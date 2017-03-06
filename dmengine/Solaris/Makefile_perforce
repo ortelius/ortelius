@@ -1,0 +1,27 @@
+CXXFLAGS=-I$(POSTGRES_DIR)/include -I/usr/include/libiodbc -I/usr/local/include -DHAVE_UNIXODBC -DDEV_VERSION -fPIC -fpermissive -m64
+
+PERFORCE_OBJS = perforce.o
+
+DMAPI_DIR = ../../../dmapi
+P4_DIR  = ../../../repositories/perforce
+
+
+all: ../perforce.so
+
+../perforce.so: $(PERFORCE_OBJS)
+	$(CXX) -m64 -shared -o $@ $(PERFORCE_OBJS) -L.. -ldmapi
+
+
+###
+
+#
+# Object files: Generic Rules
+#
+
+%.o: $(P4_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -I$(DMAPI_DIR) $(DEBUG) -c -o $@ $< -I.
+
+
+###
+
+perforce.o:	$(P4_DIR)/perforce.cpp $(P4_DIR)/perforce.h

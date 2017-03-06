@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OMTarget>
+    <Version>6.3</Version>
+    <Name>winexec.exe</Name>
+    <Project>DEPLOY-PLUS</Project>
+    <TargetDefinitionFile>winexec.exe.tgt</TargetDefinitionFile>
+    <OSPlatform>Windows</OSPlatform>
+    <BuildType>MSVC Exe DM</BuildType>
+    <IntDirectory></IntDirectory>
+    <PhoneyTarget>false</PhoneyTarget>
+    <BuildTask>
+        <Name>Compile</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+        </OptionGroup>
+    </BuildTask>
+    <BuildTask>
+        <Name>Link</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+        </OptionGroup>
+    </BuildTask>
+    <Dependency>
+        <Name>RemCom\RemCom.cpp</Name>
+        <Type>5</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/O2</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>9</Type>
+        </Option>
+        <Option>
+            <Flag>/Oi</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>25</Type>
+        </Option>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>$(BLD_OPTIONS_A)</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>25</Type>
+        </Option>
+        <Option>
+            <Flag>/D "NDEBUG"</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>9</Type>
+        </Option>
+        <Option>
+            <Flag>/D "WIN32"</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>25</Type>
+        </Option>
+        <Option>
+            <Flag>/D "_DEBUG"</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>17</Type>
+        </Option>
+        <Option>
+            <Flag>/D "_CONSOLE"</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>25</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/EHsc</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>25</Type>
+        </Option>
+        <Option>
+            <Flag>/MD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>9</Type>
+        </Option>
+        <Option>
+            <Flag>/Gy</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>25</Type>
+        </Option>
+        <Option>
+            <Flag>/W3</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>25</Type>
+        </Option>
+        <Option>
+            <Flag>/Zi</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>17</Type>
+        </Option>
+        <Option>
+            <Flag>/c</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>25</Type>
+        </Option>
+        <Option>
+            <Flag>/D "_CRT_SECURE_NO_WARNINGS" /D "_MBCS"</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>Compile results</Name>
+        <Type>6</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+</OMTarget>

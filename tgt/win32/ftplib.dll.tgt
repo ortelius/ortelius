@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OMTarget>
+    <Version>6.3</Version>
+    <Name>$(CFG)\ftplib.dll</Name>
+    <Project>DEPLOY-PLUS</Project>
+    <TargetDefinitionFile>ftplib.dll.tgt</TargetDefinitionFile>
+    <OSPlatform>Windows</OSPlatform>
+    <BuildType>MSVC DLL Shared DM</BuildType>
+    <IntDirectory>$(CFG)\ftplib</IntDirectory>
+    <PhoneyTarget>false</PhoneyTarget>
+    <BuildTask>
+        <Name>Compile</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+        </OptionGroup>
+    </BuildTask>
+    <BuildTask>
+        <Name>Link</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+        </OptionGroup>
+    </BuildTask>
+    <Dependency>
+        <Name>ftplib\dllmain.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>ftplib\ftpcomm.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>ftplib\ftplib.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>ftplib\stdafx.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>Compile results</Name>
+        <Type>38</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+</OMTarget>

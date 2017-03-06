@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OMTarget>
+    <Version>6.3</Version>
+    <Name>$(CFG)\lib\libwinlib.so</Name>
+    <Project>DEPLOY-PLUS</Project>
+    <TargetDefinitionFile>winlib.so.tgt</TargetDefinitionFile>
+    <OSPlatform>Linux</OSPlatform>
+    <BuildType>DM Shared Object</BuildType>
+    <IntDirectory>$(CFG)\winlib</IntDirectory>
+    <PhoneyTarget>false</PhoneyTarget>
+    <BuildTask>
+        <Name>Compile</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+            <Option>
+                <Flag>-DSECURITY_WIN32</Flag>
+                <Parameter></Parameter>
+                <Description></Description>
+                <Type>378</Type>
+            </Option>
+            <Option>
+                <Flag>-D_CRT_SECURE_NO_WARNINGS</Flag>
+                <Parameter></Parameter>
+                <Description></Description>
+                <Type>378</Type>
+            </Option>
+            <Option>
+                <Flag>-DWINLIB_EXPORTS</Flag>
+                <Parameter></Parameter>
+                <Description></Description>
+                <Type>378</Type>
+            </Option>
+            <Option>
+                <Flag>-fpermissive</Flag>
+                <Parameter></Parameter>
+                <Description></Description>
+                <Type>378</Type>
+            </Option>
+        </OptionGroup>
+    </BuildTask>
+    <BuildTask>
+        <Name>Link</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+        </OptionGroup>
+    </BuildTask>
+    <Dependency>
+        <Name>winlib\winlib\md5.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>winlib\winlib\winlib-unix.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>Compile results</Name>
+        <Type>6</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+</OMTarget>

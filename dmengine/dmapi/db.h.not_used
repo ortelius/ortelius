@@ -1,0 +1,48 @@
+#ifndef __db_h
+
+#define __db_h
+
+
+class DMDb
+{
+private:
+	struct pg_conn *m_conn;
+	class DMSql *m_sql;
+
+public:
+	DMDb();
+	~DMDb();
+
+	bool connect(const char* dbname, const char *user, const char *pass);
+	class DMSql &getSql();
+};
+
+
+class DMSql
+{
+private:
+	struct pg_result *m_res;
+	struct pg_conn *m_conn;
+
+	DMSql(struct pg_conn *conn);
+	~DMSql();
+
+public:
+	bool executeCommand(const char *fmt, ...);
+	bool executeQuery(const char *fmt, ...);
+	void clear();
+
+	int rows();
+	char *getString(int row, int col);
+	char *getString(int row, int col, char *dflt);
+	int getInt(int row, int col);
+	bool getBool(int row, int col);
+	bool isNull(int row, int col);
+	char *escapeLiteral(const char *str);
+	void free(void *mem);
+
+	friend class DMDb;
+};
+
+
+#endif /*__db_h*/

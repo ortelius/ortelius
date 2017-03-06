@@ -1,0 +1,1 @@
+update pg_attribute set  atttypmod = 5000 where attrelid = 'dm.dm_serverstatus'::regclass and attname = 'lasterror';

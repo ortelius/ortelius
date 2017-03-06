@@ -1,0 +1,27 @@
+CXXFLAGS=-fPIC -I$(POSTGRES_DIR)/include -I/usr/local/include -DHAVE_UNIXODBC -DHAVE_VA_LIST_STRUCT -DDEV_VERSION
+
+RESTFUL_OBJS = restful.o
+
+DMAPI_DIR = ../../../dmapi
+RESTFUL_DIR  = ../../../plugins/restful
+
+
+all: ../restful.so
+
+../restful.so: $(RESTFUL_OBJS)
+	$(CXX) -shared -o $@ $(RESTFUL_OBJS) -L.. -ldmapi
+
+
+###
+
+#
+# Object files: Generic Rules
+#
+
+%.o: $(RESTFUL_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -I$(DMAPI_DIR) $(DEBUG) -c -o $@ $< -I.
+
+
+###
+
+restful.o:	$(RESTFUL_DIR)/restful.cpp $(RESTFUL_DIR)/restful.h

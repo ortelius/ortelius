@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OMTarget>
+    <Version>6.3</Version>
+    <Name>$(CFG)\restful.dll</Name>
+    <Project>DEPLOY-PLUS</Project>
+    <TargetDefinitionFile>restful.dll.tgt</TargetDefinitionFile>
+    <OSPlatform>Windows</OSPlatform>
+    <BuildType>MSVC DLL Shared DM</BuildType>
+    <IntDirectory>$(CFG)\restful</IntDirectory>
+    <PhoneyTarget>false</PhoneyTarget>
+    <BuildTask>
+        <Name>Compile</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+            <Option>
+                <Flag>/D "UNICODE"</Flag>
+                <Parameter></Parameter>
+                <Description></Description>
+                <Type>378</Type>
+            </Option>
+            <Option>
+                <Flag>/D "_UNICODE"</Flag>
+                <Parameter></Parameter>
+                <Description></Description>
+                <Type>378</Type>
+            </Option>
+        </OptionGroup>
+    </BuildTask>
+    <BuildTask>
+        <Name>Link</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+        </OptionGroup>
+    </BuildTask>
+    <Dependency>
+        <Name>dmengine\plugins\restful\restful.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>Compile results</Name>
+        <Type>6</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>$(CFG)\dmapi.lib</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+</OMTarget>

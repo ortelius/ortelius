@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OMTarget>
+    <Version>6.3</Version>
+    <Name>$(CFG)\lib\dmtransfer</Name>
+    <Project>DEPLOY-PLUS</Project>
+    <TargetDefinitionFile>dmtransfer.noext.tgt</TargetDefinitionFile>
+    <OSPlatform>Linux</OSPlatform>
+    <BuildType>Executable</BuildType>
+    <IntDirectory>$(CFG)\dmtransfer_w</IntDirectory>
+    <PhoneyTarget>false</PhoneyTarget>
+    <BuildTask>
+        <Name>Compile</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+            <Option>
+                <Flag>-fpermissive</Flag>
+                <Parameter></Parameter>
+                <Description></Description>
+                <Type>378</Type>
+            </Option>
+        </OptionGroup>
+    </BuildTask>
+    <BuildTask>
+        <Name>Link</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+        </OptionGroup>
+    </BuildTask>
+    <Dependency>
+        <Name>dmtransfer\dmtransfer.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>dmtransfer\navigate.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>dmtransfer\options.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>dmtransfer\tinystr.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>dmtransfer\tinyxml.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>dmtransfer\tinyxmlerror.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>dmtransfer\tinyxmlparser.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>Compile results</Name>
+        <Type>38</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>libcrypto.so</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>libssl.so</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>libdl.so</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+</OMTarget>

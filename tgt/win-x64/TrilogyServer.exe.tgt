@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OMTarget>
+    <Version>6.3</Version>
+    <Name>$(CFG)\TrilogyServer.exe</Name>
+    <Project>DEPLOY-PLUS</Project>
+    <TargetDefinitionFile>TrilogyServer.exe.tgt</TargetDefinitionFile>
+    <OSPlatform>Windows</OSPlatform>
+    <BuildType>MSVC Exe DM 64-bit</BuildType>
+    <IntDirectory></IntDirectory>
+    <PhoneyTarget>false</PhoneyTarget>
+    <BuildTask>
+        <Name>Compile</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+            <Option>
+                <Flag>/D "_CRT_NONSTDC_NO_WARNINGS"</Flag>
+                <Parameter></Parameter>
+                <Description></Description>
+                <Type>378</Type>
+            </Option>
+            <Option>
+                <Flag>/D "_CRT_SECURE_NO_WARNINGS"</Flag>
+                <Parameter></Parameter>
+                <Description></Description>
+                <Type>378</Type>
+            </Option>
+        </OptionGroup>
+    </BuildTask>
+    <BuildTask>
+        <Name>Link</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+        </OptionGroup>
+    </BuildTask>
+    <Dependency>
+        <Name>TrilogyServer2.2\config.cpp</Name>
+        <Type>5</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/D "_CRT_SECURE_NO_WARNINGS" /D "_MBCS"</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>TrilogyServer2.2\license.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/D "_CRT_SECURE_NO_WARNINGS" /D "_MBCS"</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>TrilogyServer2.2\logging.cpp</Name>
+        <Type>5</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/D "_CRT_SECURE_NO_WARNINGS" /D "_MBCS"</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>TrilogyServer2.2\platform-win32.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/D "_CRT_SECURE_NO_WARNINGS" /D "_MBCS"</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>TrilogyServer2.2\service.cpp</Name>
+        <Type>5</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/D "_CRT_SECURE_NO_WARNINGS" /D "_MBCS"</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>TrilogyServer2.2\triipc.cpp</Name>
+        <Type>5</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/D "_CRT_SECURE_NO_WARNINGS" /D "_MBCS"</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>TrilogyServer2.2\trilogyd.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/D "_CRT_SECURE_NO_WARNINGS" /D "_MBCS"</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>Compile results</Name>
+        <Type>6</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>$(CFG)/xdr.lib</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>wsock32.lib</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+</OMTarget>

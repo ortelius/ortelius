@@ -1,0 +1,27 @@
+CXXFLAGS=-I$(POSTGRES_DIR)/include -I/usr/include/libiodbc -I/usr/local/include -DHAVE_UNIXODBC -DDEV_VERSION -fPIC -fpermissive -m64
+
+HTTP_OBJS = http.o
+
+DMAPI_DIR = ../../../dmapi
+HTTP_DIR  = ../../../repositories/http
+
+
+all: ../libhttp.so
+
+../libhttp.so: $(HTTP_OBJS)
+	$(CXX) -m64 -shared -o $@ $(HTTP_OBJS) -L.. -ldmapi
+
+
+###
+
+#
+# Object files: Generic Rules
+#
+
+%.o: $(HTTP_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -I$(DMAPI_DIR) $(DEBUG) -c -o $@ $< -I.
+
+
+###
+
+http.o:	$(HTTP_DIR)/http.cpp $(HTTP_DIR)/http.h

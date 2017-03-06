@@ -1,0 +1,113 @@
+#!/bin/sh
+
+PORT="22"
+CMD=""
+SFTP=""
+PW=""
+USER=""
+IDENT=""
+HOME=$(getent passwd `whoami` | cut -d: -f6)
+
+while [[ $# > 0 ]]
+do
+key="$1"
+
+case $key in
+    -usr)
+    USER="$2"
+    shift # past argument
+    ;;
+    -pw)
+    PW="$2"
+    shift # past argument
+    ;;
+    -i)
+    IDENT="$2"
+    shift # past argument
+    ;;				
+    -m)
+    HOST="$2"
+    shift # past argument
+    ;;
+    -port)
+    PORT="$2"
+    shift # past argument
+    ;;
+    -sftp)
+    SFTP="Y"
+    ;;	
+    -syn)
+    ;;
+    -force)
+    ;;
+    -t)
+    TTY="-t"
+    ;;
+    *)
+    CMD="$CMD $1"
+    ;;
+esac
+shift # past argument or value
+done
+
+if [ "$PORT" = "0" ]; then
+ PORT="22"
+fi
+
+CMD=`echo $CMD | xargs`
+
+mkdir "$HOME/.ssh" 2>/dev/null 1>/dev/null
+
+if [ ! -e "$HOME/.ssh/known_hosts" ]; then
+ ssh-keyscan -t rsa,dsa $HOST>> $HOME/.ssh/known_hosts
+ sort -u $HOME/.ssh/known_hosts > $HOME/.ssh/known_hosts.unique
+ cat $HOME/.ssh/known_hosts.unique > $HOME/.ssh/known_hosts
+fi
+
+if ! grep -q "$HOST" "$HOME/.ssh/known_hosts"; then
+ ssh-keyscan -t rsa,dsa $HOST>> $HOME/.ssh/known_hosts
+ sort -u $HOME/.ssh/known_hosts > $HOME/.ssh/known_hosts.unique
+ cat $HOME/.ssh/known_hosts.unique > $HOME/.ssh/known_hosts
+fi
+
+if [ "${SFTP}" = "Y" ]; then
+
+	TMPFILE=/tmp/re-copy$$
+
+	echo $CMD > $TMPFILE
+	echo bye >> $TMPFILE
+
+#	echo sshpass -p $PW sftp -P $PORT -b $TMPFILE $USER@$HOST 
+ if [ "${IDENT}" != "" ]; then
+		if [ "${USER}" != "" ]; then
+		  cat $TMPFILE | sftp -i $IDENT -P $PORT $USER@$HOST
+		else
+		  cat $TMPFILE | sftp -i $IDENT -P $PORT $HOST			
+		fi			
+ elif [ "${PW}" = "" ]; then
+		if [ "${USER}" != "" ]; then		
+	  cat $TMPFILE | sftp -P $PORT $USER@$HOST
+		else
+			cat $TMPFILE | sftp -P $PORT $HOST
+		fi	
+ else
+		cat $TMPFILE | sshpass -p $PW sftp -P $PORT $USER@$HOST
+	fi	
+else	
+#    echo sshpass -p $PW ssh -q $TTY -p $PORT $USER@$HOST "$CMD"
+ if [ "${IDENT}" != "" ]; then
+		if [ "${USER}" != "" ]; then
+		  ssh -q $TTY -i $IDENT -p $PORT $USER@$HOST "$CMD"
+		else
+				ssh -q $TTY -i $IDENT -p $PORT $HOST "$CMD"
+		fi			
+ elif [ "${PW}" = "" ]; then
+				if [ "${USER}" != "" ]; then
+					 ssh -q $TTY -p $PORT $USER@$HOST "$CMD"
+				else
+					 ssh -q $TTY -p $PORT $HOST "$CMD"
+				fi	
+	else			
+				sshpass -p $PW ssh -q $TTY -p $PORT $USER@$HOST "$CMD"
+	fi			
+fi	

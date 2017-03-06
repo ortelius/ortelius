@@ -1,0 +1,38 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProcComs", "ProcComs\ProcComs.vcproj", "{C1039ED9-EDAF-446D-BE89-84869B0340AB}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RemCom", "RemCom.vcproj", "{60D7397B-638A-4BCA-86FE-FBEEF4F433A4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E7A7CE0B-F74A-4F79-A7BB-B9885698CD71} = {E7A7CE0B-F74A-4F79-A7BB-B9885698CD71}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RemComSvc", "RemComSvc\RemComSvc.vcproj", "{E7A7CE0B-F74A-4F79-A7BB-B9885698CD71}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{C1039ED9-EDAF-446D-BE89-84869B0340AB}.Debug.ActiveCfg = Debug|Win32
+		{C1039ED9-EDAF-446D-BE89-84869B0340AB}.Debug.Build.0 = Debug|Win32
+		{C1039ED9-EDAF-446D-BE89-84869B0340AB}.Release.ActiveCfg = Release|Win32
+		{C1039ED9-EDAF-446D-BE89-84869B0340AB}.Release.Build.0 = Release|Win32
+		{60D7397B-638A-4BCA-86FE-FBEEF4F433A4}.Debug.ActiveCfg = Debug|Win32
+		{60D7397B-638A-4BCA-86FE-FBEEF4F433A4}.Debug.Build.0 = Debug|Win32
+		{60D7397B-638A-4BCA-86FE-FBEEF4F433A4}.Release.ActiveCfg = Release|Win32
+		{60D7397B-638A-4BCA-86FE-FBEEF4F433A4}.Release.Build.0 = Release|Win32
+		{E7A7CE0B-F74A-4F79-A7BB-B9885698CD71}.Debug.ActiveCfg = Debug|Win32
+		{E7A7CE0B-F74A-4F79-A7BB-B9885698CD71}.Debug.Build.0 = Debug|Win32
+		{E7A7CE0B-F74A-4F79-A7BB-B9885698CD71}.Release.ActiveCfg = Release|Win32
+		{E7A7CE0B-F74A-4F79-A7BB-B9885698CD71}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

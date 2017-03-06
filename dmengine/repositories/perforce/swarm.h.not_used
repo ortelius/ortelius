@@ -1,0 +1,36 @@
+#ifndef __repositories_swarm_h
+
+#define __repositories_swarm_h
+
+
+#include "extended.h"
+
+
+///////////////////////////////////////////////////////////////////////////////
+// UpdateStatus
+
+class Swarm_SetTestStatusStmtImpl : public virtual ExtendedStmtImpl
+{
+private:
+	class ExtendedStmt &m_parent;
+
+public:
+	Swarm_SetTestStatusStmtImpl(class ExtendedStmt &parent);
+
+	void execute(class Context &ctx);
+};
+
+
+class Swarm_SetTestStatusStmtImplFactory : public virtual ExtendedStmtImplFactory
+{
+public:
+	Swarm_SetTestStatusStmtImplFactory();
+
+	bool allowsBody()		{ return false; }
+	bool allowsPrePost()	{ return false; }
+	bool isThreaded()       { return false; }
+
+	ExtendedStmtImpl *create(class DM &dm, class ExtendedStmt &parent);
+};
+
+#endif /*__repositories_swarm_h*/

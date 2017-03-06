@@ -1,0 +1,70 @@
+
+
+///////////////////////////////////////////////////////////////////////////////
+// AutoPtr<T>
+///////////////////////////////////////////////////////////////////////////////
+
+template<class T> AutoPtr<T>::AutoPtr()
+	: m_ptr(NULL)
+{}
+
+
+template<class T> AutoPtr<T>::AutoPtr(T *ptr)
+	: m_ptr(ptr)
+{}
+
+
+template<class T> AutoPtr<T>::~AutoPtr()
+{
+	SAFE_DELETE(m_ptr);
+}
+
+
+template<class T> T *AutoPtr<T>::operator =(T *ptr)
+{
+	SAFE_DELETE(m_ptr);
+	m_ptr = ptr;
+	return m_ptr;
+}
+
+
+template<class T> T *AutoPtr<T>::operator ->()
+{
+	return m_ptr;
+}
+
+
+template<class T> AutoPtr<T>::operator T *()
+{
+	return m_ptr;
+}
+
+
+template<class T> T &AutoPtr<T>::operator *()
+{
+	return *m_ptr;
+}
+
+
+template<class T> bool AutoPtr<T>::operator ==(T *ptr) const
+{
+	return (m_ptr == ptr) ? true : false;
+}
+
+
+template<class T> bool AutoPtr<T>::operator !() const
+{
+	return m_ptr ? false : true;
+}
+
+
+template<class T> AutoPtr<T>::operator bool() const
+{
+	return m_ptr ? true : false;
+}
+
+
+template<class T> bool AutoPtr<T>::isNull()
+{
+	return m_ptr ? false : true;
+}

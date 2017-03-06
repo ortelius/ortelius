@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OMTarget>
+    <Version>6.3</Version>
+    <Name>jetty-9.3.6.v20151106.jup</Name>
+    <Project>DEPLOY-PLUS</Project>
+    <TargetDefinitionFile>jetty-9.3.6.v20151106.jup.tgt</TargetDefinitionFile>
+    <OSPlatform>Java</OSPlatform>
+    <BuildType>Java Unjar for Repackaging</BuildType>
+    <IntDirectory></IntDirectory>
+    <PhoneyTarget>false</PhoneyTarget>
+    <BuildTask>
+        <Name>Unjar Libraries</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+        </OptionGroup>
+    </BuildTask>
+    <Dependency>
+        <Name>jetty-9.3.6.v20151106/lib/**/*.jar</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Set Classpath</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>dmadminweb/WebContent/WEB-INF/lib/*.jar</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Set Classpath</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>	
+</OMTarget>

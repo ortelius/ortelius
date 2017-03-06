@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OMTarget>
+    <Version>6.3</Version>
+    <Name>$(CFG)\bin\libiisplugin.so</Name>
+    <Project>DEPLOY-PLUS</Project>
+    <TargetDefinitionFile>iisplugin.so.tgt</TargetDefinitionFile>
+    <OSPlatform>Linux</OSPlatform>
+    <BuildType>DM Shared Object</BuildType>
+    <IntDirectory>$(CFG)/iisplugin</IntDirectory>
+    <PhoneyTarget>false</PhoneyTarget>
+    <BuildTask>
+        <Name>Compile</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+            <Option>
+                <Flag>-DIISPLUGIN_EXPORTS</Flag>
+                <Parameter></Parameter>
+                <Description></Description>
+                <Type>378</Type>
+            </Option>
+        </OptionGroup>
+    </BuildTask>
+    <BuildTask>
+        <Name>Link</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+        </OptionGroup>
+    </BuildTask>
+    <Dependency>
+        <Name>dmengine\plugins\iisplugin\iisplugin.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>Compile results</Name>
+        <Type>6</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>$(CFG)\bin\libdmapi.so</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+</OMTarget>

@@ -1,0 +1,28 @@
+CXXFLAGS=-I$(POSTGRES_DIR)/include -I/usr/local/include -I/usr/local/opt/openssl/include -DHAVE_UNIXODBC -DDEV_VERSION -DHAVE_VA_LIST_STRUCT -DLDAP_DEPRECATED -fPIC -fpermissive -m64 -Wno-format -Wno-switch -Wno-parentheses -Wno-bool-conversion -Wno-c++11-compat-deprecated-writable-strings
+
+HARVEST_OBJS = harvest.o harvestlog.o
+
+DMAPI_DIR = ../../../dmapi
+HVST_DIR  = ../../../repositories/harvest
+
+
+all: ../harvest.so
+
+../harvest.so: $(HARVEST_OBJS)
+	$(CXX) -shared -o $@ $(HARVEST_OBJS) -L/usr/local/opt/openssl/lib -L.. -ldmapi -lssl -lcrypto
+
+
+###
+
+#
+# Object files: Generic Rules
+#
+
+%.o: $(HVST_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -I$(DMAPI_DIR) $(DEBUG) -c -o $@ $< -I.
+
+
+###
+
+harvest.o:	$(HVST_DIR)/harvest.cpp $(HVST_DIR)/harvest.h
+harvestlog.o:	$(HVST_DIR)/harvestlog.cpp $(HVST_DIR)/harvestlog.h

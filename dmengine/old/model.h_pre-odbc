@@ -1,0 +1,956 @@
+#ifndef __model_h
+
+#define __model_h
+
+
+#include "list.h"
+#include "hashtable.h"
+#include "dmapiexport.h"
+
+
+typedef enum object_kind_tag {
+	OBJ_KIND_NONE			=  0,
+	//OBJ_KIND_GROUP			=  1,
+	OBJ_KIND_ENVIRONMENT	=  2,
+	OBJ_KIND_DOMAIN         =  3,
+	OBJ_KIND_SERVER			=  4,
+	OBJ_KIND_APPLICATION	=  5,
+	OBJ_KIND_USER			=  6,
+	OBJ_KIND_USERGROUP		=  7,
+	OBJ_KIND_RESPOSITORY	=  8,
+	OBJ_KIND_NOTIFY			=  9,
+	OBJ_KIND_DATASOURCE		= 10,
+	OBJ_KIND_ACTION         = 11
+} OBJECT_KIND;
+
+
+typedef enum action_kind_tag {
+	ACTION_KIND_SCRIPT		= 1,
+	ACTION_KIND_IN_DB		= 2,
+	ACTION_KIND_EXTERNAL	= 3,
+	ACTION_KIND_PLUGIN		= 4
+} ACTION_KIND;
+
+
+typedef enum password_kind_tag {
+	CREDENTIALS_USE_DIALOG					=  0,		// Only used to indicate no credentials
+	CREDENTIALS_ENCRYPTED					=  1,		// Encrypted value in memory
+	CREDENTIALS_IN_DATABASE					=  2,		// Encrypted value in database
+	CREDENTIALS_RTI3_DFO_IN_FILESYSTEM		=  3,
+	CREDENTIALS_FROM_VARS					=  4,		// Values taken from variables
+	CREDENTIALS_HARVEST_DFO_IN_FILESYSTEM	= 10
+	//DFO_IN_HARVEST=3,
+	//CLEARTEXT_AS_DFO=4
+} CREDENTIALS_KIND;
+
+
+typedef enum line_end_format_tag{
+	LINE_ENDS_OFF			= 0,
+	LINE_ENDS_UNIX			= 1,
+	LINE_ENDS_WINDOWS		= 2,
+	LINE_ENDS_MAC			= 3
+} LINE_END_FORMAT;
+
+
+typedef enum field_kind_tag {
+	FIELD_KIND_CHECKBOX		= 1,
+	FIELD_KIND_COMBO_ARRAY	= 2,
+	FIELD_KIND_COMBO_DB		= 3,
+	FIELD_KIND_COMBO_ACTION = 4,
+	FIELD_KIND_TEXT			= 5
+} FIELD_KIND;
+
+
+class DMAPI_API IObject //IHasAttributes
+{
+public:
+	virtual const char *getAttribute(const char *name, class Context &ctx) = 0;
+	virtual class DMArray *getArrayAttribute(const char *name, class Context &ctx) = 0;
+	virtual class IObject *getObjectAttribute(const char *name, class Context &ctx) = 0;
+	virtual class Object *toObject() = 0;
+};
+
+
+//class DMAPI_API IObject : public IHasAttributes
+//{
+//public:
+//};
+
+
+class DMAPI_API Object : public IObject
+{
+protected:
+	class Model &m_model;
+	int m_id;
+	char *m_name;
+	class User *m_owner;
+	class UserGroup *m_owngrp;
+	bool m_ownerSet;
+	class Domain *m_domain;
+	bool m_domainSet;
+	char *m_summary;
+	char *m_notes;
+	class Scope *m_vars;
+	List<class UserGroup> *m_access;
+	char *m_cacheFQDomain;
+
+	Object(class Model &model, int id, const char *name);
+	virtual ~Object();
+
+public:
+	int id()			{ return m_id; }
+	const char *name()  { return m_name; }
+	virtual OBJECT_KIND kind() = 0;
+	virtual const char *table() = 0;
+	virtual const char *fk() = 0;
+
+	virtual class Object *getOwner();
+	void setOwner(class User *owner);
+	void setOwner(class UserGroup *owngrp);
+	void add(class UserGroup *usrgrp);
+	virtual bool hasAccess(class User *user);
+
+	class Domain *getDomain();
+	void setDomain(class Domain *domain);
+	const char *getFQDomain();
+
+	const char *getSummary();
+	void setSummary(const char *summary);
+	const char *getNotes();
+	void setNotes(const char *notes);
+
+	void indent(int indent);
+	virtual void print(int indent) = 0;
+	void printObject(int indent);
+
+	// IObject was IHasAttributes
+	virtual const char *getAttribute(const char *name, class Context &ctx);
+	virtual class DMArray *getArrayAttribute(const char *name, class Context &ctx);
+	virtual class IObject *getObjectAttribute(const char *name, class Context &ctx);
+	virtual class Object *toObject() { return this; }
+
+	virtual class Scope *getVars();
+};
+
+
+class DMAPI_API ProviderObject : public Object
+{
+protected:
+	char *m_type;
+	class Credentials *m_credentials;
+	Hashtable<class Property> *m_props;
+	class ProviderObjectDef *m_def;
+
+	ProviderObject(class Model &model, int id, const char *name, const char *type);
+	virtual ~ProviderObject();
+
+public:
+	virtual const char *def_kind() = 0;
+
+	virtual const char *getAttribute(const char *name, class Context &ctx);
+
+	class Credentials *getCredentials();
+	void setCredentials(class Credentials *creds);
+
+	class ProviderObjectDef &getDef(class Context &stack);
+
+	class Property *getProperty(const char *name);
+	void setProperty(class Property *prop);
+
+	virtual void printProviderObject(int indent);
+};
+
+
+class DMAPI_API ProviderObjectDef
+{
+private:
+	int m_id;
+	char *m_name;
+	class Plugin *m_plugin;
+	char *m_kind;
+	List<class PropertyDef> *m_propdefs;
+	class PropertyChecker *m_checker;
+
+	ProviderObjectDef(int id, const char *name, const char *kind, Plugin *plugin);
+
+	void add(class PropertyDef *propdef);
+
+	void createChecker();
+
+public:
+	~ProviderObjectDef();
+
+	int id()			{ return m_id; }
+	const char *name()	{ return m_name; }
+
+	List<class PropertyDef> *getPropertyDefs();
+
+	Plugin *getPlugin();
+
+	void verifyProperties(class Context &ctx, Hashtable<class Property> *props);
+	void verifyArgs(class Context &ctx, class StmtList *args, Hashtable<class Property> *props);
+
+	friend class Model;
+	friend class Credentials;	// Temp
+};
+
+
+class DMAPI_API Credentials
+{
+private:
+	int   m_id;
+	char *m_name;
+	CREDENTIALS_KIND m_kind;
+	char *m_encusername;
+	char *m_encpassword;
+	char *m_filename;
+	Hashtable<class CredentialsProvider> *m_impls;
+
+	char *internalDecryptValue(const char *value, class Object &auth, class Context &ctx);
+
+	class CredentialsProvider *createImpl(const char *provider, class Context &ctx);
+
+public:
+	Credentials(CREDENTIALS_KIND kind);
+	Credentials(int id, const char *name, CREDENTIALS_KIND kind, const char *encusername, const char *encpassword);
+	Credentials(int id, const char *name, CREDENTIALS_KIND kind, const char *filename);
+	Credentials(class Property *username, class Property *password);
+	~Credentials();
+
+	int id()				 { return m_id; }
+	CREDENTIALS_KIND kind()  { return m_kind; }
+
+	char *getDecryptedUsername(class Object &auth, class Context &ctx);
+	char *getDecryptedPassword(class Object &auth, class Context &ctx);
+	bool hasUsername();
+	bool hasPassword();
+	const char *filename()	{ return m_filename; }
+
+	bool canTransform(const char *provider, class Context &ctx);
+	const char *transform(const char *provider, class Object &auth, class Context &ctx);
+
+	void print(int indent);
+};
+
+
+class DMAPI_API Environment : public Object
+{
+private:
+	List<class Server> *m_servers;
+	List<class Application> *m_apps;
+	char *m_basedir;
+	Credentials *m_credentials;
+	class DMArray *m_serversArrayCache;
+
+	Environment(
+		class Model &model, int id, const char *name, const char *basedir);
+
+	const char *table()  { return "dm_environment"; }
+	const char *fk()     { return "envid"; }
+
+	void setCredentials(Credentials *creds);
+
+	void add(class Server *server);
+	void add(class Application *app);
+
+public:
+	~Environment();
+
+	OBJECT_KIND kind()	 { return OBJ_KIND_ENVIRONMENT; }
+
+	const char *basedir()   { return m_basedir; }
+
+	const char *getAttribute(const char *name, class Context &ctx);
+	class DMArray *getArrayAttribute(const char *name, class Context &ctx);
+	IObject *getObjectAttribute(const char *name, class Context &ctx);
+	class Scope *getVars();
+
+	//class Domain *getDomain();
+	List<class Server> *getServers();
+	List<class Application> *getApplications();
+	Credentials *getCredentials();
+
+	bool hasAccess(class User *user);
+	class Server *server(const char *name);
+	class Application *application(const char *name);
+	void print(int indent);
+
+	friend class Model;
+};
+
+
+class DMAPI_API Domain : public Object
+{
+private:
+	List<class Domain>		*m_doms;
+	List<Environment>       *m_envs;
+	List<class Application>	*m_apps;
+	List<class Repository>	*m_reps;
+	List<class Notify>		*m_nfys;
+	List<class Datasource>	*m_dats;
+
+	Domain(class Model &model, int id, const char *name);
+
+	const char *table()  { return "dm_domain"; }
+	const char *fk()     { return "domainid"; }
+
+	void add(class Domain *dom);
+	void add(Environment *env);
+	void add(class Application *app);
+	void add(class Repository *rep);
+	void add(class Notify *nfy);
+	void add(class Datasource *dat);
+
+public:
+	~Domain();
+
+	OBJECT_KIND kind()	 { return OBJ_KIND_DOMAIN; }
+
+	List<class Domain>		*getSubdomains();
+	List<Environment>   	*getEnvironments();
+	List<class Application>	*getApplications();
+	List<class Repository>	*getRepositories();
+	List<class Notify>		*getNotifys();
+	List<class Datasource>	*getDatasources();
+
+	void print(int indent);
+
+	friend class Model;
+};
+
+
+class DMAPI_API Server : public Object
+{
+private:
+	char *m_hostname;
+	char *m_protocol;
+	char *m_basedir;
+	Credentials *m_credentials;
+	char *m_hosttype;
+	LINE_END_FORMAT m_lineends;
+
+	Server(
+		class Model &model, int id, const char *name,
+		const char *hostname, const char *protocol,
+		const char *basedir, const char *hosttype,
+		LINE_END_FORMAT lineends);
+
+	const char *table()  { return "dm_server"; }
+	const char *fk()     { return "serverid"; }
+
+	void setCredentials(Credentials *creds);
+
+public:
+	~Server();
+
+	OBJECT_KIND kind()	 { return OBJ_KIND_SERVER; }
+
+	const char *hostname();
+	const char *protocol()  { return m_protocol; }
+	const char *basedir()   { return m_basedir; }
+	const char *hosttype()	{ return m_hosttype; }
+	LINE_END_FORMAT lineends() { return m_lineends; }
+
+	const char *getAttribute(const char *name, class Context &ctx);
+	IObject *getObjectAttribute(const char *name, class Context &ctx);
+	class Scope *getVars();
+	Credentials *getCredentials();
+
+	void print(int indent);
+
+	friend class Model;
+};
+
+
+class DMAPI_API Application : public Object
+{
+private:
+	class Action *m_action;
+
+	Application(class Model &model, int id, const char *name);
+
+	const char *table()  { return "dm_application"; }
+	const char *fk()     { return "appid"; }
+
+	void setAction(class Action *action);
+
+public:
+	~Application();
+
+	OBJECT_KIND kind()	 { return OBJ_KIND_APPLICATION; }
+	const char *getAttribute(const char *name, class Context &ctx);
+	IObject *getObjectAttribute(const char *name, class Context &ctx);
+	class Scope *getVars();
+
+	class Action *getAction();
+
+	bool hasAccess(class User *user);
+	void print(int indent);
+
+	friend class Model;
+};
+
+
+class DMAPI_API User : public Object
+{
+private:
+	char *m_email;
+	char *m_realname;
+	char *m_phone;
+	List<class UserGroup> *m_groups;
+	class DMArray *m_groupsArrayCache;
+	char *m_accessibleDomainsCache;
+
+	User(
+		class Model &model, int id, const char *name, const char *email,
+		const char *realname, const char *phone);
+
+	const char *table()  { return "dm_user"; }
+	const char *fk()     { return (const char*) 0; }
+
+public:
+	~User();
+
+	OBJECT_KIND kind()	 { return OBJ_KIND_USER; }
+
+	Object *getOwner()   { return (Object*) 0; }
+
+	const char *getAttribute(const char *name, class Context &ctx);
+	class DMArray *getArrayAttribute(const char *name, class Context &ctx);
+	List<class UserGroup> *getUserGroups();
+	void add(class UserGroup *group);
+	bool validateHashedPassword(const char *passhash);
+	const char *getAccessibleDomains();
+
+	void print(int indent);
+
+	friend class Model;
+};
+
+
+class DMAPI_API UserGroup : public Object
+{
+private:
+	char *m_email;
+	List<User> *m_users;
+	class DMArray *m_usersArrayCache;
+
+	UserGroup(class Model &model, int id, const char *name, const char *email);
+
+	const char *table()  { return "dm_usergroup"; }
+	const char *fk()     { return (const char*) 0; }
+
+public:
+	~UserGroup();
+
+	OBJECT_KIND kind()	 { return OBJ_KIND_USERGROUP; }
+
+	Object *getOwner()   { return (Object*) 0; }
+
+	const char *getAttribute(const char *name, class Context &ctx);
+	class DMArray *getArrayAttribute(const char *name, class Context &ctx);
+	List<User> *getUsers();
+	void add(User *user);
+
+	void print(int indent);
+
+	friend class Model;
+};
+
+
+class DMAPI_API Repository : public ProviderObject
+{
+private:
+	class RepositoryImpl *m_impl;
+	Hashtable<StringList> *m_files;
+	Hashtable<StringHashtable> *m_folders;
+	Hashtable<Hashtable<StringList> > *m_infos;
+
+	Repository(class Model &model, int id, const char *name, const char *type);
+
+	const char *table()				{ return s_table(); }
+	const char *fk()				{ return "repositoryid"; }
+	const char *def_kind()			{ return "repository"; }
+	static const char *s_table()	{ return "dm_repository"; }
+
+	void createImpl(class Context &stack);
+
+public:
+	~Repository();
+
+	OBJECT_KIND kind()				{ return OBJ_KIND_RESPOSITORY; }
+
+	class Scope *getVars();
+
+	void checkout(const char *dropzone, class ExtendedStmt &stmt, class Context &ctx);
+
+	// Callbacks
+	void checked_out_file(const char *dropzone, const char *filename);
+
+	/**
+	 * Called to indicate where a repository folder should have it's dm.info
+	 * file located.
+	 *
+	 * folder  - full repository folder path in repository format (as listed in
+	 *           dm_repositorytextpattern)
+	 * infoloc - relative path of target folder in dropzone (using platform-
+	 *           specific path)
+	 * fixed   - if true indicates that the location is the same for all
+	 *           parents of this folder, if false, then the parent file locations
+	 *           are automatically calculated
+	 */
+	void checked_out_folder(const char *dropzone, const char *folder, const char *infoloc, bool fixed);
+
+	void generateDmInfos(const char *dropzone);
+
+	char *dirname(const char *filename);
+
+	void print(int indent);
+
+	friend class Model;
+};
+
+
+class DMAPI_API Notify : public ProviderObject
+{
+private:
+	class NotifyProviderImpl *m_impl;
+
+	Notify(class Model &model, int id, const char *name, const char *type);
+
+	const char *table()				{ return s_table(); }
+	const char *fk()				{ return "notifyid"; }
+	const char *def_kind()			{ return "notify"; }
+	static const char *s_table()	{ return "dm_notify"; }
+
+	void createImpl(class Context &stack);
+
+public:
+	~Notify();
+
+	OBJECT_KIND kind()				{ return OBJ_KIND_NOTIFY; }
+
+	class Scope *getVars();
+
+	void notify(class ExtendedStmt &stmt, class OutputStream &body, List<class AttachmentStmtImpl> *atts, class Context &ctx);
+
+	void print(int indent);
+
+	friend class Model;
+};
+
+
+class DMAPI_API Datasource : public ProviderObject
+{
+private:
+	class DatasourceProviderImpl *m_impl;
+
+	Datasource(class Model &model, int id, const char *name, const char *type);
+
+	const char *table()				{ return s_table(); }
+	const char *fk()				{ return "datasourceid"; }
+	const char *def_kind()			{ return "datasource"; }
+	static const char *s_table()	{ return "dm_datasource"; }
+
+	void createImpl(class Context &stack);
+
+public:
+	~Datasource();
+
+	OBJECT_KIND kind()				{ return OBJ_KIND_DATASOURCE; }
+
+	class Scope *getVars();
+
+	void query(class ExtendedStmt &stmt, class Context &ctx);
+
+	void print(int indent);
+
+	friend class Model;
+};
+
+
+/**
+ * A deployment manager script - referred to by filepath and repositoryid or
+ * name and db textid.  parse() checks out the script and parses it, with the
+ * actions ending up in the model's global list of actions.
+ */
+class DMAPI_API Script
+{
+private:
+	Model &m_model;
+	int m_repoid;
+	char *m_filepath;
+	Action *m_action;
+	int m_textid;
+	Repository *m_repo;
+	bool m_parsed;
+	// TODO: Actions should probably be declared here
+
+	Script(class Model &model, int repoid, const char *filepath);
+	Script(class Model &model, Action *action, int textid);
+
+	int repoid()	{ return m_repoid; }
+	void setRepository(class Repository *repo);
+
+public:
+	~Script();
+
+	class Repository *getRepository();
+
+	int parse(Context &ctx);
+
+	void print(int indent);
+
+	friend class Model;
+};
+
+
+/**
+ * Definition of an argument to an external script used for mapping arguments
+ * to positional and switched parameters.
+ */
+class ActionArg
+{
+private:
+	char *m_name;
+	int m_position;
+	bool m_required;
+	bool m_pad;
+	char *m_switch;
+
+	ActionArg(const char *name, int pos, bool reqd, bool pad, const char *sw);
+
+public:
+	~ActionArg();
+
+	const char *name()		{ return m_name; }
+	int position()			{ return m_position; }
+	bool required()			{ return m_required; }
+	bool pad()				{ return m_pad; }
+	const char *getSwitch()	{ return m_switch; }
+
+	friend class Model;
+};
+
+
+class DMAPI_API Action : public Object
+{
+private:
+	ACTION_KIND m_actkind;
+	bool m_isFunction;
+	bool m_resultIsExpr;
+	bool m_parsed;
+	Script *m_script;
+
+	char *m_filepath;
+	List<ActionArg> *m_args;
+	Hashtable<ActionArg> *m_argMap;
+
+	class Plugin *m_plugin;
+
+	Action(
+		class Model &model, int id, ACTION_KIND kind, bool isFunction,
+		bool resultIsExpr, const char *name, const char *filepath);
+
+	const char *table()				{ return "dm_action"; }
+	const char *fk()				{ return "actionid"; }
+
+	void setScript(class Script *script);
+	void setPlugin(class Plugin *plugin);
+
+	void add(ActionArg *arg);
+
+public:
+	~Action();
+
+	OBJECT_KIND kind()				{ return OBJ_KIND_ACTION; }
+	ACTION_KIND actionKind()		{ return m_actkind; }
+
+	bool resultIsExpr()				{ return m_resultIsExpr; }
+	const char *filepath()			{ return m_filepath; }
+	Hashtable<ActionArg> *getArgMap();
+	List<ActionArg> *getArgs();
+
+	char *getSignature();
+	class Script *getScript();
+	int parse(class Context &ctx);
+
+	class Plugin *getPlugin();
+
+	class ActionNode *getActionNode(class Context &ctx);
+
+	void print(int indent);
+
+	friend class Model;
+};
+
+
+class DMAPI_API Field
+{
+protected:
+	class Model &m_model;
+	int m_id;
+	char *m_name;
+	FIELD_KIND m_kind;
+
+	class Action *m_action;
+
+	char *m_querystring;
+	class Datasource *m_datasource;
+
+	Field(
+		class Model &model, int id, const char *name,
+		FIELD_KIND kind, const char *querystring);
+
+	void setAction(class Action *script);
+
+	void setDatasource(class Datasource *datasource);
+
+public:
+	~Field();
+
+	int id()			{ return m_id; }
+	const char *name()  { return m_name; }
+
+	class Action *getAction();
+
+	class Datasource *getDatasource();
+
+	void populate(class DM &dm);
+
+	friend class Model;
+};
+
+
+class Plugin
+{
+private:
+	int m_id;
+	int m_version;
+	char *m_library;
+	bool m_loaded;
+
+	Plugin(int id, int version, const char *library);
+
+public:
+	~Plugin();
+
+	int id()				{ return m_id; }
+	const char *library()	{ return m_library; }
+
+	bool loadPlugin(class DM &dm);
+
+	friend class Model;
+};
+
+
+class DMAPI_API PluginObject
+{
+public:
+	PluginObject();
+	virtual ~PluginObject();
+};
+
+
+class RepositoryTextPattern
+{
+private:
+	char *m_path;
+	char *m_pattern;
+	bool m_text;
+
+	RepositoryTextPattern(const char *path, const char *pattern, bool text);
+
+public:
+	~RepositoryTextPattern();
+
+	const char *path()		{ return m_path; }
+	const char *pattern()	{ return m_pattern; }
+	bool text()				{ return m_text; }
+
+	friend class Model;
+};
+
+
+#include "cache.h"
+
+
+class DMAPI_API Model
+{
+private:
+	class DMSql &m_sql;
+	List<Environment>		*m_envs;
+	List<Application>		*m_apps;
+	class ActionNodeList	*m_actionNodes;
+	User					*m_currentUser;
+	CacheByIdAndName<Environment>	m_envCache;
+	CacheById<Domain>				m_domCache;
+	CacheById<Server>				m_srvCache;
+	CacheByIdAndName<Application>	m_appCache;
+	CacheByIdAndName<User>			m_usrCache;
+	CacheById<UserGroup>			m_usgCache;
+	CacheByIdAndName<Repository>	m_repCache;
+	CacheByIdAndName<Notify>		m_nfyCache;
+	CacheByIdAndName<Datasource>	m_datCache;
+	CacheById<Credentials>			m_crdCache;
+	CacheByIdAndName<Field>			m_fldCache;
+	CacheByIdAndName<Action>		m_actCache;
+	Hashtable<Script>				m_scrCache;
+	CacheById<ProviderObjectDef>	m_podCache;
+	CacheById<Plugin>				m_plgCache;
+	Hashtable<PluginObject>			m_pluginObjects;
+
+	// Internals
+	List<Environment> *internalGetEnvironments(const char *whereClause);
+	List<Domain> *internalGetDomains(const char *fromClause, const char *whereClause);
+	List<Application> *internalGetApplications(const char *whereClause);
+	List<User> *internalGetUsers(const char *fromClause, const char *whereClause);
+	Credentials *internalGetCredentials(const char *fromClause, const char *whereClause);
+	Action *internalGetAction(const char *fromClause, const char *whereClause);
+
+	template<class T> List<T> *internalGetProviderObjects(
+		CacheByIdAndName<T> &cache, const char *fromClause, const char *whereClause);
+
+	Environment *findOrCreateEnvironment(
+		int id, const char* name, const char *basedir);
+	Domain *findOrCreateDomain(int id, const char* name);
+	Server *findOrCreateServer(
+		int id, const char *name, const char *hostname, const char *protocol,
+		const char *basedir, const char *hosttype, LINE_END_FORMAT lineends);
+	Application *findOrCreateApplication(int id, const char *name);
+	User *findOrCreateUser(
+		int id, const char *name, const char* email,
+		const char *realname, const char *phone);
+	UserGroup *findOrCreateUserGroup(int id, const char *name, const char* email);
+	ProviderObjectDef *findOrCreateProviderObjectDef(
+		int id, const char *name, const char *kind, Plugin *plugin);
+	Credentials *findOrCreateCredentials(
+		int id, const char *name, CREDENTIALS_KIND kind,
+		char *encuser, const char *encpass, const char *filename);
+	Action *findOrCreateAction(
+		int id, ACTION_KIND kind, bool isFunc, bool resIsExpr,
+		const char *name, const char *filepath);
+	Script *findOrCreateScript(int repoid, const char *filepath);
+	Script *findOrCreateScript(Action *action, int textid);
+	Plugin *findOrCreatePlugin(int id, int version, const char *library);
+
+	template<class T> void getProviderObjectsForDomain(
+		CacheByIdAndName<T> &cache, Domain *domain);
+
+	// Environment
+	void getServersForEnvironment(Environment &env);
+	void getApplicationsForEnvironment(Environment &env);
+	//void getDomainForEnvironment(Environment &env);
+	void getCredentialsForEnvironment(Environment &server);
+
+	// Server
+	void getCredentialsForServer(Server &server);
+
+	// Application
+	void getActionForApplication(Application &app);
+
+	// Domain
+	void getSubdomainsForDomain(Domain *domain);
+	void getEnvironmentsForDomain(Domain *domain);
+	void getApplicationsForDomain(Domain *domain);
+	void getRepositoriesForDomain(Domain *domain);
+	void getNotifysForDomain(Domain *domain);
+	void getDatasourcesForDomain(Domain *domain);
+	void getParentForDomain(Domain &domain);
+	char *getAccessibleDomains(int domainid);
+	char *getAccessibleDomains(Domain &domain);
+
+	// UserGroup
+	void getUsersForUserGroup(UserGroup &group);
+
+	// User
+	void getUserGroupsForUser(User &user);
+
+	// Object
+	void getOwnerForObject(Object &obj);
+	void getVariablesForObject(Object &obj, Scope &vars);
+	void getAccessForObject(Object &obj);
+	void getDomainForObject(Object &obj);
+	void getSummaryForObject(Object &obj);
+	void getNotesForObject(Object &obj);
+
+	// ProviderObject
+	void getCredentialsForProviderObject(ProviderObject &po);
+	void getPropertiesForProviderObject(ProviderObject &obj);
+	ProviderObjectDef *getDefForProviderObject(ProviderObject &obj);
+	void getPropertyDefsForProviderObjectDef(ProviderObjectDef &pod);
+
+	// Repository
+	List<RepositoryTextPattern> *getTextPatternsForRepositoryPath(
+		Repository &repo, const char *path);
+
+	// Field
+	void getActionForField(Field &field);
+	StringList *getFieldValuesForField(Field &field);
+	StringList *getFieldValuesForField(const char *querystring);
+
+	// Script
+	void getRepositoryForScript(Script &script);
+
+	// Action
+	Action *getAction(const char *name);
+	void getArgsForAction(Action &act);
+	void getScriptForAction(Action *action);
+	char *getActionText(int textid);
+	void getPluginForAction(Action &act);
+
+	// This is private so that no-one other than friends can change the user
+	void setCurrentUser(User *user);
+	void updateUserLastLogin(User &user);
+	bool validateHashedPassword(User &user, const char *passhash);
+
+	void setActionNodes(class ActionNodeList *actions);
+	class ActionNode *firstActionNode();
+	class ActionNode *getActionNode(const char *name);
+
+public:
+	Model(class DMSql &sql);
+	~Model();
+
+	List<Environment> *getEnvironments();
+	List<Application> *getApplications();
+	Environment *getEnvironment(const char *name);
+	Application *getApplication(const char *name);
+	User *getUser(const char *name);
+	Repository *getRepository(const char *name);
+	Notify *getNotifier(const char *name);
+	Datasource *getDatasource(const char *name);
+
+	Field *getField(const char *name);
+
+	User *getCurrentUser();
+
+	void setPluginObject(const char *name, PluginObject *obj);
+	PluginObject *getPluginObject(const char *name);
+
+	friend class DM;
+	friend class Object;
+	friend class ProviderObject;
+	friend class Environment;
+	friend class Domain;
+	friend class Server;
+	friend class Application;
+	friend class Repository;
+	friend class Notify;
+	friend class Datasource;
+	friend class User;
+	friend class UserGroup;
+	friend class Field;
+	friend class Script;
+	friend class Action;
+	friend int testThings(class DMDb &db);
+};
+
+
+void DMAPI_API catFile(const char* filename);
+
+
+#include "model.impl"
+
+
+#endif /*__model_h*/

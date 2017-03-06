@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OMTarget>
+    <Version>6.3</Version>
+    <Name>$(CFG)\dmtransfer.exe</Name>
+    <Project>DEPLOY-PLUS</Project>
+    <TargetDefinitionFile>dmtransfer.exe.tgt</TargetDefinitionFile>
+    <OSPlatform>Windows</OSPlatform>
+    <BuildType>MSVC Exe DM</BuildType>
+    <IntDirectory>$(CFG)\dmtransfer</IntDirectory>
+    <PhoneyTarget>false</PhoneyTarget>
+    <BuildTask>
+        <Name>Compile</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+        </OptionGroup>
+    </BuildTask>
+    <BuildTask>
+        <Name>Link</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+        </OptionGroup>
+    </BuildTask>
+    <Dependency>
+        <Name>dmtransfer\dmtransfer.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>dmtransfer\navigate.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>dmtransfer\options.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>dmtransfer\stdafx.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>dmtransfer\tinystr.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>dmtransfer\tinyxml.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>dmtransfer\tinyxmlerror.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>dmtransfer\tinyxmlparser.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+        <Option>
+            <Flag>/GL</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+        <Option>
+            <Flag>/FD</Flag>
+            <Parameter></Parameter>
+            <Description></Description>
+            <Type>24</Type>
+        </Option>
+    </Dependency>
+    <Dependency>
+        <Name>Compile results</Name>
+        <Type>38</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>libeay32.lib</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>ssleay32.lib</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Link</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+</OMTarget>

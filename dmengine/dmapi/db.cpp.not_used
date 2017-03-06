@@ -1,0 +1,218 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+
+#include <libpq-fe.h>
+
+#include "db.h"
+#include "platform.h"
+
+
+DMDb::DMDb()
+	: m_conn(NULL), m_sql(NULL)
+{}
+
+
+DMDb::~DMDb()
+{
+	SAFE_DELETE(m_sql);
+	if(m_conn) {
+		PQfinish(m_conn);
+		m_conn = NULL;
+	}
+}
+
+
+bool DMDb::connect(const char* dbname, const char *user, const char *pass)
+{
+	char conninfo[1024];
+	sprintf(conninfo, "hostaddr = 192.168.1.1 dbname = %s user = %s password = %s", dbname, user, pass);
+
+	PGconn *conn = PQconnectdb(conninfo);
+
+	if (PQstatus(conn) != CONNECTION_OK)
+    {
+		fprintf(stderr, "Connection to database failed: %s", PQerrorMessage(conn));
+		PQfinish(conn);
+		return false;
+	}
+
+	m_conn = conn;
+	return true;
+}
+
+
+DMSql &DMDb::getSql()
+{
+	if(!m_sql) {
+		m_sql = new DMSql(m_conn);
+	} else {
+		m_sql->clear();
+	}
+	return *m_sql;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+DMSql::DMSql(PGconn *conn)
+	: m_conn(conn), m_res(NULL)
+{}
+
+
+DMSql::~DMSql()
+{
+	clear();
+}
+
+
+bool DMSql::executeCommand(const char *fmt, ...)
+{
+	if(m_res) {
+		PQclear(m_res);
+	}
+
+	va_list args;
+	va_start(args, fmt);
+	char *cmd = platform_vsprintf(fmt, args);
+	va_end(args);
+
+	PGresult *res = PQexec(m_conn, cmd);
+	SAFE_FREE(cmd);
+
+	if(PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+        fprintf(stderr, "set schema failed: %s", PQerrorMessage(m_conn));
+        PQclear(res);
+		return false;
+	}
+
+	m_res = res;
+	return true;
+}
+
+
+bool DMSql::executeQuery(const char *fmt, ...)
+{
+	if(m_res) {
+		PQclear(m_res);
+		m_res = NULL;
+	}
+
+	va_list args;
+	va_start(args, fmt);
+	char *stmt = platform_vsprintf(fmt, args);
+	va_end(args);
+
+//printf("%s\n", stmt);
+
+	PGresult *res = PQexec(m_conn, stmt);
+	if(PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "select failed: %s\n", PQerrorMessage(m_conn));
+		fprintf(stderr, "query was: %s\n", stmt);
+        PQclear(res);
+		SAFE_FREE(stmt);
+		return false;
+	}
+
+	m_res = res;
+	SAFE_FREE(stmt);
+	return true;
+}
+
+
+void DMSql::clear()
+{
+	if(m_res) {
+		PQclear(m_res);
+		m_res = NULL;
+	}
+}
+
+
+/*
+	** Random code to do parameterized values
+
+	char buf[256];
+	sprintf(buf, "%d", id);
+
+	const char *params[1];
+	params[0] = buf;
+
+	PGresult *res = PQexecParams(conn, "select e.name, u.name, u.email "
+		"from (dm_environment e left join dm_user u on e.ownerid = u.id) "
+		"where e.id = $1", 1, NULL, params, NULL, NULL, 1 );
+	if (PQresultStatus(res) != PGRES_TUPLES_OK)
+    {
+        fprintf(stderr, "select failed: %s", PQerrorMessage(conn));
+        PQclear(res);
+		return NULL;
+	}
+*/
+
+int DMSql::rows()
+{
+	if(m_res) {
+		return PQntuples(m_res);
+	}
+	return 0;
+}
+
+
+char *DMSql::getString(int row, int col)
+{
+	if(m_res) {
+		return PQgetvalue(m_res, row, col);
+	}
+	return NULL;
+}
+
+
+char *DMSql::getString(int row, int col, char *dflt)
+{
+	if(m_res) {
+		return (!PQgetisnull(m_res, row, col) ? PQgetvalue(m_res, row, col) : dflt);
+	}
+	return dflt;
+}
+
+
+int DMSql::getInt(int row, int col)
+{
+	if(m_res) {
+		return atoi(PQgetvalue(m_res, row, col));
+	}
+	return 0;
+}
+
+
+bool DMSql::getBool(int row, int col)
+{
+	if(m_res) {
+		return (strcmp(PQgetvalue(m_res, row, col), "t") == 0);
+	}
+	return false;
+}
+
+
+bool DMSql::isNull(int row, int col)
+{
+	if(m_res) {
+		return PQgetisnull(m_res, row, col) ? true : false;
+	}
+	return true;
+}
+
+
+char *DMSql::escapeLiteral(const char *str)
+{
+	return PQescapeLiteral(m_conn, str, strlen(str));
+}
+
+
+void DMSql::free(void *mem)
+{
+	PQfreemem(mem);
+}

@@ -1,0 +1,455 @@
+
+
+#include "platform.h"
+#include "list.h"
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdio.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Bucket<T>
+///////////////////////////////////////////////////////////////////////////////
+
+template<class T> Bucket<T>::Bucket(const char *k, T *v)
+	:key(DUP_NULL(k)), value(v), next(NULL)
+{}
+
+
+template<class T> Bucket<T>::~Bucket()
+{
+	if(key) { free(key); key = NULL; }
+	//if(value) { delete value; }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Hashtable<T>
+///////////////////////////////////////////////////////////////////////////////
+
+
+template<class V> Hashtable<V>::Hashtable(bool nocase /*= false*/, bool isOwner /*= false*/, int buckets /*= 10*/)
+	: m_bucketCount(buckets), m_nocase(nocase), m_isOwner(isOwner), m_count(0)
+{
+	m_buckets = (Bucket<V>**) malloc(sizeof(Bucket<V> *) * buckets);
+
+	if (m_buckets) {
+		for(int n = 0; n < buckets; n++) {
+			m_buckets[n] = (Bucket<V>*) NULL;
+		}
+	}	
+}
+
+template<class V> Hashtable<V>::~Hashtable()
+{
+	clear();
+	free(m_buckets);
+	m_buckets = NULL;
+	m_bucketCount = 0;
+	m_count = 0;
+}
+
+
+template<class V> int Hashtable<V>::hash(const char *str) const
+{
+	int ret = 0;
+
+	while(*str) {
+		ret += m_nocase ? tolower(*str) : *str;
+		str++;
+	}
+
+	return ret;
+}
+
+
+template<class V> V *Hashtable<V>::get(const char *key) const
+{
+	int n = hash(key) % m_bucketCount;
+
+	for(Bucket<V> *b = m_buckets[n]; b; b = b->next) {
+		if(b->key && ((m_nocase ? STRCASECMP(key, b->key) : strcmp(key, b->key)) == 0)) { return b->value; }
+	}
+	return (V*) 0;
+}
+
+
+template<class V> V *Hashtable<V>::put(const char *key, V *value)
+{
+	int n = hash(key) % m_bucketCount;
+
+	if(!m_buckets[n]) {
+		m_buckets[n] = new Bucket<V>(key, value);
+		m_count++;
+		if(m_count/m_bucketCount > 5) {
+			rehash();
+		}
+		return NULL;
+	}
+
+	Bucket<V> *prev = NULL;
+	for(Bucket<V> *b = m_buckets[n]; b; b = b->next) {
+		if(key && b->key && (m_nocase ? STRCASECMP(key, b->key) : strcmp(key, b->key)) == 0) {
+			//printf("### bucket already contains %p\n", b->value);
+			V *old = b->value;
+			b->value = value;
+			return old;
+		}
+
+		prev = b;
+	}
+
+	if(prev) {
+		prev->next = new Bucket<V>(key, value);
+		m_count++;
+		if(m_count/m_bucketCount > 5) {
+			rehash();
+		}
+	}
+
+	return NULL;
+}
+
+
+template<class V> void Hashtable<V>::remove(const char *key, bool nodelete /*= false*/)
+{
+	int n = hash(key) % m_bucketCount;
+
+	Bucket<V> *prev = NULL;
+	for(Bucket<V> *b = m_buckets[n]; b; b = b->next) {
+		if(b->key && ((m_nocase ? STRCASECMP(key, b->key) : strcmp(key, b->key)) == 0)) {
+			if(prev) {
+				prev->next = b->next;
+			} else {
+				m_buckets[n] = b->next;
+			}
+			if(m_isOwner && !nodelete && b->value) {
+				delete b->value; b->value = NULL;
+			}
+			delete b;
+			m_count--;
+			break;
+		}
+		prev = b;
+	}
+}
+
+
+template<class V> int Hashtable<V>::count() const
+{
+	return m_count;
+}
+
+
+template<class V> StringList *Hashtable<V>::keys() const
+{
+	StringList *ret = new StringList();
+	for(int n = 0; n < m_bucketCount; n++) {
+		for(Bucket<V> *b = m_buckets[n]; b; b = b->next) {
+			ret->add(b->key);
+		}
+	}
+	return ret;
+}
+
+
+template<class V> V **Hashtable<V>::values() const
+{
+	void *b = malloc((count() + 1) * sizeof(V*));
+	if (b) {
+		V **buf = (V**)b;
+		int count = 0;
+		for(int n = 0; n < m_bucketCount; n++) {
+			for(Bucket<V> *b = m_buckets[n]; b; b = b->next) {
+				buf[count++] = b->value;
+			}
+		}
+		buf[count] = NULL;
+		return buf;
+	} else {
+		return NULL;
+	}
+}
+
+
+template<class V> void Hashtable<V>::rehash()
+{
+	int buckets = m_count/2;
+	int n;
+
+	void *t = malloc(sizeof(Bucket<V> *) * buckets);
+	if (t) {
+		Bucket<V> **temp = (Bucket<V>**)t;
+		for(n = 0; n < buckets; n++) {
+			temp[n] = (Bucket<V>*) NULL;
+		}
+		
+		for(n = 0; n < m_bucketCount; n++) {
+			Bucket<V> *next = NULL;
+			for(Bucket<V> *b = m_buckets[n]; b; b = next) {
+				next = b->next;
+				b->next = NULL;
+				int m = hash(b->key) % buckets;
+				if(temp[m]) {
+					Bucket<V> *t;
+					for(t = temp[m]; t && t->next; t = t->next) { /*empty*/ }
+					if(t) {
+						t->next = b;
+					}
+				} else {
+					temp[m] = b;
+				}
+			}
+		}
+		
+		free(m_buckets);
+		m_buckets = temp;
+		m_bucketCount = buckets;
+	}
+}
+
+
+template<class V> void Hashtable<V>::clear()
+{
+	for(int n = 0; n < m_bucketCount; n++) {
+		for(Bucket<V> *b = m_buckets[n]; b; ) {
+			Bucket<V> *prev = b;
+			b = b->next;
+			if(m_isOwner && prev->value) {
+				delete prev->value; prev->value = NULL;
+			}
+			prev->next = NULL;
+			delete prev;
+		}
+
+		m_buckets[n] = NULL;
+	}
+}
+
+
+template<class V> void Hashtable<V>::dump()
+{
+	for(int n = 0; n < m_bucketCount; n++) {
+		printf("Bucket #%d:\n", n);
+
+		for(Bucket<V> *b = m_buckets[n]; b; b = b->next) {
+			printf("\t%s ->:\n", (b->key ? b->key : "(null)"), (b->value ? "" : "(null)"));
+
+			//if(b->value) { b->value->dump(2); }
+		}
+	}
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// BucketById<T>
+///////////////////////////////////////////////////////////////////////////////
+
+template<class T> BucketById<T>::BucketById(int k, T *v)
+	:key(k), value(v), next(NULL)
+{}
+
+
+template<class T> BucketById<T>::~BucketById()
+{}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// HashtableById<T>
+///////////////////////////////////////////////////////////////////////////////
+
+
+template<class V> HashtableById<V>::HashtableById(bool isOwner /*= false*/, int buckets /*= 10*/)
+	: m_bucketCount(buckets), m_isOwner(isOwner), m_count(0)
+{
+	m_buckets = (BucketById<V>**) malloc(sizeof(BucketById<V> *) * buckets);
+
+	if (m_buckets) {
+		for(int n = 0; n < buckets; n++) {
+			m_buckets[n] = (BucketById<V>*) NULL;
+		}
+	}
+}
+
+template<class V> HashtableById<V>::~HashtableById()
+{
+	clear();
+	free(m_buckets);
+	m_buckets = NULL;
+	m_bucketCount = 0;
+	m_count = 0;
+}
+
+
+template<class V> V *HashtableById<V>::get(int key) const
+{
+	int n = key % m_bucketCount;
+
+	for(BucketById<V> *b = m_buckets[n]; b; b = b->next) {
+		if(b->key == key) { return b->value; }
+	}
+
+	return (V*) 0;
+}
+
+
+template<class V> V *HashtableById<V>::put(int key, V *value)
+{
+	int n = key % m_bucketCount;
+
+	if(!m_buckets[n]) {
+		m_buckets[n] = new BucketById<V>(key, value);
+		m_count++;
+		if(m_count/m_bucketCount > 5) {
+			rehash();
+		}
+		return NULL;
+	}
+
+	BucketById<V> *prev = NULL;
+	for(BucketById<V> *b = m_buckets[n]; b; b = b->next) {
+		if(b->key == key) {
+			//printf("### bucket already contains %p\n", b->value);
+			V *old = b->value;
+			b->value = value;
+			return old;
+		}
+
+		prev = b;
+	}
+
+	if(prev) {
+		prev->next = new BucketById<V>(key, value);
+		m_count++;
+		if(m_count/m_bucketCount > 5) {
+			rehash();
+		}
+	}
+
+	return NULL;
+}
+
+
+template<class V> void HashtableById<V>::remove(int key, bool nodelete /*= false*/)
+{
+	int n = key % m_bucketCount;
+
+	BucketById<V> *prev = NULL;
+	for(BucketById<V> *b = m_buckets[n]; b; b = b->next) {
+		if(b->key == key) {
+			if(prev) {
+				prev->next = b->next;
+			} else {
+				m_buckets[n] = b->next;
+			}
+			if(m_isOwner && !nodelete && b->value) {
+				delete b->value; b->value = NULL;
+			}
+			delete b;
+			m_count--;
+			break;
+		}
+		prev = b;
+	}
+}
+
+
+template<class V> int HashtableById<V>::count() const
+{
+	return m_count;
+}
+
+
+template<class V> IntList *HashtableById<V>::keys() const
+{
+	IntList *ret = new IntList();
+	for(int n = 0; n < m_bucketCount; n++) {
+		for(BucketById<V> *b = m_buckets[n]; b; b = b->next) {
+			ret->add(b->key);
+		}
+	}
+	return ret;
+}
+
+
+template<class V> V **HashtableById<V>::values() const
+{
+	V **buf = (V**) malloc((count() + 1) * sizeof(V*));
+	int count = 0;
+	for(int n = 0; n < m_bucketCount; n++) {
+		for(BucketById<V> *b = m_buckets[n]; b; b = b->next) {
+			buf[count++] = b->value;
+		}
+	}
+
+	buf[count] = NULL;
+	return buf;
+}
+
+
+template<class V> void HashtableById<V>::rehash()
+{
+	int buckets = m_count/2;
+	int n;
+
+	void *t = malloc(sizeof(BucketById<V> *) * buckets);
+	if (t) {
+		BucketById<V> **temp = (BucketById<V>**)t;
+		for(n = 0; n < buckets; n++) {
+			temp[n] = (BucketById<V>*) NULL;
+		}
+		
+		for(n = 0; n < m_bucketCount; n++) {
+			BucketById<V> *next = NULL;
+			for(BucketById<V> *b = m_buckets[n]; b; b = next) {
+				next = b->next;
+				b->next = NULL;
+				int m = b->key % buckets;
+				if(temp[m]) {
+					BucketById<V> *t;
+					for(t = temp[m]; t && t->next; t = t->next) { /*empty*/ }
+					if(t) {
+						t->next = b;
+					}
+				} else {
+					temp[m] = b;
+				}
+			}
+		}
+		
+		free(m_buckets);
+		m_buckets = temp;
+		m_bucketCount = buckets;
+	}
+}
+
+
+template<class V> void HashtableById<V>::clear()
+{
+	for(int n = 0; n < m_bucketCount; n++) {
+		for(BucketById<V> *b = m_buckets[n]; b; ) {
+			BucketById<V> *prev = b;
+			b = b->next;
+			if(m_isOwner && prev->value) {
+				delete prev->value; prev->value = NULL;
+			}
+			prev->next = NULL;
+			delete prev;
+		}
+
+		m_buckets[n] = NULL;
+	}
+}
+
+
+template<class V> void HashtableById<V>::dump()
+{
+	for(int n = 0; n < m_bucketCount; n++) {
+		printf("Bucket #%d:\n", n);
+
+		for(Bucket<V> *b = m_buckets[n]; b; b = b->next) {
+			printf("\t%d ->:\n", b->key, (b->value ? "" : "(null)"));
+		}
+	}
+}

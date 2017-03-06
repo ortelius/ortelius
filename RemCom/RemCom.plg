@@ -1,0 +1,52 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: RemComSvc - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\Phil\LOCALS~1\Temp\RSP20.tmp" with contents
+[
+/nologo /MD /W4 /GX /O2 /I "C:\Program Files\Microsoft SDK\include" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"Release/" /Fp"Release/RemComSvc.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Development\RemCom\RemComSvc\RemComSvc.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\Phil\LOCALS~1\Temp\RSP20.tmp" 
+Creating temporary file "C:\DOCUME~1\Phil\LOCALS~1\Temp\RSP21.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:no /pdb:"Release/omdepsvc.pdb" /machine:I386 /out:"Release/omdepsvc.exe" /libpath:"C:\Program Files\Microsoft SDK\Lib" 
+.\Release\RemComSvc.obj
+.\Release\Service.obj
+.\Release\md5.obj
+]
+Creating command line "link.exe @C:\DOCUME~1\Phil\LOCALS~1\Temp\RSP21.tmp"
+<h3>Output Window</h3>
+Compiling...
+RemComSvc.cpp
+Linking...
+Creating command line "bscmake.exe /nologo /o"Release/RemComSvc.bsc"  .\Release\RemComSvc.sbr .\Release\Service.sbr .\Release\md5.sbr"
+Creating browse info file...
+<h3>Output Window</h3>
+<h3>
+--------------------Configuration: RemCom - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x409 /fo"Release/RemCom.res" /d "NDEBUG" "C:\Development\RemCom\RemCom.rc"" 
+Creating temporary file "C:\DOCUME~1\Phil\LOCALS~1\Temp\RSP23.tmp" with contents
+[
+Userenv.lib mpr.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:no /pdb:"Release/winexec.pdb" /debug /machine:I386 /out:"bin/winexec.exe" /libpath:"C:\Program Files\Microsoft SDK\Lib" 
+.\Release\RemCom.obj
+.\Release\RemCom.res
+]
+Creating command line "link.exe @C:\DOCUME~1\Phil\LOCALS~1\Temp\RSP23.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Linking...
+
+
+
+<h3>Results</h3>
+winexec.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

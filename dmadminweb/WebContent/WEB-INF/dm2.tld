@@ -1,0 +1,16 @@
+<taglib>
+ <tlib-version>1.0</tlib-version>
+ <jsp-version>2.0</jsp-version>
+ <short-name>dm2</short-name>
+ <tag>
+  <name>ObjectType</name>
+  <tag-class>dmadmin.jsp.ObjectTypeTag</tag-class>
+  <body-content>empty</body-content>
+  <attribute>
+   <name>valueOf</name>
+  </attribute>
+  <attribute>
+   <name>nameOf</name>
+  </attribute>
+ </tag>
+</taglib>

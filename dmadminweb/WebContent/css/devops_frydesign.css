@@ -1,0 +1,2303 @@
+html {}
+
+html, body {
+	background: #f8f8f8 url(images/header_gradient_tile_horz.png) repeat-x 0 0;
+	font-family: 'Open Sans', sans-serif;
+	font-size: .85em;
+	
+	color: #676767;
+	margin: 0 auto;
+	min-height: 100%;
+	}
+	
+
+/* a:focus {  outline: none; } */
+
+div.blog, .categories-list {   /* for my site only... joomla specific   */
+	display:  none;
+	}
+
+/***** Select Enter Box ****/
+ .selectBoxArrow{
+  margin-top:1px;
+  float:left;
+  position:absolute;
+  right:1px;
+  
+
+ } 
+ .selectBoxInput{
+  border:0px;
+  padding-left:1px;
+  height:16px;
+  position:absolute;
+  top:0px;
+  left:0px;
+ }
+
+ .selectBox{
+  border:1px solid #7f9db9;
+  height:20px; 
+ 
+ }
+ .selectBoxOptionContainer{
+  position:absolute;
+  border:1px solid #7f9db9;
+  height:100px;
+  background-color:#FFF;
+  left:-1px;
+  top:20px;
+  visibility:hidden;
+  overflow:auto;
+ }
+ .selectBoxAnOption{
+  font-family:arial;
+  font-size:12px;
+  cursor:default;
+  margin:1px;
+  overflow:hidden;
+  white-space:nowrap;
+ }
+ .selectBoxIframe{
+  position:absolute;
+  background-color:#FFF;
+  border:0px;
+  z-index:999;
+ } 
+
+/***********  MAIN CONTAINERS - NO VISIBLE ATTRIBUTES  ***************/
+	
+#container, 	
+#panel_container.left,
+#panel_container_right {
+	position: absolute;
+	top: 50px;
+	bottom: 55px;
+	}
+
+#container {        /* main container */
+	height: 100%;
+	min-height: 100%;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	}
+
+#panel_container.left {  /* houses all left panel components */
+	width:362px;
+	left: 18px;
+	}
+
+#panel_container_right {  /* container for all right panel stuff */
+	left: 396px;
+	right: 18px; 
+	overflow: hidden;
+}
+
+/*********** END MAIN CONTAINERS  ***************/
+
+
+#header {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 47px;
+	width: 100%;
+	min-width: 950px;	
+	border-top: 2px solid #275d95;	
+	display: inline-block;
+	}
+	
+.clear {
+	clear: both;
+	}
+
+.omlogo  {
+	position: absolute;
+	width: 155px;
+	height: 29px; 
+	top: 5px;
+	left: 13px;
+	display: inline;
+	}
+	
+#left_panel_tabs {  /* houses the tabs above the tree panel */
+	width:362px;
+	float: left;
+	height: 23px; 
+	position: relative;
+	top: 0;
+	left: 0;
+	display: inline-block;	 
+	}
+
+#left_panel_tabs .position_refresh_icon {
+	position: absolute;
+	top: 2px;
+	right: 2px;
+	z-index: 100;
+}
+	  
+#left_panel_tree {  /* houses the tree inside the left panel container */
+	border:2px solid #d4dde7;
+	border-radius:5px;
+	background:#eaedf0;
+	position: absolute;
+	top: 23px;
+	right: 0px;
+	bottom: 0px;
+	left: 0;
+	overflow-x: hidden;  /* ADD THE SCRIPT FOR CONROLLING THE OVERFLOW-Y */
+}
+
+#tree_test ul {
+	font-weight: 400 !important;
+	font-style: normal !important;
+}
+
+/**************** add onload="scrolltreeY" to body tag ******************/
+/*
+<script>
+	function scrolltreeY() {
+	document.getElementById("left_panel_tree").style.overflowY = "scroll"; }
+</script>
+*/
+
+#right_panel_tabs, #home_right_panel_tabs {
+	overflow: hidden;
+	left: 0;
+	}
+
+#right_panel_main, #home_right_panel_main  {
+	overflow-x: hidden;
+	overflow-y: auto;
+	left: 0;
+	}
+
+#right_panel_tabs, #home_right_panel_tabs {  /* container for tabs */
+	height: 23px; 
+	width:  calc(100% - 23px);
+	position: relative;
+	top: 0;
+	display: inline-block;	
+	white-space: nowrap;	
+	}
+	
+#right_panel_main, #home_right_panel_main {   
+	background-color:#fafafa;
+	border:2px solid #d4dde7;
+	border-radius:5px;
+	position: absolute;
+	top: 23px;
+	right: 0px;
+	bottom: 0px;
+	}
+	
+.panel_container {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */
+	left: 0;
+	position: absolute;
+	top: 40px;
+	bottom: 0;
+	right: 0;
+	text-align: center;	
+	}	
+		
+.versionsandinformation {
+	overflow-y:scroll;
+}	
+	
+.panel_container .versions {  
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */ 
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
+	position: absolute;	
+	left: 0;
+	top: 0;
+	bottom: 0;   
+	background-color: #fff;
+	border: 2px solid #d4dde7;
+	border-radius: 5px;
+	overflow-y: scroll;
+	width: calc(100% - 277px);
+	}
+	
+.panel_container .appversions {  
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */ 
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
+	top: 0;
+	}
+
+.panel_container .compversions {  
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */ 
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
+	top: 0;
+	}		
+		
+.panel_container .compitems {  
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */ 
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
+	top: 0;
+	}		
+		
+				
+.panel_container .information  {  
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */ 
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
+
+	background-color: #fff;
+	border: 2px solid #d4dde7;
+	border-radius:5px;
+	overflow: hidden;
+	top: 0;
+	bottom: 0;  
+	right: 0;	  	
+	position: absolute;
+	width: 256px;
+	}	
+	
+.panel_container .accordionpanel {   
+/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
+	position: absolute;
+	background-color: #fff;
+	border: 2px solid #d4dde7;
+	border-radius:5px;
+	overflow: hidden;
+	top: 0;
+	bottom: 0;   
+	width: 256px;
+	overflow-y: scroll;
+	right: 0; 
+	}
+		
+.panel_container iframe.accordion {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */
+	border:  none;
+	width: calc(100% - 18px);	
+	height: 100%;
+	overflow: scroll;
+	padding-top: 4px;
+	padding-bottom: 6px;
+	}	
+
+.tbd {
+	overflow-y: hidden;
+	}
+	
+.tbd .helppanel {   
+	position: absolute;
+	background-color: #fff;
+	border: 2px solid #d4dde7;
+	border-radius:5px;
+	overflow: hidden;
+	top: 40px;
+	bottom: 0;   
+	width: 54%;
+	overflow-y: scroll;
+	right: 0; 
+	}
+/********** MULTI PANEL CONFIGURATION **************/
+
+#panel_container_taskspaneltop, 
+#panel_container_taskspanelbottom, 
+#panel_container_taskspaneltop_left,
+#panel_container_taskspanelbottom_left,
+#panel_container_taskspanel_right {
+	left: 14px;
+	position: absolute;
+	min-width: 600px;
+	text-align: center;
+	right: 18px;
+	}
+
+#panel_container_taskspaneltop,
+#panel_container_taskspaneltop_left,
+#panel_container_taskspanel_right {
+	top: 50px;
+	}
+
+#panel_container_taskspanelbottom,
+#panel_container_taskspanelbottom_left,
+#panel_container_taskspanel_right {
+	bottom: 14px;
+	}
+
+#panel_container_taskspaneltop {
+	/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=203 */	
+	height: calc(50% - 28px);
+	}	
+		
+#panel_container_taskspanelbottom {
+	/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=203 */	
+	height: calc(50% - 50px);
+	}		
+			
+#panel_container_taskspaneltop_left {
+	/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=216 */
+	width: calc(50% - 14px);
+	height: calc(50% - 28px);
+	}	
+		
+#panel_container_taskspanelbottom_left {
+	/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=216 */
+	width: calc(50% - 14px);
+	height: calc(50% - 50px);
+	}	
+		
+#panel_container_taskspanel_right {
+	/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=216 */
+	left: 554px;
+	right: 18px;
+	width: calc(50% - 14px);
+	height: calc(100%- 14px);
+	}
+	
+#sub_panel_right, 
+#sub_panel_topleft,	
+#sub_panel_topright,	
+#sub_panel_bottomleft,
+#sub_panel_bottommiddle,
+#sub_panel_bottomright,
+#panel_deploy  {
+/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=216 */
+/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=209 */
+	background-color: #fff;
+	position: absolute;	
+	width: 256px;
+	height: 100%; 
+	bottom: 0;
+	top: 0;  
+	border: 2px solid #d4dde7;
+	border-radius:5px;
+	overflow: hidden;	
+	}
+
+	
+#sub_panel_topright,
+#sub_panel_bottommiddle,
+#panel_deploy { 
+/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=216 */
+	left: 270px;
+}
+	
+#sub_panel_bottomright {
+	position: absolute;
+	left: 540px;
+	height: 100%;
+	/* height: calc(100% - 4px) !important; */
+	width: calc(100% - 540px) !important;
+	overflow: hidden;
+}
+
+/*#sub_panel_bottomleft { 
+	right: 520px;
+	}	
+*/			
+#panel_deploy {  
+/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=209 */
+	width: calc(100% - 270px);	/* keeps the spacing between panels exact (css 3) */
+	}
+	
+
+/********** END PANEL CONFIGURATION **************/
+
+				
+.panel_container_title_area  {   
+	position: relative;
+	top: 0;
+	left: 0;	
+	height: 25px;
+	width: 100%;
+	background:#d4dde7;
+	border-bottom: 2px solid #c6ccd2;	
+	display: inline-block;   /*keep title bar contents horz inline */
+	}
+	
+	
+.static_tab_deploy {
+	position:  absolute;
+	border-bottom: 1px solid #d4dde7;
+	width: 100%;
+	background: url(images/tab_static_119x.png) 8px bottom no-repeat #fafafa;
+	display: inline;
+	height:  36px;
+	top: 27px;
+	left: 0;
+	bottom: 0;
+}
+
+.right_panel_title_area  {  
+	position: relative;
+	top: 0;
+	left: 0;	
+	height: 34px;
+	width: 100%;
+	background:#d4dde7;
+	border-bottom: 2px solid #c6ccd2;	
+	display: inline-block;   /*keep title bar contents horz inline */
+	}
+		
+.title_icon {
+	position:  absolute;
+	right: 14px;
+	display: inline-block;
+	top: 2px;
+	}	
+	
+	
+.deploy_sub_panel_container {  /* new addition... keeps iframe scrolling properly  */
+	position: absolute;
+/*	top: 64px !important; */
+	height: calc(100% - 14px) !important;
+	width: calc(100% - 2px) !important;
+	overflow: scroll;    /*  not sure about this... but it works.  I think it compensates for the border width??? */
+	}	
+	
+iframe,    
+iframe.summary, 
+iframe.general, 
+iframe.versiontable, 
+ 
+iframe.tasks_sub_table {
+	border:  none;
+	width: 100%;
+	height: calc(100% - 2px);
+	}	
+
+iframe.deploy_sub_table {
+ 	   width: 100% !important;
+ 	 	 
+	} 
+
+iframe.dialog_white {
+	background-color: #fff;
+	}
+
+.panel_component_item_details iframe {
+	background-color: #fff;
+	height: 100%;
+	}
+	
+#panel_container_history iframe.history, 
+#panel_container_pending iframe.pending,
+#panel_container iframe.calendar {
+	border:  none;
+	width: 100%;
+	height: calc(100% - 2px);
+	overflow: scroll;
+	}
+
+
+#panel_container_historyandpending {  /* container for history and pending stuff */
+/* REF http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=145 */
+	left: 396px;
+	position: absolute;
+	top: 50px;
+	bottom: 55px;
+	right: 18px;
+	min-width: 600px;
+	}	
+
+#panel_container_history, 
+#panel_container_pending { 
+/* REF http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=145 */  
+	background-color: #fff;
+	border:2px solid #d4dde7;
+	border-radius:5px;
+	overflow: hidden;	
+	}
+	
+#panel_container_history,
+#panel_container_pending {
+	/* REF http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=145 */ 
+	position: absolute;
+	top: 23px;
+	bottom: 0;
+	}
+
+#panel_container_history { 
+ 	width: calc(50% - 23px);	/* keeps the spacing between panels exact (css 3) */
+	}
+
+#panel_container_pending {   
+	width: 50%;
+	right: 0;	 
+	}
+
+.static_tab_pending,
+.static_tab_history {
+	/* REF http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=145 */
+	position: absolute;
+	top: 0; 
+	margin-left: 6px;
+	height: 23px;
+	background: url(images/tab_static.png) no-repeat;
+	}
+	
+.static_tab_pending {
+	width:  calc(50% - 2px);	/* keeps the spacing between static tab containers exact (css 3) */
+	right: 0;
+	} 
+	 
+.static_tab_history {
+	width: calc(50% - 23px);  /* keeps the spacing between static tab containers exact (css 3) */	
+	}
+
+
+#footer_container {  
+	height: 23px;
+	display: inline-block; 
+	border: 2px solid #d4dde7;
+	border-radius: 5px;
+	background-color: #eaedf0;
+	position: absolute;
+	bottom: 18px;
+	right: 18px;
+	left: 18px;
+}
+
+.status {
+	display: inline;
+	width: 282px;
+	padding-left: 12px; 
+	vertical-align: middle;
+}
+
+.breadcrumbs {
+	margin-left: 33px;
+	display: inline;
+	vertical-align: middle;
+	}
+
+
+/* Interaction states
+----------------------------------*/
+#componentlist .ui-state-default,
+#componentlist .ui-widget-content #componentlist .ui-state-default,
+#componentlist .ui-widget-header #componentlist .ui-state-default {
+	border: 1px solid #d4dde7/*{borderColorDefault}*/;
+	background: #eaedf0 !important;
+	font-weight: normal/*{fwDefault}*/;
+	color: #676767/*{fcDefault}*/;
+}
+#componentlist .ui-state-default a,
+#componentlist .ui-state-default a:link,
+#componentlist .ui-state-default a:visited {
+	color: #676767/*{fcDefault}*/;
+	text-decoration: none;
+}
+#componentlist .ui-state-hover,
+#componentlist .ui-widget-content #componentlist .ui-state-hover,
+#componentlist .ui-widget-header #componentlist .ui-state-hover,
+#componentlist .ui-state-focus,
+#componentlist .ui-widget-content #componentlist .ui-state-focus,
+#componentlist .ui-widget-header #componentlist .ui-state-focus {
+	border: 1px solid #d4dde7;
+	background: #b9c8da !important;
+	font-weight: normal;
+	color: #676767;
+}
+#componentlist .ui-state-hover a,
+#componentlist .ui-state-hover a:hover,
+#componentlist .ui-state-hover a:link,
+#componentlist .ui-state-hover a:visited {
+	color: #676767/*{fcHover}*/;
+	text-decoration: none;
+}
+#componentlist .ui-state-active,
+#componentlist .ui-widget-content #componentlist .ui-state-active,
+#componentlist .ui-widget-header #componentlist .ui-state-active {
+	border: 1px solid #d4dde7/*{borderColorActive}*/;
+	background: #fafafa !important;
+	font-weight: normal/*{fwDefault}*/;
+	color: #676767/*{fcActive}*/;
+}
+#componentlist .ui-state-active a,
+#componentlist .ui-state-active a:link,
+#componentlist .ui-state-active a:visited {
+	color: #676767/*{fcActive}*/;
+	text-decoration: none;
+}
+
+.ui-accordion .ui-accordion-li-fix {
+  	display: inline;
+}
+.ui-accordion .ui-accordion-header-active {
+  	border-bottom: 0 !important;
+}
+.ui-accordion .ui-accordion-header a {
+  	display: block;
+  	font-size: .85em;
+  	padding: .5em .5em .5em .7em;
+}
+
+//.ui-accordion li {
+//	margin-bottom: 5px;
+//   }
+   
+/* IE7-/Win - Fix extra vertical space in lists */
+.ui-accordion a {
+   }
+.ui-accordion-icons .ui-accordion-header a {
+  	padding-left: 2.2em;
+}
+.ui-accordion .ui-accordion-header .ui-icon {
+  	position: absolute;
+  	left: .5em;
+  	top: 50%;
+  	margin-top: -8px;
+}
+.ui-accordion .ui-accordion-content {
+	font-family: 'Open Sans', sans-serif;
+	font-size: .85em !important;
+	color: #676767;
+  	padding: 1em 2.2em;
+  	border-top: 0;
+  	margin-top: -2px;
+  	position: relative;
+  	top: 1px;
+//  	margin-bottom: 2px;
+  	overflow: auto;
+  	display: none;  
+  
+	border: 1px solid #d4dde7;
+}
+.ui-accordion .ui-accordion-content-active {
+  display: block;
+}
+
+/* CONTEXT MENU  */
+
+
+ 
+/* Define a custom icon */
+
+.ui-icon.custom-icon-firefox {
+	background-image: url(application_firefox.gif);
+	background-position: 0 0;
+}
+
+/*   END CONTEXT MENU  */
+
+
+/* @group MAIN NAV */
+
+#positiondevopsmenu  ul {
+	position: absolute;
+	color: #abbed8;
+	left: 250px;
+	top: -9px;
+}
+
+#positiondevopsmenu ul li {
+	display: inline;
+	color: #abbed8;
+	letter-spacing: .05ex;
+	padding-right: 32px; 
+	font-weight:700;
+	white-space: nowrap;
+}
+
+#positiondevopsmenu li:hover {		
+	color: #f5f7fa;
+	text-shadow: #1c4b7b 1px 1px 1px;
+	font-weight:700;
+	}
+
+#positiondevopsmenu li  {		
+	color: #abbed8;
+	text-shadow: #1c4b7b 1px 1px 1px;
+	font-weight:700;
+	}
+	
+#positiondevopsmenu li.current {		
+	color: #f5f7fa;
+	text-shadow: #1c4b7b 1px 1px 1px;
+	font-weight:700;
+	}
+	
+
+/* @end */
+/* @group MAIN NAV ALWAYS AVAILABLE */
+
+#positiondevopsmenu_right  ul {
+	color: #abbed8;
+	top: -8px; 
+	display: inline;
+	float: right;
+	position: relative;	 
+}
+
+#positiondevopsmenu_right ul li {
+	display: inline;
+	color: #abbed8;
+	letter-spacing: .05ex;
+	text-shadow: #205489 1px 1px 1px; 
+	padding-right: 24px; 
+	font-weight:700;
+	}
+
+#positiondevopsmenu_right a {
+	display: inline;
+	color: #abbed8;
+	text-decoration: none;
+	opacity: 0.70;
+	}
+
+
+#positiondevopsmenu_right .menu_icon {
+	vertical-align: 0;
+	 text-shadow: #1c4b7b 1px 1px 1px;
+	}
+
+
+#positiondevopsmenu_right a:hover {		
+	color: #f5f7fa;
+	text-shadow: #1c4b7b 1px 1px 1px;
+	font-weight:700;
+	opacity: 1;
+}
+
+#positiondevopsmenu_right a  {		
+	display: inline;
+	color: #abbed8;
+	text-shadow: #1c4b7b 1px 1px 1px;
+	font-weight:700;
+	}
+	
+#positiondevopsmenu_right li.current a {	
+	display: inline;
+	color: #f5f7fa;
+	text-shadow: #1c4b7b 1px 1px 1px;
+	font-weight:700;
+	opacity: 1;
+}
+	
+
+/* @end */
+
+/* Component jsPlumb */
+
+.compsource {
+	white-space:nowrap;cursor: pointer;padding: 0px 5px 5px 24px;background:url(images/component_16x.png) 5px 0px no-repeat !important;
+}
+
+.compversource {
+	white-space:nowrap;cursor: pointer;padding: 0px 5px 5px 24px;background:url(images/component_ver_16x.png) 5px 0px no-repeat !important;
+}
+
+.appsource {
+	white-space:nowrap;cursor: pointer;margin-bottom:5px;padding: 2px 2px 2px 24px;background:url(images/application_16x.png) 5px 1px no-repeat !important;
+}
+
+.appversource {
+	white-space:nowrap;cursor: pointer;margin-bottom:5px;padding: 2px 2px 2px 24px;background:url(images/appversion_16x.png) 5px 1px no-repeat !important;
+}
+
+.fragmentsource {
+	white-space:nowrap;cursor: pointer;margin-bottom:5px;padding: 2px 2px 2px 24px;background:url(images/file.png) 5px 1px no-repeat !important;
+}
+
+.fragmenterror {
+	border: 1px solid #cd0a0a;
+	background: #b81900 url("images/ui-bg_diagonals-thick_18_b81900_40x40.png") 50% 50% repeat;
+	color: #ffffff;
+}
+
+.fragmentfielderror {
+	color: #cd0a0a;
+}
+
+.cLabel {
+border: 1px solid #346789;
+border-radius: 0.5em;
+width: 60px;
+height: 15px;
+font-family: helvetica;
+padding: 4px;
+font-size: 10px;
+background-color: #5d5af6;
+color: #ffffff;
+-webkit-touch-callout: none;
+-webkit-user-select: none;
+-khtml-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
+overflow: hidden;
+}
+
+
+.fragment,
+.version,
+.applicationbox,
+.applicationverbox,
+.workflowbox {
+	border: 1px solid #346789;
+	box-shadow: 2px 2px 19px #aaa;
+	-o-box-shadow: 2px 2px 19px #aaa;
+	-webkit-box-shadow: 2px 2px 19px #aaa;
+	-moz-box-shadow: 2px 2px 19px #aaa;
+	-moz-border-radius: 0.5em;
+	border-radius: 0.5em;
+	opacity: 0.8;
+	filter: alpha(opacity = 80);
+	padding-right: 5px;
+	padding-left: 5px;
+	height: 64px;
+	width: 160px;
+	line-height: 12px;
+	text-align: center;
+	z-index: 20;
+	position: absolute;
+	background-color: #eeeeef;
+	color: black;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	overflow: hidden;
+	cursor: -webkit-grab;
+}
+
+.componentbox,
+.componentitembox {
+	border: 1px solid #346789;
+	box-shadow: 2px 2px 19px #aaa;
+	-o-box-shadow: 2px 2px 19px #aaa;
+	-webkit-box-shadow: 2px 2px 19px #aaa;
+	-moz-box-shadow: 2px 2px 19px #aaa;
+	-moz-border-radius: 0.5em;
+	border-radius: 0.5em;
+	opacity: 0.8;
+	filter: alpha(opacity = 80);
+	padding-right: 5px;
+	padding-left: 5px;
+	height: 32px;
+	line-height: 12px;
+	text-align: center;
+	z-index: 20;
+	position: absolute;
+	background-color: #eeeeef;
+	color: black;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	overflow: hidden;
+	cursor: -webkit-grab;
+}
+
+.ddfragment {
+	border: 1px solid #346789;
+	box-shadow: 2px 2px 19px #aaa;
+	-o-box-shadow: 2px 2px 19px #aaa;
+	-webkit-box-shadow: 2px 2px 19px #aaa;
+	-moz-box-shadow: 2px 2px 19px #aaa;
+	-moz-border-radius: 0.5em;
+	border-radius: 0.5em;
+	opacity: 0.8;
+	filter: alpha(opacity = 80);
+	padding-right: 5px;
+	padding-left: 5px;
+	height: 80px;
+	width: 122px;
+	line-height: 12px;
+	text-align: center;
+	z-index: 20;
+	position: absolute;
+	background-color: #eeeeef;
+	background-image: url(images/workflow.png);
+	background-position: 32px 45px;
+	background-repeat: no-repeat;
+	color: black;
+	padding: 4px;
+	cursor: -webkit-grab;
+}
+
+.startcomponent, 
+.startapplication,
+.startapplicationver,
+.startworkflow,
+.startfragment {
+	border: 1px solid #346789;
+	box-shadow: 2px 2px 19px #aaa;
+	-o-box-shadow: 2px 2px 19px #aaa;
+	-webkit-box-shadow: 2px 2px 19px #aaa;
+	-moz-box-shadow: 2px 2px 19px #aaa;
+	-moz-border-radius: 0.5em;
+	border-radius: 0.5em;
+	opacity: 0.8;
+	filter: alpha(opacity = 80);
+	height: 32px;
+	width: 70px;
+	line-height: 12px;
+	padding-left: 10px;
+	padding-right:10px;
+	text-align: center;
+	z-index: 20;
+	position: absolute;
+	background-color: #eeeeef;
+	color: black;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+
+
+#compitem {
+float: left;
+display: table-cell;
+height:93%;
+width: 100%;
+overflow-y:scroll;
+}
+
+#compitem h4 {
+	line-height: 16px;
+	margin: 0 0 0.4em;
+}
+
+/* End Component jsPlumb */
+
+a {
+/*	font-weight: 700; */
+	text-decoration: underline;
+	color:  #676767;
+}
+
+a:linked a:visited {
+	font-weight: 700;
+	text-decoration: underline;
+	color:  #676767;
+}
+
+a:hover {
+	font-weight: 700;
+	text-decoration: underline;
+	color:  #333;
+	/*text-shadow: #c2c2c2 1px 1px 1px;*/
+}
+
+.readmore {
+	font-weight: normal;
+	text-decoration: underline;
+	color:  #676767;
+}
+
+h1 {
+	font-weight: 700;
+	margin-left: 12px; 
+	font-size: 1.0em ; 
+	}
+	
+h2 {
+	font-weight: 700;
+	margin-left: 12px; 
+	font-size: 1.5em ; 
+	}
+
+h1.actions,
+h1.user,
+h1.deploy,
+h1.appversion,
+h1.environment,
+h1.application,
+h1.release,
+h1.relversion,
+h1.compversion,
+h1.component,
+h1.comptype,
+h1.builder,
+h1.buildjob,
+h1.build_ok,
+h1.build_fail,
+h1.server,
+h1.action,
+h1.procedure,
+h1.function,
+h1.notify,
+h1.repository,
+h1.datasource,
+h1.credentials,
+h1.usergroup,
+h1.domain {
+	margin-top: 4px;
+	padding-left: 30px;
+/*	width:  250px; */
+	line-height:  24px;
+	font-size: 1.2em;
+	color:  #506582;
+	/*text-shadow: #b0b0b0 1px 1px 2px;*/
+}
+	
+h1.action {
+	background: url(images/action_24x.png) no-repeat left top;
+	}
+	
+h1.notify {
+	background: url(images/notify_24x.png) no-repeat left top;
+	}
+	
+h1.repository {
+	background: url(images/repository_24x.png) no-repeat left top;
+	}
+
+h1.procedure {
+	background: url(images/proc_24x.png) no-repeat left top;
+	}
+	
+h1.function {
+	background: url(images/func_24x.png) no-repeat left top;
+	}
+	
+h1.datasource {
+	background: url(images/datasource_24x.png) no-repeat left top;
+	}
+	
+h1.user {
+	background: url(images/user_24x.png) no-repeat left top;
+	}
+	
+h1.usergroup {
+	background: url(images/usergroup_24x.png) no-repeat left top;
+	}
+		
+h1.deploy {
+	background: url(images/component_24x.png) no-repeat left top;
+	}
+
+h1.credentials {
+	background: url(images/credential_24x.png) no-repeat left top;
+	}
+
+h1.comptype {
+	background: url(images/comptype_24x.png) no-repeat left top;
+	}
+			
+h1.deploy_general {
+/* Ref http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=214 */
+	margin-top: 13px;
+	padding-left: 8px;
+	line-height:  23px;
+	text-align: left;
+}
+
+h1.server {
+	background: url(images/server_24x.png) no-repeat left top;
+	}
+	
+h1.appversion  {
+	background: url(images/appversion_24x.png) no-repeat left top;
+	}
+
+h1.builder  {
+	background: url(images/buildserv_24x.png) no-repeat left top;
+		}
+		
+h1.buildjob  {
+	background: url(images/buildjob_24x.png) no-repeat left top;
+		}
+		
+h1.build_ok {
+	background: url(images/blue_24x.png) no-repeat left top;
+		}
+		
+h1.build_fail  {
+	background: url(images/red_24x.png) no-repeat left top;
+		}
+		
+h1.environment  {
+	background: url(images/environment_24x.png) no-repeat left top;
+		}
+
+h1.application  {
+	background: url(images/application_24x.png) no-repeat left top;
+	}
+	
+h1.domain  {
+	background: url(images/domain_24x.png) no-repeat left top;
+	}
+
+h1.release  {
+	background: url(images/application_24x.png) no-repeat left top;
+	}
+	
+h1.relversion  {
+	background: url(images/appversion_24x.png) no-repeat left top;
+	}
+	
+h1.compversion  {
+	background: url(images/component_ver_24x.png) no-repeat left top;
+	}	
+
+h1.component  {
+	background: url(images/component_24x.png) no-repeat left top;
+	}
+		
+h1.accordion  {
+	font-size: .85em;
+	font-weight: 700; 
+	}
+
+h1.dialog_subtitle  {
+	font-size: 1.2em;
+	font-weight: 700; 
+	text-align: left;
+	margin-top: 0;
+	margin-left: 6px;
+	}
+
+span.subtitle {
+	font-weight: normal;
+	font-style: normal;
+}
+
+h1.appversion_noicon, .taskpanels {  
+/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=203 */
+	padding: 0;
+	width:  250px; 
+	line-height: 25px;
+	text-align: left;
+	margin-top: 0;
+	margin-left: 7px;
+}
+
+h2.message_title  {
+	background: url(images/notes_24x.png) no-repeat left top;
+	margin-top: 5px;
+	padding-left: 32px;
+	width:  250px; 
+	line-height:  24px;
+	}
+	
+p {
+	font-size: 1em;
+	font-weight: normal;
+	font-style: normal;
+	margin-left: 15px; 
+	}
+
+p.information  {
+	font-size: 1.0em;
+	font-weight: normal;
+	font-style: normal;
+	margin-left: 12px;
+	margin-right: 12px;
+}
+
+ p.historypending {
+	text-align: left;
+	font-weight: 700;
+	color: #5b7394;
+	margin-top: 4px;
+}
+
+.summwrap { 
+      display:block;
+      width:300px;
+      word-wrap:break-word;
+  }
+
+.inner_panel_title {
+	font-weight: 700;
+	margin-left: 8px; 
+	font-size: 12px;
+	margin-top: 2px;
+	}
+/*
+#panel {
+	border-top:2px solid #d4dde7;
+	border-left:2px solid #d4dde7;
+	border-right:2px solid #d4dde7;
+	border-bottom:2px solid #d4dde7;	
+	border-radius:5px;
+	background:#fff;
+	}
+	
+.panel_title_area  {
+	background:#d4dde7;
+	border-bottom: 1px solid #c6ccd2;
+	height: 21px;
+	width: 100%;
+	position: relative;
+	top: 0;
+	left: 0;
+	overflow: hidden;
+	}
+*/
+
+.om_tree_selection
+{
+ background: white;
+ overflow: scroll;
+ height: 600px;	
+}
+
+ul.subpanel {   /* styles list with icons in "Tasks for this Domain" panel */
+/*REF: http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=203*/
+	white-space: nowrap;
+	list-style-type: none;
+	margin-left: 0;
+	padding-left: 10px;
+	margin-top: 6px;
+}
+	
+ul.subpanel li {
+	padding-bottom: 4px;
+}	
+
+.icon_inline_Deploy {
+	width: 20px;
+	background: url(images/deploy_16x.png) no-repeat;
+	}
+	
+.icon_inline_Approve {
+	width: 20px;
+	background: url(images/approve_16x.png) no-repeat;
+	}
+	
+.icon_inline_Remove {
+	width: 20px;
+	background: url(images/remove_16x.png) no-repeat;
+	}
+
+.icon_inline_Request {
+	width: 20px;
+	background: url(images/request_16x.png) no-repeat;
+	}	
+		
+.icon_inline_CreateVersion {
+	width: 20px;
+	background: url(images/create_appver_16x.png) no-repeat;
+	}
+	
+.icon_inline_RunAction {
+	width: 20px;
+	background: url(images/action.png) no-repeat;
+	}
+			
+.icon_inline_Move {
+	width: 20px;
+	background: url(images/move_up_16x.png) no-repeat;
+	}
+	
+.icon_inline_Group {
+	width: 20px;
+	background: url(images/group_16x.png) no-repeat;
+	}
+
+/* @group Table */
+
+
+.icon_inline_user {
+	width: 20px;
+	background: url(images/user_16x.png) no-repeat;
+	}
+	
+.adjacent_icon {
+	padding-left: 20px;
+	}
+
+.dev_table { 
+	width: 100%; 
+	border-collapse: collapse;
+	border: none;
+}
+	
+.dev_table td:first-child {
+	font-style: italic;
+	/* width: auto; */
+	width: 300px;
+	}
+
+.dev_table th:last-child {
+	border-right:  none;
+	}
+
+.dev_table td:last-child {
+	border-right:  none;
+	}
+
+.dev_table td.environment{
+	font-weight: normal;
+	font-style: normal;
+	}
+
+.dev_table td.usersgroups{
+	width:  150px;
+	}
+
+.dev_table td.general{
+	width:  150px;
+	}
+
+.dev_table td.iconcolumn {
+	border-right:  none;
+	width: 30px;
+	vertical-align: top;
+	}
+
+.dev_table td { 
+	padding:4px; 
+	padding-left: 8px;
+	border-right: 1px solid #dcdcdc;
+	text-align: left;
+	}
+
+.dev_table tr:nth-child(odd) { 
+	background: #fafafa;
+	}
+
+.dev_table tr:nth-child(even) { 
+	background: #FFF;
+	}
+
+#component_item_details tr:nth-child(odd) { 
+	background: #fdfaf7;
+	}
+
+
+.dev_table th {
+	padding:4px;
+	text-align: left;
+	font-weight: 700;
+	padding-left: 8px;
+	border-bottom: 1px solid #dcdcdc; 
+	border-right: 1px solid #dcdcdc;
+	background-color: #eaedf0;
+}
+	
+ 	
+
+/* @end */
+
+
+/* @group TABS */
+
+
+.tabrow_tabmenu ul {
+	position: relative;
+	text-align: left;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	line-height: 23px;
+	top: 0;
+	}
+
+.tabrow_tabmenu ul li {
+	position: relative;
+	display: inline-block;
+	margin: 0 8px 0 6px;
+	padding: 0 6px 0 10px;
+	background-color: #b9c8da;
+	border-top-left-radius: 3px;
+	border-top: 1px solid #a9b9cd;
+	border-left: 1px solid #a9b9cd;
+	overflow: visible; /* removes extra width in IE */
+	}
+
+.tabrow_tabmenu li:hover {
+	background: #4473a6 url(images/tab_active_gradient_tile.png) 0 top;	
+	z-index: 2;
+	border-width: 1px 0px 0px 1px;
+	border-color: #275d95;
+	color: #fff;
+	}
+
+.tabrow_tabmenu li:hover a {
+	 color: #fff;
+	}
+
+.tabrow_tabmenu li:hover:after  {
+	position: absolute;
+	content: " ";
+	top: -1px;
+	right:  -26px;
+	width: 26px;
+	height: 24px;	 
+	background: url(images/tab_active_right_45.png) no-repeat;	 
+	}
+
+.tabrow_tabmenu li:after {
+	position: absolute;
+	content: " ";
+	top: -1px;
+	right:  -26px;
+	width: 26px;
+	height: 24px;	
+	background: url(images/tab_inactive_right_45.png) no-repeat;
+	}
+	
+.tabrow_tabmenu a {
+	font-weight: 700;
+	color: #5b7394; 
+	text-decoration: none;
+	}
+	
+.tabrow_tabmenu li a:after {
+	color: #5b7394; 
+	text-decoration: none;
+	}
+	
+.tabrow_tabmenu li.selected a:after {
+	color: #5b7394; 
+	text-decoration: none;
+	background: url(images/tab_active_right_45.png) no-repeat;
+	}
+	
+.tabrow_tabmenu li.current   {
+	background: #4473a6 url(images/tab_active_gradient_tile.png) 0 top;	
+	z-index: 2;
+	border-width: 1px 0px 0px 1px;
+	border-color: #275d95;
+	color: #fff;
+	}
+	
+.tabrow_tabmenu li.current a   {	 
+	z-index: 2;
+	color: #fff;
+	}
+
+.tabrow_tabmenu li.current:after {
+	font-weight: 700;
+	color: #5b7394; 
+	text-decoration: none;
+	background: url(images/tab_active_right_45.png) no-repeat;
+	}
+
+/* @end */
+
+/* @group Component Item Details Dialog */
+
+#component_item_details  {
+}
+
+.panel_component_item_details {  
+	position: absolute;	
+	width: calc(100% - 28px);	 
+	background-color: transparent;
+	border: 2px solid #dcdcdc;
+	border-radius:5px;
+	overflow: hidden;
+	top: 57px;
+	bottom: 6px;   
+	}	
+	
+/* @end */
+
+
+/* @group Message Dialog */
+
+#message {
+	font-family: 'Open Sans', sans-serif;
+	font-size: 12px;
+	color: #676767;
+ 	background-color: #f7f3ec;
+}
+	 
+.ui-dialog { 
+	border: 2px solid #a9a398;
+	border-radius: 6px;
+/*	box-shadow: 8px 8px 23px #afafaf !important;
+	background-color: #f7f3ec !important; */
+	font-family: 'Open Sans', sans-serif;
+	font-size: 1em;
+	color: #676767;
+	padding: 0;		
+}
+	
+.ui-dialog-titlebar {
+	position: relative;
+	height: 34px !important;
+	width: auto;
+	background-color: #f6ead3 !important;
+ 	top: 0 !important;
+	left: 0 !important;
+/*	border-top: 2px solid #f6ead3 !important;	
+	border-left: 2px solid #f6ead3 !important;	
+	border-right: 2px solid #f6ead3 !important; */
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	border-bottom: 2px solid #c5baa1 !important;
+}
+
+img.dialog_title_icon {
+	line-height: 34px;
+	margin: .02em 0 .18em;
+	padding-right: .65em;
+	vertical-align: middle;
+}
+
+
+.ui-dialog .ui-dialog-title {
+	float: left;
+	margin: .1em 0; 
+	font-size: 1.5em;
+	font-weight: 700;
+	color: #676767;	
+	white-space: nowrap;
+	width: calc(100% - 28px);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	
+}
+
+.ui-widget-header .ui-icon {
+    background-image: url(images/ui-icons_676767_256x240.png)/*{iconsHeader}*/; 
+}
+
+.ui-dialog-titlebar-close   {
+/*	position: absolute;
+	right: -6px !important;
+	top: 46% !important;
+	width: 21px;
+	margin: -10px 0 0 0 !important;
+	padding: 1px;
+	height: 20px; */
+	visibility: hidden;
+}
+
+.ui-icon-close { background-position: -80px -128px; }
+
+.ui-dialog .ui-dialog-content {
+	position: relative;
+	border: 0;
+	padding: 6px 0 8px 12px;
+	background-image: none !important;
+	background-color: #f7f3ec !important; 
+	overflow: auto;
+	 
+	}
+
+.ui-dialog .ui-dialog-content textarea {
+	resize: none;
+	height: calc(100% - 20px);
+	outline: none;
+	border: 1px solid #cccccc;
+	font-size: 1.0em;
+/*	color: #676767; */
+	background-image: none !important;
+	background-color: #f7f3ec !important; 
+	width: calc(100% - 28px);
+	padding: 8px 0 12px 12px;
+	overflow: scroll;
+}
+
+.ui-dialog-buttonpane {
+	border-width: 0 0 0 0 !important;
+	border-radius:5px;
+	background-image: none !important;
+	background-color: #f7f3ec !important; 
+	padding: 0 0 0 1px;
+	margin: 0 !important;	 
+	}
+
+.ui-button {
+	font-family: 'Open Sans', sans-serif !important;
+	display: inline-block !important;
+	position: relative !important;
+	padding: 0 !important;
+	line-height: normal !important;
+	margin-right: 6px !important;	
+	margin-bottom: 14px !important;
+	cursor: pointer !important;
+	vertical-align: middle !important;
+	text-align: center !important;
+	overflow: visible !important;
+}
+
+.ui-button,
+.ui-button:link,
+.ui-button:visited,
+.ui-button:hover,
+.ui-button:active {
+	color: #676767 !important;
+	font-weight: 700 !important;
+	text-decoration: none !important;
+	
+}
+
+For timepicker
+.ui-timepicker-div .ui-widget-header {
+	margin-bottom: 8px;
+}
+
+.ui-timepicker-div dl {
+	text-align: left;
+}
+
+.ui-timepicker-div dl dt {
+	height: 25px;
+	margin-bottom: -25px;
+}
+
+.ui-timepicker-div dl dd {
+	margin: 0 10px 10px 65px;
+}
+
+.ui-timepicker-div td {
+	font-size: 90%;
+}
+
+.ui-tpicker-grid-label {
+	background: none;
+	border: none;
+	margin: 0;
+	padding: 0;
+}
+
+.ui-timepicker-rtl {
+	direction: rtl;
+}
+
+.ui-timepicker-rtl dl {
+	text-align: right;
+}
+
+.ui-timepicker-rtl dl dd {
+	margin: 0 65px 10px 10px;
+}
+
+.dmdialog label,.dmdialog div {
+	display: inline-block;
+}
+
+.dmdialog label {
+	width: 90px;
+}
+
+/* @end */
+
+button.notes_button, button.notes_button:hover {
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 1px 2px 0 4px;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	}
+
+button.notes_button:hover {
+	background-color: #fff;
+	}
+
+button.edit_button {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 1px 2px 0 4px;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	}
+
+button.edit_button_disabled {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 1px 2px 0 4px;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	}
+	
+button.edit_button:hover {
+	background-color: #fff;
+	}
+
+button.delete_button {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 1px 2px 0 4px;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	}
+
+button.delete_button_disabled {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 1px 2px 0 4px;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	}
+	
+button.delete_button:hover {
+	background-color: #fff;
+	}
+	
+button.add_button {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 1px 2px 0 4px;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	}
+
+button.add_button_disable {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 1px 2px 0 4px;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	}
+	
+button.add_button:hover {
+	background-color: #fff;
+	}
+	
+button.test_button {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 4px 4px 4px 4px;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	font-size: 1.2em;
+	color:  #506582;
+	font-weight: 700;
+	}
+
+button.test_button_disable {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 4px 4px 4px 4px;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	font-size: 1.2em;
+	color:  #506582;
+	font-weight: 700;
+	}
+	
+button.test_button:hover {
+	background-color: #fff;
+	font-size: 1.2em;
+	padding: 4px 4px 4px 4px;
+	color:  #506582;
+	font-weight: 700;
+	}
+
+button.save_button, button.save_button:hover {
+	position: absolute;
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 2px 3px 0;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	right:  0px;
+	top: -1px;
+	}
+
+button.save_button:hover {
+	background-color: #fff;
+	}
+
+button.save_button_sub, button.save_button_sub:hover {
+	position: absolute;
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 2px 3px 0;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	right: 14px;
+	top: 1px;
+	}
+
+button.up_button {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 1px 2px 0 4px;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	}
+
+button.up_button_disabled {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 1px 2px 0 4px;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	}
+	
+button.up_button:hover {
+	background-color: #fff;
+	}
+	
+button.down_button {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 1px 2px 0 4px;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	}
+
+button.down_button_disabled {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	padding: 1px 2px 0 4px;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	}
+	
+button.down_button:hover {
+	background-color: #fff;
+	}	
+	
+/****  CSS FOR 16X ICON BUTTONS   *****/
+button.edit_button_param, button.edit_button_param:hover {
+	position: absolute;
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	right: 108px;
+	top: 1px;
+	height: 22px !important;
+	padding: .1em .1em .1em .1em !important;
+	}
+	
+button.add_button_param, button.add_button_param:hover {
+	position: absolute;
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	right: 82px;
+	top: 1px;
+	height: 22px !important;
+	padding: .1em .1em .1em .1em !important;
+	}
+
+button.delete_button_param, button.delete_button_param:hover {
+	position: absolute;
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	right: 56px;
+	top: 1px;
+	height: 22px !important;
+	padding: .1em .1em .1em .1em !important;
+	}
+
+button.up_button_param, button.down_button_param:hover {
+	position: absolute;
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	right: 30px;
+	top: 1px;
+	height: 22px !important;
+	padding: .1em .1em .1em .1em !important;
+	}
+	
+button.down_button_param, button.down_button_param:hover {
+	position: absolute;
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	right: 4px;
+	top: 1px;
+	height: 22px !important;
+	padding: .1em .1em .1em .1em !important;
+	}
+	
+button.edit_button_sub_small, button.edit_button_sub_small:hover {
+	position: absolute;
+	border-radius: 4px;
+	border: 1px solid #a9b9cd;
+	cursor: pointer !important;
+	background-color: #eaedf0;
+	right: 4px;
+	top: 1px;
+	height: 22px !important;
+	padding: .1em .1em .1em .1em !important;
+	}
+
+button.save_button_sub_small img {
+	padding: 0 !important;
+	}
+
+button.save_button_sub_small img {
+	padding: 0 !important;
+	}
+	
+/****  END CSS FOR 16X ICON BUTTONS   *****/
+
+
+/* @group Login Screen */
+
+button.edit_button_sub_small:hover, 
+button.delete_button_sub_small:hover, 
+button.edit_button_param:hover,
+button.add_button_param:hover,
+button.delete_button_param:hover,
+button.up_button_param:hover,
+button.down_button_param:hover {
+	background-color: #fff;
+	}
+
+
+#login_container_dialog {
+	overflow: hidden;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 12px;
+	color: #676767;
+	}
+
+.loginDialog  {
+   border-width: 0px;
+   background-color: transparent;
+   background-position: 100% 100%;
+   background-image: none;
+}
+
+.loginDialog > .ui-dialog-titlebar {
+       display: none;
+   }
+
+#login_container_dialog img {  /*positions the splash screen */
+	position: relative;
+	top: -6px;
+	left: -13px;
+	border-top: 1px solid #fff;
+	border-left: 1px solid #fff;
+	border-bottom: 2px inset #fff;
+	border-right: 1px solid #395670;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-bottom-right-radius:0;
+	border-bottom-left-radius:0;	
+	width: 500px;
+	height: 330px;
+	padding: 0;
+	}
+
+#login_container_dialog table td {
+	padding-bottom: 4px;
+	}
+
+#login_container_dialog .login_label {
+	font-weight: 700;
+	padding-right: 3px;
+	}
+
+#login_container_dialog .inputbox {
+	width: 300px;
+	height: 19px;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 12px;
+	font-weight: normal;
+	letter-spacing: .1ex;
+	color: #676767;
+	padding-left: 3px;
+	border-radius: 3px;
+	background-color: #f0f0f0;
+	border: 1px solid #999999;	
+	box-shadow: inset 1px 1px 2px rgba(53, 53, 53, 0.1);
+	}
+
+#login_container_dialog .inputbox:focus {
+	background-color: #fff;
+	}
+
+#login_container_dialog #loginset {
+	position: relative;
+	width:  380px;
+	top: 4px;
+	left: 0px;
+	margin: 0 60px 0 auto; 
+	}
+
+.logindialog .error {  /********* this div should only appear with a login error ************/
+	position: absolute;
+	left: 0;
+	bottom: 60px;
+	width: 100%;
+	height:  55px;
+	text-align: center !important;
+	background-color: #f9cb85;
+	border-bottom: 1px solid #fdeed7;
+	border-left-style: none;
+	border-right-style: none;
+	border-top: 1px solid #cda76e;
+	}
+
+.logindialog p.error-text {
+	font-size: 1em;	
+	letter-spacing: .03ex;
+	font-weight: bold;
+	font-style: italic;
+	line-height: 27px;
+	margin: 0 auto;
+	text-align: center;
+	}
+
+.logindialog div.positioncopyright {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: calc(100% - 2px);
+	text-align: center !important; 	 
+}
+
+.logindialog p.copyright {
+	font-size: .75em;
+	font-weight: 600;
+	text-align: center;
+	maring-top
+	margin-left: 15px;
+	margin-right: 15px; 
+	}
+   
+.logindialog .ui-dialog-titlebar {
+	display: none;
+	  	}
+
+.logindialog .ui-dialog {
+	position: absolute;
+	top: 0;
+	left: 0;
+	padding: 0;
+	outline: 0;
+	background: #e6e6e6 !important;
+	border: 2px solid #999999;
+	border-radius: 6px;
+	z-index:101
+	}
+
+.logindialog .ui-dialog-buttonpane {
+	position: absolute;
+	width:  calc(100% - 61px);
+	height: 30px;
+	background: #f7f3ec !important;
+	bottom:  125px; 
+}
+
+.logindialog .ui-widget-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index:100
+}
+
+.logindialog .ui-button {
+	display: inline-block;
+	position: relative;
+	padding: 0;
+	line-height: normal;
+	margin-right: .1em;
+	cursor: pointer;
+	vertical-align: middle;
+	text-align: center;
+	overflow: visible; /* removes extra width in IE */
+	} 
+	
+.logindialog .ui-button,
+.logindialog .ui-button:link,
+.logindialog .ui-button:visited,
+.logindialog .ui-button:hover,
+.logindialog .ui-button:active {
+	text-decoration: none;
+}
+
+
+.logindialog .ui-button-text {
+	font-weight: 700;
+	color: #676767;
+}
+
+/* @end */  /* END LOGIN CSS */
+
+
+#execute_err_box { 
+	position: relative;
+    left: -6px;
+    top: 5px;
+	width: 100%;
+	min-width:350px;
+	height:  30px;
+	text-align: center !important;
+	background-color: #f9cb85;
+	border-bottom: 1px solid #fdeed7;
+	border-left-style: none;
+	border-right-style: none;
+	border-top: 1px solid #cda76e;
+	}
+
+#execute_err {
+	font-size: 1em;	
+	letter-spacing: .03ex;
+	font-weight: bold;
+	font-style: italic;
+	line-height: 27px;
+	margin: 0 auto;
+	padding-right:5px;
+	padding-left:5px;
+	text-align: center;
+	}
+
+/* @group ABOUT DIALOG */   /* C lick the about icon to display the dialog.  Note that there is a weird but peculiar to my site only that causes an icon to be displayed adjacent to the dialog title. */
+#about_dialog {
+	overflow: hidden;
+}
+
+#about_dialog img {  /*positions the splash screen */
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	padding: 0;
+	border-bottom: 2px solid #fff;
+}
+
+
+#about_dialog .aboutcopy {
+	position: absolute;
+	left: 0;
+	bottom:  0;
+	width: calc(100% - 8px);
+	text-align: center !important; 
+	font-size: .75em;
+	font-weight: 600;
+	margin-top: 4px;
+}
+
+
+#subdomainlist         { list-style-type: none; margin: 0; padding: 0; }
+#subdomainlist li      { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 18px; height: 10px; background:url(images/domain_16x.png) 0px 5px no-repeat;cursor: pointer;}
+#subdomainlist li.islifecycle     { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 18px; height: 10px; background:url(images/lifecycle_16x.png) 0px 5px no-repeat;cursor: pointer;}
+#subdomainlist li span { position: absolute; margin-left: 0px; cursor: pointer; }
+
+/* @end */
+
+/* Args Tab */
+
+.actionarglist {
+	list-style-type:none;  margin: 0; padding: 0;
+}
+.actionarglist li {
+	background-color: #ddd; display:inline; padding: 4px; margin: 4px; height: 2em; line-height: 3em;
+}
+.actionarg_required {
+	border: 1px solid black;
+}
+.actionarg_padded {
+	border: 1px solid darkred;
+}
+.actionarg_optional {
+	border: 1px dashed black;
+}
+.argName {
+	font-family: "Courier New", Courier, monospace; font-style: italic;
+}
+
+#tabs-UserMembership-data, #tabs-GroupMembership-data, #tabs-DomainSummary-data {
+	overflow-y: auto;
+	height: 100%;
+}
+
+.ui-state-highlight {
+	border:2px solid blue;
+    background: #beebff url("/themeroller/images/ui-bg_glass_55_f5f846_1x400.png") 50% 50% repeat-x;
+}
+
+.ui-tp-highlight {
+	background-color: #beebff;
+}
+
+.ui-breadcrumb-highlight {
+	background: #beebff url("/themeroller/images/ui-bg_glass_55_f5f846_1x400.png") 50% 50% repeat-x;
+}
+
+.omdashboard {
+	margin-bottom: 10px;
+}
+
+h2.reports { 
+	color: white
+}
+
+
+.tabbedDialog .ui-dialog-titlebar {
+	display:none
+}
+
+.vis-item {
+  color: white;
+  background-color: #3a87ad;  
+}
+
+.vis-item.release {
+  color: white;
+  background-color: #3a87ad;   
+}
+
+.vis-item.absent {
+  color: white;
+  background-color: #daa520;
+}
+
+.vis-release {
+  color: white;
+  background-color: #e0e0e0;
+  border-color: black;
+}
+
+.vis-item.inenv {
+  color: white;
+  background-color: #61838F;	
+}
+
+.vis-item.vis-point.vis-selected, .vis-item.vis-selected {
+  border-color: #beebff;
+  background-color: #beebff;
+}
+ 
+.vis-inner {
+	width: 100%;
+}
+
+.openStyle {
+  fill: #daa520;
+  fill-opacity:0;
+  stroke-width:2px;
+}
+
+.closedStyle {
+  fill-opacity:0;
+  stroke-width:2px;
+}
+
+.ui-buglist {
+	resize: none;
+	height: calc(100% - 226px);
+	outline: none;
+	border: 1px solid #cccccc;
+	font-size: 1.0em;
+	background-image: none !important;
+	background-color: #f7f3ec !important; 
+	width: calc(100% - 15px);
+	padding: 8px 0 12px 12px;
+	overflow: scroll;
+}

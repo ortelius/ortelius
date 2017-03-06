@@ -1,0 +1,69 @@
+#include "platform.h"
+
+///////////////////////////////////////////////////////////////////////////////
+// CacheById
+///////////////////////////////////////////////////////////////////////////////
+
+template<class T> CacheById<T>::CacheById()
+	: m_cache((HashtableById<T>*) 0)
+{}
+
+
+template<class T> /*virtual*/ CacheById<T>::~CacheById()
+{
+	SAFE_DELETE(m_cache);
+}
+
+
+template<class T> T* CacheById<T>::get(int id)
+{
+	return m_cache ? m_cache->get(id) : NULL;
+}
+
+
+template<class T> /*virtual*/ void CacheById<T>::put(T* obj)
+{
+	if(!m_cache) {
+		m_cache = new HashtableById<T>(true);
+	}
+	m_cache->put(obj->id(), obj);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// CacheByIdAndName
+///////////////////////////////////////////////////////////////////////////////
+
+template<class T> CacheByIdAndName<T>::CacheByIdAndName()
+	: m_cache((HashtableById<T>*) 0), m_names((Hashtable<T>*) 0)
+{}
+
+
+template<class T> /*virtual*/ CacheByIdAndName<T>::~CacheByIdAndName()
+{
+	SAFE_DELETE(m_cache);
+	SAFE_DELETE(m_names);
+}
+
+
+template<class T> T* CacheByIdAndName<T>::get(int id)
+{
+	return m_cache ? m_cache->get(id) : NULL;
+}
+
+
+template<class T> T* CacheByIdAndName<T>::get(const char *name)
+{
+	return m_names ? m_names->get(name) : NULL;
+}
+
+
+template<class T> void CacheByIdAndName<T>::put(T* obj)
+{
+	if(!m_cache) {
+		m_cache = new HashtableById<T>(true);
+		m_names = new Hashtable<T>(false, false);
+	}
+	m_cache->put(obj->id(), obj);
+	m_names->put(obj->name(), obj);
+}

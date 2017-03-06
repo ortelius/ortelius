@@ -1,0 +1,30 @@
+CXXFLAGS=-I$(POSTGRES_DIR)/include -I/usr/local/include -I/usr/local/opt/openssl/include -DHAVE_UNIXODBC -DDEV_VERSION -DHAVE_VA_LIST_STRUCT -DLDAP_DEPRECATED -fPIC -fpermissive -m64 -Wno-format -Wno-switch -Wno-parentheses -Wno-bool-conversion -Wno-c++11-compat-deprecated-writable-strings
+
+HARVEST_OBJS = harvest.o harvestlog.o
+
+
+RESTFUL_OBJS = restful.o
+
+DMAPI_DIR = ../../../dmapi
+RESTFUL_DIR  = ../../../plugins/restful
+
+
+all: ../restful.so
+
+../restful.so: $(RESTFUL_OBJS)
+	$(CXX) -shared -o $@ $(RESTFUL_OBJS) -L/usr/local/opt/openssl/lib -L.. -ldmapi -lssl -lcrypto
+
+
+###
+
+#
+# Object files: Generic Rules
+#
+
+%.o: $(RESTFUL_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -I$(DMAPI_DIR) $(DEBUG) -c -o $@ $< -I.
+
+
+###
+
+restful.o:	$(RESTFUL_DIR)/restful.cpp $(RESTFUL_DIR)/restful.h
