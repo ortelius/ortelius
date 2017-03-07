@@ -4517,7 +4517,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    stmt.setInt(1, domainID);
    break;
   case FRAGMENT:
-   sql =  "select a.id,a.name, a.actionid,a.functionid from dm.dm_fragments a, dm.dm_fragment_categories b where a.id = b.id and b.categoryid = ? order by name";
+   sql =  "select distinct a.id,a.name, a.actionid,a.functionid from dm.dm_fragments a, dm.dm_fragment_categories b where a.id = b.id and b.categoryid = ? order by name";
    // sql_access = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N'";
    // sql_hasaccess = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y'";
    stmt = getDBConnection().prepareStatement(sql);
