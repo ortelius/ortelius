@@ -787,7 +787,7 @@ function Execute(taskname,taskid,otype,id,pid,tasktype,params,domainid)
     		 DoRefresh();
     		 LoadVersionsData();
     	 }
-    	 if (tasktype == "MOVE") DoRefresh();
+    	 if (tasktype == "MOVE" || tasktype == "RUN_ACTION") DoRefresh();
     	 if (save_showoutput == "true") DisplayDeploy(data.depno);
      } else if (data.result == false) {
     	 if (data.output != "" && typeof data.output != "undefined") {

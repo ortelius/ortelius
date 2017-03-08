@@ -1407,7 +1407,17 @@ public class API extends HttpServlet
  protected Application newAppVersion(DMSession so, String appname, HttpServletRequest request, TaskCreateVersion tcv) throws ApiException
  {
   System.out.println("DOING newappver");
-
+  String newname = request.getParameter("name");	// if specified, name of new application version
+  if (newname != null) {
+	  System.out.println("Looking up "+newname);
+	  try {
+		  so.getApplicationByName(newname);	// throws exception if not found
+		  // If we get here then application with that name was found. That's an error
+		  throw new ApiException("An application version with that name already exists");
+	  } catch(RuntimeException ex) {
+		  // Application not found exception - ok to proceed
+	  }
+  }
   Application app = getApplicationFromNameOrID(so, appname);
   //
   // At this juncture, application is set. We need to get the engine
@@ -1476,6 +1486,14 @@ public class API extends HttpServlet
    {
     throw new ApiException("New Application with id " + newid + " not found");
    }
+   if (newname != null) {
+	   // Need to rename the application
+	   System.out.println("Changing name of app with id "+newid+" to "+newname);
+	   SummaryChangeSet changes = new SummaryChangeSet();
+	   changes.add(SummaryField.NAME,newname);
+	   so.updateApplication(newapp, changes);
+	   newapp = so.getApplication(newid,false);
+   }
    return newapp;
   }
   else
@@ -1540,7 +1558,7 @@ public class API extends HttpServlet
   // API/del/environment/name
   // API/new/environment/name[?domain=<domain>&summary=<summary>]
   // API/mod/environment/name/ " "
-  // API/new/appver/appname
+  // API/new/appver/appname[?name=<vername>]
   // API/new/compver/compname
   // (D) API/clone/server/<servername>/<newname>[?domain=dom]
   // (D) API/clone/environment/<envname>/<newname?[?domain=dom]
