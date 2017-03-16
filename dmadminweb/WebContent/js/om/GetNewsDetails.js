@@ -303,6 +303,7 @@ function getBuildLogDetails(compid,buildid)
 	     var buildjob = data.details.buildjob;
 	     var files = data.files;
 	     var defects = data.defects;
+	     if (typeof defects == "undefined") defects=[];
 	     var dt = data.details.timestamp;
 	     var dur = (data.details.duration / 1000);
 	     if (files.length>0) {
