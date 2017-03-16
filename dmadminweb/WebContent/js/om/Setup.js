@@ -1582,6 +1582,31 @@ function SaveSetupData(instance)
 	 }
  });
  
+ if (wt==2) {
+	 // Add deploy task to specified domain
+	 $.ajax({
+		 url : "DomainDetails?f=at&domainid="+domainid+"&tasktype=Deploy",
+		 async : false,
+		 type : 'POST',
+		 success : function(res)
+		 {
+			 console.log("success");
+			 console.log(res);
+			 SetupDeployTaskName = res.name;
+			 SetupDeployTaskId = res.id;
+			 $.ajax({
+				 url : "DomainDetails?f=ag&gid=1&domainid="+domainid+"&tid="+SetupDeployTaskId,
+				 async : false,
+				 type : 'POST',
+				 success : function(res)
+				 {
+					 console.log("Added group everyone");
+				 }
+			 });
+		 }
+	 });
+ }
+ 
  var pwd = parent.$("#modal");
  pwd.empty();
  var tdedit = (wt==1)?"<img src=\"css/images/dhlogo.png\"><BR><HR>":"<img src=\"css/images/dhlogo2.png\"><BR><HR>";
