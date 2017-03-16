@@ -129,6 +129,33 @@ char *base64encode(unsigned char *data, unsigned long datalen)
 	return output;
 }
 
+// Simple URL encoder. Space = %20. Leaves / alone so we can encode a complete path
+char to_hex(char code)
+{
+	static char hex[] = "0123456789abcdef";
+	return hex[code & 15];
+}
+
+char *url_encode(char *str)
+{
+	char *pstr = str;
+	char *buf = (char *)malloc(strlen(str) * 3 + 1);
+	char *pbuf = buf;
+	while (*pstr) {
+		if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~') 
+			*pbuf++ = *pstr;
+		else if (*pstr == '/')
+			*pbuf++ = '/';
+		else {
+			*pbuf++ = '%';
+			*pbuf++ = to_hex(*pstr >> 4);
+			*pbuf++ = to_hex(*pstr & 15);
+		}
+		pstr++;
+	}
+	*pbuf = '\0';
+	return buf;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -428,6 +455,7 @@ void *getFileContent(char *http_request,int sock,int *retlen, int *status)
 	char *content = (char *)0;
 	char *buf = (char *)malloc(strlen(http_request)+50);
 	sprintf(buf,"%s\r\n\r\n",http_request);
+
 	SendDataToSocket(sock, buf, strlen(buf));
 	free(buf);
 
@@ -647,8 +675,12 @@ void HttpRepositoryImpl::checkout(
 		// Params go on the uri for GET
 		sock = ConnectToServer(m_host,m_port);
 		op = (char *)malloc(strlen(AuthenticationString)+strlen(offset)+strlen(m_params)+100);
-		sprintf(op,"GET %s?%s HTTP/1.1\r\nHost: %s%s",offset, m_params, m_host, AuthenticationString);
+		char *enc_offset = url_encode(offset);
+		char *enc_params = url_encode(m_params);
+		sprintf(op,"GET %s?%s HTTP/1.1\r\nHost: %s%s",enc_offset, enc_params, m_host, AuthenticationString);
 		debug1(op);
+		free(enc_offset);
+		free(enc_params);
 		void *buf = getFileContent(op,sock,&retlen,&status);
 		StringListIterator iter(*pattern);
 		char *BaseName = (char *)iter.first();
@@ -768,8 +800,12 @@ void HttpRepositoryImpl::checkout(
 					debug1("** LATEST FILE: %s",latestfile);
 					if (latestfile) {
 						op = (char *)malloc(strlen(AuthenticationString)+strlen(offset)+strlen(latestfile)+strlen(m_host)+100);
-						sprintf(op,"GET %s%s/%s HTTP/1.1\r\nHost: %s%s", offset[0]=='/'?"":"/",offset, latestfile, m_host,AuthenticationString);
+						char *enc_offset = url_encode(offset);
+						char *enc_lf = url_encode(latestfile);
+						sprintf(op,"GET %s%s/%s HTTP/1.1\r\nHost: %s%s", offset[0]=='/'?"":"/",enc_offset, enc_lf, m_host,AuthenticationString);
 						debug1(op);
+						free(enc_offset);
+						free(enc_lf);
 						callback.checked_out_folder(offset[0]?offset:"/", "\\", true);
 						void *buf = getFileContent(op,sock,&retlen,&status);
 						debug1("retlen=%d",retlen);
@@ -798,8 +834,12 @@ void HttpRepositoryImpl::checkout(
 					for(const char *patt = iter.first(); patt; patt = iter.next()) {
 						sock = ConnectToServer(m_host,m_port);
 						op = (char *)malloc(strlen(AuthenticationString)+strlen(offset)+strlen(patt)+strlen(m_host)+100);
-						sprintf(op,"GET %s%s/%s HTTP/1.1\r\nHost: %s%s",offset[0]=='/'?"":"/",offset, patt, m_host, AuthenticationString);
-						debug1(op);
+						char *enc_offset = url_encode(offset);
+						char *enc_patt = url_encode((char *)patt);
+						sprintf(op,"GET %s%s/%s HTTP/1.1\r\nHost: %s%s",offset[0]=='/'?"":"/",enc_offset, enc_patt, m_host, AuthenticationString);
+						debug1("%s",op);
+						free(enc_offset);
+						free(enc_patt);
 						callback.checked_out_folder(offset[0]?offset:"/", "\\", true);
 						void *buf = getFileContent(op,sock,&retlen,&status);
 						debug1("retlen=%d",retlen);
@@ -930,9 +970,10 @@ RepositoryImpl *HttpRepositoryImplFactory::create(
 		*cp='\0';	// terminate hostname before the port number
 	}
 	
-	if(portstr) {
+	if(portstr && portstr[0]) {
 		port = atoi(portstr);
 	}
+	if (params && !params[0]) params = NULL;
 
 	return new HttpRepositoryImpl(*this, implId, parent, host, port, uri, params, version);
 }

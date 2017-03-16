@@ -121,17 +121,17 @@ PROTOCOL_TYPE	InitType;
 
 #ifdef WIN32
 PROTOCOL protocols[]={
-{"ftp",		"ftplib.dll",	true,	INIT_FTP},
-{"sftp",	"psftplib.dll",	false,	INIT_SFTP},
-{"ftps",	"ftplib.dll",	false,	INIT_FTPS},
-{"win",		"winlib.dll",	false,	INIT_WIN}
+{"ftp",		"ftplib.dll",		true,	INIT_FTP},
+{"sftp",	"psftplib.dll",		false,	INIT_SFTP},
+{"ftps",	"ftplib.dll",		false,	INIT_FTPS},
+{"win",		"winlib.dll",		false,	INIT_WIN}
 };
 #else
 PROTOCOL protocols[]={
-{"ftp",		"libftplib.so",	0,	INIT_FTP},
-{"sftp",	"libpsftplib.so",	0,	INIT_SFTP},
-{"win",	"libwinlib.so",	0,	INIT_FTPS},
-{"ftps",	"libftplib.so",	1,	INIT_WIN}
+{"ftp",		"libftplib.so",		true,	INIT_FTP},
+{"sftp",	"libpsftplib.so",	false,	INIT_SFTP},
+{"ftps",	"libftplib.so",		false,	INIT_FTPS},
+{"win",		"libwinlib.so",		false,	INIT_WIN}
 };
 #endif
 

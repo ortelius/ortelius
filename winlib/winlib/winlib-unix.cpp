@@ -100,7 +100,7 @@ void CalculateUNCPath(char *cwd, char *FileName,char *TargetDir, char *TargetFil
  if (cwd[1] == ':')
  {
   if (m_ShareName == NULL)
-   m_ShareName = malloc(strlen(WorkName));
+   m_ShareName = (char *)malloc(strlen(WorkName));
 
   sprintf(m_ShareName,"%c$",cwd[0]);
  }
