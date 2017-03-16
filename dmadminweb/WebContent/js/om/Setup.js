@@ -108,7 +108,7 @@ function SetupWizard()
  tdedit += "<table id=\"summtab1\" class=\"summtable\">";
  tdedit += "<tr>";
  tdedit += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">Domain:</td>";
- tdedit += "<td style=\"padding-top:2px;padding-bottom:2px;\"><select name=\"domain_val\">";
+ tdedit += "<td style=\"padding-top:2px;padding-bottom:2px;\"><select id=\"domain_val\" name=\"domain_val\">";
  tdedit += "</td>";
  tdedit += "<td><input type=\"hidden\" name=\"domain_field\" value=\"\"/></td>";
  tdedit += "</tr>";
@@ -1288,6 +1288,7 @@ function SaveSetupData(instance)
  
  $.blockUI();
  var domainid = view.domain_val;
+ var domainname=$("#domain_val option:selected").text();
 
  var SaveList = [ "Credentials", "Repository", "ServerCredentials", "Environment", "Server", "Application", "BuildEngine", "BuildJob", "Component" ];
 
@@ -1624,6 +1625,8 @@ function SaveSetupData(instance)
  }
  tdedit += "</table>";
  if (wt==2) {
+	 tdedit += "<br>A <I>Deploy Task</I> \""+SetupDeployTaskName+"\" has been created in domain \""+domainname+"\" to allow ";
+	 tdedit += "deployments to take place immediately. You way wish to rename or remove this task as required.<br>";
 	 tdedit += "<br>If you have not already done so, you should now install the Jenkins plugin for DeployHub. ";
 	 tdedit += "Then, within Jenkins configure the project \""+view.jenkinsproj2_val+"\" and add the plugin as ";
 	 tdedit += "a post-build step. If you wish to perform continuous deployment, set the plug-in to deploy ";
@@ -1670,7 +1673,7 @@ function SetupNewID(ot, parentid, view)
  else if (ot == "Server") {
   name  = view.servername_val;
   ptype="Environment";
-} else if (ot == "Environment")
+ } else if (ot == "Environment")
   name  = view.envname_val;
  else if (ot == "Application")
   name = view.appname_val;
