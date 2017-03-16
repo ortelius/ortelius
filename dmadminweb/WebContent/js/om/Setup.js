@@ -1289,7 +1289,7 @@ function SaveSetupData(instance)
  $.blockUI();
  var domainid = view.domain_val;
 
- var SaveList = [ "Credentials", "Repository", "ServerCredentials", "Server", "Environment", "Application", "BuildEngine", "BuildJob", "Component" ];
+ var SaveList = [ "Credentials", "Repository", "ServerCredentials", "Environment", "Server", "Application", "BuildEngine", "BuildJob", "Component" ];
 
  for (var k=0; k < SaveList.length; k++)
  {
@@ -1304,7 +1304,9 @@ function SaveSetupData(instance)
 		 if (wt==2 && view.serverusernameenc2_val=="" && view.serverpasswordenc2_val=="") continue;
 	 }
 	 
-	 var parentid=(SaveList[k] == "BuildJob")?SetupBuildEngineId:domainid;
+	 var parentid=domainid;
+	 if (SaveList[k] == "BuildJob") parentid = SetupBuildEngineId;
+	 if (SaveList[k] == "Server") parentid = SetupEnvId;
 	 
 	 SetupNewID(SaveList[k], parentid, view);
 
@@ -1640,9 +1642,10 @@ function SetupNewID(ot, parentid, view)
   // view.servername_val += "_server";
   name  = view.servername_val;
  }
- else if (ot == "Server")
+ else if (ot == "Server") {
   name  = view.servername_val;
- else if (ot == "Environment")
+  ptype="Environment";
+} else if (ot == "Environment")
   name  = view.envname_val;
  else if (ot == "Application")
   name = view.appname_val;

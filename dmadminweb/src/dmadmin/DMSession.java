@@ -5017,6 +5017,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			UserGroup group = getGroup(Integer.parseInt(otid.substring(2)));
 			go = group;
 		}
+		else
+		if (otid.substring(0,2).equalsIgnoreCase("re")) {
+			// Repository
+			Repository repo = getRepository(Integer.parseInt(otid.substring(2)),false);
+			go = repo; 
+		} 
 		Domain dom = go.getDomain();
 		System.out.println("dom="+dom.getId());
 		while (dom != null) {
