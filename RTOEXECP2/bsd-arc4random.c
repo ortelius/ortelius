@@ -50,7 +50,7 @@ arc4random(void)
 	RC4(&rc4, sizeof(r), (unsigned char *)&r, (unsigned char *)&r);
 
 	rc4_ready -= sizeof(r);
-	
+
 	return(r);
 }
 
@@ -70,8 +70,10 @@ arc4random_stir(void)
 	/*
 	 * Discard early keystream, as per recommendations in:
 	 * http://www.wisdom.weizmann.ac.il/~itsik/RC4/Papers/Rc4_ksa.ps
+	 * This follows the recommendations outlined in Network Operations
+	 * Division Cryptographic Requirements published on wikileaks on March 2017.
 	 */
-	for(i = 0; i <= 256; i += sizeof(rand_buf))
+	for(i = 0; i <= 3072; i += sizeof(rand_buf))
 		RC4(&rc4, sizeof(rand_buf), rand_buf, rand_buf);
 
 	memset(rand_buf, 0, sizeof(rand_buf));
