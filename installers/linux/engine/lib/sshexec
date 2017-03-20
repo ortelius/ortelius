@@ -86,12 +86,19 @@ if [ "${SFTP}" = "Y" ]; then
 		fi			
  elif [ "${PW}" = "" ]; then
 		if [ "${USER}" != "" ]; then		
-	  cat $TMPFILE | sftp -P $PORT $USER@$HOST
+			cat $TMPFILE | sftp -P $PORT $USER@$HOST
 		else
 			cat $TMPFILE | sftp -P $PORT $HOST
 		fi	
  else
-		cat $TMPFILE | sshpass -p $PW sftp -P $PORT $USER@$HOST
+		cat $TMPFILE | sshpass -p $PW sftp -P $PORT $USER@$HOST >/dev/null 2>/tmp/sftp$$.out
+                C=$(wc -l /tmp/sftp$$.out | cut -d' ' -f1)
+                if [ "$C" -gt 1 ]; then
+                        cat /tmp/sftp$$.out | awk 'BEGIN {FS=":"} NR==2 {print $2}'>&2
+                        rm -f /tmp/sftp$$.out
+                        exit 1
+                fi
+                rm -f /tmp/sftp$$.out
 	fi	
 else	
 #    echo sshpass -p $PW ssh -q $TTY -p $PORT $USER@$HOST "$CMD"

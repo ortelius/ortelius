@@ -623,18 +623,28 @@ List<TransferResult> *RtiTransferProviderImpl::transferToServer(const char *drop
 						TransferResult *result = new TransferResult();
 						TiXmlElement *tgtdir = file->FirstChildElement("targetdir");
 						TiXmlElement *tgtfile = file->FirstChildElement("filename");
+						TiXmlElement *error = file->FirstChildElement("error");
+						TiXmlElement *errortext = file->FirstChildElement("errortext");
 						const char *szDir = tgtdir?tgtdir->GetText():(char *)0;
 						const char *szFile = tgtfile?tgtfile->GetText():(char *)0;
+						const char *szError = error?error->GetText():"N";
+						const char *szErrorText = errortext?errortext->GetText():"";
 						if (szDir && szFile) {
 							ServerType *st = m_target.serverType();
 							char sepchr = (st && stricmp(st->hosttype(),"windows"))?'\\':'/';
-							ctx.dm().writeToStdOut("INFO: Deployed File %s -> %s:%s%c%s",szFile,m_target.name(),szDir,sepchr,szFile);
+							if (szError[0]=='Y') {
+								ctx.dm().writeToStdErr("ERROR: Failed to Deploy File %s -> %s:%s%c%s: %s",szFile,m_target.name(),szDir,sepchr,szFile,szErrorText);
+							} else {
+								ctx.dm().writeToStdOut("INFO: Deployed File %s -> %s:%s%c%s",szFile,m_target.name(),szDir,sepchr,szFile);
+							}
 						}
 
 						for(TiXmlElement *node = file->FirstChildElement(); node; node = node->NextSiblingElement()) {
 							result->setProperty(node->Value(), node->GetText());
 						}
-						ret->add(result);
+						if (szError[0]!='Y') {
+							ret->add(result);
+						}
 					}
 				} else {
 					ctx.dm().writeToStdOut("root not found");

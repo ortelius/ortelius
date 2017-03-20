@@ -504,7 +504,9 @@ void SwitchDirAndCreateIfNecessary(char *TargetDir)
 			res = CreateFullTargetDirectory(TargetDir);
 			if (res == 0)
 			{
-				throw("Failed to create Target Directory\n");
+				char *errtext = (char *)malloc(strlen(TargetDir)+50);
+				sprintf(errtext,"Failed to create Target Directory \"%s\"\n",TargetDir);
+				throw(errtext);
 			}
 			else
 			{
@@ -513,13 +515,17 @@ void SwitchDirAndCreateIfNecessary(char *TargetDir)
 				res = protocol_cd(TargetDir);
 				if (res == 0)
 				{
-					throw("Failed to cd to directory");
+					char *errtext = (char *)malloc(strlen(TargetDir)+50);
+					sprintf(errtext,"Failed to cd to directory \"%s\"\n",TargetDir);
+					throw(errtext);
 				}
 			}
 		}
 		else
 		{
-			throw("Target Directory does not exist and auto create is off\n");
+			char *errtext = (char *)malloc(strlen(TargetDir)+100);
+			sprintf(errtext,"Target Directory \"%s\" does not exist and auto create is off\n",TargetDir);
+			throw(errtext);
 		}
 	}
 }
