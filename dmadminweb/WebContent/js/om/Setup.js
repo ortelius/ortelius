@@ -101,10 +101,8 @@ function SetupWizard()
  tdedit += "<div id=\"setuppage3\" style=\"display:none\">";
  tdedit += "<img id=\"p3img\" src=\"css/images/dhlogo.png\"><BR><HR>";
  tdedit += "<B>Page 2 of <span id=\"mp\">8</span> - Domain and Owner</B><BR>";
- tdedit += "First, let's decide in which <I>Domain</I> you want to create the initial objects. If you want to ";
- tdedit += "create a new domain then cancel this wizard, go to the <I>Domains</I> view, right click on the ";
- tdedit += "domain under which you want to create your new domain and select <I>New Sub-Domain</I>. Otherwise ";
- tdedit += "select the domain you want from the list below.";
+ tdedit += "First, let's decide in which <I>Domain</I> you want to create the initial objects. ";
+ tdedit += "Please select the domain you want from the list below.";
  tdedit += "<table id=\"summtab1\" class=\"summtable\">";
  tdedit += "<tr>";
  tdedit += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">Domain:</td>";

@@ -1029,6 +1029,7 @@ h1.repository,
 h1.datasource,
 h1.credentials,
 h1.usergroup,
+h1.template,
 h1.domain {
 	margin-top: 4px;
 	padding-left: 30px;
@@ -1141,6 +1142,10 @@ h1.compversion  {
 
 h1.component  {
 	background: url(images/component_24x.png) no-repeat left top;
+	}
+	
+h1.template  {
+	background: url(images/template_24x.png) no-repeat left top;
 	}
 		
 h1.accordion  {

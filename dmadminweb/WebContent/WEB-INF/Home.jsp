@@ -23,6 +23,8 @@
 <head>
 <title>DeployHub</title>
 
+<link rel="icon" href="favicon.ico">
+
 <link rel='stylesheet' type="text/css" href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,600,400,700,800?v=${initParam.BUILD_VERSION}'>
 <link rel="stylesheet" type="text/css" href="css/cupertino/jquery-ui-min.css?v=${initParam.BUILD_VERSION}" />
 <link rel="stylesheet" type="text/css" href="css/jquery.dmcontextmenu.css?v=${initParam.BUILD_VERSION}" />
