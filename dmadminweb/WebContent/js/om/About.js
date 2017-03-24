@@ -33,7 +33,7 @@ function ShowAbout()
           { text: "Cancel", click: function() { $( this ).dialog("close"); } }
        ];
    
-   var tdedit = "<table border=0><tr><td style=\"width:150px\">Version</td><td>8.0.0</td></tr>"
+   var tdedit = "<table border=0><tr><td style=\"width:150px\">Version</td><td>8.0."+res.build+"</td></tr>"
 	   +"<tr><td>Build</td><td>"+res.build+"</td></tr>"
 	   +"<tr><td>Database Schema:</td><td>"+res.schema+"</td></tr>"
 	   +"</table>";
