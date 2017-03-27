@@ -255,7 +255,7 @@ function ciClickElement(id)
     modal : true,
     open : function(event, ui)
     {
-     ToggleRepoProps(id,'repository_row',false);
+     ToggleRepoProps(id,'repository_row',false,true);
     }
    });
 
