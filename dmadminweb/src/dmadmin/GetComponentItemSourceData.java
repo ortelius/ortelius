@@ -143,27 +143,28 @@ public class GetComponentItemSourceData
 	
 	private IJSONSerializable getDefsForRepository(DMSession session, int repoid)
 	{
-		ProviderObject po = session.getRepository(repoid, false);
-		
 		JSONObject ret = new JSONObject();
 		JSONArray arr = new JSONArray();
 		ret.add("defs", arr);
-
-		// Lookup table of properties defined on the Repository itself
-		Hashtable<String, DMProperty> repoprops = new Hashtable<String, DMProperty>();
-		for(DMProperty p: po.getProperties()) {
-			repoprops.put(p.getName(), p);
-		}
 		
-		// Filter the defs
-		for(DMPropertyDef d : po.getPropertyDefs()) {
-			// Only pass the defs that are not defined or can be overridden or appended
-			DMProperty rp = repoprops.get(d.getName()); 
-			if((rp == null) || rp.isAppendable() || rp.isOverridable()) {
-				arr.add(d);
+		if (repoid>0) {
+			ProviderObject po = session.getRepository(repoid, false);
+	
+			// Lookup table of properties defined on the Repository itself
+			Hashtable<String, DMProperty> repoprops = new Hashtable<String, DMProperty>();
+			for(DMProperty p: po.getProperties()) {
+				repoprops.put(p.getName(), p);
+			}
+			
+			// Filter the defs
+			for(DMPropertyDef d : po.getPropertyDefs()) {
+				// Only pass the defs that are not defined or can be overridden or appended
+				DMProperty rp = repoprops.get(d.getName()); 
+				if((rp == null) || rp.isAppendable() || rp.isOverridable()) {
+					arr.add(d);
+				}
 			}
 		}
-		
 		return ret;
 	}
 }
