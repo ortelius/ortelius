@@ -1101,7 +1101,7 @@ class Expr *Restful_PostFunctionImpl::evaluate(class ExprList *args, class Conte
 	else
 	{
 		// result is neither JSON or XML
-		printf("Result (%s) is neither JSON nor XML\n",contentType?contentType:"NULL");
+		debug1("Result (%s) is neither JSON nor XML\n",contentType?contentType:"NULL");
 		ret = new Expr(content);
 	}
 
