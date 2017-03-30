@@ -78,7 +78,7 @@ function SetupWizard()
  tdedit += "<UL><LI>An initial <I>Repository</I>. A repository is a source of deployment artifacts. Repositories ";
  tdedit += "can be found under the <I>Connections</I> view.</LI>";
  tdedit += "<LI>An initial <I>Environment</I>. An Environment represents a target for deployment and contains ";
- tdedit += "one or more <I>End Points</I>. Environments can be found under under the <I>Data Center</I> view.</LI>";
+ tdedit += "one or more <I>End Points</I>. Environments can be found under the <I>Data Center</I> view.</LI>";
  tdedit += "<LI>An initial <I>End Point</I>. An End Point receives the deployment artifacts pulled from a ";
  tdedit += "<I>Repository</I>. The artifact(s) an End Point receives will depend on the <I>Component Types</I> ";
  tdedit += "it is set to accept. End Points can be found under the <I>Data Center</I> view.</LI>";
@@ -351,7 +351,7 @@ function SetupWizard()
  tdedit += "will point at your Jenkins Server to allow DeployHub to use http to download the archived file(s) ";
  tdedit += "for each build. Repositories can be found under the <I>Connections</I> view.</LI>";
  tdedit += "<LI>An initial <I>Environment</I>. An Environment represents a target for deployment and contains ";
- tdedit += "one or more <I>End Points</I>. Environments can be found under under the <I>Data Center</I> view.</LI>";
+ tdedit += "one or more <I>End Points</I>. Environments can be found under the <I>Data Center</I> view.</LI>";
  tdedit += "<LI>An initial <I>End Point</I>. This End Point will receives the build artifacts pulled from ";
  tdedit += "the Jenkins <I>Repository</I>.  End Points can be found under the <I>Data Center</I> view.</LI>";
  tdedit += "<LI>A <I>Build Engine</I> and <I>Build Job</I> to allow DeployHub to integrate with Jenkins. ";
