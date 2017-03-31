@@ -1597,7 +1597,7 @@ void RenameStmtImpl::doRename(IDropzone &indz, Node &nfrom, IDropzone &outdz, No
 				// File does not currently exist in the target dropzone. Copy the file, creating
 				// the new file name. Note, we can't simply use "rename" since we need to leave
 				// the original behind in case we have more than one target server.
-				int fout = open(absto,FILE_CREATE_PERMISSIONS);
+				int fout = open(absto,FILE_CREATE_PERMISSIONS, FILE_CREATE_MODE);
 				int fin = open(absfrom1,FILE_READ_PERMISSIONS);
 				if (fout>0 && fin>0) {
 					int n=0;

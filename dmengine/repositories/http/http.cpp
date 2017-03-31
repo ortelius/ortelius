@@ -443,7 +443,7 @@ void createDropZoneFile(void *buf,int buflen,const char *path,const char *BaseNa
 	}
 	char *fp = (char *)malloc(strlen(path)+strlen(BaseName)+10);
 	sprintf(fp,"%s/%s",path,BaseName);
-	int f = open(fp,_O_WRONLY | _O_BINARY | _O_CREAT | _O_TRUNC );
+	int f = open(fp,_O_WRONLY | _O_BINARY | _O_CREAT | _O_TRUNC, FILE_CREATE_MODE );
 	debug1("About to write %d bytes",buflen);
 	int res = write(f,buf,buflen);
 	debug1("res=%d",res);
