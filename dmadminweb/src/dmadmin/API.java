@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+
 // import oracle.net.aso.i;
 import dmadmin.json.JSONArray;
 import dmadmin.json.JSONObject;
@@ -1536,6 +1537,7 @@ public class API extends HttpServlet
   // (D) API/application/appid|appname?[latest=y&][branch=<name>] (gets latest app version, on branch if specified)
   // (D) API/servers?all=y|n[&environment=envname|envid]
   // (D) API/server/<servername>
+  //     API/components?all=y|n[&application=appname|appid] (lists all components - all = show sub-domains)
   // (D) API/component/compid|compname?[latest=y&][branch=<name>] (gets latest comp version, on branch if specified)
   // (D) API/calendar?[env=<env>&app=<app>][&start=<start>&end=<end>]
   // API/newappver/appid|appname[&taskname=<name>]
@@ -1714,6 +1716,38 @@ public class API extends HttpServlet
     {
      throw new ApiException("Path contains too many elements");
     }
+   }
+   else if (elements[0].equals("components"))
+   {
+	   if (elements.length == 1) {
+		   System.out.println("length is 1");
+		   String appname = request.getParameter("application");
+		   JSONArray result = new JSONArray();
+		   if (appname != null) {
+			   System.out.println("Doing complist for application");
+			   // Getting components for application
+			   Application app = getApplicationFromNameOrID(so, appname);
+			   System.out.println("Application is " + app.getName());
+			   List<Component> comps = so.getComponents(ObjectType.APPLICATION,app.getId(),false);
+			   System.out.println("component list is size " + comps.size());
+			   for (Component c : comps)
+			   {
+				   Component comp = so.getComponent(c.getId(), true);
+				   JSONObject je = assembleJSONForComponent(so, comp);
+				   result.add(je);
+			   }
+		   } else {
+			   System.out.println("Application is null");
+			   List<DMObject> comps = so.getDMObjects(ObjectType.COMPONENT, all);
+			   System.out.println("component list is size " + comps.size());
+			   for (DMObject comp : comps)
+			   {
+				   JSONObject je = assembleJSONForComponent(so, (Component)comp);
+				   result.add(je);
+			   }
+		   }
+		   obj.add("result", result);
+	   }
    }
    else if (elements[0].equals("component"))
    {
