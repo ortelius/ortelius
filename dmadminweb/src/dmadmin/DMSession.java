@@ -16228,7 +16228,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 
 			if (comp.getPostAction() != null)
 				st.execute("UPDATE dm.dm_component SET postactionid=" + comp.getPostAction().getId() + " WHERE id="+newid);
-   
+			
+			if (comp.getCustomAction() != null)
+			    st.execute("UPDATE dm.dm_component SET actionid=" + comp.getCustomAction().getId() + " WHERE id="+newid);
+			
 			if (comp.getBaseDirectory() != null)
 				st.execute("UPDATE dm.dm_component SET basedir='"+comp.getBaseDirectory()+"' WHERE id="+newid);
 			
