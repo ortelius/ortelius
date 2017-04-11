@@ -450,7 +450,7 @@ void createDropZoneFile(void *buf,int buflen,const char *path,const char *BaseNa
 	close(f);
 }
 
-void *getFileContent(char *http_request,int sock,int *retlen, int *status)
+void *getFileContent(Context &ctx,char *http_request,int sock,int *retlen, int *status)
 {
 	char *content = (char *)0;
 	char *buf = (char *)malloc(strlen(http_request)+50);
@@ -508,6 +508,7 @@ void *getFileContent(char *http_request,int sock,int *retlen, int *status)
 		}
 	} else {
 		// No data returned
+		ctx.dm().writeToStdErr("%s returns status %d",http_request,*status);
 		*retlen = 0;
 	}
 	return (void *)content;
@@ -553,7 +554,7 @@ void HttpRepositoryImpl::FreeDirectoryContent(char **dirlist, int numElements)
 	SAFE_FREE(dirlist);
 }
 
-char **HttpRepositoryImpl::GetDirectoryContent(int sock,char *AuthenticationString,char *offset,int *numFiles)
+char **HttpRepositoryImpl::GetDirectoryContent(Context &ctx,int sock,char *AuthenticationString,char *offset,int *numFiles)
 {
 	char **ret = (char **)0;
 	char *content = (char *)0;
@@ -561,7 +562,7 @@ char **HttpRepositoryImpl::GetDirectoryContent(int sock,char *AuthenticationStri
 	sprintf(op,"GET %s%s/ HTTP/1.1\r\nHost: %s%s",offset[0]=='/'?"":"/",offset, m_host,AuthenticationString);
 	debug1(op);
 	int retlen,status;
-	void *data = getFileContent(op,sock,&retlen,&status);
+	void *data = getFileContent(ctx,op,sock,&retlen,&status);
 	debug1("retlen=%d data=[%s]",retlen,(char *)data);
 	//
 	// We should now have an HTML representation of the directory content
@@ -681,7 +682,7 @@ void HttpRepositoryImpl::checkout(
 		debug1(op);
 		free(enc_offset);
 		free(enc_params);
-		void *buf = getFileContent(op,sock,&retlen,&status);
+		void *buf = getFileContent(ctx,op,sock,&retlen,&status);
 		StringListIterator iter(*pattern);
 		char *BaseName = (char *)iter.first();
 		if (BaseName) {
@@ -708,7 +709,7 @@ void HttpRepositoryImpl::checkout(
 					sock = ConnectToServer(m_host,m_port);
 					int numFiles=0;
 					char *latestfile=(char *)0;
-					char **filelist = GetDirectoryContent(sock,AuthenticationString,offset,&numFiles);
+					char **filelist = GetDirectoryContent(ctx,sock,AuthenticationString,offset,&numFiles);
 					debug1("numFiles=%d",numFiles);
 					if (numFiles > 0) {
 						// Got a list of files
@@ -807,7 +808,7 @@ void HttpRepositoryImpl::checkout(
 						free(enc_offset);
 						free(enc_lf);
 						callback.checked_out_folder(offset[0]?offset:"/", "\\", true);
-						void *buf = getFileContent(op,sock,&retlen,&status);
+						void *buf = getFileContent(ctx,op,sock,&retlen,&status);
 						debug1("retlen=%d",retlen);
 						// CLOSESOCKET(sock);
 						createDropZoneFile(buf,retlen,dzpath,latestfile);
@@ -841,7 +842,7 @@ void HttpRepositoryImpl::checkout(
 						free(enc_offset);
 						free(enc_patt);
 						callback.checked_out_folder(offset[0]?offset:"/", "\\", true);
-						void *buf = getFileContent(op,sock,&retlen,&status);
+						void *buf = getFileContent(ctx,op,sock,&retlen,&status);
 						debug1("retlen=%d",retlen);
 						debug1("status=%d",status);
 						CLOSESOCKET(sock);

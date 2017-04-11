@@ -37,11 +37,14 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 
+
+
 // import oracle.net.aso.i;
 import dmadmin.json.JSONArray;
 import dmadmin.json.JSONObject;
 import dmadmin.model.Application;
 import dmadmin.model.BuildJob;
+import dmadmin.model.Builder;
 import dmadmin.model.CompType;
 import dmadmin.model.Component;
 import dmadmin.model.Credential;
@@ -49,6 +52,7 @@ import dmadmin.model.CredentialKind;
 import dmadmin.model.DMAttribute;
 import dmadmin.model.DMCalendarEvent;
 import dmadmin.model.DMObject;
+import dmadmin.model.DMProperty;
 import dmadmin.model.Datasource;
 import dmadmin.model.DeployedApplication;
 import dmadmin.model.Deployment;
@@ -127,6 +131,24 @@ public class API extends HttpServlet
   }
   je.add("summary", comp.getSummary());
   je.add("lastbuild", comp.getLastBuildNumber());
+  BuildJob cbj = comp.getBuildJob();
+  if (cbj != null)
+  {
+    je.add("buildjob",cbj.getName());
+    je.add("project",cbj.getProjectName());
+    Builder builder = so.getBuilder(cbj.getBuilderId());
+    if (builder != null)
+    {
+      List<DMProperty> props = builder.getProperties();
+      for (DMProperty prop: props)
+      {
+        if (prop.getName().equalsIgnoreCase("server url"))
+        {
+          je.add("serverurl",prop.getValue());
+        }
+      }
+    }
+  }
   //
   // If this is a base version list the versions
   //
@@ -174,7 +196,6 @@ public class API extends HttpServlet
    applist.add(ao);
   }
   je.add("applications", applist);
-
   return je;
  }
 
@@ -247,7 +268,26 @@ public class API extends HttpServlet
    co.add("id", c.getId());
    co.add("name", c.getName());
    co.add("summary", c.getSummary());
+   co.add("domain",c.getDomain().getFullDomain());
    co.add("lastbuild", c.getLastBuildNumber());
+   BuildJob cbj = c.getBuildJob();
+   if (cbj != null)
+   {
+     co.add("buildjob",cbj.getName());
+     co.add("project",cbj.getProjectName());
+     Builder builder = so.getBuilder(cbj.getBuilderId());
+     if (builder != null)
+     {
+       List<DMProperty> props = builder.getProperties(); 
+       for (DMProperty prop: props)
+       {
+         if (prop.getName().equalsIgnoreCase("server url"))
+         {
+           co.add("serverurl",prop.getValue());
+		 }
+	   }
+      }
+	}
    complist.add(co);
   }
   je.add("components", complist);

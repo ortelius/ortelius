@@ -5165,29 +5165,29 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		int cols=0;
 		switch(objtype) {
 		case SERVER:
-			sql="SELECT a.id, a.name, a.domainid, a.summary, a.parentid, a.rollup, a.rollback, a.filteritems, a.lastbuildnumber "
+			sql="SELECT a.id, a.name, a.domainid, a.summary, a.parentid, a.rollup, a.rollback, a.filteritems, a.lastbuildnumber, a.buildjobid "
 				+ "FROM dm.dm_component a,dm.dm_compsallowedonserv b "
 				+ "where a.status = 'N' and a.id = b.compid and b.serverid=?";
-			cols=9;
+			cols=10;
 			break;
 		case ENVIRONMENT:
 			sql="";
 			break;
 		case DOMAIN:
-			sql="select a.id, a.name, a.domainid, a.summary, a.parentid, a.rollup, a.rollback, a.filteritems, a.lastbuildnumber "
+			sql="select a.id, a.name, a.domainid, a.summary, a.parentid, a.rollup, a.rollback, a.filteritems, a.lastbuildnumber, a.buildjobid "
 				+ "FROM dm.dm_component a where  a.status = 'N' and a.domainid in ("+m_domainlist+")";
-			cols=9;
+			cols=10;
 			break;
 		case APPLICATION:
 		 if (isRelease)
-			 sql="select a.id, a.name, a.domainid, a.summary, a.parentid, 0, 0, 'N',0,"
+			 sql="select a.id, a.name, a.domainid, a.summary, a.parentid, 0, 0, 'N',0,0,"
 			 	+ "b.xpos, b.ypos FROM dm.dm_application a, dm.dm_applicationcomponent b "
 			 	+ "where  a.status = 'N' and  b.appid=? and a.id = b.childappid";
 		 else
-			 sql="select a.id, a.name, a.domainid, a.summary, a.parentid, a.rollup, a.rollback, a.filteritems, a.lastbuildnumber, "
+			 sql="select a.id, a.name, a.domainid, a.summary, a.parentid, a.rollup, a.rollback, a.filteritems, a.lastbuildnumber, a.buildjobid, "
 				+ "b.xpos, b.ypos FROM dm.dm_component a, dm.dm_applicationcomponent b "
 				+ "where  a.status = 'N' and b.appid=? and a.id = b.compid";
-			cols=11;
+			cols=12;
 			break;
 		default:
 			break;
@@ -5200,10 +5200,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next())
 			{
-				Component comp = new Component();
-				
-				comp.setId(rs.getInt(1));
-				comp.setName(rs.getString(2));
+				Component comp = new Component(this,rs.getInt(1),rs.getString(2));
 				comp.setDomainId(rs.getInt(3));
 				comp.setSummary(rs.getString(4));
 				comp.setParentId(getInteger(rs,5,0));
@@ -5211,7 +5208,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				comp.setRollback(ComponentFilter.fromInt(getInteger(rs, 7, 0)));
 				comp.setFilterItems(getBoolean(rs, 8));
 				comp.setLastBuildNumber(rs.getInt(9));
-				if (cols>9) {
+				int buildjobid = getInteger(rs,10,0);
+				if (buildjobid > 0) {
+					BuildJob buildjob = getBuildJob(buildjobid);
+					comp.setBuildJob(buildjob);
+				}
+				if (cols>10) {
 					comp.setXpos(rs.getInt(10));
 					comp.setYpos(rs.getInt(11));
 					

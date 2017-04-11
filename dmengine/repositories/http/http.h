@@ -35,7 +35,7 @@ private:
 	char	*m_params;
 	char	*m_version;
 	bool	CheckFileExists(int sock,char *AuthenticationString,char *offset, char *patt);
-	char	**GetDirectoryContent(int sock,char *AuthenticationString,char *offset,int *numFiles);
+	char	**GetDirectoryContent(Context &ctx,int sock,char *AuthenticationString,char *offset,int *numFiles);
 	void	FreeDirectoryContent(char **dirlist, int numElements);
 
 public:
