@@ -5214,8 +5214,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					comp.setBuildJob(buildjob);
 				}
 				if (cols>10) {
-					comp.setXpos(rs.getInt(10));
-					comp.setYpos(rs.getInt(11));
+					comp.setXpos(rs.getInt(11));
+					comp.setYpos(rs.getInt(12));
 					
 				}
 				ret.add(comp);
