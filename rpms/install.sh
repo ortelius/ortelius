@@ -209,30 +209,6 @@ if [ ! -d "deployhub-install" ]; then
 fi  
 cd deployhub-install
 
-rm -f deployhub-pro-engine-8.*-1.x86_64.rpm 2>/dev/null
-rm -f deployhub-pro-webadmin-8.*-1.x86_64.rpm 2>/dev/null
-rm -f deployhub-engine-8.*-1.x86_64.rpm 2>/dev/null
-rm -f deployhub-webadmin-8.*-1.x86_64.rpm 2>/dev/null
-
-WEBADMIN=`curl -s http://www.openmakesoftware.com/qa/ |grep ".rpm" |  grep "deployhub-webadmin" | cut -d "=" -f2 | cut -d">" -f1 | sed 's/"//g' | head -1`
-ENGINE=`curl -s http://www.openmakesoftware.com/qa/ |grep ".rpm" |  grep "deployhub-engine" | cut -d "=" -f2 | cut -d">" -f1 | sed 's/"//g' | head -1`
-
-echo Downloading $ENGINE
-curl -m 600 -s -L http://www.openmakesoftware.com/qa/$ENGINE -o $ENGINE
-
-echo Downloading $WEBADMIN
-curl -m 600 -s -L http://www.openmakesoftware.com/qa/$WEBADMIN -o $WEBADMIN
-
-if [ "${DIST}" = "el7" ] || [ "${DIST}" = "fc22" ]; then
- echo Downloading openvas-smb-1.0.1-0.2.$DIST.art.x86_64.rpm
- curl -m 600 -s -L http://www.openmakesoftware.com/re/rpms/openvas-smb-1.0.1-0.2.$DIST.art.x86_64.rpm -o openvas-smb-1.0.1-0.2.$DIST.art.x86_64.rpm
-fi 
-
-if [ "${DIST}" = "el6" ] || [ "${DIST}" = "fc23" ] || [ "${DIST}" = "fc24" ]; then
- echo Downloading openvas-smb-1.0.1-1.$DIST.art.x86_64.rpm
- curl -m 600 -s -L http://www.openmakesoftware.com/re/rpms/openvas-smb-1.0.1-1.$DIST.art.x86_64.rpm -o openvas-smb-1.0.1-1.$DIST.art.x86_64.rpm
-fi 
-
 if [ "${DIST}" = "el7" ] || [ "${DIST}" = "el6" ]; then
  if [ "${DIST}" = "el7" ]; then
   echo Installing epel-release-7-9.noarch.rpm	 
