@@ -3,5 +3,5 @@
   This view is used to render the installed plugins page.
 -->
 <div>
-  Allows DeployHub to Deploy an Application
+  Allows DeployHub to track builds against Components and to optionally deploy an Application
 </div>

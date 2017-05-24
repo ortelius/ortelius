@@ -1,0 +1,15 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  <j:set var="desc" value="${it.getDescription(job)}"/>
+  <j:set var="tooltipdesc" value="${it.getToolTip(job)}"/>
+  <j:set var="relativeDisplayName" value="${job.getRelativeDisplayNameFrom(currentView.owner.itemGroup)}"/>
+  <j:set var="widthAttribute" value="width: ${it.getColumnWidth()}px;word-wrap: break-word;white-space:normal;"/>
+  <td>
+    <j:if test="${it.isDisplayName()}">
+      <a href="${jobBaseUrl}${job.shortUrl}" class='model-link inside'>${relativeDisplayName != null ? relativeDisplayName : job.displayName}</a><br/>
+    </j:if>
+    <div tooltip="${app.markupFormatter.translate(tooltipdesc)}" style="${it.isForceWidth() ? widthAttribute : null}">
+      <j:out value="${app.markupFormatter.translate(desc)}"/>
+    </div>
+  </td>
+</j:jelly>

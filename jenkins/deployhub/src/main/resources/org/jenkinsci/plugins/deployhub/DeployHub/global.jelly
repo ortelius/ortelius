@@ -12,9 +12,9 @@
     tags they use. Views are always organized according to its owner class,
     so it should be straightforward to find them.
   -->
-  <f:section title="Release Engineer">
+  <f:section title="DeployHub">
     <f:entry title="Server URL" field="serverURL"
-      description="The URL of the Release Engineer server">
+      description="The URL of the DeployHub server">
       <f:textbox />
     </f:entry>
   </f:section>

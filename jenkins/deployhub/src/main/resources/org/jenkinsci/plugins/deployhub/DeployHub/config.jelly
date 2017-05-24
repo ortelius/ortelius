@@ -18,10 +18,11 @@
 	<f:section title="Deploy Application">
 	<f:block>
 	<table>
-		<f:optionalBlock	name="deployApplication"
+		<f:optionalBlock	field="deployApplication"
 					title="Deploy Application"
 					checked="${instance.deployApplication}"
-					help="/plugin/release_engineer/help-deployapp.html">
+					help="/plugin/deployhub/help-deployapp.html"
+					inline="true">
 			<f:entry title="Target Environment" field="environment">
 				<f:textbox />
 			</f:entry>
@@ -34,21 +35,24 @@
 			<f:section title="Advanced Application Selection Options">
 			<f:block>
 			<table>
-				<f:optionalBlock	name="useAdvanced"
+				<f:optionalBlock	field="useAdvanced"
 							title="Use Advanced Version Selection"
 							checked="${instance.useAdvanced}"
-							help="/plugin/release_engineer/help-ua.html">
-					<f:optionalBlock	name="findLatestVersion"
+							help="/plugin/deployhub/help-ua.html"
+							inline="true">
+					<f:optionalBlock	field="findLatestVersion"
 								title="Find Latest Version"
 								checked="${instance.findLatestVersion}"
-								help="/plugin/release_engineer/help-flv.html">
+								help="/plugin/deployhub/help-flv.html"
+								inline="true">
 						<f:entry title="Branch Name" field="branchName">
 							<f:textbox />
 						</f:entry>
-						<f:optionalBlock	name="createNewVersion"
+						<f:optionalBlock	field="createNewVersion"
 									title="If Latest Version is approved, create a new version"
 									checked="${instance.createNewVersion}"
-									help="/plugin/release_engineer/help-cnv.html">
+									help="/plugin/deployhub/help-cnv.html"
+									inline="true">
 							<f:entry title="Create Version Task Name" field="taskname">
 								<f:textbox />
 							</f:entry>
@@ -85,29 +89,37 @@
 	<f:section title="Component Selection">
 	<f:block>
 	<table>
-		<f:optionalBlock	name="useComponent"
+		<f:optionalBlock	field="useComponent"
 					title="Component Selection"
 					checked="${instance.useComponent}"
-					help="/plugin/release_engineer/help-uc.html">
-			<f:entry title="Component Name" field="componentName" help="/plugin/release_engineer/help-cn.html">
-				<f:textbox />
-			</f:entry>
-			<f:optionalBlock	name="createNewComponent"
+					help="/plugin/deployhub/help-uc.html"
+					inline="true">
+			<f:optionalBlock	field="createNewComponent"
 						title="If component is associated with an Approved Application, create new Component Version"
 						checked="${instance.createNewComponent}"
-						help="/plugin/release_engineer/help-cncv.html">
-				<f:entry title="Branch Name" field="componentBranchName" help="/plugin/release_engineer/help-cbn.html">
+						help="/plugin/deployhub/help-cncv.html"
+						inline="true">
+				<f:entry title="Branch Name" field="componentBranchName" help="/plugin/deployhub/help-cbn.html">
 					<f:textbox />
 				</f:entry>
+				<f:entry title="All Component(s) associated with this Project">
+					<f:radio name="compsel" value="allcomps" checked="${instance.allComps}"/>
+				</f:entry>
+				<f:entry title="Component Named Below">
+					<f:radio name="compsel" value="namedcomp" checked="${instance.namedComp}" />
+				</f:entry>
 			</f:optionalBlock>
+			<f:entry title="Component Name" field="componentName" help="/plugin/deployhub/help/help-cn.html">
+				<f:textbox />
+			</f:entry>
 			<f:section title="Set Component Attributes">
 			<f:block>
 				<f:repeatable var="c" field="compatts" add="Add Attribute">
 				<table>
-				<f:entry title="Attribute Name" field="cname">
+				<f:entry title="Attribute Name" field="name">
 					<f:textbox />
 				</f:entry>
-				<f:entry title="Attribute Value" field="cvalue">
+				<f:entry title="Attribute Value" field="value">
 					<f:textbox />
 				</f:entry>
 				<f:entry title="">

@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  <th tooltip="${%DescriptionColumn.Tooltip}">
+    ${%DescriptionColumn.Header}
+  </th>
+</j:jelly>
