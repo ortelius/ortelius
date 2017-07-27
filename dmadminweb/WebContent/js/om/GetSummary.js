@@ -1295,7 +1295,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "<td><input type=\"hidden\" name=\"category_oldval\" value=\"" + category.type + category.id + "\"/></td>";
        tdedit += "</tr>";
       }
-      else if (label == "Successful Deployment Email Template" || 
+      else if (label == "Successful Deployment Template" || 
     		   label == "Approved Notify Template" ||
     		   label == "Success Notification Template" ||
     		   label == "Request Notification Template"
@@ -1327,7 +1327,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "<td><input type=\"hidden\" name=\"template_oldval\" value=\"" + oldval + "\"/></td>";
        tdedit += "</tr>";
       }
-      else if (label == "Failed Deployment Email Template" || 
+      else if (label == "Failed Deployment Template" || 
     		   label == "Rejected Notify Template" ||
     		   label == "Failure Notification Template"
     		   )

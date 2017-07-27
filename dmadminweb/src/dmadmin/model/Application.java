@@ -186,9 +186,9 @@ public class Application
 			(m_postAction != null) ? m_postAction.getLinkJSON() : null);
 		ds.addProperty(SummaryField.CUSTOM_ACTION, "Custom Action",
 			(m_customAction != null) ? m_customAction.getLinkJSON() : null);
-		ds.addProperty(SummaryField.SUCCESS_TEMPLATE, "Successful Deployment Email Template",
+		ds.addProperty(SummaryField.SUCCESS_TEMPLATE, "Successful Deployment Template",
 				(m_successTemplate != null) ? m_successTemplate.getLinkJSON() : null);
-		ds.addProperty(SummaryField.FAILURE_TEMPLATE, "Failed Deployment Email Template",
+		ds.addProperty(SummaryField.FAILURE_TEMPLATE, "Failed Deployment Template",
 				(m_failureTemplate != null) ? m_failureTemplate.getLinkJSON() : null);
 		addAttachments(ds);
 		return ds.getJSON();

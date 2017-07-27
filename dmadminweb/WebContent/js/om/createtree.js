@@ -446,7 +446,7 @@ function fs()
 	$('.ui-dialog button:nth-child(1)').button('enable');
 }
 
-function fs2(sms)
+function fs2(sms,chat)
 {
 	var addr = document.getElementById('recipient').value;
 	if (sms) {
@@ -455,7 +455,7 @@ function fs2(sms)
 		} else {
 			$('.ui-dialog button:nth-child(1)').button('disable');
 		}
-	} else {
+	} else if (!chat) {
 		var ac = addr.indexOf("@");
 		if (ac>=1 && ac < addr.length-1) {
 			$('.ui-dialog button:nth-child(1)').button('enable');
@@ -585,8 +585,9 @@ function TestNotify(tv)
 	}).done(function(data) {
 		console.log(data);
 		var sms = (data.provider == "txtlocal");
-		var sbt = sms?"Send SMS":"Send Email";
-		var rcpt = sms?data.number:data.email;
+		var chat = (data.provider == "slack" || data.provider == "hipchat");
+		var sbt = sms?"Send SMS":chat?"Send Chat Message":"Send Email";
+		var rcpt = sms?data.number:chat?"":data.email;
 		var buttons = [
            	{
            		text : sbt,
@@ -604,7 +605,7 @@ function TestNotify(tv)
 		pwd.html(
 				"<form id=\"notifyForm\">"
 				+ "Send Test Notification to:<br><br>"
-				+ "<input onkeyup=\"fs2("+sms+");\" name=\"recipient\" value=\""+rcpt+"\" id=\"recipient\" size=\"40\" type=\"input\"><br><br>"
+				+ "<input onkeyup=\"fs2("+sms+","+chat+");\" name=\"recipient\" value=\""+rcpt+"\" id=\"recipient\" size=\"40\" type=\"input\"><br><br>"
 				+ "</form>"
 		);
 		pwd.dialog({open : null});
@@ -612,7 +613,7 @@ function TestNotify(tv)
 		pwd.dialog("option", "height", "auto");
 		pwd.dialog("option", "width", "400px");
 		pwd.dialog("option", "buttons", buttons);
-		fs2(sms);
+		fs2(sms,chat);
 		pwd.dialog('open');
 	});
 	

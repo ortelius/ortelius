@@ -802,7 +802,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "<td><input type=\"hidden\" name=\"category_oldval\" value=\"" + category.type + category.id + "\"/></td>";
        tdedit += "</tr>";
       }
-      else if (label == "Successful Deployment Email Template")
+      else if (label == "Successful Deployment Template")
       {
        var template = val;
        if (typeof template.name == "undefined")
@@ -823,7 +823,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "<td><input type=\"hidden\" name=\"template_oldval\" value=\"" + template.type + template.id + "\"/></td>";
        tdedit += "</tr>";
       }
-      else if (label == "Failed Deployment Email Template")
+      else if (label == "Failed Deployment Template")
       {
        var template = val;
        if (typeof template.name == "undefined")
