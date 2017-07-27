@@ -231,4 +231,16 @@ private:
 	friend class ServerDropzone;
 };
 
+typedef enum message_type_t {
+MESSAGE_TYPE_SOAP	= 1,
+MESSAGE_TYPE_POST   = 2,
+MESSAGE_TYPE_GET    = 3
+} MESSAGE_TYPE;
+
+DMAPI_API bool getConnectionDetails(const char *fullurl,char **server,int *port,bool *secure,char **url);
+DMAPI_API int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
+			  const char *params, MESSAGE_TYPE mt, bool isSecure,const char *host, 
+			  const char *soapaction, DMArray *cookieJar, DMArray *header,	// content
+			  int *status, char **contentType, char **content,char *logfilename=NULL);
+
 #endif /*__dm_h*/

@@ -7383,7 +7383,9 @@ void Model::getArgsForAction(Action &action)
 			"select aa.name, aa.inpos, aa.required, aa.pad, "
 			"  aa.switchmode, aa.switch, aa.negswitch, aa.type "
 			"from dm_actionarg aa "
-			"where aa.actionid = %d order by aa.outpos ", action.id());
+			"where aa.actionid = %d order by %s", 
+			action.id(),
+			action.isFunction()?"aa.inpos":"aa.outpos");
 	if(IS_NOT_SQL_SUCCESS(res)) {
 		return;
 	}

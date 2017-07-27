@@ -46,6 +46,8 @@
 
 #include "../plugins/restful/include/xml2json.hpp"
 
+#include "zip.h"
+
 extern char *base64encode(unsigned char *data, unsigned long datalen);
 extern unsigned char *decryptbase64(char *md,int *retlen);
 
@@ -312,6 +314,46 @@ Expr *function_obj_dropzone_dir(int argc, Expr *self, Expr **argv, Context &ctx)
 {
 	Dropzone *dz = (Dropzone*) self->toObjectReference()->toIObject();
 	return new Expr(dz->pathname());
+}
+
+Expr *function_obj_dropzonefile_dir(int argc, Expr *self, Expr **argv, Context &ctx)
+{
+	DropzoneFile *dzf = (DropzoneFile*) self->toObjectReference()->toIObject();
+	DMArray *res = new DMArray(false,false,false);
+	// Let's see if this is a directory
+	struct stat t;
+	if (stat(dzf->dropzoneFilename(),&t)==0) {
+		if (!(t.st_mode & STAT_IS_DIRECTORY)) {
+			// Regular file = let's see if it's an archive
+			int err;
+			struct zip *zfp = zip_open(dzf->dropzoneFilename(),0,&err);
+			if (zfp) {
+				// Looks like it's opened okay - must be a zip or a war/jar or something
+				// There HAS to be a dropzone on the stack 'cos we're being called from a
+				// dropzonefile object and the only way to get here is via a dropzone (even
+				// if we're recursing into a zipfile).
+				//
+				Scope *dzscope = ctx.stack().getScope(DROPZONE_SCOPE);
+				Dropzone *dz = dzscope ? (Dropzone*) dzscope->getScopeObject() : NULL;
+				if (dz) {
+					zip_int64_t num = zip_get_num_entries(zfp,0);
+					for (zip_int64_t i=0;i<num;i++) {
+						struct zip_stat zt;
+						zip_stat_index(zfp,i,0,&zt);
+						// A directory ends with a / - do not add directories
+						int namelen = strlen(zt.name);
+						if (zt.name[namelen - 1] != '/') {
+							DropzoneFile *dzf = new DropzoneFile(*dz,zt.name,zt.size,zt.mtime);
+							res->put(zt.name,new Variable(NULL,dzf));
+						}
+					}
+				}
+				zip_close(zfp);
+			}
+		}
+	}
+	
+	return new Expr(res);
 }
 
 Expr *function_obj_dropzone_delete(int argc, Expr *self, Expr **argv, Context &ctx)
@@ -757,6 +799,7 @@ DMObjFnTable obj_fn_table[] = {
 	{ "deptime",		KIND_OBJECT, OBJ_KIND_ENVIRONMENT, 1, 1, function_obj_environment_deptime },
 	{ "dirname",		KIND_OBJECT, OBJ_KIND_SERVER,      1, 1, function_obj_dirname },
 	{ "dir",			KIND_OBJECT, OBJ_KIND_DROPZONE,    0, 0, function_obj_dropzone_dir },
+	{ "dir",			KIND_OBJECT, OBJ_KIND_DROPZONEFILE,0, 0, function_obj_dropzonefile_dir },
 	{ "filter",			KIND_ARRAY,  OBJ_KIND_NONE,        1, 1, function_obj_array_filter },
 	{ "find",			KIND_OBJECT, OBJ_KIND_DROPZONE,    1, 1, function_obj_dropzone_find },
 	{ "flatten",		KIND_ARRAY,  OBJ_KIND_NONE,        0, 0, function_obj_array_flatten },

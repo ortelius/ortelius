@@ -123,7 +123,10 @@ int executeAndCapture(
 			execv(argv[0],argv);
 		}
 		ErrNum=errno;
-		perror("exec failed");	// ### This lets us see why something failed
+		char *errmsg = (char *)malloc(strlen(argv[0])+128);
+		sprintf(errmsg,"Failed to exec \"%s\"",argv[0]);
+		perror(errmsg);	// ### This lets us see why something failed
+		free(errmsg);
 		//
 		// If we got here the program failed to run. Write the value of "errno" to
 		// the IPC pipe to allow our parent to determine why we failed to run.

@@ -60,6 +60,8 @@ private:
 	bool m_isdeleted;
 	DMINT32 m_size;
 	char *m_md5;
+	bool m_zipfile;
+	time_t m_modtime;
 
 public:
 	DropzoneFile(
@@ -70,6 +72,10 @@ public:
 	DropzoneFile(
 		class IDropzone &dz, class DropzoneFile *basedOn,
 		const char *dzpath, bool iscreated, bool ismodified);
+
+	// For results of a dir on a zipfile
+	DropzoneFile(
+		IDropzone &dz, const char *dzpath, DMINT32 size, time_t modtime);
 
 	~DropzoneFile();
 

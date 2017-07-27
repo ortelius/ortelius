@@ -1253,6 +1253,7 @@ public:
 	const char *filepath()			{ return m_filepath; }
 	const char *shell()				{ return m_shell; }
 	bool useTTY()					{ return m_useTTY; }
+	bool isFunction()				{ return m_isFunction; }
 
 	const char *filepath(ServerType &type);
 	Hashtable<ActionArg> *getActionArgMap();

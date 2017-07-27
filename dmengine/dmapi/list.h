@@ -73,6 +73,7 @@ public:
 	ListIterator<T>(const List<T> &list);
 	T *first();
 	T *next();
+	int size();
 };
 
 

@@ -631,12 +631,21 @@ List<TransferResult> *RtiTransferProviderImpl::transferToServer(const char *drop
 						const char *szErrorText = errortext?errortext->GetText():"";
 						if (szDir && szFile) {
 							ServerType *st = m_target.serverType();
-							char sepchr = (st && stricmp(st->hosttype(),"windows"))?'\\':'/';
-							if (szError[0]=='Y') {
-								ctx.dm().writeToStdErr("ERROR: Failed to Deploy File %s -> %s:%s%c%s: %s",szFile,m_target.name(),szDir,sepchr,szFile,szErrorText);
-							} else {
-								ctx.dm().writeToStdOut("INFO: Deployed File %s -> %s:%s%c%s",szFile,m_target.name(),szDir,sepchr,szFile);
+							char sepchr = (st && stricmp(st->hosttype(),"windows")==0)?'\\':'/';
+							// Let's get the paths consistent
+							char *tgtpath = (char *)malloc(strlen(szDir)+strlen(szFile)+10);
+							sprintf(tgtpath,"%s%c%s",szDir,sepchr,szFile);
+							char *p=tgtpath;
+							while (*p) {
+								if (*p=='\\' || *p=='/') *p=sepchr;
+								p++;
 							}
+							if (szError[0]=='Y') {
+								ctx.dm().writeToStdErr("ERROR: Failed to Deploy File %s -> %s:%s: %s",szFile,m_target.name(),tgtpath);
+							} else {
+								ctx.dm().writeToStdOut("INFO: Deployed File %s -> %s:%s",szFile,m_target.name(),tgtpath);
+							}
+							free(tgtpath);
 						}
 
 						for(TiXmlElement *node = file->FirstChildElement(); node; node = node->NextSiblingElement()) {

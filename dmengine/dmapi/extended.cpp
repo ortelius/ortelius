@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <sys\types.h>
 #include <sys\stat.h>
+#include <direct.h>
 #else
 #include <pthread.h>
 #include <unistd.h>
@@ -28,6 +29,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <pwd.h>
 #endif /*WIN32*/
 
 #include <stdio.h>
@@ -58,7 +60,7 @@
 #include "audit.h"
 //#include "engineconfig.h"
 #include "task.h"
-
+#include "zip.h"
 
 // Just so we can register the impls
 #include "../extended/alter/alter.h"
@@ -419,6 +421,101 @@ public:
 };
 
 ///////////////////////////////////////
+// ZipAdd
+///////////////////////////////////////
+
+class ZipAddStmtImpl : public virtual ExtendedStmtImpl
+{
+private:
+	ExtendedStmt	&m_parent;
+	bool			m_autoDelete;
+	char			**m_dzfiles;
+	long			m_numFiles;
+	char			*m_zipfileName;
+	struct zip		*m_zfp;
+	bool			m_existing;
+	zip_int64_t		m_numEntries;
+	void			AddFile(class Context &ctx,Dropzone &dz,class Variable *v,const char *offset);
+	void			CreateDirectories(char *dirname);
+
+public:
+	ZipAddStmtImpl(ExtendedStmt &parent);
+	~ZipAddStmtImpl();
+	void execute(class Context &ctx);
+};
+
+
+class ZipAddStmtImplFactory : public virtual ExtendedStmtImplFactory
+{
+public:
+	ZipAddStmtImplFactory();
+	bool allowsBody()    { return false; }
+	bool allowsPrePost() { return false; }
+	bool isThreaded()    { return false; }
+	ExtendedStmtImpl *create(DM &dm, ExtendedStmt &parent);
+};
+
+///////////////////////////////////////
+// ZipDel
+///////////////////////////////////////
+
+class ZipDelStmtImpl : public virtual ExtendedStmtImpl
+{
+private:
+	ExtendedStmt	&m_parent;
+	void			RemoveFile(Context &ctx,Variable *v);
+	struct zip		*m_zfp;
+	char			*m_zipfileName;
+
+public:
+	ZipDelStmtImpl(ExtendedStmt &parent);
+	~ZipDelStmtImpl();
+
+	void execute(class Context &ctx);
+};
+
+
+class ZipDelStmtImplFactory : public virtual ExtendedStmtImplFactory
+{
+public:
+	ZipDelStmtImplFactory();
+	bool allowsBody()    { return false; }
+	bool allowsPrePost() { return false; }
+	bool isThreaded()    { return false; }
+	ExtendedStmtImpl *create(DM &dm, ExtendedStmt &parent);
+};
+
+///////////////////////////////////////
+// ZipGet
+///////////////////////////////////////
+
+class ZipGetStmtImpl : public virtual ExtendedStmtImpl
+{
+private:
+	ExtendedStmt	&m_parent;
+	void			GetFile(Context &ctx,Dropzone &dz,Variable *v);
+	struct zip		*m_zfp;
+	char			*m_zipfileName;
+
+public:
+	ZipGetStmtImpl(ExtendedStmt &parent);
+	~ZipGetStmtImpl();
+
+	void execute(class Context &ctx);
+};
+
+
+class ZipGetStmtImplFactory : public virtual ExtendedStmtImplFactory
+{
+public:
+	ZipGetStmtImplFactory();
+	bool allowsBody()    { return false; }
+	bool allowsPrePost() { return false; }
+	bool isThreaded()    { return false; }
+	ExtendedStmtImpl *create(DM &dm, ExtendedStmt &parent);
+};
+
+///////////////////////////////////////
 // Read
 ///////////////////////////////////////
 
@@ -663,6 +760,9 @@ void ExtendedStmtImplRegistry::registerBuiltIns()
 	registerFactory("alter",		new AlterStmtImplFactory());
 	registerFactory("setatt",		new AlterStmtImplFactory());	// alternative name for alter
 	registerFactory("waitfor",		new WaitForStmtImplFactory());
+	registerFactory("zipadd",		new ZipAddStmtImplFactory());
+	registerFactory("zipdel",		new ZipDelStmtImplFactory());
+	registerFactory("zipget",		new ZipGetStmtImplFactory());
 }
 
 
@@ -1606,6 +1706,12 @@ void RenameStmtImpl::doRename(IDropzone &indz, Node &nfrom, IDropzone &outdz, No
 						write(fout,buf,n);
 					}
 					close(fin);
+#ifndef WIN32
+					char *tgtuser = getenv("DM_TARGET_USER");
+					if (!tgtuser) tgtuser="omreleng";
+					struct passwd *pwd = getpwnam(tgtuser);
+					if (pwd) fchown(fout,pwd->pw_uid,pwd->pw_gid);
+#endif
 					close(fout);
 				}
 			}
@@ -1814,6 +1920,42 @@ CreateStmtImpl::CreateStmtImpl(ExtendedStmt &parent)
 CreateStmtImpl::~CreateStmtImpl()
 {}
 
+void CreateDirectories(const char *absfilename)
+{
+	// Checks the directory in which we're going to create the file exists
+	// If it does not, attempts to create it. If THAT doesn't work, the
+	// parent directory must also be missing so we iterate up and try again
+	char *fn = strdup(absfilename);
+	char *p = fn;
+	char *ep = (char *)0;
+	while (*p) {
+		if (*p=='/' || *p=='\\') ep = p;
+		p++;
+	}
+	if (ep) {
+		*ep = '\0';
+		// fn is now the directory name.
+		printf("about to mkdir(%s)\n",fn);
+		struct stat t;
+		if (stat(fn,&t)!=0) {
+			// dir not present. Attempt to create.
+#ifdef WIN32
+			int res = _mkdir(fn);
+#else
+			int res = mkdir(fn,FILE_CREATE_PERMISSIONS);
+#endif
+			if (res != 0 && errno == ENOENT) {
+				CreateDirectories(fn);
+#ifdef WIN32
+				int res = _mkdir(fn);
+#else
+				int res = mkdir(fn,FILE_CREATE_PERMISSIONS);
+#endif
+			}
+		}
+	}
+	free(fn);
+}
 
 void CreateStmtImpl::execute(Context &ctx)
 {
@@ -1830,8 +1972,9 @@ void CreateStmtImpl::execute(Context &ctx)
 
 	CharPtr absfilename = (char*) malloc(strlen(dz.pathname()) + strlen(filename) + 3);
 	sprintf(absfilename, "%s%s%s", dz.pathname(), DIR_SEP_STR, (const char*) filename);
+	CreateDirectories(absfilename);
 	int out = open(absfilename, FILE_CREATE_PERMISSIONS, FILE_CREATE_MODE);
-	if (out) {
+	if (out > 0) {
 		// file was created okay
 		
 		Node* nStream = m_parent.getArgNode("stream");
@@ -1849,6 +1992,12 @@ void CreateStmtImpl::execute(Context &ctx)
 			//
 			write(out,stream->buffer(),stream->size());
 		}
+#ifndef WIN32
+			char *tgtuser = getenv("DM_TARGET_USER");
+			if (!tgtuser) tgtuser="omreleng";
+			struct passwd *pwd = getpwnam(tgtuser);
+			if (pwd) fchown(out,pwd->pw_uid,pwd->pw_gid);
+#endif
 		close(out);
 		DropzoneFile *df = new DropzoneFile(dz, NULL, filename, true, false);	// created
 		dz.addFile(df);
@@ -1872,6 +2021,572 @@ ExtendedStmtImpl *CreateStmtImplFactory::create(DM &dm, ExtendedStmt &parent)
 {
 	return new CreateStmtImpl(parent);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// ZipAddStmtImpl
+///////////////////////////////////////////////////////////////////////////////
+
+ZipAddStmtImpl::ZipAddStmtImpl(ExtendedStmt &parent)
+	: m_parent(parent)
+{
+	m_autoDelete = false;
+	m_dzfiles = (char **)0;
+	m_numFiles = 0;
+	m_zipfileName = (char *)0;
+	m_zfp = (struct zip *)0;
+	m_existing = false;
+	m_numEntries = 0;
+}
+
+
+ZipAddStmtImpl::~ZipAddStmtImpl()
+{
+	if (m_dzfiles) {
+		for (int i=0;i<m_numFiles;i++) {
+			free(m_dzfiles[i]);
+		}
+		free(m_dzfiles);
+	}
+}
+
+void ZipAddStmtImpl::CreateDirectories(char *dirname)
+{
+	char *fn = strdup(dirname);
+	char *p = fn;
+	char *ep = (char *)0;
+	while (*p) {
+		if (*p=='/' || *p=='\\') ep = p;
+		p++;
+	}
+	if (ep) {
+		// found a dir sep char - break at this point, add the dir to the zip and iterate
+		*ep='\0';
+		zip_dir_add(m_zfp,fn,ZIP_FL_OVERWRITE);
+		CreateDirectories(fn);
+	}
+	free(fn);
+}
+
+void ZipAddStmtImpl::AddFile(Context &ctx,Dropzone &dz,Variable *v,const char *offset)
+{
+	char *tgtfile = (char *)0;
+	char *fileToAdd = (char *)0;
+	if (v->type() == vartype_object) {
+		ObjectReference *objref = v->getObjectReference();
+		if (objref->kind() != OBJ_KIND_DROPZONEFILE) {
+			throw RuntimeError(m_parent, ctx.stack(),
+				"'files[%s]' is not a valid DropzoneFile object",offset);
+		}
+		DropzoneFile *dzf = (DropzoneFile *)objref->toObject();
+		tgtfile = (char *)malloc(strlen(dz.pathname())+strlen(dzf->dzpath())+10);
+		sprintf(tgtfile,"%s%s%s",dz.pathname(),DIR_SEP_STR,dzf->dzpath());
+		fileToAdd = (char *)dzf->dzpath();
+		if (m_autoDelete) dzf->markAsDeleted();
+	}
+	else if (v->type() == vartype_string) {
+		// We've been passed a filename.
+		fileToAdd = v->toString();
+		tgtfile = (char *)malloc(strlen(dz.pathname())+strlen(fileToAdd)+10);
+		sprintf(tgtfile,"%s%s%s",dz.pathname(),DIR_SEP_STR,fileToAdd);
+		if (m_autoDelete) {
+			DropzoneFile *dzf = dz.getFile(fileToAdd);
+			if (dzf) dzf->markAsDeleted();
+		}
+	}
+	if (tgtfile) {
+		// Check that the file exists. If this has come from a dropzonefile object then it should do
+		// but it may have been passed as an actual filename. Note, zip_source_file_create doesn't read
+		// the file until it comes to create the zipfile (on zip_close). If we left the error to be 
+		// picked up there, we wouldn't know what file was missing
+		struct stat t;
+		if (stat(tgtfile,&t)!=0) {
+			free(tgtfile);
+			throw RuntimeError("Cannot add file %s to zipfile: %s",fileToAdd,strerror(errno));
+		}
+		
+	}
+	struct zip_source *sf = zip_source_file(m_zfp,tgtfile,0,0);
+	if (!sf) {
+		free(tgtfile);
+		throw RuntimeError(m_parent, ctx.stack(),"Failed to open file '%s':%s",fileToAdd,zip_strerror(m_zfp));
+	}
+	CreateDirectories(fileToAdd);
+	zip_int64_t index = zip_file_add(m_zfp,fileToAdd,sf,ZIP_FL_OVERWRITE);
+	if (index < 0) {
+		free(tgtfile);
+		throw RuntimeError(m_parent, ctx.stack(),"Failed to add file %s to archive",fileToAdd);
+	} else {
+		if (index >= m_numEntries) {
+			// Must be new file
+			ctx.writeToStdOut("INFO: Adding File \"%s\" to %s zipfile \"%s\"",fileToAdd,m_existing?"existing":"new",m_zipfileName);
+		} else {
+			// existing index - must be existing file
+			ctx.writeToStdOut("INFO: Replacing File \"%s\" in zipfile \"%s\"",fileToAdd,m_zipfileName);
+		}
+	}
+	if (m_autoDelete) {
+		m_numFiles++;
+		if (m_dzfiles) {
+			m_dzfiles = (char **)realloc(m_dzfiles,sizeof(char *)*m_numFiles);
+		} else {
+			m_dzfiles = (char **)malloc(sizeof(char *)*m_numFiles);
+		}
+		m_dzfiles[m_numFiles-1] = tgtfile;
+		
+	}
+}
+
+void ZipAddStmtImpl::execute(Context &ctx)
+{
+	ConstCharPtr sfilename = m_parent.getArgAsString("zipfile", ctx);
+	m_zipfileName = sfilename ? Dropzone::slashify(sfilename) : NULL;
+
+	if (!m_zipfileName) {
+		throw RuntimeError(m_parent, ctx.stack(),"zipfile must be specified");
+	}
+
+	bool popdz = false;
+	Dropzone &dz = m_parent.pushDropzone(popdz, ctx);
+
+	CharPtr absfilename = (char*) malloc(strlen(dz.pathname()) + strlen(m_zipfileName) + 3);
+	sprintf(absfilename, "%s%s%s", dz.pathname(), DIR_SEP_STR, (const char*) m_zipfileName);
+	// Check if the archive already exists.
+	struct stat t;
+	m_existing=(stat(absfilename,&t)==0);
+
+	int ziperr;
+	m_zfp = zip_open(absfilename,ZIP_CREATE,&ziperr);
+	if (!m_zfp) {
+		throw RuntimeError(m_parent, ctx.stack(),"Failed to open or create zipfile (error %d)",ziperr);
+	}
+	m_numEntries = zip_get_num_entries(m_zfp,0);
+	// printf("m_existing=%s m_numEntries=%d\n",m_existing?"true":"false",m_numEntries);
+
+	Node *nFiles = m_parent.getArgNode("files");
+	Node *nFile = m_parent.getArgNode("file");
+	Node *nAutoDelete = m_parent.getArgNode("delete");
+	if (nAutoDelete) {
+		Expr *ad = nAutoDelete->evaluate(ctx);
+		m_autoDelete = ad->toBool();
+	}
+	if (nFile && nFiles) throw RuntimeError(m_parent, ctx.stack(), "'files' and 'file' parameters are mutually exclusive");
+	if (nFiles) {
+		// files: specified - create zip file from array of DropzoneFile objects
+		Expr *e = nFiles->evaluate(ctx);
+		if (e->kind() != KIND_ARRAY) {
+			throw RuntimeError(m_parent, ctx.stack(),
+				"'files' parameter is not an array of DropzoneFile objects");
+		}
+		// Files is hopefully an array of DropzoneFile objects
+		DMArray *arr = e->toArray();
+		
+		if (arr->isList()) {
+			// If a list, just loop through the keys in sequence
+			for (int i=0;i<arr->count();i++) {
+				char buf[32];
+				sprintf(buf,"%d",i);
+				Variable *v = arr->get(buf);
+				AddFile(ctx,dz,v,buf);
+			}
+		} else {
+			// Associative Array
+			AutoPtr<ExprList> keys = e->array_keys();
+			ListIterator<Expr> iter(*keys);
+			for(Expr *k = iter.first(); k; k = iter.next()) { 
+				ConstCharPtr str = k->toString();
+				Variable *v = arr->get(str);
+				AddFile(ctx,dz,v,(const char *)str);
+			}
+		}
+	}
+	if (nFile) {
+		// file: specified. This can be either a filename or a dropzonefile object. If a filename
+		// we can have an optional stream parameter which allows us to create a file "on the fly"
+		// from a stream and add the result directly into the zipfile.
+		Expr *e = nFile->evaluate(ctx);
+		if (e->kind() == KIND_OBJECT) {
+			printf("file is an object\n");
+			// Files refers to a single DropzoneFile object
+			ObjectReference *oDropzoneFileObjectRef = e->toObjectReference();
+			if (oDropzoneFileObjectRef) {
+				AddFile(ctx,dz,new Variable(NULL,oDropzoneFileObjectRef),NULL);
+			}
+		} else if (e->kind() == KIND_STR) {
+			// This is just a filename. We should do some sanity checking to make
+			// sure the file exists before calling AddFile
+			char *fileToAdd = e->toString();
+			Node *nStream = m_parent.getArgNode("stream");
+			if (!nStream) {
+				// No Stream parameter given. Add the file
+				AddFile(ctx,dz,new Variable(NULL,fileToAdd),NULL);
+			} else {
+				// With a stream parameter, the "file" is created from the content of the
+				// stream and added to the zipfile.
+				Expr *es = nStream->evaluate(ctx);
+				if (es->kind() != KIND_STREAM) {
+					throw RuntimeError(m_parent, ctx.stack(),
+						"passed 'stream' parameter is not a stream");
+				}
+				OutputStream *stream = es->toStream();
+				// Take a copy of the stream buffer. The 4th param to zip_source_buffer is
+				// 1 to tell libzip to free it when it's finished (so we don't have to worry about
+				// it).
+				void *FileData = malloc(stream->size());
+				memcpy(FileData,stream->buffer(),stream->size());
+				struct zip_source *sf = zip_source_buffer(m_zfp,FileData,stream->size(),1);
+				if (!sf) {
+					throw RuntimeError(m_parent, ctx.stack(),"Failed to create buffer from stream: %s",zip_strerror(m_zfp));
+				}
+				CreateDirectories(fileToAdd);
+				zip_int64_t index = zip_file_add(m_zfp,fileToAdd,sf,ZIP_FL_OVERWRITE);
+				if (index < 0) {
+					throw RuntimeError(m_parent, ctx.stack(),"Failed to add file %s to archive",fileToAdd);
+				} else {
+					if (index >= m_numEntries) {
+						// Must be new file
+						ctx.writeToStdOut("INFO: Adding File \"%s\" to %s archive \"%s\"",fileToAdd,m_existing?"existing":"new",m_zipfileName);
+					} else {
+						// existing index - must be existing file
+						ctx.writeToStdOut("INFO: Replacing File \"%s\" in archive \"%s\"",fileToAdd,m_zipfileName);
+					}
+				}
+			}
+		}
+	}
+
+	int res = zip_close(m_zfp);	// create the final zipfile.
+	if (res != 0) {
+		throw RuntimeError(m_parent,ctx.stack(),"Failed to create zip file %s: %s",m_zipfileName,zip_strerror(m_zfp));
+	}
+	if (!m_existing) {
+		// New archive - add to dropzone
+		DropzoneFile *df = new DropzoneFile(dz, NULL, m_zipfileName, true, false);
+		dz.addFile(df);
+	}
+	if (m_autoDelete) {
+		// Remove files from dropzone that were added to archive
+		for (int i=0;i<m_numFiles;i++) {
+			CHMOD(m_dzfiles[i],FILE_WRITE_PERMISSIONS);
+			if (unlink(m_dzfiles[i]) != 0) {
+				throw RuntimeError(m_parent,ctx.stack(),"Failed to remove file %s from dropzone",m_dzfiles[i]);
+			}
+		}
+	}
+
+	if(popdz) {
+		ctx.stack().pop(DROPZONE_SCOPE);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ZipAddImplFactory
+///////////////////////////////////////////////////////////////////////////////
+
+ZipAddStmtImplFactory::ZipAddStmtImplFactory()
+{}
+
+
+ExtendedStmtImpl *ZipAddStmtImplFactory::create(DM &dm, ExtendedStmt &parent)
+{
+	return new ZipAddStmtImpl(parent);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// ZipDelStmtImpl
+///////////////////////////////////////////////////////////////////////////////
+
+ZipDelStmtImpl::ZipDelStmtImpl(ExtendedStmt &parent)
+	: m_parent(parent)
+{
+	m_zfp = (struct zip *)0;
+	m_zipfileName = (char *)0;
+}
+
+
+ZipDelStmtImpl::~ZipDelStmtImpl()
+{}
+
+void ZipDelStmtImpl::RemoveFile(Context &ctx,Variable *v)
+{
+	char *fileToDel = (char *)0;
+	if (v->type() == vartype_object) {
+		ObjectReference *objref = v->getObjectReference();
+		if (objref->kind() != OBJ_KIND_DROPZONEFILE) {
+			throw RuntimeError(m_parent, ctx.stack(),"not a DropzoneFile object");
+		}
+		DropzoneFile *dzf = (DropzoneFile *)objref->toObject();
+		fileToDel = (char *)dzf->dzpath();
+	}
+	else if (v->type() == vartype_string) {
+		// We've been passed a filename.
+		fileToDel = v->toString();
+	}
+
+	zip_int64_t index = zip_name_locate(m_zfp,fileToDel,0);
+	printf("index is %d\n",index);
+	if (index >=0) {
+		int dres = zip_delete(m_zfp,index);
+		if (dres==0) {
+			ctx.writeToStdOut("INFO: Removed file \"%s\" from archive \"%s\"",fileToDel,m_zipfileName);
+		} else {
+			printf("dres=%d err=%s\n",dres,zip_strerror(m_zfp));
+		}
+	} else {
+		ctx.writeToStdOut("WARNING: Could not find file \"%s\" in archive \"%s\"",fileToDel,m_zipfileName);
+	}
+}
+
+void ZipDelStmtImpl::execute(Context &ctx)
+{
+	ConstCharPtr sfilename = m_parent.getArgAsString("zipfile", ctx);
+	m_zipfileName = sfilename ? Dropzone::slashify(sfilename) : NULL;
+
+	if (!m_zipfileName) {
+		throw RuntimeError(m_parent, ctx.stack(),"zipfile must be specified");
+	}
+
+	bool popdz = false;
+	Dropzone &dz = m_parent.pushDropzone(popdz, ctx);
+
+	CharPtr absfilename = (char*) malloc(strlen(dz.pathname()) + strlen(m_zipfileName) + 3);
+	sprintf(absfilename, "%s%s%s", dz.pathname(), DIR_SEP_STR, (const char*) m_zipfileName);
+
+	Node *nFiles = m_parent.getArgNode("files");
+	Node *nFile = m_parent.getArgNode("file");
+	if (nFile && nFiles) throw RuntimeError(m_parent, ctx.stack(), "'files' and 'file' parameters are mutually exclusive");
+	
+	int ziperr;
+	m_zfp = zip_open(absfilename,0,&ziperr);
+	if (!m_zfp) {
+		throw RuntimeError(m_parent, ctx.stack(),"Failed to open zipfile (error %d)",ziperr);
+	}
+
+	if (nFiles) {
+		// files: specified - assume array of DropzoneFile objects. Remove each
+		// file in the list from the archive
+		Expr *e = nFiles->evaluate(ctx);
+		if (e->kind() != KIND_ARRAY) {
+			throw RuntimeError(m_parent, ctx.stack(),
+				"'files' parameter is not an array of DropzoneFile objects");
+		}
+		// Files is hopefully an array of DropzoneFile objects
+		DMArray *arr = e->toArray();
+		
+		if (arr->isList()) {
+			// If a list, just loop through the keys in sequence
+			for (int i=0;i<arr->count();i++) {
+				char buf[32];
+				sprintf(buf,"%d",i);
+				Variable *v = arr->get(buf);
+				RemoveFile(ctx,v);
+			}
+		} else {
+			// Associative Array
+			AutoPtr<ExprList> keys = e->array_keys();
+			ListIterator<Expr> iter(*keys);
+			for(Expr *k = iter.first(); k; k = iter.next()) { 
+				ConstCharPtr str = k->toString();
+				Variable *v = arr->get(str);
+				RemoveFile(ctx,v);
+			}
+		}
+	}
+	if (nFile) {
+		// file: specified. This can be either a filename or a dropzonefile object.
+		Expr *e = nFile->evaluate(ctx);
+		if (e->kind() == KIND_OBJECT) {
+			// Files refers to a single DropzoneFile object
+			ObjectReference *oDropzoneFileObjectRef = e->toObjectReference();
+			if (oDropzoneFileObjectRef) {
+				RemoveFile(ctx,new Variable(NULL,oDropzoneFileObjectRef));
+			}
+		} else if (e->kind() == KIND_STR) {
+			// This is just a filename.
+			char *fileToDel = e->toString();
+			RemoveFile(ctx,new Variable(NULL,fileToDel));
+		}
+	}
+	
+	int cres = zip_close(m_zfp);
+	if (cres == -1) {
+		throw RuntimeError(m_parent, ctx.stack(),
+			"Failed to write changes back to zipfile: %s",zip_strerror(m_zfp));
+	}
+
+	if(popdz) {
+		ctx.stack().pop(DROPZONE_SCOPE);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ZipDelImplFactory
+///////////////////////////////////////////////////////////////////////////////
+
+ZipDelStmtImplFactory::ZipDelStmtImplFactory()
+{}
+
+
+ExtendedStmtImpl *ZipDelStmtImplFactory::create(DM &dm, ExtendedStmt &parent)
+{
+	return new ZipDelStmtImpl(parent);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// ZipGetStmtImpl
+///////////////////////////////////////////////////////////////////////////////
+
+ZipGetStmtImpl::ZipGetStmtImpl(ExtendedStmt &parent)
+	: m_parent(parent)
+{
+	m_zfp = (struct zip *)0;
+	m_zipfileName = (char *)0;
+}
+
+
+ZipGetStmtImpl::~ZipGetStmtImpl()
+{}
+
+void ZipGetStmtImpl::GetFile(Context &ctx,Dropzone &dz,Variable *v)
+{
+	char *fileToGet = (char *)0;
+	if (v->type() == vartype_object) {
+		ObjectReference *objref = v->getObjectReference();
+		if (objref->kind() != OBJ_KIND_DROPZONEFILE) {
+			throw RuntimeError(m_parent, ctx.stack(),"not a DropzoneFile object");
+		}
+		DropzoneFile *dzf = (DropzoneFile *)objref->toObject();
+		fileToGet = (char *)dzf->dzpath();
+	}
+	else if (v->type() == vartype_string) {
+		// We've been passed a filename.
+		fileToGet = v->toString();
+	}
+
+	zip_int64_t index = zip_name_locate(m_zfp,fileToGet,0);
+	if (index >=0) {
+		struct zip_file *zf = zip_fopen_index(m_zfp,index,0);
+		if (zf) {
+			char *tgtfile = (char *)malloc(strlen(dz.pathname())+strlen(fileToGet)+strlen(DIR_SEP_STR)+10);
+			sprintf(tgtfile,"%s%s%s",dz.pathname(),DIR_SEP_STR,fileToGet);
+			CreateDirectories(tgtfile);
+			int w = open(tgtfile,FILE_CREATE_PERMISSIONS);
+			if (w<=0) throw RuntimeError(m_parent,ctx.stack(),"Could not open output file %s for writing",fileToGet);
+			unsigned char buf[10];
+			int br;
+			while ((br=zip_fread(zf, buf, sizeof(buf))) > 0) {
+				int n = write(w,buf,br);
+			};
+			zip_fclose(zf);
+			close(w);
+			ctx.writeToStdOut("INFO: Extracted file \"%s\" from archive \"%s\"",fileToGet,m_zipfileName);
+			DropzoneFile *df = new DropzoneFile(dz, NULL, fileToGet, true, false);
+			dz.addFile(df);
+		} else {
+			throw RuntimeError(m_parent, ctx.stack(),"file was located in archive but could not be opened");
+		}
+	} else {
+		ctx.writeToStdOut("WARNING: Could not find file \"%s\" in archive \"%s\"",fileToGet,m_zipfileName);
+	}
+}
+
+void ZipGetStmtImpl::execute(Context &ctx)
+{
+	ConstCharPtr sfilename = m_parent.getArgAsString("zipfile", ctx);
+	m_zipfileName = sfilename ? Dropzone::slashify(sfilename) : NULL;
+
+	if (!m_zipfileName) {
+		throw RuntimeError(m_parent, ctx.stack(),"zipfile must be specified");
+	}
+
+	bool popdz = false;
+	Dropzone &dz = m_parent.pushDropzone(popdz, ctx);
+
+	CharPtr absfilename = (char*) malloc(strlen(dz.pathname()) + strlen(m_zipfileName) + 3);
+	sprintf(absfilename, "%s%s%s", dz.pathname(), DIR_SEP_STR, (const char*) m_zipfileName);
+
+	Node *nFiles = m_parent.getArgNode("files");
+	Node *nFile = m_parent.getArgNode("file");
+	if (nFile && nFiles) throw RuntimeError(m_parent, ctx.stack(), "'files' and 'file' parameters are mutually exclusive");
+	
+	int ziperr;
+	m_zfp = zip_open(absfilename,0,&ziperr);
+	if (!m_zfp) {
+		throw RuntimeError(m_parent, ctx.stack(),"Failed to open zipfile (error %d)",ziperr);
+	}
+
+	if (nFiles) {
+		// files: specified - assume array of DropzoneFile objects. Remove each
+		// file in the list from the archive
+		Expr *e = nFiles->evaluate(ctx);
+		if (e->kind() != KIND_ARRAY) {
+			throw RuntimeError(m_parent, ctx.stack(),
+				"'files' parameter is not an array of DropzoneFile objects");
+		}
+		// Files is hopefully an array of DropzoneFile objects
+		DMArray *arr = e->toArray();
+		
+		if (arr->isList()) {
+			// If a list, just loop through the keys in sequence
+			for (int i=0;i<arr->count();i++) {
+				char buf[32];
+				sprintf(buf,"%d",i);
+				Variable *v = arr->get(buf);
+				GetFile(ctx,dz,v);
+			}
+		} else {
+			// Associative Array
+			AutoPtr<ExprList> keys = e->array_keys();
+			ListIterator<Expr> iter(*keys);
+			for(Expr *k = iter.first(); k; k = iter.next()) { 
+				ConstCharPtr str = k->toString();
+				Variable *v = arr->get(str);
+				GetFile(ctx,dz,v);
+			}
+		}
+	}
+	if (nFile) {
+		// file: specified. This can be either a filename or a dropzonefile object.
+		Expr *e = nFile->evaluate(ctx);
+		if (e->kind() == KIND_OBJECT) {
+			// Files refers to a single DropzoneFile object
+			ObjectReference *oDropzoneFileObjectRef = e->toObjectReference();
+			if (oDropzoneFileObjectRef) {
+				GetFile(ctx,dz,new Variable(NULL,oDropzoneFileObjectRef));
+			}
+		} else if (e->kind() == KIND_STR) {
+			// This is just a filename.
+			char *fileToDel = e->toString();
+			GetFile(ctx,dz,new Variable(NULL,fileToDel));
+		}
+	}
+
+	int cres = zip_close(m_zfp);
+	if (cres == -1) {
+		throw RuntimeError(m_parent, ctx.stack(),
+			"Failed to write changes back to zipfile: %s",zip_strerror(m_zfp));
+	}
+
+	if(popdz) {
+		ctx.stack().pop(DROPZONE_SCOPE);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ZipGetImplFactory
+///////////////////////////////////////////////////////////////////////////////
+
+ZipGetStmtImplFactory::ZipGetStmtImplFactory()
+{}
+
+
+ExtendedStmtImpl *ZipGetStmtImplFactory::create(DM &dm, ExtendedStmt &parent)
+{
+	return new ZipGetStmtImpl(parent);
+}
+
+//*****
 
 
 

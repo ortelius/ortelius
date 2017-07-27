@@ -118,18 +118,18 @@ char *base64encode(unsigned char *data, unsigned long datalen)
 #define RESTFUL_GET_NAME  "restful_get"
 #define SOAP_NAME         "soap"
 
-typedef enum message_type_t {
-MESSAGE_TYPE_SOAP	= 1,
-MESSAGE_TYPE_POST   = 2,
-MESSAGE_TYPE_GET    = 3
-} MESSAGE_TYPE;
+//typedef enum message_type_t {
+//MESSAGE_TYPE_SOAP	= 1,
+//MESSAGE_TYPE_POST   = 2,
+//MESSAGE_TYPE_GET    = 3
+//} MESSAGE_TYPE;
 
 
 #define CONTENT_TYPE_JSON     "application/json"
 #define CONTENT_TYPE_TEXTXML  "text/xml"
 #define CONTENT_TYPE_APPXML   "application/xml"
 
-
+#ifdef OLD_LOCATION
 void SendDataToSocket(int sock, const char *data, long len)
 {
 	long bytesRemaining = len;
@@ -690,6 +690,7 @@ printf("Connecting to %d.%d.%d.%d:%d...\n",
 
 	return 0;
 }
+#endif
 
 
 char *urlEncode(const char *str)

@@ -73,6 +73,7 @@
 #define SCHEMA_VERSION 2014071501L
 
 
+
 OPTIONS options[]={
 	{ "-fields",		'Y', "trifields"			},
 	{ "-validate",		'Y', "trivalidate"			},	// TODO: use this
@@ -900,6 +901,7 @@ triODBC *connectToDatabase(DM &dm, const char *homeDir)
 	if((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO)) {
 		return NULL;
 	}
+	sql->CloseSQL();
 	return odbc;
 }
 

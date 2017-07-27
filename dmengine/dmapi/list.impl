@@ -149,3 +149,8 @@ template<class T> T *ListIterator<T>::next()
 	m_pos = m_pos ? m_pos->m_next : (ListEntry<T>*)0;
 	return m_pos ? m_pos->m_obj : (T*)0;
 }
+
+template<class T> int ListIterator<T>::size()
+{
+	return m_list.size();
+}

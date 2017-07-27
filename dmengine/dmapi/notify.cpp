@@ -127,6 +127,8 @@ void NotifyProviderImplRegistry::registerFactory(const char *name, NotifyProvide
 // TODO: Remove this when we move to a DLL
 extern "C" int smtpemail_PluginStart(DM &dm);
 extern "C" int txtlocal_PluginStart(DM &dm);
+extern "C" int slack_PluginStart(DM &dm);
+extern "C" int hipchat_PluginStart(DM &dm);
 
 void NotifyProviderImplRegistry::registerBuiltIns(DM &dm)
 {
@@ -134,6 +136,8 @@ void NotifyProviderImplRegistry::registerBuiltIns(DM &dm)
 
 	smtpemail_PluginStart(dm);
 	txtlocal_PluginStart(dm);
+	slack_PluginStart(dm);
+	hipchat_PluginStart(dm);
 }
 
 

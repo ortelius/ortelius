@@ -79,11 +79,663 @@
 // For loading scripts
 #include "tinyxml.h"
 
+// For DoHttpRequest
+#include "openssl/ssl.h"
+#include "openssl/err.h"
+#include "openssl/rand.h"
+
 extern char *base64encode(unsigned char *data, unsigned long datalen);
 extern int yyparse(void *buffer);
 
+extern void InitialiseWinsock();
 
 ///////////////////////////////////////////////////////////////////////////////
+
+bool getConnectionDetails(const char *fullurl,char **server,int *port,bool *secure,char **url)
+{
+	int sp;
+	if (	tolower(fullurl[0])=='h' &&
+			tolower(fullurl[1])=='t' &&
+			tolower(fullurl[2])=='t' &&
+			tolower(fullurl[3])=='p') {
+		if (tolower(fullurl[4])=='s') {
+			*secure=true;
+			sp=5;
+		} else {
+			*secure=false;
+			sp=4;
+		}
+		//printf("sp=%d\n",sp);
+		//printf("fullurl[%d]='%c'\n",sp,fullurl[sp]);
+		if (fullurl[sp]!=':')	return true;	
+		if (fullurl[sp+1]!='/') return true;
+		if (fullurl[sp+2]!='/') return true;
+		// http://server[:port]/ or
+		// http://server/
+		char *serverport = (char *)strdup((const char *)&(fullurl[sp+3]));	// Point to server[:port]
+		char *ep = (char *)strchr(serverport,'/');
+		if (ep) {
+			// Found a /
+			*url=strdup(ep);
+			*ep='\0';
+		} else {
+			// No / - presumably just server[:port]
+			*url=strdup("");
+		}
+		// Is there a port ID?
+		char *ps = (char *)strchr(serverport,':');
+		if (ps) {
+			// There's a port specification
+			*ps='\0';
+			*port = atoi(ps+1);
+		} else {
+			// No port specified, use default
+			*port = secure?443:80;
+		}
+		*server=strdup(serverport);
+		free((void *)serverport);
+	} else {
+		// No http:// start string.
+		char *ep = (char *)strchr(fullurl,'/');
+		if (ep) {
+			*url=strdup(ep);
+			*ep='\0';
+		} else {
+			*url=strdup("");
+		}
+		char *serverport=strdup(fullurl);
+		char *ps = strchr(serverport,':');
+		if (ps) {
+			// There's a port specification
+			*ps='\0';
+			*port = atoi(ps+1);
+		} else {
+			// No port specified, use default
+			*port = 80;
+		}
+		*server=strdup(serverport);
+		free(serverport);
+	}
+	//printf("server=[%s]\n",*server);
+	//printf("port=[%d]\n",*port);
+	//printf("url=[%s]\n",url);
+}
+
+void SendDataToSocket(int sock, const char *data, long len)
+{
+	long bytesRemaining = len;
+
+	while(bytesRemaining > 0)
+	{
+        int bytesSent = send(sock, data, bytesRemaining, 0);
+        if(bytesSent == 0)
+        {
+			return;
+        }
+        else if(bytesSent == -1)
+        {
+            perror("Failed to send");
+			return;
+        }
+
+		data += bytesSent;
+		bytesRemaining -= bytesSent;
+	}
+}
+
+void SendDataToSocket(SSL *ssl, const char *data, long len)
+{
+	long bytesRemaining = len;
+
+	while(bytesRemaining > 0)
+	{
+		int bytesSent = SSL_write(ssl, data, bytesRemaining);   /* encrypt & send message */
+        if(bytesSent == 0)
+        {
+			return;
+        }
+        else if(bytesSent == -1)
+        {
+            perror("Failed to send");
+			return;
+        }
+
+		data += bytesSent;
+		bytesRemaining -= bytesSent;
+	}
+}
+
+bool ReadDataFromSocket(int sock, char *dataPtr, long length)
+{
+	// Reads "length" bytes of data from the socket.
+	// If less than "Length" bytes are read then loop.
+	//
+	long		BytesRead=0;
+	char 		*xPtr;
+	long		BytesToRead;
+	bool		res=true;
+
+	xPtr=(char *)dataPtr;
+	BytesToRead=length;
+	bool BytesRemaining=true;
+	while (BytesRemaining)
+	{
+		BytesRead=recv(sock,xPtr,BytesToRead,0);
+		if (BytesRead == -1)
+		{
+			// ShowErrorMessage("Failed to read from socket");
+			BytesRemaining=false;
+			res=false;
+			break;
+		}
+		if (BytesRead == 0)
+		{
+			// Server has closed connection.
+			// ShowErrorMessage("Server has closed connection");
+			BytesRemaining=false;
+			res=false;
+			break;
+		}
+		if (BytesRead<BytesToRead)
+		{
+			BytesToRead=BytesToRead-BytesRead;
+			xPtr=xPtr+BytesRead;
+		}
+		else
+		{
+			BytesRemaining=false;
+		}
+	}
+	return res;
+}
+
+bool ReadDataFromSocket(SSL *ssl, char *dataPtr, long length)
+{
+	// Reads "length" bytes of data from the socket.
+	// If less than "Length" bytes are read then loop.
+	//
+	long		BytesRead=0;
+	char 		*xPtr;
+	long		BytesToRead;
+	bool		res=true;
+
+	xPtr=(char *)dataPtr;
+	BytesToRead=length;
+	bool BytesRemaining=true;
+	while (BytesRemaining)
+	{
+        BytesRead = SSL_read(ssl, xPtr, BytesToRead); /* get reply & decrypt */
+		if (BytesRead == -1)
+		{
+			BytesRemaining=false;
+			res=false;
+			break;
+		}
+		if (BytesRead == 0)
+		{
+			BytesRemaining=false;
+			res=false;
+			break;
+		}
+		if (BytesRead<BytesToRead)
+		{
+			BytesToRead=BytesToRead-BytesRead;
+			xPtr=xPtr+BytesRead;
+		}
+		else
+		{
+			BytesRemaining=false;
+		}
+	}
+	return res;
+}
+
+char *ReadToEndOfStream(int sock)
+{
+	// Reads bytes of data from a socket until the end of the stream is reached.
+	//
+	int			currSize = 0;
+	char		*ret = NULL;
+	char		xBuf[1024];
+
+	while(true) {
+		long bytesRead = recv(sock, xBuf, sizeof(xBuf), 0);
+		if(bytesRead == -1) {
+			// ShowErrorMessage("Failed to read from socket");
+			break;
+		}
+		if(bytesRead == 0) {
+			// Server has closed connection.
+			break;
+		}
+
+		ret = ret ? (char*) realloc(ret, currSize + bytesRead + 1) : (char*) malloc(bytesRead + 1);
+
+		memcpy(&ret[currSize], xBuf, bytesRead);
+		currSize += bytesRead;
+		ret[currSize] = '\0';
+
+	}
+	return ret;
+}
+
+char *ReadToEndOfStream(SSL *ssl)
+{
+	// Reads bytes of data from a socket until the end of the stream is reached.
+	//
+	int			currSize = 0;
+	char		*ret = NULL;
+	char		xBuf[1024];
+
+	while(true) {	
+        long bytesRead = SSL_read(ssl, xBuf, sizeof(xBuf));
+		if(bytesRead == -1) {
+			break;
+		}
+		if(bytesRead == 0) {
+			// Server has closed connection.
+			break;
+		}
+
+		ret = ret ? (char*) realloc(ret, currSize + bytesRead + 1) : (char*) malloc(bytesRead + 1);
+
+		memcpy(&ret[currSize], xBuf, bytesRead);
+		currSize += bytesRead;
+		ret[currSize] = '\0';
+	}
+	return ret;
+}
+
+
+char *ReadLineFromSocket(int sock)
+{
+	char Reply[1024];
+	int n;
+
+	Reply[0] = '\0';
+
+	// Read up to CR-LF
+	char ch;
+	int t=0;
+	do
+	{
+		n = recv(sock,&ch,1,0);
+
+		if(n==0)
+		{
+			// Connection has been closed
+			ch='\0';
+		}
+		else if(n==1)
+		{
+			if (ch=='\n' || t>=(sizeof(Reply)-1)) ch='\0';
+			if (ch!='\r') Reply[t++]=ch;
+		}
+		else
+		{
+			break;	// recv failed
+		}
+	} while((int) ch);
+
+	return strdup(Reply);
+}
+
+char *ReadLineFromSocket(SSL *ssl)
+{
+	char Reply[1024];
+	int n;
+
+	Reply[0] = '\0';
+
+	// Read up to CR-LF
+	char ch;
+	int t=0;
+	do
+	{
+		n = SSL_read(ssl, &ch, 1);
+
+		if(n==0)
+		{
+			// Connection has been closed
+			ch='\0';
+		}
+		else if(n==1)
+		{
+			if (ch=='\n' || t>=(sizeof(Reply)-1)) ch='\0';
+			if (ch!='\r') Reply[t++]=ch;
+		}
+		else
+		{
+			break;	// recv failed
+		}
+	} while((int) ch);
+
+	return strdup(Reply);
+}
+
+SSL_CTX* InitCTX(void)
+{   
+	SSL_METHOD *method;
+    SSL_CTX *ctx;
+ 
+    OpenSSL_add_all_algorithms();  /* Load cryptos, et.al. */
+    SSL_load_error_strings();   /* Bring in and register error messages */
+    ctx = SSL_CTX_new(SSLv23_method());   /* Create new context */
+    if ( ctx == NULL )
+    {
+       ERR_print_errors_fp(stderr);
+       printf("Failed to InitCTX\n");
+    }
+	SSL_CTX_set_options(ctx, SSL_OP_ALL);
+    return ctx;
+}
+
+
+int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
+			  const char *params, MESSAGE_TYPE mt, bool isSecure,const char *host, 
+			  const char *soapaction, DMArray *cookieJar, DMArray *header,	// content
+			  int *status, char **contentType, char **content,char *logfilename /*=NULL*/)	// return
+{
+#ifdef WIN32
+	InitialiseWinsock();
+#endif
+	FILE *logfile = (FILE *)0;
+	if (logfilename) {
+		logfile = fopen(logfilename,"a+");
+	}
+	int	sock;
+	int	res;
+	char *TransferEncoding = (char *)0;
+	bool chunked=false;
+
+	bool isPost = false;
+	if (mt != MESSAGE_TYPE_GET) isPost=true;	// isPost is true for both SOAP and POST
+
+	struct hostent *hp = gethostbyname(hostname);
+	if(!hp)
+	{
+		// gethostbyname fails	
+		errno = h_errno;
+		return -1;
+	}
+	else
+	{
+		// Create a socket on which to send.
+		sock = socket(AF_INET, SOCK_STREAM, 0);
+
+		struct sockaddr_in	name;
+		name.sin_family = AF_INET;
+		name.sin_addr.s_addr = *((int *)hp->h_addr);
+		name.sin_port = htons(port);
+
+
+		if (logfile) fprintf(logfile,"Connecting to %d.%d.%d.%d:%d...\n",
+			name.sin_addr.S_un.S_un_b.s_b1, name.sin_addr.S_un.S_un_b.s_b2,
+			name.sin_addr.S_un.S_un_b.s_b3, name.sin_addr.S_un.S_un_b.s_b4, port);
+
+		res = connect(sock,(struct sockaddr*) &name, sizeof(name));
+		if(res)
+		{
+			// Connection failure
+#ifdef WIN32
+			errno = WSAGetLastError();
+#endif /*WIN32*/
+			return -2;
+		}
+		if (logfile) fprintf(logfile,"Connected\n");
+	}
+
+	SSL_CTX *ctx;
+    int server;
+    SSL *ssl;
+
+	if (isSecure) {
+		SSL_library_init();
+ 
+		ctx = InitCTX();
+		ssl = SSL_new(ctx);      /* create new SSL connection state */
+		SSL_set_fd(ssl, sock);    /* attach the socket descriptor */
+		if ( SSL_connect(ssl) == -1 ) {
+			/* perform the connection */
+			ERR_print_errors_fp(stderr);
+		}
+	}
+
+	OutputStream request(false);	// auto-newline off
+	if(!isPost && params) {
+		// Params go on the uri for GET
+		request.writeToStdOut("GET %s%s%s HTTP/1.1\r\n", uri, params[0]?"?":"",params);
+	} else {
+		// Either no params or using POST
+		// temp
+		request.writeToStdOut("%s %s HTTP/1.1\r\n", (isPost ? "POST" : "GET"), uri);
+	}
+
+	bool hostSeen=false;
+	bool userAgentSeen=false;
+	bool contentTypeSeen=false;
+	if(header && header->count() > 0) {
+		// Additional header lines
+		AutoPtr<StringList> keys = header->keys();
+		StringListIterator iter(*keys);
+		for(const char *key = iter.first(); key; key = iter.next()) {
+			Variable *var = header->get(key);
+			ConstCharPtr val = (var ? var->toString() : NULL);
+			if(val) {
+				if (STRCASECMP(key,"host")==0) hostSeen=true;
+				if (STRCASECMP(key,"user-agent")==0) userAgentSeen=true;
+				if (STRCASECMP(key,"content-type")==0) contentTypeSeen=true;
+				request.writeToStdOut("%s: %s\r\n",key,(const char*)val);
+			}
+		}
+	}
+
+	if(host && !hostSeen) {
+		// Optional host header - user for sending requests to name-based virtual hosts
+		request.writeToStdOut("Host: %s\r\n", host);
+	}
+	// Ensure User-Agent is set (github for example requires this)
+	if (!userAgentSeen) {
+		request.writeToStdOut("User-Agent: DeployHub\r\n");
+	}
+
+	if(cookieJar && (cookieJar->count() > 0)) {
+		// Add cookies from the cookie jar hashtable
+		char *cookies = (char*) malloc(1);
+		*cookies = '\0';
+		AutoPtr<StringList> keys = cookieJar->keys();
+		StringListIterator iter(*keys);
+		for(const char *key = iter.first(); key; key = iter.next()) {
+			Variable *var = cookieJar->get(key);
+			ConstCharPtr val = (var ? var->toString() : NULL);
+			if(val) {
+				debug1("Setting cookie: '%s' = '%s'", key, (const char *)val);
+				cookies = (char*) realloc(cookies, strlen(cookies) + strlen(key) + strlen(val) + 4);
+				if(*cookies) {
+					sprintf(cookies, "%s; %s=%s", cookies, key, (const char *)val);
+				} else {
+					sprintf(cookies, "%s=%s", key, (const char *)val);
+				}
+			}
+		}
+		request.writeToStdOut("Cookie: %s\r\n", cookies);
+	}
+
+	if(isPost) {
+		switch(mt) {
+			case MESSAGE_TYPE_GET:
+			case MESSAGE_TYPE_POST:
+				if (!contentTypeSeen) {
+					if (params && *params == '{') {
+						// Looks like JSON encoded string (bit rough-and-ready)
+						request.writeToStdOut("Content-Type: application/json\r\n");
+					} else {
+						request.writeToStdOut("Content-Type: application/x-www-form-urlencoded\r\n");
+					}
+				}
+				break;
+			case MESSAGE_TYPE_SOAP:
+				if (!contentTypeSeen) {
+					request.writeToStdOut("Content-Type: text/xml;charset=UTF-8\r\n");
+				}
+				if (soapaction && soapaction[0]) {
+					request.writeToStdOut("SOAPAction: \"%s\"\r\n",soapaction);
+				}
+				break;
+		}
+		request.writeToStdOut("Content-Length: %d\r\n", (params ? strlen(params) : 0));
+	}
+	request.writeToStdOut("\r\n");		// End of header
+	if(isPost && params) {
+		request.writeToStdOut("%s", params);
+	}
+
+	if (logfile) fprintf(logfile,"Request: %s\n", request.buffer());
+
+	char *line;
+	if (isSecure) {
+		SendDataToSocket(ssl, request.buffer(), request.size());
+		line = ReadLineFromSocket(ssl);
+	} else {
+		SendDataToSocket(sock, request.buffer(), request.size());
+		line = ReadLineFromSocket(sock);
+	}
+
+	if (logfile) fprintf(logfile,"line: [%s]\n",line);
+
+	if(strncmp(line, "HTTP/1.", 7) != 0) {
+		if (isSecure) {
+			SSL_free(ssl);
+		} else {
+			CLOSESOCKET(sock);
+		}
+		return -3; // Not HTTP
+	}
+
+	*status = atoi(&line[9]);
+	debug1("Status: %d", *status);
+	if (logfile) fprintf(logfile,"status: %d\n",*status);
+
+	bool noWait = (*status == 204);	// No Content
+
+
+	long length = -1;
+
+	while(true) {
+		if (isSecure) {
+			line = ReadLineFromSocket(ssl);
+		} else {
+			line = ReadLineFromSocket(sock);
+		}
+		
+		if (logfile) fprintf(logfile,"line=%s\n",line);
+		//debug1("line = %s", line);
+
+		if(!*line) break;
+
+		if(strncmp(line, "Content-Length: ", 16) == 0) {
+			length = atol(&line[16]);
+		} else if(strncmp(line, "Content-Type: ", 14) == 0) {
+			*contentType = strdup(&line[14]);
+		} else if(strncmp(line, "Set-Cookie: ", 12) == 0) {
+			if(cookieJar) {
+				char *cookie = &line[12];
+				if(*cookie == ' ') {
+					cookie++;
+				}
+				char *eq = strchr(cookie, '=');
+				if(eq) {
+					char *sc = strchr(eq, ';');
+					if(sc) {
+						*sc = '\0';
+					}
+					*eq = '\0';
+					debug1("Storing cookie: '%s' = '%s'", cookie, &eq[1]);
+					cookieJar->put(cookie, new Variable(NULL, &eq[1]));
+				}
+			}
+		} else if(strncmp(line,"Transfer-Encoding: ",19) == 0) {
+			TransferEncoding = &(line[19]);
+			// printf("TransferEncoding=[%s]\n",TransferEncoding);
+			chunked=(strcmp(TransferEncoding,"chunked")==0);
+		}
+	}
+	if (logfile) fprintf(logfile,"Length: %d\n", length);
+	if (chunked) {
+		// No length, data is arriving in chunks
+		int totalLength=0;
+		char *data = (char *)malloc(1024);	// initial chunk
+		do {
+			char *hexsize;
+			if (isSecure) {
+				hexsize = ReadLineFromSocket(ssl);
+			} else {
+				hexsize = ReadLineFromSocket(sock);
+			}
+			length = strtol(hexsize,NULL,16);
+			if (length>0) {
+				data = (char *)realloc(data,totalLength+length+1);
+				if (isSecure) {
+					ReadDataFromSocket(ssl, &(data[totalLength]), length);
+				} else {
+					ReadDataFromSocket(sock, &(data[totalLength]), length);
+				}
+				totalLength=totalLength+length;
+				// Now read trailing \r\n after the chunk of data
+				if (isSecure) {
+					ReadLineFromSocket(ssl);
+				} else {
+					ReadLineFromSocket(sock);
+				}
+			}
+		} while (length);
+		data[totalLength]='\0';
+		*content = data;
+	} else {
+		if(length > 0) {
+			char *data = (char*) malloc(length + 1);
+			if (isSecure) {
+				if(ReadDataFromSocket(ssl, data, length)) {
+					//debug1("Data: %s", data);
+					data[length] = '\0';
+					*content = data;
+				}
+			} else {
+				if(ReadDataFromSocket(sock, data, length)) {
+					//debug1("Data: %s", data);
+					data[length] = '\0';
+					*content = data;
+				}
+			}
+			// 
+			
+		} else if(length == -1 && !noWait) {
+			if (isSecure) {
+				*content = ReadToEndOfStream(ssl);
+			} else {
+				*content = ReadToEndOfStream(sock);
+			}
+			
+		}
+	}
+	if (logfile && length>0) {
+		fprintf(logfile,"Content is:\n");
+		if (content) fprintf(logfile,*content);
+		fprintf(logfile,"\nend of content\n");
+		fclose(logfile);
+	}
+
+	if (isSecure) {
+		SSL_free(ssl);
+	} else {
+		CLOSESOCKET(sock);
+	}
+
+	return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 
 int clearDirectory(const char *pathname)
 {
@@ -2189,7 +2841,7 @@ int DM::internalDeployApplication(class Application &app,Context *origctx /* = N
 		List<ComponentItem> *cis = comp->getItems();
 		ListIterator<ComponentItem> iter2(*cis);
 		for (ComponentItem *ci = iter2.first(); ci; ci = iter2.next()) {
-			if (ci->getRollback() != OFF || comp->getRollup() != OFF) {
+			if (ci->getRollback() != OFF || ci->getRollup() != OFF) {
 				NeedRollup=true;
 				break;
 			}

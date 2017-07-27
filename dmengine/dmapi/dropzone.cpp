@@ -50,13 +50,22 @@ DropzoneFile::DropzoneFile(
 	  m_dzpath(DUP_NULL(dzpath)), m_version(DUP_NULL(version)), m_item(item),
 	  m_error(NULL), m_ischeckin(ischeckin), m_basedOn(NULL),
 	  m_iscreated(false), m_ismodified(false), m_isrenamed(false),
-	  m_isdeleted(false), m_size(-1), m_md5(NULL)
+	  m_isdeleted(false), m_size(-1), m_md5(NULL), m_zipfile(false)
 {
 	debug1("DropzoneFile(@'%s', %d, '%s', '%s', '%s', %s)", m_dz.name(),
 		(m_repoImpl ? m_repoImpl->implId() : -1), (m_repopath ? m_repopath : "(null)"),
 		(m_dzpath ? m_dzpath : "(null)"), (m_version ? m_version : "(null)"),
 		(m_ischeckin ? "true" : "false"));
 	calcSizeAndSum();
+	if (m_dzpath) {
+		// Always save paths with / separator
+		char *p = m_dzpath;
+		while (*p) {
+			if (*p=='\\') *p='/';
+			p++;
+		}
+		printf("m_dzpath=[%s]\n",m_dzpath);
+	}
 }
 
 DropzoneFile::DropzoneFile(
@@ -66,12 +75,38 @@ DropzoneFile::DropzoneFile(
 	: m_dz(dz), m_repoImpl(NULL), m_repopath(NULL), m_dzpath(DUP_NULL(dzpath)),
 	  m_version(NULL), m_item(NULL), m_error(NULL), m_ischeckin(false),
 	  m_basedOn(basedOn), m_iscreated(iscreated), m_ismodified(ismodified),
-	  m_isrenamed(false), m_isdeleted(false), m_size(-1), m_md5(NULL)
+	  m_isrenamed(false), m_isdeleted(false), m_size(-1), m_md5(NULL), m_zipfile(false)
 {
 	debug1("DropzoneFile(@'%s', '%s', '%s', %s)", m_dz.name(),
 		(m_basedOn ? m_basedOn->dzpath() : "(null)"),
 		(m_dzpath ? m_dzpath : "(null)"), (m_ismodified ? "true" : "false"));
 	calcSizeAndSum();
+	if (m_dzpath) {
+		// Always save paths with / separator
+		char *p = m_dzpath;
+		while (*p) {
+			if (*p=='\\') *p='/';
+			p++;
+		}
+		printf("m_dzpath=[%s]\n",m_dzpath);
+	}
+}
+
+// For zipfile directory listings
+DropzoneFile::DropzoneFile(
+		IDropzone &dz, const char *dzpath, DMINT32 size, time_t modtime
+	)
+	: m_dz(dz), m_dzpath(DUP_NULL(dzpath)), m_size(size), m_modtime(modtime), m_zipfile(true)	
+{
+	if (m_dzpath) {
+		// Always save paths with / separator
+		char *p = m_dzpath;
+		while (*p) {
+			if (*p=='\\') *p='/';
+			p++;
+		}
+		printf("m_dzpath=[%s]\n",m_dzpath);
+	}
 }
 
 
@@ -154,10 +189,15 @@ void DropzoneFile::calcSizeAndSum()
 
 DateTime *DropzoneFile::getCreationTime()
 {
+	if (!m_zipfile) {
 	CharPtr dzpath = dropzoneFilename();
 	struct stat sb;
 	if(stat(dzpath, &sb) != -1) {
 		return new DateTime(sb.st_ctime);
+	}
+	} else {
+		// zip file - return the stored mod time (no creation time in a zipfile)
+		return new DateTime(m_modtime);
 	}
 	return NULL;
 }
@@ -165,10 +205,15 @@ DateTime *DropzoneFile::getCreationTime()
 
 DateTime *DropzoneFile::getModifiedTime()
 {
+	if (!m_zipfile) {
 	CharPtr dzpath = dropzoneFilename();
 	struct stat sb;
 	if(stat(dzpath, &sb) != -1) {
 		return new DateTime(sb.st_mtime);
+	}
+	} else {
+		// zip file - return the stored mod time
+		return new DateTime(m_modtime);
 	}
 	return NULL;
 }
@@ -337,12 +382,22 @@ DropzoneFile *DropzoneBase::getFile(const char *dzpath)
 	if (m_files) {
 		debug1("m_files->count()=%d",m_files->count());
 		// dump();
+		// Ensure path separators are consistent with what we've stored
+		char *t = strdup(dzpath);
+		char *p = t;
+		while (*p) {
+			if (*p=='\\') *p='/';
+			p++;
+		}
+		DropzoneFile *res = m_files->get(t);
+		free(t);
+		return res;
 	}
 	else
 	{
 		debug1("m_files is null");
+		return NULL;
 	}
-	return m_files ? m_files->get(dzpath) : NULL;
 }
 
 
