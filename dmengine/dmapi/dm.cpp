@@ -467,11 +467,10 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 		name.sin_family = AF_INET;
 		name.sin_addr.s_addr = *((int *)hp->h_addr);
 		name.sin_port = htons(port);
-
+		unsigned char *ap = (unsigned char *)&(name.sin_addr.s_addr);
 
 		if (logfile) fprintf(logfile,"Connecting to %d.%d.%d.%d:%d...\n",
-			name.sin_addr.S_un.S_un_b.s_b1, name.sin_addr.S_un.S_un_b.s_b2,
-			name.sin_addr.S_un.S_un_b.s_b3, name.sin_addr.S_un.S_un_b.s_b4, port);
+			(unsigned int)ap[0],(unsigned int)ap[1],(unsigned int)ap[2],(unsigned int)ap[3], port);
 
 		res = connect(sock,(struct sockaddr*) &name, sizeof(name));
 		if(res)
