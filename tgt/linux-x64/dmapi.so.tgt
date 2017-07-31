@@ -59,6 +59,18 @@
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
     </Dependency>
     <Dependency>
+        <Name>dmengine/notifiers/hipchat/hipchat.cpp</Name>
+        <Type>5</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>dmengine/notifiers/slack/slack.cpp</Name>
+        <Type>5</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
         <Name>dmengine\dmapi\charptr.cpp</Name>
         <Type>5</Type>
         <ParentBuildTask>Compile</ParentBuildTask>
