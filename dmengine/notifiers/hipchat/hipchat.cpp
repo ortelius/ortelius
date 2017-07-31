@@ -143,7 +143,7 @@ NotifyProviderImpl *HipChatNotifyImplFactory::create(
 	if (logfile) out = fopen(logfile,"a+");
 	if (out) {
 		fprintf(out,"-- HIPCHAT LOGGING ---\n");
-		fprintf(out,"webhook=[%s]\n",fullurl);
+		fprintf(out,"webhook=[%s]\n",(const char *)fullurl);
 	}
 
 	char *servername;

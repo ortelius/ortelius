@@ -254,7 +254,7 @@ NotifyProviderImpl *SlackNotifyImplFactory::create(
 	if (logfile) out = fopen(logfile,"a+");
 	if (out) {
 		fprintf(out,"-- SLACK LOGGING ---\n");
-		fprintf(out,"webhook=[%s]\n",webhook);
+		fprintf(out,"webhook=[%s]\n",(const char *)webhook);
 	}
 	char *servername;
 	int port;
