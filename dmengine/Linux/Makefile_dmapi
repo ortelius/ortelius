@@ -1,5 +1,4 @@
-#CXXFLAGS=-I$(POSTGRES_DIR)/include -I${TRILOGYHOME}/api/include -I/usr/local/include -DHAVE_UNIXODBC -DDEV_VERSION
-CXXFLAGS=-I/usr/local/include -I/usr/include/libiodbc -DHAVE_UNIXODBC -DDEV_VERSION -DHAVE_VA_LIST_STRUCT -DLDAP_DEPRECATED -fPIC -fpermissive -m64
+CXXFLAGS=-I/usr/local/include -I/usr/include/libiodbc -I/mnt/hgfs/philgibbs/sqlheaders -DHAVE_UNIXODBC -DDEV_VERSION -DHAVE_VA_LIST_STRUCT -DLDAP_DEPRECATED -fPIC -fpermissive -m64 -Wno-write-strings
 
 DMAPI_OBJS =  dm_main.o audit.o charptr.o cmdline.o context.o credentials.o \
 	      crypto.o datasource.o datetime.o dm.o dm.tab.o dropzone.o engineconfig.o \
@@ -12,7 +11,7 @@ DMAPI_OBJS =  dm_main.o audit.o charptr.o cmdline.o context.o credentials.o \
 	      transfer.o triodbc.o notifytemplate.o \
 	      timedjob.o ftp.o ping.o \
 	      filesystem.o svn.o smtpemail.o smtp.o txtlocal.o https.o text.o \
-	      xml.o odbcdatasource.o \
+	      xml.o odbcdatasource.o hipchat.o slack.o \
 	      \
 	      alter.o appverloop.o deploy.o notifystmt.o remotescript.o
 
@@ -28,7 +27,7 @@ EXTEN_DIR = ../../../extended
 all: ../libdmapi.so
 
 ../libdmapi.so: $(DMAPI_OBJS)
-	$(CXX) -shared -o $@ $(DMAPI_OBJS) -lodbc -lm -lrt -lssl -lldap
+	$(CXX) -shared -o $@ $(DMAPI_OBJS) -lodbc -lm -lrt -lssl -lldap -lz -lzip
 	#$(CXX) -shared -o $@ $(DMAPI_OBJS) -L$(POSTGRES_DIR)/lib -lpq -lodbc ${TRILOGYHOME}/etc/trilogyapi.so -lm -lrt
 
 
@@ -137,11 +136,19 @@ ftp.o:		$(REPOS_DIR)/ftp/ftp.cpp $(REPOS_DIR)/ftp/ftp.h
 %.o: $(NOTIF_DIR)/txtlocal/%.cpp
 	$(CXX) $(CXXFLAGS) $(DEBUG) -c -o $@ $< -I$(DMAPI_DIR)
 
+%.o: $(NOTIF_DIR)/hipchat/%.cpp
+	$(CXX) $(CXXFLAGS) $(DEBUG) -c -o $@ $< -I$(DMAPI_DIR)
+
+%.o: $(NOTIF_DIR)/slack/%.cpp
+	$(CXX) $(CXXFLAGS) $(DEBUG) -c -o $@ $< -I$(DMAPI_DIR)
+
 
 smtpemail.o:	$(NOTIF_DIR)/smtpemail/smtpemail.cpp $(NOTIF_DIR)/smtpemail/smtpemail.h
 smtp.o:		$(NOTIF_DIR)/smtpemail/smtp.cpp $(NOTIF_DIR)/smtpemail/smtp.h
 txtlocal.o:	$(NOTIF_DIR)/txtlocal/txtlocal.cpp $(NOTIF_DIR)/txtlocal/txtlocal.h
 https.o:	$(NOTIF_DIR)/txtlocal/https.cpp $(NOTIF_DIR)/txtlocal/https.h
+slack.o:	$(NOTIF_DIR)/slack/slack.cpp $(NOTIF_DIR)/slack/slack.h
+hipchat.o:	$(NOTIF_DIR)/hipchat/hipchat.cpp $(NOTIF_DIR)/hipchat/hipchat.h
 
 
 # TODO: And these will also move

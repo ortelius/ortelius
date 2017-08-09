@@ -130,7 +130,7 @@ bool getConnectionDetails(const char *fullurl,char **server,int *port,bool *secu
 			*port = atoi(ps+1);
 		} else {
 			// No port specified, use default
-			*port = secure?443:80;
+			*port = *secure?443:80;
 		}
 		*server=strdup(serverport);
 		free((void *)serverport);
@@ -158,7 +158,8 @@ bool getConnectionDetails(const char *fullurl,char **server,int *port,bool *secu
 	}
 	//printf("server=[%s]\n",*server);
 	//printf("port=[%d]\n",*port);
-	//printf("url=[%s]\n",url);
+	//printf("url=[%s]\n",*url);
+	return false;
 }
 
 void SendDataToSocket(int sock, const char *data, long len)
@@ -434,7 +435,7 @@ SSL_CTX* InitCTX(void)
 int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 			  const char *params, MESSAGE_TYPE mt, bool isSecure,const char *host, 
 			  const char *soapaction, DMArray *cookieJar, DMArray *header,	// content
-			  int *status, char **contentType, char **content,char *logfilename /*=NULL*/)	// return
+			  int *status, char **contentType, char **content,char *logfilename /*=NULL*/, int *datalen /*=NULL */)	// return
 {
 #ifdef WIN32
 	InitialiseWinsock();
@@ -447,6 +448,7 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 	int	res;
 	char *TransferEncoding = (char *)0;
 	bool chunked=false;
+	char *NewLocation = (char *)0;
 
 	bool isPost = false;
 	if (mt != MESSAGE_TYPE_GET) isPost=true;	// isPost is true for both SOAP and POST
@@ -476,6 +478,7 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 		if(res)
 		{
 			// Connection failure
+			if (logfile) fprintf(logfile,"Failed to connect\n");
 #ifdef WIN32
 			errno = WSAGetLastError();
 #endif /*WIN32*/
@@ -497,6 +500,7 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 		if ( SSL_connect(ssl) == -1 ) {
 			/* perform the connection */
 			ERR_print_errors_fp(stderr);
+			return -3;
 		}
 	}
 
@@ -634,6 +638,7 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 
 		if(strncmp(line, "Content-Length: ", 16) == 0) {
 			length = atol(&line[16]);
+			if (datalen) *datalen = length;
 		} else if(strncmp(line, "Content-Type: ", 14) == 0) {
 			*contentType = strdup(&line[14]);
 		} else if(strncmp(line, "Set-Cookie: ", 12) == 0) {
@@ -657,71 +662,93 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 			TransferEncoding = &(line[19]);
 			// printf("TransferEncoding=[%s]\n",TransferEncoding);
 			chunked=(strcmp(TransferEncoding,"chunked")==0);
+		} else if(strncmp(line,"Location: ",10) == 0) {
+			// If redirect, this is the new location of the file
+			NewLocation = &(line[10]);
 		}
 	}
 	if (logfile) fprintf(logfile,"Length: %d\n", length);
-	if (chunked) {
-		// No length, data is arriving in chunks
-		int totalLength=0;
-		char *data = (char *)malloc(1024);	// initial chunk
-		do {
-			char *hexsize;
-			if (isSecure) {
-				hexsize = ReadLineFromSocket(ssl);
-			} else {
-				hexsize = ReadLineFromSocket(sock);
-			}
-			length = strtol(hexsize,NULL,16);
-			if (length>0) {
-				data = (char *)realloc(data,totalLength+length+1);
-				if (isSecure) {
-					ReadDataFromSocket(ssl, &(data[totalLength]), length);
-				} else {
-					ReadDataFromSocket(sock, &(data[totalLength]), length);
-				}
-				totalLength=totalLength+length;
-				// Now read trailing \r\n after the chunk of data
-				if (isSecure) {
-					ReadLineFromSocket(ssl);
-				} else {
-					ReadLineFromSocket(sock);
-				}
-			}
-		} while (length);
-		data[totalLength]='\0';
-		*content = data;
-	} else {
-		if(length > 0) {
-			char *data = (char*) malloc(length + 1);
-			if (isSecure) {
-				if(ReadDataFromSocket(ssl, data, length)) {
-					//debug1("Data: %s", data);
-					data[length] = '\0';
-					*content = data;
-				}
-			} else {
-				if(ReadDataFromSocket(sock, data, length)) {
-					//debug1("Data: %s", data);
-					data[length] = '\0';
-					*content = data;
-				}
-			}
-			// 
-			
-		} else if(length == -1 && !noWait) {
-			if (isSecure) {
-				*content = ReadToEndOfStream(ssl);
-			} else {
-				*content = ReadToEndOfStream(sock);
-			}
-			
+	if (*status >= 300 && *status <= 399) {
+		// redirect in progress.
+		if (NewLocation) {
+			if (logfile) fprintf(logfile, "NewLocation=[%s]\n",NewLocation);
+			char *newserver;
+			int newport;
+			bool newsecure;
+			char *newurl;
+			getConnectionDetails(NewLocation,&newserver,&newport,&newsecure,&newurl);
+			// Recurse with new details
+			// Keep original port because nexus 2 returns http://localhost rather than http://localhost:8081 
+			if (logfile) fflush(logfile);
+			DoHttpRequest(newserver,port,newurl,NULL,mt,newsecure,host,soapaction,cookieJar,header,status,contentType,content,logfilename);
+		} else {
+			if (logfile) fprintf(logfile, "Redirect status %d but no Location: returned\n",*status);
 		}
-	}
-	if (logfile && length>0) {
-		fprintf(logfile,"Content is:\n");
-		if (content) fprintf(logfile,*content);
-		fprintf(logfile,"\nend of content\n");
-		fclose(logfile);
+	} else {
+		if (chunked) {
+			// No length, data is arriving in chunks
+			int totalLength=0;
+			char *data = (char *)malloc(1024);	// initial chunk
+			do {
+				char *hexsize;
+				if (isSecure) {
+					hexsize = ReadLineFromSocket(ssl);
+				} else {
+					hexsize = ReadLineFromSocket(sock);
+				}
+				length = strtol(hexsize,NULL,16);
+				if (length>0) {
+					data = (char *)realloc(data,totalLength+length+1);
+					if (isSecure) {
+						ReadDataFromSocket(ssl, &(data[totalLength]), length);
+					} else {
+						ReadDataFromSocket(sock, &(data[totalLength]), length);
+					}
+					totalLength=totalLength+length;
+					// Now read trailing \r\n after the chunk of data
+					if (isSecure) {
+						ReadLineFromSocket(ssl);
+					} else {
+						ReadLineFromSocket(sock);
+					}
+				}
+			} while (length);
+			data[totalLength]='\0';
+			if (datalen) *datalen = totalLength;
+			*content = data;
+		} else {
+			if(length > 0) {
+				char *data = (char*) malloc(length + 1);
+				if (isSecure) {
+					if(ReadDataFromSocket(ssl, data, length)) {
+						//debug1("Data: %s", data);
+						data[length] = '\0';
+						*content = data;
+					}
+				} else {
+					if(ReadDataFromSocket(sock, data, length)) {
+						//debug1("Data: %s", data);
+						data[length] = '\0';
+						*content = data;
+					}
+				}
+				// 
+				
+			} else if(length == -1 && !noWait) {
+				if (isSecure) {
+					*content = ReadToEndOfStream(ssl);
+				} else {
+					*content = ReadToEndOfStream(sock);
+				}
+				
+			}
+		}
+		if (logfile && length>0) {
+			fprintf(logfile,"Content is:\n");
+			if (content) fprintf(logfile,*content);
+			fprintf(logfile,"\nend of content\n");
+			fclose(logfile);
+		}
 	}
 
 	if (isSecure) {
@@ -1950,14 +1977,14 @@ int DM::providerTest(OBJECT_KIND kind, int id, char *recipient)
 			} else {
 				args->add(new Stmt(strdup("to"), new Node(getCurrentUser())));
 			}
-			args->add(new Stmt(strdup("subject"), new Node(NODE_STR, strdup("Test notification from Release Engineer"))));
+			args->add(new Stmt(strdup("subject"), new Node(NODE_STR, strdup("Test notification from Openmake DeployHub"))));
 			args->add(new Stmt(strdup("logfile"), new Node(NODE_STR, strdup("$DMHOME/smtp.log"), true)));
 			args->add(new Stmt(strdup("isTestMode"), new Node(true)));	// Turn on log to screen
 			ExtendedStmt stmt2(strdup("notify"), args);
 			Audit &audit = getDummyAudit();
 			AuditEntry *ae = audit.newAuditEntry("notify");
 			OutputStream body;
-			body.writeToStdOut("Test notification from Openmake Release Engineer\n");
+			body.writeToStdOut("Test notification from Openmake DeployHub");
 
 			//body.writeToStdOut("Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Typi non habent claritatem insitam; est usus legentis in iis qui facit eorum claritatem. Investigationes demonstraverunt lectores legere me lius quod ii legunt saepius. Claritas est etiam processus dynamicus, qui sequitur mutationem consuetudium lectorum. Mirum est notare quam littera gothica, quam nunc putamus parum claram, anteposuerit litterarum formas humanitatis per seacula quarta decima et quinta decima. Eodem modo typi, qui nunc nobis videntur parum clari, fiant sollemnes in futurum.");
 			//body.writeToStdOut("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas pretium lacinia quam nec malesuada. In vehicula orci vitae lacus convallis accumsan. Etiam eleifend metus eu fringilla viverra. Etiam pretium eleifend tellus, at condimentum velit fermentum non. Phasellus dictum ultrices ullamcorper. Proin vestibulum aliquam mauris at fringilla. Aliquam erat volutpat. Nam id sapien a orci vulputate viverra in auctor elit. Nulla facilisi. In vitae tortor libero.\n"
@@ -2884,6 +2911,7 @@ int DM::internalDeployApplication(class Application &app,Context *origctx /* = N
 			}
 			if (av->getParent()==0) break;	// end of loop (no more predecessors)
 		}
+		// At this point path leads from avfrom to avto. If avfrom was not set, path starts at BASE version.
 		bool isFirst = true;
 		bool isLast = false;
 		bool isSame = false;

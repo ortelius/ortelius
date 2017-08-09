@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <errno.h>
+#include <pwd.h>
 #define _O_WRONLY O_WRONLY 
 #define _O_BINARY 0
 #define _O_CREAT O_CREAT
@@ -136,13 +137,13 @@ char to_hex(char code)
 	return hex[code & 15];
 }
 
-char *url_encode(char *str)
+static char *url_encode(char *str)
 {
 	char *pstr = str;
 	char *buf = (char *)malloc(strlen(str) * 3 + 1);
 	char *pbuf = buf;
 	while (*pstr) {
-		if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~') 
+		if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~' || *pstr == '&' || *pstr=='=') 
 			*pbuf++ = *pstr;
 		else if (*pstr == '/')
 			*pbuf++ = '/';
@@ -159,7 +160,7 @@ char *url_encode(char *str)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
+/*
 void SendDataToSocket(int sock, const char *data, long len)
 {
 	long bytesRemaining = len;
@@ -226,7 +227,7 @@ bool ReadDataFromSocket(int sock, char *dataPtr, long length)
 	}
 	return res;
 }
-
+*/
 char *stristr (char *ch1, char *ch2)
 {
 	char  *chN1, *chN2;
@@ -255,7 +256,7 @@ char *stristr (char *ch1, char *ch2)
 }
 
 
-
+#ifdef OLD_STUFF
 char *ReadToEndOfStream(int sock,int *retlen, bool CheckForHTML)
 {
 	// Reads bytes of data from a socket until the end of the stream is reached.
@@ -337,7 +338,7 @@ char *ReadLineFromSocket(int sock)
 
 	return strdup(Reply);
 }
-
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // HttpRepositoryImpl
@@ -345,11 +346,13 @@ char *ReadLineFromSocket(int sock)
 
 HttpRepositoryImpl::HttpRepositoryImpl(
 		RepositoryImplFactory &factory, DMINT32 implId, Repository &repository,
-		const char *host, int port, const char *uri, const char *params, const char *version
+		const char *host, int port, bool ssl, const char *uri, const char *params, const char *version,
+		const char *logfile
 	)
 	: RepositoryImpl(factory, implId, repository),
 	  m_host(DUP_NULL(host)), m_port(port), m_uri(DUP_NULL(uri)),
-	  m_params(DUP_NULL(params)),m_version(DUP_NULL(version))
+	  m_params(DUP_NULL(params)),m_version(DUP_NULL(version)),
+	  m_logfile(DUP_NULL(logfile)), m_secure(ssl)
 {
 	debug1("HttpRepositoryImpl('%s', %d, '%s', '%s')",
 		NULL_CHECK(m_host), m_port, NULL_CHECK(m_uri), NULL_CHECK(m_params));
@@ -362,6 +365,7 @@ HttpRepositoryImpl::~HttpRepositoryImpl()
 	SAFE_FREE(m_uri);
 	SAFE_FREE(m_params);
 	SAFE_FREE(m_version);
+	SAFE_FREE(m_logfile);
 }
 
 
@@ -450,6 +454,7 @@ void createDropZoneFile(void *buf,int buflen,const char *path,const char *BaseNa
 	close(f);
 }
 
+#ifdef OLD_STUFF
 void *getFileContent(Context &ctx,char *http_request,int sock,int *retlen, int *status)
 {
 	char *content = (char *)0;
@@ -545,6 +550,7 @@ int ConnectToServer(char *host,int port)
 	}
 	return sock;
 }
+#endif
 
 void HttpRepositoryImpl::FreeDirectoryContent(char **dirlist, int numElements)
 {
@@ -554,16 +560,29 @@ void HttpRepositoryImpl::FreeDirectoryContent(char **dirlist, int numElements)
 	SAFE_FREE(dirlist);
 }
 
-char **HttpRepositoryImpl::GetDirectoryContent(Context &ctx,int sock,char *AuthenticationString,char *offset,int *numFiles)
+char **HttpRepositoryImpl::GetDirectoryContent(Context &ctx,/* int sock, */char *AuthenticationString,char *offset,int *numFiles, FILE *logout)
 {
+	char *content;
+	char *contentType;
+	int status;
+	DMArray *headers = new DMArray(false,false,false);
+	headers->put("Authentication",new Variable(NULL,AuthenticationString));
+
+	char *op = (char *)malloc(strlen(offset)+100);
+	sprintf(op,"%s%s/",offset[0]=='/'?"":"/",offset);
+	DoHttpRequest(m_host,m_port,op,NULL,MESSAGE_TYPE_GET,m_secure,m_host,NULL,NULL,headers,&status,&contentType,&content,m_logfile);
+
 	char **ret = (char **)0;
-	char *content = (char *)0;
-	char *op = (char *)malloc(strlen(AuthenticationString)+strlen(offset)+100);
-	sprintf(op,"GET %s%s/ HTTP/1.1\r\nHost: %s%s",offset[0]=='/'?"":"/",offset, m_host,AuthenticationString);
+	//char *op = (char *)malloc(strlen(AuthenticationString)+strlen(offset)+100);
+	//sprintf(op,"GET %s%s/ HTTP/1.1\r\nHost: %s%s",offset[0]=='/'?"":"/",offset, m_host,AuthenticationString);
+	if (logout) {
+		fprintf(logout,"GetDirectoryContent\n");
+		fprintf(logout,"%s\n",op);
+	}
 	debug1(op);
-	int retlen,status;
-	void *data = getFileContent(ctx,op,sock,&retlen,&status);
-	debug1("retlen=%d data=[%s]",retlen,(char *)data);
+	int retlen; /* ,status; */
+	//void *data = getFileContent(ctx,op,sock,&retlen,&status);
+	//debug1("retlen=%d data=[%s]",retlen,(char *)data);
 	//
 	// We should now have an HTML representation of the directory content
 	// <li><a href="DeploymentManager.exe"> DeploymentManager.exe</a></li>
@@ -574,7 +593,8 @@ char **HttpRepositoryImpl::GetDirectoryContent(Context &ctx,int sock,char *Authe
 	// downloadable file that we can use.
 	//
 	*numFiles=0;
-	for (char *p=(char *)data;p && *p;p++) {
+	// for (char *p=(char *)data;p && *p;p++) {
+	for (char *p=content;p && *p;p++) {
 		if (strncmp(p,"href=\"",6)==0) {
 			// Found an href
 			char *fn = p + 6;				// First char of file name
@@ -592,6 +612,7 @@ char **HttpRepositoryImpl::GetDirectoryContent(Context &ctx,int sock,char *Authe
 
 bool HttpRepositoryImpl::CheckFileExists(int sock,char *AuthenticationString,char *offset, char *patt)
 {
+	/*
 	char *op = (char *)malloc(strlen(offset)+strlen(patt)+100);
 	sprintf(op,"HEAD %s%s/%s HTTP/1.1\r\nHost: %s%s\r\n\r\n",offset[0]=='/'?"":"/",offset, patt, m_host,AuthenticationString);
 	debug1(op);
@@ -610,6 +631,8 @@ bool HttpRepositoryImpl::CheckFileExists(int sock,char *AuthenticationString,cha
 		line = ReadLineFromSocket(sock);
 	}
 	return (status>=200 && status <=299);	// success range
+	*/
+	return false;	// for now
 }
 
 void http_handleCredentials(
@@ -644,28 +667,39 @@ void HttpRepositoryImpl::checkout(
 {
 	// Gets a file from an HTTP server
 
+	FILE *logout = (FILE *)0;
+	if (m_logfile) {
+		logout = fopen(m_logfile,"a+");
+		if (logout > 0) {
+			ctx.dm().writeToStdOut("Logging to %s",m_logfile);
+		} else {
+			ctx.dm().writeToStdOut("Failed to open %s for logging",m_logfile);
+			logout = (FILE *)0;
+		}
+	}
 	Credentials *creds = NULL;
 	http_handleCredentials(stmt,m_repository,creds,ctx);
 	char *AuthenticationString;
+	DMArray *headers = new DMArray(false,false,false);
 	if (creds) {
 		// Credentials Provided - create a base64 encoded username/password pair
+		if (logout) fprintf(logout,"Using credentials associated with repository\n");
 		char *username = creds->getDecryptedUsername(ctx);
 		char *password = creds->getDecryptedPassword(ctx);
 		char *precode = (char *)malloc(strlen(username)+strlen(password)+5);
 		sprintf(precode,"%s:%s",username,password);
 		char *b64code = base64encode((unsigned char*) precode, strlen(precode));
 		AuthenticationString = (char *)malloc(strlen(b64code)+128);
-		sprintf(AuthenticationString,"\r\nAuthorization: Basic %s",b64code);
+		sprintf(AuthenticationString,"Basic %s",b64code);
 		free(username);
 		free(password);
 		free(precode);
 		free(b64code);
+		headers->put("Authorization",new Variable(NULL,AuthenticationString));
 	} else {
 		AuthenticationString=(char *)malloc(1);
 		AuthenticationString[0]='\0';
 	}
-
-	int	sock;
 	int	res;
 
 	char *op;
@@ -673,32 +707,39 @@ void HttpRepositoryImpl::checkout(
 	char *offset = m_uri?m_uri:(char *)"";
 	debug1("CHECKOUT: m_uri is %s",m_uri?m_uri:"null");
 	if (m_params) {
-		// Params go on the uri for GET
-		sock = ConnectToServer(m_host,m_port);
-		op = (char *)malloc(strlen(AuthenticationString)+strlen(offset)+strlen(m_params)+100);
-		char *enc_offset = url_encode(offset);
-		char *enc_params = url_encode(m_params);
-		sprintf(op,"GET %s?%s HTTP/1.1\r\nHost: %s%s",enc_offset, enc_params, m_host, AuthenticationString);
-		debug1(op);
-		free(enc_offset);
-		free(enc_params);
-		void *buf = getFileContent(ctx,op,sock,&retlen,&status);
+		char *content;
+		char *ContentType;
+		if (logout) fflush(logout);
+		DoHttpRequest(m_host,m_port,offset,m_params,MESSAGE_TYPE_GET,m_secure,m_host,NULL,NULL,headers,&status,&ContentType,&content,m_logfile,&retlen);
+		if (logout) fprintf(logout,"status=%d\n",status);
 		StringListIterator iter(*pattern);
 		char *BaseName = (char *)iter.first();
 		if (BaseName) {
 			// The first pattern is the output file from the URL
-			createDropZoneFile(buf,retlen,dzpath,BaseName);
+			if (logout) fprintf(logout,"BaseName from Pattern=[%s]\n",BaseName);
+			// createDropZoneFile(buf,retlen,dzpath,BaseName);
+			createDropZoneFile((void *)content,retlen,dzpath,BaseName);
 			callback.checked_out_file(this, offset, dzpath, "1");	// need to take version from parameter
+			callback.checkout_summary(1,1,0,0);						// Record 1 of 1 files checked out successfully
+		} else {
+			if (logout) fprintf(logout,"No Pattern or BaseName - cannot create file in dropzone\n");
+			throw RuntimeError(stmt,ctx.stack(),
+				"Pattern must be specified when using params with HTTP");
 		}
-		free(op);
-		free(buf);
+		SAFE_FREE(content);
 	} else {
 		// No params - let's take the file pattern
+		if (logout) fprintf(logout,"No parameters specified\n");
 		if (pattern) {
+			if (logout) fprintf(logout,"pattern [%s] specified\n",pattern);
 			StringListIterator iter(*pattern);
 			for(const char *patt = iter.first(); patt; patt = iter.next()) {
 				debug1("patt=[%s]",patt);
+				if (logout) fprintf(logout,"pattern=[%s]\n",patt);
+				if (strlen(patt)==0) throw RuntimeError(stmt, ctx.stack(),
+					"Pattern is required for http repository");
 				HttpPattern *hpatt = new HttpPattern((char *)patt);
+				if (logout) fprintf(logout,"hpatt->getFieldCount=%d\n",hpatt->getFieldCount());
 				if (hpatt->getFieldCount() > 0) {
 					//
 					// File contains a pattern designed to look for latest version
@@ -706,16 +747,18 @@ void HttpRepositoryImpl::checkout(
 					// Step 1 - see if we can pull a directory listing from the web server
 					// -------------------------------------------------------------------
 					//
-					sock = ConnectToServer(m_host,m_port);
+					// sock = ConnectToServer(m_host,m_port);
 					int numFiles=0;
 					char *latestfile=(char *)0;
-					char **filelist = GetDirectoryContent(ctx,sock,AuthenticationString,offset,&numFiles);
+					char **filelist = GetDirectoryContent(ctx,/*sock,*/ AuthenticationString,offset,&numFiles,logout);
 					debug1("numFiles=%d",numFiles);
+					if (logout) fprintf(logout,"numFiles=%d\n",numFiles);
 					if (numFiles > 0) {
 						// Got a list of files
 						debug1("Got a filelist from server");
 						for (int i=0;i<numFiles;i++) {
 							debug1("filelist[%d]=[%s]",i,filelist[i]);
+							if (logout) fprintf(logout,"filelist[%d]=[%s]\n",i,filelist[i]);
 						}
 						// We'll assume that the list returned from the server is in alphabetical order
 						// Start with the first file in our pattern
@@ -723,7 +766,7 @@ void HttpRepositoryImpl::checkout(
 						char *tfile = hpatt->getTestFilename();	// starting file pattern;
 						for (int t=0;t<numFiles;t++) {
 							if (strcmp(filelist[t],tfile)<0) {
-								debug1("Skipping file [%s] in future",filelist[t]);
+								if (logout) fprintf(logout,"Skipping file [%s] in future\n",filelist[t]);
 								sp++;	// Skip this file in future
 							}
 						}
@@ -733,7 +776,7 @@ void HttpRepositoryImpl::checkout(
 						while (f<=hpatt->getFieldCount()) {
 							// For each field in the pattern....
 							char *tfile = hpatt->getTestFilename();
-							debug1("Looking for file [%s]",tfile);
+							if (logout) fprintf(logout,"Looking for file [%s]\n",tfile);
 							int t=sp;
 							int cfv = -1;
 							while (t<numFiles) {
@@ -745,7 +788,7 @@ void HttpRepositoryImpl::checkout(
 									latestfile = strdup(tfile);
 									cfv = hpatt->getFieldValue(f);	// Current Field Value
 									// Increment the current field
-									debug1("Incrementing field %d",f);
+									if (logout) fprintf(logout,"Incrementing field %d\n",f);
 									if (!hpatt->incrField(f)) {
 										if (f == hpatt->getFieldCount()) break;
 									}
@@ -772,7 +815,7 @@ void HttpRepositoryImpl::checkout(
 						// Could not retrieve an index of files Drop back to slower
 						// binary-chop algorithm.
 						//
-						
+						if (logout) fprintf(logout,"Could not retrieve file list - dropping to binary chop");
 						for (int f=1;f<=hpatt->getFieldCount();f++) {
 							hpatt->setMidPoint(f);
 							int lfv = hpatt->getFieldValue(f);
@@ -780,39 +823,32 @@ void HttpRepositoryImpl::checkout(
 								char *tfile = hpatt->getTestFilename();
 								// Check to see if this file exists on the server
 								//debug1("Checking [%s]",tfile);
-								bool fe = CheckFileExists(sock,AuthenticationString,offset,tfile);
+								// bool fe = CheckFileExists(sock,AuthenticationString,offset,tfile);
+								bool fe = false;
 								if (fe) {
 									// This file exists - move into the top block and try again
 									lfv = hpatt->getFieldValue(f);
 									SAFE_FREE(latestfile);
 									latestfile = strdup(tfile);
 									hpatt->chop(f,false);
-									debug1("File exists - move up to next block (field %d) lfv=%d",f,lfv);
+									if (logout) fprintf(logout,"File exists - move up to next block (field %d) lfv=%d\n",f,lfv);
 								} else {
 									// This file does not exist - move into the bottom block and try again
-									debug1("File does not exist - move to lower block (field %d)",f);
+									if (logout) fprintf(logout,"File does not exist - move to lower block (field %d)\n",f);
 									hpatt->chop(f,true);
 								}
 							}
-							debug1("Setting field %d to %d",f,lfv);
+							if (logout) fprintf(logout,"Setting field %d to %d\n",f,lfv);
 							hpatt->setField(f,lfv);
 						}
 					}
-					debug1("** LATEST FILE: %s",latestfile);
+					if (logout) fprintf(logout,"** LATEST FILE: %s\n",latestfile);
 					if (latestfile) {
-						op = (char *)malloc(strlen(AuthenticationString)+strlen(offset)+strlen(latestfile)+strlen(m_host)+100);
-						char *enc_offset = url_encode(offset);
-						char *enc_lf = url_encode(latestfile);
-						sprintf(op,"GET %s%s/%s HTTP/1.1\r\nHost: %s%s", offset[0]=='/'?"":"/",enc_offset, enc_lf, m_host,AuthenticationString);
-						debug1(op);
-						free(enc_offset);
-						free(enc_lf);
-						callback.checked_out_folder(offset[0]?offset:"/", "\\", true);
-						void *buf = getFileContent(ctx,op,sock,&retlen,&status);
-						debug1("retlen=%d",retlen);
-						// CLOSESOCKET(sock);
-						createDropZoneFile(buf,retlen,dzpath,latestfile);
-
+						char *content;
+						char *contentType;
+						if (logout) fflush(logout);
+						DoHttpRequest(m_host,m_port,op,NULL,MESSAGE_TYPE_GET,m_secure,m_host,NULL,NULL,headers,&status,&contentType,&content,m_logfile,&retlen);
+						createDropZoneFile((void *)content,retlen,dzpath,latestfile);
 						//
 						// Since we can only grab one file at a time from http protocol and since
 						// there is no recursion, we don't have to worry about folders.
@@ -825,30 +861,30 @@ void HttpRepositoryImpl::checkout(
 						callback.checkout_summary(1,1,0,0);						// Record 1 of 1 files checked out successfully
 						free(repopath);
 						free(op);
-						free(buf);
+						free(content);
 					}
 					debug1("CLOSESOCKET");
-					CLOSESOCKET(sock);
-					// FreeDirectoryContent(filelist,numFiles);
 				} else {
 					// No fields in pattern - just grab the specified file(s)
+					if (logout) fprintf(logout,"No fields in pattern, downloading specified file(s)");
 					for(const char *patt = iter.first(); patt; patt = iter.next()) {
-						sock = ConnectToServer(m_host,m_port);
-						op = (char *)malloc(strlen(AuthenticationString)+strlen(offset)+strlen(patt)+strlen(m_host)+100);
+						char *content;
+						char *contentType;
+						op = (char *)malloc(strlen(offset)+strlen(patt)+strlen(m_host)+100);
 						char *enc_offset = url_encode(offset);
+						printf("patt is 0x%lx\n",patt);
 						char *enc_patt = url_encode((char *)patt);
-						sprintf(op,"GET %s%s/%s HTTP/1.1\r\nHost: %s%s",offset[0]=='/'?"":"/",enc_offset, enc_patt, m_host, AuthenticationString);
-						debug1("%s",op);
-						free(enc_offset);
-						free(enc_patt);
+						sprintf(op,"%s%s%s%s",offset[0]=='/'?"":"/",enc_offset, enc_patt[0]?"/":"", enc_patt);
+						if (logout) fflush(logout);
+						DoHttpRequest(m_host,m_port,op,NULL,MESSAGE_TYPE_GET,m_secure,m_host,NULL,NULL,headers,&status,&contentType,&content,m_logfile,&retlen);
 						callback.checked_out_folder(offset[0]?offset:"/", "\\", true);
-						void *buf = getFileContent(ctx,op,sock,&retlen,&status);
 						debug1("retlen=%d",retlen);
 						debug1("status=%d",status);
-						CLOSESOCKET(sock);
+						if (logout) fprintf(logout,"status=%d",status);
+						// CLOSESOCKET(sock);
 						if (status>=200 && status <=299) {
 							// Success
-							createDropZoneFile(buf,retlen,dzpath,patt);
+							createDropZoneFile((void *)content,retlen,dzpath,patt);
 							//
 							// Since we can only grab one file at a time from http protocol and since
 							// there is no recursion, we don't have to worry about folders.
@@ -860,16 +896,18 @@ void HttpRepositoryImpl::checkout(
 							free(repopath);
 						} else {
 							// Failure
+							ctx.writeToStdErr("ERROR: HTTP GET %s returns status %d",op,status);
 							callback.checkout_summary(0,0,0,0);						// Record 0 of 0 files checked out successfully
 						}
 						
 						free(op);
-						free(buf);
+						free(content);
 					}
 				}
 			}	/* end loop through patterns */
 		} /* pattern available */		
 	} /* no params for http get */
+	if (logout) fclose(logout);
 }
 
 
@@ -925,15 +963,33 @@ RepositoryImpl *HttpRepositoryImplFactory::create(
 {
 	bool ssl=false;
 	int sp=0;
+	char *host;
+	int port;
+	char *uri;
 	
 	ConstCharPtr server  = stmt.getOverridableArgAsString("server", parent, true, ctx);
 	ConstCharPtr portstr = stmt.getOverridableArgAsString("port", parent, false, ctx);
 	ConstCharPtr params  = stmt.getOverridableArgAsString("params", parent, false, ctx);
 	ConstCharPtr version = stmt.getOverridableArgAsString("version", parent, false, ctx);
 	ConstCharPtr uri2    = stmt.getOverridableAppendableArgAsString("URI",'/','/',parent,false,ctx);
+	ConstCharPtr logfile = stmt.getOverridableArgAsString("logfile", parent, false, ctx);
 
 	debug2("uri2=[%s]",(const char *)uri2);
 
+	getConnectionDetails(server,&host,&port,&ssl,&uri);
+	if (uri2) {
+		if (uri) {
+			uri = (char *)realloc(uri,strlen(uri)+strlen(uri2)+2);
+			if (uri2[0]!='/') {
+				strcat(uri,"/");
+			}
+			strcat(uri,uri2);
+		} else {
+			uri = strdup(uri2);
+		}
+	}
+
+	/*
 	if (
 		tolower(server[0])=='h' &&
 		tolower(server[1])=='t' &&
@@ -974,9 +1030,10 @@ RepositoryImpl *HttpRepositoryImplFactory::create(
 	if(portstr && portstr[0]) {
 		port = atoi(portstr);
 	}
+	*/
 	if (params && !params[0]) params = NULL;
 
-	return new HttpRepositoryImpl(*this, implId, parent, host, port, uri, params, version);
+	return new HttpRepositoryImpl(*this, implId, parent, host, port, ssl, uri, params, version, logfile);
 }
 
 

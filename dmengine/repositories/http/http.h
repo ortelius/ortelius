@@ -34,14 +34,16 @@ private:
 	char	*m_uri;
 	char	*m_params;
 	char	*m_version;
+	char	*m_logfile;
+	bool	m_secure;
 	bool	CheckFileExists(int sock,char *AuthenticationString,char *offset, char *patt);
-	char	**GetDirectoryContent(Context &ctx,int sock,char *AuthenticationString,char *offset,int *numFiles);
+	char	**GetDirectoryContent(Context &ctx,/*int sock,*/char *AuthenticationString,char *offset,int *numFiles, FILE *logout);
 	void	FreeDirectoryContent(char **dirlist, int numElements);
 
 public:
 	HttpRepositoryImpl(
 		class RepositoryImplFactory &factory, DMINT32 implId, class Repository &repository,
-		const char *host, int port, const char *uri, const char *params, const char *version);
+		const char *host, int port, bool ssl, const char *uri, const char *params, const char *version, const char *logfile);
 
 	virtual ~HttpRepositoryImpl();
 

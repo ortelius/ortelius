@@ -1,4 +1,4 @@
-CXXFLAGS=-I$(POSTGRES_DIR)/include -I/usr/include/libiodbc -I/usr/local/include -DHAVE_UNIXODBC -DDEV_VERSION -fPIC -fpermissive
+CXXFLAGS=-I$(POSTGRES_DIR)/include -I/usr/include/libiodbc -I/mnt/hgfs/philgibbs/sqlheaders -I/usr/local/include -DHAVE_UNIXODBC -DDEV_VERSION -fPIC -fpermissive
 
 HARVEST_OBJS = harvest.o harvestlog.o
 

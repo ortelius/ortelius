@@ -241,6 +241,8 @@ DMAPI_API bool getConnectionDetails(const char *fullurl,char **server,int *port,
 DMAPI_API int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 			  const char *params, MESSAGE_TYPE mt, bool isSecure,const char *host, 
 			  const char *soapaction, DMArray *cookieJar, DMArray *header,	// content
-			  int *status, char **contentType, char **content,char *logfilename=NULL);
+			  int *status, char **contentType, char **content,char *logfilename=NULL,int *datalen=NULL);
+
+
 
 #endif /*__dm_h*/

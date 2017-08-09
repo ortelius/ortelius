@@ -3,9 +3,7 @@ POSTGRES_DIR=/opt/PostgreSQL/9.1
 TRILOGYHOME=/home/harvest/Trilogy2.2.1
 CC=gcc
 CXX=g++
-#CXXFLAGS=-fexceptions
-#CXXFLAGS=-I$(POSTGRES_DIR)/include -I/usr/local/include -DHAVE_UNIXODBC -DDEV_VERSION
-CXXFLAGS=-I/usr/local/include -DHAVE_UNIXODBC -DDEV_VERSION -DLDAP_DEPRECATED -fPIC -fpermissive -m64
+CXXFLAGS=-I/usr/local/include -I../dmapi -I/mnt/hgfs/philgibbs/sqlheaders -DHAVE_UNIXODBC -DDEV_VERSION -DLDAP_DEPRECATED -fPIC -fpermissive -m64 -Wno-enum-compare -Wno-write-strings
 DEBUG=-g
 OUTDIR=debug
 #DEBUG=
@@ -14,7 +12,7 @@ MAKEFLAGS=POSTGRES_DIR=$(POSTGRES_DIR) TRILOGYHOME=$(TRILOGYHOME) \
 	CC=$(CC) CXX=$(CXX) DEBUG=$(DEBUG)
 
 
-all: $(OUTDIR) $(OUTDIR)/dm $(OUTDIR)/harvest.so $(OUTDIR)/perforce.so $(OUTDIR)/restful.so
+all: $(OUTDIR) $(OUTDIR)/dm $(OUTDIR)/harvest.so $(OUTDIR)/perforce.so $(OUTDIR)/restful.so $(OUTDIR)/setodbc $(OUTDIR)/libhttp.so
 
 $(OUTDIR):
 	mkdir $(OUTDIR)
@@ -37,6 +35,12 @@ $(OUTDIR)/perforce:
 $(OUTDIR)/perforce.so: $(OUTDIR)/perforce force_look
 	cd $(OUTDIR)/perforce; $(MAKE) -f ../../Makefile_perforce
 
+$(OUTDIR)/http:
+	mkdir $(OUTDIR)/http
+
+$(OUTDIR)/libhttp.so: $(OUTDIR)/http force_look
+	cd $(OUTDIR)/http; $(MAKE) -f ../../Makefile_http
+
 $(OUTDIR)/restful:
 	mkdir $(OUTDIR)/restful
 
@@ -44,13 +48,23 @@ $(OUTDIR)/restful.so: $(OUTDIR)/restful force_look
 	cd $(OUTDIR)/restful; $(MAKE) -f ../../Makefile_restful
 
 $(OUTDIR)/dm: $(OUTDIR)/main.o $(OUTDIR)/libdmapi.so
-	$(CXX) -o $@ $(OUTDIR)/main.o -L$(OUTDIR) -ldmapi -lldap
-	#$(CXX) -o $@ $(OUTDIR)/main.o -Wl,--rpath-link=$(POSTGRES_DIR)/lib -L$(OUTDIR) -ldmapi 
-	#	 ${TRILOGYHOME}/etc/trilogyapi.so -L${TRILOGYHOME}/etc -ltrilogy -ltcl8.5 -ltk8.5
+	$(CXX) -o $@ $(OUTDIR)/main.o -L$(OUTDIR) -ldmapi -lldap -lz -lzip
+
+$(OUTDIR)/setodbc: $(OUTDIR)/setodbc.o $(OUTDIR)/crypto.o $(OUTDIR)/dmapi/options.o $(OUTDIR)/triodbc.o
+	$(CXX) -m64 -o $@ $(OUTDIR)/crypto.o $(OUTDIR)/setodbc.o $(OUTDIR)/dmapi/options.o $(OUTDIR)/triodbc.o -L$(ODBC_LIB_DIR) -L$(SSL_LIB_DIR) -L$(OUTDIR) -lssl -lcrypto -lodbc
+
+$(OUTDIR)/crypto.o:     ../dmapi/crypto.cpp
+	$(CXX) -DSETODBC $(CXXFLAGS) -m64 -o $@ -c ../dmapi/crypto.cpp
+
+$(OUTDIR)/triodbc.o:    ../dmapi/triodbc.cpp
+	$(CXX) -DSETODBC $(CXXFLAGS) -m64 -o $@ -c ../dmapi/triodbc.cpp
 
 clean:
-	rm -f $(OUTDIR)/*.o $(OUTDIR)/dm $(OUTDIR)/libdmapi.so \
-		$(OUTDIR)/harvest.so $(OUTDIR)/dmapi/*.o $(OUTDIR)/harvest/*.o
+	rm -f $(OUTDIR)/*.o $(OUTDIR)/*.so $(OUTDIR)/dm $(OUTDIR)/dmapi/*.o \
+		$(OUTDIR)/http/*.o $(OUTDIR)/perforce/*.o \
+		$(OUTDIR)/restful/*.o
+
+
 
 force_look:
 	true
