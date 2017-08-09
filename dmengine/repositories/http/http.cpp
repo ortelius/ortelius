@@ -717,7 +717,7 @@ void HttpRepositoryImpl::checkout(
 		if (BaseName) {
 			// The first pattern is the output file from the URL
 			if (logout) fprintf(logout,"BaseName from Pattern=[%s]\n",BaseName);
-			// createDropZoneFile(buf,retlen,dzpath,BaseName);
+			// createDropZoneFile(buf,retlen,dzpath,B::aseName);
 			createDropZoneFile((void *)content,retlen,dzpath,BaseName);
 			callback.checked_out_file(this, offset, dzpath, "1");	// need to take version from parameter
 			callback.checkout_summary(1,1,0,0);						// Record 1 of 1 files checked out successfully
@@ -975,6 +975,7 @@ RepositoryImpl *HttpRepositoryImplFactory::create(
 	ConstCharPtr logfile = stmt.getOverridableArgAsString("logfile", parent, false, ctx);
 
 	debug2("uri2=[%s]",(const char *)uri2);
+	debug2("logfile=[%s]",(const char *)logfile);
 
 	getConnectionDetails(server,&host,&port,&ssl,&uri);
 	if (uri2) {

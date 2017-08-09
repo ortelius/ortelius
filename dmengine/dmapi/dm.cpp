@@ -291,7 +291,7 @@ bool ReadDataFromSocket(SSL *ssl, char *dataPtr, long length)
 	return res;
 }
 
-char *ReadToEndOfStream(int sock)
+char *ReadToEndOfStream(int sock,int *retlen)
 {
 	// Reads bytes of data from a socket until the end of the stream is reached.
 	//
@@ -317,10 +317,11 @@ char *ReadToEndOfStream(int sock)
 		ret[currSize] = '\0';
 
 	}
+	*retlen = currSize;
 	return ret;
 }
 
-char *ReadToEndOfStream(SSL *ssl)
+char *ReadToEndOfStream(SSL *ssl,int *retlen)
 {
 	// Reads bytes of data from a socket until the end of the stream is reached.
 	//
@@ -344,6 +345,7 @@ char *ReadToEndOfStream(SSL *ssl)
 		currSize += bytesRead;
 		ret[currSize] = '\0';
 	}
+	*retlen = currSize;
 	return ret;
 }
 
@@ -723,12 +725,14 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 					if(ReadDataFromSocket(ssl, data, length)) {
 						//debug1("Data: %s", data);
 						data[length] = '\0';
+						*datalen = length;
 						*content = data;
 					}
 				} else {
 					if(ReadDataFromSocket(sock, data, length)) {
 						//debug1("Data: %s", data);
 						data[length] = '\0';
+						*datalen = length;
 						*content = data;
 					}
 				}
@@ -736,9 +740,9 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 				
 			} else if(length == -1 && !noWait) {
 				if (isSecure) {
-					*content = ReadToEndOfStream(ssl);
+					*content = ReadToEndOfStream(ssl,datalen);
 				} else {
-					*content = ReadToEndOfStream(sock);
+					*content = ReadToEndOfStream(sock,datalen);
 				}
 				
 			}
