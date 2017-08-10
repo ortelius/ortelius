@@ -2091,6 +2091,16 @@ public class DMSession {
   return CheckObjects(sql,id);
  }
  
+ public boolean templateIsReferenced(int id) {
+	  String sql[] = {
+	  "SELECT count(*) FROM dm.dm_application where successtemplateid=?",
+	  "SELECT count(*) FROM dm.dm_application where failuretemplateid=?",
+	  "SELECT count(*) FROM dm.dm_task where successtemplateid=?",
+	  "SELECT count(*) FROM dm.dm_task where failuretemplateid=?"
+	  };      
+	  return CheckObjects(sql,id);
+ }  
+ 
  public boolean comptypeIsReferenced(int id) {
   
   String sql[] = {
@@ -2299,6 +2309,14 @@ public class DMSession {
 					return;
 				}
 			}
+			else
+			if (Type.equalsIgnoreCase("template"))
+			{       
+				if (templateIsReferenced(id)) {
+					out.print("{\"error\" : \"Cannot delete this Template - it is in use.\", \"success\" : false}");
+					return; 
+				}       
+			} 
 
 			if (Type.equalsIgnoreCase("procedure") || Type.equalsIgnoreCase("function"))
 			{
