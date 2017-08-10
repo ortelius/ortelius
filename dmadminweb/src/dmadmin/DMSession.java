@@ -2076,6 +2076,21 @@ public class DMSession {
   return CheckObjects(sql,id);
  }
  
+ public boolean notifierIsReferenced(int id) {
+  String sql[] = {
+  "SELECT count(*) FROM dm.dm_template x WHERE x.notifierid=? AND x.id IN "
+  +"(SELECT successtemplateid FROM dm.dm_application WHERE successtemplateid=x.id "
+  +"UNION "
+  +"SELECT failuretemplateid FROM dm.dm_application WHERE failuretemplateid=x.id "
+  +"UNION "
+  +"SELECT successtemplateid FROM dm.dm_task WHERE successtemplateid=x.id "
+  +"UNION "
+  +"SELECT failuretemplateid FROM dm.dm_task WHERE failuretemplateid=x.id "
+  + ")"
+  };
+  return CheckObjects(sql,id);
+ }
+ 
  public boolean comptypeIsReferenced(int id) {
   
   String sql[] = {
@@ -2276,6 +2291,14 @@ public class DMSession {
 					return;
 				}
 			}
+			else
+			if (Type.equalsIgnoreCase("notify"))
+			{
+				if (notifierIsReferenced(id)) {
+					out.print("{\"error\" : \"Cannot delete this Notifier - one or more of its associated templates are in use.\", \"success\" : false}");
+					return;
+				}
+			}
 
 			if (Type.equalsIgnoreCase("procedure") || Type.equalsIgnoreCase("function"))
 			{
@@ -2401,6 +2424,13 @@ public class DMSession {
 					DeleteFromTable("dm.dm_servercomptype","serverid",id);
 					DeleteFromTable("dm.dm_serversinenv","serverid",id);
 					DeleteFromTable("dm.dm_serverstatus","serverid",id);
+					res = DeleteFromTable("dm.dm_"+Type,"id",id);
+				}
+				else
+				if (Type.equalsIgnoreCase("notify")) {
+					DeleteFromTable("dm.dm_notifyaccess","notifyid",id);
+					DeleteFromTable("dm.dm_notifyprops","notifyid",id);
+					DeleteFromTable("dm.dm_template","notifierid",id);
 					res = DeleteFromTable("dm.dm_"+Type,"id",id);
 				}
 				else

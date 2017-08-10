@@ -54,7 +54,7 @@ function LoadArgsData(tablename, objtypeAsInt, objtype, objid, objkind, addParam
    var row = res.data[a];
    console.log(row);
    var swmode = "Switch";
-   var key = row[0];
+   var key = row[0].replace(/[^0-9A-Za-z_]/g,"");
    var name = row[4];
    var sw1 = row[11];
    var sw2 = row[12];
@@ -79,9 +79,9 @@ function LoadArgsData(tablename, objtypeAsInt, objtype, objid, objkind, addParam
    if (typestr != "false")
    {
 	   if (objkind ==1 || objkind == 2) {
-		   inputtd += "<tr class=\"clickablerow\"><td style=\"border: 1px solid #ddd;width:30%\"  id=\"name_" + key +"\">" + name + "</td><td style=\"border: 1px solid #ddd;\" id=\"type_" + name +"\">" + typestr + "</td><td style=\"border: 1px solid #ddd;\" id=\"req_" + name + "\">" + required + "</td><td style=\"display:none\" id=\"pos_" + name + "\">" + outpos + "</td><td style=\"display:none\" id=\"inpos_" + name + "\">" + inpos + "</td></tr>";
+		   inputtd += "<tr class=\"clickablerow\"><td style=\"border: 1px solid #ddd;width:30%\"  id=\"name_" + key +"\">" + name + "</td><td style=\"border: 1px solid #ddd;\" id=\"type_" + key +"\">" + typestr + "</td><td style=\"border: 1px solid #ddd;\" id=\"req_" + key + "\">" + required + "</td><td style=\"display:none\" id=\"pos_" + key + "\">" + outpos + "</td><td style=\"display:none\" id=\"inpos_" + key + "\">" + inpos + "</td></tr>";
 	   } else {
-		   inputtd += "<tr class=\"clickablerow\"><td style=\"border: 1px solid #ddd;width:30%\"  id=\"name_" + key +"\">" + name + "</td><td style=\"border: 1px solid #ddd;\" id=\"type_" + name +"\">" + typestr + "</td><td style=\"border: 1px solid #ddd;display:none;\" id=\"swmode_" + name + "\">" + swmode + "</td><td style=\"border: 1px solid #ddd;\" id=\"sw1_" + name + "\">" + sw1 + "</td><td style=\"border: 1px solid #ddd;\" id=\"sw2_" + name + "\">" + sw2 + "</td><td style=\"border: 1px solid #ddd;\" id=\"pad_" + name + "\">" + padded + "</td><td style=\"border: 1px solid #ddd;\" id=\"req_" + name + "\">" + required + "</td><td style=\"display:none\" id=\"pos_" + name + "\">" + outpos + "</td><td style=\"display:none\" id=\"inpos_" + name + "\">" + inpos + "</td></tr>";
+		   inputtd += "<tr class=\"clickablerow\"><td style=\"border: 1px solid #ddd;width:30%\"  id=\"name_" + key +"\">" + name + "</td><td style=\"border: 1px solid #ddd;\" id=\"type_" + key +"\">" + typestr + "</td><td style=\"border: 1px solid #ddd;display:none;\" id=\"swmode_" + key + "\">" + swmode + "</td><td style=\"border: 1px solid #ddd;\" id=\"sw1_" + key + "\">" + sw1 + "</td><td style=\"border: 1px solid #ddd;\" id=\"sw2_" + key + "\">" + sw2 + "</td><td style=\"border: 1px solid #ddd;\" id=\"pad_" + key + "\">" + padded + "</td><td style=\"border: 1px solid #ddd;\" id=\"req_" + key + "\">" + required + "</td><td style=\"display:none\" id=\"pos_" + key + "\">" + outpos + "</td><td style=\"display:none\" id=\"inpos_" + key + "\">" + inpos + "</td></tr>";
 		   args += getArgsTextWithMarkup(name,swmode,sw1,sw2,required,padded,a+1,outpos,outputArgs);
 	   }
 	
@@ -89,7 +89,7 @@ function LoadArgsData(tablename, objtypeAsInt, objtype, objid, objkind, addParam
    }
    else
    { 
-    td += "<tr class=\"clickablerow\"><td style=\"border: 1px solid #ddd;\" id=\"sw1_" + name + "\">" + sw1 + "</td></tr>";
+    td += "<tr class=\"clickablerow\"><td style=\"border: 1px solid #ddd;\" id=\"sw1_" + key + "\">" + sw1 + "</td></tr>";
     args += getArgsTextWithMarkup(name,swmode,sw1,sw2,required,padded,a+1,outpos,outputArgs);
     rowcnt++;
    }
@@ -286,8 +286,8 @@ function AddArgsButton(isswitch)
    {
     $("tr.ui-state-highlight").each(function(i, tr) {       
      var id = $(this).find("td").eq(0).attr("id");
-     id = id.substring(5);
-
+     id = id.substring(5).replace(/[^0-9A-Za-z_]/g,"");
+     
      var poskey = "#pos_" + id;  
      var name = $("#name_" + id).html();
      var sw1 = $("#sw1_" + id).html();
@@ -710,8 +710,15 @@ function AddArgsButton(isswitch)
      view[viewArr[i].name] = viewArr[i].value;
     }
     
-    if (view['name_val'].indexOf(" ") >= 0) {
-    	$("#errortextdiv").html("Name cannot include spaces");
+    var tn = view['name_val'].replace(/[^0-9A-Za-z_]/g,"");
+    console.log("view['name_val']=["+view['name_val']+" tn=["+tn+"]");
+    if (tn != view['name_val']) {
+    	$("#errortextdiv").html("Invalid Variable Name");
+    	return false;
+    }
+    else
+    if (view['name_val'].charAt(0) >= '0' && view['name_val'].charAt(0) <= '9') {
+    	$("#errortextdiv").html("Variable Names must start with a letter or underscore");
     	return false;
     } else {
     	$("#errortextdiv").html("");
