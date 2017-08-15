@@ -10361,8 +10361,8 @@ void Model::getVariablesForObject(Object &obj, Scope &vars)
 		return;
 	}
 
-	int deferred_arrayid[10];
-	DMArray *deferred_array[10];
+	int deferred_arrayid[1000];
+	DMArray *deferred_array[1000];
 	int deferred_arrays = 0;
 
 	for(res = sql->FetchRow(); IS_SQL_SUCCESS(res); res = sql->FetchRow()) {

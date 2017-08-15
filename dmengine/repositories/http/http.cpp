@@ -707,22 +707,40 @@ void HttpRepositoryImpl::checkout(
 	char *offset = m_uri?m_uri:(char *)"";
 	debug1("CHECKOUT: m_uri is %s",m_uri?m_uri:"null");
 	if (m_params) {
-		char *content;
+		char *content = (char *)0;
 		char *ContentType;
 		if (logout) fflush(logout);
-		DoHttpRequest(m_host,m_port,offset,m_params,MESSAGE_TYPE_GET,m_secure,m_host,NULL,NULL,headers,&status,&ContentType,&content,m_logfile,&retlen);
+		int res = DoHttpRequest(m_host,m_port,offset,m_params,MESSAGE_TYPE_GET,m_secure,m_host,NULL,NULL,headers,&status,&ContentType,&content,m_logfile,&retlen);
+		if (res < 0) {
+			// There has been some sort of connection problem
+			if (logout) fclose(logout);
+			throw RuntimeError(stmt,ctx.stack(),
+				"Could not connect to HTTP Server %s:%d",m_host,m_port);
+		}
 		if (logout) fprintf(logout,"status=%d\n",status);
+		if (status<200 || status >299) {
+			// Invalid return code - not found or some other issue we haven't caught
+			if (logout) fclose(logout);
+			throw RuntimeError(stmt,ctx.stack(),
+				"GET %s:%d%s?%s returns status %d",m_host,m_port,m_uri?m_uri:"",m_params,status);
+		}
 		StringListIterator iter(*pattern);
 		char *BaseName = (char *)iter.first();
 		if (BaseName) {
 			// The first pattern is the output file from the URL
-			if (logout) fprintf(logout,"BaseName from Pattern=[%s]\n",BaseName);
-			// createDropZoneFile(buf,retlen,dzpath,B::aseName);
+			if (logout) {
+				fprintf(logout,"BaseName from Pattern=[%s]\n",BaseName);
+				fprintf(logout,"retlen = %d\n",retlen);
+			}
+			// createDropZoneFile(buf,retlen,dzpath,BaseName);
 			createDropZoneFile((void *)content,retlen,dzpath,BaseName);
-			callback.checked_out_file(this, offset, dzpath, "1");	// need to take version from parameter
+			callback.checked_out_file(this, offset, BaseName, "1");	// need to take version from component item
 			callback.checkout_summary(1,1,0,0);						// Record 1 of 1 files checked out successfully
 		} else {
-			if (logout) fprintf(logout,"No Pattern or BaseName - cannot create file in dropzone\n");
+			if (logout) {
+				fprintf(logout,"No Pattern or BaseName - cannot create file in dropzone\n");
+				fclose(logout);
+			}
 			throw RuntimeError(stmt,ctx.stack(),
 				"Pattern must be specified when using params with HTTP");
 		}
@@ -731,7 +749,6 @@ void HttpRepositoryImpl::checkout(
 		// No params - let's take the file pattern
 		if (logout) fprintf(logout,"No parameters specified\n");
 		if (pattern) {
-			if (logout) fprintf(logout,"pattern [%s] specified\n",pattern);
 			StringListIterator iter(*pattern);
 			for(const char *patt = iter.first(); patt; patt = iter.next()) {
 				debug1("patt=[%s]",patt);
@@ -866,21 +883,37 @@ void HttpRepositoryImpl::checkout(
 					debug1("CLOSESOCKET");
 				} else {
 					// No fields in pattern - just grab the specified file(s)
-					if (logout) fprintf(logout,"No fields in pattern, downloading specified file(s)");
+					if (logout) fprintf(logout,"No fields in pattern, downloading specified file(s)\n");
 					for(const char *patt = iter.first(); patt; patt = iter.next()) {
 						char *content;
 						char *contentType;
 						op = (char *)malloc(strlen(offset)+strlen(patt)+strlen(m_host)+100);
 						char *enc_offset = url_encode(offset);
-						printf("patt is 0x%lx\n",patt);
 						char *enc_patt = url_encode((char *)patt);
 						sprintf(op,"%s%s%s%s",offset[0]=='/'?"":"/",enc_offset, enc_patt[0]?"/":"", enc_patt);
 						if (logout) fflush(logout);
-						DoHttpRequest(m_host,m_port,op,NULL,MESSAGE_TYPE_GET,m_secure,m_host,NULL,NULL,headers,&status,&contentType,&content,m_logfile,&retlen);
+						int res = DoHttpRequest(m_host,m_port,op,NULL,MESSAGE_TYPE_GET,m_secure,m_host,NULL,NULL,headers,&status,&contentType,&content,m_logfile,&retlen);
+						if (res < 0) {
+							// There has been some sort of connection problem
+							if (logout) fclose(logout);
+							throw RuntimeError(stmt,ctx.stack(),
+								"Could not connect to HTTP Server %s:%d",m_host,m_port);
+						}
+						if (logout) fprintf(logout,"status=%d\n",status);
+						if (status<200 || status >299) {
+							// Invalid return code - not found or some other issue we haven't caught
+							if (logout) fclose(logout);
+							throw RuntimeError(stmt,ctx.stack(),
+								"GET %s:%d%s%s%s%s returns status %d",
+								m_host,m_port,
+								offset[0]=='/'?"":"/",enc_offset,
+								enc_patt[0]?"/":"", enc_patt,
+								status);
+						}
 						callback.checked_out_folder(offset[0]?offset:"/", "\\", true);
 						debug1("retlen=%d",retlen);
 						debug1("status=%d",status);
-						if (logout) fprintf(logout,"status=%d",status);
+
 						// CLOSESOCKET(sock);
 						if (status>=200 && status <=299) {
 							// Success

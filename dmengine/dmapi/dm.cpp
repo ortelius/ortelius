@@ -105,8 +105,6 @@ bool getConnectionDetails(const char *fullurl,char **server,int *port,bool *secu
 			*secure=false;
 			sp=4;
 		}
-		//printf("sp=%d\n",sp);
-		//printf("fullurl[%d]='%c'\n",sp,fullurl[sp]);
 		if (fullurl[sp]!=':')	return true;	
 		if (fullurl[sp+1]!='/') return true;
 		if (fullurl[sp+2]!='/') return true;
@@ -423,7 +421,11 @@ SSL_CTX* InitCTX(void)
  
     OpenSSL_add_all_algorithms();  /* Load cryptos, et.al. */
     SSL_load_error_strings();   /* Bring in and register error messages */
+#ifdef OPENSSL_110
+	ctx = SSL_CTX_new(TLS_method());
+#else
     ctx = SSL_CTX_new(SSLv23_method());   /* Create new context */
+#endif
     if ( ctx == NULL )
     {
        ERR_print_errors_fp(stderr);
@@ -433,6 +435,13 @@ SSL_CTX* InitCTX(void)
     return ctx;
 }
 
+void CloseLogging(FILE *logfile)
+{
+	if (logfile) {
+		fprintf(logfile,"--- HTTP LOGGING ENDS ---\n");
+		fclose(logfile);
+	}
+}
 
 int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 			  const char *params, MESSAGE_TYPE mt, bool isSecure,const char *host, 
@@ -446,6 +455,8 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 	if (logfilename) {
 		logfile = fopen(logfilename,"a+");
 	}
+	if (logfile) fprintf(logfile,"--- HTTP LOGGING STARTS ---\n");
+
 	int	sock;
 	int	res;
 	char *TransferEncoding = (char *)0;
@@ -459,6 +470,8 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 	if(!hp)
 	{
 		// gethostbyname fails	
+		if (logfile) fprintf(logfile,"ERROR: gethostbyname(%s) fails (errno %d)\n",hostname,errno);
+		CloseLogging(logfile);
 		errno = h_errno;
 		return -1;
 	}
@@ -480,9 +493,10 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 		if(res)
 		{
 			// Connection failure
-			if (logfile) fprintf(logfile,"Failed to connect\n");
+			if (logfile) fprintf(logfile,"Failed to connect (errno %d)\n",errno);
 #ifdef WIN32
 			errno = WSAGetLastError();
+			CloseLogging(logfile);
 #endif /*WIN32*/
 			return -2;
 		}
@@ -501,7 +515,10 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 		SSL_set_fd(ssl, sock);    /* attach the socket descriptor */
 		if ( SSL_connect(ssl) == -1 ) {
 			/* perform the connection */
+			if (logfile) fprintf(logfile,"Failed to perform SSL_connect\n");
 			ERR_print_errors_fp(stderr);
+			if (logfile) ERR_print_errors_fp(logfile);
+			CloseLogging(logfile);
 			return -3;
 		}
 	}
@@ -595,7 +612,15 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 		request.writeToStdOut("%s", params);
 	}
 
-	if (logfile) fprintf(logfile,"Request: %s\n", request.buffer());
+	if (logfile) {
+		// print the request a line at a time with > in front of each line
+		char *t = strdup(request.buffer());
+		char *temp;
+		for(char *line = STRTOK_R(t,"\r\n", &temp);	line; line = STRTOK_R(NULL, "\r\n", &temp)) {
+			fprintf(logfile,"> %s\n",line);
+		}
+		free(t);
+	}
 
 	char *line;
 	if (isSecure) {
@@ -606,7 +631,7 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 		line = ReadLineFromSocket(sock);
 	}
 
-	if (logfile) fprintf(logfile,"line: [%s]\n",line);
+	if (logfile) fprintf(logfile,"< %s\n",line);
 
 	if(strncmp(line, "HTTP/1.", 7) != 0) {
 		if (isSecure) {
@@ -614,12 +639,14 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 		} else {
 			CLOSESOCKET(sock);
 		}
+		if (logfile) fprintf(logfile,"Not HTTP protocol\n",line);
+		CloseLogging(logfile);
 		return -3; // Not HTTP
 	}
 
 	*status = atoi(&line[9]);
 	debug1("Status: %d", *status);
-	if (logfile) fprintf(logfile,"status: %d\n",*status);
+	
 
 	bool noWait = (*status == 204);	// No Content
 
@@ -633,8 +660,7 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 			line = ReadLineFromSocket(sock);
 		}
 		
-		if (logfile) fprintf(logfile,"line=%s\n",line);
-		//debug1("line = %s", line);
+		if (logfile) fprintf(logfile,"< %s\n",line);
 
 		if(!*line) break;
 
@@ -669,7 +695,10 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 			NewLocation = &(line[10]);
 		}
 	}
-	if (logfile) fprintf(logfile,"Length: %d\n", length);
+	if (logfile) {
+		fprintf(logfile,"status: %d\n",*status);
+		fprintf(logfile,"Length: %d\n", length);
+	}
 	if (*status >= 300 && *status <= 399) {
 		// redirect in progress.
 		if (NewLocation) {
@@ -682,7 +711,7 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 			// Recurse with new details
 			// Keep original port because nexus 2 returns http://localhost rather than http://localhost:8081 
 			if (logfile) fflush(logfile);
-			DoHttpRequest(newserver,port,newurl,NULL,mt,newsecure,host,soapaction,cookieJar,header,status,contentType,content,logfilename);
+			DoHttpRequest(newserver,port,newurl,NULL,mt,newsecure,host,soapaction,cookieJar,header,status,contentType,content,logfilename,datalen);
 		} else {
 			if (logfile) fprintf(logfile, "Redirect status %d but no Location: returned\n",*status);
 		}
@@ -725,14 +754,14 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 					if(ReadDataFromSocket(ssl, data, length)) {
 						//debug1("Data: %s", data);
 						data[length] = '\0';
-						*datalen = length;
+						if (datalen) *datalen = length;
 						*content = data;
 					}
 				} else {
 					if(ReadDataFromSocket(sock, data, length)) {
 						//debug1("Data: %s", data);
 						data[length] = '\0';
-						*datalen = length;
+						if (datalen) *datalen = length;
 						*content = data;
 					}
 				}
@@ -749,9 +778,12 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 		}
 		if (logfile && length>0) {
 			fprintf(logfile,"Content is:\n");
-			if (content) fprintf(logfile,*content);
+			if (strncmp(*contentType,"Text",4)==0) {
+				if (*content) fprintf(logfile,*content);
+			} else {
+				fprintf(logfile,"<<DATA>>");
+			}
 			fprintf(logfile,"\nend of content\n");
-			fclose(logfile);
 		}
 	}
 
@@ -761,6 +793,7 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 		CLOSESOCKET(sock);
 	}
 
+	CloseLogging(logfile);
 	return 0;
 }
 
