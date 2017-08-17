@@ -556,6 +556,7 @@ function AddArgsButton(isswitch)
 			    	text : "Ok",
 			    	click : function() {
 			    		parent.$("#modal").dialog("close");
+			    		parent.$("#modal").css("overflow","auto");
 			    	}
 			    }
 			    ]:[
@@ -573,11 +574,12 @@ function AddArgsButton(isswitch)
 					text : "Cancel",
 					click : function() {
 						parent.$("#modal").dialog("close");
+			    		parent.$("#modal").css("overflow","auto");
 					}
 			    }
 			    ];
 	
-	 var tdedit = "<div style='width:95%;height:350px;'><form id=\"Procform\" style='height:100%;'>"
+	 var tdedit = "<div style='width:98%;height:95%;'><form id=\"Procform\" style='height:100%;'>"
 		 + "<textarea id='editproc' cols='400' wrap='off' spellcheck='false' style='width:100%;height:100%;font-size:14px;font-family:courier;white-space: pre; overflow: auto;'></textarea>";
 	 tdedit += "</form></div><div id='parsearea'></div>";
 
@@ -587,8 +589,11 @@ function AddArgsButton(isswitch)
      pwd.dialog({
         open : function(event, ui) {
         	LoadProcBody("editproc",objid,generate,!generate);
+        	$(this).css('overflow', 'hidden');
         }
      });
+
+     
 
      pwd.dialog("option", "title", generate?"View Generated DMScript":"Edit Procedure Body");
      pwd.dialog("option", "height", "500");
@@ -1078,7 +1083,10 @@ function SaveProcBody(divid,text)
 	    			  console.log("success");
 	    			  LoadProcBody("ProcBodyTextArea",save_action_id,false,false);
 	    			  $("#parsearea").html("");
-	    			  if (okclicked) parent.$("#modal").dialog("close");
+	    			  if (okclicked) {
+	    				  parent.$("#modal").dialog("close");
+	    				  parent.$("#modal").css("overflow","auto");
+	    			  }
 	    			  okclicked=false;
 	    		  } else {
 	    			  console.log("failed with "+data.parseResult);
@@ -1110,6 +1118,7 @@ function LoadProcBody(divid,actionid,generate,editmode)
 		browsers: "all",
 		is_editable: editmode,
 		allow_toggle: false,
+		allow_resize: "no",
 		save_callback: "SaveProcBody"
 	});
 	$.ajax(
@@ -1131,6 +1140,7 @@ function LoadProcBody(divid,actionid,generate,editmode)
     			   }
     		   }
     		   parent.$("#modal").dialog("close");
+    		   parent.$("#modal").css("overflow","auto");
     		   alert(errmsg);
     	   } else {
     		   editAreaLoader.setValue(divid,data);
