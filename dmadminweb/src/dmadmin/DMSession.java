@@ -2101,6 +2101,13 @@ public class DMSession {
 	  return CheckObjects(sql,id);
  }  
  
+ public boolean datasourceIsReferenced(int id) {
+     String sql[] = {
+      "SELECT count(*) FROM dm.dm_user where datasourceid=?"
+     };
+     return CheckObjects(sql,id);
+ }
+ 
  public boolean comptypeIsReferenced(int id) {
   
   String sql[] = {
@@ -2316,6 +2323,14 @@ public class DMSession {
 					out.print("{\"error\" : \"Cannot delete this Template - it is in use.\", \"success\" : false}");
 					return; 
 				}       
+			}
+			else
+			if (Type.equalsIgnoreCase("datasource"))
+			{       
+		        if (datasourceIsReferenced(id)) {
+		                out.print("{\"error\": \"Cannot delete this Datasource - it is in use.\", \"success\" : false}");
+		                return; 
+		        }       
 			} 
 
 			if (Type.equalsIgnoreCase("procedure") || Type.equalsIgnoreCase("function"))
