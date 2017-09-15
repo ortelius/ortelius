@@ -151,7 +151,7 @@ public:
 	void setSummary(const char *summary);
 	const char *getNotes();
 	void setNotes(const char *notes);
-	void setBuildId(int buildid);
+	// void setBuildId(int buildid);
 
 	void indent(int indent);
 	virtual void print(int indent) = 0;
@@ -779,6 +779,8 @@ public:
 	int getParentId()              { return m_parentid; }	
 	int getPredecessorId()         { return m_predecessorid; }
 	int buildid()				   { return m_buildid; }
+	int datasourceid()             { return m_datasourceid; }
+	
 	
 	List<Defect> *getDefects();
 	List<Server> *getServerSubset(class Context &ctx);
@@ -789,6 +791,7 @@ public:
 	class Action *getPostAction();
 
 	void recordDeployedToServer(class DM &dm, class Server &server, bool success);
+	void setBuildId(int buildid);
 
 	void print(int indent);
 

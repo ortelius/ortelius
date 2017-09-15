@@ -2910,6 +2910,10 @@ void Component::add(ComponentItem *item)
 	m_items->add(item);
 }
 
+void Component::setBuildId(int buildid)
+{
+	m_buildid = buildid;
+}
 
 Action *Component::getCustomAction()
 {
@@ -9458,14 +9462,41 @@ Component *Model::getComponentDeployedToServer(Server &server, Component &comp)
 	AutoPtr<List<Component> > matches = internalGetComponents("dm_compsonserv cos", whereClause);
 	ListIterator<Component> iter(*matches);
 	Component *depcomp = iter.first();
+	Component *newcomp = (Component *)0;
 
 	if(depcomp) {
+		// Duplicate the component (it may have been cached and we need a new copy if we change
+		// the build number)
+		newcomp = new Component(*this,
+			depcomp->id(),depcomp->name(),depcomp->basedir(),
+			depcomp->getRollup(),depcomp->getRollback(),depcomp->getFilterItems(),
+			depcomp->isDeployAlways(),depcomp->isDeploySequentially(),depcomp->getParentId(),
+			depcomp->getPredecessorId(),depcomp->datasourceid(),depcomp->buildid());
+		// Get the build number from the target server
+		int compid = depcomp->id();
+		int servid = server.id();
+		int depbuildid;
+		AutoPtr<triSQL> sql = m_odbc.GetSQL();
+		sql->PrepareStatement("SELECT buildnumber FROM dm.dm_compsonserv WHERE compid=? AND serverid=?");
+		sql->BindParameter(1, SQL_INTEGER, sizeof(compid), &compid, sizeof(compid));
+		sql->BindParameter(2, SQL_INTEGER, sizeof(servid), &servid, sizeof(servid));
+		sql->BindColumn(1, SQL_INTEGER, &depbuildid, sizeof(depbuildid));
+		SQLRETURN res = sql->Execute();
+		if (res == SQL_SUCCESS || res == SQL_SUCCESS_WITH_INFO) {
+			res = sql->FetchRow();
+			// Should only be a single row returned
+			if (res == SQL_SUCCESS || res == SQL_SUCCESS_WITH_INFO) {
+				// Update the component build id with that stored for the target server
+			newcomp->setBuildId(depbuildid);
+			}
+			sql->CloseSQL();
+		}
 		debug1("getCompDeployedToServ %d, '%s' - returning %d, '%s'", server.id(), server.name(), depcomp->id(), depcomp->name());
 	} else {
 		debug1("getCompDeployedToServ %d, '%s' - returning NULL", server.id(), server.name());
 	}
 
-	return depcomp;
+	return newcomp?newcomp:depcomp;
 }
 
 

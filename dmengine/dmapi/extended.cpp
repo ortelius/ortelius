@@ -2470,8 +2470,14 @@ void ZipGetStmtImpl::GetFile(Context &ctx,Dropzone &dz,Variable *v)
 		if (zf) {
 			char *tgtfile = (char *)malloc(strlen(dz.pathname())+strlen(fileToGet)+strlen(DIR_SEP_STR)+10);
 			sprintf(tgtfile,"%s%s%s",dz.pathname(),DIR_SEP_STR,fileToGet);
+			// fileToGet may have directory separators in it - sort those out so they're consistent
+			char *p = tgtfile;
+			while (*p) {
+				if (*p=='\\' || *p=='/') *p = DIR_SEP_CHAR;
+				p++;
+			}
 			CreateDirectories(tgtfile);
-			int w = open(tgtfile,FILE_CREATE_PERMISSIONS);
+			int w = open(tgtfile,FILE_CREATE_PERMISSIONS,FILE_CREATE_MODE);
 			if (w<=0) throw RuntimeError(m_parent,ctx.stack(),"Could not open output file %s for writing",fileToGet);
 			unsigned char buf[10];
 			int br;
