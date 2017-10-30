@@ -25,7 +25,7 @@ Visit [Jenkins Plugin](https://plugins.jenkins.io/deployhub)
 *   libiodbc > 3.50
 *  openvas-smb
 *  gnutls
-*  ansible
+*  ansible (optional)
 *  java-1.8.0-openjdk > 1.8.0.0
 
 ## Slack Channel
