@@ -901,14 +901,15 @@ function DisplayDeploy(lognum)
       GetNewsDetails(lognum);
       
 
-      $(this).css("height", "400px");
+      $(this).css("height", "400px").find(".right_panel_title_area").css({cursor: 'move'});
       // $("#displaylogtabs").tabs({ heightStyle: "fill" });
       SetTabActive(1,"displaylogtabs-files");
       // CreateDeployReports();
-	  // $(this).parent().draggable();
+      // $(this).parent().draggable();
      },
      dialogClass: 'tabbedDialog'
-    }).css({cursor: 'move'}).parent().draggable({cancel:'',handle:''});;
+    }).parent().draggable({cancel:'',handle:'.right_panel_title_area'});
+  
 
   var buttons = [
                  {
