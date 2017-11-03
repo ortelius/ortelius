@@ -2719,7 +2719,7 @@ INSERT INTO dm_appsallowedinenv VALUES (1, 1);
 -- Data for Name: dm_appsinenv; Type: TABLE DATA; Schema: dm; Owner: postgres
 --
 
-INSERT INTO dm_appsinenv VALUES (1, 1, 129, NULL, NULL, NULL);
+-- INSERT INTO dm_appsinenv VALUES (1, 1, 129, NULL, NULL, NULL);
 
 
 --
@@ -2834,10 +2834,10 @@ INSERT INTO dm_compsallowedonserv VALUES (3, 2);
 -- Data for Name: dm_compsonserv; Type: TABLE DATA; Schema: dm; Owner: postgres
 --
 
-INSERT INTO dm_compsonserv VALUES (1, 1, 129, NULL, NULL, NULL);
-INSERT INTO dm_compsonserv VALUES (1, 2, 129, NULL, NULL, NULL);
-INSERT INTO dm_compsonserv VALUES (2, 1, 129, NULL, NULL, NULL);
-INSERT INTO dm_compsonserv VALUES (3, 2, 129, NULL, NULL, NULL);
+-- INSERT INTO dm_compsonserv VALUES (1, 1, 129, NULL, NULL, NULL);
+-- INSERT INTO dm_compsonserv VALUES (1, 2, 129, NULL, NULL, NULL);
+-- INSERT INTO dm_compsonserv VALUES (2, 1, 129, NULL, NULL, NULL);
+-- INSERT INTO dm_compsonserv VALUES (3, 2, 129, NULL, NULL, NULL);
 
 
 --
@@ -3004,7 +3004,7 @@ INSERT INTO dm_engineconfig VALUES (1, 'threadlimit', '4');
 -- Data for Name: dm_environment; Type: TABLE DATA; Schema: dm; Owner: postgres
 --
 
-INSERT INTO dm_environment VALUES (1, 'demoenv', 1, NULL, 2, NULL, 'Demo Environment', NULL, NULL, NULL, NULL, NULL, NULL, 'O', NULL, NULL, 'N');
+INSERT INTO dm_environment VALUES (1, 'demoenv', 1, NULL, 2, NULL, 'Demo Environment', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'N');
 
 
 --
