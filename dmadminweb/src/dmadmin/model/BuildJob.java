@@ -132,10 +132,17 @@ public class BuildJob extends DMObject
  @Override
  public IJSONSerializable getSummaryJSON()
  {
+  Builder builder = m_session.getBuilder(getBuilderId());
+  ProviderDefinition provider = builder.getDef();
   PropertyDataSet ds = new PropertyDataSet();
   ds.addProperty(SummaryField.NAME, "Name", getName());
   ds.addProperty(SummaryField.SUMMARY, "Summary", getSummary());
-  ds.addProperty(SummaryField.PROJECTNAME, "Project Name", getProjectName());
+  if (provider.getName().equalsIgnoreCase("bamboo")) {
+	  // Bamboo uses "Plan Name" and not "Project Name"
+	  ds.addProperty(SummaryField.PROJECTNAME,"Plan Name", getProjectName());
+  } else {
+	  ds.addProperty(SummaryField.PROJECTNAME,"Project Name", getProjectName());
+  }
   addCreatorModifier(ds);
   return ds.getJSON();
  }

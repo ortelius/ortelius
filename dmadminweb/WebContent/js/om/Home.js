@@ -16,8 +16,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-function ShowHome(hbc)
+function ShowHome(hbc,nocallback)
 {
+	nocallback = nocallback || false;
 	console.log("currenttree="+currenttree);
  if (displayhome)
  {
@@ -178,6 +179,7 @@ function ShowHome(hbc)
   else
    $("#panel_container_right").show(); 
  }
+ if (ShowingInitialHelp && !nocallback) ShowHelpPage(10);
 }
 
 

@@ -45,9 +45,11 @@ public class Home extends HttpServletBase
  @Override
  public void handleRequest(DMSession session, boolean isPost, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
  {
+	 System.out.println("in Home.java");
   HomeTabsList ht = session.getHomeTabs();
   request.setAttribute("ht", ht);
   request.setAttribute("username", session.GetUserName());
+  request.setAttribute("firstinstall",session.firstInstall());
   request.setAttribute("admin", session.getAclOverride() ? "Y" : "N");
   System.out.println("admin=" + (session.getAclOverride() ? "Y" : "N"));
   request.getRequestDispatcher("/WEB-INF/Home.jsp").forward(request, response);

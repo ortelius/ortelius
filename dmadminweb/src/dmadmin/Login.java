@@ -47,7 +47,9 @@ public class Login extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		request.getRequestDispatcher("/WEB-INF/Home.jsp").forward(request, response);
+		DMSession session = new DMSession(request.getSession());
+		request.setAttribute("firstinstall",session.firstInstall());
+		request.getRequestDispatcher("WEB-INF/Home.jsp").forward(request, response);
 	}
 
 	/**
@@ -57,9 +59,15 @@ public class Login extends HttpServlet {
 		HttpSession hs = request.getSession();
 		String username=request.getParameter("username");
         String password=request.getParameter("password");
+        String initial=request.getParameter("initial");
+        boolean initialInstall=false;
         DMSession so = new DMSession(hs);
-        
-        LoginException loginres = so.Login(username,password);
+        if (initial!=null && initial.equalsIgnoreCase("Y")) {
+        	// Initial admin password creation.
+        	initialInstall=true;
+        }
+
+        LoginException loginres = initialInstall?so.InitialLogin(password):so.Login(username,password);
         String userdatefmt = so.GetUserDateFormat();
     	String usertimefmt = so.GetUserTimeFormat();
     	System.out.println("login returns "+loginres.getExceptionType());
@@ -92,10 +100,10 @@ public class Login extends HttpServlet {
         	hs.setAttribute("logininfo","Login OK");
         	if (so.getAclOverride()) {
         		// Administrator login
-        		response.getWriter().write("{\"Msg\": \"Login Admin\", \"datefmt\": \""+userdatefmt+"\", \"timefmt\": \""+usertimefmt+"\"}");
+        		response.getWriter().write("{\"Msg\": \"Login Admin\", \"datefmt\": \""+userdatefmt+"\", \"timefmt\": \""+usertimefmt+"\", \"newuser\": \""+so.getNewUser()+"\"}");
         	} else {
         		// Normal (non admin) login
-        		response.getWriter().write("{\"Msg\": \"Login OK\", \"datefmt\": \""+userdatefmt+"\", \"timefmt\": \""+usertimefmt+"\"}");
+        		response.getWriter().write("{\"Msg\": \"Login OK\", \"datefmt\": \""+userdatefmt+"\", \"timefmt\": \""+usertimefmt+"\", \"newuser\": \""+so.getNewUser()+"\"}");
         	}
         	break;
         case LOGIN_BAD_PASSWORD:
@@ -115,7 +123,7 @@ public class Login extends HttpServlet {
         	hs.setAttribute("session", so);
         	hs.setAttribute("pwchange",true);
         	so.setWebHostName(request);
-        	response.getWriter().write("{\"Msg\": \"Password must be changed\", \"datefmt\": \""+userdatefmt+"\", \"timefmt\": \""+usertimefmt+"\"}");
+        	response.getWriter().write("{\"Msg\": \"Password must be changed\", \"datefmt\": \""+userdatefmt+"\", \"timefmt\": \""+usertimefmt+"\", \"newuser\": \""+so.getNewUser()+"\"}");
             break;
         case LDAP_ERROR:
         	System.out.println("LDAP ERROR: loginres.getMessage()="+loginres.getMessage());

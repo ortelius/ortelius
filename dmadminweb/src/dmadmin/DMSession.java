@@ -187,8 +187,10 @@ public class DMSession {
 	
 	private int m_userDomain;
 	private int m_userID;
+	private boolean m_newUser;
 	private String m_datefmt;
 	private String m_timefmt;
+	private String m_username;
 	private String m_password;
 
 	private boolean m_OverrideAccessControl;
@@ -301,6 +303,11 @@ public class DMSession {
 	public int GetUserID()
 	{
 		return getUserID();
+	}
+	
+	public String getNewUser()
+	{
+		return m_newUser?"Y":"N";
 	}
 	
 	public void setWebHostName(HttpServletRequest request)
@@ -428,48 +435,49 @@ public class DMSession {
 	{
 		try
 		{
-			Statement st = getDBConnection().createStatement();
-			ResultSet rs = st.executeQuery("SELECT domainid FROM dm.dm_user where id = "+UserID);
-			rs.next();
-			m_userDomain = rs.getInt(1);
-			System.out.println("user domain = " + m_userDomain);
-			rs.close();
-			st.close();
-			//
-			// Okay, now derive a list of all our sub-domains
-			//
-			System.out.println("Before GetParentDomains, m_domains.size()="+m_domains.size());
-			GetParentDomains(m_userDomain);
-			System.out.println("After GetParentDomains, m_domains.size()="+m_domains.size());
-			Iterator<Map.Entry<Integer,String>> it = m_domains.entrySet().iterator();
-			String sep="";
-			while (it.hasNext())
-			{
-			    Map.Entry<Integer,String> pairs = it.next();
-			    m_parentdomains=m_parentdomains+sep+pairs.getKey();
-			    sep=",";
+			synchronized(this) {
+				m_domains = new HashMap<Integer,String>();
+				m_domainlist="";
+				m_parentdomains="";
+				Statement st = getDBConnection().createStatement();
+				ResultSet rs = st.executeQuery("SELECT domainid FROM dm.dm_user where id = "+UserID);
+				rs.next();
+				m_userDomain = rs.getInt(1);
+				System.out.println("user domain = " + m_userDomain);
+				rs.close();
+				st.close();
+				//
+				// Okay, now derive a list of all our sub-domains
+				//
+				System.out.println("Before GetParentDomains, m_domains.size()="+m_domains.size());
+				GetParentDomains(m_userDomain);
+				System.out.println("After GetParentDomains, m_domains.size()="+m_domains.size());
+				Iterator<Map.Entry<Integer,String>> it = m_domains.entrySet().iterator();
+				String sep="";
+				while (it.hasNext())
+				{
+				    Map.Entry<Integer,String> pairs = it.next();
+				    m_parentdomains=m_parentdomains+sep+pairs.getKey();
+				    sep=",";
+				}
+				System.out.println("m_parentdomains="+m_parentdomains);
+				m_domains.put(m_userDomain, "Y");
+				
+				GetSubDomains(m_domains,m_userDomain);
+				
+				//
+				// Create a "domainlist" string for queries
+				//
+				it = m_domains.entrySet().iterator();
+				sep="";
+				while (it.hasNext())
+				{
+				    Map.Entry<Integer,String> pairs = it.next();
+				    m_domainlist=m_domainlist+sep+pairs.getKey();
+				    sep=",";
+				}
+				System.out.println("domainlist="+m_domainlist);
 			}
-			System.out.println("m_parentdomains="+m_parentdomains);
-			m_domains.put(m_userDomain, "Y");
-			
-			GetSubDomains(m_domains,m_userDomain);
-			
-			//
-			// Create a "domainlist" string for queries
-			//
-			it = m_domains.entrySet().iterator();
-			sep="";
-			while (it.hasNext())
-			{
-			    Map.Entry<Integer,String> pairs = it.next();
-			    m_domainlist=m_domainlist+sep+pairs.getKey();
-			    sep=",";
-			}
-			System.out.println("domainlist="+m_domainlist);
-			//
-			// Construct a domain heirarchy - in other words, all the domains above our home domain
-			//
-			
 		}
 		 catch (Exception e)
 	     {
@@ -695,8 +703,11 @@ public class DMSession {
 		{
 			res = connectToDatabase(m_httpSession.getServletContext());
 			if (res != null) throw new LoginException(res.getExceptionType(),res.getMessage());
-			// PreparedStatement st = getDBConnection().prepareStatement("SELECT id,passhash,locked,forcechange,datefmt,timefmt,datasourceid FROM dm.dm_user where name = ? and status='N'");
-			PreparedStatement st = getDBConnection().prepareStatement("SELECT id,passhash,locked,forcechange,datefmt,timefmt FROM dm.dm_user where name = ? and status='N'");
+			if (m_username != null && UserName.equals(m_username)) {
+				System.out.println("Already logged in, returning success");
+				return new LoginException(LoginExceptionType.LOGIN_OKAY,"");
+			}
+			PreparedStatement st = m_conn.prepareStatement("SELECT id,passhash,locked,forcechange,datefmt,timefmt,datasourceid,lastlogin FROM dm.dm_user where name = ? and status='N'");	 
 			st.setString(1,UserName);
 			ResultSet rs = st.executeQuery();
 			if (!rs.next()) throw new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD,"");	// No row retrieved
@@ -723,9 +734,12 @@ public class DMSession {
 			m_timefmt = rs.getString(6);
 			if (rs.wasNull()) m_timefmt = m_defaulttimefmt;
 			setUserID(rs.getInt(1));
+			rs.getTimestamp(8);
+			m_newUser = (rs.wasNull());
 			m_OverrideAccessControl = false;
 			m_UserPermissions = new UserPermissions(this,0);
 			m_password = Password;
+			m_username = UserName;
 			GetDomains(getUserID());
 			PreparedStatement st2 = getDBConnection().prepareStatement("SELECT g.acloverride,g.tabendpoints,g.tabapplications,g.tabactions,g.tabproviders,g.tabusers,g.id FROM dm.dm_usergroup g,dm.dm_usersingroup x WHERE x.userid=? AND g.id=x.groupid");
 			st2.setInt(1, getUserID());
@@ -773,6 +787,7 @@ public class DMSession {
 				ull.setInt(1, getUserID());
 				ull.execute();
 				getDBConnection().commit();
+				System.out.println("commited");
 				res = new LoginException(LoginExceptionType.LOGIN_OKAY,"");
 			}
 			rs.close();
@@ -789,6 +804,36 @@ public class DMSession {
 			res = e;
 		}
 		return res;
+	}
+	
+	public LoginException InitialLogin(String password)
+	{
+		// We've been called to do an initial password set for the admin user followed
+		// by a login. As a security precaution, we only set the password if the lastlogin
+		// field for id 1 is null (which it should only be on initial setup). This prevents
+		// someone hacking the admin password by doing a login call with initial=Y
+		//
+		System.out.println("InitialLogin("+password+")");
+		if (firstInstall().equalsIgnoreCase("y")) {
+			System.out.println("Resetting admin password");
+			// set the admin password to the specified value before logging in
+			System.out.println("Setting admin password for InitialLogin");
+			String base64pw = encryptPassword(password);
+			try {
+				PreparedStatement stmt = m_conn.prepareStatement("UPDATE dm.dm_user SET passhash=? WHERE id=1");
+				stmt.setString(1,base64pw);
+				stmt.execute();
+				stmt.close();
+				getDBConnection().commit();
+			} catch (SQLException ex) {
+				System.out.println("Setting initial admin password throws SQLException:"+ex.getMessage());
+			}
+			
+		} else {
+			System.out.println("First install is N");
+		}
+		System.out.println("logging in with admin/"+password);
+		return Login("admin",password);
 	}
 	
 	public String getPassword()
@@ -1046,7 +1091,7 @@ public class DMSession {
 			long t = timeNow();
 			if (objtype.equalsIgnoreCase("user"))
 			{
-				cs = getDBConnection().prepareStatement("SELECT count(*) from dm.dm_user WHERE name=? AND domainid=? AND status='N'");
+				cs = getDBConnection().prepareStatement("SELECT count(*) from dm.dm_user WHERE name=? AND status='N'");
 				st = getDBConnection().prepareStatement("INSERT INTO dm.dm_user(id,name,domainid,creatorid,modifierid,created,modified,locked,status) VALUES(?,?,?,?,?,?,?,'N','N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
@@ -1056,7 +1101,6 @@ public class DMSession {
 				st.setLong(6,t);
 				st.setLong(7,t);
 				cs.setString(1,objname);
-				cs.setInt(2,domainid);
 				ret = new ObjectTypeAndId(ObjectType.USER, id);
 			}
 			else
@@ -1269,7 +1313,11 @@ public class DMSession {
 						cs.close();
 						st.close();
 						String ots = ret.getObjectType().toString();
-						throw new RuntimeException(ots.substring(0,1)+ots.substring(1).toLowerCase()+" "+objname+" already exists in this domain");
+						if (objtype.equalsIgnoreCase("user")) {
+							throw new RuntimeException("User "+objname+" already exists");
+						} else {
+							throw new RuntimeException(ots.substring(0,1)+ots.substring(1).toLowerCase()+" "+objname+" already exists in this domain");
+						}
 					}
 				} else {
 					// count has failed for some reason
@@ -10856,6 +10904,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public NewsFeedDataSet getPendingNewsForObject(ObjectTypeAndId otid, int from, int to)
 	{
+		if (m_userID==0) return new NewsFeedDataSet();	// Sometimes can get called from a background thread before login
 		DynamicQueryBuilder query = new DynamicQueryBuilder(getDBConnection(), "");
 		System.out.println("1) query string="+query.getQueryString());
 		
@@ -12488,7 +12537,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	public List<Action> getAccessibleActions(String objid,int domainid)
 	{
 		System.out.println("getAccessibleActions("+objid+","+domainid+")");
-		if (objid.substring(0,4).equalsIgnoreCase("task")) {
+		if (objid.startsWith("task")) {
 			objid="ta"+objid.substring(4);
 		}
 		ObjectTypeAndId x = new ObjectTypeAndId(objid);
@@ -14088,7 +14137,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
  public List<Repository> getAccessibleRepositories(String objid,int domainid)
  {
 	System.out.println("getAccessibleRepositories("+objid+","+domainid+")");
-	if (objid.substring(0,4).equalsIgnoreCase("task")) {
+	if (objid.startsWith("task")) {
 		objid="ta"+objid.substring(4);
 	}
 	ObjectTypeAndId x = new ObjectTypeAndId(objid);
@@ -19368,7 +19417,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	public List<NotifyTemplate> getAccessibleTemplates(String objid,int domainid)
 	{
 		System.out.println("getAccessibleTemplates("+objid+","+domainid+")");
-		if (objid.substring(0,4).equalsIgnoreCase("task")) {
+		if (objid.startsWith("task")) {
 			objid="ta"+objid.substring(4);
 		}
 		ObjectTypeAndId x = new ObjectTypeAndId(objid);
@@ -22571,6 +22620,110 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	  }
 	  return ret;
 }
+  
+  JSONObject getBuildHistoryBamboo(int builderid,int buildjobid)
+  {
+	  System.out.println("getBuildHistoryBamboo builderid="+builderid+" buildjobid="+buildjobid);
+	  String sql1="select value,encrypted from dm.dm_buildengineprops where name='Server URL' and builderid = ?";
+	  String sql2="select projectname from dm.dm_buildjob where id=?";
+	  String sql3="select a.buildnumber,b.id,b.name,b.parentid from dm.dm_buildhistory a,dm.dm_component b where a.compid=b.id and	a.buildjobid=? order by buildnumber desc";
+	  JSONObject ret = new JSONObject();
+	  try {
+	  	 Builder builder = getBuilder(builderid);
+	  	 Credential cred = builder.getCredential();
+		 PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
+		 PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
+		 PreparedStatement stmt3 = m_conn.prepareStatement(sql3);
+		 stmt1.setInt(1,builderid);
+		 stmt2.setInt(1,buildjobid);
+		 stmt3.setInt(1,buildjobid);
+		 ResultSet rs1 = stmt1.executeQuery();
+		 if (rs1.next()) {
+			 // Got the Server URL
+			 String serverURL = rs1.getString(1);
+			 String encrypted = rs1.getString(2);
+			 System.out.println("Server URL="+serverURL);
+			 if (encrypted != null && encrypted.equalsIgnoreCase("y")) {
+				 serverURL = new String(Decrypt3DES(serverURL,m_passphrase));
+				 System.out.println("Decrypted server URL="+serverURL);
+			 }
+			 ResultSet rs2 = stmt2.executeQuery();
+			 if (rs2.next()) {
+				 String jobname = rs2.getString(1).replaceAll(" ", "%20");
+				 if (jobname.length()>0) {
+					 //
+					 // Get all the builds we know about for this build job and assemble the
+					 // JSON Array of components associated with each build number
+					 //
+					 Hashtable<Integer,JSONArray> complist = new Hashtable<Integer,JSONArray>();
+					 ResultSet rs3 = stmt3.executeQuery();
+					 while (rs3.next()) {
+						 int buildno = rs3.getInt(1);
+						 // Have we seen this build before?
+						 JSONArray ja = complist.get(buildno);
+						 if (ja == null) ja = new JSONArray();	// new build
+						 int compid = rs3.getInt(2);
+						 String compname = rs3.getString(3);
+						 int parentid = getInteger(rs3,4,0);
+						 JSONObject compdetails = new JSONObject();
+						 compdetails.add("id",compid);
+						 compdetails.add("name",compname);
+						 compdetails.add("type",(parentid>0)?"cv":"co");
+						 ja.add(compdetails);
+						 complist.put(buildno,ja);						 
+					 }
+					 rs3.close();
+					 //
+					 // Now get "all" the builds from the build server. Not all of these will
+					 // relate to builds in DeployHub
+					 //
+					 boolean commit=false;
+					 String res = getJSONFromServer(serverURL+"/rest/api/latest/job/"+jobname+"/api/json?tree=builds[number,timestamp,result,duration]",cred);
+				     JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
+				     JsonArray builds = returnedjson.getAsJsonArray("builds");
+				     JSONArray retBuilds = new JSONArray();
+				     for (int i=0;i<builds.size();i++) {
+				    	 JsonObject jsonJob = builds.get(i).getAsJsonObject();
+				    	 int buildid = jsonJob.get("number").getAsInt();
+				    	 int duration = jsonJob.get("duration").getAsInt();
+				    	 String result = jsonJob.get("result").getAsString();
+				    	 long timestamp = jsonJob.get("timestamp").getAsLong();
+				    	 System.out.println("buildid="+buildid+" timestamp="+timestamp);
+				    	 JSONObject buildobj = new JSONObject();
+				    	 buildobj.add("id", buildid);
+				    	 buildobj.add("result",result);
+				    	 buildobj.add("timestamp",formatDateToUserLocale((int)(timestamp/1000)));
+				    	 buildobj.add("duration",duration);
+				    	 JSONArray recomps = complist.get(buildid);
+				    	 if (recomps == null) recomps = new JSONArray();
+				    	 buildobj.add("components",recomps);
+				    	 retBuilds.add(buildobj);
+				     }
+				     ret.add("builds", retBuilds);
+				     if (commit) m_conn.commit();
+				 } else {
+					 ret.add("error","Cannot retrieve Builds - Project Name is not set");
+				 }
+			 } else {
+				 ret.add("error","Could not retrieve Project Name from build job");
+			 }
+			 rs2.close();
+		 } else {
+			 // Couldn't find server URL - stick an error into the return object
+			 ret.add("error","Build Engine has no Server URL defined");
+		 }
+		 rs1.close();
+		 stmt1.close();
+		 
+		 stmt2.close();
+	  } catch (SQLException e) {
+			 System.out.println(e.getMessage());
+			 e.printStackTrace();
+			 ret.add("error","SQL Failed running getProjectsFromBamboo");
+	  }
+	  return ret;
+  }
+  
   JSONObject getProjectsFromJenkins(int builderid)
   {
 	  System.out.println("getProjectsFromJenkins");
@@ -22619,6 +22772,55 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	  return ret;
   }
   
+  JSONObject getProjectsFromBamboo(int builderid)
+  {
+	  System.out.println("getProjectsFromBamboo");
+	  String sql="select value,encrypted from dm.dm_buildengineprops where name='Server URL' and builderid = ?";
+	  JSONObject ret = new JSONObject();
+	  try {
+	  	 Builder builder = getBuilder(builderid);
+	  	 Credential cred = builder.getCredential();
+		 PreparedStatement stmt = m_conn.prepareStatement(sql);
+		 stmt.setInt(1,builderid);
+		 ResultSet rs = stmt.executeQuery();
+		 if (rs.next()) {
+			 // Got the Server URL
+			 String serverURL = rs.getString(1);
+			 if (rs.getString(2).equalsIgnoreCase("y")) {
+				 // Server URL is encrypted
+				 serverURL = new String(Decrypt3DES(serverURL, m_passphrase));
+			 }
+			 System.out.println("Server URL="+serverURL);
+			 String res = getJSONFromServer(serverURL+"/rest/api/latest/plan.json",cred);
+		     JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
+		     JsonObject plans = returnedjson.getAsJsonObject("plans");
+		     JsonArray plan = plans.getAsJsonArray("plan");
+		     JSONArray retJobs = new JSONArray();
+		     if (plan.size()==0) {
+		    	 ret.add("error","No Projects found on Bamboo Server "+serverURL);
+		     }
+		     for (int i=0;i<plan.size();i++) {
+		    	 JsonObject jsonPlan = plan.get(i).getAsJsonObject();
+		    	 String planname = jsonPlan.get("shortName").getAsString();
+		    	 JSONObject jobobj = new JSONObject();
+		    	 jobobj.add("name", planname);
+		    	 retJobs.add(jobobj);
+		     }
+		     ret.add("jobs", retJobs);
+		 } else {
+			 // Couldn't find server URL - stick an error into the return object
+			 ret.add("error","Build Engine has no Server URL defined");
+		 }
+		 rs.close();
+		 stmt.close();
+	  } catch (SQLException e) {
+			 System.out.println(e.getMessage());
+			 e.printStackTrace();
+			 ret.add("error","SQL Failed running getProjectsFromBamboo");
+	  }
+	  return ret;
+  }
+  
   JSONObject getBuildHistory(int buildjobid)
   {
 	 System.out.println("getBuildHistory buildjobid="+buildjobid);
@@ -22644,6 +22846,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				  rs.close();
 				  stmt.close();
 				  return getBuildHistoryJenkins(builderid,buildjobid);
+			  } if (providerName.equalsIgnoreCase("bamboo")) {
+				  rs.close();
+				  stmt.close();
+				  return getBuildHistoryBamboo(builderid,buildjobid);
 			  } else {
 				  // did not recognize provider
 				  rs.close();
@@ -22699,6 +22905,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				  rs.close();
 				  stmt.close();
 				  return getProjectsFromJenkins(builderid);
+			  } else if (providerName.equalsIgnoreCase("bamboo")) {
+				  rs.close();
+				  stmt.close();
+				  return getProjectsFromBamboo(builderid);
 			  } else {
 				  // did not recognize provider
 				  rs.close();
@@ -23551,5 +23761,34 @@ public void SyncAnsible(ServletContext context)
   public void setCopyId(int m_copyid)
   {
    this.m_copyid = m_copyid;
+  }
+  
+  public String firstInstall()
+  {
+	  System.out.println("firstInstall");
+	  String initialInstall="N";
+	  LoginException res = connectToDatabase(m_httpSession.getServletContext());
+	  if (res == null) {
+		  // successful connection
+		  try {
+			  PreparedStatement stmt = m_conn.prepareStatement("SELECT lastlogin FROM dm.dm_user WHERE id=1");
+			  ResultSet rs = stmt.executeQuery();
+			  rs.next();
+			  rs.getTimestamp(1);
+			  if (rs.wasNull()) {
+				  // admin user has not yet logged in.
+				  initialInstall="Y";
+			  }
+			  rs.close();
+			  stmt.close();
+		  } catch(SQLException ex) {
+			  System.out.println("firstInstall check encountered DB error:"+ex.getMessage());
+			  initialInstall="Y";	// if DB error then it's likely we're still initialising database
+		  }
+	  } else {
+		  System.out.println("Failed to connect to DB");
+	  }
+	  System.out.println("Returning initialInstall="+initialInstall);
+	  return initialInstall;
   }
 }

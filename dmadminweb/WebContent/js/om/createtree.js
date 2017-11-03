@@ -1226,7 +1226,7 @@ function eventSelectNode(frameid,admin,data)
  console.log("gotoDate="+gotoDate);
  if (gotoDate != null) $("#tabs-Calendar").click();	// Switch to Calendar Tab
  if ((objtype=="do" || objtype=="cp" || objtype=="cy" || objtype=="cc") && oldmenu != "domains_menu") displayhome=true;
- ShowHome(false);
+ ShowHome(false,ShowingInitialHelp);
  displayhome=false;
 }
 
@@ -1390,6 +1390,9 @@ function GetDomainData(typestr)
 	$.ajax({
 		  dataType: "json",
 		  url: "GetDomainContent?typestr="+typestr+"&domainid=0",
+		  error: function(a,textStatus,errorThrown) {
+			  	console.log("ERROR: status=["+textStatus+"] errorThrown=["+errorThrown+"]"); 
+		  },
 		  async: false
 		}).done(function( data ) {
 				console.log(data);

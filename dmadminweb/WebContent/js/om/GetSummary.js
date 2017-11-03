@@ -968,10 +968,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
     	  if (val==0) val="";
     	  else val="<a onClick=\"javascript:DisplayBuild("+objid+","+val+");\">#"+val+"</a>";
       }
-      else if (label == "Project Name") {
-    	  console.log("Project name seen");
-    	  console.log(val);
-    	  console.log("that was val");
+      else if (label == "Project Name" || label == "Plan Name") {
     	  var project = val;
     	  var oldval=val;
        

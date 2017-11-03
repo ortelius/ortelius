@@ -148,7 +148,8 @@ function Stack()
 
 var breadcrumbs = new Stack();
 
-function getCookie(Name) {
+function getCookie(Name,nodecode) {
+ nodecode = nodecode || false;
  var search = Name + "="
  var returnvalue = "";
  if (document.cookie.length > 0) {
@@ -160,7 +161,7 @@ function getCookie(Name) {
      end = document.cookie.indexOf(";", offset);
      // set index of end of cookie value
      if (end == -1) end = document.cookie.length;
-     returnvalue=unescape(document.cookie.substring(offset, end))
+     returnvalue=nodecode?document.cookie.substring(offset,end):unescape(document.cookie.substring(offset, end));
      }
   }
  return returnvalue;
@@ -226,7 +227,7 @@ String.prototype.trimChars = function(charlist) {
   $.blockUI.defaults.theme = true;
   $.blockUI.defaults.themedCSS.width = "15%";
 
-  loginformData = getCookie("logindata");
+  loginformData = getCookie("logindata",true);
   
   loggedin='N';
   
@@ -238,7 +239,8 @@ String.prototype.trimChars = function(charlist) {
 		  async : false,
 		  dataType: "json"
  		}).done(function(data) {
- 			console.log("data="+data);
+ 			console.log("login data:"+data);
+ 			console.log(data);
   			if (data == null) {
   				loggedin = 'N';
   			} else if (data.Msg.toLowerCase() == "Login OK".toLowerCase()) {
@@ -260,6 +262,62 @@ String.prototype.trimChars = function(charlist) {
  	SetCookie("admin","N");
   }
   
+  if ("${firstinstall}" == "Y") {
+	  // First install - prompt the user to set admin password and show them
+	  // some basic information to get started
+	  var l = "<div id=\"firstinstall\">";
+	  l+="<table border=\"0\"><tr><td valign=\"top\"><img src=\"css/images/setupdog.png\"></td><td valign=\"top\">";
+	  l+="<h2>Set Admin Password</h2>Welcome to DeployHub Open Source Edition. The first thing you need to do is to set the password for the \"admin\" user account. ";
+	  l+="Once this is done, you will be logged in as the \"admin\" user and you will be able to create more user accounts ";
+	  l+="and set up the objects which will allow you to automate your deployments with ease.<br><br>";
+	  l+="<form id=\"firstinstallform\">";
+	  l+="<table style=\"width:100%;\" border=\"0\">";
+	  l+="<tr>";
+	  l+="<td align=\"right\">\Admin Password:</td>";
+	  l+="<td align=\"left\"><input class=\"inputbox\" type=\"password\" id=\"newpassword\" name=\"newpassword\" /></td>";
+	  l+="</tr>";
+	  l+="<tr>";
+	  l+="<td align=\"right\">Confirm Admin Password:</td>";
+	  l+="<td align=\"left\"><input class=\"inputbox\" type=\"password\" id=\"newpasswordagain\" name=\"newpasswordagain\" /></td>";
+	  l+="</tr>";
+	  l+="</table>";
+	  l+="</form><BR><BR><HR>";
+	  l+="</div>";
+	  l+="<div class=\"error\"><p class=\"error_txt\" id=\"login_err\"></p></div>";
+	  l+="</td></tr></table></div>";
+	  $("#modal").html(l);
+
+	  $("#modal").dialog({
+	    resizable : false,
+	    draggable: false,
+	    width : 600,
+	    height : 410,
+	    modal : true,
+	    title : "Welcome to DeployHub Open Source Edition!",
+	    open: function(event,ui){
+	    	$(".ui-dialog-buttonpane button:contains('Login')").button('disable');
+	    }
+	   });
+	   $("#modal").keyup(function(event) {
+		   if(event.keyCode === 13) {
+		        DoAdminPasswordSet(this);
+		   }
+	   });
+	   $("#modal").dialog("option", "buttons", [
+	   {
+	    text : "Login",
+	    disabled: true,
+	    click : function()
+	    {
+	     DoAdminPasswordSet(this);
+	    }
+	   } ]);
+	   $("#modal").dialog("open");
+	   
+	   $("#newpassword").on("keyup", VerifyPW);
+	   $("#newpasswordagain").on("keyup", VerifyPW);
+  }
+  else
   if (loggedin != "Y")
   {
    var l = "<img src=\"images/devops_splash.png\" alt=\"\"  class=\"logindialog\" />"
@@ -342,6 +400,9 @@ String.prototype.trimChars = function(charlist) {
    breadcrumbs.push("#applications_tree");
 
    EnableTabs("release_menu");
+   if (newUser=="Y") {
+	   ShowHelpForNewUsers();
+   }
   }
  });
 
@@ -350,10 +411,14 @@ String.prototype.trimChars = function(charlist) {
   var pw1 = $("#newpassword").val();
   var pw2 = $("#newpasswordagain").val();
 
-  if (pw1 != pw2)
+  if (pw1 != pw2 || pw1=="")
   {
    $(".ui-dialog-buttonpane button:contains('Login')").button('disable');
-   $("#login_err").html("Passwords do not match");
+   if (pw1=="") {
+		$("#login_err").html("");
+   } else {
+		$("#login_err").html("Passwords do not match");
+   }
   }
   else
   {
@@ -361,6 +426,55 @@ String.prototype.trimChars = function(charlist) {
    $("#login_err").html("");
   }
 
+ }
+ 
+ function DoAdminPasswordSet(dlg)
+ {
+	 console.log("DoAdminPasswordSet");
+	 var newpw = $("#newpassword").val();
+	 var loginformData = "domain=&username=admin&initial=Y&password="+encodeURIComponent(newpw);
+	 $.post("Login", loginformData, null, "json").done(function(data) {
+		console.log("data=");
+		console.log(data);
+		if (data.Msg.toLowerCase() == "Login OK".toLowerCase()) {
+			console.log("Normal login");
+			loggedin="Y";
+			admin="N";
+			isAdmin="N";
+			newUser=data.newuser;
+			console.log("datefmt="+data.datefmt);
+			userdatefmt = data.datefmt;
+			usertimefmt = data.timefmt;
+		} else if (data.Msg.toLowerCase() == "Login Admin".toLowerCase()) {
+			console.log("2) admin login");
+			loggedin="Y";
+			admin="Y";
+			isAdmin="Y";
+			newUser=data.newuser;
+			console.log("datefmt="+data.datefmt);
+			userdatefmt = data.datefmt;
+			usertimefmt = data.timefmt;
+		}
+ 		if (loggedin=="Y") {
+ 			SetCookie("admin",admin);
+ 			console.log("newUser="+newUser);
+  			$("#modal").dialog("close");
+  			$.sessionTimeout({
+   				logoutUrl : "Logout",
+   				redirUrl : "Logout",
+   				keepAliveUrl : "KeepAlive"
+  			});
+  			breadcrumbs.push("#releases_tree");
+  			document.cookie = "logindata=" + loginformData;
+  			EnableTabs("release_menu");
+  			if (newUser=="Y") {
+  			   ShowHelpForNewUsers();
+  		    }
+ 		} else {
+  			$("#login_err").html(data.Msg);
+ 		}
+
+	 });
  }
 
  function DoLogin(dlg)
@@ -383,7 +497,7 @@ String.prototype.trimChars = function(charlist) {
    		$.ajax({
    			type : "POST",
     		dataType : 'json',
-    		url : "ChangePassword?oldpw=" + oldpw + "&newpw=" + newpw,
+    		url : "ChangePassword?oldpw=" + encodeURIComponent(oldpw) + "&newpw=" + encodeURIComponent(newpw),
     		async : false
    		}).done(function(data) { 
     		console.log(data.errtext);
@@ -431,6 +545,7 @@ String.prototype.trimChars = function(charlist) {
    				loggedin="Y";
    				admin="N";
    				isAdmin="N";
+   				newUser=data.newuser;
    				console.log("datefmt="+data.datefmt);
    				userdatefmt = data.datefmt;
    				usertimefmt = data.timefmt;
@@ -439,6 +554,7 @@ String.prototype.trimChars = function(charlist) {
    				loggedin="Y";
    				admin="Y";
    				isAdmin="Y";
+   				newUser=data.newuser;
    				console.log("datefmt="+data.datefmt);
    				userdatefmt = data.datefmt;
    				usertimefmt = data.timefmt;
@@ -456,12 +572,16 @@ String.prototype.trimChars = function(charlist) {
      			document.cookie = "logindata=" + loginformData;
     		} else {
      			if (data.Msg == "Password must be changed") {
+     				newUser=data.newuser;
       				forcepwchange = true;
      				$(".ui-dialog-buttonpane button:contains('Login')").button('disable');
       				parent.$("#login_container_dialog").dialog("option", "height", 675);
       				$("#logintab").find("tr.newpw").show();
      			}
      			$("#login_err").html(data.Msg);
+    		}
+    		if (newUser=="Y") {
+    			ShowHelpForNewUsers();
     		}
    		});
   	}
@@ -471,7 +591,7 @@ String.prototype.trimChars = function(charlist) {
  function ActivateSubTabs()
  {
   console.log("ActivateSubTabs()");
-  ShowHome(false);
+  ShowHome(false,ShowingInitialHelp);
 
   if (typeof objid == "undefined")
    objid = 1;
@@ -755,7 +875,7 @@ String.prototype.trimChars = function(charlist) {
     $("#title_icon").html("<button class=\"edit_button\" onClick=\"javascript:EditSummaryButton(false)\"><img alt=\"Edit\" src=\"images/pencil_24x22.png\"></button>");
     $("#tabs-General-data").html("<table id=\"summ\" class=\"dev_table\"><tbody></tbody></table>");
     console.log("LoadSummaryData, objtypeAsInt="+objtypeAsInt+" objtype="+objtype);
-    LoadSummaryData("summ", objtypeAsInt, objtype, objid, "");
+    LoadSummaryData("summ", objtypeAsInt, objtype, objid, objtype=="bj"?"&be="+lastSelectedNode:"");
    }
    else
    {
@@ -1610,7 +1730,7 @@ String.prototype.trimChars = function(charlist) {
   if (typeof lastSelectedNode == "undefined" || lastSelectedNode=="") {
 	  $("#panel_container_right").show();
 	  displayhome=true;
-	  ShowHome(false);
+	  ShowHome(false,ShowingInitialHelp);
 	  displayhome=false;
   }
   console.log($("#panel_container_right"));
@@ -1665,6 +1785,7 @@ String.prototype.trimChars = function(charlist) {
  
  function SetActive(tabname)
  {
+	 explorerFlasher = false;	// switch off highlighting if in help mode
 	 lastSelectedNode="";
 	 console.log("SetActive("+tabname+") oldtabmenu="+oldtabmenu);
   if (oldtabmenu.length > 0)
@@ -1731,10 +1852,381 @@ String.prototype.trimChars = function(charlist) {
   }
  }
 
- function EnableTabs(menuname)
+ function FlashViews()
  {
+	 // If user clicks BACK to go from flashing JUST Deploy View to flashing ALL views you
+	 // can get into an odd effect whereby the Deploy View flashes out of sequence with the
+	 // other shortcuts. So wait for dvFlashInProgress to drop to false; 
+	 if (viewFlasher) {
+		if (dvFlashInProgress) {
+			// Still in the process of flashing DeployView
+			setTimeout(FlashViews,500);
+		} else {
+			$("#release_menu").fadeIn(500).fadeOut(500).fadeIn(500);
+			$("#endpoints_menu").fadeIn(500).fadeOut(500).fadeIn(500);
+			$("#deploy_menu").fadeIn(500).fadeOut(500).fadeIn(500);
+			$("#containers_menu").fadeIn(500).fadeOut(500).fadeIn(500);
+			$("#domains_menu").fadeIn(500).fadeOut(500).fadeIn(500);
+			$("#usersgroups_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
+				FlashViews();
+			});
+		}
+	 }
+ }
+ 
+ function FlashDeployView()
+ {
+	 if (deployFlasher) {
+		 console.log("setting dvFlashInProgress=true");
+		 dvFlashInProgress=true;
+		 $("#release_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
+			 console.log("setting dvFlashInProgress=false");
+			 dvFlashInProgress=false;
+			 FlashDeployView();
+		 });
+	 }
+ }
+ 
+ function FlashDataCenterView()
+ {
+	 if (dcFlasher) {
+		 $("#endpoints_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
+			 FlashDataCenterView();
+		 });
+	 }
+ }
+ 
+ function FlashConnectionsView()
+ {
+	 if (connFlasher) {
+		 $("#containers_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
+			 FlashConnectionsView();
+		 });
+	 }
+ }
+ 
+ function FlashFlowView()
+ {
+	 if (flowFlasher) {
+		 $("#deploy_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
+			 FlashFlowView();
+		 });
+	 }
+ }
+ 
+ function FlashDomainsView()
+ {
+	 if (domFlasher) {
+		 $("#domains_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
+			 FlashDomainsView();
+		 });
+	 }
+ }
+ 
+ function FlashUsersView()
+ {
+	 if (uagFlasher) {
+		 $("#usersgroups_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
+			 FlashUsersView();
+		 });
+	 }
+ }
+ 
+ function FlashExplorerPanel()
+ {
+	 if (explorerFlasher) {
+		 $("#left_panel_tabs").delay(500).fadeOut(500).fadeIn(200);
+		 $("#left_panel_tree").delay(500).fadeOut(500).fadeIn(200,function() {
+			 FlashExplorerPanel();
+		 });
+	 }
+ }
+ 
+ function FlashHomeIcon()
+ {
+	 if (homeFlasher) {
+		 $("#home_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
+			 FlashHomeIcon();
+		 });
+	 }
+ }
+ 
+ function FlashBreadcrumbPanel()
+ {
+	 if (breadcrumbFlasher) {
+		 $("#footer_container").fadeIn(500).fadeOut(500).fadeIn(500,function() {
+			 FlashBreadcrumbPanel();
+		 });
+	 }
+ }
+ 
+ function clearAllFlashFlags()
+ {
+	explorerFlasher = false;
+	viewFlasher = false;
+	deployFlasher = false;
+	dcFlasher = false;
+	flowFlasher = false;
+	connFlasher = false;
+	domFlasher = false;
+	uagFlasher = false;
+	homeFlasher = false;
+	breadcrumbFlasher = false;
+ }
+ 
+ 
+ function ShowHelpPage(pageno)
+ {
+	 console.log("ShowHelpPage("+pageno+")");
+	 HelpPageNumber=pageno;
+ 	$('div[id^="helppage"]').hide();
+ 	$("#helppage"+pageno.toString()).show();
+ 	if (pageno==1) {
+ 		$("#modal").dialog("option", "buttons", [
+      	   {
+      	    text : "Yes, Please!",
+      	    click : function()
+      	    {
+      	    	HelpPageNumber++;
+      	    	ShowHelpPage(HelpPageNumber);
+      	    }
+      	   },{
+      		    text : "No, thanks!",
+      		    click : function()
+      		    {
+      		    	$("#modal").dialog("close");
+      		    	ShowingInitialHelp=false;
+      		    	clearAllFlashFlags();
+      		    }
+      		 }
+      	   ]);
+ 	}
+ 	else if (pageno>1 && pageno<12) {
+		$("#modal").dialog("option", "buttons",
+		[{
+       	    text : "Back",
+       	    click : function() {
+       	    	HelpPageNumber--;
+       	    	ShowHelpPage(HelpPageNumber);
+            }
+         },{
+            text : "Next",
+			click : function() {
+				HelpPageNumber++;
+				ShowHelpPage(HelpPageNumber);
+			}
+         },{
+        	text : "Finish",
+ 			click : function() {
+ 				$("#modal").dialog("close");
+ 		    	ShowingInitialHelp=false;
+ 		    	clearAllFlashFlags();
+ 			}
+         }
+		]);
+ 	} else {
+ 		$("#modal").dialog("option", "buttons", [
+       	   {
+       	    text : "Back",
+       	    click : function()
+       	    {
+       	    	HelpPageNumber--;
+       	    	ShowHelpPage(HelpPageNumber);
+       	    }
+       	   },{
+       		    text : "Finish",
+       		    click : function()
+       		    {
+       		    	$("#modal").dialog("close");
+       		    	ShowingInitialHelp=false;
+       		    	clearAllFlashFlags();
+       		    }
+       		 }
+       	   ]);	
+ 	}
+ 	clearAllFlashFlags();
+ 	switch(pageno) {
+ 	case 2:
+ 		explorerFlasher = true;
+ 		FlashExplorerPanel();
+ 		break;
+ 	case 3:
+ 		viewFlasher = true;
+ 		FlashViews();
+ 		break;
+ 	case 4:
+ 		deployFlasher = true;
+ 		FlashDeployView();
+ 		EnableTabs("release_menu",true);
+ 		break;
+ 	case 5:
+ 		dcFlasher = true;
+ 		FlashDataCenterView();
+ 		EnableTabs("endpoints_menu",true);
+ 		break;
+ 	case 6:
+ 		flowFlasher = true;
+ 		FlashFlowView();
+ 		EnableTabs("deploy_menu",true);
+ 		break;
+ 	case 7:
+ 		connFlasher = true;
+ 		FlashConnectionsView();
+ 		EnableTabs("containers_menu",true);
+ 		break;
+ 	case 8:
+ 		domFlasher = true;
+ 		FlashDomainsView();
+ 		EnableTabs("domains_menu",true);
+ 		break;
+ 	case 9:
+ 		uagFlasher = true;
+ 		FlashUsersView();
+ 		EnableTabs("usersgroups_menu",true);
+ 		break;
+ 	case 10:
+ 		homeFlasher = true;
+ 		FlashHomeIcon();
+ 		displayhome=true;
+ 		ShowHome(true,true);
+ 		break;
+ 	case 11:
+ 		breadcrumbFlasher = true;
+ 		FlashBreadcrumbPanel();
+ 		break;
+ 	}
+ }
+
+ function ShowHelpForNewUsers()
+ {
+	 // Open up the help dialog for new users
+	 ShowingInitialHelp=true;
+	 newUser=false;
+	 var w1="<table border=\"0\"><tr><td valign=\"top\"><img src=\"css/images/setupdog.png\"></td><td valign=\"top\">";
+	 var w2="</td></tr></table></div>";
+	 var t="<div id=\"helppage1\">"+w1;
+	  t+="<h2>Hello!</h2>It looks like you've not logged into DeployHub before. Do you want to have an overview of how DeployHub works ";
+	  t+="and how to navigate the User Interface? If you click \"Yes Please!\" you will be shown each major UI component. You can drag ";
+	  t+="this dialog around the screen and interact with the DeployHub UI and this dialog will show you information about what you ";
+	  t+="have clicked on.";
+	  t+=w2;
+	  t+="<div id=\"helppage2\" style=\"display:none\">"+w1;
+	  t+="<h2>Explorer Panel</h2>The flashing panel on the left of the screen is the <I>Explorer</I>. Nearly all navigation is done from here. The explorer panel shows the ";
+	  t+="domain hierarchy starting from your <I>Home Domain</I>. The objects shown in the explorer panel are controlled by the ";
+	  t+="tabs at the top of the explorer panel as well as the currently selected <I>View</I>. We will discuss views on the next ";
+	  t+="page.<BR><BR>You can generally bring up a <I>Context Menu</I> by selecting an object in the Explorer Panel and right-clicking. ";
+	  t+="To create new objects of a specified type you need to switch the Explorer Panel to show objects of that type, right-click on ";
+	  t+="the Domain in which you want to create the object and select \"Create New...\"";
+	  t+=w2;
+	  t+="<div id=\"helppage3\" style=\"display:none\">"+w1;
+	  t+="<h2>Views</h2>The flashing links across the top of the screen switch between different <I>views</I>. Each view shows information about ";
+	  t+="different DeployHub objects. You can click on one of these views for a description of what the view contains, or just click ";
+	  t+="\"Next\" or \"Back\" to walk through the views one by one."
+	  t+=w2;
+	  t+="<div id=\"helppage4\" style=\"display:none\">"+w1;
+	  t+="<h2>Deploy View</h2>The <I>Deploy</I> view contains all of the Applications and Components. Applications are ";
+	  t+="made up of one or more Components. You assemble an Application by dragging Components onto a panel that represents the ";
+	  t+="deployment sequence.<br><br>";
+	  t+="Applications are deployed to Environments. Environments are configured via the <I>Data Center</I> view.";
+	  t+="Applications and Components can be versioned. This allows DeployHub to know which version of the application has been ";
+	  t+="deployed to which Environment and to handle the roll-forward and roll-back logic.";
+	  t+=w2;
+	  t+="<div id=\"helppage5\" style=\"display:none\">"+w1;
+	  t+="<h2>Data Center View</h2>The <I>Data Center</I> view contains all of the End Points, Environments and Build Engines that ";
+	  t+="DeployHub connects to. Applications are deployed to Environments. An Environment is made up of one or more End Points. An ";
+	  t+="End Point can be a physical or virtual server, a container or any other device that receives changes (such as a router or ";
+	  t+="load balancer). Each End Point has <I>Component Types</I> associated with it. When an Application is deployed, its components ";
+	  t+="are delivered to the appropriate end-points within the targeted Environment";
+	  t+=w2;
+	  t+="<div id=\"helppage6\" style=\"display:none\">"+w1;
+	  t+="<h2>Flows View</h2>The <I>Flows</I> view contains all the Actions, Procedures and Functions that control the deployment logic. ";
+	  t+="Actions are created with a drag-and-drop graphical editor to build workflow logic. Procedures and Functions can be written ";
+	  t+="to run on the target end-point or locally on the DeployHub server. Local scripts can also be written in <I>DMScript</I> ";
+	  t+="(DeployHub's own scripting language) which can then be used as stored procedures. Actions can be built from Procedures and ";
+	  t+="Functions. Actions are attached to Components and Applications to control the activities that DeployHub will perform ";
+	  t+="before and after each Component (or Application) is deployed.";
+	  t+=w2;
+	  t+="<div id=\"helppage7\" style=\"display:none\">"+w1;
+	  t+="<h2>Connections View</h2>The <I>Connections</I> view contains all the Repositories, Data Sources and Credentials that DeployHub ";
+	  t+="can access. A Repository is a source of deployment artifacts and can be an SCM tool, an FTP(S) server, a web URL (for binary ";
+	  t+="repositories) or even just a file system. Credentials are objects (typically username/password combinations) that allow DeployHub ";
+	  t+="to connect to external systems, such as repositories, end-points or Data Sources. A <I>Data Source</I> is a source of external ";
+	  t+="data such as an ODBC connection to a database.";
+	  t+=w2;
+	  t+="<div id=\"helppage8\" style=\"display:none\">"+w1;
+	  t+="<h2>Domains View</h2>The <I>Domains</I> view allows you to modify the Domain Hierarchy. Every object in DeployHub is associated ";
+	  t+="with a Domain. A user's <I>Home Domain</I> is always shown at the top of the explorer panel. ";
+	  t+="The \"My Pipeline\" domain contains sub-domains which represent a pipeline that an application would ";
+	  t+="typically go through on its way to production. You can change this pipeline if required.<BR><BR>Domains contain <I>Tasks</I> which users ";
+	  t+="can invoke. Tasks perform activities such as deployments, approvals or move application versions between domains in a pipeline.";
+	  t+=w2;
+	  t+="<div id=\"helppage9\" style=\"display:none\">"+w1;
+	  t+="<h2>Users & Groups View</h2>The <I>Users & Groups</I> view allows you to view/create users in DeployHub and assign those ";
+	  t+="users to different user groups. The permission model in DeployHub is based around membership of different user groups. <I>Tasks</I> ";
+	  t+="are made available to members of specific User Groups and every object in DeployHub has access control via User Groups.<BR><BR>";
+	  t+="User Groups are granted permissions to create new objects of specific types.";
+	  t+=w2;
+	  t+="<div id=\"helppage10\" style=\"display:none\">"+w1;
+	  t+="<h2>Home Page</h2>This is your Home Page. You click here to view your \"To Do\" list. You are assigned things to do based on your membership of ";
+	  t+="different <I>User Groups</I> or if you are the \"owner\" of certain objects. For example, if a user requests a time slot on ";
+	  t+="an environment calendar and you are the owner of that environment (either as an individual or as a member of the owning user ";
+	  t+="group) then the request to authorise the time will appear on your \"To Do\" list.<BR><BR>";
+	  t+="The Home Page also shows the combined timeline of all the objects to which you have subscribed. You can subscribe to any ";
+	  t+="object in DeployHub to which you have access. The timeline for all subscribed objects is brought together into the Timeline ";
+	  t+="Tab";
+	  t+=w2;
+	  t+="<div id=\"helppage11\" style=\"display:none\">"+w1;
+	  t+="<h2>Breadcrumb Tray</h2>The flashing panel at the bottom of the screen is the <I>Breadcrumb Tray</I>. It contains shortcuts to ";
+	  t+="previously selected objects. Every time you select an object in the <I>Explorer</I> it is placed into the Breadcrumb Tray. To ";
+	  t+="return to a previously selected object, just click on the link in the Breadcrumb Tray. DeployHub will automatically switch ";
+	  t+="the <I>View</I> and the <I>Explorer Tab</I> to select the desired object.<BR><BR>";
+	  t+="Why not try it now? Click on different views and select objects from the different Explorer Panels. See how they appear in the ";
+	  t+="Breadcrumb Tray. Click on the object in the Breadcrumb Tray to reset the views and tabs to redisplay the selected obejct.";
+	  t+=w2;
+	  t+="<div id=\"helppage12\" style=\"display:none\">"+w1;
+	  t+="<h2>Go Deploy!</h2>That's it! You now know all you need to navigate the DeployHub User Interface. Click \"Finish\" to close ";
+	  t+="this dialog and to start using DeployHub. Click \"Back\" to revisit the earlier pages."
+	  t+=w2;
+	  $("#modal").html(t);
+
+	  $("#modal").dialog({
+		title: "Welcome to DeployHub Open Source Edition!",
+	    resizable : false,
+	    width : 600,
+	    height : 400,
+	    modal : false,
+	    draggable: true
+	   });
+	   $("#modal").dialog("option", "buttons", [
+	   {
+	    text : "Yes, Please!",
+	    click : function()
+	    {
+	    	HelpPageNumber++;
+	    	ShowHelpPage(HelpPageNumber);
+	    }
+	   },{
+		    text : "No, thanks!",
+		    click : function()
+		    {
+		    	$("#modal").dialog("close");
+		    	ShowingInitialHelp=false;
+		    	clearAllFlashFlags();
+		    }
+		 }
+	   ]);
+
+	   $("#modal").dialog("open");
+ }
+ 
+ function EnableTabs(menuname,nocallback)
+ {
+  viewFlasher=false;
   currentmenu = menuname;
   SetActiveMenu(menuname);
+  
+  nocallback = nocallback || false;
+  console.log("EnableTabs("+menuname+") ShowingInitialHelp="+ShowingInitialHelp);
 
   if (menuname == "domains_menu")
   {
@@ -1754,6 +2246,7 @@ String.prototype.trimChars = function(charlist) {
    $("#repositories_tab").hide();
    $("#domains_tab").show();
    $("#types_tab").show();
+   if (ShowingInitialHelp && !nocallback) ShowHelpPage(8);
   }
   else if (menuname == "release_menu")
   {
@@ -1773,6 +2266,7 @@ String.prototype.trimChars = function(charlist) {
    $("#repositories_tab").hide();
    $("#domains_tab").hide();
    $("#types_tab").hide();
+   if (ShowingInitialHelp && !nocallback) ShowHelpPage(4);
   }
   else if (menuname == "containers_menu")
   {
@@ -1791,7 +2285,8 @@ String.prototype.trimChars = function(charlist) {
    $("#groups_tab").hide();
    $("#repositories_tab").show();
    $("#domains_tab").hide();
-   $("#types_tab").hide();   
+   $("#types_tab").hide();
+   if (ShowingInitialHelp && !nocallback) ShowHelpPage(7);
   }
   else if (menuname == "endpoints_menu")
   {
@@ -1810,7 +2305,8 @@ String.prototype.trimChars = function(charlist) {
    $("#groups_tab").hide();
    $("#repositories_tab").hide();
    $("#domains_tab").hide();
-   $("#types_tab").hide();   
+   $("#types_tab").hide();
+   if (ShowingInitialHelp && !nocallback) ShowHelpPage(5);
   }
   else if (menuname == "deploy_menu")
   {
@@ -1829,7 +2325,8 @@ String.prototype.trimChars = function(charlist) {
    $("#groups_tab").hide();
    $("#repositories_tab").hide();
    $("#domains_tab").hide();
-   $("#types_tab").hide();  
+   $("#types_tab").hide();
+   if (ShowingInitialHelp && !nocallback) ShowHelpPage(6);
   }
   else if (menuname == "usersgroups_menu")
   {
@@ -1849,7 +2346,8 @@ String.prototype.trimChars = function(charlist) {
    $("#groups_tab").show();
    $("#repositories_tab").hide();
    $("#domains_tab").hide();
-   $("#types_tab").hide();   
+   $("#types_tab").hide();
+   if (ShowingInitialHelp && !nocallback) ShowHelpPage(9);
   }
  }
 </script>  
@@ -2452,7 +2950,8 @@ String.prototype.trimChars = function(charlist) {
 	</div>
 	<div class="clear">
 	</div>
-	<div id="login_container_dialog"></div>	
+	<div id="login_container_dialog"></div>
+	<div id="firstinstall_container_dialog"></div>
 	<div id="modal"></div>
 	<div id="displaylog"></div>
 	<div id="buildlog"></div>

@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import dmadmin.json.JSONObject;
 import dmadmin.model.Action;
+import dmadmin.model.BuildJob;
 import dmadmin.model.DMObject;
 import dmadmin.model.Server;
 import dmadmin.model.Task;
@@ -37,7 +38,6 @@ import dmadmin.model.TaskRemove;
 import dmadmin.model.TaskCreateVersion;
 import dmadmin.model.TaskMove;
 import dmadmin.model.TaskRequest;
-import dmadmin.model.User;
 
 /**
  * Servlet implementation class GetSummaryData
@@ -77,9 +77,17 @@ public class GetSummaryData extends HttpServletBase
 		  (dmobj.getObjectType() == ObjectType.USER && id == session.GetUserID() && !session.getAclOverride()) ||	// Cannot edit yourself
 		  !dmobj.isUpdatable();
   
-  // temp
-  if (dmobj instanceof User) {
-	  System.out.println("Date Format = "+((User)dmobj).getDateFmt());
+  
+  if (dmobj instanceof BuildJob) {
+	  // If this is a new Build Job then get the Build Engine to which it belongs
+	  if (id == -1) {
+		  // new object - set build engine
+		  String otid = request.getParameter("be");
+		  if (otid != null) {
+			  BuildJob buildjob = (BuildJob)dmobj;
+			  buildjob.setBuilderId(Integer.parseInt(otid.substring(2)));
+		  }
+	  }
   }
   
   if (dmobj instanceof Action) {
