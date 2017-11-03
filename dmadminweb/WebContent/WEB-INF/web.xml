@@ -1148,4 +1148,14 @@
     <servlet-name>GetBuildLog</servlet-name>
     <url-pattern>/GetBuildLog</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>ChangePassword</display-name>
+    <servlet-name>ChangePassword</servlet-name>
+    <servlet-class>dmadmin.ChangePassword</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ChangePassword</servlet-name>
+    <url-pattern>/ChangePassword</url-pattern>
+  </servlet-mapping>
 </web-app>
