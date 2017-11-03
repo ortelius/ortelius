@@ -223,7 +223,7 @@ public class NewsFeed
 			}
 			
 			if (to == 0)
-			 to = (int)(System.currentTimeMillis()/1000);
+			 to = (int)(System.currentTimeMillis()/1000)+10000;
 			
 			System.out.println("doGetNotes 2: from="+from+" to="+to);
 			

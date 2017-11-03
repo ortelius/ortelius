@@ -790,6 +790,11 @@ function Execute(taskname,taskid,otype,id,pid,tasktype,params,domainid)
     	 }
     	 if (tasktype == "MOVE" || tasktype == "RUN_ACTION") DoRefresh();
     	 if (save_showoutput == "true") DisplayDeploy(data.depno);
+    	 // If we're on timeline, refresh it
+		 if (currentSubTabsSelection[currenttree][0]=='tabs-History') {
+			 console.log("Refreshing the timeline!");
+			 ActivateSubTabs();
+		 }
      } else if (data.result == false) {
     	 if (data.output != "" && typeof data.output != "undefined") {
     		 $("#execute_err").html(data.output);
