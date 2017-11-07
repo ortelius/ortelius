@@ -1250,14 +1250,12 @@ int dmmain(int argc,char **argv)
 		//
 		// Connect to Target Server
 		//
-		if (getenv("TRIDEBUG")) printf("About to connect, Server=[%s] UserName=[%s] Password=[%s]\n",Server?Server:"NULL",UserName?UserName:"NULL",Password?Password:"NULL");
 		if (Keyfile) {
 			Password = (char *)malloc(strlen(Keyfile)+10);
 			sprintf(Password,"%c%s",'\1',Keyfile);
 		}
 		int i = protocol_connect(Server,UserName,Password);
 
-		if (getenv("TRIDEBUG")) printf("protocol_connect returns %d\n",i);
 		if (i <= 0)
 		{
 			ret=1;
@@ -1324,6 +1322,8 @@ int dmmain(int argc,char **argv)
 			Iterate(SourceDir,TargetDir);
 			printf("</files>\n");
 		}
+
+		protocol_disconnect();
 	}
 	catch(const char *ErrorString)
 	{

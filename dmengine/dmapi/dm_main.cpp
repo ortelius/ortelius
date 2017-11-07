@@ -110,7 +110,8 @@ OPTIONS options[]={
 	{"-loadusers",		'Y',	"triloadusers"		},
 	{"-loadservs",		'Y',	"triloadservs"		},
 	{"-loadenvs",		'Y',	"triloadenvs"		},
-	{"-dumpdb",			'N',	"tridumpdb"			},
+	{"-dumpdb",			'N',	"tridumpdb"			},	// dump encrypted DSN, username and password to stdout
+	{"-testdb",			'N',	"tritestdb"			},	// test DB connection
 	{"-scanserver",		'Y',	"triscanserver"		},	// checks MD5 sums against previous deployments
 	{"-checkserver",	'Y',	"tricheckserver"	},	// checks connectivity (protocol and credentials etc) to a server
 	{"-remove",			'N',	"triremoveapp"		},	// Removes an application from an environment.
@@ -614,10 +615,6 @@ void ensurePassphraseFile(DM &dm, const char *homeDir)
 		struct stat sb;
 		if(stat(ppfilename, &sb) == -1) {
 			if(errno == ENOENT) {
-				//// Doesn't exist - so create it
-				//dm.writeToLogFile("Creating passphrase file");
-				// createPassphraseFile(ppfilename);
-				// Doesn't exist - user should run dmsetup to create
 				dm.exitWithError("FATAL ERROR: The file dm.asc does not exist.  Please run the dmsetup\n"
 					             "             tool to create it.");
 			} else {
@@ -868,10 +865,29 @@ triODBC *connectToDatabase(DM &dm, const char *homeDir)
 	if(nulls != 2) {
 		dm.exitWithError("FATAL ERROR: dm.odbc is not a valid odbc file");
 	}
-	// printf("dsn = '%s'; user = '%s'; pass = '%s'\n", (const char*) details, user, pass);
+	if (getenv("tritestdb")) {
+		printf("Testing connecting to database\n");
+		printf("DSN:       [%s]\n",(const char *)details);
+		printf("Username:  [%s]\n",user);
+		printf("Password:  [*****]\n");
+	}
 
 	triODBC *odbc = new triODBC();
-	int res = odbc->ConnectToDataSource(&dm, (char*) dsn, (char*) user, (char*) pass);
+	long res = odbc->ConnectToDataSource(&dm, (char*) dsn, (char*) user, (char*) pass);
+
+	if (getenv("tritestdb")) {
+		if (res == SQL_SUCCESS || res == SQL_SUCCESS_WITH_INFO) {
+			printf("Database connection successful\n");
+		} else {
+			char *MsgPtr;
+			SQLINTEGER errnum;
+			odbc->GetLastError(&MsgPtr,&errnum);
+			dm.writeToStdErr("Failed to Connect to Database: %s",MsgPtr);
+			free(MsgPtr);
+		}
+		odbc->DisconnectFromDataSource();
+		exit(0);
+	}
 	if((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO)) {
 		char *MsgPtr;
 		SQLINTEGER errnum;
@@ -1315,7 +1331,7 @@ void dumpDBCreds(DM &dm,const char *homeDir)
 	} else {
 		int s = sb.st_size;
 		char *buf = decryptFile(odbcfilename,&s);
-		EncryptBuffer(buf,s);
+		// EncryptBuffer(buf,s);
 		write(1,buf,s);
 	}
 	exit(res);

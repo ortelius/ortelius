@@ -31,9 +31,8 @@
 #include <errno.h>
 #endif /*!WIN32*/
 
-#include "restful.h"
-
 #include "dm.h"
+#include "restful.h"
 #include "node.h"
 #include "expr.h"
 #include "context.h"
@@ -118,11 +117,7 @@ char *base64encode(unsigned char *data, unsigned long datalen)
 #define RESTFUL_GET_NAME  "restful_get"
 #define SOAP_NAME         "soap"
 
-//typedef enum message_type_t {
-//MESSAGE_TYPE_SOAP	= 1,
-//MESSAGE_TYPE_POST   = 2,
-//MESSAGE_TYPE_GET    = 3
-//} MESSAGE_TYPE;
+
 
 
 #define CONTENT_TYPE_JSON     "application/json"
@@ -912,7 +907,7 @@ class Expr *Restful_PostFunctionImpl::evaluate(class ExprList *args, class Conte
 	char *url = (char *)0;
 	int port=0;
 	char *server=(char *)0;
-	int sp;
+	// int sp;
 	char *soapaction = (char *)0;
 	DMArray *header = NULL;
 	Expr *headerOrCredential = NULL;
@@ -994,71 +989,10 @@ class Expr *Restful_PostFunctionImpl::evaluate(class ExprList *args, class Conte
 	// Calculate SSL requirement, port and server name from URL.
 	//
 	// printf("fullurl=[%s]\n",fullurl);
-	if (	tolower(fullurl[0])=='h' &&
-			tolower(fullurl[1])=='t' &&
-			tolower(fullurl[2])=='t' &&
-			tolower(fullurl[3])=='p') {
-		if (tolower(fullurl[4])=='s') {
-			secure=true;
-			sp=5;
-		} else {
-			secure=false;
-			sp=4;
-		}
-		//printf("sp=%d\n",sp);
-		//printf("fullurl[%d]='%c'\n",sp,fullurl[sp]);
-		if (fullurl[sp]!=':') throw RuntimeError(m_parent, ctx.stack(), MalformedURLErrorMsg);
-		if (fullurl[sp+1]!='/') throw RuntimeError(m_parent, ctx.stack(), MalformedURLErrorMsg);
-		if (fullurl[sp+2]!='/') throw RuntimeError(m_parent, ctx.stack(), MalformedURLErrorMsg);
-		// http://server[:port]/ or
-		// http://server/
-		char *serverport = (char *)strdup((const char *)&(fullurl[sp+3]));	// Point to server[:port]
-		char *ep = (char *)strchr(serverport,'/');
-		if (ep) {
-			// Found a /
-			url=strdup(ep);
-			*ep='\0';
-		} else {
-			// No / - presumably just server[:port]
-			url=strdup("");
-		}
-		// Is there a port ID?
-		char *ps = (char *)strchr(serverport,':');
-		if (ps) {
-			// There's a port specification
-			*ps='\0';
-			port = atoi(ps+1);
-		} else {
-			// No port specified, use default
-			port = secure?443:80;
-		}
-		server=strdup(serverport);
-		free((void *)serverport);
-	} else {
-		// No http:// start string.
-		char *ep = (char *)strchr(fullurl,'/');
-		if (ep) {
-			url=strdup(ep);
-			*ep='\0';
-		} else {
-			url=strdup("");
-		}
-		char *serverport=strdup(fullurl);
-		char *ps = strchr(serverport,':');
-		if (ps) {
-			// There's a port specification
-			*ps='\0';
-			port = atoi(ps+1);
-		} else {
-			// No port specified, use default
-			port = 80;
-		}
-		server=strdup(serverport);
-		free(serverport);
+	if (getConnectionDetails(fullurl,&server,&port,&secure,&url)) {
+		throw RuntimeError(m_parent, ctx.stack(), MalformedURLErrorMsg);
 	}
-	//printf("server=[%s]\n",server);
-	//printf("port=[%d]\n",port);
-	//printf("url=[%s]\n",url);
+	
 
 	char *contentType = NULL;
 	char *content = NULL;

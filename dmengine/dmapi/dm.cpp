@@ -2131,6 +2131,7 @@ void DM::writevToStdOut(long threadId, const char* buffer)
 	int len = 0;
 	fprintf(stdout, buffer);
 	fprintf(stdout, "\n");
+	fflush(stdout);
 	
 	// Also record in db log
 	if(m_model) {
@@ -2175,6 +2176,7 @@ void DM::writevToStdErr(long threadId, const char *buffer)
 	}
 	fprintf(stderr, buffer);
 	fprintf(stderr, (useColor ? "\x1b[0m\n" :  "\n"));
+	fflush(stderr);
 
 	// Also record in db log
 	if(m_model) {

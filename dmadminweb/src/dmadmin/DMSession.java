@@ -10943,7 +10943,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				+ "  (SELECT count(*) FROM dm.dm_historycomment c WHERE c.id = r.id AND c.kind = " + ObjectType.REQUEST.value() + "), "
 				+ "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.objid = r.id AND a.kind = " + ObjectType.REQUEST.value() + ") "
 				+ "FROM dm.dm_request r "
-				+ "LEFT OUTER JOIN dm.dm_task t ON t.id = r.taskid AND t.id IN (SELECT taskid FROM dm.dm_taskaccess ta,dm_usersingroup ug WHERE ug.userid="+getUserID()+" AND ta.usrgrpid = ug.groupid) "
+				+ "LEFT OUTER JOIN dm.dm_task t ON t.id = r.taskid AND t.id IN (SELECT taskid FROM dm.dm_taskaccess ta,dm.dm_usersingroup ug WHERE ug.userid="+getUserID()+" AND ta.usrgrpid = ug.groupid) "
 				+ "LEFT OUTER JOIN dm.dm_application a ON a.id = r.appid "
 				+ "LEFT OUTER JOIN dm.dm_calendar c ON c.id = r.calendarid AND c.endtime > "+timeNow()+" "
 				+ "LEFT OUTER JOIN dm.dm_user u ON u.id = r.userid "

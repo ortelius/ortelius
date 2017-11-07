@@ -1074,7 +1074,8 @@ void DeployStmtImpl::executeWithAudit(DMThreadList &threads, Context &ctx)
 				char vn[128];
 				sprintf(vn,"?customcomp%d",comp->id());
 				Variable *t = compscope->get(vn);
-				if (t) {
+				if (t && t->getString()[0]=='Y') {
+				
 					// must be already in custom action for this component.
 					// set comp to NULL so that we drop into executeSingle
 					comp = NULL;

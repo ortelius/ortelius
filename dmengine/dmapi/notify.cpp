@@ -124,7 +124,6 @@ void NotifyProviderImplRegistry::registerFactory(const char *name, NotifyProvide
 	m_factories.put(name, factory);
 }
 
-// TODO: Remove this when we move to a DLL
 extern "C" int smtpemail_PluginStart(DM &dm);
 extern "C" int txtlocal_PluginStart(DM &dm);
 extern "C" int slack_PluginStart(DM &dm);

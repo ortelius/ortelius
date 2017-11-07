@@ -3208,6 +3208,16 @@ int ApplicationComponentThread::execute(Context &ctx)
 
 	try {
 		ctx.stack().pop(COMPONENT_SCOPE);
+		// PAG FIX: ensure the marker that prevents custom action loops is
+		// reset at this point, otherwise if the component is pushed onto the
+		// stack again the flag is still set and the code will think we're being
+		// called from inside a custom action and will fail.
+
+		char vn[128];
+		sprintf(vn,"?customcomp%d",comp.id());
+		Scope *compscope = comp.getVars();
+		compscope->set(vn,"N");
+
 	} catch(DMException &e) {
 		ctx.dm().writeToLogFile("Caught exception (2)");
 		e.print(ctx);
@@ -5484,10 +5494,20 @@ StringList *Action::mapArgsForFunction(class FunctionNode &func, ExprList *args,
 				if (expr && (expr->kind() == KIND_ARRAY)) {
 					DMArray *arr = expr->toArray();
 					if (arr) {
-						Variable **values = arr->values();
-						for(Variable **v = values; v && *v; v++) {
-							ConstCharPtr arrval = (*v)->toString();
-							lsca->process(arrval, *params, ctx);
+						if (arr->isList()) {
+							for (int i=0;i<arr->count();i++) {
+								char buf[32];
+								sprintf(buf,"%d",i);
+								Variable *v = arr->get(buf);
+								ConstCharPtr arrval = v->toString();
+								lsca->process(arrval, *params, ctx);
+							}
+						} else {
+							Variable **values = arr->values();
+							for(Variable **v = values; v && *v; v++) {
+								ConstCharPtr arrval = (*v)->toString();
+								lsca->process(arrval, *params, ctx);
+							}
 						}
 						if(env) {
 							env->putTri(lsca->name(), expr->stringify());
@@ -5579,10 +5599,20 @@ StringList *Action::mapArgsForAction(ExtendedStmt &stmt, Context &ctx, Envp *env
 				if (expr && (expr->kind() == KIND_ARRAY)) {
 					DMArray *arr = expr->toArray();
 					if (arr) {
-						Variable **values = arr->values();
-						for(Variable **v = values; v && *v; v++) {
-							ConstCharPtr arrval = (*v)->toString();
-							lsca->process(arrval, *params, ctx);
+						if (arr->isList()) {
+							for (int i=0;i<arr->count();i++) {
+								char buf[32];
+								sprintf(buf,"%d",i);
+								Variable *v = arr->get(buf);
+								ConstCharPtr arrval = v->toString();
+								lsca->process(arrval, *params, ctx);
+							}
+						} else {
+							Variable **values = arr->values();
+							for(Variable **v = values; v && *v; v++) {
+								ConstCharPtr arrval = (*v)->toString();
+								lsca->process(arrval, *params, ctx);
+							}
 						}
 						if(env) {
 							env->putTri(lsca->name(), expr->stringify());

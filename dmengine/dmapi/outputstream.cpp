@@ -165,3 +165,12 @@ long OutputStream::size()
 {
 	return m_len;
 }
+
+void OutputStream::truncate()
+{
+	if (m_buffer) {
+		free(m_buffer);
+		m_buffer = NULL;
+	}
+	m_len=0;
+}

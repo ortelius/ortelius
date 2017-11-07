@@ -6,8 +6,9 @@
 #endif
 #else
 #define PSFTPLIB_API
-#define LPCTSTR const char*
+#define LPCTSTR const char *
 #endif
+
 
 #include "callback.h"
 
@@ -28,27 +29,11 @@ PSFTPLIB_API	int		protocol_put(char *Filename);
 PSFTPLIB_API	int		protocol_get(char *Filename);
 PSFTPLIB_API	char	*protocol_pwd();
 PSFTPLIB_API	int		protocol_delete(char *Filename);
-//
-// Following functions are used to invoke PSFTP functions from psftplib.cpp
-//
-#ifdef WIN32
-int sftp_cmd_open(struct sftp_command *cmd);
-int sftp_cmd_cd(struct sftp_command *cmd);
-int sftp_cmd_lcd(struct sftp_command *cmd);
-int sftp_cmd_mkdir(struct sftp_command *cmd);
-int sftp_cmd_put(struct sftp_command *cmd);
-int sftp_cmd_get(struct sftp_command *cmd);
-int sftp_cmd_rm(struct sftp_command *cmd);
-void sk_init(void);
-void do_defaults(char *session, Config * cfg);
-Config cfg;
-#endif
-char *pwd;
+
 char *ReturnErrorPtr();
-void SetSSHUserName(char *u);				// in ssh.c
-void SetSSHPassword(char *p);				// in ssh.c
 }
 #endif
+char *pwd;
 
 #ifndef CFILEINCLUDE
 extern "C" {

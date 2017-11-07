@@ -18,9 +18,13 @@
 #include <stdio.h>
 #ifndef WIN32
 #include <unistd.h>
-#endif /*!WIN32*/
+#else
+#include <windows.h>
+#endif
 
 #include "https.h"
+
+#include <string.h>
 
 #include "../../dmapi/platform.h"
 

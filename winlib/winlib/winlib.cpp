@@ -50,6 +50,41 @@ WMIWrapper			*m_wmi;
 
 char *GlobalErrorPtr;
 
+
+// Version of vasprintf for Windows
+
+int vasprintf(char **strp, const char *fmt, va_list ap)
+{
+	int r = -1, size = _vscprintf(fmt, ap);
+	if ((size >= 0) && (size < INT_MAX)) {
+		*strp = (char *)malloc(size+1); //+1 for null
+		if (*strp) {
+			r = vsnprintf(*strp, size+1, fmt, ap);  //+1 for null
+			if (r == -1) free(*strp);
+		}
+	} else {
+		*strp = 0;
+	}
+	return(r);
+}
+
+void WriteToDebugFile(const char *fmt, ...)
+{
+	char *msg = NULL;
+	if (getenv("OMDEBUG")) {
+		FILE *out = fopen(getenv("OMDEBUG"),"a+");
+		if (out) {
+			va_list args;
+			va_start(args, fmt);
+			vasprintf(&msg,fmt, args);
+			fprintf(out,"%s\n",msg);
+			free(msg);
+			va_end(args);
+			fclose(out);
+		}
+	}
+}
+
 void InitialiseWinsock()
 {
 	WORD		wVersionRequested=MAKEWORD(2,2);	// version 2.2
@@ -259,6 +294,7 @@ int protocol_connect(char *HostName,char *UserName,char *Password)
 	// if username is missing we'll turn it into domain\username
 	// if domain = HostName we'll set the "noimpersonate" flag
 	//
+	WriteToDebugFile("protocol_connect(HostName=[%s] UserName=[%s]",HostName,UserName);
 	wchar_t pszName[CREDUI_MAX_USERNAME_LENGTH+1] = {0};
     wchar_t pszPwd[CREDUI_MAX_PASSWORD_LENGTH+1] = {0};
 
@@ -280,9 +316,14 @@ int protocol_connect(char *HostName,char *UserName,char *Password)
 	int res = 1;
 	if (m_CallbackFunction) res = m_CallbackFunction(CALLBACK_PRECONNECT,(void *)1,0);
 
-	
-
 	m_HostName = _strdup(HostName);
+	
+	if (m_ShareName == (char *)0) {
+		WriteToDebugFile("No share name, must be connecting prior to execution - returning success");
+		return 1;	// Connecting prior to an exec/copyexec call.
+	} else {
+		WriteToDebugFile("Share name is [%s] - connecting prior to file transfer",m_ShareName);
+	}
 
 	bool NoImpersonate=false;
 	char *dn = (char *)0;
@@ -321,9 +362,10 @@ int protocol_connect(char *HostName,char *UserName,char *Password)
 	{
 		char *qun=(char *)malloc(strlen(dn)+strlen(un)+2);
 		sprintf(qun,"%s\\%s",dn,un);
+		WriteToDebugFile("qun=[%s]",qun);
 		// sprintf(qun,UserName);	// just user name - we're passing domain in somewhere else now.
 
-		// printf("Calling NetworkConnection(HostName=[%s] m_ShareName=[%s]\n",HostName,m_ShareName);
+		WriteToDebugFile("Calling NetworkConnection(HostName=[%s] m_ShareName=[%s]\n",HostName,m_ShareName?m_ShareName:"C$");
 		m_nc = new NetworkConnection(HostName,m_ShareName?m_ShareName:"C$");
 
 		charToWchar(qun, pszName, sizeof(pszName));
@@ -366,6 +408,7 @@ int protocol_connect(char *HostName,char *UserName,char *Password)
 			// Connecting to local host
 			//
 			//printf("Connecting using token\n");
+			WriteToDebugFile("Connecting to local host");
 			NoImpersonate=false;
 			if (!m_wmi->connectServerUsingToken(HostName,"root\\cimv2"))
 			{
@@ -446,6 +489,9 @@ char *protocol_return_last_error()
 
 int protocol_disconnect()
 {
+	if (m_nc) {
+		m_nc->disconnect();
+	}
 	return 0;
 }
 
@@ -471,7 +517,7 @@ char *protocol_exec(char **argv,char *shell,bool CopyFromLocal)
 	}
 	if (shell) plen+= (strlen(shell)+10);
 
-	char *execstr;
+	char *execstr = (char *)0;
 	// printf("Malloced space for execstr=%d\n",strlen(basedir)+plen+strlen(m_HostName)+strlen(m_UserName)+strlen(m_Password)+60);
 
 	if (CopyFromLocal)
@@ -504,13 +550,12 @@ char *protocol_exec(char **argv,char *shell,bool CopyFromLocal)
 		}
 	}
 
-	bool bi=false;
-
-	char *szDebug = getenv("OMDEBUG");
-	bool dbg=(szDebug && tolower(szDebug[0])=='y');
+	bool bi=false;	// built in
+	bool oq=false;	// outer quotes
 
 	if (m_HostName)
 	{
+		oq=true;
 		execstr = (char *)malloc(strlen(basedir)+plen+strlen(m_HostName)+strlen(m_UserName)+strlen(m_Password)+60);
 		if (shell) {
 			char *FmtStr = CopyFromLocal?"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:\"%s\" /c /s:\"%s\" \"%s\"\"":"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:%s /s:\"%s\" \"%s\"\"";
@@ -519,14 +564,14 @@ char *protocol_exec(char **argv,char *shell,bool CopyFromLocal)
 			char *FmtStr = CopyFromLocal?"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:\"%s\" /c \"%s\"\"":"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:%s \"%s\"\"";
 			sprintf(execstr,FmtStr,basedir,m_HostName,m_UserName,m_Password,argv[0]);
 		}
-		if (dbg) {
-			printf("shell=[%s]\n",shell);
-			printf("execstr=[%s]\n",execstr);
-		}
+		WriteToDebugFile("m_HostName=[%s]",m_HostName);
+		WriteToDebugFile("shell=[%s]\n",shell);
+		WriteToDebugFile("execstr=[%s]\n",execstr);
 	}
 	else
 	{
 		// No hostname - must be local execution
+		WriteToDebugFile("m_HostName not set: local execution");
 		char *t=argv[0];
 		char *e=(char *)0;
 		while (*t)
@@ -564,6 +609,17 @@ char *protocol_exec(char **argv,char *shell,bool CopyFromLocal)
 		}
 	}
 	
+	if (oq && n>1) {
+		WriteToDebugFile("quoted execstr=[%s], removing last quote\n",execstr);
+		// Entire command line up until now is surrounded by " - lose the last quote. The arg
+		// loop below will stick it back on the end of the parameter list
+		char *p = &(execstr[strlen(execstr)-1]);
+		WriteToDebugFile("*p=[%c]",*p);
+		if (*p=='"') *p--='\0';
+	}
+	
+	WriteToDebugFile("a) execstr=[%s]\n",execstr);
+
 	for (int i=1;i<n;i++)
 	{
 		// printf("argv[%d]=[%s]\n",i,argv[i]);
@@ -574,7 +630,7 @@ char *protocol_exec(char **argv,char *shell,bool CopyFromLocal)
 	}
 
 	int res=0;
-	if (dbg) printf("execstr=[%s]\n",execstr);
+	WriteToDebugFile("b) execstr=[%s]\n",execstr);
 
 	// If we're running locally and we're trying to run md5sum then calculate the checksum directly
 	if (strncmp(execstr,"\"\"md5sum\"",7)==0) {
@@ -617,6 +673,7 @@ char *protocol_exec(char **argv,char *shell,bool CopyFromLocal)
 
 	  */
 	// printf("res=%d\n",res);
+	if (execstr) free(execstr);
 	return (char *)res;
 }
 

@@ -73,6 +73,7 @@ public:
 
 	const char *buffer();
 	long size();
+	void truncate();
 };
 
 

@@ -1029,7 +1029,12 @@ int OMExecuteCmd(char *cmd,char *LogFile)
  memset(dest,0,sizeof(dest)); // readlink does not null terminate!
  struct stat info;
  pid = getpid();
+// proc/%d/exe does not exist on Solaris
+#ifdef __SUNOS__
+ sprintf(path, "/proc/%d/path/a.out", pid);
+#else
  sprintf(path, "/proc/%d/exe", pid);
+#endif
  if (readlink(path, dest, sizeof(dest)) == -1)
    perror("readlink");
 
@@ -1051,7 +1056,7 @@ int OMExecuteCmd(char *cmd,char *LogFile)
 
  fprintf(fp,"#!/bin/sh\n");
 //	fprintf(fp,"env\n");
-	fprintf(fp,"export PATH=%s:$PATH\n",dest);
+	fprintf(fp,"PATH=%s:$PATH;export PATH\n",dest);
 	if (strstr(cmd,"cat -") != NULL && *(cmd + strlen(cmd) - 1) != '"')
 		strcat(cmd,"\"");
  fprintf(fp,"%s 1>%s 2>&1",cmd,LogFile);

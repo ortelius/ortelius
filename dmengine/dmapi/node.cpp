@@ -2940,7 +2940,7 @@ ExtendedStmtImpl *ExtendedStmt::createImpl(Context &ctx)
 ControlPathReturn ExtendedStmt::checkControlPaths(class DM &dm)
 {
 	// TODO: This is not a particularly clean way to do this
-	if(strcmp(m_ident, "abort") == 0) {
+	if (m_ident && strcmp(m_ident, "abort") == 0) {
 		debug1("Exception path detected");
 		return control_path_exception;
 	}

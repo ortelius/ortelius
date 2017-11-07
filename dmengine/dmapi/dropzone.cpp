@@ -64,7 +64,6 @@ DropzoneFile::DropzoneFile(
 			if (*p=='\\') *p='/';
 			p++;
 		}
-		printf("m_dzpath=[%s]\n",m_dzpath);
 	}
 }
 
@@ -88,7 +87,6 @@ DropzoneFile::DropzoneFile(
 			if (*p=='\\') *p='/';
 			p++;
 		}
-		printf("m_dzpath=[%s]\n",m_dzpath);
 	}
 }
 
@@ -105,7 +103,6 @@ DropzoneFile::DropzoneFile(
 			if (*p=='\\') *p='/';
 			p++;
 		}
-		printf("m_dzpath=[%s]\n",m_dzpath);
 	}
 }
 

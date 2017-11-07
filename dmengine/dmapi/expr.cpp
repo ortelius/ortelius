@@ -447,6 +447,13 @@ Expr *function_obj_stream_length(int argc, Expr *self, Expr **argv, Context &ctx
 	return new Expr((int)stream->size());
 }
 
+Expr *function_obj_stream_truncate(int argc, Expr *self, Expr **argv, Context &ctx)
+{
+	OutputStream *stream = self->toStream();
+	stream->truncate();
+	return new Expr((int)0);
+}
+
 Expr *function_obj_stream_base64_encode(int argc, Expr *self, Expr **argv, Context &ctx)
 {
 	OutputStream *stream = self->toStream();
@@ -831,6 +838,7 @@ DMObjFnTable obj_fn_table[] = {
 	{ "to_char",		KIND_DATE,   OBJ_KIND_NONE,        0, 2, function_obj_date_to_char },
 	{ "to_int",			KIND_DATE,   OBJ_KIND_NONE,        0, 1, function_obj_date_to_int },
 	{ "to_json",		KIND_ARRAY,	 OBJ_KIND_NONE,        0, 0, function_obj_array_to_json },
+	{ "truncate",		KIND_STREAM, OBJ_KIND_NONE,	       0, 0, function_obj_stream_truncate },
 	{ "upper",			KIND_STR,    OBJ_KIND_NONE,        0, 0, function_obj_string_upper },
 	{ "versions",		KIND_OBJECT, OBJ_KIND_APPLICATION, 0, 1, function_obj_children },
 	{ "xmlparse",		KIND_STR,    OBJ_KIND_NONE,        0, 0, function_obj_string_parsexml },

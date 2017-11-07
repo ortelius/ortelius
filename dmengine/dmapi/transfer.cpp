@@ -249,119 +249,121 @@ RtiTransferProviderImpl::RtiTransferProviderImpl(
 
 void RtiTransferProviderImpl::deleteFromServer(Component &comp,Context &ctx)
 {
-	debug3("Removing files associated with the last deployment of component %s to server %s",comp.name(),m_target.name());
-	//
-	// Create a temporary file containing a list of files to remove on this server
-	//
-	char *listfile = NULL;
-	FILE *out = ctx.dm().createTemporaryFile(&listfile);
-	debug3("out = 0x%lx Temp File: %s", out, listfile);
-	if (out) {
-		// Create a list of files and add them to the temporary file
-		StringList *filelist = comp.getFilesForLastDeployment(m_target,ctx.dm().deployId());
-		if (filelist->size() > 0) {
-			StringListIterator iter(*filelist);
-			for(const char *pathname = iter.first(); pathname; pathname = iter.next()) {
-				debug3("Removing File [%s]", pathname);
-				fprintf(out,"%s\n",pathname);
-		}
-			fclose(out);
-	}
-	} else {
-		// Problem creating temporary file
-	}
-	char dmtransfer[1024];
-	sprintf(dmtransfer, "%s%slib%sdmtransfer%s",
-		ctx.dm().dmHome(), DIR_SEP_STR, DIR_SEP_STR, EXE_EXT);
-
-	CmdLine cmd(dmtransfer);
-	if (strcmp(m_target.hostname(),"localhost") ==0)
-	{
-#ifdef WIN32
-		cmd.add("-protocol").add("win").add("-server").add(m_target.hostname());		
-#else 
-		cmd.add("-protocol").add("sftp").add("-server").add(m_target.hostname());
-#endif					
-	}
-	else
-	{
- 	cmd.add("-protocol").add(m_protocol).add("-server").add(m_target.hostname());		
-	}
-
-	if (strcmp(m_protocol,"sftp")==0 && m_target.getSSHPort() != 22) {
-		// Default port number has changed
-		char szPortNum[128];
-		sprintf(szPortNum,"%d",m_target.getSSHPort());
-		cmd.add("-port").add(szPortNum);
-	}
-	if (m_credentials) {
-		switch(m_credentials->credkind()) {
-		case CREDENTIALS_ENCRYPTED:
-		case CREDENTIALS_IN_DATABASE:
-		case CREDENTIALS_FROM_VARS: {
-			// decrypt always allocates memory
-			char *username = m_credentials->getDecryptedUsername(ctx); // was m_tgtenv PAG 18/02/2015
-			char *password = m_credentials->getDecryptedPassword(ctx); // was m_tgtenv PAG 18/02/2015
-			cmd.add("-user").add(username).add("-password").add(password);
-			SECURE_FREE(username);
-			SECURE_FREE(password);
-			}
-			break;
-		case CREDENTIALS_PRIVATE_KEY: {
-			char *username = m_credentials->getDecryptedUsername(ctx);
-			char *filename = (char *)m_credentials->filename(ctx);
-			cmd.add("-user").add(username).add("-keyfile").add(filename);
-			SECURE_FREE(username);
-			SECURE_FREE(filename);
-			}
-		    break;
-		default:
-			throw RuntimeError(ctx.stack(), "Credentials kind %d not yet implemented", m_credentials->kind());
-		}
-	}
-	cmd.add("-dellist").add(listfile);
-	// Lock on the hostname of the target server
-	debug1("%s\n",cmd.toCommandString());
-	ctx.dm().writeToStdOut("INFO: Removing Component %s from Server %s",comp.name(),m_target.name());
-	Thread::lock(__LINE__,__FILE__,m_target.hostname());
-
-	CapturedData *cd = NULL;
-	int tempExitStatus;
-	int ret = executeAndCapture(ctx.stream(), cmd, NULL, false, ctx.threadId(), &tempExitStatus, &cd, NULL);
-	debug1("dmtransfer complete, ret=%d tempexitstatus=%d",ret,tempExitStatus);
-
-	// Unlock again
-	Thread::unlock(__LINE__,__FILE__,m_target.hostname());
-
-	if(ret || tempExitStatus) {
-		// Get any stderr output
-		if(cd) {
-			char *temp = NULL;
-			cd->appendStandardErr("\0", 1);
-			for(char *eline = STRTOK_R((char*) cd->standardErr(), "\r\n", &temp);
-				eline; eline = STRTOK_R(NULL, "\r\n", &temp)) {
-				ctx.dm().writeToStdErr(eline);
-			}
-		}
-		SAFE_DELETE(cd);
-		throw RuntimeError(ctx.stack(), "dmtransfer failed when removing files");
-	}
-	else
-	{
-		// Successful completion - rattle through the standard output and write to log
-		if(cd) {
-			char *temp = NULL;
-			cd->appendStandardOut("\0", 1);
-			for(char *eline = STRTOK_R((char*) cd->standardOut(), "\r\n", &temp);
-				eline; eline = STRTOK_R(NULL, "\r\n", &temp)) {
-				ctx.dm().writeToStdOut(eline);
-			}
-		}
-		SAFE_DELETE(cd);
+	StringList *filelist = comp.getFilesForLastDeployment(m_target,ctx.dm().deployId());
+	if (filelist->size() > 0) {
+		debug3("Removing files associated with the last deployment of component %s to server %s",comp.name(),m_target.name());
 		//
-		// Now write the DELETED entries into dm_deploymentxfer
+		// Create a temporary file containing a list of files to remove on this server
 		//
+		char *listfile = NULL;
+		FILE *out = ctx.dm().createTemporaryFile(&listfile);
+		debug3("out = 0x%lx Temp File: %s", out, listfile);
+		if (out) {
+			// Create a list of files and add them to the temporary file
+			if (filelist->size() > 0) {
+				StringListIterator iter(*filelist);
+				for(const char *pathname = iter.first(); pathname; pathname = iter.next()) {
+					debug3("Removing File [%s]", pathname);
+					fprintf(out,"%s\n",pathname);
+			}
+				fclose(out);
+		}
+		} else {
+			// Problem creating temporary file
+		}
+		char dmtransfer[1024];
+		sprintf(dmtransfer, "%s%slib%sdmtransfer%s",
+			ctx.dm().dmHome(), DIR_SEP_STR, DIR_SEP_STR, EXE_EXT);
+	
+		CmdLine cmd(dmtransfer);
+		if (strcmp(m_target.hostname(),"localhost") ==0)
+		{
+	#ifdef WIN32
+			cmd.add("-protocol").add("win").add("-server").add(m_target.hostname());		
+	#else 
+			cmd.add("-protocol").add("sftp").add("-server").add(m_target.hostname());
+	#endif					
+		}
+		else
+		{
+	 	cmd.add("-protocol").add(m_protocol).add("-server").add(m_target.hostname());		
+		}
+	
+		if (strcmp(m_protocol,"sftp")==0 && m_target.getSSHPort() != 22) {
+			// Default port number has changed
+			char szPortNum[128];
+			sprintf(szPortNum,"%d",m_target.getSSHPort());
+			cmd.add("-port").add(szPortNum);
+		}
+		if (m_credentials) {
+			switch(m_credentials->credkind()) {
+			case CREDENTIALS_ENCRYPTED:
+			case CREDENTIALS_IN_DATABASE:
+			case CREDENTIALS_FROM_VARS: {
+				// decrypt always allocates memory
+				char *username = m_credentials->getDecryptedUsername(ctx); // was m_tgtenv PAG 18/02/2015
+				char *password = m_credentials->getDecryptedPassword(ctx); // was m_tgtenv PAG 18/02/2015
+				cmd.add("-user").add(username).add("-password").add(password);
+				SECURE_FREE(username);
+				SECURE_FREE(password);
+				}
+				break;
+			case CREDENTIALS_PRIVATE_KEY: {
+				char *username = m_credentials->getDecryptedUsername(ctx);
+				char *filename = (char *)m_credentials->filename(ctx);
+				cmd.add("-user").add(username).add("-keyfile").add(filename);
+				SECURE_FREE(username);
+				SECURE_FREE(filename);
+				}
+			    break;
+			default:
+				throw RuntimeError(ctx.stack(), "Credentials kind %d not yet implemented", m_credentials->kind());
+			}
+		}
+		cmd.add("-dellist").add(listfile);
+		// Lock on the hostname of the target server
+		debug1("%s\n",cmd.toCommandString());
+		ctx.dm().writeToStdOut("INFO: Removing Component %s from Server %s",comp.name(),m_target.name());
+		Thread::lock(__LINE__,__FILE__,m_target.hostname());
+	
+		CapturedData *cd = NULL;
+		int tempExitStatus;
+		int ret = executeAndCapture(ctx.stream(), cmd, NULL, false, ctx.threadId(), &tempExitStatus, &cd, NULL);
+		debug1("dmtransfer complete, ret=%d tempexitstatus=%d",ret,tempExitStatus);
+	
+		// Unlock again
+		Thread::unlock(__LINE__,__FILE__,m_target.hostname());
+	
+		if(ret || tempExitStatus) {
+			// Get any stderr output
+			if(cd) {
+				char *temp = NULL;
+				cd->appendStandardErr("\0", 1);
+				for(char *eline = STRTOK_R((char*) cd->standardErr(), "\r\n", &temp);
+					eline; eline = STRTOK_R(NULL, "\r\n", &temp)) {
+					ctx.dm().writeToStdErr(eline);
+				}
+			}
+			SAFE_DELETE(cd);
+			throw RuntimeError(ctx.stack(), "dmtransfer failed when removing files");
+		}
+		else
+		{
+			// Successful completion - rattle through the standard output and write to log
+			if(cd) {
+				char *temp = NULL;
+				cd->appendStandardOut("\0", 1);
+				for(char *eline = STRTOK_R((char*) cd->standardOut(), "\r\n", &temp);
+					eline; eline = STRTOK_R(NULL, "\r\n", &temp)) {
+					ctx.dm().writeToStdOut(eline);
+				}
+			}
+			SAFE_DELETE(cd);
+			//
+			// Now write the DELETED entries into dm_deploymentxfer
+			//
 
+		}
 	}
 }
 
@@ -385,7 +387,12 @@ List<TransferResult> *RtiTransferProviderImpl::transferToServer(const char *drop
 
 	// Now examine the component base directory
 	if(m_comp && m_comp->basedir()) {
-		PathNameImpl *compPath = m_target.createPath(m_comp->basedir());
+		// Expand variables in the component base directory
+		Node nfilepath(NODE_STR, strdup(m_comp->basedir()), true);
+		ExprPtr efilepath = nfilepath.evaluate(ctx);
+		ConstCharPtr compbasedir = efilepath->stringify();
+		// PathNameImpl *compPath = m_target.createPath(m_comp->basedir());
+		PathNameImpl *compPath = m_target.createPath(compbasedir);
 		if(!compPath) {
 			throw RuntimeError(ctx.stack(), "Failed to create path for server '%s'", m_target.name()); 
 		}
