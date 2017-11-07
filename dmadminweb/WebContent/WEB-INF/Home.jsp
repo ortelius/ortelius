@@ -1755,12 +1755,7 @@ String.prototype.trimChars = function(charlist) {
 
  function SetTabActive(menuid,tabname)
  {
-	 console.log("SetTabActive("+tabname+")");
-	 if (tabname=='displaylogtabs-log') {
-		 $("#deprefresh").show();
-	 } else {
-		 $("#deprefresh").hide();
-	 }
+	console.log("SetTabActive("+tabname+")");
 	if (oldsubtabmenu[menuid].length > 0) {
 		$("#" + oldsubtabmenu[menuid]).removeClass('current');
 		$("#" + oldsubtabmenu[menuid]).removeClass('active');
@@ -1769,9 +1764,16 @@ String.prototype.trimChars = function(charlist) {
 	}
 	$("#"+tabname).addClass('current');
 	$("#"+tabname).addClass('active');
+	oldsubtabmenu[menuid] = tabname;
+	if (tabname=='displaylogtabs-log' || tabname=='displaylogtabs-files'  || tabname=='displaylogtabs-general' || tabname=='displaylogtabs-scripts') {
+		if (!depComplete) $("#deprefresh").show();
+		RefreshLogDetail(saveLognum);
+	} else {
+		$("#deprefresh").hide();
+	}
 	$("#"+tabname+"-data").show();
 	console.log("Showing #" + tabname+"-data");
-	oldsubtabmenu[menuid] = tabname;
+	
 	if (tabname=="displaylogtabs-reports") {
 		// May need to call replot here
 		CreateDeployReports();

@@ -861,7 +861,8 @@ function DisplayDeploy(lognum)
     "</div>" +
     "<div class=\"right_panel_title_area\" style=\"display:inline-block;\">" +
     "<h1 class=\"build\">Deploy #"+lognum +
-    "<button id=\"deprefresh\" class=\"edit_button\" style=\"float:right;display:none;\" onClick=\"javascript:RefreshLogDetail(summSaveobjid)\"><img alt=\"Refresh\" src=\"images/refresh.png\"></button>" +
+    "<div id=\"deprefresh\" style=\"float:right;display:none;\"><input id=\"autorefresh\" type=\"checkbox\" checked onClick=\"javascript:TogglePlayPause(summSaveobjid)\">Auto Refresh&nbsp;&nbsp;&nbsp;</div>"+
+ //   "<button id=\"deprefresh\" class=\"edit_button\" style=\"float:right;display:none;\" onClick=\"javascript:TogglePlayPause(summSaveobjid)\"><img alt=\"Refresh\" src=\"images/play.png\"></button>" +
 //    "<button id=\"depmaximize\" class=\"edit_button\" style=\"float:right;\" onClick=\"javascript:MaxLogDetail(summSaveobjid)\"><img alt=\"Maximize\" src=\"images/maximize.png\"></button>" +
  //   "<button id=\"depminimize\" class=\"edit_button\" style=\"float:right;\" onClick=\"javascript:MinLogDetail(summSaveobjid)\"><img alt=\"Minimize\" src=\"images/minimize.png\"></button>" + 
     "</h1>" +
@@ -923,7 +924,7 @@ function DisplayDeploy(lognum)
                  } ];
     pwd.dialog("option", "title", "Results for #" + lognum);
     // pwd.dialog("option", "height", "450px");
-    pwd.dialog("option", "width", "920px");
+    pwd.dialog("option", "width", "1080px");
     pwd.dialog("option", "buttons", buttons);
     
     pwd.dialog('open');

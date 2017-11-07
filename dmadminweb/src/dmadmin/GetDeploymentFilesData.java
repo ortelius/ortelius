@@ -55,6 +55,7 @@ public class GetDeploymentFilesData extends HttpServletBase
   Deployment dep = session.getDeployment(depid, true);
   JSONObject obj = new JSONObject();
   obj.add("readOnly", true);
+  obj.add("complete", dep.isComplete());
   if (f.equalsIgnoreCase("f"))
   {
    obj.add("data", dep.getFilesJSON());

@@ -15,27 +15,20 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-function GetNewsDetails(objid)
+
+function LoadDeploymentSummaryData(objid)
 {
- objtypeAsInt = 99;
- tablename = "newssum";
- summSavetablename = tablename;
- summSaveobjtypeAsInt = objtypeAsInt;
- summSaveobjtype = "";
- summSaveobjid = objid;
 
  console.log("GetSummaryData?objtype=" + objtypeAsInt + "&id=" + objid);
- $.ajax(
- {
+	$.ajax({
   url : "GetSummaryData?objtype=" + objtypeAsInt + "&id=" + objid,
   dataType : 'json',
   type : 'GET',
-  success : function(res)
-  {
+		success : function(res) {
+			console.log(res);
    var td = "";
 
-   for (var r = 0; r < res.data.length; r++)
-   {
+			for (var r = 0; r < res.data.length; r++) {
     var row = res.data[r];
     var field = row[0];
     var callback = row[1];
@@ -45,99 +38,74 @@ function GetNewsDetails(objid)
     var isuser = true;
     var oldval = "";
 
-    if (label == "Name")
-    {
+				if (label == "Name") {
      objName = val;
-    }
-    else if (label == "Deployed By")
-    {
+				} else if (label == "Deployed By") {
      var owner = val;
-     if (typeof owner.name != "undefined")
-     {
+					if (typeof owner.name != "undefined") {
       val = owner.name;
-      if (owner.type != "us")
-       isuser = false;
-     }
-     else
-     {
+						if (owner.type != "us") isuser = false;
+					} else {
       owner = new Object();
       owner.type = "us";
       owner.name = "";
       owner.id = 0;
       val = "";
      }
-    }
-    else if (label == "Application Name")
-    {
+				} else if (label == "Application Name") {
      var owner = val;
-     if (typeof owner.name != "undefined")
-     {
+					if (typeof owner.name != "undefined") {
       val = owner.name;
-      if (owner.type != "us")
-       isuser = false;
-     }
-     else
-     {
+						if (owner.type != "us") isuser = false;
+					} else {
       owner = new Object();
       owner.type = "us";
       owner.name = "";
       owner.id = 0;
       val = "";
      }
-    }
-    else if (label == "Environment Name")
-    {
+				} else if (label == "Environment Name") {
      var owner = val;
-     if (typeof owner.name != "undefined")
-     {
+					if (typeof owner.name != "undefined") {
       val = owner.name;
-      if (owner.type != "us")
-       isuser = false;
-     }
-     else
-     {
+						if (owner.type != "us") isuser = false;
+					} else {
       owner = new Object();
       owner.type = "us";
       owner.name = "";
       owner.id = 0;
       val = "";
      }
-    }
-    else if (label == "Started")
-    {
+				} else if (label == "Started") {
      var created = val;
-     if (typeof created.name != "undefined")
-     {
+					if (typeof created.name != "undefined") {
       var d = convertDate(created.name);
       val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
-     }
-     else
+					} else {
       val = "";
     }
-    else if (label == "Finished")
-    {
+				} else if (label == "Finished") {
+					$("#deprefresh").hide(); // Deployment Complete
+					depComplete = true;
      var modified = val;
-     if (typeof modified.name != "undefined")
-     {
+					if (typeof modified.name != "undefined") {
       var d = convertDate(modified.name);
       val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+					} else {
+						val = "";
      }
-     else
-      val = "";
     }
     
-    if (label == "Deployed By")
-    {
+				if (label == "Deployed By") {
      td += "<tr><td class=\"summlabel\" style=\"width:30%\">";
      td += label;
      td += ":</td><td>";
-     if (isuser)
+					if (isuser) {
       td += "<img src=\"css/images/user_16x.png\"\ style=\"vertical-align:middle;\">&nbsp;" + val;
-     else
+					} else {
       td += "<img src=\"css/images/group_16x.png\"\ style=\"vertical-align:middle;\">&nbsp;" + val;
     }
-    else
-    {
+				} else {
       var myid = label.toLocaleLowerCase().replace(" ", "") + "_sumrow";
 
       td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\" style=\"width:30%\">";
@@ -150,76 +118,29 @@ function GetNewsDetails(objid)
 
    $("#" + tablename + " > tbody").html(td);
   },
-  error : function(jqxhr, status, err)
-  {
+		error : function(jqxhr, status, err) {
    console.log(status);
    console.log(err);
   }
  });
- 
-  $.getJSON("GetDeploymentLog?deployid=" + objid, function(data) {
-
-     console.log(data);
-     
-     var td = "";
-     for (i=0;i<data.log.length;i++)
-     {
-      var row = data.log[i];
-
-      row.line = row.line.replace("<BR>","");
-      
-      if (row.stream == 2)
-       td += "<tr><td style=\"color:#e00\" class=\"tid" + row.color + "\">" + row.line + "</td></tr>";
-      else
-       td += "<tr><td class=\"tid" + row.color + "\">" + row.line + "</td></tr>";
      }
 
-     $("#deploymentlog").html(td);
-  }); 
   
-  console.log("GetDeploymentFilesData?f=f&id="+objid);
-  $.getJSON("GetDeploymentFilesData?f=f&id=" + objid, function(res) {
 
-   console.log(res);
    
-   var td = "<table id=\"deploymentfiles\" cellspacing=\"0\" width=\"100%\" >";
+function GetNewsDetails(objid)
+{
+ objtypeAsInt = 99;
+ tablename = "newssum";
+ summSavetablename = tablename;
+ summSaveobjtypeAsInt = objtypeAsInt;
+ summSaveobjtype = "";
+ summSaveobjid = objid;
+ depComplete = false;
    
-   td += "<thead class=\"ui-widget-header\"><tr><th>Step</th><th>Repository</th><th>Repository Path</th><th>Version</th><th>Component</th><th>Build</th><th>Target</th><th>Target Path</th><th>MD5</th></tr></thead><tbody>";
-   var rowcnt = 0;
+ LoadDeploymentSummaryData(objid);
    
-   for (i=0;i<res.data.length;i++)
-   {
-    var row = res.data[i];
-    var step = row[0].name;
-    var repo = row[1].name;
-    var repopath = row[2];
-    var version = row[3];
-    var component = row[4].name;
-    var target = row[5].name;
-    var targetpath = row[6];
-    for (var z=0;z<targetpath.length;z++) {
-    	if (targetpath.charAt(z)=='/') {
-    		targetpath=targetpath.replaceAll("\\\\","/");
-    		break;
-    	}
-    	else
-    	if (targetpath.charAt(z)=='\\') {
-    		targetpath=targetpath.replaceAll("/","\\");
-    		break;
-    	}
-    }
-    var md5 = row[7];
-    var buildno = (row[8]==0)?"":"#"+row[8];
-    td += "<tr><td style=\"border: 1px solid #ddd;\">" + step + "</td><td style=\"border: 1px solid #ddd;\">" + repo + "</td><td style=\"border: 1px solid #ddd;\">" + repopath + "</td><td style=\"border: 1px solid #ddd;\">" + version + "</td><td style=\"border: 1px solid #ddd;\">" + component + "</td><td style=\"border: 1px solid #ddd;\">" + buildno + "</td><td style=\"border: 1px solid #ddd;\">" + target + "</td><td style=\"border: 1px solid #ddd;\">" + targetpath + "</td><td style=\"border: 1px solid #ddd;\">"+md5+"</td></tr>";
-   }
    
-   for (rowcnt; rowcnt < 5; rowcnt++)
-   {
-    td += "<tr><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td></tr>";   
-   }
-   td += "</tbody></table></div>";
-   $("#displaylogtabs-files-data").html(td);
-});
   
   $.getJSON("GetDeploymentFilesData?f=d&id=" + objid, function(res) {
 	   console.log(res);
@@ -239,37 +160,10 @@ function GetNewsDetails(objid)
 	   $("#displaylogtabs-defects-data").html(td);
   });
   
+  oldsubtabmenu[1]="displaylogtabs-files";
+  RefreshLogDetail(objid);
  
-  $.getJSON("GetDeploymentFilesData?f=s&id=" + objid, function(res) {
 
-	   console.log(res);
-	   
-	   var td = "<table id=\"deploymentscripts\" cellspacing=\"0\" width=\"100%\" >";
-	   
-	   td += "<thead class=\"ui-widget-header\"><tr><th>Step</th><th>Action/Procedure/Function</th></tr></thead><tbody>";
-	   var rowcnt = 0;
-	   
-	   for (i=0;i<res.data.length;i++)
-	   {
-	    var row = res.data[i];
-	    var step = row.step;
-	    var action = row.action;
-	    var otid=(action.type=="ac")?action.type+action.id:action.type+action.id+"-"+action.kind;
-	    var img="action.png";
-	    if (action.type=="pr") img="proc.png";
-	    if (action.type=="fn") img="func.png";
-	    linkval="<span style=\"position:relative; top:-3px;\"><img src=\"css/images/"+img+"\" style=\"position:relative; top: 3px; padding-right:5px\"><a href='javascript:SwitchDisplay(\""+otid+"\");'>"+action.name+"</a></span>";
-	    td += "<tr><td style=\"border: 1px solid #ddd;\">" + step + "</td><td style=\"border: 1px solid #ddd;\">" + linkval + "</td></tr>";
-	   }
-	   /*
-	   for (rowcnt; rowcnt < 5; rowcnt++)
-	   {
-	    td += "<tr><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td></tr>";   
-	   }
-	   */
-	   td += "</tbody></table></div>";
-	   $("#displaylogtabs-scripts-data").html(td);
-	});
   // ReplotDeployReports(objid);  
 }
 
@@ -362,25 +256,137 @@ function MinLogDetail(objid)
   $('.ui-dialog').width(save_logdlg_width);
 } 
  
+function TogglePlayPause(objid)
+{
+	if ($("#autorefresh").is(':checked')) RefreshLogDetail(objid);
+}
+
 function RefreshLogDetail(objid)
 {
+	var logRefresh=$("#autorefresh").is(':checked');
+	console.log("RefreshLogDetail("+objid+") logRefresh="+logRefresh);
+	console.log("Tab="+oldsubtabmenu[1]);
+	// Refresh data in current tab
+	if (oldsubtabmenu[1]=="displaylogtabs-log") {
  $.getJSON("GetDeploymentLog?deployid=" + objid, function(data) {
-
+			console.log("Refreshing deployment log");
   console.log(data);
-  
   var td = "";
-  for (i=0;i<data.log.length;i++)
-  {
+			for (i=0;i<data.log.length;i++) {
    var row = data.log[i];
 
    row.line = row.line.replace("<BR>","");
-   
    if (row.stream == 2)
     td += "<tr><td style=\"color:#e00\" class=\"tid" + row.color + "\">" + row.line + "</td></tr>";
    else
     td += "<tr><td class=\"tid" + row.color + "\">" + row.line + "</td></tr>";
   }
+			if (!data.complete) {
+				td+="<tr><td><img src=\"images/spinner.gif\" /></td></tr>";
+			}
+			$("#deploymentlog").html(td);
+			if (data.complete) {
+				logRefresh = false;
+				$("#deprefresh").hide();
+			}
+			if (logRefresh && !data.complete) {
+				// Scroll to bottom of log
+				var wtf = $('#displaylogtabs-log-data');
+				if (typeof wtf[0] != "undefined") {
+					var height = wtf[0].scrollHeight;
+					wtf.scrollTop(height);
+					clearTimeout(arTimerID);
+					arTimerID = setTimeout(function() {
+						RefreshLogDetail(objid);
+					},2000);
+				}
+			}
+		});
+	}
+	if (oldsubtabmenu[1]=="displaylogtabs-files") {
+		$.getJSON("GetDeploymentFilesData?f=f&id=" + objid, function(res) {
+			console.log("Refreshing deployment files");
+			console.log(res);  
+			var td = "<table id=\"deploymentfiles\" cellspacing=\"0\" width=\"100%\" >";
+			td += "<thead class=\"ui-widget-header\"><tr><th>Step</th><th>Repository</th><th>Repository Path</th><th>Version</th><th>Component</th><th>Build</th><th>Target</th><th>Target Path</th><th>MD5</th></tr></thead><tbody>";
+			var rowcnt = 0;
+			for (i=0;i<res.data.length;i++) {
+				var row = res.data[i];
+				var step = row[0].name;
+				var repo = row[1].name;
+				var repopath = row[2];
+				var version = row[3];
+				var component = row[4].name;
+				var target = row[5].name;
+				var targetpath = row[6];
+				for (var z=0;z<targetpath.length;z++) {
+					if (targetpath.charAt(z)=='/') {
+						targetpath=targetpath.replaceAll("\\\\","/");
+						break;
+					}
+					else
+					if (targetpath.charAt(z)=='\\') {
+						targetpath=targetpath.replaceAll("/","\\");
+						break;
+					}
+				}
+				var md5 = row[7];
+				var buildno = (row[8]==0)?"":"#"+row[8];
+				td += "<tr><td style=\"border: 1px solid #ddd;\">" + step + "</td><td style=\"border: 1px solid #ddd;\">" + repo + "</td><td style=\"border: 1px solid #ddd;\">" + repopath + "</td><td style=\"border: 1px solid #ddd;\">" + version + "</td><td style=\"border: 1px solid #ddd;\">" + component + "</td><td style=\"border: 1px solid #ddd;\">" + buildno + "</td><td style=\"border: 1px solid #ddd;\">" + target + "</td><td style=\"border: 1px solid #ddd;\">" + targetpath + "</td><td style=\"border: 1px solid #ddd;\">"+md5+"</td></tr>";
+			} 
+			for (rowcnt; rowcnt < 5; rowcnt++) {
+				td += "<tr><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td></tr>";   
+			}
+			td += "</tbody></table></div>";
+			$("#displaylogtabs-files-data").html(td);
+			if (res.complete) {
+				logRefresh = false;
+				$("#deprefresh").hide();
+			}
+			if (logRefresh && !res.complete) {
+				clearTimeout(arTimerID);
+				arTimerID = setTimeout(function() {
+					RefreshLogDetail(objid);
+				},2000);
+			}
+		});
+	}
+	
+	if (oldsubtabmenu[1]=="displaylogtabs-general") {
+		LoadDeploymentSummaryData(objid);
+		if (logRefresh && !depComplete) {
+			clearTimeout(arTimerID);
+			arTimerID = setTimeout(function() {
+				RefreshLogDetail(objid);
+			},2000);
+		} 
+	}
 
-  $("#deploymentlog").html(td);
+	if (oldsubtabmenu[1]=="displaylogtabs-scripts") {
+		$.getJSON("GetDeploymentFilesData?f=s&id=" + objid, function(res) {
+			console.log(res);
+			var td = "<table id=\"deploymentscripts\" cellspacing=\"0\" width=\"100%\" >";	   
+			td += "<thead class=\"ui-widget-header\"><tr><th>Step</th><th>Action/Procedure/Function</th></tr></thead><tbody>";
+			var rowcnt = 0;   
+			for (i=0;i<res.data.length;i++) {
+				var row = res.data[i];
+				var step = row.step;
+				var action = row.action;
+				var otid=(action.type=="ac")?action.type+action.id:action.type+action.id+"-"+action.kind;
+				var img="action.png";
+				if (action.type=="pr") img="proc.png";
+				if (action.type=="fn") img="func.png";
+				linkval="<span style=\"position:relative; top:-3px;\"><img src=\"css/images/"+img+"\" style=\"position:relative; top: 3px; padding-right:5px\"><a href='javascript:SwitchDisplay(\""+otid+"\");'>"+action.name+"</a></span>";
+				td += "<tr><td style=\"border: 1px solid #ddd;\">" + step + "</td><td style=\"border: 1px solid #ddd;\">" + linkval + "</td></tr>";
+			}
+			td += "</tbody></table></div>";
+			$("#displaylogtabs-scripts-data").html(td);
+			if (logRefresh && !res.complete) {
+				clearTimeout(arTimerID);
+				arTimerID = setTimeout(function() {
+					RefreshLogDetail(objid);
+				},2000);
+			}
 });  
+	}
 }
