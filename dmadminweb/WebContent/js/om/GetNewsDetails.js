@@ -18,112 +18,115 @@
 
 function LoadDeploymentSummaryData(objid)
 {
-
- console.log("GetSummaryData?objtype=" + objtypeAsInt + "&id=" + objid);
+	console.log("GetSummaryData?objtype=" + objtypeAsInt + "&id=" + objid);
 	$.ajax({
-  url : "GetSummaryData?objtype=" + objtypeAsInt + "&id=" + objid,
-  dataType : 'json',
-  type : 'GET',
+		url : "GetSummaryData?objtype=" + objtypeAsInt + "&id=" + objid,
+		dataType : 'json',
+		type : 'GET',
 		success : function(res) {
 			console.log(res);
-   var td = "";
+			var td = "";
 
 			for (var r = 0; r < res.data.length; r++) {
-    var row = res.data[r];
-    var field = row[0];
-    var callback = row[1];
-    var rtype = row[2];
-    var label = row[3];
-    var val = row[4];
-    var isuser = true;
-    var oldval = "";
+				var row = res.data[r];
+				var field = row[0];
+				var callback = row[1];
+				var rtype = row[2];
+				var label = row[3];
+				var val = row[4];
+				var isuser = true;
+				var oldval = "";
 
 				if (label == "Name") {
-     objName = val;
+					objName = val;
 				} else if (label == "Deployed By") {
-     var owner = val;
+					var owner = val;
 					if (typeof owner.name != "undefined") {
-      val = owner.name;
+						val = owner.name;
 						if (owner.type != "us") isuser = false;
 					} else {
-      owner = new Object();
-      owner.type = "us";
-      owner.name = "";
-      owner.id = 0;
-      val = "";
-     }
+						owner = new Object();
+						owner.type = "us";
+						owner.name = "";
+						owner.id = 0;
+						val = "";
+					}
 				} else if (label == "Application Name") {
-     var owner = val;
+					var owner = val;
 					if (typeof owner.name != "undefined") {
-      val = owner.name;
+						val = owner.name;
 						if (owner.type != "us") isuser = false;
 					} else {
-      owner = new Object();
-      owner.type = "us";
-      owner.name = "";
-      owner.id = 0;
-      val = "";
-     }
+						owner = new Object();
+						owner.type = "us";
+						owner.name = "";
+						owner.id = 0;
+						val = "";
+					}
 				} else if (label == "Environment Name") {
-     var owner = val;
+					var owner = val;
 					if (typeof owner.name != "undefined") {
-      val = owner.name;
+						val = owner.name;
 						if (owner.type != "us") isuser = false;
 					} else {
-      owner = new Object();
-      owner.type = "us";
-      owner.name = "";
-      owner.id = 0;
-      val = "";
-     }
+						owner = new Object();
+						owner.type = "us";
+						owner.name = "";
+						owner.id = 0;
+						val = "";
+					}
 				} else if (label == "Started") {
-     var created = val;
-					if (typeof created.name != "undefined") {
-      var d = convertDate(created.name);
-      val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+					var created = val;
+					if (typeof created.value != "undefined") {
+						var d = new Date(created.value * 1000);
+						val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+					} else if (typeof created.name != "undefined") {
+						var d = convertDate(created.name);
+						val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
 					} else {
-      val = "";
-    }
+						val = "";
+					}
 				} else if (label == "Finished") {
 					$("#deprefresh").hide(); // Deployment Complete
 					depComplete = true;
-     var modified = val;
-					if (typeof modified.name != "undefined") {
-      var d = convertDate(modified.name);
-      val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+					var modified = val;
+					if (typeof modified.value != "undefined") {
+						var d = new Date(modified.value * 1000);
+						val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+					} else if (typeof modified.name != "undefined") {
+						var d = convertDate(modified.name);
+						val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
 					} else {
 						val = "";
-     }
-    }
+					}
+				}
     
 				if (label == "Deployed By") {
-     td += "<tr><td class=\"summlabel\" style=\"width:30%\">";
-     td += label;
-     td += ":</td><td>";
+					td += "<tr><td class=\"summlabel\" style=\"width:30%\">";
+					td += label;
+					td += ":</td><td>";
 					if (isuser) {
-      td += "<img src=\"css/images/user_16x.png\"\ style=\"vertical-align:middle;\">&nbsp;" + val;
+						td += "<img src=\"css/images/user_16x.png\"\ style=\"vertical-align:middle;\">&nbsp;" + val;
 					} else {
-      td += "<img src=\"css/images/group_16x.png\"\ style=\"vertical-align:middle;\">&nbsp;" + val;
-    }
+						td += "<img src=\"css/images/group_16x.png\"\ style=\"vertical-align:middle;\">&nbsp;" + val;
+					}
 				} else {
-      var myid = label.toLocaleLowerCase().replace(" ", "") + "_sumrow";
-
-      td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\" style=\"width:30%\">";
-      td += label;
-      td += ":</td><td>";
-      td += val;
-    }  
-    td += "</td></tr>";
-   }
-
-   $("#" + tablename + " > tbody").html(td);
-  },
+					var myid = label.toLocaleLowerCase().replace(" ", "") + "_sumrow";
+					td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\" style=\"width:30%\">";
+					td += label;
+					td += ":</td><td>";
+					td += val;
+				}
+				td += "</td></tr>";
+			}
+			$("#" + tablename + " > tbody").html(td);
+		},
 		error : function(jqxhr, status, err) {
-   console.log(status);
-   console.log(err);
-  }
- });
-     }
+			console.log(status);
+			console.log(err);
+		}
+	});
+}
 
   
 
