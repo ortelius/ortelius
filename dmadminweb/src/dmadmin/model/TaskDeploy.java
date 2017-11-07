@@ -101,7 +101,7 @@ public class TaskDeploy
 		System.out.println("Calling startDeployment - waitFor is "+(waitFor?"true":"false"));
 		
 		 m_cmd = engine.startDeployment(this, app, env, userName, sessionid, cmdline_params);
-		 return m_cmd.run(waitFor, null, true);
+		 return m_cmd.run(waitFor, null, false);
 	}
 	
 	public int getDeploymentID()
