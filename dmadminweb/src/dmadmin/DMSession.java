@@ -3729,6 +3729,7 @@ public class DMSession {
 	    		if (encrypted != null && encrypted.equalsIgnoreCase("y")) {
 	    			// This server URL is encrypted
 	    			byte[] sun = Decrypt3DES(serverurl,m_passphrase);
+	    			serverurl = new String(Decrypt3DES(serverurl, m_passphrase));
 	    			String comparevalue = new String(sun);
 	    			System.out.println("Encrypted URL - comparing "+server+" with "+comparevalue);
 	    			match = comparevalue.equalsIgnoreCase(server);
@@ -3738,12 +3739,11 @@ public class DMSession {
 	    			match = serverurl.equalsIgnoreCase(server);
 	    			System.out.println("match="+match);
 	    		}
-	    		if (match) {
 	    			// Found a matching build job for this server URL
 	    			// Ping Jenkins back and see if this build was successful or not.
 	    			Builder builder = getBuilder(buildengineid);
 	    			Credential cred = builder.getCredential();
-	    			String res = getJSONFromServer(encodedurl+"/api/json",cred);
+	    			String res = getJSONFromServer(serverurl+"/api/json",cred);
 					System.out.println("Found a match - build job "+buildjobid+" component "+compid);
 					System.out.println("result from Jenkins is "+res);
 					JsonObject issueObject = new JsonParser().parse(res).getAsJsonObject();
@@ -3777,9 +3777,6 @@ public class DMSession {
 		    		tbobj.add("buildengine", builder.getLinkJSON());
 		    		tbobj.add("buildjob", buildjob.getLinkJSON());
 					ret.add(tbobj);
-				} else {
-					System.out.println("no match");
-				}
 	    	}
 	    	rs1.close();
 	    	stmt1.close();
@@ -22426,6 +22423,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 try {
 			 if (response1 != null) response1.close();
 			 httpclient.close();
+			 if (response1 == null)
+			 {
+			  resString = "Could not connect to '" + url + "' using credentials '" + credentials + "'";
+			 } 
 		 } catch(IOException ex) {
 			 // shrugs
 		 }
@@ -22591,6 +22592,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 }
 			 System.out.println("Server URL="+serverURL);
 			 String res = getJSONFromServer(serverURL+"/api/json",cred);
+			 if (res.startsWith("Could not connect"))
+			  ret.add("error",res);
+			 else
+			 {
+
 		     JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
 		     JsonArray jobs = returnedjson.getAsJsonArray("jobs");
 		     JSONArray retJobs = new JSONArray();
@@ -22605,6 +22611,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		    	 retJobs.add(jobobj);
 		     }
 		     ret.add("jobs", retJobs);
+			} 
 		 } else {
 			 // Couldn't find server URL - stick an error into the return object
 			 ret.add("error","Build Engine has no Server URL defined");
