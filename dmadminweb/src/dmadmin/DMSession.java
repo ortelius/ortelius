@@ -1083,6 +1083,10 @@ public class DMSession {
 	{
 		System.out.println("CreateNewObject(objtype="+objtype+" objname="+objname+" domainid="+domainid+" parentid="+parentid+" id="+id + " treeid=" + treeid);
 		ObjectTypeAndId ret = null;
+
+		if (objname.replaceAll("[A-Za-z0-9_]","").length()>0) {
+			throw new RuntimeException("Invalid Object Name");
+		}
 		
 		try
 		{
@@ -4291,6 +4295,7 @@ public class DMSession {
 			update.execute();
 			getDBConnection().commit();
 			update.close();
+			m_domainhash.remove(dom.getId());	// in case it's cached.
 			return true;
 		} catch(SQLException e) {
 			e.printStackTrace();
@@ -8168,6 +8173,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		switch(field) {
 		case NAME: {
 			String name = (String) changes.get(field);
+			if (name.replaceAll("[A-Za-z0-9_]","").length()>0) {
+				throw new RuntimeException("Invalid Object Name"); 
+			}
 			if ((name != null) && (name.length() > 0)) {
 				if (obj instanceof Domain) {
 					Domain dom = (Domain)obj;

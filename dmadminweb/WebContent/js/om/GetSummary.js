@@ -124,6 +124,26 @@ function LoadBuildData(tablename, objtypeAsInt, objtype, objid, addParams)
 	});
 }
 
+function ToggleLifeCycle()
+{
+	var pwd = $("#modal");
+	var cb = pwd.find("#lifecycledomain_val");
+	isLifeCycle = cb.is(":checked");
+	var sdl = pwd.find("#subdomainlist");
+	if (isLifeCycle) {
+		sdl.find('li').addClass("islifecycle");
+		sdl.sortable({
+			axis : "y",
+			cursor : "move",
+			stop : function(event, ui) {
+			}
+		});
+		sdl.sortable("enable");
+	} else {
+		sdl.find('li').removeClass("islifecycle");
+		sdl.sortable("disable");
+	}
+}
 
 function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
 {
@@ -730,13 +750,13 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        {
         summSaveisLifeCycle = true;
         isLifeCycle = true;
-        tdedit += "<td><span id=\"lifecycledomain_txt\" style=\"display:none\">Yes</span><input name=\"lifecycledomain_val\" id=\"lifecycledomain_val\" style='width:24em' onClick=\"javascript:isLifeCycle=false;\" type=\"checkbox\" checked /></td>";
+        tdedit += "<td><span id=\"lifecycledomain_txt\" style=\"display:none\">Yes</span><input name=\"lifecycledomain_val\" id=\"lifecycledomain_val\" style='width:24em' onClick=\"javascript:ToggleLifeCycle();\" type=\"checkbox\" checked /></td>";
        }
        else
        {
         summSaveisLifeCycle = false;
         isLifeCycle = false;
-        tdedit += "<td><span id=\"lifecycledomain_txt\" style=\"display:none\">Yes</span><input name=\"lifecycledomain_val\" id=\"lifecycledomain_val\" style='width:24em' onClick=\"javascript:isLifeCycle=true;\" type=\"checkbox\"/></td>";
+        tdedit += "<td><span id=\"lifecycledomain_txt\" style=\"display:none\">Yes</span><input name=\"lifecycledomain_val\" id=\"lifecycledomain_val\" style='width:24em' onClick=\"javascript:ToggleLifeCycle();\" type=\"checkbox\"/></td>";
        }
        tdedit += "<td><input type=\"hidden\" name=\"lifecycledomain_field\" value=\"" + field + "\"/></td>";
        tdedit += "<td><input type=\"hidden\" name=\"lifecycledomain_callback\" value=\"" + callback + "\"/></td>";
@@ -2158,7 +2178,7 @@ function EditSummaryButton(isProfile)
    {
     var sdl = pwd.find("#subdomainlist");
     var cnt = sdl.children().length;
-
+/*
     if (cnt > 0)
     {
      var lifecycle = pwd.find("#lifecycledomain_val");
@@ -2166,6 +2186,7 @@ function EditSummaryButton(isProfile)
      lifecycle.hide();
      pwd.find("#lifecycledomain_txt").show();
     }
+*/
    }
    else
    {
@@ -2173,7 +2194,7 @@ function EditSummaryButton(isProfile)
 
     var sdl = pwd.find("#subdomainlist");
     var cnt = sdl.children().length;
-
+/*
     if (cnt > 0)
     {
      var lifecycle = pwd.find("#lifecycledomain_val");
@@ -2183,6 +2204,7 @@ function EditSummaryButton(isProfile)
      lcd.html("No");
      lcd.show();
     }
+*/
    }
 
    var sdl = pwd.find("#subdomainlist");

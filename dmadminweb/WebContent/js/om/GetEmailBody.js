@@ -1336,7 +1336,7 @@ function EditSummaryButton()
    {
     var sdl = pwd.find("#subdomainlist");
     var cnt = sdl.children().length;
-
+/*
     if (cnt > 0)
     {
      var lifecycle = pwd.find("#lifecycledomain_val");
@@ -1344,6 +1344,7 @@ function EditSummaryButton()
      lifecycle.hide();
      pwd.find("#lifecycledomain_txt").show();
     }
+*/
    }
    else
    {
@@ -1351,7 +1352,7 @@ function EditSummaryButton()
 
     var sdl = pwd.find("#subdomainlist");
     var cnt = sdl.children().length;
-
+/*
     if (cnt > 0)
     {
      var lifecycle = pwd.find("#lifecycledomain_val");
@@ -1361,6 +1362,7 @@ function EditSummaryButton()
      lcd.html("No");
      lcd.show();
     }
+*/
    }
 
    var sdl = pwd.find("#subdomainlist");
