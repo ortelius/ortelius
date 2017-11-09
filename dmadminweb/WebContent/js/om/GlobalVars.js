@@ -726,7 +726,8 @@ var menuForType = {
 	"bj":	{tm: "endpoints_menu",  t: "builders_tab"},			// Build Jobs
 	"re":	{tm: "containers_menu", t: "repositories_tab"},		// Repositories
 	"us":	{tm: "usersgroups_menu",t: "users_tab"},			// Users
-	"gr":	{tm: "usersgroups_menu",t: "groups_tab"}			// User Group
+	"gr":	{tm: "usersgroups_menu",t: "groups_tab"},			// User Group
+	"cr":	{tm: "containers_menu",	t: "credentials_tab"}		// Credentials
 };
 
 function getLocaleDateString(){

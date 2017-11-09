@@ -1279,6 +1279,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        } else {
     	   oldval = cred.type + cred.id;
        }
+       linkval=cred.showlink?"<a href='javascript:SwitchDisplay(\"cr"+cred.id+"\");'>"+cred.name+"</a>":cred.name;
        val = cred.name;
        tdedit += "<tr>";
        tdedit += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">" + label + ":</td>";

@@ -6571,7 +6571,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			ret.setSummary("");
 			return ret;
 		}
-		String sql =  "SELECT	b.name,b.summary,b.domainid,b.status, "
+		String sql =  "SELECT	b.name,b.summary,b.domainid,b.status,b.credid, "
 				 	+ "			uc.id, uc.name, uc.realname, b.created, "
 					+ "			um.id, um.name, um.realname, b.modified, "
 					+ "			uo.id, uo.name, uo.realname, g.id, g.name "
@@ -6593,7 +6593,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				ret.setSummary(rs.getString(2));
 				ret.setDomainId(getInteger(rs, 3, 0));
 				getStatus(rs, 4, ret);
-				getCreatorModifierOwner(rs, 5, ret);
+				int credid = getInteger(rs,5,0);
+				if (credid != 0) {
+					Credential cred = getCredential(credid,false);
+					ret.setCredential(cred);
+				}
+				getCreatorModifierOwner(rs, 6, ret);
 			}
 			rs.close();
 			stmt.close();
