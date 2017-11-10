@@ -317,7 +317,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\dmtransfer\windows\release&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; ..\..\dmtransfer\windows\debug&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;C:\Program Files\openmake\DeployEngine\lib&quot;&#x0D;&#x0A;"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\dmtransfer\windows\release&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; ..\..\dmtransfer\windows\debug&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;C:\Program Files\openmake\DeployEngine\lib&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;C:\Development\DeployHubDistroOSS\engine\lib&quot;"
 			/>
 		</Configuration>
 	</Configurations>

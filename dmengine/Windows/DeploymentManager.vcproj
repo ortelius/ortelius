@@ -164,7 +164,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;C:\Program Files\Openmake\DeployEngine\bin&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;C:\Program Files\Openmake\DeployEngine\bin&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;C:\Development\DeployHubDistroOSS\engine\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -314,7 +314,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;C:\Program Files\Openmake\DeployEngine\bin&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;C:\Program Files\Openmake\DeployEngine\bin&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;C:\Development\DeployHubDistroOSS\engine\bin&quot;"
 			/>
 		</Configuration>
 	</Configurations>

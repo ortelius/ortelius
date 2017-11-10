@@ -119,7 +119,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)\..\includes&quot;"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)\..\includes&quot;;../libzip/"
 				PreprocessorDefinitions="DEV_VERSION;WIN32;_WINDOWS;_USRDLL;DMAPI_EXPORTS;_CRT_SECURE_NO_WARNINGS;_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -139,9 +139,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wsock32.lib ssleay32.lib libeay32.lib wldap32.lib"
+				AdditionalDependencies="wsock32.lib ssleay32.lib libeay32.lib wldap32.lib zlib.lib libzip.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(ProjectDir)\LIBRARIES$(PlatformName)&quot;"
+				AdditionalLibraryDirectories="&quot;$(TargetDir)&quot;;&quot;$(ProjectDir)\LIBRARIES$(PlatformName)&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="17"
@@ -166,7 +166,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;C:\Program Files\Openmake\DeployEngine\bin&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;C:\Program Files\Openmake\DeployEngine\bin&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;C:\Development\DeployHubDistroOSS\engine\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -275,7 +275,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)\..\includes&quot;;&quot;C:\Program Files (x86)\PostgreSQL\9.1\include&quot;;&quot;C:\Program Files (x86)\Trinem\Trilogy\api\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)\..\includes&quot;;../libzip/"
 				PreprocessorDefinitions="DEV_VERSION;WIN32;_WINDOWS;_USRDLL;DMAPI_EXPORTS;_CRT_SECURE_NO_WARNINGS;NDEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="2"
@@ -297,9 +297,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wsock32.lib ssleay32.lib libeay32.lib wldap32.lib"
+				AdditionalDependencies="wsock32.lib ssleay32.lib libeay32.lib wldap32.lib zlib.lib libzip.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(ProjectDir)\LIBRARIES$(PlatformName)&quot;;&quot;C:\Program Files (x86)\Trinem\Trilogy\api\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(ProjectDir)\LIBRARIES$(PlatformName)&quot;;&quot;$(TargetDir)&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -326,7 +326,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;C:\Program Files\Openmake\DeployEngine\bin&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;C:\Program Files\Openmake\DeployEngine\bin&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;C:\Development\DeployHubDistroOSS\engine\bin&quot;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -590,7 +590,15 @@
 				Name="notifiers"
 				>
 				<File
+					RelativePath="..\notifiers\hipchat\hipchat.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\notifiers\txtlocal\https.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\notifiers\slack\slack.cpp"
 					>
 				</File>
 				<File
@@ -912,7 +920,15 @@
 				Name="notifiers"
 				>
 				<File
+					RelativePath="..\notifiers\hipchat\hipchat.h"
+					>
+				</File>
+				<File
 					RelativePath="..\notifiers\txtlocal\https.h"
+					>
+				</File>
+				<File
+					RelativePath="..\notifiers\slack\slack.h"
 					>
 				</File>
 				<File

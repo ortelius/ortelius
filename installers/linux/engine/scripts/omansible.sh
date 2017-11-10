@@ -1,4 +1,5 @@
 #!/bin/bash
+id
 declare -a ANSIBLE_OPTS
 while [[ $# > 1 ]]
 do
@@ -62,6 +63,8 @@ if [[ "$SUDO_PW" != "none" && "$SUDO_PW" != "" ]]; then
  echo "  sudo: yes" >> /tmp/$$.yml
 fi
 
+echo "  gather_facts: false" >> /tmp/$$.yml
+echo "  " >> /tmp/$$.yml
 echo "  vars:" >> /tmp/$$.yml
 if [ "$USERID" != "" ]; then
  echo "    ansible_ssh_user: $USERID" >> /tmp/$$.yml
@@ -86,6 +89,17 @@ do
   echo "    $var: $val"  >> /tmp/$$.yml
 done  
 
+echo "   " >> /tmp/$$.yml
+echo "  pre_tasks:" >> /tmp/$$.yml
+echo "   " >> /tmp/$$.yml
+echo "  - name: Install python2 for Ansible" >> /tmp/$$.yml
+echo '    raw: bash -c "test -e /usr/bin/python || (apt -qqy update && apt install -qqy python-minimal)"' >> /tmp/$$.yml
+echo "    register: output" >> /tmp/$$.yml
+echo "    changed_when:" >> /tmp/$$.yml
+echo '    - output.stdout != ""' >> /tmp/$$.yml
+echo '    - output.stdout != "\r\n"' >> /tmp/$$.yml
+echo "  - name: Gathering Facts" >> /tmp/$$.yml
+echo "    setup:" >> /tmp/$$.yml
 echo "   " >> /tmp/$$.yml
 echo "  roles:" >> /tmp/$$.yml
 echo "     - { role: $ROLE }" >> /tmp/$$.yml

@@ -3830,7 +3830,7 @@ public class DMSession {
 	    			// Ping Jenkins back and see if this build was successful or not.
 	    			Builder builder = getBuilder(buildengineid);
 	    			Credential cred = builder.getCredential();
-	    			String res = getJSONFromServer(encodedurl+"/api/json",cred);
+	    			String res = getJSONFromServer(serverurl+"/api/json",cred);
 					System.out.println("Found a match - build job "+buildjobid+" component "+compid);
 					System.out.println("result from Jenkins is "+res);
 					JsonObject issueObject = new JsonParser().parse(res).getAsJsonObject();
@@ -3864,9 +3864,9 @@ public class DMSession {
 		    		tbobj.add("buildengine", builder.getLinkJSON());
 		    		tbobj.add("buildjob", buildjob.getLinkJSON());
 					ret.add(tbobj);
-				} else {
-					System.out.println("no match");
-				}
+	    		} else {
+                    System.out.println("no match");
+	    		}
 	    	}
 	    	rs1.close();
 	    	stmt1.close();
@@ -22523,6 +22523,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 try {
 			 if (response1 != null) response1.close();
 			 httpclient.close();
+			 if (response1 == null)
+			 {
+			  resString = "Could not connect to '" + url + "' using credentials '" + credentials + "'";
+			 } 
 		 } catch(IOException ex) {
 			 // shrugs
 		 }
@@ -22819,21 +22823,25 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 }
 			 System.out.println("Server URL="+serverURL);
 			 String res = getJSONFromServer(serverURL+"/rest/api/latest/plan.json",cred);
-		     JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
-		     JsonObject plans = returnedjson.getAsJsonObject("plans");
-		     JsonArray plan = plans.getAsJsonArray("plan");
-		     JSONArray retJobs = new JSONArray();
-		     if (plan.size()==0) {
-		    	 ret.add("error","No Projects found on Bamboo Server "+serverURL);
-		     }
-		     for (int i=0;i<plan.size();i++) {
-		    	 JsonObject jsonPlan = plan.get(i).getAsJsonObject();
-		    	 String planname = jsonPlan.get("shortName").getAsString();
-		    	 JSONObject jobobj = new JSONObject();
-		    	 jobobj.add("name", planname);
-		    	 retJobs.add(jobobj);
-		     }
-		     ret.add("jobs", retJobs);
+			 if (res.startsWith("Could not connect")) {
+				 ret.add("error",res);
+			 } else {
+			     JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
+			     JsonObject plans = returnedjson.getAsJsonObject("plans");
+			     JsonArray plan = plans.getAsJsonArray("plan");
+			     JSONArray retJobs = new JSONArray();
+			     if (plan.size()==0) {
+			    	 ret.add("error","No Projects found on Bamboo Server "+serverURL);
+			     }
+			     for (int i=0;i<plan.size();i++) {
+			    	 JsonObject jsonPlan = plan.get(i).getAsJsonObject();
+			    	 String planname = jsonPlan.get("shortName").getAsString();
+			    	 JSONObject jobobj = new JSONObject();
+			    	 jobobj.add("name", planname);
+			    	 retJobs.add(jobobj);
+			     }
+			     ret.add("jobs", retJobs);
+			} 
 		 } else {
 			 // Couldn't find server URL - stick an error into the return object
 			 ret.add("error","Build Engine has no Server URL defined");

@@ -272,7 +272,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="../dmapi"
+				AdditionalIncludeDirectories="../includes;../dmapi"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -319,7 +319,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;C:\Program Files\Openmake\DeployEngine\bin&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;C:\Program Files\Openmake\DeployEngine\bin&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;C:\Development\DeployHubDistroOSS\engine\bin&quot;"
 			/>
 		</Configuration>
 	</Configurations>
