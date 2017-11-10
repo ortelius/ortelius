@@ -3729,7 +3729,7 @@ public class DMSession {
 	public JSONArray recordJenkinsBuild(String encodedurl) throws Exception
 	{
 		JSONArray ret = new JSONArray();
-		System.out.println("buildurl=["+encodedurl+"]");
+		System.out.println("recordJenkinsBuild encodedurl=["+encodedurl+"]");
     	try {
 			String buildurl = java.net.URLDecoder.decode(encodedurl, "UTF-8");
 			System.out.println("buildurl=["+buildurl+"]");
@@ -3741,13 +3741,14 @@ public class DMSession {
 	    	System.out.println("build number="+buildno);
 	    	int sp=(buildurl.startsWith("http://"))?7:8;	
 	    	String server = buildurl.substring(0,buildurl.indexOf('/',sp));
-	    	System.out.println("server="+server);
+	    	System.out.println("Jenkins Server=["+server+"]");
 	    	//
 	    	// Note, this just updates the builds for the latest version of any component
 	    	// with the specified build job. The Jenkins plug-in may need to pass Branch
 	    	// along to make sure this works with the latest version of a component on the
 	    	// Branch. Worry about this later
 	    	//
+	    	System.out.println("Looking for Build Engine with Server URL or Jenkins Match URL of ["+server+"]");
 	    	String sql1 = 	"select a.id,a.name,b.value,b.encrypted,c.id,c.name,d.id	"	+
 					"from 	dm.dm_buildjob	a,			"	+
 					"		dm.dm_buildengineprops b,	"	+
@@ -3763,15 +3764,14 @@ public class DMSession {
 					"and	d.domainid in ("+m_domainlist+")";
 	    	String sql2 = "INSERT INTO dm.dm_buildhistory(buildjobid,buildnumber,compid,userid,timestamp,success) VALUES(?,?,?,?,?,?)";
 	    	String sql3 = "UPDATE dm.dm_component SET lastbuildnumber=? WHERE id=?";
+	    	String sql4 = "SELECT value,encrypted FROM dm.dm_buildengineprops WHERE name='Jenkins Match URL' AND builderid=?";
 	    	PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
-	    	System.out.println("sql1="+sql1+" ?="+jobname);
 	    	stmt1.setString(1,jobname);
 	    	ResultSet rs1 = stmt1.executeQuery();
 	    	while (rs1.next()) {
-	    		System.out.println("got a row, serverurl = ["+rs1.getString(3)+"] compid="+rs1.getInt(5));
 	    		int buildjobid = rs1.getInt(1);
 	    		// String buildjobname = rs1.getString(2);
-	    		String serverurl = rs1.getString(3).replaceAll("/*$","");	// remove any trailing / chars
+	    		String serverurl = rs1.getString(3);
 	    		String encrypted = rs1.getString(4);
 	    		int compid = rs1.getInt(5);
 	    		// String compname = rs1.getString(6);
@@ -3781,15 +3781,50 @@ public class DMSession {
 	    		if (encrypted != null && encrypted.equalsIgnoreCase("y")) {
 	    			// This server URL is encrypted
 	    			byte[] sun = Decrypt3DES(serverurl,m_passphrase);
-	    			String comparevalue = new String(sun);
-	    			System.out.println("Encrypted URL - comparing "+server+" with "+comparevalue);
+	    			serverurl = new String(Decrypt3DES(serverurl, m_passphrase));
+	    			String comparevalue = new String(sun).replaceAll("/*$","");	// remove any trailing / chars;
+	    			System.out.println("Comparing ["+server+"] with ["+comparevalue+"] (was encrypted)");
 	    			match = comparevalue.equalsIgnoreCase(server);
 	    		} else {
 	    			// Server URL is not encrypted - straight forward compare
-	    			System.out.println("non-encrypted compare");
-	    			match = serverurl.equalsIgnoreCase(server);
-	    			System.out.println("match="+match);
+	    			String comparevalue = serverurl.replaceAll("/*$","");
+	    			System.out.println("Comparing ["+server+"] with ["+comparevalue+"]");
+	    			match = comparevalue.equalsIgnoreCase(server);
 	    		}
+	    		System.out.println("\"Server URL\" match="+match);
+	    		
+	    		if (!match) {
+	    			// No match yet - check if there's a Jenkins Match URL to compare instead
+	    			PreparedStatement stmt4 = m_conn.prepareStatement(sql4);
+	    			stmt4.setInt(1,buildengineid);
+	    			ResultSet rs4 = stmt4.executeQuery();
+	    			if (rs4.next()) {
+	    				System.out.println("Jenkins Match URL seen");
+	    				String matchURL = rs4.getString(1);
+	    				String enc = rs4.getString(2);
+	    				if (enc != null && enc.equalsIgnoreCase("y")) {
+	    					// This matchURL address is encrypted
+	    					System.out.println("matchURL is encrypted");
+	    					matchURL = new String(Decrypt3DES(matchURL, m_passphrase));
+	    				}
+	    				matchURL = matchURL.replaceAll("/*$","");	// get rid of any trailing / chars
+	    				System.out.println("Comparing ["+server+"] with ["+matchURL+"]");
+	    				match = matchURL.equalsIgnoreCase(server);
+	    				if (match) {
+	    					// Replace the server part in the encoded URL with our Server URL for
+	    					// the subsequent ping back to Jenkins. Format of encodedurl is:
+	    					// http[s]://server:port/blah/job/<project>/<buildno>
+	    					// Format of matchURL will be
+	    					// http[s]://server:port/blah
+	    					int soj = encodedurl.indexOf("/job/");
+	    					encodedurl = serverurl.replaceAll("/*$", "")+encodedurl.substring(soj);
+	    					System.out.println("encodedurl now ["+encodedurl+"] (for callback)");
+	    				}
+	    			}
+		    		rs4.close();
+		    		stmt4.close();
+		    		System.out.println("\"Jenkins Match URL\" match="+match);
+		    	}
 	    		if (match) {
 	    			// Found a matching build job for this server URL
 	    			// Ping Jenkins back and see if this build was successful or not.
@@ -22534,37 +22569,28 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   JSONObject getBuildHistoryJenkins(int builderid,int buildjobid)
   {
 	  System.out.println("getBuildHistoryJenkins builderid="+builderid+" buildjobid="+buildjobid);
-	  String sql1="select value,encrypted from dm.dm_buildengineprops where name='Server URL' and builderid = ?";
 	  String sql2="select projectname from dm.dm_buildjob where id=?";
 	  String sql3="select a.buildnumber,b.id,b.name,b.parentid from dm.dm_buildhistory a,dm.dm_component b where a.compid=b.id and	a.buildjobid=? order by buildnumber desc";
 	  JSONObject ret = new JSONObject();
 	  try {
 	  	 Builder builder = getBuilder(builderid);
 	  	 Credential cred = builder.getCredential();
-		 PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
 		 PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
 		 PreparedStatement stmt3 = getDBConnection().prepareStatement(sql3);
-		 stmt1.setInt(1,builderid);
 		 stmt2.setInt(1,buildjobid);
 		 stmt3.setInt(1,buildjobid);
-		 ResultSet rs1 = stmt1.executeQuery();
-		 if (rs1.next()) {
-			 // Got the Server URL
-			 String serverURL = rs1.getString(1);
-			 String encrypted = rs1.getString(2);
+		 String serverURL = getBuildServerURL(builderid);
+		 if (serverURL != null) { 
 			 System.out.println("Server URL="+serverURL);
-			 if (encrypted != null && encrypted.equalsIgnoreCase("y")) {
-				 serverURL = new String(Decrypt3DES(serverURL,m_passphrase));
-				 System.out.println("Decrypted server URL="+serverURL);
-			 }
 			 ResultSet rs2 = stmt2.executeQuery();
 			 if (rs2.next()) {
-				 String jobname = rs2.getString(1).replaceAll(" ", "%20");
+				 String jobname = rs2.getString(1); // .replaceAll(" ", "%20");
 				 if (jobname.length()>0) {
 					 //
 					 // Get all the builds we know about for this build job and assemble the
 					 // JSON Array of components associated with each build number
 					 //
+					 jobname = jobname.replaceAll(" ","%20");
 					 Hashtable<Integer,JSONArray> complist = new Hashtable<Integer,JSONArray>();
 					 ResultSet rs3 = stmt3.executeQuery();
 					 while (rs3.next()) {
@@ -22589,7 +22615,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					 //
 					 boolean commit=false;
 					 String res = getJSONFromServer(serverURL+"/job/"+jobname+"/api/json?tree=builds[number,timestamp,result,duration]",cred);
-				     JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
+				     System.out.println(res);
+					 JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
 				     JsonArray builds = returnedjson.getAsJsonArray("builds");
 				     JSONArray retBuilds = new JSONArray();
 				     for (int i=0;i<builds.size();i++) {
@@ -22622,8 +22649,6 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 // Couldn't find server URL - stick an error into the return object
 			 ret.add("error","Build Engine has no Server URL defined");
 		 }
-		 rs1.close();
-		 stmt1.close();
 		 
 		 stmt2.close();
 	  } catch (SQLException e) {
@@ -22739,50 +22764,39 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   
   JSONObject getProjectsFromJenkins(int builderid)
   {
-	  System.out.println("getProjectsFromJenkins");
-	  String sql="select value,encrypted from dm.dm_buildengineprops where name='Server URL' and builderid = ?";
-	  JSONObject ret = new JSONObject();
-	  try {
-	  	 Builder builder = getBuilder(builderid);
-	  	 Credential cred = builder.getCredential();
-		 PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-		 stmt.setInt(1,builderid);
-		 ResultSet rs = stmt.executeQuery();
-		 if (rs.next()) {
-			 // Got the Server URL
-			 String serverURL = rs.getString(1);
-			 if (rs.getString(2).equalsIgnoreCase("y")) {
-				 // Server URL is encrypted
-				 serverURL = new String(Decrypt3DES(serverURL, m_passphrase));
-			 }
-			 System.out.println("Server URL="+serverURL);
-			 String res = getJSONFromServer(serverURL+"/api/json",cred);
-		     JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
-		     JsonArray jobs = returnedjson.getAsJsonArray("jobs");
-		     JSONArray retJobs = new JSONArray();
-		     if (jobs.size()==0) {
-		    	 ret.add("error","No Projects found on Jenkins Server "+serverURL);
-		     }
-		     for (int i=0;i<jobs.size();i++) {
-		    	 JsonObject jsonJob = jobs.get(i).getAsJsonObject();
-		    	 String jobname = jsonJob.get("name").getAsString();
-		    	 JSONObject jobobj = new JSONObject();
-		    	 jobobj.add("name", jobname);
-		    	 retJobs.add(jobobj);
-		     }
-		     ret.add("jobs", retJobs);
+	 System.out.println("getProjectsFromJenkins");
+	 String serverURL = getBuildServerURL(builderid);
+	 JSONObject ret = new JSONObject();
+  	 Builder builder = getBuilder(builderid);
+  	 Credential cred = builder.getCredential();
+
+	 if (serverURL != null) {
+		 // Got the Server URL
+		 System.out.println("Server URL="+serverURL);
+		 String res = getJSONFromServer(serverURL+"/api/json",cred);
+		 if (res.startsWith("Could not connect")) {
+			 ret.add("error",res);
 		 } else {
-			 // Couldn't find server URL - stick an error into the return object
-			 ret.add("error","Build Engine has no Server URL defined");
-		 }
-		 rs.close();
-		 stmt.close();
-	  } catch (SQLException e) {
-			 System.out.println(e.getMessage());
-			 e.printStackTrace();
-			 ret.add("error","SQL Failed running getProjectsFromJenkins");
-	  }
-	  return ret;
+			 JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
+			 JsonArray jobs = returnedjson.getAsJsonArray("jobs");
+			 JSONArray retJobs = new JSONArray();
+			 if (jobs.size()==0) {
+				 ret.add("error","No Projects found on Jenkins Server "+serverURL);
+			 }
+			 for (int i=0;i<jobs.size();i++) {
+				 JsonObject jsonJob = jobs.get(i).getAsJsonObject();
+				 String jobname = jsonJob.get("name").getAsString();
+				 JSONObject jobobj = new JSONObject();
+				 jobobj.add("name", jobname);
+				 retJobs.add(jobobj);
+			 }
+			 ret.add("jobs", retJobs);
+		 }  
+	 } else {
+		 // Couldn't find server URL - stick an error into the return object
+		 ret.add("error","Build Engine has no Server URL defined");
+	 }
+	 return ret;
   }
   
   JSONObject getProjectsFromBamboo(int builderid)
