@@ -355,7 +355,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        {
         tdedit += "<tr id=\"password_row\" style=\"display:none\">";
         tdedit += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">Password:</td>";
-        tdedit += "<td><input name=\"password_val\" style='width:24em' type=\"text\" value=\"" + val + "\"/></td>";
+        tdedit += "<td><input name=\"password_val\" style='width:24em' type=\"password\" value=\"" + val + "\"/></td>";
         tdedit += "<td><input type=\"hidden\" name=\"password_field\" value=\"" + field + "\"/></td>";
         tdedit += "<td><input type=\"hidden\" name=\"password_callback\" value=\"" + callback + "\"/></td>";
         tdedit += "<td><input type=\"hidden\" name=\"password_oldval\" /></td>";
@@ -1505,9 +1505,9 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        var created = val;
        if (typeof created.when != "undefined")
        {
-        var d = convertDate(created.when);
-        val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
-        val += " by " + created.tooltip;
+        // var d = convertDate(created.when);
+        // val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+        val = created.when + " by " + created.tooltip;
        }
        else
         val = "";
@@ -1519,9 +1519,9 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        console.log(modified);
        if (typeof modified.when != "undefined")
        {
-        var d = convertDate(modified.when);
-        val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
-        val += " by " + modified.tooltip;
+        // var d = convertDate(modified.when);
+        // val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+        val = modified.when + " by " + modified.tooltip;
        }
        else
         val = "";
@@ -1529,18 +1529,13 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
       else if (label == "Last Login")
       {
        var modified = val;
-       if (typeof modified.name != "undefined")
-       {
-        var d = convertDate(modified.name);
-        console.log("FullYear = "+d.getFullYear());
-        if (d.getFullYear() < 2000) {
-        	val = "";
-        } else {
-        	val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
-        }
+       if (modified.value == 0) {
+	 val="";
+       } else if (typeof modified.name != "undefined") {
+	 val = modified.name;
+       } else {
+         val = "";
        }
-       else
-        val = "";
        tdedit += "<tr>";
        tdedit += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">" + label + ":</td>";
        tdedit += "<td name=\"lastlogin_val\" style=\"padding-top:2px;padding-bottom:2px;\">" + val + "</td>";
