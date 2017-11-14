@@ -53,6 +53,7 @@ public class GetComponentItemLayout extends HttpServlet {
  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
  {
   response.setContentType("application/json;charset=UTF-8");
+  response.setHeader("Cache-Control","no-cache");
   int compid = ServletUtils.getIntParameter(request, "compid");
   
   PrintWriter out = response.getWriter();
