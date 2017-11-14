@@ -1084,7 +1084,8 @@ public class DMSession {
 		System.out.println("CreateNewObject(objtype="+objtype+" objname="+objname+" domainid="+domainid+" parentid="+parentid+" id="+id + " treeid=" + treeid);
 		ObjectTypeAndId ret = null;
 
-		if (objname.replaceAll("[A-Za-z0-9_]","").length()>0) {
+		String AllowedChars = objtype.equalsIgnoreCase("componentitem")?"[A-Za-z0-9_ ]":"[A-Za-z0-9_]";
+		if (objname.replaceAll(AllowedChars,"").length()>0) {
 			throw new RuntimeException("Invalid Object Name");
 		}
 		
