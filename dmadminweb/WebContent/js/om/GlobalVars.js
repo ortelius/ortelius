@@ -50,6 +50,7 @@ var forcepwchange = false;
 var saveRes = null;
 var tdedit = "";
 var tdedit2 = "";
+var tdedit3 = "";
 var displayhome = false;
 var save_preaction_val = "";
 var save_postaction_val = "";

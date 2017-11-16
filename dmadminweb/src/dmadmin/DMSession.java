@@ -1084,8 +1084,7 @@ public class DMSession {
 		System.out.println("CreateNewObject(objtype="+objtype+" objname="+objname+" domainid="+domainid+" parentid="+parentid+" id="+id + " treeid=" + treeid);
 		ObjectTypeAndId ret = null;
 
-		String AllowedChars = objtype.equalsIgnoreCase("componentitem")?"[A-Za-z0-9_ ]":"[A-Za-z0-9_]";
-		if (objname.replaceAll(AllowedChars,"").length()>0) {
+		if (objname.replaceAll("[A-Za-z0-9_ ]","").length()>0) {
 			throw new RuntimeException("Invalid Object Name");
 		}
 		
@@ -8214,7 +8213,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		switch(field) {
 		case NAME: {
 			String name = (String) changes.get(field);
-			if (name.replaceAll("[A-Za-z0-9_]","").length()>0) {
+			if (name.replaceAll("[A-Za-z0-9_ ]","").length()>0) {
 				throw new RuntimeException("Invalid Object Name"); 
 			}
 			if ((name != null) && (name.length() > 0)) {
