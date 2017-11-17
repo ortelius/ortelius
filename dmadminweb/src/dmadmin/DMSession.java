@@ -1084,7 +1084,7 @@ public class DMSession {
 		System.out.println("CreateNewObject(objtype="+objtype+" objname="+objname+" domainid="+domainid+" parentid="+parentid+" id="+id + " treeid=" + treeid);
 		ObjectTypeAndId ret = null;
 
-		if (objname.replaceAll("[A-Za-z0-9_ ]","").length()>0) {
+		if (objname.replaceAll("[A-Za-z0-9_; ]","").length()>0) {
 			throw new RuntimeException("Invalid Object Name");
 		}
 		
@@ -8213,7 +8213,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		switch(field) {
 		case NAME: {
 			String name = (String) changes.get(field);
-			if (name.replaceAll("[A-Za-z0-9_ ]","").length()>0) {
+			if (name.replaceAll("[A-Za-z0-9_; ]","").length()>0) {
 				throw new RuntimeException("Invalid Object Name"); 
 			}
 			if ((name != null) && (name.length() > 0)) {
@@ -13569,68 +13569,57 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			
 			for(DMAttribute a : changes.added()) {
 				System.out.println("Inserting " + id + " '" + a.getName() + "' into " + table + "vars");
+				String cntStr = "SELECT arrayid from dm." + table + "vars where " + fk + " = ? and name = ?";
+    
+				PreparedStatement stmt2 = getDBConnection().prepareStatement(cntStr);
+				stmt2.setInt(1, id);
+				stmt2.setString(2, a.getName());
 				
-    String cntStr = "SELECT arrayid from dm." + table + "vars where " + fk + " = ? and name = ?";
+				System.out.println("cntStr="+cntStr+" id="+id+" name="+a.getName());
     
-    PreparedStatement stmt2 = getDBConnection().prepareStatement(cntStr);
-    stmt2.setInt(1, id);
-    stmt2.setString(2, a.getName());     
+				int arrayid = -1;
     
-    int arrayid = -1;
+				ResultSet rs = stmt2.executeQuery();
+				if (rs.next()) {
+					arrayid = rs.getInt(1);
+					if (arrayid == 0) arrayid = -1;
+				} 
+				rs.close();
+				stmt2.close();
     
-    ResultSet rs = stmt2.executeQuery( );
-
-    if (rs.next())
-    {
-     arrayid = rs.getInt(1);
-     if (arrayid == 0)
-      arrayid = -1;
-    } 
-    
-    rs.close();
-    stmt2.close();
-    
-    if (arrayid == -1)
-    { 
-     if (a.isArray())
-     {
-      arrayid = getID("arrayvalues");
-      PreparedStatement stmt = getDBConnection().prepareStatement(asql2);
-      stmt.setInt(1, id);
-      stmt.setString(2, a.getName());
-      stmt.setInt(3, arrayid);
-      stmt.execute();
-      stmt.close();
-      
-      stmt = getDBConnection().prepareStatement("INSERT into dm.dm_arrayvalues(id,name,value) values(?,?,?)");
-      stmt.setInt(1, arrayid);
-      stmt.setString(2, a.getKey());
-      stmt.setString(3, a.getValue());
-      stmt.execute();
-      stmt.close();
-     }
-     else
-     {
-      PreparedStatement stmt = getDBConnection().prepareStatement(asql1);
-      stmt.setInt(1, id);
-      stmt.setString(2, a.getName());
-      stmt.setString(3, a.getValue());
-      stmt.execute();
-      stmt.close();     
-     }
-    }
-    else
-    {
-     if (a.isArray())
-     { 
-      PreparedStatement stmt = getDBConnection().prepareStatement("INSERT into dm.dm_arrayvalues(id,name,value) values(?,?,?)");
-      stmt.setInt(1, arrayid);
-      stmt.setString(2, a.getKey());
-      stmt.setString(3, a.getValue());
-      stmt.execute();
-      stmt.close();
-     } 
-    }
+				if (arrayid == -1) { 
+					if (a.isArray()) {
+						arrayid = getID("arrayvalues");
+						PreparedStatement stmt = getDBConnection().prepareStatement(asql2);
+						stmt.setInt(1, id);
+						stmt.setString(2, a.getName());
+						stmt.setInt(3, arrayid);
+						stmt.execute();
+						stmt.close(); 
+						stmt = getDBConnection().prepareStatement("INSERT into dm.dm_arrayvalues(id,name,value) values(?,?,?)");
+						stmt.setInt(1, arrayid);
+						stmt.setString(2, a.getKey());
+						stmt.setString(3, a.getValue());
+						stmt.execute();
+						stmt.close();
+					} else {
+						PreparedStatement stmt = getDBConnection().prepareStatement(asql1);
+						stmt.setInt(1, id);
+						stmt.setString(2, a.getName());
+						stmt.setString(3, a.getValue());
+						stmt.execute();
+						stmt.close();     
+					}
+				} else {
+					if (a.isArray()) { 
+						PreparedStatement stmt = getDBConnection().prepareStatement("INSERT into dm.dm_arrayvalues(id,name,value) values(?,?,?)");
+						stmt.setInt(1, arrayid);
+						stmt.setString(2, a.getKey());
+						stmt.setString(3, a.getValue());
+						stmt.execute();
+						stmt.close();
+					} 
+				}
 			}
 			getDBConnection().commit();
 			return true;
@@ -16431,7 +16420,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		AttributeChangeSet changes = new AttributeChangeSet();
   
 		for (DMAttribute a : attribs) {
-			changes.addAdded(new DMAttribute(a.getName(), a.getValue()));
+			// changes.addAdded(new DMAttribute(a.getName(), a.getValue()));
+			changes.addAdded(a);
 		} 
 		newcomp.updateAttributes(changes);
 	}
