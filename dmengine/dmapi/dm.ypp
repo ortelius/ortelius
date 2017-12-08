@@ -234,7 +234,8 @@ listinit: listele				{ $$ = new NodeList(); $$->add($1); }
 listele: exp					{ $$ = new Node(NODE_LISTELE, $1); }
 ;
 
-jsonobjinit: jsonobjele				{ $$ = new NodeList(); $$->add($1); }
+jsonobjinit: /* empty */				{ $$ = new NodeList(); }
+	 | jsonobjele						{ $$ = new NodeList(); $$->add($1); }
      | jsonobjinit ',' jsonobjele		{ $$ = $1; $$->add($3); }
 ;
 

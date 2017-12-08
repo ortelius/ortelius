@@ -152,7 +152,7 @@
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union
-#line 22 "dm.y"
+#line 22 "dm.ypp"
 value {
 	class ActionNode     *actn;
 	class ActionNodeList *alist;
@@ -166,7 +166,7 @@ value {
 	int 		      ival;
 	char 		     *str;
 }
-/* Line 1529 of yacc.c.  */
+/* Line 1489 of yacc.c.  */
 #line 171 "dm.tab.hpp"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

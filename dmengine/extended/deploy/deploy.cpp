@@ -122,6 +122,8 @@ int DeployThread::execute(Context &ctx)
 			}
 		}
 	}
+
+	int retcode=0;
 	//
 	// Execute any "Pre" action on the deploy TASK
 	try {
@@ -133,10 +135,16 @@ int DeployThread::execute(Context &ctx)
 		throw;
 	}
 
-	if(m_comp) {
+	if(m_comp && m_comp->getPreAction()) {
 		try {
 			debug3("about to call m_parent.executeComponentPre");
 			m_parent.executeComponentPre(*m_comp, ctx);
+			Variable *v = ctx.stack().get("?");	// Exit code from any post executed script
+			retcode = v?v->getInt():0;
+			ctx.dm().writeToStdOut("INFO: Pre Action for Component %s exits code %d",m_comp->name(),retcode);
+			if (retcode != 0) throw RuntimeError(ctx.stack(),
+					"Pre Action %s for Component %s Failed: Return Code: %d",
+					m_comp->getPreAction()->name(),m_comp->name(),retcode);
 			debug3("executeComponentPre - done");
 		} catch(...) {
 			m_dropzone.releaseRef();
@@ -187,7 +195,7 @@ int DeployThread::execute(Context &ctx)
 			}
 		}
 
-		int retcode=0;
+		
 		if (remainingServerList->size() > 0) {
 			Context customctx(ctx, *remainingServerList);
 			ctx.dm().writeToStdOut("INFO: Deploying Component %s using Custom Action %s",m_comp->name(),m_comp->getCustomAction()->name());
@@ -207,6 +215,12 @@ int DeployThread::execute(Context &ctx)
 					"Custom Action %s for Component %s Failed: Return Code: %d",
 					m_comp->getCustomAction()->name(),m_comp->name(),retcode);
 			}
+		}
+		if (m_comp->getPostAction()) {
+			m_parent.executeComponentPost(*m_comp, ctx);
+			Variable *v = ctx.stack().get("?");	// Exit code from any post executed script
+			retcode = v?v->getInt():0;
+			ctx.dm().writeToStdOut("INFO: Post Action for Component %s exits code %d",m_comp->name(),retcode);
 		}
 		return retcode;
 	} else {
@@ -359,7 +373,7 @@ int DeployThread::execute(Context &ctx)
 	debug3("Calling releaseRef");
 	m_dropzone.releaseRef();
 	//TODO: delete m_callback after ALL threads exit, as it is shared
-	return 0;	// for now
+	return retcode;
 }
 
 

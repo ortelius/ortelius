@@ -178,7 +178,7 @@
 
 
 /* Copy the first part of user declarations.  */
-#line 3 "dm.y"
+#line 3 "dm.ypp"
 
 #include <math.h>
 #include <stdio.h>
@@ -217,7 +217,7 @@ static size_t yytnamerr(char *yyres, const char *yystr);
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union
-#line 22 "dm.y"
+#line 22 "dm.ypp"
 value {
 	class ActionNode     *actn;
 	class ActionNodeList *alist;
@@ -231,7 +231,7 @@ value {
 	int 		      ival;
 	char 		     *str;
 }
-/* Line 193 of yacc.c.  */
+/* Line 187 of yacc.c.  */
 #line 236 "dm.tab.cpp"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -307,7 +307,7 @@ typedef short int yytype_int16;
 #define YYSIZE_MAXIMUM ((YYSIZE_T) -1)
 
 #ifndef YY_
-# if defined YYENABLE_NLS && YYENABLE_NLS
+# if YYENABLE_NLS
 #  if ENABLE_NLS
 #   include <libintl.h> /* INFRINGES ON USER NAME SPACE */
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
@@ -481,7 +481,7 @@ union yyalloc
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  30
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  130
+#define YYNRULES  131
 /* YYNRULES -- Number of states.  */
 #define YYNSTATES  312
 
@@ -540,13 +540,13 @@ static const yytype_uint16 yyprhs[] =
      182,   187,   190,   194,   200,   203,   209,   218,   227,   238,
      244,   252,   253,   257,   258,   262,   263,   266,   268,   271,
      276,   280,   282,   286,   290,   291,   293,   297,   301,   303,
-     307,   309,   311,   315,   319,   323,   327,   331,   337,   343,
-     344,   346,   350,   352,   354,   358,   362,   366,   370,   372,
-     374,   376,   378,   380,   383,   385,   389,   395,   401,   405,
-     409,   413,   417,   421,   425,   429,   433,   436,   439,   443,
-     447,   451,   455,   459,   463,   467,   471,   476,   481,   483,
-     486,   488,   492,   494,   498,   503,   507,   514,   515,   517,
-     519
+     307,   309,   310,   312,   316,   320,   324,   328,   332,   338,
+     344,   345,   347,   351,   353,   355,   359,   363,   367,   371,
+     373,   375,   377,   379,   381,   384,   386,   390,   396,   402,
+     406,   410,   414,   418,   422,   426,   430,   434,   437,   440,
+     444,   448,   452,   456,   460,   464,   468,   472,   477,   482,
+     484,   487,   489,   493,   495,   499,   504,   508,   515,   516,
+     518,   520
 };
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
@@ -582,29 +582,29 @@ static const yytype_int8 yyrhs[] =
       -1,    26,   102,    76,    85,    -1,    30,    76,    85,    -1,
       93,    -1,    92,    71,    93,    -1,    22,    76,   102,    -1,
       -1,    95,    -1,    94,    71,    95,    -1,   103,    15,   102,
-      -1,    97,    -1,    96,    71,    97,    -1,   102,    -1,    99,
-      -1,    98,    71,    99,    -1,    21,    76,    19,    -1,    21,
-      76,    21,    -1,    21,    76,    18,    -1,    21,    76,    42,
-      -1,    21,    76,    73,    98,    74,    -1,    21,    76,    65,
-     100,    77,    -1,    -1,   101,    -1,   100,    71,   101,    -1,
-     102,    -1,   103,    -1,    73,    94,    74,    -1,    73,    96,
-      74,    -1,    73,    98,    74,    -1,    65,   100,    77,    -1,
-      18,    -1,    42,    -1,    19,    -1,    20,    -1,    21,    -1,
-      75,    22,    -1,    23,    -1,    12,   105,    74,    -1,    12,
-     105,    13,   102,    74,    -1,    12,   105,    14,   102,    74,
-      -1,   102,    17,   102,    -1,   102,    61,   102,    -1,   102,
-      60,   102,    -1,   102,    62,   102,    -1,   102,    63,   102,
-      -1,   102,    64,   102,    -1,   102,    54,   102,    -1,   102,
-      55,   102,    -1,    60,   102,    -1,    67,   102,    -1,    69,
-     102,    70,    -1,   102,    56,   102,    -1,   102,     6,   102,
-      -1,   102,    57,   102,    -1,   102,     7,   102,    -1,   102,
-      58,   102,    -1,   102,     8,   102,    -1,   102,    59,   102,
-      -1,    22,    69,   106,    70,    -1,   102,    65,   102,    77,
-      -1,    22,    -1,    75,    22,    -1,    23,    -1,    12,   105,
-      74,    -1,   104,    -1,   105,    17,   104,    -1,   105,    65,
-     102,    77,    -1,   105,    66,   104,    -1,   105,    66,    22,
-      69,   106,    70,    -1,    -1,   107,    -1,   102,    -1,   107,
-      71,   102,    -1
+      -1,    97,    -1,    96,    71,    97,    -1,   102,    -1,    -1,
+      99,    -1,    98,    71,    99,    -1,    21,    76,    19,    -1,
+      21,    76,    21,    -1,    21,    76,    18,    -1,    21,    76,
+      42,    -1,    21,    76,    73,    98,    74,    -1,    21,    76,
+      65,   100,    77,    -1,    -1,   101,    -1,   100,    71,   101,
+      -1,   102,    -1,   103,    -1,    73,    94,    74,    -1,    73,
+      96,    74,    -1,    73,    98,    74,    -1,    65,   100,    77,
+      -1,    18,    -1,    42,    -1,    19,    -1,    20,    -1,    21,
+      -1,    75,    22,    -1,    23,    -1,    12,   105,    74,    -1,
+      12,   105,    13,   102,    74,    -1,    12,   105,    14,   102,
+      74,    -1,   102,    17,   102,    -1,   102,    61,   102,    -1,
+     102,    60,   102,    -1,   102,    62,   102,    -1,   102,    63,
+     102,    -1,   102,    64,   102,    -1,   102,    54,   102,    -1,
+     102,    55,   102,    -1,    60,   102,    -1,    67,   102,    -1,
+      69,   102,    70,    -1,   102,    56,   102,    -1,   102,     6,
+     102,    -1,   102,    57,   102,    -1,   102,     7,   102,    -1,
+     102,    58,   102,    -1,   102,     8,   102,    -1,   102,    59,
+     102,    -1,    22,    69,   106,    70,    -1,   102,    65,   102,
+      77,    -1,    22,    -1,    75,    22,    -1,    23,    -1,    12,
+     105,    74,    -1,   104,    -1,   105,    17,   104,    -1,   105,
+      65,   102,    77,    -1,   105,    66,   104,    -1,   105,    66,
+      22,    69,   106,    70,    -1,    -1,   107,    -1,   102,    -1,
+     107,    71,   102,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
@@ -617,13 +617,13 @@ static const yytype_uint16 yyrline[] =
      174,   175,   176,   177,   178,   179,   180,   182,   184,   186,
      187,   190,   191,   199,   200,   203,   204,   207,   208,   211,
      212,   215,   216,   219,   222,   223,   224,   227,   230,   231,
-     234,   237,   238,   242,   243,   244,   245,   246,   247,   250,
-     251,   252,   255,   258,   259,   260,   261,   262,   265,   266,
+     234,   237,   238,   239,   243,   244,   245,   246,   247,   248,
+     251,   252,   253,   256,   259,   260,   261,   262,   263,   266,
      267,   268,   269,   270,   271,   272,   273,   274,   275,   276,
      277,   278,   279,   280,   281,   282,   283,   284,   285,   286,
-     287,   288,   289,   290,   291,   292,   293,   294,   297,   298,
-     299,   300,   303,   304,   305,   306,   307,   311,   312,   315,
-     316
+     287,   288,   289,   290,   291,   292,   293,   294,   295,   298,
+     299,   300,   301,   304,   305,   306,   307,   308,   312,   313,
+     316,   317
 };
 #endif
 
@@ -684,13 +684,13 @@ static const yytype_uint8 yyr1[] =
       86,    86,    86,    86,    86,    86,    86,    86,    86,    86,
       86,    87,    87,    88,    88,    89,    89,    90,    90,    91,
       91,    92,    92,    93,    94,    94,    94,    95,    96,    96,
-      97,    98,    98,    99,    99,    99,    99,    99,    99,   100,
-     100,   100,   101,   102,   102,   102,   102,   102,   103,   103,
+      97,    98,    98,    98,    99,    99,    99,    99,    99,    99,
+     100,   100,   100,   101,   102,   102,   102,   102,   102,   103,
      103,   103,   103,   103,   103,   103,   103,   103,   103,   103,
      103,   103,   103,   103,   103,   103,   103,   103,   103,   103,
-     103,   103,   103,   103,   103,   103,   103,   103,   104,   104,
-     104,   104,   105,   105,   105,   105,   105,   106,   106,   107,
-     107
+     103,   103,   103,   103,   103,   103,   103,   103,   103,   104,
+     104,   104,   104,   105,   105,   105,   105,   105,   106,   106,
+     107,   107
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -703,13 +703,13 @@ static const yytype_uint8 yyr2[] =
        4,     2,     3,     5,     2,     5,     8,     8,    10,     5,
        7,     0,     3,     0,     3,     0,     2,     1,     2,     4,
        3,     1,     3,     3,     0,     1,     3,     3,     1,     3,
-       1,     1,     3,     3,     3,     3,     3,     5,     5,     0,
-       1,     3,     1,     1,     3,     3,     3,     3,     1,     1,
-       1,     1,     1,     2,     1,     3,     5,     5,     3,     3,
-       3,     3,     3,     3,     3,     3,     2,     2,     3,     3,
-       3,     3,     3,     3,     3,     3,     4,     4,     1,     2,
-       1,     3,     1,     3,     4,     3,     6,     0,     1,     1,
-       3
+       1,     0,     1,     3,     3,     3,     3,     3,     5,     5,
+       0,     1,     3,     1,     1,     3,     3,     3,     3,     1,
+       1,     1,     1,     1,     2,     1,     3,     5,     5,     3,
+       3,     3,     3,     3,     3,     3,     3,     2,     2,     3,
+       3,     3,     3,     3,     3,     3,     3,     4,     4,     1,
+       2,     1,     3,     1,     3,     4,     3,     6,     0,     1,
+       1,     3
 };
 
 /* YYDEFACT[STATE-NAME] -- Default rule to reduce with in state
@@ -718,34 +718,34 @@ static const yytype_uint8 yyr2[] =
 static const yytype_uint8 yydefact[] =
 {
        0,     0,     0,     0,     0,     0,     0,     2,     5,     0,
-      88,    90,    91,    92,     0,    94,    89,     0,    79,     0,
-       0,    64,     0,     3,    83,     0,   118,   120,     0,     0,
+      89,    91,    92,    93,     0,    95,    90,     0,    80,     0,
+       0,    64,     0,     3,    84,     0,   119,   121,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,    51,     0,     0,     0,     0,     0,     4,    16,
-     122,     0,     1,     0,     0,     6,   118,     0,   127,   106,
-       0,    80,    82,   107,     0,    92,     0,    65,     0,    68,
-       0,    71,    70,    83,    93,     0,     0,     0,     0,     0,
+     123,     0,     1,     0,     0,     6,   119,     0,   128,   107,
+       0,    81,    83,   108,     0,    93,     0,    65,     0,    68,
+       0,    72,    70,    84,    94,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,   127,    13,     0,    44,    35,    36,     0,    53,
+       0,     0,   128,    13,     0,    44,    35,    36,     0,    53,
        0,     0,     0,     0,     0,     0,     0,     0,    38,    37,
-      41,     0,    39,     0,     0,     0,     0,     0,   119,    17,
-       0,     0,     0,     7,     9,     0,     0,     0,    95,   129,
-       0,   128,     0,    87,   108,     0,     0,    84,     0,    85,
-       0,    86,     0,   110,   112,   114,    98,   104,   105,   109,
-     111,   113,   115,   100,    99,   101,   102,   103,     0,   121,
+      41,     0,    39,     0,     0,     0,     0,     0,   120,    17,
+       0,     0,     0,     7,     9,     0,     0,     0,    96,   130,
+       0,   129,     0,    88,   109,     0,     0,    85,     0,    86,
+       0,    87,     0,   111,   113,   115,    99,   105,   106,   110,
+     112,   114,   116,   101,   100,   102,   103,   104,     0,   122,
        0,     0,    61,     0,    14,     0,    31,     0,     0,     0,
        0,     0,     0,     0,     0,    30,     0,     0,    42,     0,
-       0,     0,     0,     0,    83,     0,   123,     0,   118,   125,
-      11,     0,    10,     0,     0,   118,   116,     0,    81,    75,
-      73,    74,    76,    79,     0,    66,    69,     0,    72,    67,
-     117,     0,     0,     0,     0,    15,     0,    32,     0,     0,
+       0,     0,     0,     0,    84,     0,   124,     0,   119,   126,
+      11,     0,    10,     0,     0,   119,   117,     0,    82,    76,
+      74,    75,    77,    80,    71,    66,    69,     0,    73,    67,
+     118,     0,     0,     0,     0,    15,     0,    32,     0,     0,
        0,     0,     0,     0,     0,    52,     0,     0,     0,     0,
-       0,     0,    40,     0,   124,   127,     0,     0,    96,    97,
-     127,   130,     0,     0,    63,     0,    45,    62,    49,    54,
+       0,     0,    40,     0,   125,   128,     0,     0,    97,    98,
+     128,   131,     0,     0,    63,     0,    45,    62,    49,    54,
       43,     0,    23,    22,    18,    25,    24,     0,     0,     0,
-       0,     0,     0,    20,     0,     8,    12,     0,    78,    77,
+       0,     0,     0,    20,     0,     8,    12,     0,    79,    78,
        0,     0,     0,     0,    27,    28,    29,    26,     0,     0,
-       0,    57,     0,   126,   126,     0,     0,     0,    19,     0,
+       0,    57,     0,   127,   127,     0,     0,     0,    19,     0,
        0,    34,    58,    55,    50,    47,     0,    46,     0,     0,
       60,     0,    33,     0,     0,    59,    56,    48,     0,     0,
        0,    21
@@ -1164,7 +1164,7 @@ while (YYID (0))
    we won't break user code: when these are the locations we know.  */
 
 #ifndef YY_LOCATION_PRINT
-# if defined YYLTYPE_IS_TRIVIAL && YYLTYPE_IS_TRIVIAL
+# if YYLTYPE_IS_TRIVIAL
 #  define YY_LOCATION_PRINT(File, Loc)			\
      fprintf (File, "%d.%d-%d.%d",			\
 	      (Loc).first_line, (Loc).first_column,	\
@@ -1613,7 +1613,7 @@ yydestruct (yymsg, yytype, yyvaluep, yylocationp, yyparam)
   switch (yytype)
     {
       case 102: /* "exp" */
-#line 109 "dm.y"
+#line 109 "dm.ypp"
 	{ delete (yyvaluep->node); };
 #line 1619 "dm.tab.cpp"
 	break;
@@ -1749,7 +1749,7 @@ yyparse (yyparam)
   yyssp = yyss;
   yyvsp = yyvs;
   yylsp = yyls;
-#if defined YYLTYPE_IS_TRIVIAL && YYLTYPE_IS_TRIVIAL
+#if YYLTYPE_IS_TRIVIAL
   /* Initialize the default location before parsing starts.  */
   yylloc.first_line   = yylloc.last_line   = 1;
   yylloc.first_column = yylloc.last_column = 0;
@@ -1938,264 +1938,264 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 115 "dm.y"
+#line 115 "dm.ypp"
     { ((yyparse_param*) yyparam)->actnlist = (yyvsp[(2) - (2)].alist); ;}
     break;
 
   case 3:
-#line 116 "dm.y"
+#line 116 "dm.ypp"
     { ((yyparse_param*) yyparam)->expr = (yyvsp[(2) - (2)].node); ;}
     break;
 
   case 4:
-#line 117 "dm.y"
+#line 117 "dm.ypp"
     { ((yyparse_param*) yyparam)->stmtlist = (yyvsp[(2) - (2)].slist); ;}
     break;
 
   case 5:
-#line 120 "dm.y"
+#line 120 "dm.ypp"
     { (yyval.alist) = new ActionNodeList(); (yyval.alist)->add((yyvsp[(1) - (1)].actn)); ;}
     break;
 
   case 6:
-#line 121 "dm.y"
+#line 121 "dm.ypp"
     { (yyval.alist) = (yyvsp[(1) - (2)].alist); (yyval.alist)->add((yyvsp[(2) - (2)].actn)); ;}
     break;
 
   case 7:
-#line 124 "dm.y"
+#line 124 "dm.ypp"
     { (yyval.actn) = new ActionNode((yylsp[(1) - (3)]), (yyvsp[(2) - (3)].str), (yyvsp[(3) - (3)].slist)); ;}
     break;
 
   case 8:
-#line 125 "dm.y"
+#line 125 "dm.ypp"
     { (yyval.actn) = new ActionNode((yylsp[(1) - (6)]), (yyvsp[(2) - (6)].str), (yyvsp[(4) - (6)].nlist), (yyvsp[(6) - (6)].slist)); ;}
     break;
 
   case 9:
-#line 128 "dm.y"
+#line 128 "dm.ypp"
     { (yyval.nlist) = NULL; ;}
     break;
 
   case 10:
-#line 129 "dm.y"
+#line 129 "dm.ypp"
     { (yyval.nlist) = (yyvsp[(1) - (1)].nlist); ;}
     break;
 
   case 11:
-#line 131 "dm.y"
+#line 131 "dm.ypp"
     { (yyval.nlist) = new NodeList(); (yyval.nlist)->add(new Node(NODE_STR, (yyvsp[(1) - (1)].str))); ;}
     break;
 
   case 12:
-#line 132 "dm.y"
+#line 132 "dm.ypp"
     { (yyval.nlist) = (yyvsp[(1) - (3)].nlist); (yyval.nlist)->add(new Node(NODE_STR, (yyvsp[(3) - (3)].str))); ;}
     break;
 
   case 13:
-#line 135 "dm.y"
+#line 135 "dm.ypp"
     { (yyval.slist) = NULL; ;}
     break;
 
   case 14:
-#line 136 "dm.y"
+#line 136 "dm.ypp"
     { (yyval.slist) = new StmtList(); ;}
     break;
 
   case 15:
-#line 137 "dm.y"
+#line 137 "dm.ypp"
     { (yyval.slist) = (yyvsp[(2) - (3)].slist); ;}
     break;
 
   case 16:
-#line 140 "dm.y"
+#line 140 "dm.ypp"
     { (yyval.slist) = new StmtList(); (yyval.slist)->add((yyvsp[(1) - (1)].stmt)); ;}
     break;
 
   case 17:
-#line 141 "dm.y"
+#line 141 "dm.ypp"
     { (yyval.slist) = (yyvsp[(1) - (2)].slist); (yyval.slist)->add((yyvsp[(2) - (2)].stmt)) ;}
     break;
 
   case 18:
-#line 144 "dm.y"
+#line 144 "dm.ypp"
     { (yyval.stmt) = new IfStmt((yylsp[(1) - (5)]), (yyvsp[(3) - (5)].node), (yyvsp[(5) - (5)].slist)); ;}
     break;
 
   case 19:
-#line 145 "dm.y"
+#line 145 "dm.ypp"
     { (yyval.stmt) = new IfStmt((yylsp[(1) - (7)]), (yyvsp[(3) - (7)].node), (yyvsp[(5) - (7)].slist), (yyvsp[(7) - (7)].slist)); ;}
     break;
 
   case 20:
-#line 146 "dm.y"
+#line 146 "dm.ypp"
     { (yyval.stmt) = new WhileStmt((yylsp[(1) - (5)]), (yyvsp[(3) - (5)].node), (yyvsp[(5) - (5)].slist)); ;}
     break;
 
   case 21:
-#line 148 "dm.y"
+#line 148 "dm.ypp"
     { (yyval.stmt) = new ForStmt((yylsp[(1) - (13)]), (yyvsp[(3) - (13)].node), (yyvsp[(5) - (13)].node), (yyvsp[(7) - (13)].node), (yyvsp[(9) - (13)].node), (yyvsp[(11) - (13)].node), (yyvsp[(13) - (13)].slist)); ;}
     break;
 
   case 22:
-#line 149 "dm.y"
+#line 149 "dm.ypp"
     { (yyval.stmt) = new ForEachStmt((yylsp[(1) - (5)]), (yyvsp[(3) - (5)].stmt), (yyvsp[(5) - (5)].slist), false); ;}
     break;
 
   case 23:
-#line 150 "dm.y"
+#line 150 "dm.ypp"
     { (yyval.stmt) = new ForEachStmt((yylsp[(1) - (5)]), new Stmt((yylsp[(1) - (5)]), (yyvsp[(2) - (5)].str), (yyvsp[(4) - (5)].node) ), (yyvsp[(5) - (5)].slist), false); ;}
     break;
 
   case 24:
-#line 151 "dm.y"
+#line 151 "dm.ypp"
     { (yyval.stmt) = new ForEachStmt((yylsp[(1) - (5)]), (yyvsp[(3) - (5)].stmt), (yyvsp[(5) - (5)].slist), true); ;}
     break;
 
   case 25:
-#line 152 "dm.y"
+#line 152 "dm.ypp"
     { (yyval.stmt) = new ForEachStmt((yylsp[(1) - (5)]), new Stmt((yylsp[(1) - (5)]), (yyvsp[(2) - (5)].str), (yyvsp[(4) - (5)].node) ), (yyvsp[(5) - (5)].slist), true); ;}
     break;
 
   case 26:
-#line 153 "dm.y"
+#line 153 "dm.ypp"
     { (yyval.stmt) = new SetStmt((yylsp[(1) - (6)]), (yyvsp[(2) - (6)].str), (yyvsp[(3) - (6)].node), (yyvsp[(5) - (6)].node)); ;}
     break;
 
   case 27:
-#line 154 "dm.y"
+#line 154 "dm.ypp"
     { (yyval.stmt) = new SetStmt((yylsp[(1) - (6)]), (yyvsp[(2) - (6)].str), (yyvsp[(3) - (6)].node), new Node(
      							NODE_PLUS,  new Node(NODE_NLVAR, (yyvsp[(3) - (6)].node)->deepCopy()), (yyvsp[(5) - (6)].node))); ;}
     break;
 
   case 28:
-#line 156 "dm.y"
+#line 156 "dm.ypp"
     { (yyval.stmt) = new SetStmt((yylsp[(1) - (6)]), (yyvsp[(2) - (6)].str), (yyvsp[(3) - (6)].node), new Node(
      							NODE_MINUS, new Node(NODE_NLVAR, (yyvsp[(3) - (6)].node)->deepCopy()), (yyvsp[(5) - (6)].node))); ;}
     break;
 
   case 29:
-#line 158 "dm.y"
+#line 158 "dm.ypp"
     { (yyval.stmt) = new SetStmt((yylsp[(1) - (6)]), (yyvsp[(2) - (6)].str), (yyvsp[(3) - (6)].node), new Node(
      							NODE_TIMES, new Node(NODE_NLVAR, (yyvsp[(3) - (6)].node)->deepCopy()), (yyvsp[(5) - (6)].node))); ;}
     break;
 
   case 30:
-#line 160 "dm.y"
+#line 160 "dm.ypp"
     { (yyval.stmt) = new SetStmt((yylsp[(1) - (3)]), NULL, (yyvsp[(2) - (3)].node), new Node(
      							NODE_PLUS, new Node(NODE_NLVAR,
      								(yyvsp[(2) - (3)].node)->deepCopy()), new Node(1))); ;}
     break;
 
   case 31:
-#line 163 "dm.y"
+#line 163 "dm.ypp"
     { (yyval.stmt) = new SetStmt((yylsp[(1) - (3)]), NULL, (yyvsp[(2) - (3)].node), new Node(
      							NODE_MINUS, new Node(NODE_NLVAR,
      								(yyvsp[(2) - (3)].node)->deepCopy()), new Node(1))); ;}
     break;
 
   case 32:
-#line 166 "dm.y"
+#line 166 "dm.ypp"
     { (yyval.stmt) = new EchoStmt((yylsp[(1) - (4)]), (yyvsp[(2) - (4)].node), (yyvsp[(3) - (4)].str)); ;}
     break;
 
   case 33:
-#line 167 "dm.y"
+#line 167 "dm.ypp"
     { (yyval.stmt) = new TryCatchStmt((yylsp[(1) - (8)]), (yyvsp[(2) - (8)].slist), (yyvsp[(5) - (8)].str), (yyvsp[(7) - (8)].slist), (yyvsp[(8) - (8)].slist)); ;}
     break;
 
   case 34:
-#line 168 "dm.y"
+#line 168 "dm.ypp"
     { (yyval.stmt) = new SwitchStmt((yylsp[(1) - (7)]), (yyvsp[(3) - (7)].node), (yyvsp[(6) - (7)].clist) ); ;}
     break;
 
   case 35:
-#line 169 "dm.y"
+#line 169 "dm.ypp"
     { (yyval.stmt) = new Stmt((yylsp[(1) - (2)]), STMT_BREAK); ;}
     break;
 
   case 36:
-#line 170 "dm.y"
+#line 170 "dm.ypp"
     { (yyval.stmt) = new Stmt((yylsp[(1) - (2)]), STMT_CONTINUE); ;}
     break;
 
   case 37:
-#line 171 "dm.y"
+#line 171 "dm.ypp"
     { (yyval.stmt) = new PsLoopStmt((yylsp[(1) - (2)]), (yyvsp[(2) - (2)].slist)); ;}
     break;
 
   case 38:
-#line 172 "dm.y"
+#line 172 "dm.ypp"
     { (yyval.stmt) = new ParallelStmt((yylsp[(1) - (2)]), (yyvsp[(2) - (2)].slist)); ;}
     break;
 
   case 39:
-#line 173 "dm.y"
+#line 173 "dm.ypp"
     { (yyval.stmt) = new SequentialStmt((yylsp[(1) - (2)]), (yyvsp[(2) - (2)].slist)); ;}
     break;
 
   case 40:
-#line 174 "dm.y"
+#line 174 "dm.ypp"
     { (yyval.stmt) = new UsingStmt((yylsp[(1) - (4)]), (yyvsp[(2) - (4)].str), (yyvsp[(3) - (4)].node), (yyvsp[(4) - (4)].slist)); ;}
     break;
 
   case 41:
-#line 175 "dm.y"
+#line 175 "dm.ypp"
     { (yyval.stmt) = new ReturnStmt((yylsp[(1) - (2)])); ;}
     break;
 
   case 42:
-#line 176 "dm.y"
+#line 176 "dm.ypp"
     { (yyval.stmt) = new ReturnStmt((yylsp[(1) - (3)]), (yyvsp[(2) - (3)].node)); ;}
     break;
 
   case 43:
-#line 177 "dm.y"
+#line 177 "dm.ypp"
     { (yyval.stmt) = new EvalStmt((yylsp[(1) - (5)]), (yyvsp[(3) - (5)].node)); ;}
     break;
 
   case 44:
-#line 178 "dm.y"
+#line 178 "dm.ypp"
     { (yyval.stmt) = new ExtendedStmt((yylsp[(1) - (2)]), (yyvsp[(1) - (2)].str), (yyvsp[(2) - (2)].slist)); ;}
     break;
 
   case 45:
-#line 179 "dm.y"
+#line 179 "dm.ypp"
     { (yyval.stmt) = new ExtendedStmt((yylsp[(1) - (5)]), (yyvsp[(1) - (5)].str), (yyvsp[(3) - (5)].slist), (yyvsp[(5) - (5)].slist)); ;}
     break;
 
   case 46:
-#line 181 "dm.y"
+#line 181 "dm.ypp"
     { (yyval.stmt) = new ExtendedStmt((yylsp[(1) - (8)]), (yyvsp[(1) - (8)].str), (yyvsp[(3) - (8)].slist), (yyvsp[(7) - (8)].slist), NULL); ;}
     break;
 
   case 47:
-#line 183 "dm.y"
+#line 183 "dm.ypp"
     { (yyval.stmt) = new ExtendedStmt((yylsp[(1) - (8)]), (yyvsp[(1) - (8)].str), (yyvsp[(3) - (8)].slist), NULL, (yyvsp[(7) - (8)].slist)); ;}
     break;
 
   case 48:
-#line 185 "dm.y"
+#line 185 "dm.ypp"
     { (yyval.stmt) = new ExtendedStmt((yylsp[(1) - (10)]), (yyvsp[(1) - (10)].str), (yyvsp[(3) - (10)].slist), (yyvsp[(7) - (10)].slist), (yyvsp[(9) - (10)].slist)); ;}
     break;
 
   case 49:
-#line 186 "dm.y"
+#line 186 "dm.ypp"
     { (yyval.stmt) = new ExtendedStmt(new FunctionNode((yylsp[(1) - (5)]), (yyvsp[(1) - (5)].str), (yyvsp[(3) - (5)].nlist))); ;}
     break;
 
   case 50:
-#line 187 "dm.y"
+#line 187 "dm.ypp"
     { (yyval.stmt) = new ExtendedStmt(new Node(NODE_OBJFUNC, (yyvsp[(1) - (7)].node), (yyvsp[(3) - (7)].str), (yyvsp[(5) - (7)].nlist))); ;}
     break;
 
   case 51:
-#line 190 "dm.y"
+#line 190 "dm.ypp"
     { (yyval.str) = NULL; ;}
     break;
 
   case 52:
-#line 191 "dm.y"
+#line 191 "dm.ypp"
     { (yyval.str) = concatenate_string("-", (yyvsp[(3) - (3)].str)); SAFE_FREE((yyvsp[(3) - (3)].str));
 						  if((yyvsp[(1) - (3)].str)) {
      						      char *temp = concatenate_string((yyvsp[(1) - (3)].str), (yyval.str));
@@ -2205,398 +2205,403 @@ yyreduce:
     break;
 
   case 53:
-#line 199 "dm.y"
+#line 199 "dm.ypp"
     { (yyval.str) = NULL; ;}
     break;
 
   case 54:
-#line 200 "dm.y"
+#line 200 "dm.ypp"
     { (yyval.str) = (yyvsp[(3) - (3)].str); ;}
     break;
 
   case 55:
-#line 203 "dm.y"
+#line 203 "dm.ypp"
     { (yyval.slist) = NULL; ;}
     break;
 
   case 56:
-#line 204 "dm.y"
+#line 204 "dm.ypp"
     { (yyval.slist) = (yyvsp[(2) - (2)].slist); ;}
     break;
 
   case 57:
-#line 207 "dm.y"
+#line 207 "dm.ypp"
     { (yyval.clist) = new CaseStmtList(); (yyval.clist)->add((yyvsp[(1) - (1)].cstmt)); ;}
     break;
 
   case 58:
-#line 208 "dm.y"
+#line 208 "dm.ypp"
     { (yyval.clist) = (yyvsp[(1) - (2)].clist); (yyval.clist)->add((yyvsp[(2) - (2)].cstmt)); ;}
     break;
 
   case 59:
-#line 211 "dm.y"
+#line 211 "dm.ypp"
     { (yyval.cstmt) = new CaseStmt((yylsp[(1) - (4)]), (yyvsp[(2) - (4)].node), (yyvsp[(4) - (4)].slist)); ;}
     break;
 
   case 60:
-#line 212 "dm.y"
+#line 212 "dm.ypp"
     { (yyval.cstmt) = new CaseStmt((yylsp[(1) - (3)]), (yyvsp[(3) - (3)].slist)); ;}
     break;
 
   case 61:
-#line 215 "dm.y"
+#line 215 "dm.ypp"
     { (yyval.slist) = new StmtList(); (yyval.slist)->add((yyvsp[(1) - (1)].stmt)); ;}
     break;
 
   case 62:
-#line 216 "dm.y"
+#line 216 "dm.ypp"
     { (yyval.slist) = (yyvsp[(1) - (3)].slist); (yyval.slist)->add((yyvsp[(3) - (3)].stmt)); ;}
     break;
 
   case 63:
-#line 219 "dm.y"
+#line 219 "dm.ypp"
     { (yyval.stmt) = new Stmt((yylsp[(1) - (3)]), (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].node) ); ;}
     break;
 
   case 64:
-#line 222 "dm.y"
+#line 222 "dm.ypp"
     { (yyval.nlist) = new NodeList(); ;}
     break;
 
   case 65:
-#line 223 "dm.y"
+#line 223 "dm.ypp"
     { (yyval.nlist) = new NodeList(); (yyval.nlist)->add((yyvsp[(1) - (1)].node)); ;}
     break;
 
   case 66:
-#line 224 "dm.y"
+#line 224 "dm.ypp"
     { (yyval.nlist) = (yyvsp[(1) - (3)].nlist); (yyval.nlist)->add((yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 67:
-#line 227 "dm.y"
+#line 227 "dm.ypp"
     { (yyval.node) = new Node(NODE_ARRELE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 68:
-#line 230 "dm.y"
+#line 230 "dm.ypp"
     { (yyval.nlist) = new NodeList(); (yyval.nlist)->add((yyvsp[(1) - (1)].node)); ;}
     break;
 
   case 69:
-#line 231 "dm.y"
+#line 231 "dm.ypp"
     { (yyval.nlist) = (yyvsp[(1) - (3)].nlist); (yyval.nlist)->add((yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 70:
-#line 234 "dm.y"
+#line 234 "dm.ypp"
     { (yyval.node) = new Node(NODE_LISTELE, (yyvsp[(1) - (1)].node)); ;}
     break;
 
   case 71:
-#line 237 "dm.y"
-    { (yyval.nlist) = new NodeList(); (yyval.nlist)->add((yyvsp[(1) - (1)].node)); ;}
-    break;
-
-  case 72:
-#line 238 "dm.y"
-    { (yyval.nlist) = (yyvsp[(1) - (3)].nlist); (yyval.nlist)->add((yyvsp[(3) - (3)].node)); ;}
-    break;
-
-  case 73:
-#line 242 "dm.y"
-    { (yyval.node) = new Node(NODE_ARRELE, new Node(NODE_STR, (yyvsp[(1) - (3)].str)), new Node((yyvsp[(3) - (3)].ival))); ;}
-    break;
-
-  case 74:
-#line 243 "dm.y"
-    { (yyval.node) = new Node(NODE_ARRELE, new Node(NODE_STR, (yyvsp[(1) - (3)].str)), new Node(NODE_STR, (yyvsp[(3) - (3)].str),true)); ;}
-    break;
-
-  case 75:
-#line 244 "dm.y"
-    { (yyval.node) = new Node(NODE_ARRELE, new Node(NODE_STR, (yyvsp[(1) - (3)].str)), new Node((yyvsp[(3) - (3)].bval))); ;}
-    break;
-
-  case 76:
-#line 245 "dm.y"
-    { (yyval.node) = new Node(NODE_ARRELE, new Node(NODE_STR, (yyvsp[(1) - (3)].str)), new Node(NODE_STR, strdup(""))); ;}
-    break;
-
-  case 77:
-#line 246 "dm.y"
-    { (yyval.node) = new Node(NODE_ARRELE, new Node(NODE_STR, (yyvsp[(1) - (5)].str)), new Node(NODE_ARRINI, NULL, (yyvsp[(4) - (5)].nlist))); ;}
-    break;
-
-  case 78:
-#line 247 "dm.y"
-    { (yyval.node) = new Node(NODE_ARRELE, new Node(NODE_STR, (yyvsp[(1) - (5)].str)), new Node(NODE_LISTINI, NULL, (yyvsp[(4) - (5)].nlist))); ;}
-    break;
-
-  case 79:
-#line 250 "dm.y"
+#line 237 "dm.ypp"
     { (yyval.nlist) = new NodeList(); ;}
     break;
 
-  case 80:
-#line 251 "dm.y"
+  case 72:
+#line 238 "dm.ypp"
     { (yyval.nlist) = new NodeList(); (yyval.nlist)->add((yyvsp[(1) - (1)].node)); ;}
     break;
 
-  case 81:
-#line 252 "dm.y"
+  case 73:
+#line 239 "dm.ypp"
     { (yyval.nlist) = (yyvsp[(1) - (3)].nlist); (yyval.nlist)->add((yyvsp[(3) - (3)].node)); ;}
     break;
 
-  case 82:
-#line 255 "dm.y"
-    { (yyval.node) = new Node(NODE_LISTELE, (yyvsp[(1) - (1)].node)); ;}
+  case 74:
+#line 243 "dm.ypp"
+    { (yyval.node) = new Node(NODE_ARRELE, new Node(NODE_STR, (yyvsp[(1) - (3)].str)), new Node((yyvsp[(3) - (3)].ival))); ;}
     break;
 
-  case 83:
-#line 258 "dm.y"
-    { (yyval.node) = (yyvsp[(1) - (1)].node); ;}
+  case 75:
+#line 244 "dm.ypp"
+    { (yyval.node) = new Node(NODE_ARRELE, new Node(NODE_STR, (yyvsp[(1) - (3)].str)), new Node(NODE_STR, (yyvsp[(3) - (3)].str),true)); ;}
     break;
 
-  case 84:
-#line 259 "dm.y"
-    { (yyval.node) = new Node(NODE_ARRINI, NULL, (yyvsp[(2) - (3)].nlist)); ;}
+  case 76:
+#line 245 "dm.ypp"
+    { (yyval.node) = new Node(NODE_ARRELE, new Node(NODE_STR, (yyvsp[(1) - (3)].str)), new Node((yyvsp[(3) - (3)].bval))); ;}
     break;
 
-  case 85:
-#line 260 "dm.y"
-    { (yyval.node) = new Node(NODE_LISTINI, NULL, (yyvsp[(2) - (3)].nlist)); ;}
+  case 77:
+#line 246 "dm.ypp"
+    { (yyval.node) = new Node(NODE_ARRELE, new Node(NODE_STR, (yyvsp[(1) - (3)].str)), new Node(NODE_STR, strdup(""))); ;}
     break;
 
-  case 86:
-#line 261 "dm.y"
-    { (yyval.node) = new Node(NODE_ARRINI, NULL, (yyvsp[(2) - (3)].nlist)); ;}
+  case 78:
+#line 247 "dm.ypp"
+    { (yyval.node) = new Node(NODE_ARRELE, new Node(NODE_STR, (yyvsp[(1) - (5)].str)), new Node(NODE_ARRINI, NULL, (yyvsp[(4) - (5)].nlist))); ;}
     break;
 
-  case 87:
-#line 262 "dm.y"
-    { (yyval.node) = new Node(NODE_LISTINI, NULL, (yyvsp[(2) - (3)].nlist)); ;}
+  case 79:
+#line 248 "dm.ypp"
+    { (yyval.node) = new Node(NODE_ARRELE, new Node(NODE_STR, (yyvsp[(1) - (5)].str)), new Node(NODE_LISTINI, NULL, (yyvsp[(4) - (5)].nlist))); ;}
     break;
 
-  case 88:
-#line 265 "dm.y"
-    { (yyval.node) = new Node((yyvsp[(1) - (1)].bval));		;}
+  case 80:
+#line 251 "dm.ypp"
+    { (yyval.nlist) = new NodeList(); ;}
     break;
 
-  case 89:
-#line 266 "dm.y"
-    { (yyval.node) = new Node(NODE_NULL, (char*) NULL);     ;}
-    break;
-
-  case 90:
-#line 267 "dm.y"
-    { (yyval.node) = new Node((yyvsp[(1) - (1)].ival));		;}
-    break;
-
-  case 91:
-#line 268 "dm.y"
-    { (yyval.node) = new Node(NODE_STR, (yyvsp[(1) - (1)].str));	;}
-    break;
-
-  case 92:
-#line 269 "dm.y"
-    { (yyval.node) = new Node(NODE_STR, (yyvsp[(1) - (1)].str), true);	;}
-    break;
-
-  case 93:
-#line 270 "dm.y"
-    { (yyval.node) = new Node(NODE_LOOKUP, (yyvsp[(2) - (2)].str));	;}
-    break;
-
-  case 94:
-#line 271 "dm.y"
-    { (yyval.node) = new Node(NODE_LOOKUP, (yyvsp[(1) - (1)].str));	;}
-    break;
-
-  case 95:
-#line 272 "dm.y"
-    { (yyval.node) = new Node(NODE_NLVAR, (yyvsp[(2) - (3)].node));	;}
-    break;
-
-  case 96:
-#line 273 "dm.y"
-    { (yyval.node) = new Node(NODE_IFUNSET, new Node(NODE_NLVAR, (yyvsp[(2) - (5)].node)), (yyvsp[(4) - (5)].node));	;}
-    break;
-
-  case 97:
-#line 274 "dm.y"
-    { (yyval.node) = new Node(NODE_IFSET, new Node(NODE_NLVAR, (yyvsp[(2) - (5)].node)), (yyvsp[(4) - (5)].node)); ;}
-    break;
-
-  case 98:
-#line 275 "dm.y"
-    { (yyval.node) = new Node(NODE_CONC, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
-    break;
-
-  case 99:
-#line 276 "dm.y"
-    { (yyval.node) = new Node(NODE_PLUS, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));		;}
-    break;
-
-  case 100:
-#line 277 "dm.y"
-    { (yyval.node) = new Node(NODE_MINUS, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));		;}
-    break;
-
-  case 101:
-#line 278 "dm.y"
-    { (yyval.node) = new Node(NODE_TIMES, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); 		;}
-    break;
-
-  case 102:
-#line 279 "dm.y"
-    { (yyval.node) = new Node(NODE_DIV, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));  		;}
-    break;
-
-  case 103:
-#line 280 "dm.y"
-    { (yyval.node) = new Node(NODE_MOD, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));   		;}
-    break;
-
-  case 104:
-#line 281 "dm.y"
-    { (yyval.node) = new Node(NODE_AND, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));    	;}
-    break;
-
-  case 105:
-#line 282 "dm.y"
-    { (yyval.node) = new Node(NODE_OR, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));	    	;}
-    break;
-
-  case 106:
-#line 283 "dm.y"
-    { (yyval.node) = new Node(NODE_NEG, (yyvsp[(2) - (2)].node));       		;}
-    break;
-
-  case 107:
-#line 284 "dm.y"
-    { (yyval.node) = new Node(NODE_NOT, (yyvsp[(2) - (2)].node));       		;}
-    break;
-
-  case 108:
-#line 285 "dm.y"
-    { (yyval.node) = (yyvsp[(2) - (3)].node);			;}
-    break;
-
-  case 109:
-#line 286 "dm.y"
-    { (yyval.node) = new Node(NODE_EQ, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
-    break;
-
-  case 110:
-#line 287 "dm.y"
-    { (yyval.node) = new Node(NODE_NE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
-    break;
-
-  case 111:
-#line 288 "dm.y"
-    { (yyval.node) = new Node(NODE_GT, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
-    break;
-
-  case 112:
-#line 289 "dm.y"
-    { (yyval.node) = new Node(NODE_GE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
-    break;
-
-  case 113:
-#line 290 "dm.y"
-    { (yyval.node) = new Node(NODE_LT, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
-    break;
-
-  case 114:
-#line 291 "dm.y"
-    { (yyval.node) = new Node(NODE_LE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
-    break;
-
-  case 115:
-#line 292 "dm.y"
-    { (yyval.node) = new Node(NODE_MATCH, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
-    break;
-
-  case 116:
-#line 293 "dm.y"
-    { (yyval.node) = new FunctionNode((yylsp[(1) - (4)]), (yyvsp[(1) - (4)].str), (yyvsp[(3) - (4)].nlist)); ;}
-    break;
-
-  case 117:
-#line 294 "dm.y"
-    { (yyval.node) = new Node(NODE_ARRAY, (yyvsp[(1) - (4)].node), (yyvsp[(3) - (4)].node));	;}
-    break;
-
-  case 118:
-#line 297 "dm.y"
-    { (yyval.node) = new Node(NODE_IDOROBJ, (yyvsp[(1) - (1)].str)); ;}
-    break;
-
-  case 119:
-#line 298 "dm.y"
-    { (yyval.node) = new Node(NODE_LOOKUP, (yyvsp[(2) - (2)].str));	;}
-    break;
-
-  case 120:
-#line 299 "dm.y"
-    { (yyval.node) = new Node(NODE_LOOKUP, (yyvsp[(1) - (1)].str));	;}
-    break;
-
-  case 121:
-#line 300 "dm.y"
-    { (yyval.node) = new Node(NODE_NLVAR, (yyvsp[(2) - (3)].node)); ;}
-    break;
-
-  case 122:
-#line 303 "dm.y"
-    { (yyval.node)= (yyvsp[(1) - (1)].node); ;}
-    break;
-
-  case 123:
-#line 304 "dm.y"
-    { (yyval.node) = new Node(NODE_CONC, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
-    break;
-
-  case 124:
-#line 305 "dm.y"
-    { (yyval.node) = new Node(NODE_ARRAY, new Node(NODE_NLVAR, (yyvsp[(1) - (4)].node)), (yyvsp[(3) - (4)].node)); ;}
-    break;
-
-  case 125:
-#line 306 "dm.y"
-    { (yyval.node) = new Node(NODE_OBJECT, new Node(NODE_NLVAR, (yyvsp[(1) - (3)].node)), (yyvsp[(3) - (3)].node)); ;}
-    break;
-
-  case 126:
-#line 308 "dm.y"
-    { (yyval.node) = new Node(NODE_OBJFUNC, (yyvsp[(1) - (6)].node), (yyvsp[(3) - (6)].str), (yyvsp[(5) - (6)].nlist)); ;}
-    break;
-
-  case 127:
-#line 311 "dm.y"
-    { (yyval.nlist) = NULL; ;}
-    break;
-
-  case 128:
-#line 312 "dm.y"
-    { (yyval.nlist) = (yyvsp[(1) - (1)].nlist); ;}
-    break;
-
-  case 129:
-#line 315 "dm.y"
+  case 81:
+#line 252 "dm.ypp"
     { (yyval.nlist) = new NodeList(); (yyval.nlist)->add((yyvsp[(1) - (1)].node)); ;}
     break;
 
+  case 82:
+#line 253 "dm.ypp"
+    { (yyval.nlist) = (yyvsp[(1) - (3)].nlist); (yyval.nlist)->add((yyvsp[(3) - (3)].node)); ;}
+    break;
+
+  case 83:
+#line 256 "dm.ypp"
+    { (yyval.node) = new Node(NODE_LISTELE, (yyvsp[(1) - (1)].node)); ;}
+    break;
+
+  case 84:
+#line 259 "dm.ypp"
+    { (yyval.node) = (yyvsp[(1) - (1)].node); ;}
+    break;
+
+  case 85:
+#line 260 "dm.ypp"
+    { (yyval.node) = new Node(NODE_ARRINI, NULL, (yyvsp[(2) - (3)].nlist)); ;}
+    break;
+
+  case 86:
+#line 261 "dm.ypp"
+    { (yyval.node) = new Node(NODE_LISTINI, NULL, (yyvsp[(2) - (3)].nlist)); ;}
+    break;
+
+  case 87:
+#line 262 "dm.ypp"
+    { (yyval.node) = new Node(NODE_ARRINI, NULL, (yyvsp[(2) - (3)].nlist)); ;}
+    break;
+
+  case 88:
+#line 263 "dm.ypp"
+    { (yyval.node) = new Node(NODE_LISTINI, NULL, (yyvsp[(2) - (3)].nlist)); ;}
+    break;
+
+  case 89:
+#line 266 "dm.ypp"
+    { (yyval.node) = new Node((yyvsp[(1) - (1)].bval));		;}
+    break;
+
+  case 90:
+#line 267 "dm.ypp"
+    { (yyval.node) = new Node(NODE_NULL, (char*) NULL);     ;}
+    break;
+
+  case 91:
+#line 268 "dm.ypp"
+    { (yyval.node) = new Node((yyvsp[(1) - (1)].ival));		;}
+    break;
+
+  case 92:
+#line 269 "dm.ypp"
+    { (yyval.node) = new Node(NODE_STR, (yyvsp[(1) - (1)].str));	;}
+    break;
+
+  case 93:
+#line 270 "dm.ypp"
+    { (yyval.node) = new Node(NODE_STR, (yyvsp[(1) - (1)].str), true);	;}
+    break;
+
+  case 94:
+#line 271 "dm.ypp"
+    { (yyval.node) = new Node(NODE_LOOKUP, (yyvsp[(2) - (2)].str));	;}
+    break;
+
+  case 95:
+#line 272 "dm.ypp"
+    { (yyval.node) = new Node(NODE_LOOKUP, (yyvsp[(1) - (1)].str));	;}
+    break;
+
+  case 96:
+#line 273 "dm.ypp"
+    { (yyval.node) = new Node(NODE_NLVAR, (yyvsp[(2) - (3)].node));	;}
+    break;
+
+  case 97:
+#line 274 "dm.ypp"
+    { (yyval.node) = new Node(NODE_IFUNSET, new Node(NODE_NLVAR, (yyvsp[(2) - (5)].node)), (yyvsp[(4) - (5)].node));	;}
+    break;
+
+  case 98:
+#line 275 "dm.ypp"
+    { (yyval.node) = new Node(NODE_IFSET, new Node(NODE_NLVAR, (yyvsp[(2) - (5)].node)), (yyvsp[(4) - (5)].node)); ;}
+    break;
+
+  case 99:
+#line 276 "dm.ypp"
+    { (yyval.node) = new Node(NODE_CONC, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    break;
+
+  case 100:
+#line 277 "dm.ypp"
+    { (yyval.node) = new Node(NODE_PLUS, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));		;}
+    break;
+
+  case 101:
+#line 278 "dm.ypp"
+    { (yyval.node) = new Node(NODE_MINUS, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));		;}
+    break;
+
+  case 102:
+#line 279 "dm.ypp"
+    { (yyval.node) = new Node(NODE_TIMES, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); 		;}
+    break;
+
+  case 103:
+#line 280 "dm.ypp"
+    { (yyval.node) = new Node(NODE_DIV, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));  		;}
+    break;
+
+  case 104:
+#line 281 "dm.ypp"
+    { (yyval.node) = new Node(NODE_MOD, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));   		;}
+    break;
+
+  case 105:
+#line 282 "dm.ypp"
+    { (yyval.node) = new Node(NODE_AND, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));    	;}
+    break;
+
+  case 106:
+#line 283 "dm.ypp"
+    { (yyval.node) = new Node(NODE_OR, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node));	    	;}
+    break;
+
+  case 107:
+#line 284 "dm.ypp"
+    { (yyval.node) = new Node(NODE_NEG, (yyvsp[(2) - (2)].node));       		;}
+    break;
+
+  case 108:
+#line 285 "dm.ypp"
+    { (yyval.node) = new Node(NODE_NOT, (yyvsp[(2) - (2)].node));       		;}
+    break;
+
+  case 109:
+#line 286 "dm.ypp"
+    { (yyval.node) = (yyvsp[(2) - (3)].node);			;}
+    break;
+
+  case 110:
+#line 287 "dm.ypp"
+    { (yyval.node) = new Node(NODE_EQ, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    break;
+
+  case 111:
+#line 288 "dm.ypp"
+    { (yyval.node) = new Node(NODE_NE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    break;
+
+  case 112:
+#line 289 "dm.ypp"
+    { (yyval.node) = new Node(NODE_GT, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    break;
+
+  case 113:
+#line 290 "dm.ypp"
+    { (yyval.node) = new Node(NODE_GE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    break;
+
+  case 114:
+#line 291 "dm.ypp"
+    { (yyval.node) = new Node(NODE_LT, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    break;
+
+  case 115:
+#line 292 "dm.ypp"
+    { (yyval.node) = new Node(NODE_LE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    break;
+
+  case 116:
+#line 293 "dm.ypp"
+    { (yyval.node) = new Node(NODE_MATCH, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    break;
+
+  case 117:
+#line 294 "dm.ypp"
+    { (yyval.node) = new FunctionNode((yylsp[(1) - (4)]), (yyvsp[(1) - (4)].str), (yyvsp[(3) - (4)].nlist)); ;}
+    break;
+
+  case 118:
+#line 295 "dm.ypp"
+    { (yyval.node) = new Node(NODE_ARRAY, (yyvsp[(1) - (4)].node), (yyvsp[(3) - (4)].node));	;}
+    break;
+
+  case 119:
+#line 298 "dm.ypp"
+    { (yyval.node) = new Node(NODE_IDOROBJ, (yyvsp[(1) - (1)].str)); ;}
+    break;
+
+  case 120:
+#line 299 "dm.ypp"
+    { (yyval.node) = new Node(NODE_LOOKUP, (yyvsp[(2) - (2)].str));	;}
+    break;
+
+  case 121:
+#line 300 "dm.ypp"
+    { (yyval.node) = new Node(NODE_LOOKUP, (yyvsp[(1) - (1)].str));	;}
+    break;
+
+  case 122:
+#line 301 "dm.ypp"
+    { (yyval.node) = new Node(NODE_NLVAR, (yyvsp[(2) - (3)].node)); ;}
+    break;
+
+  case 123:
+#line 304 "dm.ypp"
+    { (yyval.node)= (yyvsp[(1) - (1)].node); ;}
+    break;
+
+  case 124:
+#line 305 "dm.ypp"
+    { (yyval.node) = new Node(NODE_CONC, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    break;
+
+  case 125:
+#line 306 "dm.ypp"
+    { (yyval.node) = new Node(NODE_ARRAY, new Node(NODE_NLVAR, (yyvsp[(1) - (4)].node)), (yyvsp[(3) - (4)].node)); ;}
+    break;
+
+  case 126:
+#line 307 "dm.ypp"
+    { (yyval.node) = new Node(NODE_OBJECT, new Node(NODE_NLVAR, (yyvsp[(1) - (3)].node)), (yyvsp[(3) - (3)].node)); ;}
+    break;
+
+  case 127:
+#line 309 "dm.ypp"
+    { (yyval.node) = new Node(NODE_OBJFUNC, (yyvsp[(1) - (6)].node), (yyvsp[(3) - (6)].str), (yyvsp[(5) - (6)].nlist)); ;}
+    break;
+
+  case 128:
+#line 312 "dm.ypp"
+    { (yyval.nlist) = NULL; ;}
+    break;
+
+  case 129:
+#line 313 "dm.ypp"
+    { (yyval.nlist) = (yyvsp[(1) - (1)].nlist); ;}
+    break;
+
   case 130:
-#line 316 "dm.y"
+#line 316 "dm.ypp"
+    { (yyval.nlist) = new NodeList(); (yyval.nlist)->add((yyvsp[(1) - (1)].node)); ;}
+    break;
+
+  case 131:
+#line 317 "dm.ypp"
     { (yyval.nlist) = (yyvsp[(1) - (3)].nlist); (yyval.nlist)->add((yyvsp[(3) - (3)].node));	;}
     break;
 
 
 /* Line 1267 of yacc.c.  */
-#line 2600 "dm.tab.cpp"
+#line 2605 "dm.tab.cpp"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2816,7 +2821,7 @@ yyreturn:
 }
 
 
-#line 318 "dm.y"
+#line 319 "dm.ypp"
 
 
 

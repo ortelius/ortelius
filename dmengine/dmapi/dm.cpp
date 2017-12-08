@@ -2855,35 +2855,35 @@ int DM::internalDeployApplication(class Application &app,Context *origctx /* = N
 		}
 		Context ctx(*this, *serverList,stack);
 		Audit &audit = ctx.dm().getDummyAudit();
-		AuditEntry *ae = audit.newAuditEntry("ApplicationCustom");
-		ae->start();
-		NotifyTemplate *tmpl = (NotifyTemplate *)0;
-		int res = internalRunAction(*action,&ctx);
-		ae->finish();
+		
+		Action *preAction = app.getPreAction();
 		Action *postAction = app.getPostAction();
-
-		printf("getting template, res=%d\n",res);
-		tmpl = (res==0)?app.getSuccessTemplate(ctx):app.getFailureTemplate(ctx);
-		if (tmpl) internalNotify(ctx,tmpl);
-		/*
-		if(getTargetEnvironment()) {
-			Context ctx(*this, *(getTargetEnvironment()->getServers()),stack);
-			tmpl = (res==0)?app.getSuccessTemplate(ctx):app.getFailureTemplate(ctx);
-			if (tmpl) internalNotify(ctx,tmpl);
-		} else {
-			writeToStdOut("No target environment");
-			List<Server> emptyList;
-			Context ctx(*this, emptyList, stack);
-			tmpl = (res==0)?app.getSuccessTemplate(ctx):app.getFailureTemplate(ctx);
-			if (tmpl) internalNotify(ctx,tmpl);
+		int res=0;
+		if (preAction) {
+			Audit &audit = ctx.dm().getDummyAudit();
+			AuditEntry *ae = audit.newAuditEntry("ApplicationPre");
+			ae->start();
+			res = internalRunAction(*preAction);
+			ae->finish();
 		}
-		*/
-		recordDeployedToEnvironment(app, (res==0));	// success if res = 0, false otherwise
-		// PAG MOD 30/05/2015 - don't cleanup here since this deletes the ExtendedStmtImplRegistry
-		// and if we're deploying a release the subsequent version doesn't have access to the built-in
-		// commands
-		// cleanup();
-		if(postAction) {
+		if (res == 0) {
+			// Pre Action ran okay (or there wasn't one)
+			AuditEntry *ae = audit.newAuditEntry("ApplicationCustom");
+			ae->start();
+			NotifyTemplate *tmpl = (NotifyTemplate *)0;
+			res = internalRunAction(*action,&ctx);
+			ae->finish();
+			printf("getting template, res=%d\n",res);
+			tmpl = (res==0)?app.getSuccessTemplate(ctx):app.getFailureTemplate(ctx);
+			if (tmpl) internalNotify(ctx,tmpl);
+			recordDeployedToEnvironment(app, (res==0));	// success if res = 0, false otherwise
+			// PAG MOD 30/05/2015 - don't cleanup here since this deletes the ExtendedStmtImplRegistry
+			// and if we're deploying a release the subsequent version doesn't have access to the built-in
+			// commands
+			// cleanup();
+		}
+		printf("postaction=0x%lx\n",postAction);
+		if (postAction && res == 0) {
 			Audit &audit = ctx.dm().getDummyAudit();
 			AuditEntry *ae = audit.newAuditEntry("ApplicationPost");
 			ae->start();
