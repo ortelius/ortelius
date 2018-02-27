@@ -3506,7 +3506,7 @@ public class DMSession {
 				+	"where	a.builderid=b.builderid	"
 				+	"and	b.id=?";
 		try {
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
+			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
 			stmt1.setInt(1,jobid);
 			ResultSet rs1 = stmt1.executeQuery();
 			if (rs1.next()) {
@@ -3520,7 +3520,12 @@ public class DMSession {
 				Builder engine = getBuilder(buildjob.getBuilderId());
 				Credential cred = engine.getCredential();
 				// http://localhost:8081/job/IT%20Guys/142/consoleText
-				String res = getJSONFromServer(serverurl+"/job/"+buildjob.getProjectName().replaceAll(" ", "%20")+"/"+buildid+"/consoleText",cred);
+				String project = buildjob.getProjectName().replaceAll(" ", "%20");
+				
+				if (project.contains("/"))
+				 project = project.replace("/", "/job/");
+				
+				String res = getJSONFromServer(serverurl+"/job/"+project+"/"+buildid+"/consoleText",cred);
 				System.out.println("got console output:");
 				System.out.println(res);
 				return res;
@@ -3528,7 +3533,8 @@ public class DMSession {
 			rs1.close();
 			stmt1.close();
 		} catch(SQLException ex) {
-			
+			ex.printStackTrace();
+			rollback();
 		}
 		return null;
 	}
@@ -3540,6 +3546,10 @@ public class DMSession {
 		Credential cred = builder.getCredential();
 		String server = getBuildServerURL(buildjob.getBuilderId());
 		String project = buildjob.getProjectName().replaceAll(" ", "%20");
+  
+		if (project.contains("/"))
+          project = project.replace("/", "/job/");
+  
 		String url = server + "/job/"+project+"/"+buildid+"/api/json";
 		System.out.println("getBuildTime, url="+url);
 		String res = getJSONFromServer(url, cred);
@@ -3554,6 +3564,7 @@ public class DMSession {
 		}
 		return timestamp;
 	}
+	
 	
 	public JSONObject getBuildDetails(int jobid,int buildid)
 	{
@@ -3598,6 +3609,10 @@ public class DMSession {
 		Credential cred = builder.getCredential();
 		String server = getBuildServerURL(buildjob.getBuilderId());
 		String project = buildjob.getProjectName().replaceAll(" ", "%20");
+		
+        if (project.contains("/"))
+          project = project.replace("/", "/job/");
+  
 		String url = server + "/job/"+project+"/"+buildid+"/api/json";
 		System.out.println("getBuildDuration, url="+url);
 		String res = getJSONFromServer(url, cred);
@@ -3612,6 +3627,7 @@ public class DMSession {
 		}
 		return duration;
 	}
+
 	
 	public String getBuildCommitID(int jobid,int buildid)
 	{
@@ -3735,6 +3751,16 @@ public class DMSession {
 			System.out.println("buildurl=["+buildurl+"]");
 			int jns = buildurl.lastIndexOf("/job/")+5;	// Job Name Start
 	    	String jobname = buildurl.substring(jns,buildurl.indexOf("/",jns));
+	    	
+	    	if (buildurl.indexOf("/job/") != buildurl.lastIndexOf("/job/"))
+	    	{
+	    	 String work = buildurl.substring(buildurl.indexOf("/job/")+5);
+	    	 work = work.substring(0, work.lastIndexOf("/"));
+	    	 work = work.substring(0, work.lastIndexOf("/"));
+	    	 work = work.replaceAll("/job/", "/");
+	    	 jobname=work;
+	    	}
+	    	
 	    	System.out.println("jobname=["+jobname+"]");
 	    	int bns = buildurl.lastIndexOf('/',buildurl.length()-2);
 	    	int buildno = Integer.parseInt(buildurl.substring(bns+1,buildurl.length()-1));
@@ -3765,7 +3791,7 @@ public class DMSession {
 	    	String sql2 = "INSERT INTO dm.dm_buildhistory(buildjobid,buildnumber,compid,userid,timestamp,success) VALUES(?,?,?,?,?,?)";
 	    	String sql3 = "UPDATE dm.dm_component SET lastbuildnumber=? WHERE id=?";
 	    	String sql4 = "SELECT value,encrypted FROM dm.dm_buildengineprops WHERE name='Jenkins Match URL' AND builderid=?";
-	    	PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
+	    	PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
 	    	stmt1.setString(1,jobname);
 	    	ResultSet rs1 = stmt1.executeQuery();
 	    	while (rs1.next()) {
@@ -3792,7 +3818,6 @@ public class DMSession {
 	    			match = comparevalue.equalsIgnoreCase(server);
 	    		}
 	    		System.out.println("\"Server URL\" match="+match);
-	    		
 	    		if (!match) {
 	    			// No match yet - check if there's a Jenkins Match URL to compare instead
 	    			PreparedStatement stmt4 = m_conn.prepareStatement(sql4);
@@ -3803,10 +3828,10 @@ public class DMSession {
 	    				String matchURL = rs4.getString(1);
 	    				String enc = rs4.getString(2);
 	    				if (enc != null && enc.equalsIgnoreCase("y")) {
-	    					// This matchURL address is encrypted
+	    	    			// This matchURL address is encrypted
 	    					System.out.println("matchURL is encrypted");
-	    					matchURL = new String(Decrypt3DES(matchURL, m_passphrase));
-	    				}
+	    	    			matchURL = new String(Decrypt3DES(matchURL, m_passphrase));
+	    	    		}
 	    				matchURL = matchURL.replaceAll("/*$","");	// get rid of any trailing / chars
 	    				System.out.println("Comparing ["+server+"] with ["+matchURL+"]");
 	    				match = matchURL.equalsIgnoreCase(server);
@@ -3821,34 +3846,34 @@ public class DMSession {
 	    					System.out.println("encodedurl now ["+encodedurl+"] (for callback)");
 	    				}
 	    			}
-		    		rs4.close();
-		    		stmt4.close();
-		    		System.out.println("\"Jenkins Match URL\" match="+match);
-		    	}
+	    			rs4.close();
+	    			stmt4.close();
+	    			System.out.println("\"Jenkins Match URL\" match="+match);
+	    		}
 	    		if (match) {
 	    			// Found a matching build job for this server URL
 	    			// Ping Jenkins back and see if this build was successful or not.
 	    			Builder builder = getBuilder(buildengineid);
 	    			Credential cred = builder.getCredential();
-	    			String res = getJSONFromServer(serverurl+"/api/json",cred);
+	    			String res = getJSONFromServer(encodedurl+"/api/json",cred);
 					System.out.println("Found a match - build job "+buildjobid+" component "+compid);
 					System.out.println("result from Jenkins is "+res);
 					JsonObject issueObject = new JsonParser().parse(res).getAsJsonObject();
 					String result = issueObject.get("result").getAsString();
 					System.out.println("result is "+result);
 					boolean success = result.equalsIgnoreCase("success");
-					PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+					PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 					stmt2.setInt(1,buildjobid);
 					stmt2.setInt(2,buildno);
 					stmt2.setInt(3,compid);
-					stmt2.setInt(4, getUserID());
+					stmt2.setInt(4, m_userID);
 					stmt2.setLong(5,timeNow());
 					stmt2.setString(6,success?"Y":"N");
 					stmt2.execute();
 					stmt2.close();
 					if (success) {
 						// Update "lastbuildnumber" for component
-						PreparedStatement stmt3 = getDBConnection().prepareStatement(sql3);
+						PreparedStatement stmt3 = m_conn.prepareStatement(sql3);
 						stmt3.setInt(1,buildno);
 						stmt3.setInt(2,compid);
 						stmt3.execute();
@@ -3865,13 +3890,13 @@ public class DMSession {
 		    		tbobj.add("buildjob", buildjob.getLinkJSON());
 					ret.add(tbobj);
 	    		} else {
-                    System.out.println("no match");
+	   				System.out.println("no match");
 	    		}
 	    	}
 	    	rs1.close();
 	    	stmt1.close();
 	    	System.out.println("end of sql1 loop");
-	    	getDBConnection().commit();
+	    	m_conn.commit();
 	    	return ret;	
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
@@ -3884,6 +3909,8 @@ public class DMSession {
 		}
 		return null;
 	}
+
+
 	
 	public void AddBuildToComponent(Component comp,int buildno,String [] files,String commit,boolean success)
 	{
@@ -22568,8 +22595,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	  try {
 	  	 Builder builder = getBuilder(builderid);
 	  	 Credential cred = builder.getCredential();
-		 PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
-		 PreparedStatement stmt3 = getDBConnection().prepareStatement(sql3);
+		 PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
+		 PreparedStatement stmt3 = m_conn.prepareStatement(sql3);
 		 stmt2.setInt(1,buildjobid);
 		 stmt3.setInt(1,buildjobid);
 		 String serverURL = getBuildServerURL(builderid);
@@ -22577,13 +22604,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 System.out.println("Server URL="+serverURL);
 			 ResultSet rs2 = stmt2.executeQuery();
 			 if (rs2.next()) {
-				 String jobname = rs2.getString(1); // .replaceAll(" ", "%20");
+				 String jobname = rs2.getString(1).replaceAll(" ", "%20");
 				 if (jobname.length()>0) {
 					 //
 					 // Get all the builds we know about for this build job and assemble the
 					 // JSON Array of components associated with each build number
 					 //
-					 jobname = jobname.replaceAll(" ","%20");
 					 Hashtable<Integer,JSONArray> complist = new Hashtable<Integer,JSONArray>();
 					 ResultSet rs3 = stmt3.executeQuery();
 					 while (rs3.next()) {
@@ -22607,9 +22633,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					 // relate to builds in Release Engineer
 					 //
 					 boolean commit=false;
+					 if (jobname.contains("/"))
+					  jobname = jobname.replace("/", "/job/");
+					 
 					 String res = getJSONFromServer(serverURL+"/job/"+jobname+"/api/json?tree=builds[number,timestamp,result,duration]",cred);
-				     System.out.println(res);
-					 JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
+					 System.out.println(res);
+				     JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
 				     JsonArray builds = returnedjson.getAsJsonArray("builds");
 				     JSONArray retBuilds = new JSONArray();
 				     for (int i=0;i<builds.size();i++) {
@@ -22630,7 +22659,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				    	 retBuilds.add(buildobj);
 				     }
 				     ret.add("builds", retBuilds);
-				     if (commit) getDBConnection().commit();
+				     if (commit) m_conn.commit();
 				 } else {
 					 ret.add("error","Cannot retrieve Builds - Project Name is not set");
 				 }
@@ -22642,7 +22671,6 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 // Couldn't find server URL - stick an error into the return object
 			 ret.add("error","Build Engine has no Server URL defined");
 		 }
-		 
 		 stmt2.close();
 	  } catch (SQLException e) {
 			 System.out.println(e.getMessage());
@@ -22757,40 +22785,60 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   
   JSONObject getProjectsFromJenkins(int builderid)
   {
-	 System.out.println("getProjectsFromJenkins");
-	 String serverURL = getBuildServerURL(builderid);
-	 JSONObject ret = new JSONObject();
-  	 Builder builder = getBuilder(builderid);
-  	 Credential cred = builder.getCredential();
-
-	 if (serverURL != null) {
-		 // Got the Server URL
-		 System.out.println("Server URL="+serverURL);
-		 String res = getJSONFromServer(serverURL+"/api/json",cred);
-		 if (res.startsWith("Could not connect")) {
-			 ret.add("error",res);
+	  System.out.println("getProjectsFromJenkins");
+	  
+	  String serverURL = getBuildServerURL(builderid);
+	  JSONObject ret = new JSONObject();
+	  	 Builder builder = getBuilder(builderid);
+	  	 Credential cred = builder.getCredential();
+		 if (serverURL != null) {
+			 // Got the Server URL
+			 System.out.println("Server URL="+serverURL);
+			 String res = getJSONFromServer(serverURL+"/api/json",cred);
+			 if (res.startsWith("Could not connect")) {
+				 ret.add("error",res);
+			 } else {
+			     JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
+			     JsonArray jobs = returnedjson.getAsJsonArray("jobs");
+			     JSONArray retJobs = new JSONArray();
+			     if (jobs.size()==0) {
+			    	 ret.add("error","No Projects found on Jenkins Server "+serverURL);
+			     }
+			     for (int i=0;i<jobs.size();i++) {
+			    	 JsonObject jsonJob = jobs.get(i).getAsJsonObject();
+			    	 if (jsonJob.get("_class").getAsString().contains("Folder"))
+			    	 {
+			    	  String folder = jsonJob.get("name").getAsString();
+			    	  String url = jsonJob.get("url").getAsString();
+			    	  String folderres = getJSONFromServer(url+"/api/json",cred);
+			    	  JsonObject folderreturnedjson = new JsonParser().parse(folderres).getAsJsonObject();
+		        JsonArray folderjobs = folderreturnedjson.getAsJsonArray("jobs");
+		        for (int k=0;k<folderjobs.size();k++) 
+		        {
+		         JsonObject folderjsonJob = folderjobs.get(k).getAsJsonObject();
+	          String jobname = folderjsonJob.get("name").getAsString();
+	          JSONObject jobobj = new JSONObject();
+	          jobobj.add("name", folder + "/" + jobname);
+	          retJobs.add(jobobj);	         
+		        }
+			    	 }
+			    	 else
+			    	 {
+			    	  String jobname = jsonJob.get("name").getAsString();
+			    	  JSONObject jobobj = new JSONObject();
+			    	  jobobj.add("name", jobname);
+			    	  retJobs.add(jobobj);
+			    	 } 
+			     }
+			     ret.add("jobs", retJobs);
+			 }   
 		 } else {
-			 JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
-			 JsonArray jobs = returnedjson.getAsJsonArray("jobs");
-			 JSONArray retJobs = new JSONArray();
-			 if (jobs.size()==0) {
-				 ret.add("error","No Projects found on Jenkins Server "+serverURL);
-			 }
-			 for (int i=0;i<jobs.size();i++) {
-				 JsonObject jsonJob = jobs.get(i).getAsJsonObject();
-				 String jobname = jsonJob.get("name").getAsString();
-				 JSONObject jobobj = new JSONObject();
-				 jobobj.add("name", jobname);
-				 retJobs.add(jobobj);
-			 }
-			 ret.add("jobs", retJobs);
-		 }  
-	 } else {
-		 // Couldn't find server URL - stick an error into the return object
-		 ret.add("error","Build Engine has no Server URL defined");
-	 }
-	 return ret;
+			 // Couldn't find server URL - stick an error into the return object
+			 ret.add("error","Build Engine has no Server URL defined");
+		 }
+	  return ret;
   }
+
   
   JSONObject getProjectsFromBamboo(int builderid)
   {
