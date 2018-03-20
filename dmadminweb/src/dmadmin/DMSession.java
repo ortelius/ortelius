@@ -22786,59 +22786,84 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   JSONObject getProjectsFromJenkins(int builderid)
   {
 	  System.out.println("getProjectsFromJenkins");
-	  
+	  JSONArray retJobs = new JSONArray();
 	  String serverURL = getBuildServerURL(builderid);
 	  JSONObject ret = new JSONObject();
-	  	 Builder builder = getBuilder(builderid);
-	  	 Credential cred = builder.getCredential();
+	  Builder builder = getBuilder(builderid);
+	  Credential cred = builder.getCredential();
 		 if (serverURL != null) {
 			 // Got the Server URL
 			 System.out.println("Server URL="+serverURL);
-			 String res = getJSONFromServer(serverURL+"/api/json",cred);
-			 if (res.startsWith("Could not connect")) {
+			 ArrayList<String> jobs = new ArrayList<String>();
+			 
+			 String res = recurseProjectsFromJenkins(serverURL,"",cred,jobs);
+			 
+			 if (res.startsWith("Could not connect")) 
+			 {
 				 ret.add("error",res);
-			 } else {
-			     JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
-			     JsonArray jobs = returnedjson.getAsJsonArray("jobs");
-			     JSONArray retJobs = new JSONArray();
-			     if (jobs.size()==0) {
-			    	 ret.add("error","No Projects found on Jenkins Server "+serverURL);
-			     }
-			     for (int i=0;i<jobs.size();i++) {
-			    	 JsonObject jsonJob = jobs.get(i).getAsJsonObject();
-			    	 if (jsonJob.get("_class").getAsString().contains("Folder"))
-			    	 {
-			    	  String folder = jsonJob.get("name").getAsString();
-			    	  String url = jsonJob.get("url").getAsString();
-			    	  String folderres = getJSONFromServer(url+"/api/json",cred);
-			    	  JsonObject folderreturnedjson = new JsonParser().parse(folderres).getAsJsonObject();
-		        JsonArray folderjobs = folderreturnedjson.getAsJsonArray("jobs");
-		        for (int k=0;k<folderjobs.size();k++) 
-		        {
-		         JsonObject folderjsonJob = folderjobs.get(k).getAsJsonObject();
-	          String jobname = folderjsonJob.get("name").getAsString();
-	          JSONObject jobobj = new JSONObject();
-	          jobobj.add("name", folder + "/" + jobname);
-	          retJobs.add(jobobj);	         
-		        }
-			    	 }
-			    	 else
-			    	 {
-			    	  String jobname = jsonJob.get("name").getAsString();
-			    	  JSONObject jobobj = new JSONObject();
-			    	  jobobj.add("name", jobname);
-			    	  retJobs.add(jobobj);
-			    	 } 
-			     }
-			     ret.add("jobs", retJobs);
+			 } 
+			 else 
+			 {
+	    if (jobs.size()==0) 
+	    {
+			   ret.add("error","No Projects found on Jenkins Server "+serverURL);
+			  }
+			     
+	    for (int i=0;i<jobs.size();i++)
+	    {
+	     JSONObject jobobj = new JSONObject();
+    	 jobobj.add("name", jobs.get(i));
+			   retJobs.add(jobobj);
+     }
+     ret.add("jobs", retJobs);
 			 }   
-		 } else {
+		 } 
+		 else 
+		 {
 			 // Couldn't find server URL - stick an error into the return object
 			 ret.add("error","Build Engine has no Server URL defined");
 		 }
 	  return ret;
   }
+  
+  String recurseProjectsFromJenkins(String ServerURL, String currentFolder,Credential cred,ArrayList<String>jobList)
+  {
+   System.out.println("recurseProjectsFromJenkins");
 
+   String encFolder = currentFolder.replaceAll(" ","%20") + "/api/json";
+
+   String res = getJSONFromServer(ServerURL + encFolder,cred);
+   
+   System.out.println("Server URL="+ServerURL + encFolder);
+   if (res.startsWith("Could not connect")) 
+   {
+    return res;
+   } 
+   else 
+   {
+    JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
+    JsonArray jobs = returnedjson.getAsJsonArray("jobs");
+    JSONArray retJobs = new JSONArray();
+       
+    for (int i=0;i<jobs.size();i++) 
+    {
+     JsonObject jsonJob = jobs.get(i).getAsJsonObject();
+     
+     if (!jsonJob.get("_class").getAsString().contains("Folder"))
+     {
+      String name = currentFolder + "/" + jsonJob.get("name").getAsString();
+      name = name.replaceAll("\\/job\\/", "/").substring(1);
+      jobList.add(name);
+     }
+     else
+     {
+      String newFolder = currentFolder + "/job/" + jsonJob.get("name").getAsString();
+      recurseProjectsFromJenkins(ServerURL,newFolder,cred,jobList);
+     }
+    }   
+   }
+   return "";
+  }
   
   JSONObject getProjectsFromBamboo(int builderid)
   {
