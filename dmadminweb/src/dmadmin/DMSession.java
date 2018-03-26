@@ -22452,6 +22452,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	 // CloseableHttpClient httpclient = HttpClients.createDefault();
 	 // Basic Auth setup
 	 // System.out.println("getJSONFromServer: url="+url);
+	String credUsername = "";
+	String credPassword = "";
 
      byte[] credentials = null;
      if (cred != null) {
@@ -22465,8 +22467,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	     		String up = rs.getString(2);
 	     		byte[] dun = Decrypt3DES(un,m_passphrase);
 	     		byte[] dup = Decrypt3DES(up,m_passphrase);
-	     		String credUsername = new String(dun);
-	     		String credPassword = new String(dup);
+	     		credUsername = new String(dun);
+	     		credPassword = new String(dup);
 	     		/*
 	     		System.out.println(
 	     		"credUsername=["+
@@ -22541,7 +22543,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 httpclient.close();
 			 if (response1 == null)
 			 {
-			  resString = "Could not connect to '" + url + "' using credentials '" + credentials + "'";
+			  resString = "Could not connect to '" + url + "' using credentials '" + credentials + "' '" + credUsername + ":" + credPassword + "'";
 			 } 
 		 } catch(IOException ex) {
 			 // shrugs
