@@ -22513,6 +22513,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 } else {
 			 System.out.println("*** could not get status line");
 		 }
+		 if (statusCode == 401)
+		 {
+		  resString = "Could not connect to '" + url + "' using credentials '" + credentials + "' '" + credUsername + ":" + credPassword + "'\n" + sl.toString();
+		 }
 		 if (statusCode >= 200 && statusCode <=299) {
 			 // In valid range
 		     // System.out.println(response1.getStatusLine());
