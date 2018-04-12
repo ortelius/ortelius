@@ -50,6 +50,7 @@ WMIWrapper			*m_wmi;
 
 char *GlobalErrorPtr;
 
+int cfileexists(const char* filename);
 
 // Version of vasprintf for Windows
 
@@ -555,11 +556,31 @@ char *protocol_exec(char **argv,char *shell,bool CopyFromLocal)
 
 	if (m_HostName)
 	{
-		oq=true;
-		execstr = (char *)malloc(strlen(basedir)+plen+strlen(m_HostName)+strlen(m_UserName)+strlen(m_Password)+60);
-		if (shell) {
-			char *FmtStr = CopyFromLocal?"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:\"%s\" /c /s:\"%s\" \"%s\"\"":"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:%s /s:\"%s\" \"%s\"\"";
-			sprintf(execstr,FmtStr,basedir,m_HostName,m_UserName,m_Password,shell,argv[0]);
+		char execpgm[4096] = {""};
+		
+		sprintf(execpgm,"%s\\psexec.exe",basedir);
+		if (cfileexists(execpgm))
+		{
+		 oq=true;
+		 execstr = (char *)malloc(strlen(basedir)+plen+strlen(m_HostName)+strlen(m_UserName)+strlen(m_Password)+60);
+		 if (shell) {
+			 if (CopyFromLocal)
+			  sprintf(execstr,"\"\"%s\\psexec.exe\" \\\\%s -u \"%s\" -p \"%s\" -c \"%s\" cmd /c \"%s\" \"%s\"\"",basedir,m_HostName,m_UserName,m_Password,argv[0],shell,argv[0]);
+				else
+					sprintf(execstr,"\"\"%s\\psexec.exe\" \\\\%s -u \"%s\" -p %s cmd /c \"%s\" \"%s\"\"",basedir,m_HostName,m_UserName,m_Password,shell,argv[0]);
+		} else {
+			if (CopyFromLocal)
+				sprintf(execstr,"\"\"%s\\psexec.exe\" \\\\%s -u \"%s\" -p \"%s\" -c \"%s\"\" \"%s\"\"",basedir,m_HostName,m_UserName,m_Password,argv[0], argv[0]);			
+			else	
+			 sprintf(execstr,"\"\"%s\\psexec.exe\" \\\\%s -u \"%s\" -p \"%s\" \"%s\"\"",basedir,m_HostName,m_UserName,m_Password,argv[0]);			
+		}
+		else
+		{							
+		 oq=true;
+		 execstr = (char *)malloc(strlen(basedir)+plen+strlen(m_HostName)+strlen(m_UserName)+strlen(m_Password)+60);
+		 if (shell) {
+		 	char *FmtStr = CopyFromLocal?"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:\"%s\" /c /s:\"%s\" \"%s\"\"":"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:%s /s:\"%s\" \"%s\"\"";
+			 sprintf(execstr,FmtStr,basedir,m_HostName,m_UserName,m_Password,shell,argv[0]);
 		} else {
 			char *FmtStr = CopyFromLocal?"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:\"%s\" /c \"%s\"\"":"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:%s \"%s\"\"";
 			sprintf(execstr,FmtStr,basedir,m_HostName,m_UserName,m_Password,argv[0]);
@@ -874,4 +895,13 @@ int protocol_delete(char *Filename)
 		return 0;
 	}
 	return 1;
+}
+
+int cfileexists(const char* filename){
+    struct stat buffer;
+    int exist = stat(filename,&buffer);
+    if(exist == 0)
+        return 1;
+    else // -1
+        return 0;
 }
