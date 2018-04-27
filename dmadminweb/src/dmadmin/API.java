@@ -36,9 +36,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-
-
-
 // import oracle.net.aso.i;
 import dmadmin.json.JSONArray;
 import dmadmin.json.JSONObject;
@@ -47,6 +44,7 @@ import dmadmin.model.BuildJob;
 import dmadmin.model.Builder;
 import dmadmin.model.CompType;
 import dmadmin.model.Component;
+import dmadmin.model.ComponentItem;
 import dmadmin.model.Credential;
 import dmadmin.model.CredentialKind;
 import dmadmin.model.DMAttribute;
@@ -62,6 +60,7 @@ import dmadmin.model.Engine;
 import dmadmin.model.Environment;
 import dmadmin.model.LoginException.LoginExceptionType;
 import dmadmin.model.NotifyTemplate;
+import dmadmin.model.Repository;
 import dmadmin.model.Server;
 import dmadmin.model.ServerType;
 import dmadmin.model.Task;
@@ -441,6 +440,9 @@ public class API extends HttpServlet
     case USERGROUP:
      obj = (id > 0) ? so.getGroup(id) : so.getGroupByName(idOrName);
      break;
+    case REPOSITORY:
+        obj = (id>0)?so.getRepository(id,true):so.getRepositoryByName(idOrName);
+        break;	 
     default:
      throw new ApiException(ot.toString() + " not supported in getObjectFromNameOrID");
    }
@@ -492,6 +494,11 @@ public class API extends HttpServlet
  private Datasource getDatasourceFromNameOrID(DMSession so, String idOrName) throws ApiException
  {
   return (Datasource) getObjectFromNameOrID(so, ObjectType.DATASOURCE, idOrName);
+ }
+
+ private Repository getRepositoryFromNameOrID(DMSession so,String idOrName) throws ApiException
+ {
+  return (Repository)getObjectFromNameOrID(so,ObjectType.REPOSITORY,idOrName);
  }
 
  protected Credential getCredentialFromNameOrID(DMSession so, String idOrName) throws ApiException
@@ -1138,6 +1145,76 @@ public class API extends HttpServlet
   }
  }
 
+ private void AddComponentItems(DMSession so, String compname, String compitem, int xpos, int ypos, boolean removeAll, HttpServletRequest request, String repo, String pattern, String uri) throws ApiException
+ {
+  // API/new/compitem/name[?component=<component>&xpos=<xpos>&ypos=<ypos>&removeAll=<Y>]
+
+  if (compname == null || compname.length() == 0)
+   throw new ApiException("component name must be specified");
+  if (compitem == null || compitem.length() == 0)
+   throw new ApiException("component item must be specified");
+
+  try
+  {
+   Component comp = getComponentFromNameOrID(so, compname);
+
+   if (comp == null)
+    throw new ApiException("Could not retrieve component '" + compname + "'");
+
+   if (removeAll)  // Used when adding the first item
+   {
+    try
+    {
+     so.DeleteComponentItems(comp.getId());
+    }
+    catch (SQLException e)
+    {
+     throw new ApiException("Could not remove Component Items for '" + compname + "'");
+    } 
+   }
+   
+   int newid = so.getID("componentitem");
+
+   so.CreateNewObject("componentitem", compitem, comp.getDomainId(), comp.getId(), newid, xpos, ypos, "components", false);
+
+   ComponentItem compi = so.getComponentItem(newid, true);
+
+   if (compi == null)
+    throw new ApiException("Failed to create new component item");
+
+   so.componentItemMoveItem(comp.getId(),compi.getId(),xpos,ypos);
+   
+   SummaryChangeSet schanges = new SummaryChangeSet();
+   SummaryField field = SummaryField.fromInt(SummaryField.ITEM_REPOSITORY.value());
+   if(field != null) {
+    Repository r = getRepositoryFromNameOrID(so, repo);
+    so.processField(so, field, "re" + r.getId(), schanges);
+   }
+   
+   ACDChangeSet<DMProperty> pchanges = new ACDChangeSet<DMProperty>();
+   
+   pchanges.addAdded(new DMProperty("pattern",pattern,false,false,false));
+   pchanges.addAdded(new DMProperty("uri",uri,false,false,false));   
+
+   
+    ComponentItem ci = so.getComponentItem(compi.getId(), true);
+    if(ci.isUpdatable()) {    
+     boolean res = true;
+     if(!schanges.isEmpty()) {
+      ci.updateSummary(schanges);
+     }
+     if(res && !pchanges.isEmpty()) {
+      res = ci.updateProperties(pchanges);
+     }
+    } 
+  }
+  catch (RuntimeException e)
+  {
+   throw new ApiException(e.getMessage());
+  }
+  
+ }
+
  protected void AddServer(DMSession so, String servername, HttpServletRequest request) throws ApiException
  {
   // API/new/server/name[?domain=<domain>&env=<env>]
@@ -1558,6 +1635,15 @@ public class API extends HttpServlet
   {
    throw new ApiException("New Component with id " + newid + " not found");
   }
+  
+  Component baseComp = comp;
+  // Find Base component
+  while (baseComp.getPredecessorId() != 0)
+  {
+   baseComp = so.getComponent(baseComp.getPredecessorId(), false);
+  }
+  so.componentAddVersionDependency(baseComp.getId(),comp.getId(),newComp.getId()); 
+
   return newComp;
  }
 
@@ -2236,6 +2322,44 @@ public class API extends HttpServlet
       AddEnvironment(so, elements[2], request);
      else if (elements[1].equals("credential"))
       AddCredential(so, elements[2], request);
+     else 
+	  if (elements[1].equals("compitem")) 
+       {
+        String compname = request.getParameter("component");
+        String xStr     = request.getParameter("xpos");
+        String yStr     = request.getParameter("ypos");
+        String removeAllStr = request.getParameter("removeall");
+        String repo = request.getParameter("repo");
+        String pattern = request.getParameter("pattern");
+        String uri = request.getParameter("uri");
+        int xpos = 0;
+        int ypos = 0;
+        boolean removeAll = false;
+        
+        if (repo == null)
+          repo = "";
+        
+        if (pattern == null)
+         pattern = "";
+        
+        if (uri == null)
+         uri = "";
+        
+        if (xStr == null || xStr.length() == 0)
+         xpos = 0;
+        else
+         xpos = Integer.parseInt(xStr);
+        
+        if (yStr == null || yStr.length() == 0)
+         ypos = 0;
+        else
+         ypos = Integer.parseInt(yStr);
+        
+        if (removeAllStr != null && removeAllStr.equalsIgnoreCase("Y"))
+         removeAll = true;
+        
+        AddComponentItems(so, compname, elements[2], xpos, ypos, removeAll, request,repo,pattern,uri);
+      	} 
      else
       throw new ApiException("Invalid object \"" + elements[1] + "\" for \"new\" operation");
     }

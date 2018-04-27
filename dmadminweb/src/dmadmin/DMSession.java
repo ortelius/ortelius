@@ -6954,6 +6954,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				case CREDENTIALS:	ret = getCredential(id,true);break;
 				case TEMPLATE:		ret = getTemplate(id);break;
 				case USERGROUP:		ret = getGroup(id);break;
+			    case REPOSITORY:    ret = getRepository(id,true);break;
 				default:			break;
 				}
 			} else {
@@ -7043,6 +7044,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	public UserGroup getGroupByName(String groupName)
 	{
 		return (UserGroup)getObjectByName(ObjectType.USERGROUP,groupName);
+	}
+	
+    public Repository getRepositoryByName(String repoName)
+	{
+	 return (Repository)getObjectByName(ObjectType.REPOSITORY,repoName);
 	}
 	
 	public Task getTaskByType(Domain domain,TaskType type)
@@ -16294,7 +16300,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	}
 	*/
 	
-	private void DeleteComponentItems(int compid) throws SQLException
+	public void DeleteComponentItems(int compid) throws SQLException
 	{
 		System.out.println("DeleteComponentItems from compid="+compid);
 		PreparedStatement psx = getDBConnection().prepareStatement("DELETE FROM dm.dm_compitemprops WHERE compitemid in (SELECT id FROM dm.dm_componentitem WHERE compid=?)");
@@ -23894,4 +23900,61 @@ public void SyncAnsible(ServletContext context)
 	  System.out.println("Returning initialInstall="+initialInstall);
 	  return initialInstall;
   }
+  
+	public void processField(DMSession so, SummaryField field, String value, SummaryChangeSet changes)
+	{
+		ObjectType type = field.type();
+
+		if(type == null) {		
+			// Simple string
+			changes.add(field, value);
+			return;
+		}
+		
+		if((value == null) || (value.length() == 0)) {
+			// Null value
+			changes.add(field, null);
+			return;			
+		}
+
+		switch(type) {
+		case COMPONENT_FILTER:	// Simple string "OFF", "ON", "ALL"
+			changes.add(field, value);
+			return;
+		default:
+			break;
+		}
+		
+		// Parse out the oid (from "u123") and lookup the object - we guarantee that we will pass an object that exists
+		String prefix = type.getTypeString();
+		if(value.startsWith(prefix)) {
+			String soid = value.substring(prefix.length());
+			try {
+				int oid = Integer.parseInt(soid);
+				Object obj = so.getObject(type, oid);
+				if(obj != null) {
+					changes.add(field, obj);
+				} else {
+					System.err.println("ERROR: Object " + type + " " + oid + " not found");											
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			System.err.println("ERROR: Incorrect object type for field " + field + " (expecting " + type + ")");
+		}
+	}
+
+	public DMProperty processProperty(String prop, String pval)
+	{
+		//if(pval.length() < 3) {
+		//	throw new RuntimeException("Invalid property value: too short");
+		//}
+		//char encr = pval.charAt(0);
+		//char over = pval.charAt(1);
+		//char apnd = pval.charAt(2);
+		//String value = pval.substring(3);
+		//return new DMProperty(prop, value, (encr == 'Y'), (over == 'Y'), (apnd == 'Y'));
+		return new DMProperty(prop, pval, false, false, false);
+	}
 }

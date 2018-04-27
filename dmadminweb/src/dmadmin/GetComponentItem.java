@@ -82,7 +82,7 @@ public class GetComponentItem
 					int sf = Integer.parseInt(param.substring(12));
 					SummaryField field = SummaryField.fromInt(sf);
 					if(field != null) {
-						processField(so, field, value, schanges);
+						so.processField(so, field, value, schanges);
 					} else {
 						System.err.println("ERROR: Unknown summary field " + sf);
 					}
@@ -94,19 +94,19 @@ public class GetComponentItem
 				String prop = param.substring(12);
 				String pval = request.getParameter(param);
 				System.out.println("change '" + prop + "' = '" + pval + "'");
-				pchanges.addChanged(processProperty(prop, pval));
+				pchanges.addChanged(so.processProperty(prop, pval));
 			} else if(param.startsWith("prop_add_")) {
 				// Now handle the Property additions
 				String prop = param.substring(9);
 				String pval = request.getParameter(param);
 				System.out.println("add '" + prop + "' = '" + pval + "'");
-				pchanges.addAdded(processProperty(prop, pval));
+				pchanges.addAdded(so.processProperty(prop, pval));
 			} else if(param.startsWith("prop_delete_")) {
 				// Now handle the Property removals
 				String prop = param.substring(12);
 				String pval = request.getParameter(param);
 				System.out.println("delete '" + prop + "' = '" + pval + "'");
-				pchanges.addDeleted(processProperty(prop, pval));
+				pchanges.addDeleted(so.processProperty(prop, pval));
 			}
 		}
 		
@@ -149,61 +149,5 @@ public class GetComponentItem
 		out.println(ret);
 	}
 	
-	private void processField(DMSession so, SummaryField field, String value, SummaryChangeSet changes)
-	{
-		ObjectType type = field.type();
-
-		if(type == null) {		
-			// Simple string
-			changes.add(field, value);
-			return;
-		}
-		
-		if((value == null) || (value.length() == 0)) {
-			// Null value
-			changes.add(field, null);
-			return;			
-		}
-
-		switch(type) {
-		case COMPONENT_FILTER:	// Simple string "OFF", "ON", "ALL"
-			changes.add(field, value);
-			return;
-		default:
-			break;
-		}
-		
-		// Parse out the oid (from "u123") and lookup the object - we guarantee that we will pass an object that exists
-		String prefix = type.getTypeString();
-		if(value.startsWith(prefix)) {
-			String soid = value.substring(prefix.length());
-			try {
-				int oid = Integer.parseInt(soid);
-				Object obj = so.getObject(type, oid);
-				if(obj != null) {
-					changes.add(field, obj);
-				} else {
-					System.err.println("ERROR: Object " + type + " " + oid + " not found");											
-				}
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
-		} else {
-			System.err.println("ERROR: Incorrect object type for field " + field + " (expecting " + type + ")");
-		}
-	}
-
-	private DMProperty processProperty(String prop, String pval)
-	{
-		//if(pval.length() < 3) {
-		//	throw new RuntimeException("Invalid property value: too short");
-		//}
-		//char encr = pval.charAt(0);
-		//char over = pval.charAt(1);
-		//char apnd = pval.charAt(2);
-		//String value = pval.substring(3);
-		//return new DMProperty(prop, value, (encr == 'Y'), (over == 'Y'), (apnd == 'Y'));
-		return new DMProperty(prop, pval, false, false, false);
-	}
 }
 
