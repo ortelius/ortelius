@@ -7028,7 +7028,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public Domain getDomainByName(String domainName)
 	{	
-		return (Domain)getObjectByName(ObjectType.DOMAIN,domainName);	
+	 if (domainName.equalsIgnoreCase("GLOBAL"))
+	  return getDomain(1);
+			 
+	 return (Domain)getObjectByName(ObjectType.DOMAIN,domainName);	
 	}
 	
 	public Credential getCredentialByName(String credName)
