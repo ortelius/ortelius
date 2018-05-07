@@ -824,7 +824,7 @@ public class API extends HttpServlet
   SummaryChangeSet changes = new SummaryChangeSet();
   String summary = request.getParameter("lifecycle");
   if (summary != null && summary.equalsIgnoreCase("Y"))
-   changes.add(SummaryField.DOMAIN_LIFECYCLE, "Y");
+   changes.add(SummaryField.DOMAIN_LIFECYCLE, true);
   if (!changes.isEmpty())
   {
    so.updateDomain(moddom, changes); // Commits on success
@@ -1122,6 +1122,7 @@ public class API extends HttpServlet
    throw new ApiException(e.getMessage());
   }
  }
+
  
  protected void AddEnvironment(DMSession so, String envname, HttpServletRequest request) throws ApiException
  {
@@ -2385,6 +2386,8 @@ public class API extends HttpServlet
       newCompVersion(so, elements[2], request);
      else if (elements[1].equals("environment"))
       AddEnvironment(so, elements[2], request);
+     else if (elements[1].equals("domain")) 
+      AddDomain(so,elements[2],request);
      else if (elements[1].equals("credential"))
       AddCredential(so, elements[2], request);
      else 
