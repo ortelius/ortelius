@@ -818,6 +818,30 @@ public class API extends HttpServlet
    }
   }
  }
+ 
+ private void internalModDomain(DMSession so, Domain moddom, HttpServletRequest request) throws ApiException
+ {
+  SummaryChangeSet changes = new SummaryChangeSet();
+  String summary = request.getParameter("lifecycle");
+  if (summary != null && summary.equalsIgnoreCase("Y"))
+   changes.add(SummaryField.DOMAIN_LIFECYCLE, "Y");
+  if (!changes.isEmpty())
+  {
+   so.updateDomain(moddom, changes); // Commits on success
+  }
+  else
+  {
+   try
+   {
+    so.GetConnection().commit();
+   }
+   catch (SQLException e)
+   {
+    // TODO Auto-generated catch block
+    e.printStackTrace();
+   }
+  }
+ }
 
  private void internalModServer(DMSession so, Server modserv, HttpServletRequest request) throws ApiException
  {
@@ -1058,6 +1082,47 @@ public class API extends HttpServlet
   }
  }
 
+ protected void AddDomain(DMSession so, String domname, HttpServletRequest request) throws ApiException
+ {
+  // API/new/domain/name[?domain=<domain>&lifecyle=Y]
+  // Do we have create domain permission?
+  if (!so.getCreatePermission(ObjectType.DOMAIN))
+  {
+   // No!
+   throw new ApiException("No Create Domain Permission");
+  }
+  if (domname == null || domname.length() == 0)
+   throw new ApiException("domain name must be specified");
+  String domain = request.getParameter("domain");
+  Domain tgtdomain = null;
+  // If domain is specified, use that, otherwise create domain in user's home domain
+  if (domain != null)
+  {
+   tgtdomain = getDomainFromNameOrID(so, domain);
+   if (tgtdomain == null)
+    throw new ApiException("Unable to find domain " + tgtdomain + ": name invalid or no access");
+  }
+  else
+  {
+   throw new ApiException("Parent domain is required");
+  }
+
+  try
+  {
+   int newid = so.getID("domain");
+   so.CreateNewObject("domain", domname, tgtdomain.getId(), tgtdomain.getId(), newid, 0, 0, "domains", false);
+   // Having created the environment, submit the "changes" to set the attributes
+   Domain  newdom = so.getDomain(newid);
+   if (newdom == null)
+    throw new ApiException("Failed to create new domain");
+   internalModDomain(so, newdom, request);
+  }
+  catch (RuntimeException e)
+  {
+   throw new ApiException(e.getMessage());
+  }
+ }
+ 
  protected void AddEnvironment(DMSession so, String envname, HttpServletRequest request) throws ApiException
  {
   // API/new/environment/name[?domain=<domain>&summary=<summary>]
