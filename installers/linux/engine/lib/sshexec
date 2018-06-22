@@ -1,4 +1,5 @@
 #!/bin/sh
+#set -x
 
 PORT="22"
 CMD=""
@@ -6,7 +7,12 @@ SFTP=""
 PW=""
 USER=""
 IDENT=""
-HOME=$(getent passwd `whoami` | cut -d: -f6)
+
+if uname | grep -i Darwin; then
+	HOME=$(finger `whoami` | awk '/^Directory/ {print $2}')
+else	
+ HOME=$(getent passwd `whoami` | cut -d: -f6)
+fi	
 
 while [[ $# > 0 ]]
 do
@@ -57,6 +63,8 @@ fi
 CMD=`echo $CMD | xargs`
 
 mkdir "$HOME/.ssh" 2>/dev/null 1>/dev/null
+ssh-keygen -R $HOST  2>/dev/null 1>/dev/null
+ssh-keygen -R `getent ahostsv4 $HOST | awk '{print $1}' | sort -u | head -1`  2>/dev/null 1>/dev/null
 
 if [ ! -e "$HOME/.ssh/known_hosts" ]; then
  if [ "${PORT}" == "22" ]; then
@@ -67,6 +75,9 @@ if [ ! -e "$HOME/.ssh/known_hosts" ]; then
  sort -u $HOME/.ssh/known_hosts > $HOME/.ssh/known_hosts.unique
  cat $HOME/.ssh/known_hosts.unique > $HOME/.ssh/known_hosts
 fi
+
+cat $HOME/.ssh/known_hosts | grep -v "$HOST" >  $HOME/.ssh/known_hosts.unique
+cat $HOME/.ssh/known_hosts.unique > $HOME/.ssh/known_hosts
 
 if ! grep -q "$HOST" "$HOME/.ssh/known_hosts"; then
  if [ "${PORT}" == "22" ]; then
@@ -99,19 +110,72 @@ if [ "${SFTP}" = "Y" ]; then
 			cat $TMPFILE | sftp -P $PORT $HOST
 		fi	
  else
-		cat $TMPFILE | sshpass -p \'$PW\' sftp -P $PORT $USER@$HOST >/dev/null 2>/tmp/sftp$$.out
-                C=$(wc -l /tmp/sftp$$.out | cut -d' ' -f1)
-                if [ "$C" -gt 1 ]; then
-                        cat /tmp/sftp$$.out | awk 'BEGIN {FS=":"} NR==2 {print $2}'>&2
-                        rm -f /tmp/sftp$$.out
-                        exit 1
-                fi
-                rm -f /tmp/sftp$$.out
+		cat $TMPFILE | sshpass -p "$PW" sftp -P $PORT $USER@$HOST >/dev/null 2>/tmp/sftp$$.out
+  C=$(wc -l /tmp/sftp$$.out | cut -d' ' -f1)
+  if [ "$C" -gt 1 ]; then
+          cat /tmp/sftp$$.out | awk 'BEGIN {FS=":"} NR==2 {print $2}'>&2
+          rm -f /tmp/sftp$$.out
+          exit 1
+  fi
+  rm -f /tmp/sftp$$.out
 	fi	
 else	
+	# Check Remote OS Type
+	OSCHECK=""
+	
  if [ "${IDENT}" != "" ]; then
 		if [ "${USER}" != "" ]; then
-		  ssh -q $TTY -i $IDENT -p $PORT $USER@$HOST "$CMD"
+			OSCHECK=`ssh -q $TTY -i $IDENT -p $PORT $USER@$HOST "uname"`
+		else
+				OSCHECK=`ssh -q $TTY -i $IDENT -p $PORT $HOST "uname"`
+		fi			
+ elif [ "${PW}" = "" ]; then
+				if [ "${USER}" != "" ]; then
+					 OSCHECK=`ssh -q $TTY -p $PORT $USER@$HOST "uname"`
+				else
+					 OSCHECK=`ssh -q $TTY -p $PORT $HOST "uname"`
+				fi	
+	else			
+				OSCHECK=`sshpass -p "$PW" ssh -q $TTY -p $PORT $USER@$HOST "uname"`
+	fi
+	
+	# Failed to Execute process = Windows
+	if echo "$OSCHECK" | grep -i 'Failed to Execute process'; then
+			#Fixup mkdir command			
+			OIFS=IFS
+			IFS=';'
+			NEWCMD=""
+
+			for x in $CMD
+			do
+			  if [[ $x = *"mkdir -p"* ]]; then
+			    x=`echo $x | cut -b 10-`
+			    IFS='/'
+			    newdir=""
+			    for y in $x
+			    do
+			     if [[ $y != "" ]]; then
+			       newdir+='#'
+			       newdir+=$y
+			       NEWCMD+="mkdir $newdir && "
+			     fi
+			    done
+							NEWCMD="cmd /c \"`echo $NEWCMD | rev | cut -c 5- | rev`\""
+			  else
+			    IFS=" "
+			    NEWCMD+="$x"
+			    NEWCMD+=";"
+			  fi
+			done
+
+			IFS=OIFS
+			CMD=`echo $NEWCMD | tr "#" "/"`
+	fi		
+	
+	# Run the command
+ if [ "${IDENT}" != "" ]; then
+		if [ "${USER}" != "" ]; then
+			ssh -q $TTY -i $IDENT -p $PORT $USER@$HOST "$CMD"
 		else
 				ssh -q $TTY -i $IDENT -p $PORT $HOST "$CMD"
 		fi			
@@ -122,6 +186,6 @@ else
 					 ssh -q $TTY -p $PORT $HOST "$CMD"
 				fi	
 	else			
-				sshpass -p \'$PW\' ssh -q $TTY -p $PORT $USER@$HOST "$CMD"
+				sshpass -p "$PW" ssh -q $TTY -p $PORT $USER@$HOST "$CMD"
 	fi			
 fi	
