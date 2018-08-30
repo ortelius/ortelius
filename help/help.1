@@ -1,0 +1,32 @@
+% deployhub_pro (1) DeployHub Pro
+% Steve Taylor @ OpenMake Software
+% 7/17/17
+
+# NAME
+deployhub_pro - this image runs the DeployHub Pro Web Admin and DeployHub Pro Engine for preforming agentless application releases.
+
+# DESCRIPTION
+Image is used as a stand-alone container.  No special priviledges need.  External volume is needed to persist the Postgres data and logs.
+
+# USAGE
+Two external volumes are needed.  First, the Postgres Data volume.  Second, the logs volume.
+
+docker run -v $PWD/data:/var/lib/pgsql/data:Z -v $PWD/logs:/opt/deployhub/logs:Z -p 7171:8080 -d --hostname docker_dh <image_id>
+
+# ENVIRONMENT VARIABLES
+No environment variables needed, make sure to pass along docker_dh as the hostname.
+
+# LABELS
+No labels used.
+
+# SECURITY IMPLICATIONS
+Port 8080 is exposed.
+
+-p 7171:8080
+    Opens container port 8080 and maps it to 7171 on the Host.
+
+# HISTORY
+Initial Version.
+
+# SEE ALSO
+http://www.deployhug.org and http://www.openmakesoftware.com
