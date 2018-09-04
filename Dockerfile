@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/rhel7
 MAINTAINER DeployHub
-ARG BUILDNUM
+ENV BUILDNUM=158
 
 EXPOSE 8080
 
