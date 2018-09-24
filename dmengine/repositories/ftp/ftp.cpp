@@ -529,7 +529,11 @@ void FtpRepositoryImpl::checkoutFolder(
 void FtpRepositoryImpl::LoadFtpLibrary(bool usessl) {
 	try
 	{
+#ifdef WIN32
 		m_ftplib = DLOPEN("../lib/ftplib.dll");
+#else
+  m_ftplib = DLOPEN("../lib/libftplib.so");
+#endif
 		if (m_ftplib == NULL) throw(ERROR_COULD_NOT_FIND_LIBRARY);	// Could not locate protocol library
 		protocol_initialise = (PROTOCOL_INITIALISE)DLSYM(m_ftplib,"protocol_initialise");
 		protocol_connect = (PROTOCOL_CONNECT)DLSYM(m_ftplib,"protocol_connect");
