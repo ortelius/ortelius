@@ -74,7 +74,7 @@ if ($systemd)
 }
 else
 {
- print "This system does not use systemd.  In order for the Release Engineer webadmin to run as a service, you will need to manually configure the init script. Please consult the product documentation or support for help\n";
+ print "This system does not use systemd.  In order for the DeployHub webadmin to run as a service, you will need to manually configure the init script. Please consult the product documentation or support for help\n";
 }
 
 system("chown -R omreleng:omreleng $webadmin_home");

@@ -155,9 +155,9 @@ function AddSrv4CompButton(isVersion)
 
  var tdedit = "<form id=\"srv4compform\"><table id=\"srv4comptab\" class=\"summtable\">";
  if (isVersion) {
-	 tdedit += "<tr><td style=\"text-align:left;\"><I>Manually add this Component Version to selected end point(s). Use this if the end point has had the component version installed outside of Release Engineer.</td></tr>";
+	 tdedit += "<tr><td style=\"text-align:left;\"><I>Manually add this Component Version to selected end point(s). Use this if the end point has had the component version installed outside of DeployHub.</td></tr>";
  } else {
-	 tdedit += "<tr><td style=\"text-align:left;\"><I>Associate this Component with selected end point(s). This tells Release Engineer which end point(s) will receive versions of this component during a deployment.</td></tr>";
+	 tdedit += "<tr><td style=\"text-align:left;\"><I>Associate this Component with selected end point(s). This tells DeployHub which end point(s) will receive versions of this component during a deployment.</td></tr>";
  }
  tdedit += "<tr><td style=\"text-align:left;\"><B>End Point:</B></td></tr>";
  tdedit += "<tr><td><div id=\"allocated\" name=\"allocated_val\" class=\"om_tree_selection\"/></div>";

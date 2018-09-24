@@ -144,11 +144,11 @@ public class GetActionLayout extends HttpServlet {
     	response.setContentType("application/download");
     	if (convert) {
     		response.setHeader("Content-Disposition","attachment; filename=export_"+action.getName()+"_converted.re;");
-	    	out.println("<!-- Release Engineer Export File (converted from action \""+action.getName()+"\") -->");
+	    	out.println("<!-- DeployHub Export File (converted from action \""+action.getName()+"\") -->");
 	    	so.ExportGraphAsProcedure(id,out);
     	} else {
 	    	response.setHeader("Content-Disposition","attachment; filename=export_"+action.getName()+".re;");
-	    	out.println("<!-- Release Engineer Export File -->");
+	    	out.println("<!-- DeployHub Export File -->");
 	    	so.ExportFunction(id,out);
     	}
     }

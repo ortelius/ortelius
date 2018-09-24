@@ -254,7 +254,7 @@ if [ -f /usr/bin/dnf ]; then
 	if [ "${INPUTTEXT}" = "y" ] || [ "${INPUTTEXT}" = "Y" ]; then
 		dnf upgrade < /dev/tty
 	fi		
-	echo Installing Release Engineer
+	echo Installing DeployHub
 	dnf -y install *.rpm 
 elif [ -f /usr/bin/yum ]; then
 	echo -n "Recommend performing yum upgrade? (y/N) "
@@ -262,7 +262,7 @@ elif [ -f /usr/bin/yum ]; then
 	if [ "${INPUTTEXT}" = "y" ] || [ "${INPUTTEXT}" = "Y" ]; then
 		yum upgrade < /dev/tty
 	fi
-	echo Installing Release Engineer	
+	echo Installing DeployHub	
 	yum -y install *.rpm
 fi	
 
@@ -270,7 +270,7 @@ echo
 echo "*****************************************************"
 echo
 IPADDR=`ip -f inet -o addr show | grep -v 127.0.0.1 | head -1 | awk '{split($4,a,"/") ;print a[1]}'`
-echo "Access Release Engineer using the following:"
+echo "Access DeployHub using the following:"
 echo
 echo "     URL: http://$IPADDR:8080/dmadminweb/Home"
 echo "  UserId: admin" 

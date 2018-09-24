@@ -1,8 +1,8 @@
 [ODBC Data Sources]
-dm=Release Engineer
+dm=DeployHub
 
 [dm]
-Description=PostgreSQL connection to Release Engineer DB
+Description=PostgreSQL connection to DeployHub DB
 Driver=/usr/lib64/psqlodbc.so
 Database=postgres
 DSN=dm

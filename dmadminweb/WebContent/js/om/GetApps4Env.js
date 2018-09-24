@@ -189,7 +189,7 @@ function AddApp4EnvButton()
  } ];
 
  var tdedit = "<form id=\"App4Envform\"><table id=\"App4Envtab\" class=\"summtable\">";
- tdedit += "<tr><td style=\"text-align:left;\"><I>Associate Application(s) with this environment. This tells Release Engineer which applications are allowed to be deployed to this environment.</I></td></tr>";
+ tdedit += "<tr><td style=\"text-align:left;\"><I>Associate Application(s) with this environment. This tells DeployHub which applications are allowed to be deployed to this environment.</I></td></tr>";
  tdedit += "<tr><td style=\"text-align:left;\"><B>Application:</B></td></tr>";
  tdedit += "<tr><td><div id=\"addapp\" name=\"addapp_val\" class=\"om_tree_selection\"/></div>";
  tdedit += "</td></tr>";
@@ -235,7 +235,7 @@ function AddAppVer4EnvButton()
  } ];
 
  var tdedit = "<form id=\"App4Envform\"><table id=\"App4Envtab\" class=\"summtable\">";
- tdedit += "<tr><td style=\"text-align:left;\"><I>Manually add Application Version(s) to this environment. Use this if the envirnonment has had the application version installed outside of Release Engineer.</td></tr>";
+ tdedit += "<tr><td style=\"text-align:left;\"><I>Manually add Application Version(s) to this environment. Use this if the envirnonment has had the application version installed outside of DeployHub.</td></tr>";
  tdedit += "<tr><td style=\"text-align:left;\"><B>Application Versions:<B></td></tr>";
  tdedit += "<tr><td><div id=\"addapp\" name=\"addapp_val\" class=\"om_tree_selection\"/></div>";
  tdedit += "</td></tr>";

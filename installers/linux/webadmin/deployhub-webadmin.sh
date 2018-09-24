@@ -5,8 +5,8 @@
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Start Release Engineer Webadmin interface
-# Description:       Start Release Engineer Webadmin interface
+# Short-Description: Start DeployHub Webadmin interface
+# Description:       Start DeployHub Webadmin interface
 ### END INIT INFO
 
 dir="/opt/deployhub/webadmin"

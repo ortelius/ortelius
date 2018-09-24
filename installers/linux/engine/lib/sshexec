@@ -111,7 +111,7 @@ if [ "${SFTP}" = "Y" ]; then
 		fi	
  else
 		cat $TMPFILE | sshpass -p "$PW" sftp -P $PORT $USER@$HOST >/dev/null 2>/tmp/sftp$$.out
-  C=$(wc -l /tmp/sftp$$.out | cut -d' ' -f1)
+  C=$(cat /tmp/sftp$$.out | grep -v "Warning" | grep -v "Connected to" | wc -l | cut -d' ' -f1)
   if [ "$C" -gt 1 ]; then
           cat /tmp/sftp$$.out | awk 'BEGIN {FS=":"} NR==2 {print $2}'>&2
           rm -f /tmp/sftp$$.out

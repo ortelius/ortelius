@@ -123,7 +123,7 @@ function AddComp4SrvButton()
                 } ];
 
  var tdedit = "<form id=\"Comp4Srvform\"><table id=\"Comp4Srvtab\" class=\"summtable\">";
- tdedit += "<tr><td style=\"text-align:left;\"><I>Associate Component(s) with this server. This tells Release Engineer which components should be placed on this server during a deployment.</I></td></tr>";
+ tdedit += "<tr><td style=\"text-align:left;\"><I>Associate Component(s) with this server. This tells DeployHub which components should be placed on this server during a deployment.</I></td></tr>";
  tdedit += "<tr><td style=\"text-align:left;\"><B>Component:</B></td></tr>";
  tdedit += "<tr><td><div id=\"addcomp2srv\" name=\"addcomp2srv_val\" class=\"om_tree_selection\"/></div>";
  tdedit += "</td></tr>";
@@ -169,7 +169,7 @@ function AddCompVersion4SrvButton()
                 } ];
 
  var tdedit = "<form id=\"Comp4Srvform\"><table id=\"Comp4Srvtab\" class=\"summtable\">";
- tdedit += "<tr><td style=\"text-align:left;\"><I>Manually add Component Version(s) to this end point. Use this if the end point has had the component version installed outside of Release Engineer.</td></tr>";
+ tdedit += "<tr><td style=\"text-align:left;\"><I>Manually add Component Version(s) to this end point. Use this if the end point has had the component version installed outside of DeployHub.</td></tr>";
  tdedit += "<tr><td style=\"text-align:left;\"><B>Component Version:</B></td></tr>";
  tdedit += "<tr><td><div id=\"addcomp2srv\" name=\"addcomp2srv_val\" class=\"om_tree_selection\"/></div>";
  tdedit += "</td></tr>";

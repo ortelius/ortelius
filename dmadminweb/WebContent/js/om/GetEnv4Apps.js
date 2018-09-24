@@ -284,9 +284,9 @@ function AddEnv4AppButton(isVersion)
 
  var tdedit = "<form id=\"Env4Appform\"><table id=\"Env4Apptab\" class=\"summtable\">";
  if (isVersion) {
-	 tdedit += "<tr><td style=\"text-align:left;\"><I>Manually add this Application Version to an environment. Use this if the envirnonment has had this application version installed outside of Release Engineer.</td></tr>";
+	 tdedit += "<tr><td style=\"text-align:left;\"><I>Manually add this Application Version to an environment. Use this if the envirnonment has had this application version installed outside of DeployHub.</td></tr>";
  } else {
-	 tdedit += "<tr><td style=\"text-align:left;\"><I>Associate Environments with this Application. This tells Release Engineer to which environments this application is allowed to be deployed.</I></td></tr>";
+	 tdedit += "<tr><td style=\"text-align:left;\"><I>Associate Environments with this Application. This tells DeployHub to which environments this application is allowed to be deployed.</I></td></tr>";
  }
  tdedit += "<tr><td style=\"text-align:left;\"><B>Environment:</B></td></tr>";
  tdedit += "<tr><td><div id=\"addenv2app\" name=\"addenv2app_val\" class=\"om_tree_selection\"/></div>";

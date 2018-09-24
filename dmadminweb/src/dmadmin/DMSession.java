@@ -22645,7 +22645,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					 rs3.close();
 					 //
 					 // Now get "all" the builds from the build server. Not all of these will
-					 // relate to builds in Release Engineer
+					 // relate to builds in DeployHub
 					 //
 					 boolean commit=false;
 					 if (jobname.contains("/"))

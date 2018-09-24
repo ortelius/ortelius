@@ -6,7 +6,7 @@ swagger: '2.0'
 # This is your document metadata
 info:
   version: "7.7.0"
-  title: Release Engineer RESTful API
+  title: DeployHub RESTful API
   description: |
     # Object Accessibility
    
@@ -14,7 +14,7 @@ info:
 
     If a requested object does not have "read" permission then it cannot be accessed via the API. Similarly, attempting to modify objects which do not have the appropriate "change" permission is also prohibited. In such cases, the "success" flag returned is "false" and the error is "Permission Denied".
     
-    # Logging in to Establishing a Connection to Release Engineer
+    # Logging in to Establishing a Connection to DeployHub
 
       When issuing calls to the API, the client application must either first issue a "login" call, specifying the username and password or must specify the username and password in each individual call to the API.
 
@@ -39,17 +39,17 @@ info:
 
     # Use the object's internal ID
     
-    Every object in Release Engineer has a unique ID. This is used internally in the Release Engineer database as a primary/foreign key. An object is given an ID when it is first created and that ID never changes or is re-used, even if the object itself is deleted. Therefore, if you know the ID of the object you can specify that in the API and RE will know which to object you're referring to, even if the name is not unique.
+    Every object in DeployHub has a unique ID. This is used internally in the DeployHub database as a primary/foreign key. An object is given an ID when it is first created and that ID never changes or is re-used, even if the object itself is deleted. Therefore, if you know the ID of the object you can specify that in the API and RE will know which to object you're referring to, even if the name is not unique.
 
-    The query tools in the Release Engineer API generally return the object's internal ID as well as its name. Once you know the ID you can use it in subsequent calls to the API.
+    The query tools in the DeployHub API generally return the object's internal ID as well as its name. Once you know the ID you can use it in subsequent calls to the API.
 
-    To use the ID, just place it where you would normally place the object's name. Release Engineer will assume you're specifying an ID if the name given is fully-numeric.
+    To use the ID, just place it where you would normally place the object's name. DeployHub will assume you're specifying an ID if the name given is fully-numeric.
     
-    *Do not create objects with fully numeric names - Release Engineer will not be able to determine if this is an object id or the object name.*
+    *Do not create objects with fully numeric names - DeployHub will not be able to determine if this is an object id or the object name.*
     
     # Using cURL to access the API	
 
-      Here is an example of how to use cURL to access the Release Engineer API. 
+      Here is an example of how to use cURL to access the DeployHub API. 
 
       First, we need to login. This operation will return a session ID. We use cURL's --cookie-jar option to store this session ID in the file C:\temp\session.txt
 
@@ -75,7 +75,7 @@ paths:
       description: |
         When issuing calls to the API, the client application must either first issue a "login" call, specifying the username and password or must specify the username and password in each individual call to the API.
         
-        When calling the Release Engineer API from inside DMScript (the Release Engineer built-in scripting language), the JSESSIONID value for the logged-in user is available via a global variable ($JSESSIONID). This can be used to allow DMScript to call the Release Engineer API without the need for an explicit second login. See the DMScript user guide for more information.
+        When calling the DeployHub API from inside DMScript (the DeployHub built-in scripting language), the JSESSIONID value for the logged-in user is available via a global variable ($JSESSIONID). This can be used to allow DMScript to call the DeployHub API without the need for an explicit second login. See the DMScript user guide for more information.
       # This is array of GET operation parameters:
       parameters:
         # An example parameter that is in query and is required
@@ -606,11 +606,11 @@ paths:
       description: |
         This call starts a deployment of the specified application into the specified environment.
         
-        In order for API deployments to work through the Release Engineer permission model, there has to be a Deploy task either in the domain in which the specified application is located or in any of the parent domains if the Deploy task is set to be available to sub-domains. If finer control is required, the task can be named via the task parameter. 
+        In order for API deployments to work through the DeployHub permission model, there has to be a Deploy task either in the domain in which the specified application is located or in any of the parent domains if the Deploy task is set to be available to sub-domains. If finer control is required, the task can be named via the task parameter. 
 
         This mechanism ensures that the invoking user has permission to deploy the application (since the permissions are checked against the task). Also, by specifying the task to execute, any pre and post link actions are executed just as if the task had been invoked via the Web UI.
         
-        Note - Any additional parameters are created as Global Variables accessible in Release Engineer with a url_ prefix. For example, if you passed "myparam=123" as a parameter in the "deploy" api call, it would be available as $url_myparam in Release Engineer.
+        Note - Any additional parameters are created as Global Variables accessible in DeployHub with a url_ prefix. For example, if you passed "myparam=123" as a parameter in the "deploy" api call, it would be available as $url_myparam in DeployHub.
       # This is array of GET operation parameters:
       parameters:
         - name: wait
@@ -698,7 +698,7 @@ paths:
       summary: Create New Application Version
       # Describe this verb here. Note: you can use markdown
       description: |
-          This call creates a new version of an application. The new application inherits all the attributes of the predecessor application. In order for this to work through the Release Engineer permission model, there has to be a Create Version task either in the domain in which the specified application is located or in any of the parent domains if the Create Version task is set to be available to sub-domains. If finer control is required, the task can be named via the task parameter. 
+          This call creates a new version of an application. The new application inherits all the attributes of the predecessor application. In order for this to work through the DeployHub permission model, there has to be a Create Version task either in the domain in which the specified application is located or in any of the parent domains if the Create Version task is set to be available to sub-domains. If finer control is required, the task can be named via the task parameter. 
 
           This mechanism ensures that the invoking user has permission to create a new version of the application (since the permissions are checked against the task) and also the target domain (i.e. the domain in which the new application is created) is determined from the task. Also, by specifying the task to execute, any pre and post link actions are executed just as if the task had been invoked via the Web UI.
 
@@ -802,15 +802,15 @@ paths:
       summary: Associate a Build with a Component
       # Describe this verb here. Note: you can use markdown
       description: |
-          This call associates a build number with a specified component. It is typically used from build engines to notify Release Engineer that a new build has been performed. If the component is associated with an approved application then a new version of the component and application is created automatically and the new component version replaces the old component version in the newly created application version.
+          This call associates a build number with a specified component. It is typically used from build engines to notify DeployHub that a new build has been performed. If the component is associated with an approved application then a new version of the component and application is created automatically and the new component version replaces the old component version in the newly created application version.
 
-          In order for this to work through the Release Engineer permission model, the associated "Create Application Version" task needs to be specified. This ensures that the invoking user has permission to create a new version of the application (since the permissions are checked against the named task) and also the target domain (i.e. the domain in which the new application is created) is determined from the task. Also, by specifying the task to execute, any pre and post link actions are executed just as if the task had been invoked via the Web UI.
+          In order for this to work through the DeployHub permission model, the associated "Create Application Version" task needs to be specified. This ensures that the invoking user has permission to create a new version of the application (since the permissions are checked against the named task) and also the target domain (i.e. the domain in which the new application is created) is determined from the task. Also, by specifying the task to execute, any pre and post link actions are executed just as if the task had been invoked via the Web UI.
 
       # This is array of GET operation parameters:
       parameters:
         - name: comp_id
           in: path
-          description: Is the ID of a BASE component. Release Engineer will find the latest version of this component and associate the build with that component version. If branch is specified then the latest version on the branch is located. The component can be specified using either its name, its qualified name (i.e. with its parent domain(s) included in dot notation) or its internal ID. 
+          description: Is the ID of a BASE component. DeployHub will find the latest version of this component and associate the build with that component version. If branch is specified then the latest version on the branch is located. The component can be specified using either its name, its qualified name (i.e. with its parent domain(s) included in dot notation) or its internal ID. 
           required: true
           type: integer
         - name: build_id
@@ -830,7 +830,7 @@ paths:
           type: string 
         - name: issue
           in: query
-          description: Is a change request id to associate with this build. If you add an issue then the specified component must have an associated change request datasource associated with it. This is because Release Engineer will query the change tracking tool in order to retrieve the description of the change and the current status. If the component does not have such a datasource an error is returned.  You can specify one or more issue parameters if you need to associate multiple change requests with this build or use the issues parameter to specify multiple change requests.
+          description: Is a change request id to associate with this build. If you add an issue then the specified component must have an associated change request datasource associated with it. This is because DeployHub will query the change tracking tool in order to retrieve the description of the change and the current status. If the component does not have such a datasource an error is returned.  You can specify one or more issue parameters if you need to associate multiple change requests with this build or use the issues parameter to specify multiple change requests.
           required: false
           type: string   
         - name: issues
@@ -869,7 +869,7 @@ paths:
       # Describe this verb here. Note: you can use markdown
       description: |
           This call allows the API to approve/reject an application for a specified domain.
-          In order for this to work through the Release Engineer permission model, there has to be a Approve task either in the domain in which the specified application is located or in any of the parent domains if the Approve task is set to be available to sub-domains. If finer control is required, the task can be named via the task parameter. 
+          In order for this to work through the DeployHub permission model, there has to be a Approve task either in the domain in which the specified application is located or in any of the parent domains if the Approve task is set to be available to sub-domains. If finer control is required, the task can be named via the task parameter. 
 
           This mechanism ensures that the invoking user has permission to approve the application (since the permissions are checked against the named task) and also the target domain (i.e. the domain to which the application is being approved/rejected) is determined from the task. Also, by specifying the task to execute, any pre and post link actions are executed just as if the task had been invoked via the Web UI.
 
@@ -1027,7 +1027,7 @@ paths:
       description: |
           This call disassociates an application from an environment. Once the application has been disassociated from the environment neither it nor any of its versions can be deployed to that environment.
           
-          Disassociating an application from an environment does not physically remove the application from the environment. It simply prevents Release Engineer from deploying any version of the application to the environment.
+          Disassociating an application from an environment does not physically remove the application from the environment. It simply prevents DeployHub from deploying any version of the application to the environment.
 
       # This is array of GET operation parameters:
       parameters:
@@ -1154,7 +1154,7 @@ paths:
           in: query
           description: |
                 The type of credential to create. Must be one of - 
-                    encrypted	The username and password are held encrypted in the Release Engineer database.
+                    encrypted	The username and password are held encrypted in the DeployHub database.
                     vars	The username and password contain variable names to be expanded when the credential is used. Held unencrypted in the database.
                     ppk	Public/Private Key file.
                     dfo	DFO filename for use with Harvest.
@@ -1224,7 +1224,7 @@ paths:
           in: query
           description: |
                 The type of credential to create. Must be one of - 
-                    encrypted	The username and password are held encrypted in the Release Engineer database.
+                    encrypted	The username and password are held encrypted in the DeployHub database.
                     vars	The username and password contain variable names to be expanded when the credential is used. Held unencrypted in the database.
                     ppk	Public/Private Key file.
                     dfo	DFO filename for use with Harvest.
@@ -1627,7 +1627,7 @@ paths:
       summary: Deleting a Server
       # Describe this verb here. Note: you can use markdown
       description: |
-          This call deletes a server. The server is removed from any associated environment and deleted from Release Engineer.
+          This call deletes a server. The server is removed from any associated environment and deleted from DeployHub.
           
           You would typically use this call in combination with "Clone" in order to dynamically add and remove servers from an environment pre and post deployment. See the "clone" command later in this document for more information on cloning servers.
           
@@ -1796,7 +1796,7 @@ paths:
       summary: Deleting a User
       # Describe this verb here. Note: you can use markdown
       description: |
-          This call deletes a user. The server is removed from any associated user group and deleted from Release Engineer.
+          This call deletes a user. The server is removed from any associated user group and deleted from DeployHub.
       # This is array of GET operation parameters:
       parameters:
         - name: user_id

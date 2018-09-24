@@ -2587,7 +2587,7 @@ int DM_main(int argc, char **argv, char **envp)
 				}
 				const char *notifySubject = getenv("trisubject");
 				if(!notifySubject) {
-					 notifySubject = "Notification from Release Engineer";
+					 notifySubject = "Notification from DeployHub";
 				}
 				int templateid = 0;
 				const char *notifyTemplate = getenv("tritemplate");
