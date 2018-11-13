@@ -1,4 +1,4 @@
-FROM fedora
+FROM registry.fedoraproject.org/fedora:28
 MAINTAINER DeployHub
 ARG BUILDNUM
 
