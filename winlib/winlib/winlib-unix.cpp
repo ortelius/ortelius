@@ -257,7 +257,7 @@ int protocol_connect(char *HostName,char *UserName,char *Password)
  return 1;
 	
 	/****
- sprintf(cmd,"winexe --uninstall --user=%s%%%s //%s \"cmd /c echo SUCCESS\"",m_UserName,m_Password,m_HostName);
+ sprintf(cmd,"dhwinrm --uninstall --user=%s%%%s //%s \"cmd /c echo SUCCESS\"",m_UserName,m_Password,m_HostName);
  //    output
  //  SUCCESS
  // exec cmd
@@ -423,7 +423,7 @@ char *protocol_exec(char **argv,char *shell,bool CopyFromLocal)
   else
    basename = argv[0];
 
-  sprintf(cmd,"smbclient --user=%s%%%s //%s/C$ -c 'mkdir \"\\temp\";cd \"\\temp\";put \"%s\" \"%s\";allinfo \"%s\"'",m_UserName,m_Password,m_HostName,argv[0],basename,basename);
+  sprintf(cmd,"dhwinrm --user=%s%%%s //%s/C$ -c 'mkdir \"\\temp\";cd \"\\temp\";put \"%s\" \"%s\";allinfo \"%s\"'",m_UserName,m_Password,m_HostName,argv[0],basename,basename);
   //  output
   // altname: foo.txt
   // create_time:    Mon Oct 26 11:09:47 AM 2015 MDT
@@ -514,7 +514,7 @@ char *protocol_exec(char **argv,char *shell,bool CopyFromLocal)
 		
  if (m_HostName)
  {
-  sprintf(execstr,"winexe --uninstall --user=%s%%%s //%s \"cmd /c \\\"c:\\temp\\%s\\\"\"",m_UserName,m_Password,m_HostName,rembasename);
+  sprintf(execstr,"dhwinrm --uninstall --user=%s%%%s //%s \"cmd /c \\\"c:\\temp\\%s\\\"\"",m_UserName,m_Password,m_HostName,rembasename);
  }
  else
  {
@@ -559,7 +559,7 @@ char *protocol_exec(char **argv,char *shell,bool CopyFromLocal)
 
  fclose(fpremote);
 	
- sprintf(cmd1,"smbclient --user=%s%%%s //%s/C$ -c 'mkdir \"\\temp\";cd \"\\temp\";put \"%s\" \"%s\";allinfo \"%s\"'",m_UserName,m_Password,m_HostName,remotescript,rembasename,rembasename);
+ sprintf(cmd1,"dhwinrm --user=%s%%%s //%s/C$ -c 'mkdir \"\\temp\";cd \"\\temp\";put \"%s\" \"%s\";allinfo \"%s\"'",m_UserName,m_Password,m_HostName,remotescript,rembasename,rembasename);
  //  output
  // altname: foo.txt
  // create_time:    Mon Oct 26 11:09:47 AM 2015 MDT
@@ -741,7 +741,7 @@ int protocol_cd(char *NewDir)
 		myDir[j] = '\0';
 	}	
 
- sprintf(cmd,"winexe --user=%s%%%s //%s 'cmd /c \"mkdir \"%s\"&cd /d \"%s\"&cd\"'",m_UserName,m_Password,m_HostName,myDir,myDir);
+ sprintf(cmd,"dhwinrm --user=%s%%%s //%s 'cmd /c \"mkdir \"%s\"&cd /d \"%s\"&cd\"'",m_UserName,m_Password,m_HostName,myDir,myDir);
  //  output
  // Current directory is \\192.168.3.89\c$\temp\
  //  //
@@ -867,7 +867,7 @@ int protocol_mkdir(char *NewDir)
 		myDir[j] = '\0';
 	}	
 	
- sprintf(cmd,"winexe --user=%s%%%s //%s 'cmd /c \"mkdir \"%s\" 2>nul & cd \"%s\" & cd\"'",m_UserName,m_Password,m_HostName,myDir,myDir);
+ sprintf(cmd,"dhwinrm --user=%s%%%s //%s 'cmd /c \"mkdir \"%s\" 2>nul & cd \"%s\" & cd\"'",m_UserName,m_Password,m_HostName,myDir,myDir);
  //  output
  // Current directory is \\192.168.3.89\c$\temp\
  //  //
@@ -972,7 +972,7 @@ int protocol_put(char *Filename)
   protocol_mkdir(line);
 		
   res = 1;
-  sprintf(cmd,"smbclient --user=%s%%%s //%s/%s -c 'cd \"%s\";allinfo \"%s\"'",m_UserName,m_Password,m_HostName,m_ShareName,tgtdir,TargetFileName);
+  sprintf(cmd,"dhwinrm --user=%s%%%s //%s/%s -c 'cd \"%s\";allinfo \"%s\"'",m_UserName,m_Password,m_HostName,m_ShareName,tgtdir,TargetFileName);
   //  output
   // altname: foo.txt
   // create_time:    Mon Oct 26 11:09:47 AM 2015 MDT
@@ -1000,7 +1000,7 @@ int protocol_put(char *Filename)
   {
    // File exists - make sure it's writable
 
-   sprintf(cmd,"smbclient --user=%s%%%s //%s/%s -c 'cd \"%s\";setmode \"%s\" -r;allinfo \"%s\"'",m_UserName,m_Password,m_HostName,m_ShareName,tgtdir,TargetFileName,TargetFileName);
+   sprintf(cmd,"dhwinrm --user=%s%%%s //%s/%s -c 'cd \"%s\";setmode \"%s\" -r;allinfo \"%s\"'",m_UserName,m_Password,m_HostName,m_ShareName,tgtdir,TargetFileName,TargetFileName);
    //  output
    // altname: foo.txt
    // create_time:    Mon Oct 26 11:09:47 AM 2015 MDT
@@ -1030,7 +1030,7 @@ int protocol_put(char *Filename)
     throw(2);
   }
 
-  sprintf(cmd,"smbclient --user=%s%%%s //%s/%s -c 'cd \"%s\";put \"%s\" \"%s\";allinfo \"%s\"'",m_UserName,m_Password,m_HostName,m_ShareName,tgtdir,Filename,TargetFileName,TargetFileName);
+  sprintf(cmd,"dhwinrm --user=%s%%%s //%s/%s -c 'cd \"%s\";put \"%s\" \"%s\";allinfo \"%s\"'",m_UserName,m_Password,m_HostName,m_ShareName,tgtdir,Filename,TargetFileName,TargetFileName);
   //  output
   // altname: foo.txt
   // create_time:    Mon Oct 26 11:09:47 AM 2015 MDT
@@ -1146,7 +1146,7 @@ int protocol_delete(char *Filename)
 
   protocol_mkdir(tgtdir);
   res = 1;
-  sprintf(cmd,"smbclient --user=%s%%%s //%s/%s -c 'cd \"%s\";allinfo \"%s\"'",m_UserName,m_Password,m_HostName,m_ShareName,tgtdir,TargetFileName);
+  sprintf(cmd,"dhwinrm --user=%s%%%s //%s/%s -c 'cd \"%s\";allinfo \"%s\"'",m_UserName,m_Password,m_HostName,m_ShareName,tgtdir,TargetFileName);
   //  output
   // altname: foo.txt
   // create_time:    Mon Oct 26 11:09:47 AM 2015 MDT
@@ -1174,7 +1174,7 @@ int protocol_delete(char *Filename)
   {
    // File exists - make sure it's writable
 
-   sprintf(cmd,"smbclient --user=%s%%%s //%s/%s -c 'cd \"%s\";setmode \"%s\" -r;allinfo \"%s\"'",m_UserName,m_Password,m_HostName,m_ShareName,tgtdir,TargetFileName,TargetFileName);
+   sprintf(cmd,"dhwinrm --user=%s%%%s //%s/%s -c 'cd \"%s\";setmode \"%s\" -r;allinfo \"%s\"'",m_UserName,m_Password,m_HostName,m_ShareName,tgtdir,TargetFileName,TargetFileName);
    //  output
    // altname: foo.txt
    // create_time:    Mon Oct 26 11:09:47 AM 2015 MDT
@@ -1204,7 +1204,7 @@ int protocol_delete(char *Filename)
     throw(2);
   }
 
-  sprintf(cmd,"smbclient --user=%s%%%s //%s/%s -c 'cd \"%s\";del \"%s\";allinfo \"%s\"'",m_UserName,m_Password,m_HostName,m_ShareName,tgtdir,TargetFileName,TargetFileName);
+  sprintf(cmd,"dhwinrm --user=%s%%%s //%s/%s -c 'cd \"%s\";del \"%s\";allinfo \"%s\"'",m_UserName,m_Password,m_HostName,m_ShareName,tgtdir,TargetFileName,TargetFileName);
   //  output
   // altname: foo.txt
   // create_time:    Mon Oct 26 11:09:47 AM 2015 MDT

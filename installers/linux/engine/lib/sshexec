@@ -62,6 +62,15 @@ fi
 
 CMD=`echo $CMD | xargs`
 
+COPYEXEC=N
+
+if echo "$CMD" | grep -i 'cat -'; then
+ cat - > /tmp/$$.sh
+ COPYEXEC=Y
+else
+ echo > /tmp/$$.sh
+fi
+
 mkdir "$HOME/.ssh" 2>/dev/null 1>/dev/null
 ssh-keygen -R $HOST  2>/dev/null 1>/dev/null
 ssh-keygen -R `getent ahostsv4 $HOST | awk '{print $1}' | sort -u | head -1`  2>/dev/null 1>/dev/null
@@ -175,17 +184,17 @@ else
 	# Run the command
  if [ "${IDENT}" != "" ]; then
 		if [ "${USER}" != "" ]; then
-			ssh -q $TTY -i $IDENT -p $PORT $USER@$HOST "$CMD"
+                                cat /tmp/$$.sh | ssh -q $TTY -i $IDENT -p $PORT $USER@$HOST "$CMD"
 		else
-				ssh -q $TTY -i $IDENT -p $PORT $HOST "$CMD"
+				cat /tmp/$$.sh | ssh -q $TTY -i $IDENT -p $PORT $HOST "$CMD"
 		fi			
  elif [ "${PW}" = "" ]; then
 				if [ "${USER}" != "" ]; then
-					 ssh -q $TTY -p $PORT $USER@$HOST "$CMD"
+					 cat /tmp/$$.sh | ssh -q $TTY -p $PORT $USER@$HOST "$CMD"
 				else
-					 ssh -q $TTY -p $PORT $HOST "$CMD"
+					 cat /tmp/$$.sh | ssh -q $TTY -p $PORT $HOST "$CMD"
 				fi	
 	else			
-				sshpass -p "$PW" ssh -q $TTY -p $PORT $USER@$HOST "$CMD"
+				cat /tmp/$$.sh | sshpass -p "$PW" ssh -q $TTY -p $PORT $USER@$HOST "$CMD"
 	fi			
 fi	

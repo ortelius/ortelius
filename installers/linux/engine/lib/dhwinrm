@@ -1,0 +1,225 @@
+#!/usr/bin/python3
+
+from pprint import pprint
+import sys
+import tempfile
+import os
+import shutil
+import subprocess
+
+def main():
+    # print command line arguments
+    drive = ""
+
+    for arg in sys.argv[1:]:
+        if ("--user" in arg):
+          user=arg[7:]
+          parts=user.split('%')
+          user=parts[0]
+          pw=parts[1]
+        elif (arg.startswith('//')):
+          host=arg[2:]
+          parts = host.split('/')
+          host=parts[0]
+          if ("$" in arg):
+            drive=parts[1][0] + ':'
+        elif (arg.startswith('-c')):
+          junk="" 
+        else:
+          cmd=arg
+        
+#    print(user)
+#    print(pw)
+#    print(host)
+#    pprint(drive)
+#    print(cmd)
+
+    dir = ""
+    if (";put " in cmd): 
+      dir=cmd.split(';')[0]
+      dir=dir.replace("mkdir ", "")
+      dir=dir.replace("cd ","")
+      dir=dir.replace("\"","")
+#      pprint(dir)
+
+      file=cmd.split(';')[-1]
+      file=file[9:]
+      file=file[:-1]
+#      pprint(file)
+
+      from_file=cmd.split(';')[2]
+      if ('/' in from_file):
+        from_file=from_file[5:]
+        from_file=from_file[:-(len(file) + 4)] 
+      else:
+        from_file=os.getcwd() + '/' + file
+      
+      to_file = drive + dir + '\\' + file
+      to_dir  = drive + dir 
+
+#      pprint(from_file)
+#      pprint(to_file)
+#      pprint(to_dir)
+
+      tempdir = tempfile.mkdtemp()
+      os.chdir(tempdir)
+    
+      fp = open('hosts','w') 
+      fp.write("[windows]\n")
+      fp.write(host + "\n")
+      fp.close()
+
+      os.mkdir('group_vars')
+
+      fp = open('group_vars/windows.yml','w') 
+      fp.write("ansible_user: \"" + user + "\"\n")
+      fp.write("ansible_password: \"" + pw + "\"\n")
+      fp.write("ansible_port: 5985\n")
+      fp.write("ansible_connection: winrm\n")
+      fp.write("ansible_winrm_server_cert_validation: ignore\n")
+      fp.close()
+
+      fp = open('runit.yml','w') 
+      fp.write("---\n")
+      fp.write("- name: Transfer File\n")
+      fp.write("  hosts: all\n")
+      fp.write("  gather_facts: no\n")
+      fp.write("\n")
+      fp.write("  tasks:\n")
+      fp.write("  - name: Make Dir\n")
+      fp.write("    win_file:\n")
+      fp.write("      path: " + to_dir + "\n")
+      fp.write("      state: directory\n")
+      fp.write("\n")
+      fp.write("  - name: Copy File\n")
+      fp.write("    win_copy:\n")
+      fp.write("      src: " + from_file + "\n")
+      fp.write("      dest: " + to_file + "\n")
+      fp.close()
+
+      success=0
+      errors=[]
+      p = subprocess.Popen('ansible-playbook runit.yml -i hosts', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+      for line in p.stdout.readlines():
+         errors.append(line)
+         if ('ok=2' in str(line)):
+           success=1
+      p.wait()
+
+      if (success):
+       print("stream: [::$DATA], " + str(os.stat(from_file).st_size) + " bytes")
+      else:
+       for line in errors:
+         print(line)
+
+      os.chdir('/tmp')
+      shutil.rmtree(tempdir) 
+
+    elif ("mkdir " in cmd): 
+      dir=cmd.split('&')[0] 
+      dir=dir[15:]
+      dir=dir[:-1]
+      dir=dir.replace('" 2>nul','')
+      print(dir)
+
+      tempdir = tempfile.mkdtemp()
+      os.chdir(tempdir)
+    
+      fp = open('hosts','w') 
+      fp.write("[windows]\n")
+      fp.write(host + "\n")
+      fp.close()
+
+      os.mkdir('group_vars')
+
+      fp = open('group_vars/windows.yml','w') 
+      fp.write("ansible_user: \"" + user + "\"\n")
+      fp.write("ansible_password: \"" + pw + "\"\n")
+      fp.write("ansible_port: 5985\n")
+      fp.write("ansible_connection: winrm\n")
+      fp.write("ansible_winrm_server_cert_validation: ignore\n")
+      fp.close()
+
+      fp = open('runit.yml','w') 
+      fp.write("---\n")
+      fp.write("- name: Make Directory\n")
+      fp.write("  hosts: all\n")
+      fp.write("  gather_facts: no\n")
+      fp.write("\n")
+      fp.write("  tasks:\n")
+      fp.write("  - name: Create directory structure\n")
+      fp.write("    win_file:\n")
+      fp.write("      path: " + dir + "\n")
+      fp.write("      state: directory\n")
+      fp.close()
+
+      success=0
+      errors=[]
+      p = subprocess.Popen('ansible-playbook runit.yml -i hosts', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+      for line in p.stdout.readlines():
+         errors.append(line)
+         if ('ok=1' in str(line)):
+           success=1
+      p.wait()
+
+      if (success):
+       print(dir)
+      else:
+       for line in errors:
+         print(line)
+
+      os.chdir('/tmp')
+      shutil.rmtree(tempdir) 
+
+    else: 
+      cmd = cmd.replace("cmd /c \"",'')
+      cmd = cmd[:-1]
+
+      tempdir = tempfile.mkdtemp()
+      os.chdir(tempdir)
+    
+      fp = open('hosts','w') 
+      fp.write("[windows]\n")
+      fp.write(host + "\n")
+      fp.close()
+
+      os.mkdir('group_vars')
+
+      fp = open('group_vars/windows.yml','w') 
+      fp.write("ansible_user: \"" + user + "\"\n")
+      fp.write("ansible_password: \"" + pw + "\"\n")
+      fp.write("ansible_port: 5985\n")
+      fp.write("ansible_connection: winrm\n")
+      fp.write("ansible_winrm_server_cert_validation: ignore\n")
+      fp.close()
+
+      fp = open('runit.yml','w') 
+      fp.write("---\n")
+      fp.write("- name: Run Batch file\n")
+      fp.write("  hosts: all\n")
+      fp.write("  gather_facts: no\n")
+      fp.write("\n")
+      fp.write("  tasks:\n")
+      fp.write("  - name: Execute File\n")
+      fp.write("    win_command: " + cmd + "\n")
+      fp.write("    register: cat\n")
+      fp.write("    changed_when: False\n")
+      fp.write("  - name: Print Output\n")
+      fp.write("    debug: var=cat.stdout_lines\n")
+      fp.close()
+
+      my_env = os.environ.copy()
+      my_env['ANSIBLE_STDOUT_CALLBACK'] = 'minimal'
+      p = subprocess.Popen('ansible-playbook runit.yml -i hosts', env=my_env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+      for line in p.stdout.readlines():
+         if ("=>" in str(line)):
+          break
+         print(line.decode('ascii'))
+         
+      p.wait()
+
+      os.chdir('/tmp')
+      shutil.rmtree(tempdir) 
+
+if __name__ == "__main__":
+    main()
