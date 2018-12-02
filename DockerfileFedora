@@ -5,7 +5,7 @@ ARG BUILDNUM
 EXPOSE 8080
 
 RUN useradd -ms /bin/bash omreleng
-RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm;yum -y update; yum -y install sudo iputils compat-openssl10 openssh-clients ansible; yum -y install http://www6.atomicorp.com/channels/atomic/fedora/28/x86_64/RPMS/atomic-release-1.0-21.fc28.art.noarch.rpm; yum -y install openvas-smb
+RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm;yum -y update; yum -y install sudo iputils compat-openssl10 openssh-clients python-requests python-winrm python3-winrm ansible; 
 RUN curl -sL -o /tmp/${BUILDNUM}.sh https://www.openmakesoftware.com/re/docker-oss.html
 RUN chmod 777 /tmp/${BUILDNUM}.sh;/tmp/${BUILDNUM}.sh;yum -y clean all;rm -rf /var/cache/yum;mkdir /home/omreleng/.ssh;chown -R omreleng:omreleng /home/omreleng;echo 'omreleng       ALL=(ALL)       NOPASSWD: ALL' >> /etc/sudoers
 
