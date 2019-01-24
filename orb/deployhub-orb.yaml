@@ -1,0 +1,203 @@
+version: 2.1
+description: >
+  DeployHub Integration. This Orb provides the ability to approve, move, deploy and get logs in DeployHub. The source for this Orb is
+  available at: https://github.com/DeployHubProject/DeployHub/orb/deployhub-orb.yml
+
+executors:
+  default:
+    description: "CircleCI image for Python"
+    docker:
+    - image: circleci/python@3
+
+commands:
+  install:
+    description: "Installs the DeplyHub CLI python script"
+    steps:
+    - run: |
+        curl -L https://raw.githubusercontent.com/DeployHubProject/DeployHub/master/cli/deployhub.py -o /tmp/deployhub.py
+        pip3 install click requests
+
+  approve:
+    description: "Approves an Application for the current stage of the pipeline"
+    parameters:
+      userid:
+        description: "UserId to access DeployHub"
+        type: string
+        default: "${DH_USERID}"
+      password:
+        description: "Password to access DeployHub"
+        type: string
+        default: "${DH_PASSWORD}"
+      serverurl:
+        description: "URL to the DeployHub Server"
+        type: string
+        default: "${DH_SERVERURL}"
+      application:
+        description: "Application Version to Approve"
+        type: string
+
+    steps:
+    - run: >
+        python3 /tmp/deployhub.py
+        --userid << parameters.userid >>
+        --password << parameters.password >>
+        --dhurl << parameters.serverurl >>
+        --app << parameters.application >>
+
+  move:
+    description: "Moves an Application from the 'from' stage of the pipeline to another stage using the move task"
+    parameters:
+      userid:
+        description: "UserId to access DeployHub"
+        type: string
+        default: "${DH_USERID}"
+      password:
+        description: "Password to access DeployHub"
+        type: string
+        default: "${DH_PASSWORD}"
+      serverurl:
+        description: "URL to the DeployHub Server"
+        type: string
+        default: "${DH_SERVERURL}"
+      application:
+        description: "Application Version to Move"
+        type: string
+      from_domain:
+        description: "Pipeline stage to move from"
+        type: string
+      move_task:
+        description: "'Move Task' used to move the application version to desired stage"
+        type: string                
+
+    steps:
+    - run: >
+        python3 /tmp/deployhub.py
+        --userid << parameters.userid >>
+        --password << parameters.password >>
+        --dhurl << parameters.serverurl >>
+        --app << parameters.application >>
+        --from_domain << parameters.from_domain >>
+        --move_task << parameters.move_task >>                
+
+  deploy:
+    description: "Deploys an Application Version to an Environment"
+    parameters:
+      userid:
+        description: "UserId to access DeployHub"
+        type: string
+        default: "${DH_USERID}"
+      password:
+        description: "Password to access DeployHub"
+        type: string
+        default: "${DH_PASSWORD}"
+      serverurl:
+        description: "URL to the DeployHub Server"
+        type: string
+        default: "${DH_SERVERURL}"
+      application:
+        description: "Application Version to Deploy"
+        type: string
+      environment:
+        description: "Environment to Deploy to"
+        type: string             
+
+    steps:
+    - run: >
+        python3 /tmp/deployhub.py
+        --userid << parameters.userid >>
+        --password << parameters.password >>
+        --dhurl << parameters.serverurl >>
+        --app << parameters.application >>
+        --env << parameters.environment >>
+
+jobs:
+  approvejob:
+    description: "Approved an Application Version"
+    parameters:
+      userid:
+        description: "UserId to access DeployHub"
+        type: string
+        default: "${DH_USERID}"
+      password:
+        description: "Password to access DeployHub"
+        type: string
+        default: "${DH_PASSWORD}"
+      serverurl:
+        description: "URL to the DeployHub Server"
+        type: string
+        default: "${DH_SERVERURL}"
+      application:
+        description: "Application Version to Approve"
+        type: string
+    executor: default
+    steps:
+    - install:
+    - approve:
+        userid: << parameters.userid >>
+        password: << parameters.password >>
+        serverurl: << parameters.serverurl >>
+        application:  << parameters.application >>
+  movejob:
+    description: "Move an Application Version"
+    parameters:
+      userid:
+        description: "UserId to access DeployHub"
+        type: string
+        default: "${DH_USERID}"
+      password:
+        description: "Password to access DeployHub"
+        type: string
+        default: "${DH_PASSWORD}"
+      serverurl:
+        description: "URL to the DeployHub Server"
+        type: string
+        default: "${DH_SERVERURL}"
+      application:
+        description: "Application Version to Move"
+        type: string
+      from_domain:
+        description: "Pipeline stage to move from"
+        type: string
+      move_task:
+        description: "'Move Task' used to move the application version to desired stage"
+        type: string 
+    executor: default
+    steps:
+    - install:
+    - approve:
+        userid: << parameters.userid >>
+        password: << parameters.password >>
+        serverurl: << parameters.serverurl >>
+        application:  << parameters.application >>
+        from_domain:  << parameters.from_domain >>
+        move_task:  << parameters.move_task >>   
+  deployjob:
+    description: "Deploy an Application Version to an Environment"
+    parameters:
+      userid:
+        description: "UserId to access DeployHub"
+        type: string
+        default: "${DH_USERID}"
+      password:
+        description: "Password to access DeployHub"
+        type: string
+        default: "${DH_PASSWORD}"
+      serverurl:
+        description: "URL to the DeployHub Server"
+        type: string
+        default: "${DH_SERVERURL}"
+      application:
+        description: "Application Version to Deploy"
+        type: string
+      environment:
+        description: "Environment to Deploy to"
+        type: string   
+    executor: default
+    steps:
+    - install:
+    - approve:
+        userid: << parameters.userid >>
+        password: << parameters.password >>
+        serverurl: << parameters.serverurl >>
+        application:  << parameters.application >>
+        environment:  << parameters.environment >>                  
