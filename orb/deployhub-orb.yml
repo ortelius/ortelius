@@ -42,7 +42,7 @@ commands:
         --userid << parameters.userid >>
         --password << parameters.password >>
         --dhurl << parameters.serverurl >>
-        --app << parameters.application >>
+        --app "<< parameters.application >>"
         --cmd approve
 
   move:
@@ -76,9 +76,9 @@ commands:
         --userid << parameters.userid >>
         --password << parameters.password >>
         --dhurl << parameters.serverurl >>
-        --app << parameters.application >>
-        --from_domain << parameters.from_domain >>
-        --move_task << parameters.move_task >>                
+        --app "<< parameters.application >>"
+        --from_domain "<< parameters.from_domain >>"
+        --move_task "<< parameters.move_task >>"                
         --cmd move
 
   deploy:
@@ -109,8 +109,8 @@ commands:
         --userid << parameters.userid >>
         --password << parameters.password >>
         --dhurl << parameters.serverurl >>
-        --app << parameters.application >>
-        --env << parameters.environment >>
+        --app "<< parameters.application >>"
+        --env "<< parameters.environment >>"
         --cmd deploy
 
 jobs:
