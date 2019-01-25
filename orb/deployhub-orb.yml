@@ -43,6 +43,7 @@ commands:
         --password << parameters.password >>
         --dhurl << parameters.serverurl >>
         --app << parameters.application >>
+        --cmd approve
 
   move:
     description: "Moves an Application from the 'from' stage of the pipeline to another stage using the move task"
@@ -78,6 +79,7 @@ commands:
         --app << parameters.application >>
         --from_domain << parameters.from_domain >>
         --move_task << parameters.move_task >>                
+        --cmd move
 
   deploy:
     description: "Deploys an Application Version to an Environment"
@@ -109,6 +111,7 @@ commands:
         --dhurl << parameters.serverurl >>
         --app << parameters.application >>
         --env << parameters.environment >>
+        --cmd deploy
 
 jobs:
   approvejob:
