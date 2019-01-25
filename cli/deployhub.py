@@ -131,7 +131,7 @@ def main(dhurl, userid, password, cmd, app, env, deployid, from_domain, move_tas
         log = get_logs(deployid, dhurl, cookies)
         print("\n".join(log['logoutput']))
         print("\n")
-        if (log['success']):
+        if (log['exitcode'] == 0):
             print("Deployment #" + str(res['deploymentid']) + " ran successfuly")
         else:
             print("Deployment #" + str(res['deploymentid']) + " ran unsuccessfuly")
