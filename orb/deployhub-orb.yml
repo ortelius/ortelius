@@ -15,7 +15,7 @@ commands:
     steps:
     - run: |
         curl -L https://raw.githubusercontent.com/DeployHubProject/DeployHub/master/cli/deployhub.py -o /tmp/deployhub.py
-        pip3 install click requests
+        pip3 install click requests --user
 
   approve:
     description: "Approves an Application for the current stage of the pipeline"
