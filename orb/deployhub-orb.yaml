@@ -131,12 +131,12 @@ jobs:
         type: string
     executor: default
     steps:
-    - install:
-    - approve:
-        userid: << parameters.userid >>
-        password: << parameters.password >>
-        serverurl: << parameters.serverurl >>
-        application:  << parameters.application >>
+      - install
+      - approve:
+          userid: << parameters.userid >>
+          password: << parameters.password >>
+          serverurl: << parameters.serverurl >>
+          application:  << parameters.application >>
   movejob:
     description: "Move an Application Version"
     parameters:
@@ -163,14 +163,14 @@ jobs:
         type: string 
     executor: default
     steps:
-    - install:
-    - move:
-        userid: << parameters.userid >>
-        password: << parameters.password >>
-        serverurl: << parameters.serverurl >>
-        application:  << parameters.application >>
-        from_domain:  << parameters.from_domain >>
-        move_task:  << parameters.move_task >>   
+      - install
+      - move:
+          userid: << parameters.userid >>
+          password: << parameters.password >>
+          serverurl: << parameters.serverurl >>
+          application:  << parameters.application >>
+          from_domain:  << parameters.from_domain >>
+          move_task:  << parameters.move_task >>   
   deployjob:
     description: "Deploy an Application Version to an Environment"
     parameters:
@@ -194,10 +194,10 @@ jobs:
         type: string   
     executor: default
     steps:
-    - install:
-    - deploy:
-        userid: << parameters.userid >>
-        password: << parameters.password >>
-        serverurl: << parameters.serverurl >>
-        application:  << parameters.application >>
-        environment:  << parameters.environment >>                  
+      - install
+      - deploy:
+          userid: << parameters.userid >>
+          password: << parameters.password >>
+          serverurl: << parameters.serverurl >>
+          application:  << parameters.application >>
+          environment:  << parameters.environment >>                  
