@@ -7,7 +7,7 @@ executors:
   default:
     description: "CircleCI image for Python"
     docker:
-    - image: circleci/python@3
+    - image: circleci/python:3
 
 commands:
   install:
@@ -15,7 +15,7 @@ commands:
     steps:
     - run: |
         curl -L https://raw.githubusercontent.com/DeployHubProject/DeployHub/master/cli/deployhub.py -o /tmp/deployhub.py
-        pip3 install click requests
+        pip3 install click requests --user
 
   approve:
     description: "Approves an Application for the current stage of the pipeline"
@@ -42,7 +42,8 @@ commands:
         --userid << parameters.userid >>
         --password << parameters.password >>
         --dhurl << parameters.serverurl >>
-        --app << parameters.application >>
+        --app "<< parameters.application >>"
+        --cmd approve
 
   move:
     description: "Moves an Application from the 'from' stage of the pipeline to another stage using the move task"
@@ -75,9 +76,10 @@ commands:
         --userid << parameters.userid >>
         --password << parameters.password >>
         --dhurl << parameters.serverurl >>
-        --app << parameters.application >>
-        --from_domain << parameters.from_domain >>
-        --move_task << parameters.move_task >>                
+        --app "<< parameters.application >>"
+        --from_domain "<< parameters.from_domain >>"
+        --move_task "<< parameters.move_task >>"                
+        --cmd move
 
   deploy:
     description: "Deploys an Application Version to an Environment"
@@ -107,8 +109,9 @@ commands:
         --userid << parameters.userid >>
         --password << parameters.password >>
         --dhurl << parameters.serverurl >>
-        --app << parameters.application >>
-        --env << parameters.environment >>
+        --app "<< parameters.application >>"
+        --env "<< parameters.environment >>"
+        --cmd deploy
 
 jobs:
   approvejob:
