@@ -120,6 +120,7 @@ def get_logs(deployment_id, dhurl, cookies):
 @click.option('--from_domain', help='Move from Domain')
 @click.option('--move_task', help='Task to Move the Application')
 def main(dhurl, userid, password, cmd, app, env, deployid, from_domain, move_task):
+    retcode = 0
     cookies = login(dhurl, userid, password)
     if (cmd == "getlogs"):
         log = get_logs(deployid, dhurl, cookies)
@@ -130,22 +131,26 @@ def main(dhurl, userid, password, cmd, app, env, deployid, from_domain, move_tas
         log = get_logs(deployid, dhurl, cookies)
         print("\n".join(log['logoutput']))
         print("\n")
-        if (res['success']):
+        if (log['exitcode'] == 0):
             print("Deployment #" + str(res['deploymentid']) + " ran successfuly")
         else:
             print("Deployment #" + str(res['deploymentid']) + " ran unsuccessfuly")
+            retcode = 1
     elif (cmd == "move"):
         res = move_application(app, from_domain, move_task, dhurl, cookies)
         if (res['result']):
             print("Move successful")
         else:
             print("Move unsuccessful")
+            retcode = 1
     elif (cmd == "approve"):
         res = approve_application(app, dhurl, cookies)
         if (res['success']):
             print("Approval successful")
         else:
             print("Approval unsuccessful")
+            retcode = 1
+    exit(retcode)
 
 
 # Entry Point
