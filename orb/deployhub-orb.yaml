@@ -164,7 +164,7 @@ jobs:
     executor: default
     steps:
     - install:
-    - approve:
+    - move:
         userid: << parameters.userid >>
         password: << parameters.password >>
         serverurl: << parameters.serverurl >>
@@ -195,7 +195,7 @@ jobs:
     executor: default
     steps:
     - install:
-    - approve:
+    - deploy:
         userid: << parameters.userid >>
         password: << parameters.password >>
         serverurl: << parameters.serverurl >>
