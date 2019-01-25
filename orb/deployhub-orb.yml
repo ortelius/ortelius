@@ -7,7 +7,7 @@ executors:
   default:
     description: "CircleCI image for Python"
     docker:
-    - image: circleci/python@3
+    - image: circleci/python:3
 
 commands:
   install:
