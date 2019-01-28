@@ -1,65 +1,72 @@
 version: 2.1
 description: >
-  DeployHub Integration. This Orb provides the ability to approve, move, deploy and get logs in DeployHub. The source for this Orb is
-  available at: https://github.com/DeployHubProject/DeployHub/orb/deployhub-orb.yml
+  DeployHub Integration. This Orb provides the ability to approve, move, 
+  deploy and get logs in DeployHub. The source for this Orb is available 
+  at: https://github.com/DeployHubProject/DeployHub/orb/deployhub-orb.yml
 
 executors:
   default:
     description: "CircleCI image for Python"
     docker:
-    - image: circleci/python:3
+      - image: circleci/python:3
 
 commands:
   install:
-    description: "Installs the DeplyHub CLI python script"
+    description: "Installs the DeployHub CLI python script"
     steps:
-    - run: |
-        curl -L https://raw.githubusercontent.com/DeployHubProject/DeployHub/master/cli/deployhub.py -o /tmp/deployhub.py
-        pip3 install click requests --user
+      - run:
+          name: Download and install DeployHub
+          command: |
+            curl -L \
+              https://raw.githubusercontent.com/DeployHubProject/DeployHub/master/cli/deployhub.py \
+              -o /tmp/deployhub.py
+          pip3 install click requests --user
 
   approve:
     description: "Approves an Application for the current stage of the pipeline"
     parameters:
       userid:
-        description: "UserId to access DeployHub"
-        type: string
-        default: "${DH_USERID}"
+        description: "Name of env var storing UserId to access DeployHub"
+        type: env_var_name
+        default: DH_USERID
       password:
-        description: "Password to access DeployHub"
-        type: string
-        default: "${DH_PASSWORD}"
+        description: "Name of env var storing password to access DeployHub"
+        type: env_var_name
+        default: DH_PASSWORD
       serverurl:
-        description: "URL to the DeployHub Server"
-        type: string
-        default: "${DH_SERVERURL}"
+        description: "Name of env var storing URL to the DeployHub Server"
+        type: env_var_name
+        default: DH_SERVERURL
       application:
         description: "Application Version to Approve"
         type: string
 
     steps:
-    - run: >
-        python3 /tmp/deployhub.py
-        --userid << parameters.userid >>
-        --password << parameters.password >>
-        --dhurl << parameters.serverurl >>
-        --app "<< parameters.application >>"
-        --cmd approve
+      - run:
+          name: Approve application 
+          command: >
+            python3 /tmp/deployhub.py
+            --userid $<< parameters.userid >>
+            --password $<< parameters.password >>
+            --dhurl $<< parameters.serverurl >>
+            --app "<< parameters.application >>"
+            --cmd approve
 
   move:
     description: "Moves an Application from the 'from' stage of the pipeline to another stage using the move task"
     parameters:
       userid:
-        description: "UserId to access DeployHub"
-        type: string
-        default: "${DH_USERID}"
+        description: "Name of env var storing UserId to access DeployHub"
+        type: env_var_name
+        default: DH_USERID
       password:
-        description: "Password to access DeployHub"
-        type: string
-        default: "${DH_PASSWORD}"
+        description: "Name of env var storing password to access DeployHub"
+        type: env_var_name
+        default: DH_PASSWORD
       serverurl:
-        description: "URL to the DeployHub Server"
-        type: string
-        default: "${DH_SERVERURL}"
+        description: "Name of env var storing URL to the DeployHub Server"
+        type: env_var_name
+        default: DH_SERVERURL
       application:
         description: "Application Version to Move"
         type: string
@@ -71,31 +78,33 @@ commands:
         type: string                
 
     steps:
-    - run: >
-        python3 /tmp/deployhub.py
-        --userid << parameters.userid >>
-        --password << parameters.password >>
-        --dhurl << parameters.serverurl >>
-        --app "<< parameters.application >>"
-        --from_domain "<< parameters.from_domain >>"
-        --move_task "<< parameters.move_task >>"                
-        --cmd move
+    - run:
+        name: Move application along DeployHub pipeline
+        command: >
+          python3 /tmp/deployhub.py
+          --userid $<< parameters.userid >>
+          --password $<< parameters.password >>
+          --dhurl $<< parameters.serverurl >>
+          --app "<< parameters.application >>"
+          --from_domain "<< parameters.from_domain >>"
+          --move_task "<< parameters.move_task >>"                
+          --cmd move
 
   deploy:
     description: "Deploys an Application Version to an Environment"
     parameters:
       userid:
-        description: "UserId to access DeployHub"
-        type: string
-        default: "${DH_USERID}"
+        description: "Name of env var storing UserId to access DeployHub"
+        type: env_var_name
+        default: DH_USERID
       password:
-        description: "Password to access DeployHub"
-        type: string
-        default: "${DH_PASSWORD}"
+        description: "Name of env var storing password to access DeployHub"
+        type: env_var_name
+        default: DH_PASSWORD
       serverurl:
-        description: "URL to the DeployHub Server"
-        type: string
-        default: "${DH_SERVERURL}"
+        description: "Name of env var storing URL to the DeployHub Server"
+        type: env_var_name
+        default: DH_SERVERURL
       application:
         description: "Application Version to Deploy"
         type: string
@@ -104,31 +113,33 @@ commands:
         type: string             
 
     steps:
-    - run: >
-        python3 /tmp/deployhub.py
-        --userid << parameters.userid >>
-        --password << parameters.password >>
-        --dhurl << parameters.serverurl >>
-        --app "<< parameters.application >>"
-        --env "<< parameters.environment >>"
-        --cmd deploy
+    - run:
+        name: Deploy application
+        command: >
+          python3 /tmp/deployhub.py
+          --userid << parameters.userid >>
+          --password << parameters.password >>
+          --dhurl << parameters.serverurl >>
+          --app "<< parameters.application >>"
+          --env "<< parameters.environment >>"
+          --cmd deploy
 
 jobs:
   approvejob:
-    description: "Approved an Application Version"
+    description: "Approve an Application Version"
     parameters:
       userid:
-        description: "UserId to access DeployHub"
-        type: string
-        default: "${DH_USERID}"
+        description: "Name of env var storing UserId to access DeployHub"
+        type: env_var_name
+        default: DH_USERID
       password:
-        description: "Password to access DeployHub"
-        type: string
-        default: "${DH_PASSWORD}"
+        description: "Name of env var storing password to access DeployHub"
+        type: env_var_name
+        default: DH_PASSWORD
       serverurl:
-        description: "URL to the DeployHub Server"
-        type: string
-        default: "${DH_SERVERURL}"
+        description: "Name of env var storing URL to the DeployHub Server"
+        type: env_var_name
+        default: DH_SERVERURL
       application:
         description: "Application Version to Approve"
         type: string
@@ -144,17 +155,17 @@ jobs:
     description: "Move an Application Version"
     parameters:
       userid:
-        description: "UserId to access DeployHub"
-        type: string
-        default: "${DH_USERID}"
+        description: "Name of env var storing UserId to access DeployHub"
+        type: env_var_name
+        default: DH_USERID
       password:
-        description: "Password to access DeployHub"
-        type: string
-        default: "${DH_PASSWORD}"
+        description: "Name of env var storing password to access DeployHub"
+        type: env_var_name
+        default: DH_PASSWORD
       serverurl:
-        description: "URL to the DeployHub Server"
-        type: string
-        default: "${DH_SERVERURL}"
+        description: "Name of env var storing URL to the DeployHub Server"
+        type: env_var_name
+        default: DH_SERVERURL
       application:
         description: "Application Version to Move"
         type: string
@@ -178,17 +189,17 @@ jobs:
     description: "Deploy an Application Version to an Environment"
     parameters:
       userid:
-        description: "UserId to access DeployHub"
-        type: string
-        default: "${DH_USERID}"
+        description: "Name of env var storing UserId to access DeployHub"
+        type: env_var_name
+        default: DH_USERID
       password:
-        description: "Password to access DeployHub"
-        type: string
-        default: "${DH_PASSWORD}"
+        description: "Name of env var storing password to access DeployHub"
+        type: env_var_name
+        default: DH_PASSWORD
       serverurl:
-        description: "URL to the DeployHub Server"
-        type: string
-        default: "${DH_SERVERURL}"
+        description: "Name of env var storing URL to the DeployHub Server"
+        type: env_var_name
+        default: DH_SERVERURL
       application:
         description: "Application Version to Deploy"
         type: string
