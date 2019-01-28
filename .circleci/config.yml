@@ -8,6 +8,7 @@ workflows:
     jobs:
       - orb-tools/increment:
           orb-path: orb/deployhub-orb.yml
-          orb-ref: deployhub/deployhub-orb@1.0.0
+          orb-ref: deployhub/deployhub-orb
           publish-token-variable: "$CIRCLECI_DEV_API_TOKEN"
+          segment: minor
           validate: true
