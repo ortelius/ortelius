@@ -12,6 +12,10 @@ DeployHub achieves Continuous Deploy.  DeployHub is the first open source Applic
 ```
 curl -sL http://www.deployhub.org/downloads/latest.html | sh
 ```
+
+### CircleCI ORB
+See the orb subdirectory for details
+
 ### Jenkins Plugin
 Visit [Jenkins Plugin](https://plugins.jenkins.io/deployhub)
 
