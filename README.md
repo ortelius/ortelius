@@ -35,9 +35,6 @@ Visit [Jenkins Plugin](https://plugins.jenkins.io/deployhub)
 ## Slack Channel
 deployhub.slack.com
 
-## Google Groups Email List
-https://groups.google.com/forum/#!forum/deployhub-project
-
 ## Online Help
 
 https://www.deployhub.org/help/NetHelp
