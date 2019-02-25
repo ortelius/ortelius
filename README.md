@@ -37,7 +37,7 @@ deployhub.slack.com
 
 ## Online Help
 
-https://www.deployhub.org/help/NetHelp
+https://www.deployhub.com/helpdh/NetHelp
 
 ## Detailed Install
 
