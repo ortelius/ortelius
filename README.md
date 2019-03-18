@@ -1,49 +1,39 @@
-# DeployHub
+# Ortelius
 
-DeployHub achieves Continuous Deploy.  DeployHub is the first open source Application Release Automation (ARA) solution designed to break down the 'wall' between development and data centers so your cool new features get to production at the speed of agile.  DeployHub unblocks the flow of code changes to production by eliminating the overhead of end target agents and the additional burden imposed on developers by traditional deployment approaches.  
+Otelius on-prem runs as docker container.  In order to install it you need to have docker up and running.
 
-## DeployHub Installation
-### Stable 8.0
+## Docker Installation
+### [Docker for Windows](https://docs.docker.com/docker-for-windows/install/)
+Requires Microsoft Windows 10 Professional or Enterprise 64-bit
+
+### [Docker for CentOS](https://docs.docker.com/install/linux/docker-ce/centos/)
+Requires CentOS 64-bit 7.1 and higher on x86_64
+
+### [Docker for RedHat](https://docs.docker.com/install/linux/docker-ee/rhel/)
+Require RHEL 64-bit 7.1 and higher on x86_64, s390x, or ppc64le (not ppc64).
+
+### [Docker for Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+Requires 64-bit version of one of these Ubuntu versions:
+Bionic 18.04 (LTS)
+Artful 17.10
+Xenial 16.04 (LTS)
+Trusty 14.04 (LTS)
+
+### [Docker for OS/X](https://docs.docker.com/docker-for-mac/install/)
+Requires macOS El Capitan 10.11 and newer macOS releases are supported. We recommend upgrading to the latest version of macOS.
+
+### [Test your Docker Install](https://docs.docker.com/get-started/#test-docker-installation)
+
+### Ortelius Image Pull
 ```
- curl -sL http://www.deployhub.org/downloads | sh
+docker pull quay.io/deployhub/deployhub
 ```
-
-### Latest
+### Ortelius Start
 ```
-curl -sL http://www.deployhub.org/downloads/latest.html | sh
+docker run -v ~/deployhub/data:/var/lib/pgsql/data:Z -v ~/deployhub/logs:/opt/deployhub/logs:Z -p 7171:8080 -d --hostname docker_dh -v ~/.ssh:/keys:Z ${IMAGE}
 ```
-
-### CircleCI ORB
-See the orb subdirectory for details
-
-### Jenkins Plugin
-Visit [Jenkins Plugin](https://plugins.jenkins.io/deployhub)
-
-### RPM Dependencies
-*   unixODBC > 2.1
-*   postgresql-server > 9.2
-*   postgresql-odbc > 9.2
-*   samba-client > 4.0
-*   perl > 5.10
-*   sshpass > 1.0
-*   libiodbc > 3.50
-*  openvas-smb
-*  gnutls
-*  ansible (optional)
-*  java-1.8.0-openjdk > 1.8.0.0
-
-## Slack Channel
-deployhub.slack.com
-
-## Online Help
-
-https://www.deployhub.com/helpdh/NetHelp
-
-## Detailed Install
-
-https://www.deployhub.org/help/NetHelp/#!Documents/deployhubinstallationguideforlinux.htm
 
 ## Support
 
-https://github.com/OpenMake-Software/DeployHub/issues
+https://github.com/ortelius/ortelius/issues
 
