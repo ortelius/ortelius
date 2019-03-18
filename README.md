@@ -26,11 +26,13 @@ Requires macOS El Capitan 10.11 and newer macOS releases are supported. We recom
 
 ### Ortelius Image Pull
 ```
-docker pull quay.io/deployhub/deployhub
+docker pull quay.io/ortelius/ortelius
 ```
 ### Ortelius Start
 ```
-docker run -v ~/deployhub/data:/var/lib/pgsql/data:Z -v ~/deployhub/logs:/opt/deployhub/logs:Z -p 7171:8080 -d --hostname docker_dh -v ~/.ssh:/keys:Z ${IMAGE}
+mkdir -p ~/ortelius/data
+chmod 777 ~/ortelius/data
+docker run -v ~/ortelius/data:/var/lib/pgsql/data:Z -p 7171:8080 -d --hostname docker_dh -v ~/.ssh:/keys:Z ${IMAGE}
 ```
 
 ## Support
