@@ -14,10 +14,10 @@ Require RHEL 64-bit 7.1 and higher on x86_64, s390x, or ppc64le (not ppc64).
 
 ### [Docker for Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 Requires 64-bit version of one of these Ubuntu versions:
-Bionic 18.04 (LTS)
-Artful 17.10
-Xenial 16.04 (LTS)
-Trusty 14.04 (LTS)
+* Bionic 18.04 (LTS)
+* Artful 17.10
+* Xenial 16.04 (LTS)
+* Trusty 14.04 (LTS)
 
 ### [Docker for OS/X](https://docs.docker.com/docker-for-mac/install/)
 Requires macOS El Capitan 10.11 and newer macOS releases are supported. We recommend upgrading to the latest version of macOS.
