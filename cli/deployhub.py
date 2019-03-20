@@ -1,11 +1,18 @@
-#!/usr/bin/env python
 """This module interfaces with the DeployHub RestAPIs to perform login, deploy, move and approvals."""
 
 import json
 import urllib
 import time
 import requests
-import click
+
+
+def get_json(url, cookies):
+    """Get URL as json string.
+    Returns: json string"""
+    res = requests.get(url, cookies=cookies)
+    if (res is None):
+        return None
+    return res.json()
 
 
 def is_empty(my_string):
@@ -29,30 +36,21 @@ def login(dhurl, user, password):
 def deploy_application(app, env, dhurl, cookies):
     """Deploy the application to the environment
     Returns: deployment_id"""
-    url = dhurl + "/dmadminweb/API/deploy/" + urllib.parse.quote(app) + "/" + urllib.parse.quote(env)
-
-    res = requests.get(url, cookies=cookies)
-    return res.json()
+    return get_json(dhurl + "/dmadminweb/API/deploy/" + urllib.parse.quote(app) + "/" + urllib.parse.quote(env), cookies)
 
 
 def move_application(app, from_domain, task, dhurl, cookies):
     """Move an application from the from_domain using the task"""
     # Get appid
-    url = dhurl + "/dmadminweb/API/application/" + urllib.parse.quote(app)
-    res = requests.get(url, cookies=cookies)
-    data = res.json()
+    data = get_json(dhurl + "/dmadminweb/API/application/" + urllib.parse.quote(app), cookies)
     appid = str(data['result']['id'])
 
     # Get from domainid
-    url = dhurl + "/dmadminweb/API/domain/" + urllib.parse.quote(from_domain)
-    res = requests.get(url, cookies=cookies)
-    data = res.json()
+    data = get_json(dhurl + "/dmadminweb/API/domain/" + urllib.parse.quote(from_domain), cookies)
     fromid = str(data['result']['id'])
 
     # Get from Tasks
-    url = dhurl + "/dmadminweb/GetTasks?domainid=" + fromid
-    res = requests.get(url, cookies=cookies)
-    data = res.json()
+    data = get_json(dhurl + "/dmadminweb/GetTasks?domainid=" + fromid, cookies)
     taskid = "0"
 
     for atask in data:
@@ -60,37 +58,30 @@ def move_application(app, from_domain, task, dhurl, cookies):
             taskid = str(atask['id'])
 
     # Move App Version
-    url = dhurl + "/dmadminweb/RunTask?f=run&tid=" + taskid + "&notes=&id=" + appid + "&pid=" + fromid
-
-    res = requests.get(url, cookies=cookies)
-    return(res.json())
+    data = get_json(dhurl + "/dmadminweb/RunTask?f=run&tid=" + taskid + "&notes=&id=" + appid + "&pid=" + fromid, cookies)
+    return(data)
 
 
 def approve_application(app, dhurl, cookies):
     """Approve the application for the current domain that it is in."""
     # Get appid
-    url = dhurl + "/dmadminweb/API/application/" + urllib.parse.quote(app)
-    res = requests.get(url, cookies=cookies)
-    data = res.json()
+    data = get_json(dhurl + "/dmadminweb/API/application/" + urllib.parse.quote(app), cookies)
     appid = str(data['result']['id'])
 
-    url = dhurl + "/dmadminweb/API/approve/" + appid
-    res = requests.get(url, cookies=cookies)
-    return res.json()
+    data = get_json(dhurl + "/dmadminweb/API/approve/" + appid, cookies)
+    return data
 
 
 def is_deployment_done(deployment_id, dhurl, cookies):
     """Check to see if the deployment has completed"""
-    url = dhurl + "/dmadminweb/API/log/" + deployment_id + "?checkcomplete=Y"
-    res = requests.get(url, cookies=cookies)
+    data = get_json(dhurl + "/dmadminweb/API/log/" + deployment_id + "?checkcomplete=Y", cookies)
 
-    if (res is None):
+    if (data is None):
         return [False, "Could not get log #" + deployment_id]
 
-    if (is_empty(res.text)):
+    if (is_empty(data.text)):
         return [False, "Could not get log #" + deployment_id]
 
-    data = res.json()
     return [True, data]
 
 
@@ -109,50 +100,54 @@ def get_logs(deployment_id, dhurl, cookies):
         time.sleep(10)
 
 
-@click.command()
-@click.option('--cmd', help='Command:  deploy, approve, getlogs, move', required=True)
-@click.option('--dhurl', help='DeployHub Server URL')
-@click.option('--userid', help='Login Userid')
-@click.option('--password', help='Login Password')
-@click.option('--deployid', help='Deployment Id')
-@click.option('--app', help='Application Name')
-@click.option('--env', help='Deployment Environment')
-@click.option('--from_domain', help='Move from Domain')
-@click.option('--move_task', help='Task to Move the Application')
-def main(dhurl, userid, password, cmd, app, env, deployid, from_domain, move_task):
-    retcode = 0
-    cookies = login(dhurl, userid, password)
-    if (cmd == "getlogs"):
-        log = get_logs(deployid, dhurl, cookies)
-        print("\n".join(log['logoutput']))
-    elif (cmd == "deploy"):
-        res = deploy_application(app, env, dhurl, cookies)
-        deployid = str(res['deploymentid'])
-        log = get_logs(deployid, dhurl, cookies)
-        print("\n".join(log['logoutput']))
-        print("\n")
-        if (log['exitcode'] == 0):
-            print("Deployment #" + str(res['deploymentid']) + " ran successfuly")
-        else:
-            print("Deployment #" + str(res['deploymentid']) + " ran unsuccessfuly")
-            retcode = 1
-    elif (cmd == "move"):
-        res = move_application(app, from_domain, move_task, dhurl, cookies)
-        if (res['result']):
-            print("Move successful")
-        else:
-            print("Move unsuccessful")
-            retcode = 1
-    elif (cmd == "approve"):
-        res = approve_application(app, dhurl, cookies)
-        if (res['success']):
-            print("Approval successful")
-        else:
-            print("Approval unsuccessful")
-            retcode = 1
-    exit(retcode)
+def get_attrs(app, comp, env, srv, dhurl, cookies):
+    """Get the attributes for this deployment base on app version and env.
+    Returns: json of attributes"""
 
+    data = get_json(dhurl + "/dmadminweb/API/environment/" + urllib.parse.quote(env), cookies)
+    envid = str(data['result']['id'])
+    servers = data['result']['servers']
 
-# Entry Point
-if __name__ == "__main__":
-    main()
+    data = get_json(dhurl + "/dmadminweb/API/getvar/environment/" + envid, cookies)
+    env_attrs = data['attributes']
+
+    for a_srv in servers:
+        if (srv == a_srv['name']):
+            srvid = str(a_srv['id'])
+            data = get_json(dhurl + "/dmadminweb/API/getvar/server/" + srvid, cookies)
+            srv_attrs = data['attributes']
+            break
+
+    data = get_json(dhurl + "/dmadminweb/API/application/" + app, cookies)
+
+    if (app == data['result']['name']):
+        appid = str(data['result']['id'])
+    else:
+        for a_ver in data['result']['versions']:
+            if (app == a_ver['name']):
+                appid = str(a_ver['id'])
+                break
+
+    data = get_json(dhurl + "/dmadminweb/API/getvar/application/" + appid, cookies)
+    app_attrs = data['attributes']
+
+    data = get_json(dhurl + "/dmadminweb/API/component/" + comp, cookies)
+    compid = str(data['result']['id'])
+
+    data = get_json(dhurl + "/dmadminweb/API/getvar/component/" + compid, cookies)
+    comp_attrs = data['attributes']
+
+    result = {}
+    for entry in env_attrs:
+        result.update(entry)
+
+    for entry in srv_attrs:
+        result.update(entry)
+
+    for entry in app_attrs:
+        result.update(entry)
+
+    for entry in comp_attrs:
+        result.update(entry)
+
+    return json.dumps(result)
