@@ -265,10 +265,20 @@ int ExecuteCommand(char *cmdline,char *charsin,char **charsout,char **errout)
 			memcpy(*charsout,outThreadInfo.buf,outThreadInfo.datalen);
 			(*charsout)[outThreadInfo.datalen]='\0';
 		}
+		else
+		{
+			*charsout = (char *)malloc(1);
+			*charsout[0]='\0';
+		}
 		*errout = errThreadInfo.datalen?(char *)malloc(errThreadInfo.datalen+1):0;
 		if (*errout) {
 			memcpy(*errout,errThreadInfo.buf,errThreadInfo.datalen);
 			(*errout)[errThreadInfo.datalen]='\0';
+		}
+		else
+		{
+			*errout = (char *)malloc(1);
+			*errout[0]='\0';
 		}
 		WriteToDebugFile("Exit Code: %d",(int)ExitStatus);
 		WriteToDebugFile("---------------- STDOUT ----------------\n%s",*charsout);
@@ -751,22 +761,37 @@ int doGetPut(char *cmdString,char *Filename)
 	int retcode=1;	// success until something goes wrong
 	char *charsout;
 	char *errout;
+	
 	int res = ExecutePSFTP(cmdString,&charsout,&errout);
 	if (res || strstr(charsout,"=>")==(char *)0) {
 		WriteToDebugFile("Failed to get/put");
+		WriteToDebugFile(charsout);
 		// Error return or no Transfer message - must be a failure. Error message has the path to the file followed by a colon and the error message
-		char *errmsg = strstr(charsout,Filename);
-		if (errmsg) {
-			errmsg+=strlen(Filename);
-			errmsg+=2;
 			safe_free(m_errorptr);
-			m_errorptr = strdup(errmsg);
-			// Now remove any trailing newlines
-			char *t=&(m_errorptr[strlen(m_errorptr)-1]);
-			while (*t=='\n' || *t=='\r') *t--='\0';
+			m_errorptr = (char *)malloc(strlen(charsout)*4);
+   *m_errorptr = '\0';
+			
+			int len = strlen(charsout);
+			int i=0;
+			char work[20]= {"\0"};
+
+			for (i=0;i<len;i++)
+			{
+				if (charsout[i] == '\r')
+				 charsout[i] = ' ';
+				
+				if (charsout[i] == '\n')
+					strcpy(work,"&lt;BR&gt;");
+				else
+     sprintf(work,"%c",charsout[i]);
+						
+				strcat(m_errorptr,work);
+			}
+			retcode=0;
 		}
-		retcode=0;
-	}
+	WriteToDebugFile("=======================");
+	WriteToDebugFile(m_errorptr);
+	WriteToDebugFile("=======================");
 	safe_free(charsout);
 	safe_free(errout);
 	free(cmdString);

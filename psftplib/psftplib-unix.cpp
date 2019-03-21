@@ -746,6 +746,8 @@ int protocol_put(char *FileName)
  int k=0;
 	int j=0;
  int len=0;
+FILE *dbout = fopen("/tmp/debug.out","a");
+fprintf(dbout,"protocol_put(%s)\n",FileName);
 
  if (FileName != NULL)
  {
@@ -777,12 +779,15 @@ int protocol_put(char *FileName)
 	{	
   sprintf(cmd,"sshexec -sftp %s -m \"%s\" -port \"%d\" -usr \"%s\" -pw '%s' put \"%s\" \"%s/%s\"",m_identfile,m_HostName,m_portnum,m_UserName,m_Password,myFileName,pwd,myFileName);
  }
+fprintf(dbout,"cmd=[%s]\n",cmd);
  if (OMExecuteCmd(cmd,results) == 0)
  {
+fprintf(dbout,"OMExecuteCmd returns 0\n");
   if ((fp=fopen(results, "r")) != NULL)
   {
    while (fgets(line, sizeof(line), fp) != NULL)
    {
+fprintf(dbout,"line=[%s]\n",line);
 				if (line[strlen(line)-1] == '\n')
 				{
 					line[strlen(line)-1] = '\0';
@@ -798,15 +803,19 @@ int protocol_put(char *FileName)
    fclose(fp);
 			if (getenv("TRIDEBUG") == NULL)
      unlink(results);
+fprintf(dbout,"about to return res=%d\n",res);
+fclose(dbout);
    return res;
   }
  }
+fprintf(dbout,"OMExecuteCmd returns non zero\n");
 
  if ((fp=fopen(results, "r")) != NULL)
  {
   *err = '\0';
   while (fgets(line, sizeof(line), fp) != NULL)
   {
+fprintf(dbout,"line=[%s]\n",line);
 	if (line[strlen(line)-1] == '\n')
 	{
 		line[strlen(line)-1] = '\0';
@@ -814,11 +823,14 @@ int protocol_put(char *FileName)
 	}
  	if (strlen(err) + strlen(line) < 59000) strcat(err,line);
   }
+fprintf(dbout,"Setting global error ptr to [%s]\n",err);
   SetGlobalErrorPtr(err);
   fclose(fp);
  }
 	if (getenv("TRIDEBUG") == NULL)
    unlink(results);
+fprintf(dbout,"returning 0\n");
+fclose(dbout);
  return 0;
 }
 

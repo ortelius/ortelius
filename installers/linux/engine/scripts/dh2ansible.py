@@ -12,7 +12,12 @@ import socket
 def main():
     """Main entry point"""
     targetOS = 'linux'
+    user = ''
+    pw = ''
     taskfile = ''
+    servers = ''
+    su = ''
+    supw = ''
     envvars = {}
 
     with open(sys.argv[1],"r") as fp:
@@ -75,7 +80,7 @@ def main():
     my_env = os.environ.copy()
     # my_env['ANSIBLE_STDOUT_CALLBACK'] = 'minimal'
     p = subprocess.Popen('ansible-playbook runit.yml -i ' + envvars['server_hostname'] + ',', env=my_env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
+    json_str = ""
     for line in p.stdout.readlines():
         print(line.decode('ascii').strip('\n'))
 

@@ -400,6 +400,7 @@ class CreateStmtImpl : public virtual ExtendedStmtImpl
 {
 private:
 	ExtendedStmt &m_parent;
+	// void CreateDirectories(const char *absfilename);
 
 public:
 	CreateStmtImpl(ExtendedStmt &parent);

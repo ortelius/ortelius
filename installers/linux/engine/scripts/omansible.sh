@@ -1,5 +1,5 @@
 #!/bin/bash
-id
+ID=`whoami`
 declare -a ANSIBLE_OPTS
 while [[ $# > 1 ]]
 do
@@ -55,8 +55,12 @@ else
  sort -u $HOME/.ssh/known_hosts > $HOME/.ssh/known_hosts.unique
  cat $HOME/.ssh/known_hosts.unique > $HOME/.ssh/known_hosts
 fi
-	
-$TRILOGYHOME/trilogycli ANSIBLE install $ROLE
+
+if [ "$ID" = "root" ]; then
+  /usr/bin/ansible-galaxy install $ROLE
+else			
+  $TRILOGYHOME/trilogycli ANSIBLE install $ROLE
+fi		
 
 echo "- hosts: all" > /tmp/$$.yml
 if [[ "$SUDO_PW" != "none" && "$SUDO_PW" != "" ]]; then
@@ -106,6 +110,16 @@ echo "     - { role: $ROLE }" >> /tmp/$$.yml
 
 cat /tmp/$$.yml | sed "s/pass: .*/pass: XXXXXXX/"
 
-$TRILOGYHOME/trilogycli KNOWN_HOSTS $TARGET
+if [ "$ID" = "root" ]; then
+ $TRILOGYHOME/scripts/add_known_hosts.sh $TARGET
+else
+	 $TRILOGYHOME/trilogycli KNOWN_HOSTS $TARGET
+fi
+		
 echo ansible /tmp/$$.yml -i "$TARGET,"
-$TRILOGYHOME/trilogycli ANSIBLE2 /tmp/$$.yml -i "$TARGET,"
+
+if [ "$ID" = "root" ]; then
+ /usr/bin/ansible-playbook	/tmp/$$.yml -i "$TARGET,"
+else
+	$TRILOGYHOME/trilogycli ANSIBLE2 /tmp/$$.yml -i "$TARGET,"
+fi

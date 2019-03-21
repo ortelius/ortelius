@@ -318,7 +318,7 @@ int protocol_connect(char *HostName,char *UserName,char *Password)
 	if (m_CallbackFunction) res = m_CallbackFunction(CALLBACK_PRECONNECT,(void *)1,0);
 
 	m_HostName = _strdup(HostName);
-	
+
 	if (m_ShareName == (char *)0) {
 		WriteToDebugFile("No share name, must be connecting prior to execution - returning success");
 		return 1;	// Connecting prior to an exec/copyexec call.
@@ -563,27 +563,35 @@ char *protocol_exec(char **argv,char *shell,bool CopyFromLocal)
 		{
 		 oq=true;
 		 execstr = (char *)malloc(strlen(basedir)+plen+strlen(m_HostName)+strlen(m_UserName)+strlen(m_Password)+60);
-		 if (shell) {
+		 if (shell) 
+			{
 			 if (CopyFromLocal)
 			  sprintf(execstr,"\"\"%s\\psexec.exe\" \\\\%s -u \"%s\" -p \"%s\" -c \"%s\" cmd /c \"%s\" \"%s\"\"",basedir,m_HostName,m_UserName,m_Password,argv[0],shell,argv[0]);
 				else
 					sprintf(execstr,"\"\"%s\\psexec.exe\" \\\\%s -u \"%s\" -p %s cmd /c \"%s\" \"%s\"\"",basedir,m_HostName,m_UserName,m_Password,shell,argv[0]);
-		} else {
-			if (CopyFromLocal)
-				sprintf(execstr,"\"\"%s\\psexec.exe\" \\\\%s -u \"%s\" -p \"%s\" -c \"%s\"\" \"%s\"\"",basedir,m_HostName,m_UserName,m_Password,argv[0], argv[0]);			
-			else	
-			 sprintf(execstr,"\"\"%s\\psexec.exe\" \\\\%s -u \"%s\" -p \"%s\" \"%s\"\"",basedir,m_HostName,m_UserName,m_Password,argv[0]);			
+		 } 
+		 else 
+		 {
+			 if (CopyFromLocal)
+				 sprintf(execstr,"\"\"%s\\psexec.exe\" \\\\%s -u \"%s\" -p \"%s\" -c \"%s\"\" \"%s\"\"",basedir,m_HostName,m_UserName,m_Password,argv[0], argv[0]);			
+			 else	
+			  sprintf(execstr,"\"\"%s\\psexec.exe\" \\\\%s -u \"%s\" -p \"%s\" \"%s\"\"",basedir,m_HostName,m_UserName,m_Password,argv[0]);			
+		 }
 		}
 		else
 		{							
 		 oq=true;
 		 execstr = (char *)malloc(strlen(basedir)+plen+strlen(m_HostName)+strlen(m_UserName)+strlen(m_Password)+60);
-		 if (shell) {
+		 if (shell) 
+			{
 		 	char *FmtStr = CopyFromLocal?"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:\"%s\" /c /s:\"%s\" \"%s\"\"":"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:%s /s:\"%s\" \"%s\"\"";
 			 sprintf(execstr,FmtStr,basedir,m_HostName,m_UserName,m_Password,shell,argv[0]);
-		} else {
-			char *FmtStr = CopyFromLocal?"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:\"%s\" /c \"%s\"\"":"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:%s \"%s\"\"";
-			sprintf(execstr,FmtStr,basedir,m_HostName,m_UserName,m_Password,argv[0]);
+		 } 
+			else 
+			{
+			 char *FmtStr = CopyFromLocal?"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:\"%s\" /c \"%s\"\"":"\"\"%s\\winexec.exe\" \\\\%s /user:\"%s\" /pwd:%s \"%s\"\"";
+			 sprintf(execstr,FmtStr,basedir,m_HostName,m_UserName,m_Password,argv[0]);
+			}
 		}
 		WriteToDebugFile("m_HostName=[%s]",m_HostName);
 		WriteToDebugFile("shell=[%s]\n",shell);
@@ -629,7 +637,7 @@ char *protocol_exec(char **argv,char *shell,bool CopyFromLocal)
 			bp++;
 		}
 	}
-	
+
 	if (oq && n>1) {
 		WriteToDebugFile("quoted execstr=[%s], removing last quote\n",execstr);
 		// Entire command line up until now is surrounded by " - lose the last quote. The arg

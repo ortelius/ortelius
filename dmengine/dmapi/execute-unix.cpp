@@ -29,6 +29,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <platform.h>
+#include <sys/stat.h>
 
 int Fork()
 {
@@ -47,8 +48,10 @@ extern "C" void ChildProcessDies(int signal)
 {
 	//switch(signal) {
 	//case SIGCHLD:
+	//	TRIDEBUG(("ChildProcessDies - SIGCHLD"));
 	//	break;
 	//default:
+	//	TRIDEBUG(("ChildProcessDies - %d", signal));
 	//	break;
 	//}
 }
@@ -80,6 +83,8 @@ int executeAndCapture(
 	//NOT USED: fd_set	ReadDescriptors;
 	//NOT USED: fd_set	WriteDescriptors;
 	
+	debug3("ExecuteAndCapture - Enter");
+
 	signal(SIGCHLD,ChildProcessDies);
 
 	*cd = new CapturedData();
@@ -97,36 +102,52 @@ int executeAndCapture(
 	if (pid==0)
 	{
 		// Child Process - run the program.
-		close(ipc[0]);		// Close the "read" side of the pipe
-		close(StdOut[0]);	// Close the "read" side of the pipe
-		close(StdErr[0]);	// Close the "read" side of the pipe
-		close(StdIn[1]);	// Close the "write" side of the pipe.
-		close(0);		// Close standard in
-		dup(StdIn[0]);		// make standard in the read end of the "stdin" pipe
-		close(1);		// Close standard out
-		dup(StdOut[1]);		// make standard out the "write" end of the "stdout" pipe
-		close(2);		// Close standard err
-		dup(StdErr[1]);		// make standard err the "write" end of the "stderr" pipe
-		// Change the working directory if one has been specified
-		if(cwd) {
-			if(chdir(cwd) != 0) {
-				fprintf(stderr, "Unable to chdir to '%s'\n", cwd);
-				exit(1);
+		char *tgtuser = getenv("DM_TARGET_USER");
+		if (!tgtuser) tgtuser = "nobody";
+		uid_t tgtuid = name_to_uid(tgtuser);
+		//
+		// If running as root, switch to target user. If not running as root, just
+		// execute
+		//
+		if (getuid() || setuid(tgtuid)==0) {
+			// successful switch to new user
+			close(ipc[0]);		// Close the "read" side of the pipe
+			close(StdOut[0]);	// Close the "read" side of the pipe
+			close(StdErr[0]);	// Close the "read" side of the pipe
+			close(StdIn[1]);	// Close the "write" side of the pipe.
+			close(0);		// Close standard in
+			dup(StdIn[0]);		// make standard in the read end of the "stdin" pipe
+			close(1);		// Close standard out
+			dup(StdOut[1]);		// make standard out the "write" end of the "stdout" pipe
+			close(2);		// Close standard err
+			dup(StdErr[1]);		// make standard err the "write" end of the "stderr" pipe
+			// Change the working directory if one has been specified
+			if(cwd) {
+				if(chdir(cwd) != 0) {
+					fprintf(stderr, "Unable to chdir to '%s'\n", cwd);
+					exit(1);
+				}
 			}
-		}
-		//
-		// Now try and run the program.
-		//
-		if(EnvPtr) {
-			execve(argv[0],argv,EnvPtr);
+			//
+			// Now try and run the program.
+			//
+			if(EnvPtr) {
+				execve(argv[0],argv,EnvPtr);
+			} else {
+				execv(argv[0],argv);
+			}
+			ErrNum=errno;
+			char *errmsg = (char *)malloc(strlen(argv[0])+128);
+			sprintf(errmsg,"Failed to exec \"%s\"",argv[0]);
+			perror(errmsg);	// ### This lets us see why something failed
+			free(errmsg);
 		} else {
-			execv(argv[0],argv);
+			ErrNum=errno;
+			char *errmsg = (char *)malloc(strlen(tgtuser)+128);
+			sprintf(errmsg,"Failed to switch to target user %s",tgtuser);
+			perror(errmsg);
+			free(errmsg);
 		}
-		ErrNum=errno;
-		char *errmsg = (char *)malloc(strlen(argv[0])+128);
-		sprintf(errmsg,"Failed to exec \"%s\"",argv[0]);
-		perror(errmsg);	// ### This lets us see why something failed
-		free(errmsg);
 		//
 		// If we got here the program failed to run. Write the value of "errno" to
 		// the IPC pipe to allow our parent to determine why we failed to run.

@@ -15,19 +15,25 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#ifdef WIN32
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <errno.h>
-
-#ifdef WIN32
 #include <windows.h>
 #include <io.h>
 #include <fcntl.h>
 #include <sys\types.h>
 #include <sys\stat.h>
 #else
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <errno.h>
 #include <dlfcn.h>
 #include <pthread.h>
 #include <unistd.h>
@@ -72,6 +78,15 @@
 // #define SCHEMA_VERSION 2014080701L
 #define SCHEMA_VERSION 2014071501L
 
+// For parsing API output
+#include "lexer.h"
+#include "expr.h"
+
+#ifdef WIN32 
+#include "compat.h"
+#endif
+
+#include "zip.h"
 
 
 OPTIONS options[]={
@@ -635,12 +650,15 @@ void ensurePassphraseFile(DM &dm, const char *homeDir)
 
 int runScript(DM &dm, const char *baseDir, char **argv, char **envp)
 {
+	char *reason = getenv("TRIREASON");
+	bool onTimer = reason?(strcmp(reason,"TIMED")==0):false;
 	dm.initialize(baseDir, argv, envp);
 	if (!dm.getTargetApplication()) {
 		dm.exitWithError("No application selected");
 	}
 	int res = dm.doDeployment(*(dm.getTargetApplication()));
-	dm.cleanup();	// PAG MOD 30/05/2015 - move cleanup to here.
+	// PAG MOD 11/04/2017 - do not call cleanup if on timer (since there may be another deployment coming)
+	if (!onTimer) dm.cleanup();	// PAG MOD 30/05/2015 - move cleanup to here. 
 	return res;
 }
 
@@ -674,6 +692,70 @@ int runTask(DM &dm, int taskid, const char *baseDir, char **argv, char **envp)
 	return res;
 }
 
+
+typedef enum tagTriReason {
+	REASON_NONE = 0,
+	REASON_UNSET,
+	REASON_POPULATE,
+	REASON_LISTBOX,
+	REASON_VALIDATION,
+	REASON_SCRIPT,
+	REASON_TIMED
+#ifdef HAVE_TRILOGYAPI
+	, REASON_PRELOAD
+#endif /*HAVE_TRILOGYAPI*/
+} TriReason;
+
+
+TriReason triReasonFromString(const char *triReason)
+{
+	if(strcmp(triReason, "POPULATE") == 0) {
+		return REASON_POPULATE;
+	} else if(strcmp(triReason, "LISTBOX") == 0) {
+		return REASON_LISTBOX;
+	} else if(strcmp(triReason, "VALIDATION") == 0) {
+		return REASON_VALIDATION;
+	} else if(strcmp(triReason, "SCRIPT") == 0) {
+		return REASON_SCRIPT;
+	} else if(strcmp(triReason, "TIMED") == 0) {
+		return REASON_TIMED;
+	}
+#ifdef HAVE_TRILOGYAPI
+	 else if(strcmp(triReason, "PRELOAD") == 0) {
+		return REASON_PRELOAD;
+	}
+#endif /*HAVE_TRILOGYAPI*/
+	return REASON_NONE;
+}
+
+static char to_hex(char code)
+{
+	static char hex[] = "0123456789abcdef";
+	return hex[code & 15];
+}
+
+static char *url_encode(const char *str)
+{
+	char *pstr = (char *)str;
+	char *buf = (char *)malloc(strlen(str) * 3 + 1);
+	char *pbuf = buf;
+	while (*pstr) {
+		if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~') 
+			*pbuf++ = *pstr;
+		else if (*pstr == '/')
+			*pbuf++ = '/';
+		else {
+			*pbuf++ = '%';
+			*pbuf++ = to_hex(*pstr >> 4);
+			*pbuf++ = to_hex(*pstr & 15);
+		}
+		pstr++;
+	}
+	*pbuf = '\0';
+	return buf;
+}
+
+
 /**
  * First check if -usr was specified, if not then use Trilogy's TRICLIENTUSERNAME
  */
@@ -687,20 +769,45 @@ void setCurrentUser(DM &dm)
 		dm.exitWithError("Username must be specified");
 	}
 	if(!dm.setCurrentUser(username)) {
+		// TODO: This should probably report "invalid username or password" so
+		// as not to give away usernames
 		dm.exitWithError("Logon denied: invalid username or password");
 	}
 
 	const char *password = getenv("tripassword");
+	// PRO Version - password may be passed in TRIFIELD1 if being invoked from the Web UI
+	if (!password) password = getenv("TRIFIELD1");
 	if(password) {
+		// Get WebUI to authenticate
+		// 
+		char *eu = url_encode(username);
+		char *ep = url_encode(password);
+		char *fmt = "/dmadminweb/API/login?user=%s&pass=%s";
+		char *p = (char *)malloc(strlen(fmt)+strlen(eu)+strlen(ep)+10);
+		sprintf(p,fmt,eu,ep);
+		free(eu);
+		free(ep);
+		Expr *content;
+		List<Server> servers = new List<Server>();
+		ScopeStack *stack = new ScopeStack(dm);
+		Context *ctx = new Context(dm,servers,*stack);
+		if (dm.API(*ctx,p,NULL,&content)==false) {
+			dm.exitWithError("Logon denied: invalid username or password");
+		}
+		/*
 		char *passhash = digestValue(password, strlen(password), true);
 		if(!dm.getCurrentUser()->validateHashedPassword(passhash)) {
 			dm.exitWithError("Logon denied: invalid username or password");
 		}
+		*/
 
 		dm.writeToLogFile("User '%s' authenticated", username);
 		dm.updateUserLastLogin(*(dm.getCurrentUser()));
 	} else {
-		dm.exitWithError("Password must be specified");
+		if (dm.getEventId()==0) {
+			// Password mandatory if we're not running a timed event
+			dm.exitWithError("Password must be specified");
+		}
 	}
 }
 
@@ -825,9 +932,15 @@ char *getHomeDirectory(const char *argv0)
 }
 #endif
 
+
+
+
 triODBC *connectToDatabase(DM &dm, const char *homeDir)
 {
-	ensurePassphraseFile(dm, homeDir);
+	ensurePassphraseFile(dm, homeDir);	// dm.asc HAS to exist (for password encryption)
+	triODBC *odbc = (triODBC *)0;
+	int res=0;
+	bool usingWebService=false;
 
 	char odbcfilename[1024];
 	sprintf(odbcfilename, "%s%sdm.odbc", homeDir, DIR_SEP_STR);
@@ -835,69 +948,85 @@ triODBC *connectToDatabase(DM &dm, const char *homeDir)
 
 	// Does the odbc file exist?
 	struct stat sb;
+	debug1("Checking for existence of %s\n",odbcfilename);
 	if(stat(odbcfilename, &sb) == -1) {
 		if(errno == ENOENT) {
-			// Doesn't exist - so create it
-			dm.exitWithError("FATAL ERROR: The file dm.odbc does not exist.  Please configure\n"
-				"             the database connection using the dmsetup tool.");
+			debug1("not found - connect to web service");
+			// dm.odbc file does not exist - assume we're going to run SQL queries over Web Service
+			char *clientid = getenv("CLIENTID");
+			if (!clientid) dm.exitWithError("No dm.odbc file found and CLIENTID not set");
+			//
+			// Create an empty context for SQL queries.
+			//
+			List<Server> serverSet;
+			ScopeStack stack(dm);
+			stack.setGlobal("DMHOME", dm.getBaseDir());
+			stack.setGlobal("TRIDM_PLATFORM", DM_PLATFORM);
+			Context ctx(dm,serverSet,stack);
+
+			odbc = new triODBC(&ctx,clientid);
+			res = odbc->ConnectToDataSource(&dm);
+			usingWebService=true;
 		} else {
 			dm.exitWithError("FATAL ERROR: Unable to stat odbc file");
 		}
-	}
+	} else {
+		debug1("found - connecting locally over ODBC");
+		// Decrypt dm.odbc
+		int len = 0;
+		CharPtr details = decryptFile(odbcfilename, &len);
+		const char *dsn = details;
+		const char *user = NULL;
+		const char *pass = NULL;
 
-	int len = 0;
-	CharPtr details = decryptFile(odbcfilename, &len);
-	const char *dsn = details;
-	const char *user = NULL;
-	const char *pass = NULL;
-
-	int nulls = 0;
-	for(int n = 0; n < len; n++) {
-		if(!details[n]) {
-			nulls++;
-			if(nulls == 1) {
-				user = &details[n+1];
-			} else if(nulls == 2) {
-				pass = &details[n+1];
+		int nulls = 0;
+		for(int n = 0; n < len; n++) {
+			if(!details[n]) {
+				nulls++;
+				if(nulls == 1) {
+					user = &details[n+1];
+				} else if(nulls == 2) {
+					pass = &details[n+1];
+				}
 			}
 		}
-	}
-	if(nulls != 2) {
-		dm.exitWithError("FATAL ERROR: dm.odbc is not a valid odbc file");
-	}
-	if (getenv("tritestdb")) {
-		printf("Testing connecting to database\n");
-		printf("DSN:       [%s]\n",(const char *)details);
-		printf("Username:  [%s]\n",user);
-		printf("Password:  [*****]\n");
-	}
-
-	triODBC *odbc = new triODBC();
-	long res = odbc->ConnectToDataSource(&dm, (char*) dsn, (char*) user, (char*) pass);
-
-	if (getenv("tritestdb")) {
-		if (res == SQL_SUCCESS || res == SQL_SUCCESS_WITH_INFO) {
-			printf("Database connection successful\n");
-		} else {
-			char *MsgPtr;
-			SQLINTEGER errnum;
-			odbc->GetLastError(&MsgPtr,&errnum);
-			dm.writeToStdErr("Failed to Connect to Database: %s",MsgPtr);
-			free(MsgPtr);
+		if(nulls != 2) {
+			dm.exitWithError("FATAL ERROR: dm.odbc is not a valid odbc file");
 		}
-		odbc->DisconnectFromDataSource();
-		exit(0);
+		if (getenv("tritestdb")) {
+			printf("Testing connecting to database\n");
+			printf("DSN:       [%s]\n",(const char *)details);
+			printf("Username:  [%s]\n",user);
+			printf("Password:  [*****]\n");
+		}
+
+		odbc = new triODBC();
+		res = odbc->ConnectToDataSource(&dm, (char*) dsn, (char*) user, (char*) pass);
+
+		if (getenv("tritestdb")) {
+			if (res == SQL_SUCCESS || res == SQL_SUCCESS_WITH_INFO) {
+				printf("Database connection successful\n");
+			} else {
+				char *MsgPtr;
+				SQLINTEGER errnum;
+				odbc->GetLastError(&MsgPtr,&errnum);
+				dm.writeToStdErr("Failed to Connect to Database: %s",MsgPtr);
+				free(MsgPtr);
+			}
+			odbc->DisconnectFromDataSource();
+			exit(0);
+		}
 	}
 	if((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO)) {
 		char *MsgPtr;
 		SQLINTEGER errnum;
 		odbc->GetLastError(&MsgPtr,&errnum);
-		dm.writeToStdErr("ERROR %d: %s",errnum,MsgPtr);
+		dm.writeToStdErr("Failed to Connect to Database: %s",MsgPtr);
 		free(MsgPtr);
 		return NULL;
 	}
 
-	if (getenv("tritestmode")) {
+	if (getenv("tritestmode") && !usingWebService) {
 		printf("\nConnected as User \"%s\" via datasource \"%s\" to \"%s\"\nUsing driver %s version %s\n\n",
 			odbc->GetUserName(),
 			odbc->GetDSN(),
@@ -1682,6 +1811,9 @@ void UpdateDB(triODBC &odbc,Context &ctx,int serverid,int status,char *ipaddr,un
 	SQLLEN ni_servername;
 	SQLLEN ni_hostname;
 
+	char *reason = getenv("TRIREASON");
+	bool onTimer = reason?(strcmp(reason,"TIMED")==0):false;
+
 	nameresolution[0]=(status & CHECK_NAME_RESOLUTION_OKAY)?'Y':'N';
 	ping[0]=(status & CHECK_PING_OKAY)?'Y':'N';
 	connection[0]=(status & CHECK_CONNECTION_OKAY)?'Y':'N';
@@ -1735,7 +1867,27 @@ void UpdateDB(triODBC &odbc,Context &ctx,int serverid,int status,char *ipaddr,un
 			if (basedir[0]=='N') failed=true;
 			changed=true;
 		}
-
+		if (changed && onTimer) {
+			// Server has changed state since our last check.
+			// Set variables for notification body expansion
+			ctx.stack().setGlobal("SERVER_NAME",servername);
+			ctx.stack().setGlobal("SERVER_HOSTNAME",hostname);
+			ctx.stack().setGlobal("NAME_RESOLUTION",(nameresolution[0]=='Y')?"OK":"FAILED");
+			ctx.stack().setGlobal("PING",(ping[0]=='Y')?"OK":"FAILED");
+			ctx.stack().setGlobal("CONNECTION",(connection[0]=='Y')?"OK":"FAILED");
+			ctx.stack().setGlobal("BASEDIR",(basedir[0]=='Y')?"OK":"FAILED");
+			ctx.stack().setGlobal("SERVER_STATUS",failed?"FAILED":"OK");
+			ctx.stack().setGlobal("ERROR_TEXT",ErrorText?ErrorText:"");
+			Model *model = ctx.dm().getModel();
+			if (model) {
+				Server *server = model->getServer(serverid);
+				if (server) {
+					NotifyTemplate *tmpl = server->getPingTemplate(ctx);
+					ctx.dm().setCurrentUser("admin");	// Mmmmm .... 
+					if (tmpl) ctx.dm().internalNotify(ctx,tmpl);
+				}
+			}
+		}
 		char updsql[2048];
 		AutoPtr<triSQL> sql2 = odbc.GetSQL();
 		strcpy(updsql,"UPDATE dm_serverstatus SET nameresolution=?, ping=?, connection=?, basedir=?, lasterror=?, lasttime=?, pingtime=?");
@@ -2343,342 +2495,552 @@ __declspec(dllexport)
 
 int DM_main(int argc, char **argv, char **envp)
 {
+//	printf(
+//#ifdef WIN32
+//#ifdef _WIN64
+//		"WIN64"
+//#else
+//		"WIN32"
+//#endif /*_WIN64*/
+//#else
+//		"UNIX"
+//#endif /*WIN32*/
+//		"; sizeof(short) = %d; sizeof(int) = %d; sizeof(long) = %d; sizeof(DMINT32) = %d\n",
+//		sizeof(short), sizeof(int), sizeof(long), sizeof(DMINT32));
+//	exit(0);
+ umask(00000);
+ mkdir("/tmp/testit1",0777);
+ int uid = getuid();
+ int euid = geteuid();
+ FILE *f = fopen("/tmp/t.dat","w");
+ fprintf(f,"%d %d\n", uid, euid);
+ fclose(f);
+ 
 	try {
-		int n = ScanOptions(options, sizeof(options)/sizeof(options[0]), argc, argv);
+	int n = ScanOptions(options, sizeof(options)/sizeof(options[0]), argc, argv);
 
-		if(getenv("tridebuglevel")) {
-			setdebuglevel(atoi(getenv("tridebuglevel")));
-		}
+	if(getenv("tridebuglevel")) {
+		setdebuglevel(atoi(getenv("tridebuglevel")));
+	}
 
-		if(getenv("trihelp")) {
-			printHelpAndExit();
-		}
+	if(getenv("trihelp")) {
+		printHelpAndExit();
+	}
+	
+	// Start of name/value and positional args
+	char **nvargv = &argv[n];
 
-		// Start of name/value and positional args
-		char **nvargv = &argv[n];
+	const char *triReason = getenv("TRIREASON");
 
-		// Now safe to create a DM object and set our homedir
-		DM dm;
-		ConstCharPtr homeDir = getHomeDirectory(argv[0]);
-	#ifdef DEV_VERSION
-		if(getenv("tridmhome")) {
-			homeDir = strdup(getenv("tridmhome"));
-			struct stat sb;
-			if(stat(homeDir, &sb) == -1) {
-				if(errno == ENOENT) {
-					// Doesn't exist - so create it
-					dm.exitWithError("FATAL ERROR: Directory '%s' does not exist", (const char*) homeDir);
-				} else {
-					dm.exitWithError("FATAL ERROR: Unable to stat directory '%s'", (const char*) homeDir);
-				}
+	TriReason reason = triReason ? triReasonFromString(triReason) : REASON_UNSET;
+	if(reason == REASON_NONE) {
+		fprintf(stderr, "Not a good TRIREASON!\n");
+		return 1;
+	}
+
+
+	// Now safe to create a DM object and set our homedir
+	DM dm;
+	ConstCharPtr homeDir = getHomeDirectory(argv[0]);
+#ifdef DEV_VERSION
+	if(getenv("tridmhome")) {
+		homeDir = strdup(getenv("tridmhome"));
+		struct stat sb;
+		if(stat(homeDir, &sb) == -1) {
+			if(errno == ENOENT) {
+				// Doesn't exist - so create it
+				dm.exitWithError("FATAL ERROR: Directory '%s' does not exist", (const char*) homeDir);
+			} else {
+				dm.exitWithError("FATAL ERROR: Unable to stat directory '%s'", (const char*) homeDir);
 			}
 		}
-	#endif /*DEV_VERSION*/
-		dm.setDmHome(homeDir);
+	}
+#endif /*DEV_VERSION*/
+	dm.setDmHome(homeDir);
 
-		// Reset path to include bin dir for ssl libraries
-	#ifdef WIN32
-		const char *path = getenv("PATH");
-		if(path) {
-			char *temp = (char*) malloc(strlen(path) + 5 + strlen(homeDir) + 10);
-			sprintf(temp, "PATH=%s%sbin%s%s", homeDir, DIR_SEP_STR, PATH_SEP_STR, path);
-			putenv(temp);
-		} else {
-			char *temp = (char*) malloc(strlen(homeDir) + 10);
-			sprintf(temp, "PATH=%s%sbin", homeDir, DIR_SEP_STR);
-			putenv(temp);
+	// Reset path to include bin dir for ssl libraries
+#ifdef WIN32
+	const char *path = getenv("PATH");
+	if(path) {
+		char *temp = (char*) malloc(strlen(path) + 5 + strlen(homeDir) + 10);
+		sprintf(temp, "PATH=%s%sbin%s%s", homeDir, DIR_SEP_STR, PATH_SEP_STR, path);
+		putenv(temp);
+	} else {
+		char *temp = (char*) malloc(strlen(homeDir) + 10);
+		sprintf(temp, "PATH=%s%sbin", homeDir, DIR_SEP_STR);
+		putenv(temp);
+	}
+#endif /*WIN32*/
+
+	// Everything from here on needs a database connection
+	AutoPtr<triODBC> odbc;
+
+	try {
+		if(!(odbc = connectToDatabase(dm, homeDir))) {
+			dm.exitWithError("FATAL ERROR: Failed to connect to database");
 		}
-	#endif /*WIN32*/
+	} catch(DMException &e) {
+		dm.exitWithError("%s\nFATAL ERROR: Failed to connect to database", e.getMessage());
+	}
 
-		// Everything from here on needs a database connection
-		AutoPtr<triODBC> odbc;
+	SetEngineHostName(dm,*odbc);	// Default installation has engine host set to "localhost"
 
+	
+
+	if (getenv("triloadusers")) {
+		Model model(*odbc, dm.getHostname());
+		loadUsersAndExit(model,*odbc,getenv("triloadusers"));
+	}
+
+	if (getenv("triloadenvs")) {
+		Model model(*odbc, dm.getHostname());
+		loadEnvironmentsAndExit(model,*odbc,getenv("triloadenvs"));
+	}
+
+	if (getenv("triloadservs")) {
+		Model model(*odbc, dm.getHostname());
+		loadServersAndExit(model,*odbc,getenv("triloadservs"));
+	}
+
+	if (getenv("tridumpdb")) {
+		dumpDBCreds(dm,(const char *)homeDir);
+	}
+
+	// If -install specified, just install plugins and exit
+	if(getenv("triinstall")) {
+		Model model(*odbc, dm.getHostname());
+		dm.setModel(&model);
+		dm.installPlugin(getenv("triinstall"));
+		// repositories
+		// filesystem_PluginInstall(dm);
+		// svn_PluginInstall(dm);
+		// dm.installPlugin("harvest");
+		// dm.installPlugin("http");
+		// transfers
+		// rti_PluginInstall(dm);
+		// notifies
+		// smtpemail_PluginInstall(dm);
+		// txtlocal_PluginInstall(dm);
+		// datasources
+#ifdef HAVE_ODBC
+		//odbcdatasource_PluginInstall(dm);
+#endif /*HAVE_ODBC*/
+		// modifiers
+		// xmlmodify_PluginInstall(dm);
+		// textmodify_PluginInstall(dm);
+		return 0;
+	}
+
+	const char *deplog = getenv("trideplog");
+	if(deplog) {
+		int logtoshow = atoi(deplog);
+		if(!logtoshow) {
+			dm.exitWithError("Invalid deploymentid for -showlog");
+		}
+		return showDeploymentLog(*odbc, logtoshow);
+	}
+
+	const char *fileToParse = NULL;
+	if((fileToParse = getenv("triparse")) != NULL) {
+		int ret = 0;
 		try {
-			if(!(odbc = connectToDatabase(dm, homeDir))) {
-				dm.exitWithError("FATAL ERROR: Failed to connect to database");
+			ret = dm.parse(fileToParse);
+			if(ret == 0) {
+				printf("\"%s\" parsed ok.\n", fileToParse);
 			}
 		} catch(DMException &e) {
-			dm.exitWithError("%s\nFATAL ERROR: Failed to connect to database", e.getMessage());
+			e.print(dm);
+			ret = 4;
+		}
+		return ret;
+	}
+
+
+	if(getenv("tridmscript")) {
+		// Generate a script from the graphical data stored in the database
+		char buf[1024];
+		int actionid = atol(getenv("tridmscript"));
+		Model model(*odbc, dm.getHostname());
+		dm.setModel(&model);
+		setCurrentUser(dm);
+		dm.initialize(homeDir, nvargv, envp);
+		List<Server> serverSet;
+		ScopeStack stack(dm);
+		stack.setGlobal("DMHOME", dm.getBaseDir());
+		stack.setGlobal("TRIDM_PLATFORM", DM_PLATFORM);
+		Context ctx(dm,serverSet,stack);
+		Dropzone &dz = getScriptDropzone(ctx);
+		Action *action = model.getAction(actionid);
+		if (!action) {
+			throw RuntimeError("actionid invalid or action with that id could not be found",actionid);
+		}
+		AutoPtr<GraphicalScriptGenerator> gen = model.createGraphicalScriptGenerator(dz, *action);
+		if(!gen->generate()) {
+			throw RuntimeError("Error generating script for action '%s'", action->name());
+		}
+		//printf("parse generated '%s'\n", (const char*) gen->filename());
+		FILE *in = fopen(gen->filename(),"r");
+		while (fgets(buf,sizeof(buf),in)) {
+			printf(buf);
+		}
+		unlink(gen->filename());
+		return 0;
+	}
+
+	if(getenv("triencrypt")) {
+		Model model(*odbc, dm.getHostname());
+		dm.setModel(&model);
+		setCurrentUser(dm);
+		ensurePassphraseFile(dm, homeDir);
+
+		// Read first line of input from stdin
+		char line[1024];
+		if(!fgets(line, sizeof(line), stdin)) {
+			dm.exitWithError("No input given");
 		}
 
-		SetEngineHostName(dm,*odbc);	// Default installation has engine host set to "localhost"
+		// Trim trailing newline
+		for(char *x = &line[strlen(line) - 1];
+				(x > line) && ((*x == '\r') || (*x == '\n')); x--) {
+			*x = '\0';
+		}
 
+		//dumpbuffer(line, strlen(line));
 		
-
-		if (getenv("triloadusers")) {
-			Model model(*odbc, dm.getHostname());
-			loadUsersAndExit(model,*odbc,getenv("triloadusers"));
+		try {
+			ConstCharPtr encLine = encryptValue(line, strlen(line));
+			printf("%s\n", (const char*) encLine);
+		} catch(DMException &e) {
+			e.print(dm);
+			dm.exitWithError("Error during encryption");
 		}
 
-		if (getenv("triloadenvs")) {
-			Model model(*odbc, dm.getHostname());
-			loadEnvironmentsAndExit(model,*odbc,getenv("triloadenvs"));
-		}
+		return 0;
+	}
 
-		if (getenv("triloadservs")) {
-			Model model(*odbc, dm.getHostname());
-			loadServersAndExit(model,*odbc,getenv("triloadservs"));
+	const char *providerTest = NULL;
+	if((providerTest = getenv("triprovidertest")) != NULL) {
+		OBJECT_KIND kind = OBJ_KIND_NONE;
+		if(strcmp(providerTest, "repository") == 0) {
+			kind = OBJ_KIND_REPOSITORY;
+		} else if(strcmp(providerTest, "notify") == 0) {
+			kind = OBJ_KIND_NOTIFY;
+		} else if(strcmp(providerTest, "datasource") == 0) {
+			kind = OBJ_KIND_DATASOURCE;
+		} else {
+			dm.exitWithError("Unrecognised provider type '%s'", providerTest);
 		}
-
-		if (getenv("tridumpdb")) {
-			dumpDBCreds(dm,(const char *)homeDir);
-		}
-
-		// If -install specified, just install plugins and exit
-		if(getenv("triinstall")) {
-			Model model(*odbc, dm.getHostname());
-			dm.setModel(&model);
-			dm.installPlugin(getenv("triinstall"));
-			// repositories
-			// filesystem_PluginInstall(dm);
-			// svn_PluginInstall(dm);
-			// dm.installPlugin("harvest");
-			// dm.installPlugin("http");
-			// transfers
-			// rti_PluginInstall(dm);
-			// notifies
-			// smtpemail_PluginInstall(dm);
-			// txtlocal_PluginInstall(dm);
-			// datasources
-	#ifdef HAVE_ODBC
-			//odbcdatasource_PluginInstall(dm);
-	#endif /*HAVE_ODBC*/
-			// modifiers
-			// xmlmodify_PluginInstall(dm);
-			// textmodify_PluginInstall(dm);
-			return 0;
-		}
-
-		const char *deplog = getenv("trideplog");
-		if(deplog) {
-			int logtoshow = atoi(deplog);
-			if(!logtoshow) {
-				dm.exitWithError("Invalid deploymentid for -showlog");
-			}
-			return showDeploymentLog(*odbc, logtoshow);
-		}
-
-		const char *fileToParse = NULL;
-		if((fileToParse = getenv("triparse")) != NULL) {
-			int ret = 0;
-			try {
-				ret = dm.parse(fileToParse);
-				if(ret == 0) {
-					printf("\"%s\" parsed ok.\n", fileToParse);
+		int ret = -1;
+		if(nvargv && nvargv[0]) {
+			int id = atoi(nvargv[0]);
+			if(id > 0) {
+#ifdef DEV_VERSION
+				if(getenv("tridmhome")) {
+					debug1("DMHOME = '%s'", (const char*) homeDir);
 				}
-			} catch(DMException &e) {
-				e.print(dm);
-				ret = 4;
-			}
-			return ret;
-		}
-
-
-		if(getenv("tridmscript")) {
-			// Generate a script from the graphical data stored in the database
-			char buf[1024];
-			int actionid = atol(getenv("tridmscript"));
-			Model model(*odbc, dm.getHostname());
-			dm.setModel(&model);
-			setCurrentUser(dm);
-			dm.initialize(homeDir, nvargv, envp);
-			List<Server> serverSet;
-			ScopeStack stack(dm);
-			stack.setGlobal("DMHOME", dm.getBaseDir());
-			stack.setGlobal("TRIDM_PLATFORM", DM_PLATFORM);
-			Context ctx(dm,serverSet,stack);
-			Dropzone &dz = getScriptDropzone(ctx);
-			Action *action = model.getAction(actionid);
-			if (!action) {
-				throw RuntimeError("actionid invalid or action with that id could not be found",actionid);
-			}
-			AutoPtr<GraphicalScriptGenerator> gen = model.createGraphicalScriptGenerator(dz, *action);
-			if(!gen->generate()) {
-				throw RuntimeError("Error generating script for action '%s'", action->name());
-			}
-			//printf("parse generated '%s'\n", (const char*) gen->filename());
-			FILE *in = fopen(gen->filename(),"r");
-			while (fgets(buf,sizeof(buf),in)) {
-				printf(buf);
-			}
-			unlink(gen->filename());
-			return 0;
-		}
-
-		if(getenv("triencrypt")) {
-			Model model(*odbc, dm.getHostname());
-			dm.setModel(&model);
-			setCurrentUser(dm);
-			ensurePassphraseFile(dm, homeDir);
-
-			// Read first line of input from stdin
-			char line[1024];
-			if(!fgets(line, sizeof(line), stdin)) {
-				dm.exitWithError("No input given");
-			}
-
-			// Trim trailing newline
-			for(char *x = &line[strlen(line) - 1];
-					(x > line) && ((*x == '\r') || (*x == '\n')); x--) {
-				*x = '\0';
-			}
-
-			//dumpbuffer(line, strlen(line));
-			
-			try {
-				ConstCharPtr encLine = encryptValue(line, strlen(line));
-				printf("%s\n", (const char*) encLine);
-			} catch(DMException &e) {
-				e.print(dm);
-				dm.exitWithError("Error during encryption");
-			}
-
-			return 0;
-		}
-
-		const char *providerTest = NULL;
-		if((providerTest = getenv("triprovidertest")) != NULL) {
-			OBJECT_KIND kind = OBJ_KIND_NONE;
-			if(strcmp(providerTest, "repository") == 0) {
-				kind = OBJ_KIND_REPOSITORY;
-			} else if(strcmp(providerTest, "notify") == 0) {
-				kind = OBJ_KIND_NOTIFY;
-			} else if(strcmp(providerTest, "datasource") == 0) {
-				kind = OBJ_KIND_DATASOURCE;
+#endif /*DEV_VERSION*/
+				Model model(*odbc, dm.getHostname());
+				dm.setModel(&model);
+				setCurrentUser(dm);
+				dm.initialize(homeDir, nvargv, envp);
+				if (argc-n > 1) {
+					ret = dm.providerTest(kind, id, nvargv[1]);
+				} else {
+					ret = dm.providerTest(kind, id);
+				}
+				dm.deleteTemporaryFilesAndFolders();
 			} else {
-				dm.exitWithError("Unrecognised provider type '%s'", providerTest);
+				dm.exitWithError("Bad provider id '%s'", nvargv[0]);
 			}
-			int ret = -1;
+		} else {
+			dm.exitWithError("No provider id specified");
+		}
+		return ret;
+	}
+
+	const char *notifier = NULL;
+	if((notifier = getenv("trinotify")) != NULL) {
+		int ret = -1;
+		int nfyid = atoi(notifier);
+		if(nfyid > 0) {
+			const char *notifyFrom = getenv("trifrom");
+			if(!notifyFrom) {
+				notifyFrom = "re@openmakesoftware.com";
+			}
+			const char *notifySubject = getenv("trisubject");
+			if(!notifySubject) {
+				 notifySubject = "Notification from Release Engineer";
+			}
+			int templateid = 0;
+			const char *notifyTemplate = getenv("tritemplate");
+			if(notifyTemplate) {
+				templateid = atoi(notifyTemplate);
+				if(templateid == 0) {
+					dm.exitWithError("Bad template id '%s'", notifyTemplate);
+				}
+			}
 			if(nvargv && nvargv[0]) {
-				int id = atoi(nvargv[0]);
-				if(id > 0) {
-	#ifdef DEV_VERSION
-					if(getenv("tridmhome")) {
-						debug1("DMHOME = '%s'", (const char*) homeDir);
-					}
-	#endif /*DEV_VERSION*/
-					Model model(*odbc, dm.getHostname());
-					dm.setModel(&model);
-					setCurrentUser(dm);
-					dm.initialize(homeDir, nvargv, envp);
-					if (argc-n > 1) {
-						ret = dm.providerTest(kind, id, nvargv[1]);
-					} else {
-						ret = dm.providerTest(kind, id);
-					}
-					dm.deleteTemporaryFilesAndFolders();
-				} else {
-					dm.exitWithError("Bad provider id '%s'", nvargv[0]);
+#ifdef DEV_VERSION
+				if(getenv("tridmhome")) {
+					debug1("DMHOME = '%s'", (const char*) homeDir);
 				}
-			} else {
-				dm.exitWithError("No provider id specified");
-			}
-			return ret;
-		}
-
-		const char *notifier = NULL;
-		if((notifier = getenv("trinotify")) != NULL) {
-			int ret = -1;
-			int nfyid = atoi(notifier);
-			if(nfyid > 0) {
-				const char *notifyFrom = getenv("trifrom");
-				if(!notifyFrom) {
-					notifyFrom = "re@openmakesoftware.com";
-				}
-				const char *notifySubject = getenv("trisubject");
-				if(!notifySubject) {
-					 notifySubject = "Notification from DeployHub";
-				}
-				int templateid = 0;
-				const char *notifyTemplate = getenv("tritemplate");
-				if(notifyTemplate) {
-					templateid = atoi(notifyTemplate);
-					if(templateid == 0) {
-						dm.exitWithError("Bad template id '%s'", notifyTemplate);
-					}
-				}
-				if(nvargv && nvargv[0]) {
-	#ifdef DEV_VERSION
-					if(getenv("tridmhome")) {
-						debug1("DMHOME = '%s'", (const char*) homeDir);
-					}
-	#endif /*DEV_VERSION*/
-					Model model(*odbc, dm.getHostname());
-					dm.setModel(&model);
-					setCurrentUser(dm);
-					setTargetAppAndEnvFromParams(dm, false);
-					dm.initialize(homeDir, nvargv, envp);
-					ret = dm.doNotify(nfyid, notifyFrom, notifySubject, templateid);
-					dm.deleteTemporaryFilesAndFolders();
-				} else {
-					dm.exitWithError("No recipients specified");
-				}
-			} else {
-				dm.exitWithError("Bad notifier id '%s'", notifier);
-			}
-			return ret;
-		}
-
-		const char *runtask = NULL;
-		if((runtask = getenv("triruntask")) != NULL) {
-			int ret = -1;
-			int taskid = atoi(runtask);
-			if(taskid > 0) {
+#endif /*DEV_VERSION*/
 				Model model(*odbc, dm.getHostname());
 				dm.setModel(&model);
 				setCurrentUser(dm);
 				setTargetAppAndEnvFromParams(dm, false);
-				ret = runTask(dm, taskid, homeDir, nvargv, envp);
+				dm.initialize(homeDir, nvargv, envp);
+				ret = dm.doNotify(nfyid, notifyFrom, notifySubject, templateid);
 				dm.deleteTemporaryFilesAndFolders();
 			} else {
-				dm.exitWithError("Bad task id '%s'", runtask);
+				dm.exitWithError("No recipients specified");
 			}
-			return ret;
+		} else {
+			dm.exitWithError("Bad notifier id '%s'", notifier);
 		}
+		return ret;
+	}
 
-	#ifdef DEV_VERSION
+	const char *runtask = NULL;
+	if((runtask = getenv("triruntask")) != NULL) {
+		int ret = -1;
+		int taskid = atoi(runtask);
+		if(taskid > 0) {
+			Model model(*odbc, dm.getHostname());
+			dm.setModel(&model);
+			setCurrentUser(dm);
+			setTargetAppAndEnvFromParams(dm, false);
+			ret = runTask(dm, taskid, homeDir, nvargv, envp);
+			dm.deleteTemporaryFilesAndFolders();
+		} else {
+			dm.exitWithError("Bad task id '%s'", runtask);
+		}
+		return ret;
+	}
+
+	switch(reason)
+	{
+	case REASON_UNSET:
+#if 0
+		// TODO: Remove this - it is here so we can run from debugger
+		// Have we been invoked with a web-interface deployment flag
+		if(!getenv("triappname") && !getenv("triappid")
+				&& !getenv("trienvname") && !getenv("trienvid")) {
+			// Run script with some test data set - -usr toggles between demo and testsuite
+			const char *user = getenv("TRIDM_USER");
+			if(user && (strcmp(user, "demo") == 0)) {
+				putenv(strdup("TRIFIELD1=Demo Environment (SSH)"));
+				putenv(strdup("TRIFIELD2="));
+				putenv(strdup("TRIFIELD3="));
+				//putenv(strdup("TRIFIELD4=DMDemo AppVer 2.0"));
+				putenv(strdup("TRIFIELD4=DMDemo P4 Components"));
+
+				nvargv = (char**) malloc(5 * sizeof(char*));
+				nvargv[0] = (char*) "cmdln_haruser=harvest";
+				nvargv[1] = (char*) "cmdln_harpass=harvest";
+				nvargv[2] = (char*) "cmdln_harproject=DMDemo";
+				nvargv[3] = (char*) "cmdln_harstate=Test";
+				//nvargv[4] = (char*) "cmdln_harpackages='DMDemo-2.0'";
+				//nvargv[5] = NULL;
+				//nvargv[4] = (char*) "DMDemo-1.0";
+				nvargv[4] = (char*) "DMDemo-2.0";
+				nvargv[5] = NULL;
+			} else {
+				putenv(strdup("TRIFIELD1=envA"));
+				putenv(strdup("TRIFIELD2=harvest"));
+				putenv(strdup("TRIFIELD3=harvest"));
+				putenv(strdup("TRIFIELD4=app2"));
+				//putenv(strdup("TRIFIELD4=CreditScore"));
+				nvargv = (char**) malloc(3 * sizeof(char*));
+				nvargv[0] = (char*) "cmdln_haruser=harvest";
+				nvargv[1] = (char*) "cmdln_harpass=harvest";
+				nvargv[2] = NULL;
+			}
+
+			if(!user) {
+				putenv(strdup("TRIDM_USER=admin"));
+			}
+		}
+		// fall thru...
+#endif /*0*/
+	case REASON_SCRIPT:
+	case REASON_TIMED: {
+#ifdef DEV_VERSION
 		if(getenv("tridmhome")) {
 			debug1("DMHOME = '%s'", (const char*) homeDir);
 		}
-	#endif /*DEV_VERSION*/
+#endif /*DEV_VERSION*/
 		if(getenv("tritestmode")) {
 			return testThings(*odbc);
 		}
 
+		/*
+		 * PAG MOD - remove license key check here. Licensing will be done through the
+		 * web UI
+		License lic;
+		lic.OpenLicenseFile(homeDir, "dm.lic");
+		LicenseError licerror = lic.LoadLicenseFile();
+		if(licerror == CouldNotOpenLicenseFile) {
+			dm.exitWithError("Could not find or open license file \"%s\"", "dm.lic");
+		} else if(licerror == CorruptLicenseFile) {
+			dm.exitWithError("Invalid or corrupt license file \"%s\"", "dm.lic");
+		}
+		if(lic.CheckForExpiredLicense()) {
+			dm.exitWithError("License key has expired.\n"
+				"Please contact OpenMake Software for a new license key");
+		}
+		if(lic.CheckForInvalidHostName()) {
+			dm.exitWithError("License key is not valid for this host.\n"
+				"Please contact OpenMake Software for a new license key");
+		}
+		*/
+
 		Model model(*odbc, dm.getHostname());
 		dm.setModel(&model);
 
-		if (getenv("triscanserver")) {
-			// Scan server and calculate MD5 for all deployed applications
-			int serverid = atol(getenv("triscanserver"));
-			ScanServer(model,dm,*odbc,serverid);
-		} else
-		if (getenv("tricheckserver")) {
-			// Check connectivity to server
-			int serverid = atol(getenv("tricheckserver"));
+		if (reason == REASON_TIMED) {
+			// If we've been invoked on the timer, we need to find any jobs that
+			// are scheduled to run now. The "user" should be set to the owner
+			// of that job.
+			printf("Start timer activity\n");
+			List<TimedJob> *a = model.getTimedJobs();
+			ListIterator<TimedJob> iter(*a);
+			for (TimedJob *t=iter.first();t;t=iter.next()) {
+				printf("Event ID %d\n",t->getEventId());
+				char appstr[128];
+				char envstr[128];
+				char usrstr[300];
+				sprintf(appstr,"triappid=%d",t->getAppId());
+				sprintf(envstr,"trienvid=%d",t->getEnvId());
+				User *user = model.getUserById(t->getUsrId());
+				sprintf(usrstr,"TRIDM_USER=%s",user->name());
+				putenv(appstr);
+				putenv(envstr);
+				putenv(usrstr);
+				dm.setEventId(t->getEventId());
+				DoDeployment(model,dm,(const char *)homeDir,envp,nvargv);
+			}
+			// Check for servers to be pinged/checked periodically
+			printf("Checking servers\n");
 			dm.initialize(homeDir,nvargv,envp);
-			CheckServerConnectivity(model,dm,*odbc,serverid);
-		} else
-		if (getenv("tridumpscript")) {
-			// Dump out the script content specified by the given id
-			int actionid = atol(getenv("tridumpscript"));
-			dm.initialize(homeDir,nvargv,envp);
-			dm.DumpScript(actionid);
-		} else 
-		if (getenv("triimpscript")) {
-			dm.initialize(homeDir,nvargv,envp);
-			dm.importScript();
+			List <Server> *sl = model.getServersToCheck();
+			ListIterator<Server> iter2(*sl);
+			printf("sl=%d\n",sl->size());
+			for (Server *s=iter2.first();s;s=iter2.next()) {
+				printf("Checking server id %d\n",s->id());
+				int status = CheckServerConnectivity(model,dm,*odbc,s->id());
+				printf("Status=0x%lx\n",status);
+				if (status & CHECK_CONNECTION_OKAY) {
+					//
+					// We connected okay to this server. If the server has received
+					// deployments and we need to check the MD5 checksums then do
+					// this now.
+					//
+					if (model.checkMD5(s->id())) {
+						ScanServer(model,dm,*odbc,s->id());
+					}
+				}
+			}
+			dm.cleanup();	// cleanup here as DoDeployment will not do this if on timer.
+			printf("end of timer activiity\n");
 		} else {
-			DoDeployment(model,dm,(const char *)homeDir,envp,nvargv);
+			//
+			// Invoked as a user-invoked deployment
+			if (getenv("triscanserver")) {
+				// Scan server and calculate MD5 for all deployed applications
+				int serverid = atol(getenv("triscanserver"));
+				ScanServer(model,dm,*odbc,serverid);
+			} else
+			if (getenv("tricheckserver")) {
+				// Check connectivity to server
+				int serverid = atol(getenv("tricheckserver"));
+				dm.initialize(homeDir,nvargv,envp);
+				// dm.writeToLogFile("After dm.initialize, stack is:\n");
+				CheckServerConnectivity(model,dm,*odbc,serverid);
+			} else
+			if (getenv("tridumpscript")) {
+				// Dump out the script content specified by the given id
+				int actionid = atol(getenv("tridumpscript"));
+				dm.initialize(homeDir,nvargv,envp);
+				dm.DumpScript(actionid);
+			} else 
+			if (getenv("triimpscript")) {
+				dm.initialize(homeDir,nvargv,envp);
+				dm.importScript();
+			} else {
+				DoDeployment(model,dm,(const char *)homeDir,envp,nvargv);
+			}
 		}
+		return 0; // TIMED or SCRIPT
+		}
+
+	case REASON_VALIDATION: {
+		Model model(*odbc, dm.getHostname());
+		dm.setModel(&model);
+		dm.getDummyAudit();
+		return validateDialog(dm, model);
+		}
+
+#if 0
+	case REASON_UNSET:
+		// Run script with some test data set
+		putenv(strdup("trifields=environments,username,password,applications,combo1,combo2,combo3"));
+		//putenv(strdup("TRICURRENTFIELD=1"));
+		putenv(strdup("TRICURRENTFIELD=7"));
+		putenv(strdup("TRIFIELD1=envA"));
+		putenv(strdup("TRIDM_USER=robert"));
+		// fall thru...
+#endif /*0*/
+
+	case REASON_POPULATE: {
+		Model model(*odbc, dm.getHostname());
+		dm.setModel(&model);
+		dm.getDummyAudit();
+		setCurrentUser(dm);
+		dm.initialize(homeDir, nvargv, envp);
+		int res = handleFieldPopulation(dm, model);
+		dm.cleanup();
+		dm.deleteTemporaryFilesAndFolders();
+		return res;
+		}
+
+#if 0
+	case REASON_UNSET:
+		putenv(strdup("TRIDM_USER=robert"));
+		// fall thru...
+#endif /*0*/
+
+	case REASON_LISTBOX: {
+		Model model(*odbc, dm.getHostname());
+		dm.setModel(&model);
+		dm.getDummyAudit();
+		setCurrentUser(dm);
+		ensurePassphraseFile(dm, homeDir);
+		int res = runListboxScript(dm, homeDir, nvargv, envp);
+		dm.cleanup();
+		dm.deleteTemporaryFilesAndFolders();
+		return res;
+		}
+
+#ifdef HAVE_TRILOGYAPI
+	case REASON_PRELOAD: {
+		dm.writeToLogFile("PRELOAD");
+		OnPopulateAnyField(PreloadPopulateField);
+		int ret = WaitForTrilogy(60, argc, argv);
+		dm.writeToLogFile("EXITING - ret = %d", ret);
 		return 0;
+		}
+		break;
+#endif /*HAVE_TRILOGYAPI*/
+	}
+
 	} catch(DMException &e) {
 		fprintf(stderr, "Unhandled exception: %s\n", e.getMessage());
-		fprintf(stdout, "Unhandled exception: %s\n", e.getMessage());
+		// fprintf(stdout, "Unhandled exception: %s\n", e.getMessage());
 		return 1;
 	} catch(...) {
 		fprintf(stderr, "Unknown exception\n");
-		fprintf(stdout, "Unknown exception\n");
+		// fprintf(stdout, "Unknown exception\n");
 		return 1;
 	}
 	return 0;

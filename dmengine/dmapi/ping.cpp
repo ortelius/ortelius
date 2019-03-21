@@ -160,7 +160,7 @@ int ping(const char *servername,char **szad,unsigned long *pRoundTripTime)
 	}
 	// Call external ping (IPPROTO_ICMP requires root privileges)
 	char pingcmd[128];
-	sprintf(pingcmd,"ping -q -t 10 -c 1 %s",*szad);
+	sprintf(pingcmd,"ping -q -c 1 %s",*szad);  // SBT remove -t 10 since its too short for AWS
 	FILE *ppipe = popen(pingcmd,"r");
 	char pingbuf[1024];
 	while (fgets(pingbuf,sizeof(pingbuf),ppipe));

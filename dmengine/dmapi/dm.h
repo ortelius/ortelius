@@ -116,6 +116,7 @@ public:
 	class User *getCurrentUser();
 	void updateUserLastLogin(User &user);
 	void setEventId(int eventid);
+	int getEventId();
 	int  internalNotify(Context &ctx,class NotifyTemplate *t);
 	int DumpScript(int actionid);
 	int importScript();
@@ -180,6 +181,7 @@ public:
 	int providerTest(enum object_kind_tag kind, int id, char *recipient = (char *)0);
 
 	void writeToLogFile(const char *fmt, ...);
+	bool API(Context &ctx ,const char *URL,const char *params,Expr **ret,DMArray *cjp=(DMArray *)0);
 
 	// IOutputStream
 	void writeToStdOut(const char *fmt, ...);
@@ -231,6 +233,7 @@ private:
 	friend class ServerDropzone;
 };
 
+// For posting to the DeployHub API
 typedef enum message_type_t {
 MESSAGE_TYPE_SOAP	= 1,
 MESSAGE_TYPE_POST   = 2,

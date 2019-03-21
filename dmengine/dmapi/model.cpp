@@ -4489,6 +4489,9 @@ List<TimedJob> *Model::getTimedJobs()
 	time_t now = time(NULL);
 	List<TimedJob> *ret = new List<TimedJob>();
 	AutoPtr<triSQL> sql = m_odbc.GetSQL();
+
+	printf("getTimedJobs, now=%ld\n",now);
+
 	const char *sql1 =	"SELECT	a.id,a.creatorid,a.appid,a.envid,b.domainid	"
 						"FROM	dm_calendar a,				"
 						"		dm_environment b			"
@@ -5867,7 +5870,30 @@ Model::Model(class triODBC &odbc, const char *engineHostname)
 {
 	m_deploymentStartTime = time(NULL);
 	debug1("Deployment started at %d", m_deploymentStartTime);
-	m_engineId = 1;
+
+	AutoPtr<triSQL> sql = m_odbc.GetSQL();
+	SQLRETURN res = sql->PrepareStatement("SELECT e.id FROM dm_engine e "
+		"WHERE lower(e.hostname)=lower(?) AND e.status = 'N'");
+	if(IS_NOT_SQL_SUCCESS(res)) {
+		throw RuntimeError("Failed to lookup engine id");
+	}
+	int hostnamelen = m_engineHostname ? strlen(m_engineHostname) : 0;
+	sql->BindParameter(1, SQL_CHAR, hostnamelen, (char*) m_engineHostname, hostnamelen);
+	int engineId = 0;
+	sql->BindColumn(1, SQL_INTEGER, &engineId, sizeof(engineId));
+	res = sql->Execute();
+	if(res != SQL_SUCCESS) {
+		sql->CloseSQL();
+		throw RuntimeError("Failed to find engine id for host '%s'", m_engineHostname);
+	}
+	res = sql->FetchRow();
+	if(IS_NOT_SQL_SUCCESS(res)) {
+		sql->CloseSQL();
+		throw RuntimeError("Failed to find engine id for host '%s'", m_engineHostname);
+	}
+	debug1("Engine id is %d", engineId);
+	m_engineId = engineId;
+	sql->CloseSQL();
 }
 
 
@@ -5955,6 +5981,24 @@ void Model::setDomainList(int domainid /* == 0 */)
 		m_DomainList = (char *)malloc(128);	// Initial size
 		sprintf(m_DomainList,"%d",m_currentUser->getDomain()->id());
 		setDomainList(m_currentUser->getDomain()->id());	// recurse
+
+		int domid;
+		AutoPtr<triSQL> sql = m_odbc.GetSQL();
+		int res = sql->BindColumn(1,SQL_INTEGER,&domid,sizeof(domid));
+		res = sql->BindParameter(1,SQL_INTEGER,sizeof(domainid),&domainid,sizeof(domainid));
+		res = sql->ExecuteSQL("SELECT id FROM dm_domain WHERE name = 'Infrastructure' and domainid = 1");
+		res = sql->FetchRow();
+		while (res == SQL_SUCCESS || res == SQL_SUCCESS_WITH_INFO) {
+			char szDomainId[128];
+			sprintf(szDomainId,",%d",domid);
+			int newsize = strlen(m_DomainList)+strlen(szDomainId)+5;
+			m_DomainList = (char *)realloc(m_DomainList,newsize);
+			strcat(m_DomainList,szDomainId);
+			setDomainList(domid);
+			res = sql->FetchRow();
+		}
+		sql->CloseSQL();
+		
 	} else {
 		int domid;
 		AutoPtr<triSQL> sql = m_odbc.GetSQL();
@@ -9167,6 +9211,7 @@ Component *Model::findOrCreateComponent(
 			*this, id, name, basedir, rollup, rollback, filterItems, deployAlways, deploySequentially, parentid, predecessorid, datasourceid, buildid);
 		m_comCache.put(com);
 	}
+
 	return com;
 }
 

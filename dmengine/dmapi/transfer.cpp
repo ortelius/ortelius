@@ -286,7 +286,7 @@ void RtiTransferProviderImpl::deleteFromServer(Component &comp,Context &ctx)
 		}
 		else
 		{
-	 	cmd.add("-protocol").add(m_protocol).add("-server").add(m_target.hostname());		
+ 		cmd.add("-protocol").add(m_protocol).add("-server").add(m_target.hostname());		
 		}
 	
 		if (strcmp(m_protocol,"sftp")==0 && m_target.getSSHPort() != 22) {
@@ -315,12 +315,12 @@ void RtiTransferProviderImpl::deleteFromServer(Component &comp,Context &ctx)
 				SECURE_FREE(username);
 				SECURE_FREE(filename);
 				}
-			    break;
+				break;
 			default:
 				throw RuntimeError(ctx.stack(), "Credentials kind %d not yet implemented", m_credentials->kind());
 			}
 		}
-		cmd.add("-dellist").add(listfile);
+		cmd.add("-dellist").add(listfile); 
 		// Lock on the hostname of the target server
 		debug1("%s\n",cmd.toCommandString());
 		ctx.dm().writeToStdOut("INFO: Removing Component %s from Server %s",comp.name(),m_target.name());
@@ -648,7 +648,7 @@ List<TransferResult> *RtiTransferProviderImpl::transferToServer(const char *drop
 								p++;
 							}
 							if (szError[0]=='Y') {
-								ctx.dm().writeToStdErr("ERROR: Failed to Deploy File %s -> %s:%s: %s",szFile,m_target.name(),tgtpath);
+								ctx.dm().writeToStdErr("ERROR: Failed to Deploy File %s -> %s:%s: %s %s",szFile,m_target.name(),tgtpath,szErrorText);
 							} else {
 								ctx.dm().writeToStdOut("INFO: Deployed File %s -> %s:%s",szFile,m_target.name(),tgtpath);
 							}

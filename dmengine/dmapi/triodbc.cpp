@@ -33,17 +33,21 @@
 */
 
 #include "platform.h"
-#include "triodbc.h"
 #include "odbcseeds.h"
 #include "memory.h"
 #include "autoptr.h"
 
 #include "dm.h"
+#include "triodbc.h"
 
 #ifdef WIN32
-#include <io.H>
+#include <io.h>
 #endif
 
+#ifndef SETODBC
+#include "expr.h"
+#include "tinyxml.h"
+#endif
 /*******************************************************************
  *
  * RANDOM NUMBER GENERATOR COMPONENTS FOR CONNECTION PARAMETERS
@@ -169,6 +173,63 @@ void EncryptBuffer(char *Buffer,long BufferLen)
 }
 
 
+static char to_hex(char code)
+{
+	static char hex[] = "0123456789abcdef";
+	return hex[code & 15];
+}
+
+static char *url_encode(char *str)
+{
+	char *pstr = str;
+	char *buf = (char *)malloc(strlen(str) * 3 + 1);
+	char *pbuf = buf;
+	while (*pstr) {
+		if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~') 
+			*pbuf++ = *pstr;
+		else if (*pstr == '/')
+			*pbuf++ = '/';
+		else {
+			*pbuf++ = '%';
+			*pbuf++ = to_hex(*pstr >> 4);
+			*pbuf++ = to_hex(*pstr & 15);
+		}
+		pstr++;
+	}
+	*pbuf = '\0';
+	return buf;
+}
+
+#ifndef SETODBC
+bool internalParseReply(char *xmlstr,TiXmlElement **result,int *errnum,char **errstr)
+{
+	static TiXmlDocument doc;
+	doc.Clear();
+	doc.Parse(xmlstr);
+	try {
+		if (doc.Error()) throw "Failed to parse XML from WebService";
+		*result = doc.FirstChildElement("result");
+		if (!(*result)) throw "result tag not found in XML reply from WebService";
+		const char *success = (*result)->Attribute("success");
+		if (!success) throw "success attribute not found in result tag";
+		if (success[0]!='Y') {
+			TiXmlElement *err = (*result)->FirstChildElement("error");
+			if (err) {
+				const char *szErrNum = err->Attribute("errnum");
+				*errnum = szErrNum?atoi(szErrNum):0;
+				throw err->GetText();
+			} else {
+				*errnum = 0;
+				throw "Unknown (no error tag)";
+			}
+		}
+		return true;
+	} catch(const char *ErrStr) {
+		*errstr = strdup(ErrStr);
+	}
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // triODBC
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,8 +238,27 @@ void EncryptBuffer(char *Buffer,long BufferLen)
 triODBC::triODBC()
 	: m_EnvHandle((SQLHENV) 0), m_EnvHandleSet(false),
 	  m_ConnHandle((SQLHDBC) 0), m_ConnHandleSet(false),
-	  m_triSQL(), m_DatabaseType(DATABASE_TYPE_UNKNOWN)
+	  m_triSQL(), m_DatabaseType(DATABASE_TYPE_UNKNOWN),
+	  m_useWebService(false), m_clientid((char *)0),
+	  m_LastErrorNum(0), m_LastErrorText((char *)0),
+	  m_dsn((char *)0), m_UserName((char *)0),
+	  m_Password((char *)0)
 {}
+
+triODBC::triODBC(Context *ctx,char *clientid)
+	: m_EnvHandle((SQLHENV) 0), m_EnvHandleSet(false),
+	  m_ConnHandle((SQLHDBC) 0), m_ConnHandleSet(false),
+	  m_triSQL(), m_DatabaseType(DATABASE_TYPE_POSTGRES),
+	  m_useWebService(true), m_ctx(ctx),
+	  m_LastErrorNum(0), m_LastErrorText((char *)0),
+	  m_dsn((char *)0), m_UserName((char *)0),
+	  m_Password((char *)0)
+{
+	m_clientid = strdup(clientid);
+#ifndef SETODBC
+	m_CookieJar = new DMArray(false);
+#endif
+}
 
 
 // RHT 19/11/2012 - moved from header
@@ -191,30 +271,45 @@ triODBC::~triODBC()
 	if (m_dsn) free(m_dsn);
 	if (m_UserName) free(m_UserName);
 	if (m_Password) free(m_Password);
+	if (m_clientid) free(m_clientid);
+	if (m_LastErrorText) free(m_LastErrorText);
 }
+
+#ifndef SETODBC
+bool triODBC::parseReply(char *xmlstr,TiXmlElement **result)
+{
+	return internalParseReply(xmlstr,result,&m_LastErrorNum,&m_LastErrorText);
+}
+#endif
 
 DATABASE_TYPE triODBC::GetDatabaseType()
 {
+	if (m_useWebService) return DATABASE_TYPE_POSTGRES;
 	return m_DatabaseType;
 }
 
 long triODBC::AllocateAndSetEnvironmentHandle()
 {
 	long		res;
-	res=SQLAllocHandle(SQL_HANDLE_ENV,SQL_NULL_HANDLE,&m_EnvHandle);
-	if ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO))
-	{
-		res=SQL_ERROR;
-	}
-	else
-	{
-		res=SQLSetEnvAttr(m_EnvHandle,SQL_ATTR_ODBC_VERSION,
-					(void *)SQL_OV_ODBC3,0);
+	if (!m_useWebService) {
+		res=SQLAllocHandle(SQL_HANDLE_ENV,SQL_NULL_HANDLE,&m_EnvHandle);
 		if ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO))
 		{
 			res=SQL_ERROR;
-			SQLFreeHandle(SQL_HANDLE_ENV, m_EnvHandle);
 		}
+		else
+		{
+			res=SQLSetEnvAttr(m_EnvHandle,SQL_ATTR_ODBC_VERSION,
+						(void *)SQL_OV_ODBC3,0);
+			if ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO))
+			{
+				res=SQL_ERROR;
+				SQLFreeHandle(SQL_HANDLE_ENV, m_EnvHandle);
+			}
+		}
+	} else {
+		// For Web Service just return success
+		res=SQL_SUCCESS;
 	}
 	return res;
 }
@@ -222,47 +317,58 @@ long triODBC::AllocateAndSetEnvironmentHandle()
 long triODBC::AllocateConnectionHandle()
 {
 	long		res;
-
-
-	res=SQLAllocHandle(SQL_HANDLE_DBC,m_EnvHandle,&m_ConnHandle);
-	if ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO))
-	{
-		res=SQL_ERROR;
+	if (!m_useWebService) {
+		res=SQLAllocHandle(SQL_HANDLE_DBC,m_EnvHandle,&m_ConnHandle);
+		if ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO))
+		{
+			res=SQL_ERROR;
+		}
+		SQLSetConnectAttr(m_ConnHandle, SQL_LOGIN_TIMEOUT, (SQLPOINTER *)5, 0);
 	}
-	SQLSetConnectAttr(m_ConnHandle, SQL_LOGIN_TIMEOUT, (SQLPOINTER *)5, 0);
+	else {
+		// For Web Service just return success
+		res=SQL_SUCCESS;
+	}
 	return res;
 }
 
 void triODBC::GetLastError(char **MsgPtr,SQLINTEGER *ErrNum)
 {
-	SQLCHAR		SQLStatusString[10];
-	SQLCHAR		ErrorText[1024];
-	SQLSMALLINT	ErrorTextActualLength = 0;
+	if (!m_useWebService) {
+		SQLCHAR		SQLStatusString[10];
+		SQLCHAR		ErrorText[1024];
+		SQLSMALLINT	ErrorTextActualLength = 0;
 
-	SQLRETURN ret = SQLGetDiagRecA(SQL_HANDLE_DBC,
-			m_ConnHandle,
-			1,
-			SQLStatusString,
-			ErrNum,
-                        ErrorText,
-			sizeof(ErrorText),
-			&ErrorTextActualLength);
-//fprintf(stderr, "ret = %d; ErrorTextActualLength = %d\n", ret, ErrorTextActualLength);
-	*MsgPtr = (ErrorTextActualLength > 0) ? strdup((const char *)ErrorText) : NULL;
+		SQLRETURN ret = SQLGetDiagRecA(SQL_HANDLE_DBC,
+				m_ConnHandle,
+				1,
+				SQLStatusString,
+				ErrNum,
+							ErrorText,
+				sizeof(ErrorText),
+				&ErrorTextActualLength);
+		*MsgPtr = (ErrorTextActualLength > 0) ? strdup((const char *)ErrorText) : NULL;
+	} else {
+		*MsgPtr = strdup(m_LastErrorText);
+		*ErrNum = m_LastErrorNum;
+	}
 }
 
 
 long triODBC::FreeConnectionHandle()
 {
 	long res;
-
-	if (m_ConnHandleSet)
-	{
-		m_ConnHandleSet=false;
-		res = SQLFreeHandle(SQL_HANDLE_DBC,m_ConnHandle);
-	}
-	else
-	{
+	if (!m_useWebService) {
+		if (m_ConnHandleSet)
+		{
+			m_ConnHandleSet=false;
+			res = SQLFreeHandle(SQL_HANDLE_DBC,m_ConnHandle);
+		}
+		else
+		{
+			res = SQL_SUCCESS;
+		}
+	} else {
 		res = SQL_SUCCESS;
 	}
 	return res;
@@ -272,23 +378,48 @@ long triODBC::FreeEnvironmentHandle()
 {
 	long res;
 
-	if (m_EnvHandleSet)
-	{
-		m_EnvHandleSet=false;
-		res = SQLFreeHandle(SQL_HANDLE_ENV, m_EnvHandle);
-	}
-	else
-	{
+	if (!m_useWebService) {
+		if (m_EnvHandleSet)
+		{
+			m_EnvHandleSet=false;
+			res = SQLFreeHandle(SQL_HANDLE_ENV, m_EnvHandle);
+		}
+		else
+		{
+			res = SQL_SUCCESS;
+		}
+	} else {
 		res = SQL_SUCCESS;
 	}
 	return res;
 }
 
+long triODBC::ConnectToDataSource(DM *dm)
+{
+#ifndef SETODBC
+	long res = SQL_ERROR;
+	if (m_useWebService) {
+		m_dm = dm;
+		m_nowcolname = "now()";
+		m_DatabaseType = DATABASE_TYPE_POSTGRES;
+		Expr *ret;
+		char *params = (char *)malloc(strlen(m_clientid)+128);
+		sprintf(params,"clientid=%s",m_clientid);
+		dm->API(*m_ctx,"/dmadminweb/API/sql",params,&ret,m_CookieJar);
+		TiXmlElement *result;
+		if (parseReply(ret->toString(),&result)) {
+			res = SQL_SUCCESS;
+		}
+	}
+	return res;
+#else
+	return SQL_ERROR;
+#endif
+}
+
 long triODBC::ConnectToDataSource(DM *dm, char *DSN,char *Username,char *Password)
 {
 	long		res;
-	//int		in;
-	//char		*Buffer;
 
 	// printf("DSN=[%s] Username=[%s] Password=[%s]\n",DSN,Username,Password);
 
@@ -391,6 +522,7 @@ long triODBC::ConnectToDataSource(DM *dm, char *DSN,char *Username,char *Passwor
 	return res;
 }
 
+/*
 long triODBC::ConnectToDataSource(DM *dm,char *FileName)
 {
 	long		res;
@@ -449,41 +581,52 @@ long triODBC::ConnectToDataSource(DM *dm,char *FileName)
 	}
 	return res;
 }
+*/
 
 long triODBC::DisconnectFromDataSource()
 {
 	long res;
-	if (m_ConnHandleSet)
-	{
-    	// m_triSQL.CloseAnyOpenHandles(); // RHT - 28/11/2006 - this fixes a couple of IVRs in the destructor
-		res=SQLDisconnect(m_ConnHandle);
+	if (!m_useWebService) {
+		if (m_ConnHandleSet)
+		{
+    		// m_triSQL.CloseAnyOpenHandles(); // RHT - 28/11/2006 - this fixes a couple of IVRs in the destructor
+			res=SQLDisconnect(m_ConnHandle);
+		}
+		else
+		{
+			res=SQL_SUCCESS;
+		}
+		FreeConnectionHandle();
+		FreeEnvironmentHandle();
+	} else {
+		res = SQL_SUCCESS;
 	}
-	else
-	{
-		res=SQL_SUCCESS;
-	}
-	FreeConnectionHandle();
-	FreeEnvironmentHandle();
 	return res;
 }
 
+/*
 void triODBC::Reconnect()
 {
 	DisconnectFromDataSource();
 	m_dm->writeToStdOut("Reconnecting dsn=[%s] username=[%s]",m_dsn,m_UserName);
 	ConnectToDataSource(m_dm,m_dsn,m_UserName,m_Password);
 }
-
+*/
 
 triSQL *triODBC::GetSQL()
 {
 	triSQL *p_triSQL = new triSQL;
-	p_triSQL->AllocateStatementHandle(m_ConnHandle);
 	p_triSQL->setODBC(this);
+	p_triSQL->AllocateStatementHandle(m_ConnHandle);
+	p_triSQL->setCookieJar(m_CookieJar);
 	return p_triSQL;
 }
-
-
+/*
+bool triODBC::getUseWebService()
+{
+	return m_useWebService;
+}
+*/
 
 
 
@@ -491,6 +634,13 @@ triSQL *triODBC::GetSQL()
 ///////////////////////////////////////////////////////////////////////////////
 // triSQL
 ///////////////////////////////////////////////////////////////////////////////
+
+#ifndef SETODBC
+bool triSQL::parseReply(char *xmlstr,TiXmlElement **result)
+{
+	return internalParseReply(xmlstr,result,&m_LastErrorNum,&m_LastErrorText);
+}
+#endif
 
 void triSQL::CloseAnyOpenHandles()
 {
@@ -509,6 +659,11 @@ void triSQL::setODBC(triODBC *odbc)
 	m_odbc = odbc;
 }
 
+void triSQL::setCookieJar(DMArray *cookieJar)
+{
+	m_CookieJar = cookieJar;
+}
+
 long triSQL::AllocateStatementHandle(SQLHDBC ConnHandle)
 {
 	//
@@ -516,35 +671,53 @@ long triSQL::AllocateStatementHandle(SQLHDBC ConnHandle)
 	//
 	long		res;
 	m_ConnHandle = ConnHandle;	// Passed from parent triODBC class
-	res=SQLAllocHandle(SQL_HANDLE_STMT,m_ConnHandle,&m_StatHandle);
-	if ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO))
-	{
-		res=SQL_ERROR;
-		m_StatHandleSet=false;
-	}
-	else
-	{
+	if (!m_odbc->getUseWebService()) {
+		res=SQLAllocHandle(SQL_HANDLE_STMT,m_ConnHandle,&m_StatHandle);
+		if ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO))
+		{
+			res=SQL_ERROR;
+			m_StatHandleSet=false;
+		}
+		else
+		{
+			m_StatHandleSet=true;
+		}
+	} else {
+		// Web Service
+		m_ConnHandle = (SQLHDBC)this;
 		m_StatHandleSet=true;
+		m_StatHandle=(SQLHSTMT)this;
+		res = SQL_SUCCESS;
 	}
 	return res;
 }
 
 long triSQL::FreeStatementHandle()
 {
-
+	if (!m_odbc->getUseWebService()) {
 #ifndef WIN32
-	// This crashes windows servers for some reason - RHT - 28/11/2006 - modified to check set var
-	if( m_StatHandleSet )
-	{
-	    m_StatHandleSet=false;
-	    return SQLFreeHandle(SQL_HANDLE_STMT,m_StatHandle);
-	}
-#else
-	// For Windows servers, just return success...
-	m_StatHandleSet=false;
-	return 0;
+		// This crashes windows servers for some reason - RHT - 28/11/2006 - modified to check set var
+		if( m_StatHandleSet )
+		{
+			m_StatHandleSet=false;
+			return SQLFreeHandle(SQL_HANDLE_STMT,m_StatHandle);
+		}
 #endif
-
+		m_StatHandleSet=false;
+		return 0;
+	} else {
+		// Web Service
+#ifndef SETODBC
+		if (m_StatHandleSet) {
+			char params[256];
+			Expr *ret;
+			sprintf(params,"close=Y&stmtid=%lx",(long)m_StatHandle);
+			m_odbc->getDM()->API(*(m_odbc->getCTX()),"/dmadminweb/API/sql",params,&ret,m_CookieJar);
+		}
+#endif
+		m_StatHandleSet=false;
+		return 0;
+	}
 }
 
 //
@@ -555,9 +728,24 @@ triSQL::triSQL()
 	m_StatHandleSet=false;
 	CharCols=(CHARCOLS *)0;
 	m_RowArraySize=1;
-        m_NumRowsFetched=0;
+    m_NumRowsFetched=0;
 	m_IndicatorArray=(SQLLEN *)0;
 	m_SingleIndicator=0;
+	m_maxBindParams=0;
+	m_BindParams = (BIND_PARAMS *)0;
+	m_maxBindColumns=0;
+	m_BindColumns = (BIND_COLUMNS *)0;
+	m_returnedData = (char ***)0;
+	m_retColCount = 0;
+	m_retRowCount = 0;
+	m_currentRow = 0;
+	m_ParamCount = 0;
+	m_RowsUpdated = 0;
+	m_LastErrorText = (char *)0;
+	m_LastErrorNum = 0;
+#ifndef SETODBC
+	m_CookieJar = new DMArray(false);
+#endif
 }
 
 
@@ -569,6 +757,21 @@ triSQL::triSQL(triSQL &copy)
     m_NumRowsFetched=0;
 	m_IndicatorArray=(SQLLEN *)0;
 	m_SingleIndicator=0;
+	m_maxBindParams=0;
+	m_BindParams = (BIND_PARAMS *)0;
+	m_maxBindColumns=0;
+	m_BindColumns = (BIND_COLUMNS *)0;
+	m_returnedData = (char ***)0;
+	m_retColCount = 0;
+	m_retRowCount = 0;
+	m_currentRow = 0;
+	m_ParamCount = 0;
+	m_RowsUpdated = 0;
+	m_LastErrorText = (char *)0;
+	m_LastErrorNum = 0;
+#ifndef SETODBC
+	DMArray cookieJar = new DMArray(false);
+#endif
 }
 
 
@@ -586,10 +789,22 @@ triSQL::~triSQL()
 	}
 	CharCols=(CHARCOLS *)0;
 	if (m_RowArraySize > 1 && m_IndicatorArray) free(m_IndicatorArray);
+	if (m_maxBindParams>0 && m_BindParams) free(m_BindParams);
+	if (m_maxBindColumns>0 && m_BindColumns) free(m_BindColumns);
+	if (m_returnedData) {
+		for (int r=0;r<m_retRowCount;r++) {
+			char **cd = m_returnedData[r];
+			for (int c=0;c<m_retColCount;c++) {
+				free(cd[c]);
+			}
+			free(cd);
+		}
+		free(m_returnedData);
+	}
+	if (m_LastErrorText) free(m_LastErrorText);
 }
 
 
-// RHT 22/09/2010 - merged from PM
 SQLRETURN triSQL::BindParameter(	SQLUSMALLINT	ColumnNumber,
 							SQLSMALLINT		TargetType,
 							SQLUINTEGER		Precision,
@@ -598,8 +813,7 @@ SQLRETURN triSQL::BindParameter(	SQLUSMALLINT	ColumnNumber,
 {
 	SQLSMALLINT Scale = 0;
 	SQLSMALLINT SourceType = SQL_C_DEFAULT;
-	// SQLINTEGER *pcbValuePointer = (SQLINTEGER *)malloc(sizeof(SQLINTEGER));
-	static SQLLEN pcbValue[256];	// RHT 07/08/2012 - was SQLINTEGER
+	static SQLLEN pcbValue[256];
 
 	// printf("BindParameter = Binding Parameter %d (%s) Precision=%d\n",ColumnNumber,(TargetValuePtr == (SQLPOINTER)0)?"NULL":"Real Data",Precision);
 
@@ -639,18 +853,44 @@ SQLRETURN triSQL::BindParameter(	SQLUSMALLINT	ColumnNumber,
 	 // printf("Calling SQLBindParameter(m_StatHandle,%d,SQL_PARAM_INPUT,%d,%d,%d,%d,0x%lx,%d,0x%lx)\n",
 		// ColumnNumber,SourceType,TargetType,Precision,Scale,TargetValuePtr,BufferLength,&(pcbValue[ColumnNumber]));
 	
+	SQLRETURN res;
 
-	
-	SQLRETURN res = SQLBindParameter(	m_StatHandle,
-									ColumnNumber,
-									SQL_PARAM_INPUT,
-									SourceType,
-									TargetType,
-									Precision,
-									Scale,
-									TargetValuePtr,
-									BufferLength,
-									&(pcbValue[ColumnNumber]));
+	if (!m_odbc->getUseWebService()) {
+#ifdef __SUNOS__
+	if ((TargetType == SQL_INTEGER || TargetType == SQL_C_SLONG) && BufferLength == 8 && sizeof(long) == 8)
+	{
+		// Mapping to a long - breaks on Solaris 64 bit - remap
+		TargetValuePtr = (SQLPOINTER)((unsigned char *)TargetValuePtr + 4);
+		BufferLength = 4;
+	}
+#endif
+		res = SQLBindParameter(	m_StatHandle,
+										ColumnNumber,
+										SQL_PARAM_INPUT,
+										SourceType,
+										TargetType,
+										Precision,
+										Scale,
+										TargetValuePtr,
+										BufferLength,
+										&(pcbValue[ColumnNumber]));
+	} else {
+		// For Web Service - add to the bind list. We will get the values
+		// and pass them to the Web Service when we execute the query.
+		if (ColumnNumber > m_maxBindParams) {
+			if (!m_maxBindParams) {
+				m_BindParams = (BIND_PARAMS *)malloc(sizeof(BIND_PARAMS));
+			} else {
+				m_BindParams = (BIND_PARAMS *)realloc(m_BindParams,sizeof(BIND_PARAMS)*ColumnNumber);
+			}
+			m_maxBindParams = ColumnNumber;
+		}
+		m_BindParams[ColumnNumber-1].TargetType = TargetType;
+		m_BindParams[ColumnNumber-1].Precision = Precision;
+		m_BindParams[ColumnNumber-1].TargetValuePtr = TargetValuePtr;
+		m_BindParams[ColumnNumber-1].BufferLength = BufferLength;
+		res = SQL_SUCCESS;
+	}
 	return res;
 }
 
@@ -659,7 +899,7 @@ long triSQL::BindColumn(	SQLUSMALLINT 	ColumnNumber,
 				SQLSMALLINT	TargetType,
 				SQLPOINTER	TargetValuePtr,
 				SQLINTEGER	BufferLength,
-				SQLLEN	*ni)	// RHT 07/08/2012 - was SQLINTEGER
+				SQLLEN	*ni)
 {
 	long			res;
 	static SQLLEN	StrLen_or_IndPtr;
@@ -701,102 +941,181 @@ long triSQL::BindColumn(	SQLUSMALLINT 	ColumnNumber,
 			memset(xCol->DataPtr, 0, xCol->DataLength);
 		}
 	}
-	if (ni)
+	if (!m_odbc->getUseWebService()) {
+// For Solaris 64 bit
+#ifdef __SUNOS__
+	if ((TargetType == SQL_INTEGER || TargetType == SQL_C_SLONG) && BufferLength == 8 && sizeof(long) == 8)
 	{
-		//
-		// User has supplied a null indicator location
-		//
-		res=SQLBindCol(	m_StatHandle,
-				ColumnNumber,
-				TargetType,
-				TargetValuePtr,
-				BufferLength,
-				ni);
+		// Mapping to a long - breaks on Solaris 64 bit - remap
+		bzero(TargetValuePtr,BufferLength);
+		TargetValuePtr = (SQLPOINTER)((unsigned char *)TargetValuePtr + 4);
+		BufferLength = 4;
 	}
-	else
-	{
-		//
-		// User has not supplied a null indicator - default to local copy (ignore)
-		//
-		res=SQLBindCol(	m_StatHandle,
-				ColumnNumber,
-				TargetType,
-				TargetValuePtr,
-				BufferLength,
-				m_IndicatorArray);
-	}
-	if ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO))
-	{
-		res=SQL_ERROR;
+#endif
+		if (ni)
+		{
+			//
+			// User has supplied a null indicator location
+			//
+			res=SQLBindCol(	m_StatHandle,
+					ColumnNumber,
+					TargetType,
+					TargetValuePtr,
+					BufferLength,
+					ni);
+		}
+		else
+		{
+			//
+			// User has not supplied a null indicator - default to local copy (ignore)
+			//
+			res=SQLBindCol(	m_StatHandle,
+					ColumnNumber,
+					TargetType,
+					TargetValuePtr,
+					BufferLength,
+					m_IndicatorArray);
+		}
+		if ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO))
+		{
+			res=SQL_ERROR;
+		}
+	} else {
+		if (ColumnNumber > m_maxBindColumns) {
+			if (!m_maxBindColumns) {
+				m_BindColumns = (BIND_COLUMNS *)malloc(sizeof(BIND_COLUMNS));
+			} else {
+				m_BindColumns = (BIND_COLUMNS *)realloc(m_BindColumns,sizeof(BIND_COLUMNS)*ColumnNumber);
+			}
+			m_maxBindColumns = ColumnNumber;
+		}
+		m_BindColumns[ColumnNumber-1].TargetType = TargetType;
+		m_BindColumns[ColumnNumber-1].TargetValuePtr = TargetValuePtr;
+		m_BindColumns[ColumnNumber-1].BufferLength = BufferLength;
+		if (ni) {
+			m_BindColumns[ColumnNumber-1].NullIndicator = ni;
+		} else {
+			m_BindColumns[ColumnNumber-1].NullIndicator = m_IndicatorArray;
+		}
+		res = SQL_SUCCESS;
 	}
 	return res;
 }
 
-bool triSQL::ReportError(char *place)
-{
-	char		*MsgPtr = NULL;
-	SQLINTEGER	ErrNum = 0;
-	GetLastError(&MsgPtr,&ErrNum);
-#ifndef SETODBC
-	debug1("DB ERROR in %s: %s",place?place:"unknown",MsgPtr?MsgPtr:" No Error String Returned");
-#endif
-	// Do not try and log DB errors to the DB because connection errors end up iterating through reconnect and reporterror
-	// m_odbc->getDM()->writeToStdOut("DB ERROR in %s: %s",place?place:"unknown",MsgPtr?MsgPtr:" No Error String Returned");
-	bool TryAgain = (ErrNum == 34 || (MsgPtr && strstr(MsgPtr,"No response")));
-	if (MsgPtr) free(MsgPtr);
-	if (TryAgain) {
-#ifndef SETODBC
-		debug3("*** reconnect flag set StatHandleSet=%s StatHandle=0x%lx ConnectionHandle=0x%lx",
-			this->m_StatHandleSet?"true":"false",
-			this->m_StatHandle,
-			this->m_ConnHandle);
-#endif
-	}
-	return TryAgain;
-}
 
-// RHT 22/09/2010 - merged from PM
 SQLRETURN triSQL::Execute()
 {
 	SQLRETURN res;
-	res = SQLExecute(m_StatHandle);
-	int n=10;
-	while ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO) && (res != SQL_NEED_DATA) && (res != SQL_NO_DATA))
-	{
-		bool TryAgain = ReportError("Execute");
-		if (TryAgain) {
-#ifdef WIN32
-			Sleep(1000);	// Wait one second
-#else
-			sleep(1000);	// Wait one second
-#endif
-			res = SQLExecute(m_StatHandle);
+	if (!m_odbc->getUseWebService()) {
+		res = SQLExecute(m_StatHandle);
+	} else {
+#ifndef SETODBC
+		// For web services we need to bind all the parameters before executing
+		// the query.
+		Expr *ret;
+		m_RowsUpdated = 0;
+		for (int i=1;i<=m_ParamCount;i++) {
+			char *params = (char *)0;
+			switch(m_BindParams[i-1].TargetType) {
+				case SQL_INTEGER:
+					params = (char *)malloc(256);
+					sprintf(params,"bind=Y&stmtid=%lx&colno=%d&coltype=2&val=%d",
+						(long)m_StatHandle,i,*((long *)m_BindParams[i-1].TargetValuePtr));
+					break;
+				case SQL_CHAR:	// SQL_C_CHAR is the same
+				case SQL_LONGVARCHAR:
+					params = (char *)malloc(strlen((char *)m_BindParams[i-1].TargetValuePtr)+256);
+					char *ev = url_encode((char *)m_BindParams[i-1].TargetValuePtr);
+					sprintf(params,"bind=Y&stmtid=%lx&colno=%d&coltype=1&val=%s",
+						(long)m_StatHandle,i,ev);
+					free(ev);
+					break;
+			}
+			m_odbc->getDM()->API(*(m_odbc->getCTX()),"/dmadminweb/API/sql",params,&ret,m_CookieJar);
+			if (params) free(params);
 		}
-		n--;
-		if (n<=0) break;
+		// Now execute the query itself
+		char p[128];
+		sprintf(p,"execute=Y&stmtid=%lx",m_StatHandle);
+		m_odbc->getDM()->API(*(m_odbc->getCTX()),"/dmadminweb/API/sql",p,&ret,m_CookieJar);
+		TiXmlElement *result;
+		if (parseReply(ret->toString(),&result)) {
+			try {
+				const char *szRowCount = result->Attribute("rowcount");
+				if (szRowCount) m_RowsUpdated = atoi(szRowCount);
+				TiXmlElement *cols = result->FirstChildElement("columns");
+				if (cols) {
+					// Column data is only returned for query statements
+					const char *szCount = cols->Attribute("count");
+					if (!szCount) throw "count attribute not found";
+					m_retColCount = atoi(szCount);
+					TiXmlElement *data = result->FirstChildElement("data");
+					if (!data) throw "data tag not found";
+					m_retRowCount=0;
+					for(TiXmlElement *row = data->FirstChildElement("row"); row; row = row->NextSiblingElement("row")) {
+						m_retRowCount++;
+						if (!m_returnedData) {
+							// First row
+							m_returnedData = (char ***)malloc((sizeof(char **)));
+						} else {
+							// Subsequent row
+							m_returnedData = (char ***)realloc(m_returnedData,sizeof(char **)*m_retRowCount);
+						}
+						char **cd = (char **)malloc(sizeof(char *)*m_retColCount);
+						m_returnedData[m_retRowCount-1]=cd;
+						int colnum=0;
+						for (TiXmlElement *col = row->FirstChildElement(); col; col = col->NextSiblingElement()) {
+							const char *szNull = col->Attribute("null");
+							if (szNull && szNull[0]=='Y') {
+								cd[colnum] = (char *)0;		// null indicator
+							} else {
+								const char *coltext = col->GetText();
+								cd[colnum]=strdup(coltext?coltext:"");
+							}
+							colnum++;
+						}
+					}
+				}
+				res = SQL_SUCCESS;
+				/*
+				printf("Data is:\n");
+				for (int r=0;r<m_retRowCount;r++) {
+					printf("row %d\n",r);
+					char **p = m_returnedData[r];
+					for (int c=0;c<m_retColCount;c++) {
+						printf("col %d data [%s]\n",c,p[c]);
+					}
+				}
+				*/
+			} catch(const char *errtext) {
+				res = SQL_ERROR;
+				m_LastErrorText = strdup(errtext);
+			}
+		} else {
+			res = SQL_ERROR;
+		}
+#endif
 	}
-
 	return res;
 }
 
-
-// RHT 20/12/2013 - RHT added
 SQLRETURN triSQL::ExecuteIgnoringErrors()
 {
 	SQLRETURN res;
-	res = SQLExecute(m_StatHandle);
+	if (!m_odbc->getUseWebService()) {
+		res = SQLExecute(m_StatHandle);
+	} else {
+		res = this->Execute();
+	}
 	if ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO) && (res != SQL_NEED_DATA) && (res != SQL_NO_DATA))
 	{
 		// printf("SQLExecute failed with res=%d\n",res);
 		res=SQL_ERROR;
-		ReportError("ExecuteIgnoringErrors");
 	}
 
 	return res;
 }
 
-
-// RHT 22/09/2010 - merged from PM
 SQLRETURN triSQL::ParamData()
 {
 	SQLPOINTER Value;
@@ -805,16 +1124,10 @@ SQLRETURN triSQL::ParamData()
 	{
 		// printf("SQLExecute failed with res=%d\n",res);
 		res=SQL_ERROR;
-		//
-		// Any failure of SQL should be reported.
-		//
-		ReportError("ParamData");
 	}
 	return res;
 }
 
-
-// RHT 22/09/2010 - merged from PM
 SQLRETURN triSQL::PutData(SQLPOINTER TargetValue,SQLLEN DataLength)
 {
 	SQLRETURN res = SQLPutData(m_StatHandle,TargetValue,DataLength);
@@ -822,10 +1135,6 @@ SQLRETURN triSQL::PutData(SQLPOINTER TargetValue,SQLLEN DataLength)
 	{
 		// printf("SQLExecute failed with res=%d\n",res);
 		res=SQL_ERROR;
-		//
-		// Any failure of SQL should be reported.
-		//
-		ReportError("PutData");
 	}
 	return res;
 }
@@ -839,18 +1148,14 @@ SQLRETURN triSQL::GetData(SQLUSMALLINT ColumnNumber,SQLSMALLINT	TargetType,SQLPO
 	{
 		// printf("SQLExecute failed with res=%d\n",res);
 		res=SQL_ERROR;
-		//
-		// Any failure of SQL should be reported.
-		//
-		ReportError("GetData");
 	}
 	return res;
 }
 
 
-SQLRETURN /*long*/ triSQL::ExecuteSQL(const char *SQLformat, ...)
+SQLRETURN triSQL::ExecuteSQL(const char *SQLformat, ...)
 {
-	SQLRETURN /*long*/		res;
+	SQLRETURN	res;
 	va_list		ap;
 	char		*SQLStatement;
 
@@ -883,23 +1188,19 @@ SQLRETURN /*long*/ triSQL::ExecuteSQL(const char *SQLformat, ...)
 #ifndef SETODBC
 	debug3("SQLStatement=[%s]\n",SQLStatement);
 #endif
- 	res=SQLExecDirectA(m_StatHandle,(unsigned char *)SQLStatement,SQL_NTS);
 
+	if (!m_odbc->getUseWebService()) {
+ 		res=SQLExecDirectA(m_StatHandle,(unsigned char *)SQLStatement,SQL_NTS);
+	} else {
+		// For web service, prepare the statement first
+		res = this->PrepareStatement(SQLStatement);
+		if (res == SQL_SUCCESS) {
+			res = this->Execute();
+		}
+	}
 	if ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO))
 	{
 		res=SQL_ERROR;
-		ReportError("ExecuteSQL");
-		//
-		// Any failure of SQL should be reported.
-		//
-		/*
-		char		*MsgPtr = NULL;
-		SQLINTEGER	ErrNum;
-		GetLastError(&MsgPtr,&ErrNum);
-		fprintf(stderr,"%d [%s]\n",ErrNum,(MsgPtr ? MsgPtr : ""));
-		fprintf(stderr,"SQL: %s\n",SQLStatement);
-		if(MsgPtr) free(MsgPtr);
-		*/
 	}
 	free(SQLStatement);
 
@@ -950,6 +1251,7 @@ SQLRETURN /*long*/ triSQL::ExecuteSQLIgnoringErrors(const char *SQLformat, ...)
 	return res;
 }
 
+
 // RHT 22/09/2010 - merged from PM
 SQLRETURN triSQL::PrepareStatement(const char *SQLformat, ...)
 {
@@ -985,32 +1287,35 @@ SQLRETURN triSQL::PrepareStatement(const char *SQLformat, ...)
 	debug3("SQLStatement=[%s]\n",SQLStatement);
 #endif
 
- 	res=SQLPrepareA(m_StatHandle,(unsigned char *)SQLStatement,SQL_NTS);
-
-	/*
-	if ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO))
-	{
-		res=SQL_ERROR;
-		//
-		// Any failure of SQL should be reported.
-		//
-		ReportError("PrepareStatement");
-	}
-	*/
-	int n=10;
-	while ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO))
-	{
-		bool TryAgain = ReportError("PrepareStatement");
-		if (TryAgain) {
-#ifdef WIN32
-			Sleep(1000);	// Wait one second
-#else
-			sleep(1000);	// Wait one second
-#endif
-			res = SQLPrepareA(m_StatHandle,(unsigned char *)SQLStatement,SQL_NTS);
+	if (!m_odbc->getUseWebService()) {
+ 		res=SQLPrepareA(m_StatHandle,(unsigned char *)SQLStatement,SQL_NTS);
+	} else {
+#ifndef SETODBC
+		// Call web service to prepare statement
+		Expr *ret = (Expr *)0;
+		char *ustmt = url_encode(SQLStatement);
+		char *p = (char *)malloc(strlen(ustmt)+128);
+		sprintf(p,"stmtid=%lx&prepare=Y&query=%s",m_StatHandle,ustmt);
+		m_odbc->getDM()->API(*(m_odbc->getCTX()),"/dmadminweb/API/sql",p,&ret,m_CookieJar);
+		TiXmlElement *result;
+		if (parseReply(ret->toString(),&result)) {
+			try {
+				const char *szParams = result->Attribute("params");
+				if (!szParams) throw "No params attribute";
+				m_ParamCount = atoi(szParams);
+				res = SQL_SUCCESS;
+			} catch(const char *errstr) {
+				res = SQL_ERROR;
+				m_LastErrorText = strdup(errstr);
+				m_LastErrorNum = 0;
+			}
+		} else {
+			res = SQL_ERROR;
 		}
-		n--;
-		if (n<=0) break;
+		free(p);
+		free(ustmt);
+		
+#endif
 	}
 
 	free(SQLStatement);
@@ -1018,34 +1323,6 @@ SQLRETURN triSQL::PrepareStatement(const char *SQLformat, ...)
 	return res;
 }
 
-void triSQL::SetArraySize(long nRows)
-{
-	if (m_IndicatorArray && m_RowArraySize>1)
-	{
-		// Existing indicator array
-		free(m_IndicatorArray);
-	}
-
-	m_RowArraySize=nRows;
-
-	if (m_RowArraySize > 1)
-	{
-		SQLSetStmtAttr(m_StatHandle,SQL_ATTR_ROW_BIND_TYPE,SQL_BIND_BY_COLUMN,0);
-		SQLSetStmtAttr(m_StatHandle,SQL_ATTR_ROW_ARRAY_SIZE,(SQLPOINTER)m_RowArraySize, 0);
-		//
-		// Grab some space for the null indicator array
-		//
-		m_IndicatorArray = (SQLLEN *)calloc(m_RowArraySize,sizeof(SQLLEN));
-	}
-	else
-	{
-		//
-		// Only one row - indicator can be a single variable.
-		//
-		m_IndicatorArray = &m_SingleIndicator;
-	}
-	SQLSetStmtAttr(m_StatHandle,SQL_ATTR_ROWS_FETCHED_PTR,&m_NumRowsFetched,0);
-}
 
 long triSQL::GetRowsReturned()
 {
@@ -1054,33 +1331,92 @@ long triSQL::GetRowsReturned()
 
 long triSQL::GetRowCount()
 {
-	SQLLEN RowCount;		// RHT 07/08/2012 - was long, but fails to compile on 64-bit Linux
+	SQLLEN RowCount;
 
-	SQLRETURN res = SQLRowCount(m_StatHandle,&RowCount);
-	if (res!=SQL_SUCCESS && res != SQL_SUCCESS_WITH_INFO)
-	{
-		char		*MsgPtr = NULL;
-		SQLINTEGER	ErrNum;
+	if (!m_odbc->getUseWebService()) {
+		SQLRETURN res = SQLRowCount(m_StatHandle,&RowCount);
+		if (res!=SQL_SUCCESS && res != SQL_SUCCESS_WITH_INFO)
+		{
+			char		*MsgPtr = NULL;
+			SQLINTEGER	ErrNum;
 
-		GetLastError(&MsgPtr,&ErrNum);
-		fprintf(stderr,"[%s]\n",(MsgPtr ? MsgPtr : ""));
-		if(MsgPtr) free(MsgPtr);
+			GetLastError(&MsgPtr,&ErrNum);
+			fprintf(stderr,"[%s]\n",(MsgPtr ? MsgPtr : ""));
+			if(MsgPtr) free(MsgPtr);
+		}
+		else
+		{
+			// printf("res=%s\n",res==SQL_SUCCESS?"SQL_SUCCESS":"SQL_SUCCESS_WITH_INFO");
+		}
+	} else {
+		// For web service - need to get the result from the reply.
+		RowCount = m_RowsUpdated;
 	}
-	else
-	{
-		// printf("res=%s\n",res==SQL_SUCCESS?"SQL_SUCCESS":"SQL_SUCCESS_WITH_INFO");
-	}	
 	return RowCount;
 }
 
 
 extern void dumpbuffer(const char *buf, int len);
 
-SQLRETURN /*long*/ triSQL::FetchRow()
+SQLRETURN triSQL::FetchRow()
 {
-	SQLRETURN /*long*/		res;
+	SQLRETURN res;
 
- 	res=SQLFetch(m_StatHandle);
+	if (!m_odbc->getUseWebService()) {
+ 		res=SQLFetch(m_StatHandle);
+	} else {
+#ifndef SETODBC
+		// For the web service, the rows should already have been fetched
+		if (m_currentRow >= m_retRowCount) return SQL_NO_DATA;	// all rows retrieved
+		char **cd = m_returnedData[m_currentRow++];
+		for (int c=0;c<m_retColCount;c++) {
+			// copy the data to the bind variables
+			if (cd[c]) {
+				// Not NULL data
+				switch(m_BindColumns[c].TargetType) {
+					case SQL_INTEGER:
+						*((int *)(m_BindColumns[c].TargetValuePtr)) = atoi(cd[c]);
+						if (m_BindColumns[c].NullIndicator) {
+							*(SQLLEN *)(m_BindColumns[c].NullIndicator) = sizeof(int);
+						}
+						break;
+					case SQL_CHAR: {
+						char *dst = (char *)m_BindColumns[c].TargetValuePtr;
+						int len = m_BindColumns[c].BufferLength-1;
+						strncpy(dst,cd[c],len);
+						dst[len]='\0';
+						if (m_BindColumns[c].NullIndicator) {
+							*(SQLLEN *)(m_BindColumns[c].NullIndicator) = strlen(dst);
+						}
+						}
+						break;
+					case SQL_TIMESTAMP: {
+						char *t = strdup(cd[c]);
+						SQL_TIMESTAMP_STRUCT ts;
+						ts.second=atoi(&(t[12]));
+						t[12]='\0';
+						ts.minute=atoi(&(t[10]));
+						t[10]='\0';
+						ts.hour=atoi(&(t[8]));
+						t[8]='\0';
+						ts.day=atoi(&(t[6]));
+						t[6]='\0';
+						ts.month=atoi(&(t[4]));
+						t[4]='\0';
+						ts.year=atoi(t);
+						free(t);
+						memcpy((void *)m_BindColumns[c].TargetValuePtr,(void *)&ts,sizeof(ts));
+						}
+						break;
+				}
+			} else {
+				// NULL data - set the null indicator
+				*(SQLLEN *)(m_BindColumns[c].NullIndicator) = SQL_NULL_DATA;
+			}
+		}
+		res = SQL_SUCCESS;
+#endif
+	}
 	//
 	// Now loop through, doing an "rtrim" on all the returned CHAR columns
 	//
@@ -1100,7 +1436,6 @@ SQLRETURN /*long*/ triSQL::FetchRow()
 	}
 	if(res == -1) {
 		// printf("query failed\n");
-		ReportError("FetchRow");
 	}
 	return res;
 }
@@ -1132,20 +1467,26 @@ long triSQL::FetchMultipleRows(unsigned long *RowCount)
 
 void triSQL::GetLastError(char **MsgPtr,SQLINTEGER *ErrNum)
 {
-	SQLCHAR		SQLStatusString[10];
-	SQLCHAR		ErrorText[1024];
-	SQLSMALLINT	ErrorTextActualLength = 0;
+	if (!m_odbc->getUseWebService()) {
+		SQLCHAR		SQLStatusString[10];
+		SQLCHAR		ErrorText[1024];
+		SQLSMALLINT	ErrorTextActualLength = 0;
 
-	SQLRETURN ret = SQLGetDiagRecA(SQL_HANDLE_STMT,
-			m_StatHandle,
-			1,
-			SQLStatusString,
-			ErrNum,
-                        ErrorText,
-			sizeof(ErrorText),
-			&ErrorTextActualLength);
-//fprintf(stderr, "ret = %d; ErrorTextActualLength = %d\n", ret, ErrorTextActualLength);
-	*MsgPtr = (ErrorTextActualLength > 0) ? strdup((const char *)ErrorText) : NULL;
+		SQLRETURN ret = SQLGetDiagRecA(SQL_HANDLE_STMT,
+				m_StatHandle,
+				1,
+				SQLStatusString,
+				ErrNum,
+							ErrorText,
+				sizeof(ErrorText),
+				&ErrorTextActualLength);
+	//fprintf(stderr, "ret = %d; ErrorTextActualLength = %d\n", ret, ErrorTextActualLength);
+		*MsgPtr = (ErrorTextActualLength > 0) ? strdup((const char *)ErrorText) : NULL;
+	} else {
+		// Web Service calls store the error in the triSQL object
+		*MsgPtr = strdup(m_LastErrorText);
+		*ErrNum = m_LastErrorNum;
+	}
 }
 
 long triSQL::CloseSQL()
@@ -1462,9 +1803,28 @@ COLDATA *triSQL::GetColumnInfoForStatement()
 
 SQLRETURN triSQL::SetAutoCommitMode(bool autoCommit)
 {
-	SQLRETURN res = SQLSetConnectAttr(m_ConnHandle, SQL_ATTR_AUTOCOMMIT,
-		(SQLPOINTER) (autoCommit ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF),
-		SQL_IS_UINTEGER);
+	SQLRETURN res;
+	if (!m_odbc->getUseWebService()) {
+		res = SQLSetConnectAttr(m_ConnHandle, SQL_ATTR_AUTOCOMMIT,
+			(SQLPOINTER) (autoCommit ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF),
+			SQL_IS_UINTEGER);
+	} else {
+		// Send Auto Commit mode to Web Service
+#ifndef SETODBC
+		char params[256];
+		Expr *ret;
+		sprintf(params,"start=%s&stmtid=%lx",(autoCommit?"Y":"N"),(long)m_StatHandle);
+		m_odbc->getDM()->API(*(m_odbc->getCTX()),"/dmadminweb/API/sql",params,&ret,m_CookieJar);
+		TiXmlElement *e;
+		if (parseReply(ret->toString(),&e)) {
+			res = SQL_SUCCESS;
+		} else {
+			res = SQL_ERROR;
+		}
+#else
+		res = SQL_ERROR;
+#endif
+	}
 
 	if((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO))
 	{
@@ -1482,7 +1842,26 @@ SQLRETURN triSQL::SetAutoCommitMode(bool autoCommit)
 
 SQLRETURN triSQL::EndTransaction(bool commit)
 {
-	SQLRETURN res = SQLEndTran(SQL_HANDLE_DBC, m_ConnHandle, (commit ? SQL_COMMIT : SQL_ROLLBACK));
+	SQLRETURN res = SQL_SUCCESS;
+	if (!m_odbc->getUseWebService()) {
+		res = SQLEndTran(SQL_HANDLE_DBC, m_ConnHandle, (commit ? SQL_COMMIT : SQL_ROLLBACK));
+	} else {
+#ifndef SETODBC
+		// Tell Web Service to commit
+		char params[256];
+		Expr *ret;
+		sprintf(params,"end=%s&stmtid=%lx",(commit?"Y":"N"),(long)m_StatHandle);
+		m_odbc->getDM()->API(*(m_odbc->getCTX()),"/dmadminweb/API/sql",params,&ret,m_CookieJar);
+		TiXmlElement *e;
+		if (parseReply(ret->toString(),&e)) {
+			res = SQL_SUCCESS;
+		} else {
+			res = SQL_ERROR;
+		}
+#else
+		res = SQL_ERROR;
+#endif
+	}
 
 	if((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO))
 	{

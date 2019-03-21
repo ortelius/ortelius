@@ -48,6 +48,7 @@
 #  endif
 #endif
 
+#include "tinyxml.h"	// for TiXmlElement
 
 // For convenience - RHT 19/12/2013
 #define IS_SQL_SUCCESS(x)		((x == SQL_SUCCESS) || (x == SQL_SUCCESS_WITH_INFO))
@@ -89,6 +90,19 @@ DATABASE_TYPE_ORACLE=10,
 DATABASE_TYPE_POSTGRES=20
 } DATABASE_TYPE;
 
+typedef struct bind_params_tag{
+SQLSMALLINT TargetType;
+SQLSMALLINT Precision;
+SQLPOINTER TargetValuePtr;
+SQLLEN BufferLength;
+} BIND_PARAMS;
+
+typedef struct bind_columns_tag{
+SQLSMALLINT TargetType;
+SQLPOINTER TargetValuePtr;
+SQLLEN BufferLength;
+SQLPOINTER NullIndicator;
+} BIND_COLUMNS;
 
 class DMAPI_API triSQL
 {
@@ -101,6 +115,19 @@ private:
 	CHARCOLS		*CharCols;
 	CHARCOLS		*xCol;
 	class triODBC	*m_odbc;
+	int				m_maxBindParams;
+	BIND_PARAMS		*m_BindParams;
+	int				m_maxBindColumns;
+	BIND_COLUMNS	*m_BindColumns;
+	class DMArray	*m_CookieJar;
+	char			***m_returnedData;
+	int				m_retColCount;
+	int				m_retRowCount;
+	int				m_currentRow;
+	char			*m_LastErrorText;
+	int				m_LastErrorNum;
+	int				m_ParamCount;
+	int				m_RowsUpdated;
 
 	long			AllocateStatementHandle(SQLHDBC ConnHandle);
 	long			FreeStatementHandle();
@@ -109,8 +136,9 @@ private:
 	unsigned long	m_NumRowsFetched;
 	SQLLEN			*m_IndicatorArray;
 	SQLLEN			m_SingleIndicator;
-	bool			ReportError(char *place);
 	void			setODBC(triODBC *odbc);
+	void			setCookieJar(class DMArray *cookieJar);
+	bool			parseReply(char *xmlstr,TiXmlElement **result);
 
 	triSQL();
 	triSQL(triSQL &rhs);
@@ -128,7 +156,6 @@ public:
 	SQLRETURN	ParamData();
 	SQLRETURN	PutData(SQLPOINTER TargetValue,SQLLEN DataLength);
 	SQLRETURN	GetData(SQLUSMALLINT ColumnNumber,SQLSMALLINT	TargetType,SQLPOINTER TargetValuePtr,SQLLEN DataLength, SQLLEN *ni);	// RHT 04/12/2013
-	void		SetArraySize(long nRows);
 	long		GetRowsReturned();
 	long		GetRowCount();
 	SQLRETURN	FetchRow();
@@ -162,18 +189,26 @@ private:
 	char			*m_nowcolname;
 	DATABASE_TYPE	m_DatabaseType;
 	class DM		*m_dm;
+	class Context	*m_ctx;
+
+	char			*m_clientid;
+	bool			m_useWebService;	// If set all queries are routed to the webservice
+	class DMArray	*m_CookieJar;
+	char			*m_LastErrorText;
+	int				m_LastErrorNum;
+
 
 	long			AllocateAndSetEnvironmentHandle();
 	long			AllocateConnectionHandle();
 	long			FreeEnvironmentHandle();
 	long			FreeConnectionHandle();
+	bool			parseReply(char *xmlstr,TiXmlElement **result);
 
 public:
 
-	long			ConnectToDataSource(class DM *dm,char *PathName);
+	long			ConnectToDataSource(DM *dm);
 	long			ConnectToDataSource(class DM *dm,char *DSN,char *Username,char *Password);
 	long			DisconnectFromDataSource();
-	void			Reconnect();
 	void			GetLastError(char **MsgPtr,SQLINTEGER *ErrNum);
 	char			*GetDatabaseVendor(){return m_dbname;}
 	char			*GetDSN(){return m_dsn;}
@@ -185,8 +220,12 @@ public:
 	triSQL			*GetSQL();
 	DATABASE_TYPE	GetDatabaseType();
 	class DM		*getDM(){return m_dm;}
+	bool			getUseWebService() {return m_useWebService;};
+	class Context	*getCTX(){return m_ctx;}
+	
 	
 	triODBC();
+	triODBC(class Context *ctx,char *clientid);
 	~triODBC();
 
 	

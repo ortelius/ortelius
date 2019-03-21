@@ -123,7 +123,6 @@ bool WMIWrapper::createLocator()
 	return true;
 }
 
-
 bool WMIWrapper::connectServer(const char *machine, const char * path,const wchar_t *name, const wchar_t *pwd)
 {
 	wchar_t pszServer[1204];

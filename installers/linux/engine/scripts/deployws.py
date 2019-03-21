@@ -36,6 +36,9 @@ def stopApp():
    global nodeName
    global serverName
    
+   if len(appName) == 0 or appName.lower() == "none":
+       return
+       
    if len(clusterName) > 0 and clusterName.lower() != "none":
     for server in clusterMembers:
      serverName=AdminConfig.showAttribute(server,'memberName')
@@ -77,6 +80,10 @@ def startApp():
  global nodeName
  global serverName
  
+ if len(appName) == 0 or appName.lower() == "none":
+     restartServer()
+     return
+     
  if len(clusterName) > 0 and clusterName.lower() != "none":
     configJVM()
     for server in clusterMembers:
@@ -369,6 +376,10 @@ def changedDataSource():
     return 0
     
 def removeApp():
+    
+    if len(appName) == 0 or appName.lower() == "none":
+        return
+        
     if isAppExists():
      print 'Removing Application "%s"...' %(appName)
      AdminApp.uninstall(appName)
@@ -421,8 +432,40 @@ def stopServer():
     print "Server %s is now %s" %(serverName, serverStatus)
 
 def restartServer():
-    stopServer()
-    startServer()
+    serverObj = AdminControl.completeObjectName('WebSphere:type=Server,name=' + serverName + ',*')
+
+    if len(serverObj) > 0:
+      serverStatus = AdminControl.getAttribute(serverObj, 'state')
+    else:
+      serverStatus = 'STOPPED'
+     
+    if serverStatus != "STOPPED":
+      print 'Stopping server "%s" on node "%s"...' %(serverName, nodeName)
+      AdminControl.stopServer(serverName)
+      while (serverStatus != 'STOPPED'):
+       serverObj = AdminControl.completeObjectName('WebSphere:type=Server,name=' + serverName + ',*')
+       if len(serverObj) > 0:
+        serverStatus = AdminControl.getAttribute(serverObj, 'state')
+       else:
+        serverStatus = 'STOPPED'
+       time.sleep(5)
+      
+    print "Server %s is now %s" %(serverName, serverStatus)     
+      
+    serverObj = AdminControl.completeObjectName('WebSphere:type=Server,name=' + serverName + ',*')
+    if serverStatus != "STARTED":
+      print 'Starting server "%s" on node "%s"...' %(serverName, nodeName)
+      AdminControl.startServer(serverName)
+    serverStatus = 'STOPPED'
+ 
+    while (serverStatus != 'STARTED'):
+     serverObj = AdminControl.completeObjectName('WebSphere:type=Server,name=' + serverName + ',*')
+     if len(serverObj) > 0:
+      serverStatus = AdminControl.getAttribute(serverObj, 'state')
+     else:
+      serverStatus = 'STOPPED'
+     time.sleep(5)
+    print "Server %s is now %s" %(serverName, serverStatus)     
 
 def stopCluster():
     print 'Stopping cluster "%s"...' %(clusterName)
@@ -438,6 +481,9 @@ def startCluster():
     print 'Cluster "%s" started successfully' %(clusterName)
     
 def installApp():
+    if len(appName) == 0 or appName.lower() == "none":
+        return
+        
     if isAppExists():
      removeApp()
     print 'Installing application from "%s" ...' %(fileName) 

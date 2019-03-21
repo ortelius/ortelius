@@ -1254,6 +1254,7 @@ int dmmain(int argc,char **argv)
 			Password = (char *)malloc(strlen(Keyfile)+10);
 			sprintf(Password,"%c%s",'\1',Keyfile);
 		}
+
 		int i = protocol_connect(Server,UserName,Password);
 
 		if (i <= 0)

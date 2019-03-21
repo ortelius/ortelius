@@ -80,6 +80,7 @@
 #include "tinyxml.h"
 
 // For DoHttpRequest
+
 #include "openssl/ssl.h"
 #include "openssl/err.h"
 #include "openssl/rand.h"
@@ -1381,6 +1382,11 @@ void DM::setEventId(int eventid)
 	m_eventid = eventid;
 }
 
+int DM::getEventId()
+{
+	return m_eventid;
+}
+
 
 FILE *DM::createTemporaryFile(char **filename)
 {
@@ -2077,6 +2083,70 @@ int DM::providerTest(OBJECT_KIND kind, int id, char *recipient)
 	return -1;
 }
 
+// For engine calls to the API
+
+// Simple URL encoder. Space = %20. Leaves / alone so we can encode a complete path
+
+
+bool DM::API(Context &ctx ,const char *URL,const char *params,Expr **ret,DMArray *cjp /* = NULL */)
+{
+	*ret = NULL;
+	bool result=false;			// default = fail
+	char *hostname="localhost";	// default
+	int port=8080;				// default
+	bool secure=false;			// default
+
+	char *webUI = getenv("WEBSERVER");
+	if (webUI) {
+		// Remote engine override
+		char *url;
+		if (getConnectionDetails(webUI,&hostname,&port,&secure,&url)) {
+			// Error parsing WEBSERVER
+			exitWithError("WEBSERVER variable cannot be parsed.");
+		}
+	}
+	int status;
+	char *contentType;
+	char *content;
+	
+	DMArray cookieJar = new DMArray(false);
+	if (!cjp) cjp = &cookieJar;
+
+
+	debug3("hostname=[%s]\n",hostname);
+	debug3("port=%d\n",port);
+	debug3("params=[%s]\n",params);
+	debug3("URL=[%s]\n",URL);
+
+	int res = DoHttpRequest(hostname,port,URL,
+			  params, MESSAGE_TYPE_GET, secure, hostname, 
+			  NULL, cjp, NULL,
+			  &status, &contentType,&content);
+
+	// printf("returned, res=%d status=%d contentType=%s\n",res,status,contentType);
+	if(res == 0 && content) {
+		
+		if (strncmp(contentType,"application/xml",15)==0) {
+			// XML reply - only API call that returns XML is the SQL interface
+			Expr *e = new Expr(content);
+			*ret = e;
+		} else {
+			// Assume JSON reply
+			LexerBuffer lb(expr_lexer, content, NULL);
+			Expr *e = lb.parseExpression(ctx); // May raise an exception
+			if (e) {
+				// *ret = e->toArray();
+				*ret = e;
+				Variable *V = e->toArray()->get("success");
+				if (V) {
+					result = V->getInt()?true:false;
+				}
+			}
+		}
+	}
+
+	return result;
+}
 
 void DM::writeToLogFile(const char* fmt, ...)
 {
@@ -2887,6 +2957,7 @@ int DM::internalDeployApplication(class Application &app,Context *origctx /* = N
 			Audit &audit = ctx.dm().getDummyAudit();
 			AuditEntry *ae = audit.newAuditEntry("ApplicationPost");
 			ae->start();
+			printf("executing post action\n");
 			res = internalRunAction(*postAction);
 			ae->finish();
 		}

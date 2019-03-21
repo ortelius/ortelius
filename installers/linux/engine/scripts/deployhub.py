@@ -150,4 +150,4 @@ def get_attrs(app, comp, env, srv, dhurl, cookies):
     for entry in comp_attrs:
         result.update(entry)
 
-    return json.dumps(result)
+    return result

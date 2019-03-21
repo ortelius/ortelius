@@ -22,7 +22,7 @@
 #include "hashtable.h"
 
 
-#define DEFAULT_THREADLIMIT 10
+#define DEFAULT_THREADLIMIT 25
 
 #define CONFIG_THREADLIMIT "thread_limit"
 

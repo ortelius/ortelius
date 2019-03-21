@@ -10,6 +10,8 @@ import subprocess
 def main():
     # print command line arguments
     drive = ""
+    from_cmd=""
+    to_cmd=""
 
     for arg in sys.argv[1:]:
         if ("--user" in arg):
@@ -32,7 +34,23 @@ def main():
 #    print(pw)
 #    print(host)
 #    pprint(drive)
+
+    if (".cmd" in cmd and 'cmd /c' in cmd):
+     cmd2 = cmd.split('\\')[-1]
+     to_cmd = "c:\\temp\\" + cmd2.replace('"','')
+     cmd2 = '/tmp/' + cmd2.replace('"',"")
+     fc = open(cmd2,'r')
+     data = str(fc.read())
+     fc.close()
+     data = data.replace('"(null)"','')
+     data = data.replace('"','')
+     fc = open(cmd2,'w')
+     fc.write(data)
+     fc.close()
+     from_cmd = cmd2
+     
 #    print(cmd)
+
 
     dir = ""
     if (";put " in cmd): 
@@ -72,11 +90,13 @@ def main():
       os.mkdir('group_vars')
 
       fp = open('group_vars/windows.yml','w') 
-      fp.write("ansible_user: \"" + user + "\"\n")
-      fp.write("ansible_password: \"" + pw + "\"\n")
-      fp.write("ansible_port: 5985\n")
+      fp.write("ansible_user: '" + user + "'\n")
+      fp.write("ansible_password: '" + pw + "'\n")
+      fp.write("ansible_port: '5985'\n")
       fp.write("ansible_connection: winrm\n")
-      fp.write("ansible_winrm_server_cert_validation: ignore\n")
+      fp.write("ansible_winrm_transport: credssp\n")
+      fp.write("ansible_winrm_server_cert_validation: ignore\n") 
+      fp.write("validate_certs: false\n")    
       fp.close()
 
       fp = open('runit.yml','w') 
@@ -102,10 +122,10 @@ def main():
       p = subprocess.Popen('ansible-playbook runit.yml -i hosts', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
       for line in p.stdout.readlines():
          errors.append(line)
-         if ('ok=2' in str(line)):
+         if ('ok=2' in str(line) or 'ok=3' in str(line)):
            success=1
       p.wait()
-
+      
       if (success):
        print("stream: [::$DATA], " + str(os.stat(from_file).st_size) + " bytes")
       else:
@@ -113,7 +133,7 @@ def main():
          print(line)
 
       os.chdir('/tmp')
-      shutil.rmtree(tempdir) 
+#      shutil.rmtree(tempdir) 
 
     elif ("mkdir " in cmd): 
       dir=cmd.split('&')[0] 
@@ -133,11 +153,13 @@ def main():
       os.mkdir('group_vars')
 
       fp = open('group_vars/windows.yml','w') 
-      fp.write("ansible_user: \"" + user + "\"\n")
-      fp.write("ansible_password: \"" + pw + "\"\n")
-      fp.write("ansible_port: 5985\n")
+      fp.write("ansible_user: '" + user + "'\n")
+      fp.write("ansible_password: '" + pw + "'\n")
+      fp.write("ansible_port: '5985'\n")
       fp.write("ansible_connection: winrm\n")
-      fp.write("ansible_winrm_server_cert_validation: ignore\n")
+      fp.write("ansible_winrm_transport: credssp\n")
+      fp.write("ansible_winrm_server_cert_validation: ignore\n") 
+      fp.write("validate_certs: false\n")   
       fp.close()
 
       fp = open('runit.yml','w') 
@@ -169,7 +191,7 @@ def main():
          print(line)
 
       os.chdir('/tmp')
-      shutil.rmtree(tempdir) 
+#      shutil.rmtree(tempdir) 
 
     else: 
       cmd = cmd.replace("cmd /c \"",'')
@@ -186,11 +208,13 @@ def main():
       os.mkdir('group_vars')
 
       fp = open('group_vars/windows.yml','w') 
-      fp.write("ansible_user: \"" + user + "\"\n")
-      fp.write("ansible_password: \"" + pw + "\"\n")
-      fp.write("ansible_port: 5985\n")
+      fp.write("ansible_user: '" + user + "'\n")
+      fp.write("ansible_password: '" + pw + "'\n")
+      fp.write("ansible_port: '5985'\n")
       fp.write("ansible_connection: winrm\n")
-      fp.write("ansible_winrm_server_cert_validation: ignore\n")
+      fp.write("ansible_winrm_transport: credssp\n")
+      fp.write("ansible_winrm_server_cert_validation: ignore\n") 
+      fp.write("validate_certs: false\n")   
       fp.close()
 
       fp = open('runit.yml','w') 
@@ -200,6 +224,13 @@ def main():
       fp.write("  gather_facts: no\n")
       fp.write("\n")
       fp.write("  tasks:\n")
+      fp.write("\n")
+      if (len(from_cmd) > 0):
+         fp.write("  - name: Copy File\n")
+         fp.write("    win_copy:\n")
+         fp.write("      src: " + from_cmd + "\n")
+         fp.write("      dest: " + to_cmd + "\n")
+         fp.write("\n")
       fp.write("  - name: Execute File\n")
       fp.write("    win_command: " + cmd + "\n")
       fp.write("    register: cat\n")
@@ -212,14 +243,14 @@ def main():
       my_env['ANSIBLE_STDOUT_CALLBACK'] = 'minimal'
       p = subprocess.Popen('ansible-playbook runit.yml -i hosts', env=my_env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
       for line in p.stdout.readlines():
-         if ("=>" in str(line)):
-          break
+         # if ("=>" in str(line)):
+         #   break
          print(line.decode('ascii'))
          
       p.wait()
 
       os.chdir('/tmp')
-      shutil.rmtree(tempdir) 
+#      shutil.rmtree(tempdir) 
 
 if __name__ == "__main__":
     main()

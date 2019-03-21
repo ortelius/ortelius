@@ -379,27 +379,32 @@ void DatabaseAudit::writevToAuditLog(int stream, long threadId, const char *buff
 
 void DatabaseAudit::writeBufferToAuditLog(int stream, long threadId, const char* buffer, int len)
 {
+	// Mod - make this thread safe
+	Thread::lock(__LINE__,__FILE__,"writeBufferToAuditLog");
 	m_lineno++;
-
+	// Ensure buffer has no unprintable characters in it
+	char *p = (char *)buffer;
+	for (int i=0;i<len;i++) {
+		if (p[i]<=' ' && p[i]!='\r' && p[i]!='\n') p[i]=' ';
+	}
 	AutoPtr<triSQL> sql = m_odbc.GetSQL();
 	SQLRETURN res = sql->PrepareStatement(
 		"INSERT INTO dm_deploymentlog(deploymentid,lineno,runtime,stream,thread,line) VALUES(%d,%d,%s,%d,%d,?)",
 		m_deployId, m_lineno, m_odbc.getNowCol(), stream, threadId);
-	if((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO)) {
-		debug1/*WriteToLogFile*/("Failed to insert audit log into database - prepare failed");
-		return;
+	if ((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO)) {
+		debug1("Failed to insert audit log into database - prepare failed");
+	} else {
+		sql->BindParameter(1, SQL_LONGVARCHAR /*was SQL_BINARY*/, len, (char*) buffer, len);
+		SQLRETURN execres = sql->Execute();
+		if(execres == SQL_NEED_DATA) {
+			debug1("Insert audit log into database - need data");
+			execres = sql->ParamData();		// Get to first BLOB column
+			execres = sql->PutData((char*) buffer, len);
+			execres = sql->ParamData();	// Execute insert
+		}
+		sql->CloseSQL();
 	}
-
-	sql->BindParameter(1, SQL_LONGVARCHAR /*was SQL_BINARY*/, len, (char*) buffer, len);
-	SQLRETURN execres = sql->Execute();
-	if(execres == SQL_NEED_DATA) {
-		debug1/*WriteToLogFile*/("Insert audit log into database - need data");
-		execres = sql->ParamData();		// Get to first BLOB column
-		execres = sql->PutData((char*) buffer, len);
-		execres = sql->ParamData();	// Execute insert
-	}
-
-	sql->CloseSQL();
+	Thread::unlock(__LINE__,__FILE__,"writeBufferToAuditLog");
 }
 
 
