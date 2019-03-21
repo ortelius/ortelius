@@ -23,8 +23,8 @@ RUN useradd -ms /bin/bash omreleng; \
     chmod 777 /tmp/helm_install.sh; \
     /tmp/helm_install.sh; \
 
-    curl -sL -o /tmp/deployhub-pro-engine.rpm https://github.com/ortelius/ortelius/blob/master/rpms/deployhub-engine.rpm?raw=true; \
-    curl -sL -o /tmp/deployhub-pro-webadmin.rpm https://github.com/ortelius/ortelius/blob/master/rpms/deployhub-webadmin.rpm?raw=true; \
+    curl -sL -o /tmp/deployhub-engine.rpm https://github.com/ortelius/ortelius/blob/master/rpms/deployhub-engine.rpm?raw=true; \
+    curl -sL -o /tmp/deployhub-webadmin.rpm https://github.com/ortelius/ortelius/blob/master/rpms/deployhub-webadmin.rpm?raw=true; \
     yum -y install /tmp/deployhub-engine.rpm /tmp/deployhub-webadmin.rpm; \
     yum -y clean all; \
     rm -rf /var/cache/yum; \
