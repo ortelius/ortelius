@@ -30,12 +30,12 @@ export HOME=$(getent passwd `whoami` | cut -d: -f6)
 
 sudo cp -r /keys/* /root/.ssh
 sudo chown -R root /root/.ssh
-sudo chmod 600 /root/.ssh
+sudo chmod 755 /root/.ssh
 sudo chmod 600 /root/.ssh/known*
 
 cp -r /keys/* $HOME/.ssh
 chown -R omreleng $HOME/.ssh 
-chmod 600 $HOME/.ssh
+chmod 755 $HOME/.ssh
 chmod 600 $HOME/.ssh/known*
 
 echo Running DeployHub Processes
