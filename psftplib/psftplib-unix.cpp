@@ -574,10 +574,14 @@ int protocol_cd(char *NewDir)
 	len = strlen(line);
 	for (k=0; k<len; k++)
 	{
-		if (line[k] == '\n' || line[k] == '\r') line[k] = '\0';
+		if (line[k] == '\n' || line[k] == '\r') 
+      line[k] = '\0';
 		else
-		if (line[k] == '\\') line[k] == '/';
-		else if (line[k] != myDir[k]) match=false;
+      if (line[k] == '\\') 
+        line[k] == '/';
+		  else 
+        if (line[k] != myDir[k]) 
+          match=false;
 	}
 	if (match && strlen(line) == strlen(myDir))
 	{
@@ -587,15 +591,12 @@ int protocol_cd(char *NewDir)
 	}
    }
    fclose(fp);
-			if (getenv("TRIDEBUG") == NULL)
-     unlink(results);
-   return res;
   }
  }
 
- if ((fp=fopen(results, "r")) != NULL)
+ if ((fp=fopen(results, "r")) != NULL && res == 0)
  {
-		*err = '\0';
+	*err = '\0';
   while (fgets(line, sizeof(line), fp) != NULL)
   {
 			if (line[strlen(line)-1] == '\n')
@@ -606,12 +607,13 @@ int protocol_cd(char *NewDir)
    if (strlen(err) + strlen(line) < 59000)
 				strcat(err,line);
   }
-		SetGlobalErrorPtr(err);
+	SetGlobalErrorPtr(err);
   fclose(fp);
  }
-	if (getenv("TRIDEBUG") == NULL)
-   unlink(results);
- return 0;
+
+ if (getenv("TRIDEBUG") == NULL)
+     unlink(results);
+ return res;
 }
 
 int protocol_lcd(char *NewDir)
@@ -704,15 +706,12 @@ int protocol_mkdir(char *NewDir)
     }
    }
    fclose(fp);
-			if (getenv("TRIDEBUG") == NULL)
-     unlink(results);
-   return res;
   }
  }
 
- if ((fp=fopen(results, "r")) != NULL)
+ if ((fp=fopen(results, "r")) != NULL && res == 0)
  {
-		*err = '\0';
+	*err = '\0';
   while (fgets(line, sizeof(line), fp) != NULL)
   {
 			if (line[strlen(line)-1] == '\n')
@@ -724,10 +723,13 @@ int protocol_mkdir(char *NewDir)
    if (strlen(err) + strlen(line) < 59000)
 				strcat(err,line);
   }
-		SetGlobalErrorPtr(err);
+	SetGlobalErrorPtr(err);
   fclose(fp);
  }
- return 0;
+
+ 	if (getenv("TRIDEBUG") == NULL)
+     unlink(results);
+  return res;
 }
 
 int protocol_put(char *FileName)

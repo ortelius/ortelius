@@ -184,17 +184,17 @@ else
 	# Run the command
  if [ "${IDENT}" != "" ]; then
 		if [ "${USER}" != "" ]; then
-                                cat /tmp/$$.sh | ssh -q $TTY -i $IDENT -p $PORT $USER@$HOST "$CMD"
+                                cat /tmp/$$.sh | ssh $TTY -i $IDENT -p $PORT $USER@$HOST "$CMD"
 		else
-				cat /tmp/$$.sh | ssh -q $TTY -i $IDENT -p $PORT $HOST "$CMD"
+				cat /tmp/$$.sh | ssh $TTY -i $IDENT -p $PORT $HOST "$CMD"
 		fi			
  elif [ "${PW}" = "" ]; then
 				if [ "${USER}" != "" ]; then
-					 cat /tmp/$$.sh | ssh -q $TTY -p $PORT $USER@$HOST "$CMD"
+					 cat /tmp/$$.sh | ssh $TTY -p $PORT $USER@$HOST "$CMD"
 				else
-					 cat /tmp/$$.sh | ssh -q $TTY -p $PORT $HOST "$CMD"
+					 cat /tmp/$$.sh | ssh $TTY -p $PORT $HOST "$CMD"
 				fi	
 	else			
-				cat /tmp/$$.sh | sshpass -p "$PW" ssh -q $TTY -p $PORT $USER@$HOST "$CMD"
+				cat /tmp/$$.sh | sshpass -p "$PW" ssh $TTY -p $PORT $USER@$HOST "$CMD"
 	fi			
 fi	
