@@ -24,9 +24,9 @@ RUN curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm
     chmod 777 /tmp/helm_install.sh; \
     /tmp/helm_install.sh; 
 
-RUN curl -sL -o /tmp/deployhub-engine$$.rpm https://github.com/ortelius/ortelius/blob/master/rpms/deployhub-engine.rpm?raw=true; \
-    curl -sL -o /tmp/deployhub-webadmin$$.rpm https://github.com/ortelius/ortelius/blob/master/rpms/deployhub-webadmin.rpm?raw=true; \
-    yum -y install /tmp/deployhub-engine$$.rpm /tmp/deployhub-webadmin$$.rpm; \
+RUN BLD=$(date|md5);curl -sL -o /tmp/deployhub-engine${BLD}.rpm https://github.com/ortelius/ortelius/blob/master/rpms/deployhub-engine.rpm?raw=true; \
+    curl -sL -o /tmp/deployhub-webadmin${BLD}.rpm https://github.com/ortelius/ortelius/blob/master/rpms/deployhub-webadmin.rpm?raw=true; \
+    yum -y install /tmp/deployhub-engine${BLD}.rpm /tmp/deployhub-webadmin${BLD}.rpm; \
     yum -y clean all; \
     rm -rf /var/cache/yum; \
     mkdir -p /home/omreleng/.ssh; \

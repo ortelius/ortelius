@@ -1303,7 +1303,7 @@ int dmmain(int argc,char **argv)
 						ret = 0;
 					} else {
 						// Failure - base directory is invalid
-						printf("Base directory \"%s\" is invalid or inaccessible\n",argv[p]?argv[p]:"null");
+						printf("Base directory \"%s\" is invalid or inaccessible\n%s\n",argv[p]?argv[p]:"null",protocol_return_last_error());
 						ret = 2;	// to differentiate between connection failure (which is exit 1)
 					}
 				}
