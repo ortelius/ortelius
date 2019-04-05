@@ -12,6 +12,8 @@ def main():
     drive = ""
     from_cmd=""
     to_cmd=""
+    errors=[]
+    success=0
 
     for arg in sys.argv[1:]:
         if ("--user" in arg):
@@ -117,10 +119,9 @@ def main():
       fp.write("      dest: " + to_file + "\n")
       fp.close()
 
-      success=0
-      errors=[]
       p = subprocess.Popen('ansible-playbook runit.yml -i hosts', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
       for line in p.stdout.readlines():
+         line = line.decode('ascii')
          errors.append(line)
          if ('ok=2' in str(line) or 'ok=3' in str(line)):
            success=1
@@ -128,12 +129,6 @@ def main():
       
       if (success):
        print("stream: [::$DATA], " + str(os.stat(from_file).st_size) + " bytes")
-      else:
-       for line in errors:
-         print(line)
-
-      os.chdir('/tmp')
-#      shutil.rmtree(tempdir) 
 
     elif ("mkdir " in cmd): 
       dir=cmd.split('&')[0] 
@@ -175,10 +170,9 @@ def main():
       fp.write("      state: directory\n")
       fp.close()
 
-      success=0
-      errors=[]
       p = subprocess.Popen('ansible-playbook runit.yml -i hosts', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
       for line in p.stdout.readlines():
+         line = line.decode('ascii')
          errors.append(line)
          if ('ok=1' in str(line)):
            success=1
@@ -186,12 +180,6 @@ def main():
 
       if (success):
        print(dir)
-      else:
-       for line in errors:
-         print(line)
-
-      os.chdir('/tmp')
-#      shutil.rmtree(tempdir) 
 
     else: 
       cmd = cmd.replace("cmd /c \"",'')
@@ -243,13 +231,23 @@ def main():
       my_env['ANSIBLE_STDOUT_CALLBACK'] = 'minimal'
       p = subprocess.Popen('ansible-playbook runit.yml -i hosts', env=my_env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
       for line in p.stdout.readlines():
-         # if ("=>" in str(line)):
-         #   break
-         print(line.decode('ascii'))
-         
+         line = line.decode('ascii')
+         errors.append(line)
       p.wait()
 
-      os.chdir('/tmp')
+
+    fplog = open("ansible.log","a")
+    for line in errors:
+      fplog.write(line)
+      print(line)
+    fplog.close()
+
+    os.chdir('/tmp')
+    if (success):
+      sys.exit(0)
+    else:
+      sys.exit(1)
+
 #      shutil.rmtree(tempdir) 
 
 if __name__ == "__main__":
