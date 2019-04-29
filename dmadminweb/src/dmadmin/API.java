@@ -2043,6 +2043,13 @@ public class API extends HttpServlet
      throw new ApiException("Path contains too many elements");
     }
    }
+			else if (elements[0].equals("domains")) 
+			{
+			    System.out.println("API: domains");
+			     String domlist = so.getDomainList();
+			     System.out.println(domlist);
+			      obj.add("result", domlist);
+			}						
    else if (elements[0].equals("servers"))
    {
     if (elements.length == 1)

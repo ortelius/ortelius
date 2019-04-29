@@ -740,7 +740,9 @@ public class DMSession {
 			m_UserPermissions = new UserPermissions(this,0);
 			m_password = Password;
 			m_username = UserName;
-			GetDomains(getUserID());
+			m_domainlist = "";
+			User user = getUserByName(UserName);
+	//		GetDomains(getUserID());
 			PreparedStatement st2 = getDBConnection().prepareStatement("SELECT g.acloverride,g.tabendpoints,g.tabapplications,g.tabactions,g.tabproviders,g.tabusers,g.id FROM dm.dm_usergroup g,dm.dm_usersingroup x WHERE x.userid=? AND g.id=x.groupid");
 			st2.setInt(1, getUserID());
 			ResultSet rs2 = st2.executeQuery();
