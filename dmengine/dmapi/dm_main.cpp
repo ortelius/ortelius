@@ -49,6 +49,7 @@
 #endif /*HAVE_TRILOGYAPI*/
 
 #include "dm.h"
+#include "lexer.h"
 #include "context.h"
 #include "scopestack.h"
 #include "exceptions.h"
@@ -61,6 +62,7 @@
 //#include "expr.h"	// For CharPtr only
 #include "charptr.h"
 #include "audit.h"
+
 
 #include "hashtable.h"
 
@@ -768,11 +770,6 @@ void setCurrentUser(DM &dm)
 	if(!username) {
 		dm.exitWithError("Username must be specified");
 	}
-	if(!dm.setCurrentUser(username)) {
-		// TODO: This should probably report "invalid username or password" so
-		// as not to give away usernames
-		dm.exitWithError("Logon denied: invalid username or password");
-	}
 
 	const char *password = getenv("tripassword");
 	// PRO Version - password may be passed in TRIFIELD1 if being invoked from the Web UI
@@ -785,8 +782,7 @@ void setCurrentUser(DM &dm)
 		char *fmt = "/dmadminweb/API/login?user=%s&pass=%s";
 		char *p = (char *)malloc(strlen(fmt)+strlen(eu)+strlen(ep)+10);
 		sprintf(p,fmt,eu,ep);
-		free(eu);
-		free(ep);
+	
 		Expr *content;
 		List<Server> servers = new List<Server>();
 		ScopeStack *stack = new ScopeStack(dm);
@@ -800,9 +796,33 @@ void setCurrentUser(DM &dm)
 			dm.exitWithError("Logon denied: invalid username or password");
 		}
 		*/
-
+        free(p);
 		dm.writeToLogFile("User '%s' authenticated", username);
-		dm.updateUserLastLogin(*(dm.getCurrentUser()));
+
+		char *fmt2 = "/dmadminweb/API/domains?user=%s&pass=%s";
+        char *p2 = (char *)malloc(strlen(fmt)+strlen(eu)+strlen(ep)+10);
+		sprintf(p2,fmt2,eu,ep);
+
+		if (dm.API(*ctx,p2,NULL,&content)) 
+		{
+			Expr *e = content;
+			if (e) {
+				// *ret = e->toArray();
+				Variable *V = e->toArray()->get("result");
+				if (V) 
+				{
+					const char *domainlist = V->getString();
+					if(!dm.setCurrentUser(username, domainlist))
+					{
+					 dm.exitWithError("Logon denied: invalid username or password");
+					}
+					dm.updateUserLastLogin(*(dm.getCurrentUser()));
+				}
+			}
+		}
+		free(eu);
+		free(ep);
+		free(p);
 	} else {
 		if (dm.getEventId()==0) {
 			// Password mandatory if we're not running a timed event
@@ -1883,7 +1903,7 @@ void UpdateDB(triODBC &odbc,Context &ctx,int serverid,int status,char *ipaddr,un
 				Server *server = model->getServer(serverid);
 				if (server) {
 					NotifyTemplate *tmpl = server->getPingTemplate(ctx);
-					ctx.dm().setCurrentUser("admin");	// Mmmmm .... 
+					ctx.dm().setCurrentUser("admin",NULL);	// Mmmmm .... 
 					if (tmpl) ctx.dm().internalNotify(ctx,tmpl);
 				}
 			}
@@ -1985,7 +2005,7 @@ int CheckServerConnectivity(Model &model,DM &dm,triODBC &odbc,int serverid)
 		creds = env->getCredentials();
 	}
 
-	dm.setCurrentUser("admin");	// what happens if someone renames the admin user?
+	dm.setCurrentUser("admin",NULL);	// what happens if someone renames the admin user?
 
 	TransferProviderImplFactory *factory = TransferProviderImplRegistry::instance().getFactory(s->protocol());
 	if(!factory) {
@@ -2095,7 +2115,7 @@ void ScanServer(Model &model,DM &dm,triODBC &odbc,int serverid)
 		creds = env->getCredentials();
 	}
 
-	dm.setCurrentUser("admin");	// what happens if someone renames the admin user?
+	dm.setCurrentUser("admin",NULL);	// what happens if someone renames the admin user?
 
 	// printf("envid=%d name=[%s]\n",env->id(),env->name());
 
@@ -2329,7 +2349,7 @@ void ScanServer(Model &model,DM &dm,triODBC &odbc,int serverid)
 			ctx.stack().setGlobal("SERVER_STATUS","OK");
 			Model *model = ctx.dm().getModel();
 			if (model) {
-				ctx.dm().setCurrentUser("admin");	// Mmmmm .... 
+				ctx.dm().setCurrentUser("admin",NULL);	// Mmmmm .... 
 				ctx.dm().internalNotify(ctx,md5template);
 			}
 		}
@@ -2508,13 +2528,6 @@ int DM_main(int argc, char **argv, char **envp)
 //		"; sizeof(short) = %d; sizeof(int) = %d; sizeof(long) = %d; sizeof(DMINT32) = %d\n",
 //		sizeof(short), sizeof(int), sizeof(long), sizeof(DMINT32));
 //	exit(0);
- umask(00000);
- mkdir("/tmp/testit1",0777);
- int uid = getuid();
- int euid = geteuid();
- FILE *f = fopen("/tmp/t.dat","w");
- fprintf(f,"%d %d\n", uid, euid);
- fclose(f);
  
 	try {
 	int n = ScanOptions(options, sizeof(options)/sizeof(options[0]), argc, argv);

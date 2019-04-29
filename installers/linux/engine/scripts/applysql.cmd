@@ -5,8 +5,7 @@ set database=%~3
 set username=%~4
 set password=%~5
 
-REM POSTGRES SQL
-if NOT "%dbtype" == "postgres" goto :oracle
+if NOT "%dbtype%" == "postgres" goto :oracle
 
 if exist "%dbhome%" goto homeok
 echo POSTGRES_HOME is not set or does not exist
@@ -37,8 +36,7 @@ goto :loop
 
 :end_loop
 
-REM ORACLE SQL
-if NOT "%dbtype" == "oracle" goto :sqlserver
+if NOT "%dbtype%" == "oracle" goto :sqlserver
 
 :oracle
 if exist "%dbhome%" goto oraclehomeok
@@ -67,8 +65,6 @@ cd /d "%sqldir%"
 goto :loop_ora
 
 :end_loop_ora
-
-REM SQLSERVER SQL
 
 :sqlserver
 if exist "%dbhome%" goto sqlserverhomeok

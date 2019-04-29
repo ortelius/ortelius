@@ -1,0 +1,388 @@
+#!/usr/bin/python3
+
+from pprint import pprint
+import sys
+import re
+import tempfile
+import os
+import shutil
+import subprocess
+import click
+import json
+import glob
+import hashlib
+
+def md5sum(filename):
+    md5 = hashlib.md5()
+    with open(filename, 'rb') as f:
+        for chunk in iter(lambda: f.read(128 * md5.block_size), b''):
+            md5.update(chunk)
+    return md5.hexdigest()
+
+@click.command()
+@click.option('-protocol',help='Protocol to use')
+@click.option('-sourcedir',help='Source Directory for files to be transfered')
+@click.option('-targetdir',help='Target Directory on end point')
+@click.option('-user',help='User Id')
+@click.option('-password',help='User Password')
+@click.option('-target',help='Target OS')
+@click.option('-server',help='End Point')
+@click.option('-checkbase',help='Base directory on end point')
+@click.option('-keyfile',help='Keyfile')
+@click.option('-port',help='Port')
+@click.option('-rshell',help='Remote shell to use')
+@click.option('-tty',help='Use TTY',is_flag=True)
+@click.option('-copyscript',help='Copy script to remote',is_flag=True)
+@click.option('-exec',help='Command to execute',nargs=0)
+@click.argument('exec',nargs=-1)
+
+def main(protocol,sourcedir,targetdir,user,password,target,server,checkbase,keyfile,port,rshell,tty,copyscript,exec):
+    # print command line arguments
+    # dmtransfer "-protocol" "win" "-sourcedir" "/tmp/tdm.130.1" "-targetdir" "c:\temp2" "-user" "IEUser" "-password" "Passw0rd!" "-target" "win" "-server" "192.168.3
+    # dmtransfer "-protocol" "win" "-server" "192.168.3.139" "-user" "IEUser" "-password" "Passw0rd!" "-checkbase" "d:\temp" 
+    # dmtransfer "-protocol" "sftp" "-sourcedir" "/tmp/tdm.2761.3" "-targetdir" "/home/openmake/public_html/qa" "-port" "18765" "-user" "openmake" "-keyfile" "/opt/deployhub/engine/keys/openmakesoftware.pem" "-target" "unix" "-server" "37.60.234.52" 
+    # dmtransfer "-protocol" "sftp" "-server" "192.168.3.105" "-user" "" "-password" "" "-checkbase" "/opt/release-engineer" 
+    # dmtransfer "-protocol" "sftp" "-server" "192.168.3.125" "-user" "" "-password" "" "-exec" "md5sum" "/opt/release-engineer/engine/bin/dm" 
+    # dmtransfer "-protocol" "sftp" "-server" "77.104.156.73" "-port" "18765" "-user" "?_?TƎ" "-password" "???!??" "-checkbase" "/home/deployhub/public_html/downloads/rpms" 
+
+    localconnection=""
+    from_cmd = ""
+    to_cmd = ""
+    errors=[]
+    success=True
+    failed=0
+    unreachable=0
+    rshell_parms = []
+  
+    if (rshell is not None):
+      parts = rshell.split()
+      rshell = parts[0]
+      rshell_parms = parts[1:]
+
+    if (type(exec) is tuple):
+      exec = list(exec)
+      if (copyscript is False):
+        cmd=' '.join(exec)
+      else:
+        from_cmd=exec[0].replace('\\','/')
+        
+        if (protocol == "win"):
+          to_cmd="c:\\temp\\" + os.path.basename(from_cmd)
+        else:
+          to_cmd="/tmp/" + os.path.basename(from_cmd)
+
+        exec[0]=to_cmd
+        rshell_parms.extend(exec)
+        exec = rshell_parms
+        cmd=' '.join(exec)
+    else:
+     cmd=""
+
+    if (cmd is None):
+     cmd=""
+
+    if ("cmd /c \"" in cmd):
+      cmd = cmd.replace("cmd /c \"",'')
+      cmd = cmd[:-1]
+
+    if (port is None):
+      if (protocol == "win"):
+        port = 5985
+      else:
+        port = 22
+
+    if (server == "localhost"):
+      server="127.0.0.1"
+      localconnection=" --connection=local"
+
+    tempdir = tempfile.mkdtemp()
+    os.chdir(tempdir)
+    os.mkdir('group_vars')
+          
+    if (cmd is not None and len(cmd.strip()) > 0):
+      # Execute remote command
+
+      if (protocol == "win"):
+        fp = open('hosts','w') 
+        fp.write("[windows]\n")
+        fp.write(server + "\n")
+        fp.close()
+
+        fp = open('group_vars/windows.yml','w') 
+        fp.write("ansible_user: '" + user + "'\n")
+        fp.write("ansible_password: '" + password + "'\n")
+        fp.write("ansible_port: '" + str(port) + "'\n")
+        fp.write("ansible_connection: winrm\n")
+        fp.write("ansible_winrm_transport: credssp\n")
+        fp.write("ansible_winrm_server_cert_validation: ignore\n") 
+        fp.write("validate_certs: false\n")  
+        fp.close()
+
+        fp = open('runit.yml','w') 
+        fp.write("---\n")
+        fp.write("- name: Execute File\n")
+        fp.write("  hosts: all\n")
+        fp.write("  gather_facts: no\n")
+        fp.write("\n")
+        fp.write("  tasks:\n")
+        fp.write("\n")
+
+        if (len(from_cmd) > 0):
+
+          with open(from_cmd, 'r') as f:
+            text = f.read()
+          with open(from_cmd, 'w', newline="\r\n") as f:
+            f.write(text)
+
+          fp.write("  - name: Copy File\n")
+          fp.write("    win_copy:\n")
+          fp.write("      src: " + from_cmd + "\n")
+          fp.write("      dest: " + to_cmd + "\n")
+
+        fp.write("  - name: Execute File\n")
+        if (rshell is not None):
+          fp.write("    win_command: " + rshell + " " + cmd + "\n")
+        else:
+          fp.write("    win_command: " + cmd + "\n")
+        fp.write("    register: cat\n")
+        fp.write("    changed_when: False\n")
+        fp.write("  - name: Print Output\n")
+        fp.write("    debug: var=cat.stdout_lines\n")
+        fp.close()
+      else:
+        fp = open('hosts','w') 
+        fp.write("[linux]\n")
+        fp.write(server + "\n")
+        fp.close()
+
+        fp = open('group_vars/linux.yml','w') 
+        fp.write("ansible_user: '" + user + "'\n")
+        if (password is not None):
+          fp.write("ansible_password: '" + password + "'\n")
+        if (keyfile is not None):
+           fp.write("ansible_ssh_private_key_file: '" + keyfile + "'\n")
+        fp.write("ansible_port: '" + str(port) + "'\n")
+        fp.write("validate_certs: false\n")  
+        fp.close()
+
+        fp = open('runit.yml','w') 
+        fp.write("---\n")
+        fp.write("- name: Execute File\n")
+        fp.write("  hosts: all\n")
+        fp.write("  gather_facts: no\n")
+        fp.write("\n")
+        fp.write("  tasks:\n")
+        fp.write("\n")
+
+        if (len(from_cmd) > 0):
+          fp.write("  - name: Copy File\n")
+          fp.write("    copy:\n")
+          fp.write("      src: " + from_cmd + "\n")
+          fp.write("      dest: " + to_cmd + "\n")
+          fp.write("      mode: 0755 \n")
+          fp.write("\n")
+
+        fp.write("  - name: " + cmd + "\n")
+        fp.write("    shell: " + cmd + "\n")
+        if (rshell is not None):
+          fp.write("    args: \n")
+          fp.write("      executable: " + rshell + "\n")
+        fp.write("    register: cat\n")
+        fp.write("    changed_when: False\n")
+        fp.write("  - name: Print Output\n")
+        fp.write("    debug: var=cat.stdout_lines\n")
+        fp.close() 
+
+    else:
+      #
+      # Push files
+      #
+      if (checkbase is None):
+        from_dir=sourcedir.rstrip('/') + '/'
+        to_dir=targetdir.rstrip('/') 
+      else:
+        from_dir=None
+        to_dir=checkbase
+
+      if (protocol == "win"):
+        fp = open('hosts','w') 
+        fp.write("[windows]\n")
+        fp.write(server + "\n")
+        fp.close()
+
+        fp = open('group_vars/windows.yml','w') 
+        fp.write("ansible_user: '" + user + "'\n")
+        fp.write("ansible_password: '" + password + "'\n")
+        fp.write("ansible_port: '" + str(port) + "'\n")
+        fp.write("ansible_connection: winrm\n")
+        fp.write("ansible_winrm_transport: credssp\n")
+        fp.write("ansible_winrm_server_cert_validation: ignore\n") 
+        fp.write("validate_certs: false\n")  
+        fp.close()
+
+        fp = open('runit.yml','w') 
+        fp.write("---\n")
+        fp.write("- name: Transfer File\n")
+        fp.write("  hosts: all\n")
+        fp.write("  gather_facts: no\n")
+        fp.write("\n")
+        fp.write("  tasks:\n")
+        fp.write("  - name: Make Dir\n")
+        fp.write("    win_file:\n")
+        fp.write("      path: " + to_dir + "\n")
+        fp.write("      state: directory\n")
+        
+        if (from_dir is not None):
+          fp.write("\n")
+          fp.write("  - name: Copy File\n")
+          fp.write("    win_copy:\n")
+          fp.write("      src: " + from_dir + "\n")
+          fp.write("      dest: " + to_dir + "\n")
+          fp.write("    register: copyoutput\n")
+          fp.write("  - name: Print Output\n")
+          fp.write("    debug: var=copyoutput\n")
+        fp.close()
+      else:
+        fp = open('hosts','w') 
+        fp.write("[linux]\n")
+        fp.write(server + "\n")
+        fp.close()
+
+        fp = open('group_vars/linux.yml','w') 
+        fp.write("ansible_user: '" + user + "'\n")
+        if (password is not None):
+          fp.write("ansible_password: '" + password + "'\n")
+        if (keyfile is not None):
+           fp.write("ansible_ssh_private_key_file: '" + keyfile + "'\n")
+        fp.write("ansible_port: '" + str(port) + "'\n")
+        fp.write("validate_certs: false\n")  
+        fp.close()
+
+        fp = open('runit.yml','w') 
+        fp.write("---\n")
+        fp.write("- name: Transfer File\n")
+        fp.write("  hosts: all\n")
+        fp.write("  gather_facts: no\n")
+        fp.write("\n")
+        fp.write("  tasks:\n")
+        fp.write("  - name: Make Dir\n")
+        fp.write("    file:\n")
+        fp.write("      path: " + to_dir + "\n")
+        fp.write("      state: directory\n")
+        
+        if (from_dir is not None):
+          fp.write("\n")
+          fp.write("  - name: Copy File\n")
+          fp.write("    copy:\n")
+          fp.write("      src: " + from_dir + "\n")
+          fp.write("      dest: " + to_dir + "\n")
+          fp.write("    register: copyoutput\n")
+          fp.write("  - name: Print Output\n")
+          fp.write("    debug: var=copyoutput\n")
+        fp.close() 
+
+    p = subprocess.Popen('ansible-playbook runit.yml --ssh-common-args="-o StrictHostKeyChecking=no" -i hosts' + localconnection, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for line in p.stdout.readlines():
+       line = line.decode('ascii')
+       errors.append(line)
+
+       if ("unreachable=" in str(line)):
+         lm=re.findall(r"failed=(\d*)",str(line))
+         if (lm is not None):
+           failed=int(lm[0])
+
+         lm=re.findall(r"unreachable=(\d*)",str(line))
+         if (lm is not None):
+           unreachable=int(lm[0])
+
+       if (failed > 0 or unreachable > 0 or "ERROR!" in line):
+         success=False
+    p.wait()
+
+    data = None
+
+    with tempfile.NamedTemporaryFile(mode='w+t',dir='/tmp',suffix='.log',prefix='ansible_',delete=False) as fplog:
+      if (protocol is not None): fplog.write("-protocol \"" + protocol + "\" ") 
+      if (sourcedir is not None): fplog.write("-sourcedir \"" + sourcedir+ "\" ")
+      if (targetdir is not None): fplog.write("-targetdir \"" + targetdir+ "\" ")
+      if (user is not None): fplog.write("-user \"" + user+ "\" ")
+      if (target is not None): fplog.write("-target \"" + target+ "\" ")
+      if (server is not None): fplog.write("-server \"" + server + "\" ")
+      if (checkbase is not None): fplog.write("-checkbase \"" + checkbase+ "\" ")
+      if (keyfile is not None): fplog.write("-keyfile \"" + keyfile + "\" ")
+      if (port is not None): fplog.write("-port \"" + str(port) + "\" ")
+      if (rshell is not None): fplog.write("-rshell \"" + rshell + "\" ")
+      if (tty): fplog.write("-tty ")
+      if (copyscript): fplog.write("-copyscript ")
+      if (exec is not None): fplog.write("-exec \"" + ' '.join(exec) + "\"\n")
+      fplog.write("\n")
+
+      fpin=open("runit.yml","r")
+      line = str(fpin.read())
+      fpin.close()
+      fplog.write(line)
+      fplog.write("\n")
+
+      onjson=False
+      jsonstr="{"
+
+      for line in errors:
+        fplog.write(line)
+        if (not success):
+          print(line.rstrip('\n'), file=sys.stderr)
+
+        if ("=> {" in line):
+          onjson=True
+        elif (onjson):
+          jsonstr = jsonstr + line
+          if (len(line.strip()) == 0):
+           onjson=False
+
+      if ("{" in jsonstr and "}" in jsonstr):
+        data = json.loads(jsonstr)
+      fplog.close()
+ 
+    if (data is not None):
+      if ('cat.stdout_lines' in data): 
+         for line in data['cat.stdout_lines']:
+           print(line)
+      else:
+         print("<files>")
+         for filename in glob.iglob(from_dir + '**/*', recursive=True):
+           if (os.path.isfile(filename)): 
+             md5 = md5sum(filename)
+             filesize = os.path.getsize(filename)
+             filename = filename[len(from_dir):]
+             targetdir  = os.path.dirname(to_dir + "/" + filename)
+             if (protocol == "win"):
+               targetdir = targetdir.replace('/','\\')
+             sourcedir  = os.path.dirname(filename) 
+             filename   = os.path.basename(filename)
+
+             print("<file>")
+             print("  <sourcedir>" + sourcedir + "</sourcedir>")
+             print("  <targetdir>" + targetdir + "</targetdir>")
+             print("  <filename>" + filename + "</filename>")
+             print("  <size>" + str(filesize) + "</size>")
+             print("  <mode></mode>")
+             print("  <error>N</error>")
+             print("  <errortext></errortext>")
+             print("  <md5>" + str(md5) + "</md5>")
+             print("</file>")
+         print("</files>")
+
+    os.chdir('/tmp')
+    shutil.rmtree(tempdir) 
+    if (success):
+      sys.exit(0)
+    else:
+      sys.exit(1)
+
+if __name__ == "__main__":
+    f = open("/tmp/args.txt","a")
+    pprint(sys.argv,f)
+    f.close()
+    main()
+
+
+

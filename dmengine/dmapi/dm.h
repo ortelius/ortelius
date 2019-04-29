@@ -112,7 +112,7 @@ public:
 	void setRemoveApp(bool removeApp);
 	bool getRemoveApp();
 	class Credentials *getDialogCredentials();
-	bool setCurrentUser(const char *username);
+	bool setCurrentUser(const char *username, const char *domainlist);
 	class User *getCurrentUser();
 	void updateUserLastLogin(User &user);
 	void setEventId(int eventid);

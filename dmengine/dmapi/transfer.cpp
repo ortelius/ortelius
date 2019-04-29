@@ -274,7 +274,7 @@ void RtiTransferProviderImpl::deleteFromServer(Component &comp,Context &ctx)
 		char dmtransfer[1024];
 		sprintf(dmtransfer, "%s%slib%sdmtransfer%s",
 			ctx.dm().dmHome(), DIR_SEP_STR, DIR_SEP_STR, EXE_EXT);
-	
+
 		CmdLine cmd(dmtransfer);
 		if (strcmp(m_target.hostname(),"localhost") ==0)
 		{
@@ -288,7 +288,7 @@ void RtiTransferProviderImpl::deleteFromServer(Component &comp,Context &ctx)
 		{
  		cmd.add("-protocol").add(m_protocol).add("-server").add(m_target.hostname());		
 		}
-	
+
 		if (strcmp(m_protocol,"sftp")==0 && m_target.getSSHPort() != 22) {
 			// Default port number has changed
 			char szPortNum[128];
@@ -325,15 +325,15 @@ void RtiTransferProviderImpl::deleteFromServer(Component &comp,Context &ctx)
 		debug1("%s\n",cmd.toCommandString());
 		ctx.dm().writeToStdOut("INFO: Removing Component %s from Server %s",comp.name(),m_target.name());
 		Thread::lock(__LINE__,__FILE__,m_target.hostname());
-	
+
 		CapturedData *cd = NULL;
 		int tempExitStatus;
 		int ret = executeAndCapture(ctx.stream(), cmd, NULL, false, ctx.threadId(), &tempExitStatus, &cd, NULL);
 		debug1("dmtransfer complete, ret=%d tempexitstatus=%d",ret,tempExitStatus);
-	
+
 		// Unlock again
 		Thread::unlock(__LINE__,__FILE__,m_target.hostname());
-	
+
 		if(ret || tempExitStatus) {
 			// Get any stderr output
 			if(cd) {
@@ -819,6 +819,10 @@ int RtiTransferProviderImpl::runScriptOnServer(
 		cmd.add("-tty");
 	}
 
+	if (copy) {
+		cmd.add("-copyscript");
+	}
+
 	if (m_credentials) {
 		switch(m_credentials->credkind()) {
 		case CREDENTIALS_ENCRYPTED:
@@ -846,14 +850,14 @@ int RtiTransferProviderImpl::runScriptOnServer(
 		}
 	}
 
-	cmd.add(copy ? "-copyexec" : "-exec");
-
 	if(shell) {
 		// PAG 04/05/2015 - shell now preceeded with -shell switch to allow copyexec
 		// to copy script and have it interpreted with different front end
-		cmd.add("-shell");
+		cmd.add("-rshell");
 		cmd.add(shell);
 	}
+	
+	cmd.add("-exec");
 	cmd.add(script);
 
 	if(params) {

@@ -85,10 +85,12 @@
 #include "openssl/err.h"
 #include "openssl/rand.h"
 
+
 extern char *base64encode(unsigned char *data, unsigned long datalen);
 extern int yyparse(void *buffer);
 
 extern void InitialiseWinsock();
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -425,7 +427,7 @@ SSL_CTX* InitCTX(void)
 #ifdef OPENSSL_110
 	ctx = SSL_CTX_new(TLS_method());
 #else
-    ctx = SSL_CTX_new(SSLv23_method());   /* Create new context */
+	ctx = SSL_CTX_new(SSLv23_method());   /* Create new context */
 #endif
     if ( ctx == NULL )
     {
@@ -470,7 +472,7 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 	struct hostent *hp = gethostbyname(hostname);
 	if(!hp)
 	{
-		// gethostbyname fails	
+		// gethostbyname fails
 		if (logfile) fprintf(logfile,"ERROR: gethostbyname(%s) fails (errno %d)\n",hostname,errno);
 		CloseLogging(logfile);
 		errno = h_errno;
@@ -800,7 +802,6 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
 int clearDirectory(const char *pathname)
 {
 	int res = 0;	// success
@@ -937,7 +938,7 @@ bool TempFolder::mkdir(bool empty)
 			// Doesn't exist - so create it
 			bool ret = (MKDIR(m_pathname) == 0) ? true : false;
 			debug3("m_pathname = [%s] ret=%s",m_pathname,ret?"true":"false");
-	
+	        
 			if(!ret) {
 				// Create failed - create the parent and then retry
 				debug3("Create failed");
@@ -1169,7 +1170,7 @@ class Credentials *DM::getDialogCredentials()
 }
 
 
-bool DM::setCurrentUser(const char *username)
+bool DM::setCurrentUser(const char *username, const char *domainlist)
 {
 	if(!m_model) {
 		return false;
@@ -1180,7 +1181,8 @@ bool DM::setCurrentUser(const char *username)
 	if (currentUser) {
 		m_stack.setGlobal("username",username);
 		m_stack.setGlobal("user",new ObjectReference(currentUser));
-		m_model->setDomainList();
+		if (domainlist != NULL)
+		   m_model->setDomainList(domainlist);
 	}
 	return currentUser ? true : false;
 }
@@ -2917,6 +2919,7 @@ int DM::internalDeployApplication(class Application &app,Context *origctx /* = N
 	ScopeStack &stack = origctx?origctx->stack():m_stack;
 
 	Action *action = app.getCustomAction();
+
 	if(action) {
 		// Custom action, this takes precedence over components
 		List<Server> *serverList;

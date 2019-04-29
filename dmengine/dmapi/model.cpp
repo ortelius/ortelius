@@ -4487,6 +4487,7 @@ List<TimedJob> *Model::getTimedJobs()
 	long envid;
 	long domainid;
 	time_t now = time(NULL);
+
 	List<TimedJob> *ret = new List<TimedJob>();
 	AutoPtr<triSQL> sql = m_odbc.GetSQL();
 
@@ -4560,7 +4561,6 @@ List<TimedJob> *Model::getTimedJobs()
 				deployuser = creatorid;
 			}
 			sqla->CloseSQL();
-
 			TimedJob *job = new TimedJob(eventid,appid,envid,creatorid);
 			ret->add(job);
 		}
@@ -5945,6 +5945,7 @@ List<Environment> *Model::internalGetEnvironments(const char *whereClause, bool 
 	sql->BindColumn(1, SQL_INTEGER, &id, sizeof(id));
 	sql->BindColumn(2, SQL_CHAR, envName, sizeof(envName));
 	sql->BindColumn(3, SQL_CHAR, envBasedir, sizeof(envBasedir), &ni_envBasedir);
+	
 
 	// If checkDomain is set, limit the domain of the environment to those the user can see
 	CharPtr domainClause;
@@ -5974,49 +5975,10 @@ List<Environment> *Model::internalGetEnvironments(const char *whereClause, bool 
 	return ret;
 }
 
-void Model::setDomainList(int domainid /* == 0 */)
+void Model::setDomainList(const char *domainlist)
 {
-	if (domainid == 0) {
-		// first time through
-		m_DomainList = (char *)malloc(128);	// Initial size
-		sprintf(m_DomainList,"%d",m_currentUser->getDomain()->id());
-		setDomainList(m_currentUser->getDomain()->id());	// recurse
-
-		int domid;
-		AutoPtr<triSQL> sql = m_odbc.GetSQL();
-		int res = sql->BindColumn(1,SQL_INTEGER,&domid,sizeof(domid));
-		res = sql->BindParameter(1,SQL_INTEGER,sizeof(domainid),&domainid,sizeof(domainid));
-		res = sql->ExecuteSQL("SELECT id FROM dm_domain WHERE name = 'Infrastructure' and domainid = 1");
-		res = sql->FetchRow();
-		while (res == SQL_SUCCESS || res == SQL_SUCCESS_WITH_INFO) {
-			char szDomainId[128];
-			sprintf(szDomainId,",%d",domid);
-			int newsize = strlen(m_DomainList)+strlen(szDomainId)+5;
-			m_DomainList = (char *)realloc(m_DomainList,newsize);
-			strcat(m_DomainList,szDomainId);
-			setDomainList(domid);
-			res = sql->FetchRow();
-		}
-		sql->CloseSQL();
-		
-	} else {
-		int domid;
-		AutoPtr<triSQL> sql = m_odbc.GetSQL();
-		int res = sql->BindColumn(1,SQL_INTEGER,&domid,sizeof(domid));
-		res = sql->BindParameter(1,SQL_INTEGER,sizeof(domainid),&domainid,sizeof(domainid));
-		res = sql->ExecuteSQL("SELECT id FROM dm_domain WHERE domainid=?");
-		res = sql->FetchRow();
-		while (res == SQL_SUCCESS || res == SQL_SUCCESS_WITH_INFO) {
-			char szDomainId[128];
-			sprintf(szDomainId,",%d",domid);
-			int newsize = strlen(m_DomainList)+strlen(szDomainId)+5;
-			m_DomainList = (char *)realloc(m_DomainList,newsize);
-			strcat(m_DomainList,szDomainId);
-			setDomainList(domid);
-			res = sql->FetchRow();
-		}
-		sql->CloseSQL();
-	}
+	m_DomainList = (char *)realloc(m_DomainList,strlen(domainlist)+5);
+	strcpy(m_DomainList,domainlist);
 }
 
 int Model::getDomainID2(char *DomainName,int parent)
@@ -6887,6 +6849,7 @@ Environment *Model::getEnvironment(int id)
 
 	char whereClause[2100];
 	sprintf(whereClause, "e.id = %d", id);
+
 
 	AutoPtr<List<Environment> > matches = internalGetEnvironments(whereClause, true);
 	if(matches && (matches->size() > 0)) {

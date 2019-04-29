@@ -1646,7 +1646,7 @@ private:
 
 	// This is private so that no-one other than friends can change the user
 	void setCurrentUser(User *user);
-	void setDomainList(int domainid=0);
+	void setDomainList(const char *domainlist);
 	void updateUserLastLogin(User &user);
 	bool validateHashedPassword(User &user, const char *passhash);
 	int getNextObjectId(const char *objectType);
