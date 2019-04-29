@@ -497,7 +497,7 @@ String.prototype.trimChars = function(charlist) {
    		$.ajax({
    			type : "POST",
     		dataType : 'json',
-    		url : "ChangePassword?oldpw=" + encodeURIComponent(oldpw) + "&newpw=" + encodeURIComponent(newpw),
+    		url : "ChangePassword?oldpw=" + encodeURIComponent(oldpw) + "&newpw=" + encodeURIComponent(newpw) + "&username=" + myuserid,
     		async : false
    		}).done(function(data) { 
     		console.log(data.errtext);
