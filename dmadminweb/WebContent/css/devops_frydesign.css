@@ -2306,3 +2306,7 @@ h2.reports {
 	padding: 8px 0 12px 12px;
 	overflow: scroll;
 }
+
+div.dt-buttons {
+	margin-left: 20px 
+}

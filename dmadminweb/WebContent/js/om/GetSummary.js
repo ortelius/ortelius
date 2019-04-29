@@ -4271,7 +4271,7 @@ function SaveSummaryData(instance, tablename, objtypeAsInt, objtype, objid, addP
     	   if (custid == "") {
 		        $.getJSON("UpdateAttrs", "f=inv&c=" + objid + "&xpos=440&ypos=100", function(data)
 		          {
-		            LoadComponentItemsData();
+//		            LoadComponentItemsData();
 		            SaveRbRfValues(myform);
 		          });
     	   }

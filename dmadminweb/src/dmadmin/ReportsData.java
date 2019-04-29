@@ -51,7 +51,10 @@ public class ReportsData extends HttpServletBase
   response.setContentType("text/html; charset=UTF-8");
   PrintWriter out = response.getWriter();
   String type = request.getParameter("type");
-
+ 
+  out.println("{");
+  out.println("\"data\":");
+  
   if (type.equalsIgnoreCase("FileAudit"))
   {
    String md5 = request.getParameter("md5");
@@ -60,6 +63,7 @@ public class ReportsData extends HttpServletBase
    {
     JSONArray arr = session.getFileAuditReport(md5);
     out.println(arr.getJSON());
+    out.println("}");
     return;
    }
   }
@@ -67,20 +71,24 @@ public class ReportsData extends HttpServletBase
   {
     JSONArray arr = session.getSuccess4EnvReport();
     out.println(arr.getJSON());
+    out.println("}");
     return;
   }
   else if (type.equalsIgnoreCase("ServerAudit"))
   {
     JSONArray arr = session.getServerAuditReport();
     out.println(arr.getJSON());
+    out.println("}");
     return;
   }  
   else if (type.equalsIgnoreCase("ServerInventory"))
   {
     JSONArray arr = session.getServerInventoryReport();
     out.println(arr.getJSON());
+    out.println("}");
     return;
   }    
+  out.println("}");
  }
  
 }
