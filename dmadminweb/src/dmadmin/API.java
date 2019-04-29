@@ -31,14 +31,20 @@ import java.util.Hashtable;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 // import oracle.net.aso.i;
 import dmadmin.json.JSONArray;
 import dmadmin.json.JSONObject;
+import dmadmin.json.LinkField;
+import dmadmin.model.Action;
 import dmadmin.model.Application;
 import dmadmin.model.BuildJob;
 import dmadmin.model.Builder;
@@ -71,6 +77,7 @@ import dmadmin.model.TaskDeploy;
 import dmadmin.model.Transfer;
 import dmadmin.model.User;
 import dmadmin.model.UserGroup;
+import dmadmin.util.CommandLine;
 
 /**
  * API redirector servlet - all calls to the RESTful API are routed through here.
@@ -97,12 +104,12 @@ public class API extends HttpServlet
   super();
  }
 
- protected JSONObject assembleJSONForAppApprovals(DMSession so, Application app)
+ private JSONObject assembleJSONForAppApprovals(DMSession so, Application app)
  {
   return so.applicationApprovalDomains(app);
  }
 
- protected JSONObject assembleJSONForComponent(DMSession so, Component comp)
+ private JSONObject assembleJSONForComponent(DMSession so, Component comp)
  {
   JSONObject je = new JSONObject();
   je.add("id", comp.getId());
@@ -133,20 +140,24 @@ public class API extends HttpServlet
   BuildJob cbj = comp.getBuildJob();
   if (cbj != null)
   {
-    je.add("buildjob",cbj.getName());
-    je.add("project",cbj.getProjectName());
-    Builder builder = so.getBuilder(cbj.getBuilderId());
-    if (builder != null)
+   je.add("buildjob", cbj.getName());
+   je.add("project", cbj.getProjectName());
+   Builder builder = so.getBuilder(cbj.getBuilderId());
+   if (builder != null)
+   {
+    List<DMProperty> props = builder.getProperties();
+    for (DMProperty prop : props)
     {
-      List<DMProperty> props = builder.getProperties();
-      for (DMProperty prop: props)
-      {
-        if (prop.getName().equalsIgnoreCase("server url"))
-        {
-          je.add("serverurl",prop.getValue());
-        }
-      }
+     if (prop.getName().equalsIgnoreCase("server url"))
+     {
+      je.add("serverurl", prop.getValue());
+     }
     }
+   }
+  }
+  else
+  {
+   System.out.println("build job is null");
   }
   //
   // If this is a base version list the versions
@@ -197,6 +208,20 @@ public class API extends HttpServlet
   je.add("applications", applist);
   return je;
  }
+
+ private JSONObject assembleJSONForCredential(DMSession so, Credential cred)
+ {
+  JSONObject res = new JSONObject();
+  res.add("id", cred.getId());
+  res.add("kind", cred.getKindAsString());
+  res.add("username", cred.getVarUsername());
+  res.add("password", cred.getVarPassword());
+  res.add("name", cred.getName());
+  res.add("domainid", cred.getDomainId());
+  res.add("keyfile", cred.getFilename());
+  return res;
+ }
+
 
  private JSONObject assembleJSONForApplication(DMSession so, Application app)
  {
@@ -267,33 +292,34 @@ public class API extends HttpServlet
    co.add("id", c.getId());
    co.add("name", c.getName());
    co.add("summary", c.getSummary());
-   co.add("domain",c.getDomain().getFullDomain());
+   System.out.println("component domain is " + c.getDomainId());
+   co.add("domain", c.getDomain().getFullDomain());
    co.add("lastbuild", c.getLastBuildNumber());
    BuildJob cbj = c.getBuildJob();
    if (cbj != null)
    {
-     co.add("buildjob",cbj.getName());
-     co.add("project",cbj.getProjectName());
-     Builder builder = so.getBuilder(cbj.getBuilderId());
-     if (builder != null)
+    co.add("buildjob", cbj.getName());
+    co.add("project", cbj.getProjectName());
+    Builder builder = so.getBuilder(cbj.getBuilderId());
+    if (builder != null)
+    {
+     List<DMProperty> props = builder.getProperties();
+     for (DMProperty prop : props)
      {
-       List<DMProperty> props = builder.getProperties(); 
-       for (DMProperty prop: props)
-       {
-         if (prop.getName().equalsIgnoreCase("server url"))
-         {
-           co.add("serverurl",prop.getValue());
-		 }
-	   }
+      if (prop.getName().equalsIgnoreCase("server url"))
+      {
+       co.add("serverurl", prop.getValue());
       }
-	}
+     }
+    }
+   }
    complist.add(co);
   }
   je.add("components", complist);
   return je;
  }
 
- protected JSONObject assembleJSONForEnvironment(DMSession so, Environment env)
+ private JSONObject assembleJSONForEnvironment(DMSession so, Environment env)
  {
   JSONObject je = new JSONObject();
   je.add("id", env.getId());
@@ -336,10 +362,68 @@ public class API extends HttpServlet
    applist.add(ja);
   }
   je.add("applications", applist);
+
+  List<Server> slist = so.getServersInEnvironment(env.getId());
+  JSONArray servers = new JSONArray();
+  for (Server s : slist)
+  {
+   JSONObject ja = new JSONObject();
+   ja.add("id", s.getId());
+   ja.add("name", s.getName());
+   servers.add(ja);
+  }
+  je.add("servers", servers);
+
   return je;
  }
 
- protected JSONObject assembleJSONForServer(DMSession so, Server server)
+
+
+ private JSONObject assembleJSONForDomain(DMSession so, Domain domain)
+ {
+  JSONObject je = new JSONObject();
+  je.add("id", domain.getId());
+  je.add("name", domain.getName());
+  je.add("domain", domain.getDomain().getFullDomain());
+  je.add("lifecycle", domain.getLifecycle());
+  return je;
+ }
+
+ private JSONObject assembleJSONForUser(DMSession so, User u)
+ {
+  JSONObject je = new JSONObject();
+  je.add("id", u.getId());
+  je.add("name", u.getName());
+  je.add("domain", u.getDomain().getFullDomain());
+  return je;
+ }
+
+ private JSONObject assembleJSONForTestServer(DMSession so, Server server)
+ {
+  JSONObject ret = new JSONObject();
+  ret.add("id", server.getId());
+  CommandLine m_cmd;
+  Domain m_domain = server.getDomain();
+  Engine engine = (m_domain != null) ? m_domain.findNearestEngine() : null;
+
+  if (engine == null)
+  {
+   System.err.println("Engine was null");
+   ret.add("success", false);
+  }
+  else
+  {
+   System.out.println("testing server " + server.getId());
+   m_cmd = engine.doTestServer(server);
+   m_cmd.run(true, "", true);
+
+   Server s = so.getServer(server.getId(), false);
+   ret.add("data", s.available());
+  }
+  return ret;
+ }
+
+ private JSONObject assembleJSONForServer(DMSession so, Server server)
  {
   JSONObject je = new JSONObject();
   je.add("id", server.getId());
@@ -347,11 +431,28 @@ public class API extends HttpServlet
   je.add("domain", server.getDomain().getFullDomain());
   je.add("hostname", server.getHostName());
   je.add("protocol", server.getProtocol());
+  je.add("autoping", server.getAutoPing());
+  je.add("automd5", server.getAutoMD5());
+  if (server.getAutoPing())
+  {
+   je.add("pingstart", encodeHM(server.getPingStart()));
+   je.add("pingend", encodeHM(server.getPingEnd()));
+  }
   je.add("basedir", server.getBaseDir());
   Credential cred = server.getCredential();
   if (cred != null)
   {
    je.add("credential", cred.getName());
+  }
+  NotifyTemplate md5template = server.getMD5Template();
+  NotifyTemplate pingtemplate = server.getPingTemplate();
+  if (md5template != null)
+  {
+   je.add("md5template", md5template.getName());
+  }
+  if (pingtemplate != null)
+  {
+   je.add("pingtemplate", pingtemplate.getName());
   }
   je.add("summary", server.getSummary());
   DMObject owner = server.getOwner();
@@ -441,8 +542,11 @@ public class API extends HttpServlet
      obj = (id > 0) ? so.getGroup(id) : so.getGroupByName(idOrName);
      break;
     case REPOSITORY:
-        obj = (id>0)?so.getRepository(id,true):so.getRepositoryByName(idOrName);
-        break;	 
+     obj = (id > 0) ? so.getRepository(id, true) : so.getRepositoryByName(idOrName);
+     break;
+    case ACTION:
+     obj = (id > 0) ? so.getAction(id, true) : so.getActionByName(idOrName);
+     break;
     default:
      throw new ApiException(ot.toString() + " not supported in getObjectFromNameOrID");
    }
@@ -461,32 +565,37 @@ public class API extends HttpServlet
   return obj;
  }
 
- protected Component getComponentFromNameOrID(DMSession so, String idOrName) throws ApiException
+ private Component getComponentFromNameOrID(DMSession so, String idOrName) throws ApiException
  {
   return (Component) getObjectFromNameOrID(so, ObjectType.COMPONENT, idOrName);
  }
 
- protected Application getApplicationFromNameOrID(DMSession so, String idOrName) throws ApiException
+ private Application getApplicationFromNameOrID(DMSession so, String idOrName) throws ApiException
  {
   return (Application) getObjectFromNameOrID(so, ObjectType.APPLICATION, idOrName);
  }
 
- protected Environment getEnvironmentFromNameOrID(DMSession so, String idOrName) throws ApiException
+ private Environment getEnvironmentFromNameOrID(DMSession so, String idOrName) throws ApiException
  {
   return (Environment) getObjectFromNameOrID(so, ObjectType.ENVIRONMENT, idOrName);
  }
 
- protected Server getServerFromNameOrID(DMSession so, String idOrName) throws ApiException
+ private Server getServerFromNameOrID(DMSession so, String idOrName) throws ApiException
  {
   return (Server) getObjectFromNameOrID(so, ObjectType.SERVER, idOrName);
  }
 
- protected Domain getDomainFromNameOrID(DMSession so, String idOrName) throws ApiException
+ private Action getActionFromNameOrID(DMSession so, String idOrName) throws ApiException
+ {
+  return (Action) getObjectFromNameOrID(so, ObjectType.ACTION, idOrName);
+ }
+
+ private Domain getDomainFromNameOrID(DMSession so, String idOrName) throws ApiException
  {
   return (Domain) getObjectFromNameOrID(so, ObjectType.DOMAIN, idOrName);
  }
 
- protected User getUserFromNameOrID(DMSession so, String idOrName) throws ApiException
+ private User getUserFromNameOrID(DMSession so, String idOrName) throws ApiException
  {
   return (User) getObjectFromNameOrID(so, ObjectType.USER, idOrName);
  }
@@ -496,12 +605,12 @@ public class API extends HttpServlet
   return (Datasource) getObjectFromNameOrID(so, ObjectType.DATASOURCE, idOrName);
  }
 
- private Repository getRepositoryFromNameOrID(DMSession so,String idOrName) throws ApiException
+ private Repository getRepositoryFromNameOrID(DMSession so, String idOrName) throws ApiException
  {
-  return (Repository)getObjectFromNameOrID(so,ObjectType.REPOSITORY,idOrName);
+  return (Repository) getObjectFromNameOrID(so, ObjectType.REPOSITORY, idOrName);
  }
 
- protected Credential getCredentialFromNameOrID(DMSession so, String idOrName) throws ApiException
+ private Credential getCredentialFromNameOrID(DMSession so, String idOrName) throws ApiException
  {
   return (Credential) getObjectFromNameOrID(so, ObjectType.CREDENTIALS, idOrName);
  }
@@ -518,18 +627,13 @@ public class API extends HttpServlet
 
  private void internalModUser(DMSession so, User moduser, HttpServletRequest request) throws ApiException
  {
-  Datasource ldap = null;
   SummaryChangeSet changes = new SummaryChangeSet();
   boolean bcpw = false;
   boolean blocked = false;
   String realname = request.getParameter("realname");
   /*
-  String ldapname = request.getParameter("ldap");
-  if (ldapname != null)
-  {
-   ldap = getDatasourceFromNameOrID(so, ldapname);
-  }
-  */
+   * String ldapname = request.getParameter("ldap"); if (ldapname != null) { ldap = getDatasourceFromNameOrID(so, ldapname); }
+   */
   String tel = request.getParameter("tel");
   String email = request.getParameter("email");
   String pw = request.getParameter("pw");
@@ -594,7 +698,7 @@ public class API extends HttpServlet
   }
  }
 
- protected JSONObject tsObject(int timein)
+ private JSONObject tsObject(int timein)
  {
   JSONObject to = new JSONObject();
   to.add("timestamp", timein);
@@ -611,7 +715,7 @@ public class API extends HttpServlet
   return hs + ":" + ms;
  }
 
- protected JSONObject userObject(DMSession so, int uid)
+ private JSONObject userObject(DMSession so, int uid)
  {
   User user = so.getUser(uid);
   JSONObject uo = new JSONObject();
@@ -630,7 +734,7 @@ public class API extends HttpServlet
   return df.format(date);
  }
 
- protected long convertDateTime(String timein) throws ApiException
+ private long convertDateTime(String timein) throws ApiException
  {
   // Converts a date/time string in format
   // YYYY:MM:DD:HH:MM
@@ -795,15 +899,15 @@ public class API extends HttpServlet
   }
  }
 
- private void internalModEnvironment(DMSession so, Environment modenv, HttpServletRequest request) throws ApiException
+ private void internalModDomain(DMSession so, Domain moddom, HttpServletRequest request, boolean lifecycle) throws ApiException
  {
   SummaryChangeSet changes = new SummaryChangeSet();
-  String summary = request.getParameter("summary");
-  if (summary != null)
-   changes.add(SummaryField.SUMMARY, summary);
+
+  if (lifecycle)
+   changes.add(SummaryField.DOMAIN_LIFECYCLE, true);
   if (!changes.isEmpty())
   {
-   so.updateEnvironment(modenv, changes); // Commits on success
+   so.updateDomain(moddom, changes); // Commits on success
   }
   else
   {
@@ -818,16 +922,16 @@ public class API extends HttpServlet
    }
   }
  }
- 
- private void internalModDomain(DMSession so, Domain moddom, HttpServletRequest request) throws ApiException
+
+ private void internalModEnvironment(DMSession so, Environment modenv, HttpServletRequest request) throws ApiException
  {
   SummaryChangeSet changes = new SummaryChangeSet();
-  String summary = request.getParameter("lifecycle");
-  if (summary != null && summary.equalsIgnoreCase("Y"))
-   changes.add(SummaryField.DOMAIN_LIFECYCLE, true);
+  String summary = request.getParameter("summary");
+  if (summary != null)
+   changes.add(SummaryField.SUMMARY, summary);
   if (!changes.isEmpty())
   {
-   so.updateDomain(moddom, changes); // Commits on success
+   so.updateEnvironment(modenv, changes); // Commits on success
   }
   else
   {
@@ -854,8 +958,33 @@ public class API extends HttpServlet
   String protocol = request.getParameter("protocol");
   String basedir = request.getParameter("basedir");
   String credname = request.getParameter("credential");
+  String autoping = request.getParameter("autoping");
+  String automd5 = request.getParameter("automd5");
   String comptypes = request.getParameter("comptypes");
+  String pinginterval = request.getParameter("pinginterval");
+  String pingstart = request.getParameter("pingstart");
+  String pingend = request.getParameter("pingend");
+  String pingtemplate = request.getParameter("pingtemplate");
+  String md5template = request.getParameter("md5template");
   String sshport = request.getParameter("sshport");
+  String force = request.getParameter("force");
+
+  if (force != null)
+  {
+   TableDataSet comps = so.getComponentsOnServer(modserv);
+   if (comps != null)
+   {
+    for (int k = 0; k <= comps.getRows(); k++)
+    {
+     LinkField c = (LinkField) comps.get(k, 1);
+     LinkField c3 = (LinkField) comps.get(k, 3);
+     if (c3.getDeploymentid() > 0)
+      so.removeAppVersionFromEnv(c3.getDeploymentid());
+
+     so.serverRemoveComponent(modserv.getId(), c.getId());
+    }
+   }
+  }
 
   if (comptypes != null)
   {
@@ -881,6 +1010,44 @@ public class API extends HttpServlet
      throw new ApiException("Invalid Component Type " + cts[i]);
    }
    changes.add(SummaryField.SERVER_COMPTYPE, idlist);
+  }
+
+  if (autoping != null)
+  {
+   boolean bautoping = (autoping.equalsIgnoreCase("y"));
+   changes.add(SummaryField.SERVER_AUTOPING, bautoping);
+  }
+  if (automd5 != null)
+  {
+   boolean bautomd5 = (automd5.equalsIgnoreCase("y"));
+   changes.add(SummaryField.SERVER_AUTOMD5, bautomd5);
+  }
+
+  if (pinginterval != null)
+  {
+   try
+   {
+    int pi = Integer.parseInt(pinginterval);
+    if (pi < 0 || pi > 240)
+     throw new ApiException("Ping Interval " + pinginterval + " invalid (valid range 0 - 240 mins)");
+    if ((pi % 15) > 0)
+     throw new ApiException("Ping Interval " + pinginterval + " invalid (must be a multiple of 15 mins)");
+    changes.add(SummaryField.SERVER_PINGINTERVAL, pinginterval);
+   }
+   catch (NumberFormatException ex)
+   {
+    throw new ApiException("Ping Interval " + pinginterval + " invalid (format error)");
+   }
+  }
+  if (pingstart != null)
+  {
+   Integer t = convertTime(pingstart);
+   changes.add(SummaryField.SERVER_PINGSTART, t.toString());
+  }
+  if (pingend != null)
+  {
+   Integer t = convertTime(pingend);
+   changes.add(SummaryField.SERVER_PINGEND, t.toString());
   }
 
   if (type != null)
@@ -930,6 +1097,16 @@ public class API extends HttpServlet
    Credential cred = getCredentialFromNameOrID(so, credname);
    changes.add(SummaryField.SERVER_CRED, cred);
   }
+  if (pingtemplate != null)
+  {
+   NotifyTemplate tmpl = getTemplateFromNameOrID(so, pingtemplate);
+   changes.add(SummaryField.SERVER_PINGTEMPLATE, tmpl);
+  }
+  if (md5template != null)
+  {
+   NotifyTemplate tmpl = getTemplateFromNameOrID(so, md5template);
+   changes.add(SummaryField.SERVER_MD5TEMPLATE, tmpl);
+  }
 
   if (!changes.isEmpty())
   {
@@ -949,7 +1126,7 @@ public class API extends HttpServlet
   }
  }
 
- protected void ModUser(DMSession so, String username, HttpServletRequest request) throws ApiException
+ private void ModUser(DMSession so, String username, HttpServletRequest request) throws ApiException
  {
   Domain tgtdomain = null;
   if (username == null || username.length() == 0)
@@ -971,7 +1148,7 @@ public class API extends HttpServlet
   }
  }
 
- protected void ModServer(DMSession so, String servername, HttpServletRequest request) throws ApiException
+ private void ModServer(DMSession so, String servername, HttpServletRequest request) throws ApiException
  {
   Domain tgtdomain = null;
   if (servername == null || servername.length() == 0)
@@ -993,7 +1170,7 @@ public class API extends HttpServlet
   }
  }
 
- protected void ModEnvironment(DMSession so, String envname, HttpServletRequest request) throws ApiException
+ private void ModEnvironment(DMSession so, String envname, HttpServletRequest request) throws ApiException
  {
   Domain tgtdomain = null;
   if (envname == null || envname.length() == 0)
@@ -1015,7 +1192,7 @@ public class API extends HttpServlet
   }
  }
 
- protected void ModCredential(DMSession so, String credname, HttpServletRequest request) throws ApiException
+ private void ModCredential(DMSession so, String credname, HttpServletRequest request) throws ApiException
  {
   Domain tgtdomain = null;
   if (credname == null || credname.length() == 0)
@@ -1042,7 +1219,7 @@ public class API extends HttpServlet
   }
  }
 
- protected void AddUser(DMSession so, String username, HttpServletRequest request) throws ApiException
+ private void AddUser(DMSession so, String username, HttpServletRequest request) throws ApiException
  {
   // API/new/user?name=<loginname>[&domain=<domain>&realname=<real name>&ldap=<ldap datasource>&tel=<tel no>&email=<email>&cpw=Y|N&locked=Y|N&pw=<password>]
   // Do we have create user permission?
@@ -1112,10 +1289,10 @@ public class API extends HttpServlet
    int newid = so.getID("domain");
    so.CreateNewObject("domain", domname, tgtdomain.getId(), tgtdomain.getId(), newid, 0, 0, "domains", false);
    // Having created the environment, submit the "changes" to set the attributes
-   Domain  newdom = so.getDomain(newid);
+   Domain newdom = so.getDomain(newid);
    if (newdom == null)
     throw new ApiException("Failed to create new domain");
-   internalModDomain(so, newdom, request);
+   internalModDomain(so, newdom, request, false);
   }
   catch (RuntimeException e)
   {
@@ -1123,7 +1300,6 @@ public class API extends HttpServlet
   }
  }
 
- 
  protected void AddEnvironment(DMSession so, String envname, HttpServletRequest request) throws ApiException
  {
   // API/new/environment/name[?domain=<domain>&summary=<summary>]
@@ -1165,7 +1341,7 @@ public class API extends HttpServlet
   }
  }
 
- protected void AddCredential(DMSession so, String credname, HttpServletRequest request) throws ApiException
+ private void AddCredential(DMSession so, String credname, HttpServletRequest request) throws ApiException
  {
   // API/new/credential/name[?domain=<domain>&summary=<summary>]
   // Do we have create credential permission?
@@ -1227,7 +1403,7 @@ public class API extends HttpServlet
    if (comp == null)
     throw new ApiException("Could not retrieve component '" + compname + "'");
 
-   if (removeAll)  // Used when adding the first item
+   if (removeAll) // Used when adding the first item
    {
     try
     {
@@ -1236,9 +1412,9 @@ public class API extends HttpServlet
     catch (SQLException e)
     {
      throw new ApiException("Could not remove Component Items for '" + compname + "'");
-    } 
+    }
    }
-   
+
    int newid = so.getID("componentitem");
 
    so.CreateNewObject("componentitem", compitem, comp.getDomainId(), comp.getId(), newid, xpos, ypos, "components", false);
@@ -1248,40 +1424,43 @@ public class API extends HttpServlet
    if (compi == null)
     throw new ApiException("Failed to create new component item");
 
-   so.componentItemMoveItem(comp.getId(),compi.getId(),xpos,ypos);
-   
+   so.componentItemMoveItem(comp.getId(), compi.getId(), xpos, ypos);
+
    SummaryChangeSet schanges = new SummaryChangeSet();
    SummaryField field = SummaryField.fromInt(SummaryField.ITEM_REPOSITORY.value());
-   if(field != null) {
+   if (field != null)
+   {
     Repository r = getRepositoryFromNameOrID(so, repo);
     so.processField(so, field, "re" + r.getId(), schanges);
    }
-   
-   ACDChangeSet<DMProperty> pchanges = new ACDChangeSet<DMProperty>();
-   
-   pchanges.addAdded(new DMProperty("pattern",pattern,false,false,false));
-   pchanges.addAdded(new DMProperty("uri",uri,false,false,false));   
 
-   
-    ComponentItem ci = so.getComponentItem(compi.getId(), true);
-    if(ci.isUpdatable()) {    
-     boolean res = true;
-     if(!schanges.isEmpty()) {
-      ci.updateSummary(schanges);
-     }
-     if(res && !pchanges.isEmpty()) {
-      res = ci.updateProperties(pchanges);
-     }
-    } 
+   ACDChangeSet<DMProperty> pchanges = new ACDChangeSet<DMProperty>();
+
+   pchanges.addAdded(new DMProperty("pattern", pattern, false, false, false));
+   pchanges.addAdded(new DMProperty("uri", uri, false, false, false));
+
+   ComponentItem ci = so.getComponentItem(compi.getId(), true);
+   if (ci.isUpdatable())
+   {
+    boolean res = true;
+    if (!schanges.isEmpty())
+    {
+     ci.updateSummary(schanges);
+    }
+    if (res && !pchanges.isEmpty())
+    {
+     res = ci.updateProperties(pchanges);
+    }
+   }
   }
   catch (RuntimeException e)
   {
    throw new ApiException(e.getMessage());
   }
-  
+
  }
 
- protected void AddServer(DMSession so, String servername, HttpServletRequest request) throws ApiException
+ private void AddServer(DMSession so, String servername, HttpServletRequest request) throws ApiException
  {
   // API/new/server/name[?domain=<domain>&env=<env>]
   // Do we have create server permission?
@@ -1333,7 +1512,7 @@ public class API extends HttpServlet
   }
  }
 
- protected void cloneServer(DMSession so, String servername, String newname, HttpServletRequest request) throws ApiException
+ private void cloneServer(DMSession so, String servername, String newname, HttpServletRequest request) throws ApiException
  {
   Server server = getServerFromNameOrID(so, servername);
   int domainid = server.getDomainId();
@@ -1372,7 +1551,7 @@ public class API extends HttpServlet
   }
  }
 
- protected void cloneEnvironment(DMSession so, String envname, String newname, HttpServletRequest request) throws ApiException
+ private void cloneEnvironment(DMSession so, String envname, String newname, HttpServletRequest request) throws ApiException
  {
   Environment env = getEnvironmentFromNameOrID(so, envname);
   int domainid = env.getDomainId();
@@ -1410,7 +1589,7 @@ public class API extends HttpServlet
   }
  }
 
- protected void assignServer(DMSession so, String servername, String envname) throws ApiException
+ private void assignServer(DMSession so, String servername, String envname) throws ApiException
  {
   Server server = getServerFromNameOrID(so, servername);
   Environment env = getEnvironmentFromNameOrID(so, envname);
@@ -1419,7 +1598,7 @@ public class API extends HttpServlet
   so.MoveServer(env.getId(), server.getId(), 0, 0);
  }
 
- protected void assignApplication(DMSession so, String appname, String envname) throws ApiException
+ private void assignApplication(DMSession so, String appname, String envname) throws ApiException
  {
   Environment env = getEnvironmentFromNameOrID(so, envname);
   Application app = getApplicationFromNameOrID(so, appname);
@@ -1428,14 +1607,14 @@ public class API extends HttpServlet
   so.addToAppsAllowedInEnv(env, app);
  }
 
- protected void assignUser(DMSession so, String username, String groupname) throws ApiException
+ private void assignUser(DMSession so, String username, String groupname) throws ApiException
  {
   User user = getUserFromNameOrID(so, username);
   UserGroup group = getGroupFromNameOrID(so, groupname);
   so.AddUserToGroup(group.getId(), user.getId());
  }
 
- protected void deAssignServer(DMSession so, String servername, String envname) throws ApiException
+ private void deAssignServer(DMSession so, String servername, String envname) throws ApiException
  {
   Server server = getServerFromNameOrID(so, servername);
   Environment env = getEnvironmentFromNameOrID(so, envname);
@@ -1444,7 +1623,7 @@ public class API extends HttpServlet
   so.RemoveServerFromEnvironment(env.getId(), server.getId());
  }
 
- protected void deAssignApplication(DMSession so, String appname, String envname) throws ApiException
+ private void deAssignApplication(DMSession so, String appname, String envname) throws ApiException
  {
   Environment env = getEnvironmentFromNameOrID(so, envname);
   Application app = getApplicationFromNameOrID(so, appname);
@@ -1453,7 +1632,7 @@ public class API extends HttpServlet
   so.removeFromAppsAllowedInEnv(env, app);
  }
 
- protected void deAssignUser(DMSession so, String username, String groupname) throws ApiException
+ private void deAssignUser(DMSession so, String username, String groupname) throws ApiException
  {
   User user = getUserFromNameOrID(so, username);
   UserGroup group = getGroupFromNameOrID(so, groupname);
@@ -1533,10 +1712,9 @@ public class API extends HttpServlet
 
    // Now add any other details associated with this build
    // There are two ways of passing this information
-   // files=<file1>&files=<file2> etc
+   // issue=<issue1>&issue=<issue> etc
    // or
-   // files=file1,file2 etc
-
+   // issues=issue1,issue2 etc
    String filepar = request.getParameter("files");
    String files[] = (filepar != null) ? filepar.split(",") : request.getParameterValues("file");
    String commit = request.getParameter("commit");
@@ -1548,7 +1726,7 @@ public class API extends HttpServlet
   }
  }
 
- protected JSONArray buildNotify(DMSession so, String encodedurl) throws ApiException
+ private JSONArray buildNotify(DMSession so, String encodedurl) throws ApiException
  {
   // buildurl should be in form http://hostname:port/maybe/other/bits/job/<jobname>/<buildno>
   try
@@ -1562,7 +1740,7 @@ public class API extends HttpServlet
   }
  }
 
- protected Application newAppVersion(DMSession so, String appname, HttpServletRequest request) throws ApiException
+ private Application newAppVersion(DMSession so, String appname, HttpServletRequest request) throws ApiException
  {
   // This is called from API/newappver (deprecated) and API/new/appver (going forward) - get the
   // create version from any taskname specified
@@ -1588,20 +1766,25 @@ public class API extends HttpServlet
   return newAppVersion(so, appname, request, tcv);
  }
 
- protected Application newAppVersion(DMSession so, String appname, HttpServletRequest request, TaskCreateVersion tcv) throws ApiException
+ private Application newAppVersion(DMSession so, String appname, HttpServletRequest request, TaskCreateVersion tcv) throws ApiException
  {
   System.out.println("DOING newappver");
-  String newname = request.getParameter("name");	// if specified, name of new application version
-  if (newname != null) {
-	  System.out.println("Looking up "+newname);
-	  try {
-		  so.getApplicationByName(newname);	// throws exception if not found
-		  // If we get here then application with that name was found. That's an error
-		  throw new ApiException("An application version with that name already exists");
-	  } catch(RuntimeException ex) {
-		  // Application not found exception - ok to proceed
-	  }
+  String newname = request.getParameter("name"); // if specified, name of new application version
+  if (newname != null)
+  {
+   System.out.println("Looking up " + newname);
+   try
+   {
+    so.getApplicationByName(newname); // throws exception if not found
+    // If we get here then application with that name was found. That's an error
+    throw new ApiException("An application version with that name already exists");
+   }
+   catch (RuntimeException ex)
+   {
+    // Application not found exception - ok to proceed
+   }
   }
+
   Application app = getApplicationFromNameOrID(so, appname);
   //
   // At this juncture, application is set. We need to get the engine
@@ -1670,13 +1853,14 @@ public class API extends HttpServlet
    {
     throw new ApiException("New Application with id " + newid + " not found");
    }
-   if (newname != null) {
-	   // Need to rename the application
-	   System.out.println("Changing name of app with id "+newid+" to "+newname);
-	   SummaryChangeSet changes = new SummaryChangeSet();
-	   changes.add(SummaryField.NAME,newname);
-	   so.updateApplication(newapp, changes);
-	   newapp = so.getApplication(newid,false);
+   if (newname != null)
+   {
+    // Need to rename the application
+    System.out.println("Changing name of app with id " + newid + " to " + newname);
+    SummaryChangeSet changes = new SummaryChangeSet();
+    changes.add(SummaryField.NAME, newname);
+    so.updateApplication(newapp, changes);
+    newapp = so.getApplication(newid, false);
    }
    return newapp;
   }
@@ -1686,7 +1870,7 @@ public class API extends HttpServlet
   }
  }
 
- protected Component newCompVersion(DMSession so, String compname, HttpServletRequest request) throws ApiException
+ private Component newCompVersion(DMSession so, String compname, HttpServletRequest request) throws ApiException
  {
   Component comp = getComponentFromNameOrID(so, compname);
   if (comp.getPredecessorId() == 0)
@@ -1701,15 +1885,14 @@ public class API extends HttpServlet
   {
    throw new ApiException("New Component with id " + newid + " not found");
   }
-  
+
   Component baseComp = comp;
   // Find Base component
   while (baseComp.getPredecessorId() != 0)
   {
    baseComp = so.getComponent(baseComp.getPredecessorId(), false);
   }
-  so.componentAddVersionDependency(baseComp.getId(),comp.getId(),newComp.getId()); 
-
+  so.componentAddVersionDependency(baseComp.getId(), comp.getId(), newComp.getId());
   return newComp;
  }
 
@@ -1729,7 +1912,6 @@ public class API extends HttpServlet
   // (D) API/application/appid|appname?[latest=y&][branch=<name>] (gets latest app version, on branch if specified)
   // (D) API/servers?all=y|n[&environment=envname|envid]
   // (D) API/server/<servername>
-  //     API/components?all=y|n[&application=appname|appid] (lists all components - all = show sub-domains)
   // (D) API/component/compid|compname?[latest=y&][branch=<name>] (gets latest comp version, on branch if specified)
   // (D) API/calendar?[env=<env>&app=<app>][&start=<start>&end=<end>]
   // API/newappver/appid|appname[&taskname=<name>]
@@ -1753,7 +1935,7 @@ public class API extends HttpServlet
   // API/new/environment/name[?domain=<domain>&summary=<summary>]
   // API/mod/environment/name/ " "
   // API/new/appver/appname[?name=<vername>]
-  // API/new/compver/compname
+  // API/new/compver/compname[?name=<vername>]
   // (D) API/clone/server/<servername>/<newname>[?domain=dom]
   // (D) API/clone/environment/<envname>/<newname?[?domain=dom]
   // (D) API/assign/server/<servername>/<environmentname>
@@ -1766,966 +1948,1117 @@ public class API extends HttpServlet
   // API/buildid/<compname>/<buildid>
   // API/buildnotify/buildurl=<url>
 
-  JSONObject obj = new JSONObject();
-
-  int deploymentid = 0; // for deployments
-
-  PrintWriter out = response.getWriter();
-  response.setContentType("application/json");
-  boolean delop = false;
-
-  DMSession so = null;
-
-  try
+  try (DMSession so = DMSession.getInstance(request))
   {
-   String path = request.getPathInfo();
-   if (path.length() > 1 && (path.charAt(0) == '/'))
-   {
-    path = path.substring(1);
-   }
 
-   String[] elements = path.split("/");
-   // System.out.println("elements[0] = " + elements[0]);
-   for (int i = 1; i < elements.length; i++)
-   {
-    System.out.println("Before elements[" + i + "]=[" + elements[i] + "]");
-    elements[i] = java.net.URLDecoder.decode(elements[i], "UTF-8");
-    System.out.println("After elements[" + i + "]=[" + elements[i] + "]");
-   }
+   JSONObject obj = new JSONObject();
 
-   if (elements.length < 1)
-   {
-    throw new ApiException("Invalid request path");
-   }
+   int deploymentid = 0; // for deployments
 
-   String user = request.getParameter("user");
-   String pass = request.getParameter("pass");
-   String a = request.getParameter("all");
-   boolean all = (a == null) ? false : (a.charAt(0) == 'y' || a.charAt(0) == 'Y');
+   PrintWriter out = response.getWriter();
+   boolean delop = false;
 
-   if (elements[0].equals("login"))
+   try
    {
-    if (user == null)
+    String path = request.getPathInfo();
+    if (path.length() > 1 && (path.charAt(0) == '/'))
     {
-     throw new ApiException("user must be specified");
+     path = path.substring(1);
     }
-    if (pass == null)
-    {
-     throw new ApiException("password must be specified");
-    }
-    so = new DMSession(request.getSession());
-    if (so.Login(user, pass).getExceptionType() != LoginExceptionType.LOGIN_OKAY)
-    {
-     throw new ApiException("Login failed");
-    }
-    obj.add("success", true);
 
-    HttpSession session = request.getSession();
-    session.setAttribute("session", so);
-    return; // finally will send result
-   }
-
-   if (user != null)
-   {
-    so = new DMSession(request.getSession());
-    if (pass == null)
-     throw new ApiException("password must be specified");
-    if (so.Login(user, pass).getExceptionType() != LoginExceptionType.LOGIN_OKAY)
+    String[] elements = path.split("/");
+    // System.out.println("elements[0] = " + elements[0]);
+    for (int i = 1; i < elements.length; i++)
     {
-     throw new ApiException("Login failed");
+     System.out.println("Before elements[" + i + "]=[" + elements[i] + "]");
+     elements[i] = java.net.URLDecoder.decode(elements[i], "UTF-8");
+     System.out.println("After elements[" + i + "]=[" + elements[i] + "]");
     }
-   }
 
-   if (so == null)
-   {
-    HttpSession session = request.getSession();
-    so = (DMSession) session.getAttribute("session");
-    System.out.println("so = " + so);
-   }
-
-   if (so == null)
-   {
-    throw new ApiException("Not logged in");
-   }
-
-   if (elements[0].equals("deploy"))
-   {
-    // Go invoke a deployment
-    System.out.println("API: deploy");
-    deploymentid = doDeployment(so, elements, request);
-   }
-   else if (elements[0].equals("environment"))
-   {
-    System.out.println("API: Environment");
-    if (elements.length == 2)
+    if (elements.length < 1)
     {
-     Environment env = getEnvironmentFromNameOrID(so, elements[1]);
-     System.out.println(env.getName());
-     obj.add("result", assembleJSONForEnvironment(so, env));
+     throw new ApiException("Invalid request path");
     }
-    else
+
+    String user = request.getParameter("user");
+    String pass = request.getParameter("pass");
+    String provider = request.getParameter("provider");
+    String a = request.getParameter("all");
+    boolean all = (a == null) ? false : (a.charAt(0) == 'y' || a.charAt(0) == 'Y');
+
+    if (provider == null)
+     provider = "";
+
+    if (elements[0].equals("login"))
     {
-     throw new ApiException("Path contains wrong number of elements");
-    }
-   }
-   else if (elements[0].equals("environments"))
-   {
-    System.out.println("DOING environments");
-    if (elements.length == 1)
-    {
-     System.out.println("length is 1");
-     String appname = request.getParameter("application");
-     JSONArray result = new JSONArray();
-     if (appname != null)
+     response.setContentType("application/json");
+     if (user == null)
      {
-      System.out.println("Doing envlist for application");
-      // Getting environments for application
-      Application app = getApplicationFromNameOrID(so, appname);
-      System.out.println("Application is " + app.getName());
-      List<Environment> envs = so.getEnvironmentsForApplication(app, app.getDomain());
-      System.out.println("environment list is size " + envs.size());
-      for (Environment e : envs)
+      throw new ApiException("user must be specified");
+     }
+     if (pass == null)
+     {
+      throw new ApiException("password must be specified");
+     }
+
+     if (provider != null && provider.length() > 0)
+     {
+      String j = so.jsonGetRequest(pass, provider);
+      if (j == null)
+       throw new ApiException("Login failed");
+
+      if (provider.equals("github"))
       {
-       Environment env = so.getEnvironment(e.getId(), true);
-       JSONObject je = assembleJSONForEnvironment(so, env);
-       result.add(je);
+       JsonObject json = new JsonParser().parse(j).getAsJsonObject();
+       String u = json.getAsJsonObject("data").get("alias").getAsString();
+
+       if (!user.equals(u))
+        throw new ApiException("Login failed");
       }
+      pass = "";
      }
      else
      {
-      System.out.println("Application is null");
-      List<DMObject> envs = so.getDMObjects(ObjectType.ENVIRONMENT, all);
-      System.out.println("environment list is size " + envs.size());
-      for (DMObject env : envs)
+      if (so.Login(user, pass).getExceptionType() != LoginExceptionType.LOGIN_OKAY)
       {
-       JSONObject je = assembleJSONForEnvironment(so, (Environment) env);
-       result.add(je);
+       throw new ApiException("Login failed");
       }
      }
-     obj.add("result", result);
+     obj.add("success", true);
+
+     HttpSession session = request.getSession();
+     session.setAttribute("session", so);
+     Cookie loggedinUser = new Cookie("p1", user);
+     Cookie loggedinPw = new Cookie("p2", pass);
+     loggedinUser.setPath("/");
+     loggedinPw.setPath("/");
+
+     response.addCookie(loggedinUser);
+     response.addCookie(loggedinPw);
+     return; // finally will send result
+    }
+
+    if (user != null)
+    {
+     if (pass == null)
+      throw new ApiException("password must be specified");
+     if (so.Login(user, pass).getExceptionType() != LoginExceptionType.LOGIN_OKAY)
+     {
+      throw new ApiException("Login failed");
+     }
     }
     else
     {
-     throw new ApiException("Path contains too many elements");
-    }
-   }
-   else if (elements[0].equals("components"))
-   {
-	   if (elements.length == 1) {
-		   System.out.println("length is 1");
-		   String appname = request.getParameter("application");
-		   JSONArray result = new JSONArray();
-		   if (appname != null) {
-			   System.out.println("Doing complist for application");
-			   // Getting components for application
-			   Application app = getApplicationFromNameOrID(so, appname);
-			   System.out.println("Application is " + app.getName());
-			   List<Component> comps = so.getComponents(ObjectType.APPLICATION,app.getId(),false);
-			   System.out.println("component list is size " + comps.size());
-			   for (Component c : comps)
-			   {
-				   Component comp = so.getComponent(c.getId(), true);
-				   JSONObject je = assembleJSONForComponent(so, comp);
-				   result.add(je);
-			   }
-		   } else {
-			   System.out.println("Application is null");
-			   List<DMObject> comps = so.getDMObjects(ObjectType.COMPONENT, all);
-			   System.out.println("component list is size " + comps.size());
-			   for (DMObject comp : comps)
-			   {
-				   JSONObject je = assembleJSONForComponent(so, (Component)comp);
-				   result.add(je);
-			   }
-		   }
-		   obj.add("result", result);
-	   }
-   }
-   else if (elements[0].equals("component"))
-   {
-    System.out.println("API: component");
-    if (elements.length == 2)
-    {
-     Component comp = getComponentFromNameOrID(so, elements[1]);
-     System.out.println(comp.getName());
-     // Check for "latest" and "branch" options
-     String lstr = request.getParameter("latest");
-     String branchname = request.getParameter("branch");
-     boolean latest = (lstr != null && lstr.equalsIgnoreCase("Y"));
-     if (latest)
+     // Not doing SQL - check if there's an open session with an ID of 0. If so,
+     // clear the session.
+     if (so != null && so.GetUserID() == 0)
      {
-      Component lcomp = so.getLatestVersion(comp, branchname);
-      if (lcomp != null)
+      // Outstanding SQL Query session - remove the session to prevent it being used
+      request.getSession().invalidate();
+     }
+     response.setContentType("application/json");
+    }
+
+    // END TEMP
+
+    if (so == null)
+    {
+     throw new ApiException("Not logged in");
+    }
+
+    if (elements[0].equals("deploy"))
+    {
+     // Go invoke a deployment
+     System.out.println("API: deploy");
+     deploymentid = doDeployment(so, elements, request);
+    }
+    else if (elements[0].equals("environment"))
+    {
+     System.out.println("API: Environment");
+     if (elements.length == 2)
+     {
+      Environment env = getEnvironmentFromNameOrID(so, elements[1]);
+      System.out.println(env.getName());
+      obj.add("result", assembleJSONForEnvironment(so, env));
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements");
+     }
+    }
+    else if (elements[0].equals("environments"))
+    {
+     System.out.println("DOING environments");
+     if (elements.length == 1)
+     {
+      System.out.println("length is 1");
+      String appname = request.getParameter("application");
+      JSONArray result = new JSONArray();
+      if (appname != null)
       {
-       obj.add("result", assembleJSONForComponent(so, lcomp));
+       System.out.println("Doing envlist for application");
+       // Getting environments for application
+       Application app = getApplicationFromNameOrID(so, appname);
+       System.out.println("Application is " + app.getName());
+       List<Environment> envs = so.getEnvironmentsForApplication(app, app.getDomain());
+       System.out.println("environment list is size " + envs.size());
+       for (Environment e : envs)
+       {
+        Environment env = so.getEnvironment(e.getId(), true);
+        JSONObject je = assembleJSONForEnvironment(so, env);
+        result.add(je);
+       }
       }
       else
       {
-       throw new ApiException("No Component Found");
+       System.out.println("Application is null");
+       List<DMObject> envs = so.getDMObjects(ObjectType.ENVIRONMENT, all);
+       System.out.println("environment list is size " + envs.size());
+       for (DMObject env : envs)
+       {
+        JSONObject je = assembleJSONForEnvironment(so, (Environment) env);
+        result.add(je);
+       }
       }
+      obj.add("result", result);
      }
      else
      {
-      obj.add("result", assembleJSONForComponent(so, comp));
+      throw new ApiException("Path contains too many elements");
      }
     }
-    else
+    else if (elements[0].equals("components"))
     {
-     throw new ApiException("Path contains wrong number of elements");
-    }
-   }
-   else if (elements[0].equals("application"))
-   {
-    System.out.println("API: Application");
-    if (elements.length == 2)
-    {
-     Application app = getApplicationFromNameOrID(so, elements[1]);
-     System.out.println(app.getName());
-     // Check for "latest" and "branch" options
-     String lstr = request.getParameter("latest");
-     String branchname = request.getParameter("branch");
-     boolean latest = (lstr != null && lstr.equalsIgnoreCase("Y"));
-     if (latest)
+     if (elements.length == 1)
      {
-      Application lapp = so.getLatestVersion(app, branchname);
-      if (lapp != null)
+      System.out.println("length is 1");
+      String appname = request.getParameter("application");
+      JSONArray result = new JSONArray();
+      if (appname != null)
       {
-       obj.add("result", assembleJSONForApplication(so, lapp));
+       System.out.println("Doing complist for application");
+       // Getting components for application
+       Application app = getApplicationFromNameOrID(so, appname);
+       System.out.println("Application is " + app.getName());
+       List<Component> comps = so.getComponents(ObjectType.APPLICATION, app.getId(), false);
+       System.out.println("component list is size " + comps.size());
+       for (Component c : comps)
+       {
+        Component comp = so.getComponent(c.getId(), true);
+        JSONObject je = assembleJSONForComponent(so, comp);
+        result.add(je);
+       }
       }
       else
       {
-       throw new ApiException("No Application Found");
+       System.out.println("Application is null");
+       List<DMObject> comps = so.getDMObjects(ObjectType.COMPONENT, all);
+       System.out.println("component list is size " + comps.size());
+       for (DMObject comp : comps)
+       {
+        JSONObject je = assembleJSONForComponent(so, (Component) comp);
+        result.add(je);
+       }
       }
-     }
-     else
-     {
-      obj.add("result", assembleJSONForApplication(so, app));
+      obj.add("result", result);
      }
     }
-    else
+    else if (elements[0].equals("component"))
     {
-     throw new ApiException("Path contains wrong number of elements");
-    }
-   }
-   else if (elements[0].equals("applications"))
-   {
-    System.out.println("DOING applications");
-    if (elements.length == 1)
-    {
-     System.out.println("length is 1");
-     List<DMObject> apps = so.getDMObjects(ObjectType.APPLICATION, all);
-     System.out.println("application list is size " + apps.size());
-     JSONArray result = new JSONArray();
-     for (DMObject dob : apps)
+     System.out.println("API: component");
+     if (elements.length == 2)
      {
-      Application app = (Application) dob;
-      JSONObject je = new JSONObject();
-      je.add("id", app.getId());
-      je.add("name", app.getName());
-      je.add("domain", app.getDomain().getFullDomain());
-      je.add("parentid", app.getParentId());
-      je.add("predecessorid", app.getPredecessorId());
-      je.add("summary", app.getSummary());
-      DMObject owner = app.getOwner();
-      if (owner != null)
+      Component comp = getComponentFromNameOrID(so, elements[1]);
+      System.out.println(comp.getName());
+      // Check for "latest" and "branch" options
+      String lstr = request.getParameter("latest");
+      String branchname = request.getParameter("branch");
+      boolean latest = (lstr != null && lstr.equalsIgnoreCase("Y"));
+      if (latest)
       {
-       if (owner.getObjectType() == ObjectType.USER)
-        je.add("owneruser", owner.getName());
-       if (owner.getObjectType() == ObjectType.USERGROUP)
-        je.add("ownergroup", owner.getName());
+       Component lcomp = so.getLatestVersion(comp, branchname);
+       if (lcomp != null)
+       {
+        obj.add("result", assembleJSONForComponent(so, lcomp));
+       }
+       else
+       {
+        throw new ApiException("No Component Found");
+       }
       }
-      result.add(je);
-     }
-     obj.add("result", result);
-    }
-    else
-    {
-     throw new ApiException("Path contains too many elements");
-    }
-   }
-			else if (elements[0].equals("domains")) 
-			{
-			    System.out.println("API: domains");
-			     String domlist = so.getDomainList();
-			     System.out.println(domlist);
-			      obj.add("result", domlist);
-			}						
-   else if (elements[0].equals("servers"))
-   {
-    if (elements.length == 1)
-    {
-     List<DMObject> servers = so.getDMObjects(ObjectType.SERVER, all);
-     JSONArray result = new JSONArray();
-     for (DMObject s : servers)
-     {
-      Server server = (Server) s;
-      result.add(assembleJSONForServer(so, server));
-     }
-     obj.add("result", result);
-    }
-    else
-    {
-     throw new ApiException("Path contains too many elements");
-    }
-   }
-   else if (elements[0].equals("server"))
-   {
-    System.out.println("API: server");
-    if (elements.length == 2)
-    {
-     Server server = getServerFromNameOrID(so, elements[1]);
-     System.out.println(server.getName());
-     obj.add("result", assembleJSONForServer(so, server));
-    }
-    else
-    {
-     throw new ApiException("Path contains wrong number of elements");
-    }
-   }
-   else if (elements[0].equals("approve"))
-   {
-    // Approving an application
-    if (elements.length == 2)
-    {
-     String approve = request.getParameter("approve");
-     Application app = getApplicationFromNameOrID(so, elements[1]);
-     Task t = null;
-     String taskname = request.getParameter("taskname");
-     if (taskname == null)
-      taskname = request.getParameter("task");
-     if (taskname == null)
-     {
-      // task not specified - find one
-      t = so.getTaskByType(app.getDomain(), TaskType.APPROVE);
-      if (t == null)
-       throw new ApiException("Could not find appropriate Approve Task");
+      else
+      {
+       obj.add("result", assembleJSONForComponent(so, comp));
+      }
      }
      else
      {
-      // task specified - use that
-      System.out.println("Looking up task " + taskname);
+      throw new ApiException("Path contains wrong number of elements");
+     }
+    }
+    else if (elements[0].equals("application"))
+    {
+     System.out.println("API: Application");
+     if (elements.length == 2)
+     {
+      Application app = getApplicationFromNameOrID(so, elements[1]);
+      System.out.println(app.getName());
+      // Check for "latest" and "branch" options
+      String lstr = request.getParameter("latest");
+      String branchname = request.getParameter("branch");
+      boolean latest = (lstr != null && lstr.equalsIgnoreCase("Y"));
+      if (latest)
+      {
+       Application lapp = so.getLatestVersion(app, branchname);
+       if (lapp != null)
+       {
+        obj.add("result", assembleJSONForApplication(so, lapp));
+       }
+       else
+       {
+        throw new ApiException("No Application Found");
+       }
+      }
+      else
+      {
+       obj.add("result", assembleJSONForApplication(so, app));
+      }
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements");
+     }
+
+    }
+    else if (elements[0].equals("credential"))
+    {
+     System.out.println("API: Credential");
+     if (elements.length == 2)
+     {
+      Credential cred = getCredentialFromNameOrID(so, elements[1]);
+      System.out.println(cred.getName());
+      // Check for "latest" and "branch" options
+      obj.add("result", assembleJSONForCredential(so, cred));
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements");
+     }
+    }
+    else if (elements[0].equals("domains"))
+    {
+     System.out.println("API: domains");
+     String domlist = so.getDomainList();
+     System.out.println(domlist);
+     obj.add("result", domlist);
+    }
+    else if (elements[0].equals("server"))
+    {
+     System.out.println("API: Server");
+     if (elements.length == 2)
+     {
+      Server srv = getServerFromNameOrID(so, elements[1]);
+      System.out.println(srv.getName());
+      // Check for "latest" and "branch" options
+      obj.add("result", assembleJSONForServer(so, srv));
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements");
+     }
+    }
+    else if (elements[0].equals("testserver"))
+    {
+     System.out.println("API: TestServer");
+     if (elements.length == 2)
+     {
+      Server srv = getServerFromNameOrID(so, elements[1]);
+      System.out.println(srv.getName());
+      // Check for "latest" and "branch" options
+      obj.add("result", assembleJSONForTestServer(so, srv));
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements");
+     }
+    }
+    else if (elements[0].equals("applications"))
+    {
+     System.out.println("DOING applications");
+     if (elements.length == 1)
+     {
+      System.out.println("length is 1");
+      List<DMObject> apps = so.getDMObjects(ObjectType.APPLICATION, all);
+      System.out.println("application list is size " + apps.size());
+      JSONArray result = new JSONArray();
+      for (DMObject dob : apps)
+      {
+       Application app = (Application) dob;
+       JSONObject je = new JSONObject();
+       je.add("id", app.getId());
+       je.add("name", app.getName());
+       je.add("domain", app.getDomain().getFullDomain());
+       je.add("parentid", app.getParentId());
+       je.add("predecessorid", app.getPredecessorId());
+       je.add("summary", app.getSummary());
+       DMObject owner = app.getOwner();
+       if (owner != null)
+       {
+        if (owner.getObjectType() == ObjectType.USER)
+         je.add("owneruser", owner.getName());
+        if (owner.getObjectType() == ObjectType.USERGROUP)
+         je.add("ownergroup", owner.getName());
+       }
+       result.add(je);
+      }
+      obj.add("result", result);
+     }
+     else
+     {
+      throw new ApiException("Path contains too many elements");
+     }
+    }
+    else if (elements[0].equals("domain"))
+    {
+     Domain domain = getDomainFromNameOrID(so, elements[1]);
+     if (domain == null)
+     {
+      throw new ApiException("Could not find domain");
+     }
+     else
+     {
+      obj.add("result", assembleJSONForDomain(so, domain));
+     }
+    }
+    else if (elements[0].equals("user"))
+    {
+     User u = this.getUserFromNameOrID(so, elements[1]);
+     if (u == null)
+     {
+      throw new ApiException("Could not find user");
+     }
+     else
+     {
+      obj.add("result", assembleJSONForUser(so, u));
+     }
+    }
+    else if (elements[0].equals("approve"))
+    {
+     // Approving an application
+     if (elements.length == 2)
+     {
+      String approve = request.getParameter("approve");
+      Application app = getApplicationFromNameOrID(so, elements[1]);
+      Task t = null;
+      String taskname = request.getParameter("taskname");
+      if (taskname == null)
+       taskname = request.getParameter("task");
+      if (taskname == null)
+      {
+       // task not specified - find one
+       t = so.getTaskByType(app.getDomain(), TaskType.APPROVE);
+       if (t == null)
+        throw new ApiException("Could not find appropriate Approve Task");
+      }
+      else
+      {
+       // task specified - use that
+       System.out.println("Looking up task " + taskname);
+       try
+       {
+        t = so.getTaskByName(taskname); // throws exception if not found or no access
+        if (t.getTaskType() != TaskType.APPROVE)
+         throw new ApiException("Specified task is not an Approve task");
+       }
+       catch (Exception ex)
+       {
+        throw new ApiException(ex.getMessage());
+       }
+      }
+      TaskApprove tap = so.getTaskApprove(t.getId());
+      if (tap != null)
+      {
+       tap.setApplication(app);
+       if (approve != null && approve.equalsIgnoreCase("n"))
+       {
+        tap.setApproved(false);
+       }
+       else
+       {
+        tap.setApproved(true);
+       }
+       String notes = request.getParameter("notes");
+       if (notes != null)
+       {
+        tap.setText(notes);
+       }
+       else
+       {
+        tap.setText("");
+       }
+       if (tap.run() == false)
+       {
+        throw new ApiException("Approval Task Failed: " + tap.getOutput());
+       }
+      }
+      else
+      {
+       throw new ApiException("Cannot get approve task " + t.getId());
+      }
+     }
+     else
+     {
+      throw new ApiException("Path contains too many elements");
+     }
+    }
+    else if (elements[0].equals("newappver"))
+    {
+     // Creating a new application version.
+     System.out.println("API: newappver");
+     if (elements.length == 2)
+     {
+      Application newapp = newAppVersion(so, elements[1], request);
+      obj.add("result", assembleJSONForApplication(so, newapp));
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements");
+     }
+    }
+    else if (elements[0].equals("newcompver"))
+    {
+     System.out.println("DOING newcompver");
+     if (elements.length == 2)
+     {
+      Component newComp = newCompVersion(so, elements[1], request);
+      obj.add("result", assembleJSONForComponent(so, newComp));
+     }
+     else
+     {
+      throw new ApiException("Path contains too many elements");
+     }
+    }
+    else if (elements[0].equals("replace"))
+    {
+     // API/replace/application/component/newcomponent
+     if (elements.length == 4)
+     {
+      Application app = getApplicationFromNameOrID(so, elements[1]);
+      Component oldcomp = getComponentFromNameOrID(so, elements[2]);
+      Component newcomp = getComponentFromNameOrID(so, elements[3]);
+      System.out.println("Replacing component " + oldcomp.getId() + " with " + newcomp.getId() + " for app " + app.getId());
+      so.applicationReplaceComponent(app.getId(), oldcomp.getId(), newcomp.getId(), false);
+     }
+     else
+     {
+      throw new ApiException("Path contains invalid number of elements");
+     }
+
+    }
+    else if (elements[0].equals("setaction"))
+    {
+
+     System.out.println("DOING setaction");
+     if (elements.length == 3)
+     {
+      String objtype = elements[1];
+      String objname = elements[2];
+
+      if (objtype.equals("component"))
+      {
+       Component comp = getComponentFromNameOrID(so, objname);
+       String actiontype = request.getParameter("actiontype");
+       String actionname = request.getParameter("actionname");
+       Action action = getActionFromNameOrID(so, actionname);
+
+       if (actiontype.equals("pre"))
+        comp.setPreAction(action);
+       else if (actiontype.equals("post"))
+        comp.setPostAction(action);
+       else
+        comp.setCustomAction(action);
+
+       so.updateComponentAction(comp);
+      }
+      else if (objtype.equals("application"))
+      {
+       Application app = getApplicationFromNameOrID(so, objname);
+       String actiontype = request.getParameter("actiontype");
+       String actionname = request.getParameter("actionname");
+       Action action = getActionFromNameOrID(so, actionname);
+
+       if (actiontype.equals("pre"))
+        app.setPreAction(action);
+       else if (actiontype.equals("post"))
+        app.setPostAction(action);
+       else
+        app.setCustomAction(action);
+
+       so.updateApplicationAction(app);
+      }
+     }
+    }
+    else if (elements[0].equals("setvar"))
+    {
+
+     System.out.println("DOING setvar");
+     if (elements.length == 3)
+     {
+      String objtype = elements[1];
+      String objname = elements[2];
+      String varname = request.getParameter("name");
+      String varval = request.getParameter("value");
+      if (varname == null)
+       throw new ApiException("name not specified");
+      AttributeChangeSet acs = new AttributeChangeSet();
+      DMAttribute attr = new DMAttribute();
+      attr.setName(varname);
+      attr.setValue(varval != null ? varval : "");
+      acs.addChanged(attr);
+
+      for (int i = 1; i < 100; i++)
+      {
+       varname = request.getParameter("name" + i);
+       varval = request.getParameter("value" + i);
+       if (varname == null)
+        break;
+
+       attr = new DMAttribute();
+       attr.setName(varname);
+       attr.setValue(varval != null ? varval : "");
+       acs.addChanged(attr);
+      }
+
       try
       {
-       t = so.getTaskByName(taskname); // throws exception if not found or no access
-       if (t.getTaskType() != TaskType.APPROVE)
-        throw new ApiException("Specified task is not an Approve task");
+       if (objtype.equalsIgnoreCase("environment"))
+       {
+        Environment env = getEnvironmentFromNameOrID(so, objname);
+        so.updateAttributesForObject(env, acs);
+       }
+       else if (objtype.equalsIgnoreCase("application"))
+       {
+        Application app = getApplicationFromNameOrID(so, objname);
+        so.updateAttributesForObject(app, acs);
+       }
+       else if (objtype.equalsIgnoreCase("server"))
+       {
+        Server serv = getServerFromNameOrID(so, objname);
+        ;
+        so.updateAttributesForObject(serv, acs);
+       }
+       else if (objtype.equalsIgnoreCase("component"))
+       {
+        Component comp = getComponentFromNameOrID(so, objname);
+        so.updateAttributesForObject(comp, acs);
+       }
+       else
+       {
+        throw new ApiException("Invalid object type " + objtype);
+       }
       }
-      catch (Exception ex)
+      catch (RuntimeException ex)
       {
        throw new ApiException(ex.getMessage());
       }
      }
-     TaskApprove tap = so.getTaskApprove(t.getId());
-     if (tap != null)
-     {
-      tap.setApplication(app);
-      if (approve != null && approve.equalsIgnoreCase("n"))
-      {
-       tap.setApproved(false);
-      }
-      else
-      {
-       tap.setApproved(true);
-      }
-      String notes = request.getParameter("notes");
-      if (notes != null)
-      {
-       tap.setText(notes);
-      }
-      else
-      {
-       tap.setText("");
-      }
-      if (tap.run() == false)
-      {
-       throw new ApiException("Approval Task Failed: " + tap.getOutput());
-      }
-     }
      else
      {
-      throw new ApiException("Cannot get approve task " + t.getId());
+      throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
      }
     }
-    else
+    else if (elements[0].equals("getvar"))
     {
-     throw new ApiException("Path contains too many elements");
-    }
-   }
-   else if (elements[0].equals("newappver"))
-   {
-    // Creating a new application version.
-    System.out.println("API: newappver");
-    if (elements.length == 2)
-    {
-     Application newapp = newAppVersion(so, elements[1], request);
-     obj.add("result", assembleJSONForApplication(so, newapp));
-    }
-    else
-    {
-     throw new ApiException("Path contains wrong number of elements");
-    }
-   }
-   else if (elements[0].equals("newcompver"))
-   {
-    System.out.println("DOING newcompver");
-    if (elements.length == 2)
-    {
-     Component newComp = newCompVersion(so, elements[1], request);
-     obj.add("result", assembleJSONForComponent(so, newComp));
-    }
-    else
-    {
-     throw new ApiException("Path contains too many elements");
-    }
-   }
-   else if (elements[0].equals("replace"))
-   {
-    // API/replace/application/component/newcomponent
-    if (elements.length == 4)
-    {
-     Application app = getApplicationFromNameOrID(so, elements[1]);
-     Component oldcomp = getComponentFromNameOrID(so, elements[2]);
-     Component newcomp = getComponentFromNameOrID(so, elements[3]);
-     System.out.println("Replacing component " + oldcomp.getId() + " with " + newcomp.getId() + " for app " + app.getId());
-     so.applicationReplaceComponent(app.getId(), oldcomp.getId(), newcomp.getId(), false);
-    }
-    else
-    {
-     throw new ApiException("Path contains invalid number of elements");
-    }
-
-   }
-   else if (elements[0].equals("setvar"))
-   {
-
-    System.out.println("DOING setvar");
-    if (elements.length == 3)
-    {
-     String objtype = elements[1];
-     String objname = elements[2];
-     String varname = request.getParameter("name");
-     String varval = request.getParameter("value");
-     if (varname == null)
-      throw new ApiException("name not specified");
-     AttributeChangeSet acs = new AttributeChangeSet();
-     DMAttribute attr = new DMAttribute();
-     attr.setName(varname);
-     attr.setValue(varval != null ? varval : "");
-     acs.addChanged(attr);
-     try
+     System.out.println("DOING getvar");
+     if (elements.length == 3)
      {
-      if (objtype.equalsIgnoreCase("environment"))
+      String objtype = elements[1];
+      String objname = elements[2];
+      String reqname = request.getParameter("name");
+      try
       {
-       Environment env = getEnvironmentFromNameOrID(so, objname);
-       so.updateAttributesForObject(env, acs);
-      }
-      else if (objtype.equalsIgnoreCase("application"))
-      {
-       Application app = getApplicationFromNameOrID(so, objname);
-       so.updateAttributesForObject(app, acs);
-      }
-      else if (objtype.equalsIgnoreCase("server"))
-      {
-       Server serv = getServerFromNameOrID(so, objname);
-       ;
-       so.updateAttributesForObject(serv, acs);
-      }
-      else if (objtype.equalsIgnoreCase("component"))
-      {
-       Component comp = getComponentFromNameOrID(so, objname);
-       so.updateAttributesForObject(comp, acs);
-      }
-      else
-      {
-       throw new ApiException("Invalid object type " + objtype);
-      }
-     }
-     catch (RuntimeException ex)
-     {
-      throw new ApiException(ex.getMessage());
-     }
-    }
-    else
-    {
-     throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
-    }
-   }
-   else if (elements[0].equals("getvar"))
-   {
-    System.out.println("DOING getvar");
-    if (elements.length == 3)
-    {
-     String objtype = elements[1];
-     String objname = elements[2];
-     String reqname = request.getParameter("name");
-     try
-     {
-      List<DMAttribute> atts;
-      if (objtype.equalsIgnoreCase("environment"))
-      {
-       Environment env = getEnvironmentFromNameOrID(so, objname);
-       atts = env.getAttributes();
-      }
-      else if (objtype.equalsIgnoreCase("application"))
-      {
-       Application app = getApplicationFromNameOrID(so, objname);
-       atts = app.getAttributes();
-      }
-      else if (objtype.equalsIgnoreCase("server"))
-      {
-       Server serv = getServerFromNameOrID(so, objname);
-       atts = serv.getAttributes();
-      }
-      else if (objtype.equalsIgnoreCase("component"))
-      {
-       Component comp = getComponentFromNameOrID(so, objname);
-       atts = comp.getAttributes();
-      }
-      else
-      {
-       throw new ApiException("Invalid object type " + objtype);
-      }
-      if (atts != null)
-      {
-       JSONArray as = new JSONArray();
-       for (int i = 0; i < atts.size(); i++)
+       List<DMAttribute> atts;
+       if (objtype.equalsIgnoreCase("environment"))
        {
-        DMAttribute att = atts.get(i);
-        if (reqname == null || (reqname != null && reqname.equals(att.getName())))
-        {
-         JSONObject jo = new JSONObject();
-         jo.add(att.getName(), att.getValue());
-         as.add(jo);
-        }
+        Environment env = getEnvironmentFromNameOrID(so, objname);
+        atts = env.getAttributes();
        }
-       obj.add("attributes", as);
+       else if (objtype.equalsIgnoreCase("application"))
+       {
+        Application app = getApplicationFromNameOrID(so, objname);
+        atts = app.getAttributes();
+       }
+       else if (objtype.equalsIgnoreCase("server"))
+       {
+        Server serv = getServerFromNameOrID(so, objname);
+        atts = serv.getAttributes();
+       }
+       else if (objtype.equalsIgnoreCase("component"))
+       {
+        Component comp = getComponentFromNameOrID(so, objname);
+        atts = comp.getAttributes();
+       }
+       else
+       {
+        throw new ApiException("Invalid object type " + objtype);
+       }
+       if (atts != null)
+       {
+        JSONArray as = new JSONArray();
+        for (int i = 0; i < atts.size(); i++)
+        {
+         DMAttribute att = atts.get(i);
+         if (reqname == null || (reqname != null && reqname.equals(att.getName())))
+         {
+          JSONObject jo = new JSONObject();
+          jo.add(att.getName(), att.getValue());
+          as.add(jo);
+         }
+        }
+        obj.add("attributes", as);
+       }
+      }
+      catch (RuntimeException ex)
+      {
+       throw new ApiException(ex.getMessage());
       }
      }
-     catch (RuntimeException ex)
+     else
      {
-      throw new ApiException(ex.getMessage());
+      throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
      }
-    }
-    else
-    {
-     throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
-    }
 
-   }
-   else if (elements[0].equals("log"))
-   {
-    System.out.println("DOING deployment log length=" + elements.length);
-    int id = 0;
-    try
+    }
+    else if (elements[0].equals("log"))
     {
-     if (elements.length == 2)
+     System.out.println("DOING deployment log length=" + elements.length);
+     int id = 0;
+     try
      {
-      id = Integer.parseInt(elements[1]);
-     }
-     else
-     {
-      String deploylogid = request.getParameter("id");
-      if (deploylogid == null)
+      if (elements.length == 2)
       {
-       throw new ApiException("id not specified");
+       id = Integer.parseInt(elements[1]);
       }
-      id = Integer.parseInt(deploylogid);
-     }
-    }
-    catch (NumberFormatException ex)
-    {
-     throw new ApiException("id invalid or no access");
-    }
-    if (id == 0 || so.validateDeploymentId(id) == false)
-    {
-     throw new ApiException("id invalid or no access");
-    }
-    else
-    {
-     Deployment dep = so.getDeployment(id, true);
-     //
-     // Check that the deployment is to an environment to which we have access
-     //
-     int envid = dep.getEnvironment().getId();
-     int envdomain = so.getEnvironment(envid, true).getDomainId();
-     System.out.println("envdomain=" + envdomain);
-     if (so.ValidDomain(envdomain, false))
-     {
-      obj.add("id", dep.getId());
-      obj.add("application", dep.getApplication().getName());
-      // obj.add("domain",dep.getDomain().getName());
-      obj.add("environment", dep.getEnvironment().getName());
-      obj.add("exitcode", dep.getExitCode());
-      obj.add("exitstatus", dep.getExitStatus());
-      obj.add("started", dep.getStarted());
-      obj.add("finished", dep.getFinished());
-      obj.add("complete", dep.isComplete());
-      List<DeploymentLogEntry> dl = dep.getLog();
-      obj.add("loglinecount", dl.size());
-      JSONArray logdir = new JSONArray();
-      for (int i = 0; i < dl.size(); i++)
+      else
       {
-       DeploymentLogEntry de = dl.get(i);
-       String logline = de.getLine();
-       logline = logline.replace("\\r", "");
-       logdir.add(logline);
+       String deploylogid = request.getParameter("id");
+       if (deploylogid == null)
+       {
+        throw new ApiException("id not specified");
+       }
+       id = Integer.parseInt(deploylogid);
       }
-      obj.add("logoutput", logdir);
      }
-     else
+     catch (NumberFormatException ex)
      {
       throw new ApiException("id invalid or no access");
      }
-    }
-   }
-   else if (elements[0].equals("new"))
-   {
-    // Adding a new object
-    if (elements.length == 3)
-    {
-     if (elements[1].equals("user"))
-      AddUser(so, elements[2], request);
-     else if (elements[1].equals("server"))
-      AddServer(so, elements[2], request);
-     else if (elements[1].equals("appver"))
-      newAppVersion(so, elements[2], request);
-     else if (elements[1].equals("compver"))
-      newCompVersion(so, elements[2], request);
-     else if (elements[1].equals("environment"))
-      AddEnvironment(so, elements[2], request);
-     else if (elements[1].equals("domain")) 
-      AddDomain(so,elements[2],request);
-     else if (elements[1].equals("credential"))
-      AddCredential(so, elements[2], request);
-     else 
-	  if (elements[1].equals("compitem")) 
+
+     String complete = request.getParameter("checkcomplete");
+     if (complete != null && complete.equalsIgnoreCase("Y"))
+     {
+      Deployment dep = so.getDeployment(id, true);
+      if (dep != null)
+       obj.add("iscomplete", dep.isComplete());
+      else
+       obj.add("iscomplete", false);
+     }
+     else
+     {
+      if (id == 0 || so.validateDeploymentId(id) == false)
+      {
+       throw new ApiException("id invalid or no access");
+      }
+      else
+      {
+
+       Deployment dep = so.getDeployment(id, true);
+       //
+       int envid = dep.getEnvironment().getId();
+       int envdomain = so.getEnvironment(envid, true).getDomainId();
+       System.out.println("envdomain=" + envdomain);
+       if (so.ValidDomain(envdomain, false))
        {
-        String compname = request.getParameter("component");
-        String xStr     = request.getParameter("xpos");
-        String yStr     = request.getParameter("ypos");
-        String removeAllStr = request.getParameter("removeall");
-        String repo = request.getParameter("repo");
-        String pattern = request.getParameter("pattern");
-        String uri = request.getParameter("uri");
-        int xpos = 0;
-        int ypos = 0;
-        boolean removeAll = false;
-        
-        if (repo == null)
-          repo = "";
-        
-        if (pattern == null)
-         pattern = "";
-        
-        if (uri == null)
-         uri = "";
-        
-        if (xStr == null || xStr.length() == 0)
-         xpos = 0;
-        else
-         xpos = Integer.parseInt(xStr);
-        
-        if (yStr == null || yStr.length() == 0)
-         ypos = 0;
-        else
-         ypos = Integer.parseInt(yStr);
-        
-        if (removeAllStr != null && removeAllStr.equalsIgnoreCase("Y"))
-         removeAll = true;
-        
-        AddComponentItems(so, compname, elements[2], xpos, ypos, removeAll, request,repo,pattern,uri);
-      	} 
-     else
-      throw new ApiException("Invalid object \"" + elements[1] + "\" for \"new\" operation");
-    }
-    else
-    {
-     throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
-    }
-   }
-   else if (elements[0].equals("del"))
-   {
-    // Deleting an existing object.
-    if (elements.length == 3)
-    {
-     if (elements[1].equals("user"))
-     {
-      String username = elements[2];
-      User usertodel = getUserFromNameOrID(so, username);
-      if (!usertodel.isUpdatable())
-       throw new ApiException("Permission Denied");
-      so.RemoveObject("user", usertodel.getId(), out, true);
-      delop = true;
+        obj.add("id", dep.getId());
+        obj.add("application", dep.getApplication().getName());
+        // obj.add("domain",dep.getDomain().getName());
+        obj.add("environment", dep.getEnvironment().getName());
+        obj.add("exitcode", dep.getExitCode());
+        obj.add("exitstatus", dep.getExitStatus());
+        obj.add("started", dep.getStarted());
+        obj.add("finished", dep.getFinished());
+        obj.add("complete", dep.isComplete());
+        List<DeploymentLogEntry> dl = dep.getLog();
+        obj.add("loglinecount", dl.size());
+        JSONArray logdir = new JSONArray();
+        for (int i = 0; i < dl.size(); i++)
+        {
+         DeploymentLogEntry de = dl.get(i);
+         String logline = de.getLine();
+         logline = logline.replace("\\r", "");
+         logdir.add(logline);
+        }
+        obj.add("logoutput", logdir);
+       }
+       else
+       {
+        throw new ApiException("id invalid or no access");
+       }
+      }
      }
-     else if (elements[1].equals("server"))
+    }
+    else if (elements[0].equals("new"))
+    {
+     // Adding a new object
+     if (elements.length == 3)
      {
-      String servername = elements[2];
-      Server servertodel = getServerFromNameOrID(so, servername);
-      if (!servertodel.isUpdatable())
-       throw new ApiException("Permission Denied");
-      so.RemoveObject("server", servertodel.getId(), out, true);
-      delop = true;
-     }
-     if (elements[1].equals("environment"))
-     {
-      String envname = elements[2];
-      Environment envtodel = getEnvironmentFromNameOrID(so, envname);
-      if (!envtodel.isUpdatable())
-       throw new ApiException("Permission Denied");
-      so.RemoveObject("environment", envtodel.getId(), out, true);
-      delop = true;
-     }
-     else if (elements[1].equals("credential"))
-     {
-      String credname = elements[2];
-      Credential credtodel = getCredentialFromNameOrID(so, credname);
-      if (!credtodel.isUpdatable())
-       throw new ApiException("Permission Denied");
-      so.RemoveObject("credentials", credtodel.getId(), out, true);
-      delop = true;
-     }
-     else
-      throw new ApiException("Invalid object \"" + elements[1] + "\" for \"del\" operation");
-    }
-    else
-    {
-     throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
-    }
-   }
-   else if (elements[0].equals("mod"))
-   {
-    // Modifying an existing object
-    if (elements.length == 3)
-    {
-     if (elements[1].equals("user"))
-      ModUser(so, elements[2], request);
-     else if (elements[1].equals("server"))
-      ModServer(so, elements[2], request);
-     else if (elements[1].equals("environment"))
-      ModEnvironment(so, elements[2], request);
-     else if (elements[1].equals("credential"))
-      ModCredential(so, elements[2], request);
-     else
-      throw new ApiException("Invalid object \"" + elements[1] + "\" for \"mod\" operation");
-    }
-    else
-    {
-     throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
-    }
-   }
-   else if (elements[0].equals("clone"))
-   {
-    // API/clone/server/<servername>/<newname>
-    // API/clone/environment/<envname>/<newname>
-    // API/clone/user/<username>/<newname>
-    if (elements.length == 4)
-    {
-     if (elements[1].equals("server"))
-      cloneServer(so, elements[2], elements[3], request);
-     else if (elements[1].equals("environment"))
-      cloneEnvironment(so, elements[2], elements[3], request);
-     else
-      throw new ApiException("Invalid object \"" + elements[1] + "\" for \"clone\" operation");
-    }
-    else
-    {
-     throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
-    }
-   }
-   else if (elements[0].equals("assign"))
-   {
+      if (elements[1].equals("user"))
+       AddUser(so, elements[2], request);
+      else if (elements[1].equals("server"))
+       AddServer(so, elements[2], request);
+      else if (elements[1].equals("appver"))
+       newAppVersion(so, elements[2], request);
+      else if (elements[1].equals("compver"))
+       newCompVersion(so, elements[2], request);
+      else if (elements[1].equals("environment"))
+       AddEnvironment(so, elements[2], request);
+      else if (elements[1].equals("domain"))
+       AddDomain(so, elements[2], request);
+      else if (elements[1].equals("credential"))
+       AddCredential(so, elements[2], request);
+      else if (elements[1].equals("compitem"))
+      {
+       String compname = request.getParameter("component");
+       String xStr = request.getParameter("xpos");
+       String yStr = request.getParameter("ypos");
+       String removeAllStr = request.getParameter("removeall");
+       String repo = request.getParameter("repo");
+       String pattern = request.getParameter("pattern");
+       String uri = request.getParameter("uri");
+       int xpos = 0;
+       int ypos = 0;
+       boolean removeAll = false;
 
-    // API/assign/server/<servername>/<environmentname>
-    // API/assign/application/<appname>/<environmentname>
-    if (elements.length == 4)
-    {
-     if (elements[1].equals("server"))
-      assignServer(so, elements[2], elements[3]);
-     else if (elements[1].equals("application"))
-      assignApplication(so, elements[2], elements[3]);
-     else if (elements[1].equals("user"))
-      assignUser(so, elements[2], elements[3]);
-     else
-      throw new ApiException("Invalid object \"" + elements[1] + "\" for \"assign\" operation");
-    }
-    else
-    {
-     throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
-    }
-   }
-   else if (elements[0].equals("unassign"))
-   {
-    // API/unassign/server/<servername>/<environmentname>
-    // API/unassign/application/<appname>/<environmentname>
-    if (elements.length == 4)
-    {
-     if (elements[1].equals("server"))
-      deAssignServer(so, elements[2], elements[3]);
-     else if (elements[1].equals("application"))
-      deAssignApplication(so, elements[2], elements[3]);
-     else if (elements[1].equals("user"))
-      deAssignUser(so, elements[2], elements[3]);
-     else
-      throw new ApiException("Invalid object \"" + elements[1] + "\" for \"assign\" operation");
-    }
-    else
-    {
-     throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
-    }
-   }
-   else if (elements[0].equals("buildid"))
-   {
-    // Associates a build ID with the specified component
-    // API/buildid/<compname>/<buildid>
-    if (elements.length == 3)
-    {
-     addBuildNumber(so, elements[1], elements[2], request);
-    }
-    else
-    {
-     throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
-    }
-   }
-   else if (elements[0].equals("buildnotify"))
-   {
-    // API/buildnotify?buildurl=<buildurl>
-    if (elements.length == 1)
-    {
-     String buildurl = request.getParameter("buildurl");
-     if (buildurl == null)
-      throw new ApiException("buildurl parameter not specified");
-     JSONArray info = buildNotify(so, buildurl);
-     obj.add("affected_objects", info);
-    }
-    else
-    {
-     throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
-    }
-   }
-   else if (elements[0].equals("calendar"))
-   {
-    // Listing calendar entries
-    // API/calendar?[env=<env>&app=<app>][&start=<start>&end=<end>&all=Y&deploy=Y]
-    String envname = request.getParameter("env");
-    String appname = request.getParameter("app");
-    String starttext = request.getParameter("start");
-    String endtext = request.getParameter("end");
-    long starttime = 0;
-    long endtime = 0;
-    if (starttext != null)
-    {
-     starttime = convertDateTime(starttext);
-    }
-    else
-    {
-     starttime = so.timeNow();
-    }
-    if (endtext != null)
-     endtime = convertDateTime(endtext);
-    Environment env = null;
-    Application app = null;
+       if (repo == null)
+        repo = "";
 
-    if (envname != null)
-     env = getEnvironmentFromNameOrID(so, envname);
-    if (appname != null)
-     app = getApplicationFromNameOrID(so, appname);
-    List<DMCalendarEvent> events = so.getEvents(env, app, starttime, endtime);
-    JSONArray es = new JSONArray();
-    for (DMCalendarEvent event : events)
-    {
-     JSONObject jo = new JSONObject();
-     jo.add("id", event.getID());
-     jo.add("title", event.getEventTitle());
-     jo.add("desc", event.getEventDesc());
-     jo.add("type", event.getEventTypeString());
-     jo.add("starttime", tsObject(event.getStart()));
-     jo.add("endtime", tsObject(event.getEnd()));
-     jo.add("allday", event.getAllDayEvent());
-     if (event.getApproved() > 0)
-     {
-      jo.add("approved", tsObject(event.getApproved()));
-      jo.add("approver", event.getApprover());
-     }
-     jo.add("creator", userObject(so, event.getCreatorID()));
-     jo.add("created", tsObject(event.getCreated()));
-     jo.add("deployid", event.getDeployID());
-     jo.add("pending", event.getPending());
-     int appid = event.getAppID();
-     int envid = event.getEnvID();
-     if (appid > 0)
-     {
-      Application eventapp = so.getApplication(appid, false);
-      JSONObject appjo = new JSONObject();
-      appjo.add("id", eventapp.getId());
-      appjo.add("name", eventapp.getName());
-      jo.add("application", appjo);
-     }
-     if (envid > 0)
-     {
-      Environment eventenv = so.getEnvironment(envid, false);
-      JSONObject envjo = new JSONObject();
-      envjo.add("id", eventenv.getId());
-      envjo.add("name", eventenv.getName());
-      jo.add("environment", envjo);
-     }
-     es.add(jo);
-    }
-    obj.add("result", es);
-   }
-   else
-   {
-    throw new ApiException("Unrecognised request path: " + path);
-   }
+       if (pattern == null)
+        pattern = "";
 
-   obj.add("success", true);
-   if (deploymentid != 0)
-   {
-    obj.add("deploymentid", deploymentid);
+       if (uri == null)
+        uri = "";
+
+       if (xStr == null || xStr.length() == 0)
+        xpos = 0;
+       else
+        xpos = Integer.parseInt(xStr);
+
+       if (yStr == null || yStr.length() == 0)
+        ypos = 0;
+       else
+        ypos = Integer.parseInt(yStr);
+
+       if (removeAllStr != null && removeAllStr.equalsIgnoreCase("Y"))
+        removeAll = true;
+
+       AddComponentItems(so, compname, elements[2], xpos, ypos, removeAll, request, repo, pattern, uri);
+      }
+      else
+       throw new ApiException("Invalid object \"" + elements[1] + "\" for \"new\" operation");
+
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
+     }
+    }
+    else if (elements[0].equals("del"))
+    {
+     // Deleting an existing object.
+     if (elements.length == 3)
+     {
+      if (elements[1].equals("user"))
+      {
+       String username = elements[2];
+       User usertodel = getUserFromNameOrID(so, username);
+       if (!usertodel.isUpdatable())
+        throw new ApiException("Permission Denied");
+       so.RemoveObject("user", usertodel.getId(), out, true);
+       delop = true;
+      }
+      else if (elements[1].equals("server"))
+      {
+       String servername = elements[2];
+       Server servertodel = getServerFromNameOrID(so, servername);
+       if (!servertodel.isUpdatable())
+        throw new ApiException("Permission Denied");
+       so.RemoveObject("server", servertodel.getId(), out, true);
+       delop = true;
+      }
+      if (elements[1].equals("environment"))
+      {
+       String envname = elements[2];
+       Environment envtodel = getEnvironmentFromNameOrID(so, envname);
+       if (!envtodel.isUpdatable())
+        throw new ApiException("Permission Denied");
+       so.RemoveObject("environment", envtodel.getId(), out, true);
+       delop = true;
+      }
+      else if (elements[1].equals("credential"))
+      {
+       String credname = elements[2];
+       Credential credtodel = getCredentialFromNameOrID(so, credname);
+       if (!credtodel.isUpdatable())
+        throw new ApiException("Permission Denied");
+       so.RemoveObject("credentials", credtodel.getId(), out, true);
+       delop = true;
+      }
+      else
+       throw new ApiException("Invalid object \"" + elements[1] + "\" for \"del\" operation");
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
+     }
+    }
+    else if (elements[0].equals("mod"))
+    {
+     // Modifying an existing object
+     if (elements.length == 3)
+     {
+      if (elements[1].equals("user"))
+       ModUser(so, elements[2], request);
+      else if (elements[1].equals("server"))
+       ModServer(so, elements[2], request);
+      else if (elements[1].equals("environment"))
+       ModEnvironment(so, elements[2], request);
+      else if (elements[1].equals("credential"))
+       ModCredential(so, elements[2], request);
+      else
+       throw new ApiException("Invalid object \"" + elements[1] + "\" for \"mod\" operation");
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
+     }
+    }
+    else if (elements[0].equals("clone"))
+    {
+     // API/clone/server/<servername>/<newname>
+     // API/clone/environment/<envname>/<newname>
+     // API/clone/user/<username>/<newname>
+     if (elements.length == 4)
+     {
+      if (elements[1].equals("server"))
+       cloneServer(so, elements[2], elements[3], request);
+      else if (elements[1].equals("environment"))
+       cloneEnvironment(so, elements[2], elements[3], request);
+      else
+       throw new ApiException("Invalid object \"" + elements[1] + "\" for \"clone\" operation");
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
+     }
+    }
+    else if (elements[0].equals("assign"))
+    {
+
+     // API/assign/server/<servername>/<environmentname>
+     // API/assign/application/<appname>/<environmentname>
+     if (elements.length == 4)
+     {
+      if (elements[1].equals("server"))
+       assignServer(so, elements[2], elements[3]);
+      else if (elements[1].equals("application"))
+       assignApplication(so, elements[2], elements[3]);
+      else if (elements[1].equals("user"))
+       assignUser(so, elements[2], elements[3]);
+      else
+       throw new ApiException("Invalid object \"" + elements[1] + "\" for \"assign\" operation");
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
+     }
+    }
+    else if (elements[0].equals("unassign"))
+    {
+     // API/unassign/server/<servername>/<environmentname>
+     // API/unassign/application/<appname>/<environmentname>
+     if (elements.length == 4)
+     {
+      if (elements[1].equals("server"))
+       deAssignServer(so, elements[2], elements[3]);
+      else if (elements[1].equals("application"))
+       deAssignApplication(so, elements[2], elements[3]);
+      else if (elements[1].equals("user"))
+       deAssignUser(so, elements[2], elements[3]);
+      else
+       throw new ApiException("Invalid object \"" + elements[1] + "\" for \"assign\" operation");
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
+     }
+    }
+    else if (elements[0].equals("buildid"))
+    {
+     // Associates a build ID with the specified component
+     // API/buildid/<compname>/<buildid>
+     if (elements.length == 3)
+     {
+      addBuildNumber(so, elements[1], elements[2], request);
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
+     }
+    }
+    else if (elements[0].equals("buildnotify"))
+    {
+     // API/buildnotify?buildurl=<buildurl>
+     if (elements.length == 1)
+     {
+      String buildurl = request.getParameter("buildurl");
+      if (buildurl == null)
+       throw new ApiException("buildurl parameter not specified");
+      JSONArray info = buildNotify(so, buildurl);
+      obj.add("affected_objects", info);
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements (" + elements.length + ")");
+     }
+    }
+    else if (elements[0].equals("calendar"))
+    {
+     // Listing calendar entries
+     // API/calendar?[env=<env>&app=<app>][&start=<start>&end=<end>&all=Y&deploy=Y]
+     String envname = request.getParameter("env");
+     String appname = request.getParameter("app");
+     String starttext = request.getParameter("start");
+     String endtext = request.getParameter("end");
+     long starttime = 0;
+     long endtime = 0;
+     if (starttext != null)
+     {
+      starttime = convertDateTime(starttext);
+     }
+     else
+     {
+      starttime = so.timeNow();
+     }
+     if (endtext != null)
+      endtime = convertDateTime(endtext);
+     Environment env = null;
+     Application app = null;
+
+     if (envname != null)
+      env = getEnvironmentFromNameOrID(so, envname);
+     if (appname != null)
+      app = getApplicationFromNameOrID(so, appname);
+     List<DMCalendarEvent> events = so.getEvents(env, app, starttime, endtime);
+     JSONArray es = new JSONArray();
+     for (DMCalendarEvent event : events)
+     {
+      JSONObject jo = new JSONObject();
+      jo.add("id", event.getID());
+      jo.add("title", event.getEventTitle());
+      jo.add("desc", event.getEventDesc());
+      jo.add("type", event.getEventTypeString());
+      jo.add("starttime", tsObject(event.getStart()));
+      jo.add("endtime", tsObject(event.getEnd()));
+      jo.add("allday", event.getAllDayEvent());
+      if (event.getApproved() > 0)
+      {
+       jo.add("approved", tsObject(event.getApproved()));
+       jo.add("approver", event.getApprover());
+      }
+      jo.add("creator", userObject(so, event.getCreatorID()));
+      jo.add("created", tsObject(event.getCreated()));
+      jo.add("deployid", event.getDeployID());
+      jo.add("pending", event.getPending());
+      int appid = event.getAppID();
+      int envid = event.getEnvID();
+      if (appid > 0)
+      {
+       Application eventapp = so.getApplication(appid, false);
+       JSONObject appjo = new JSONObject();
+       appjo.add("id", eventapp.getId());
+       appjo.add("name", eventapp.getName());
+       jo.add("application", appjo);
+      }
+      if (envid > 0)
+      {
+       Environment eventenv = so.getEnvironment(envid, false);
+       JSONObject envjo = new JSONObject();
+       envjo.add("id", eventenv.getId());
+       envjo.add("name", eventenv.getName());
+       jo.add("environment", envjo);
+      }
+      es.add(jo);
+     }
+     obj.add("result", es);
+    }
+    else if (!elements[0].equals("sql"))
+    {
+     throw new ApiException("Unrecognised request path: " + path);
+    }
+
+    obj.add("success", true);
+    if (deploymentid != 0)
+    {
+     obj.add("deploymentid", deploymentid);
+    }
    }
-  }
-  catch (ApiException e)
-  {
-   if (so != null)
+   catch (ApiException e)
    {
-    try
+    System.out.println("ApiException caught e=" + e.getMessage());
+    if (so != null)
     {
-     so.GetConnection().rollback();
+     try
+     {
+      so.GetConnection().rollback();
+     }
+     catch (SQLException e1)
+     {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+     }
     }
-    catch (SQLException e1)
-    {
-     // TODO Auto-generated catch block
-     e1.printStackTrace();
-    }
+    obj.add("success", false);
+    obj.add("error", e.getMessage());
    }
-   obj.add("success", false);
-   obj.add("error", e.getMessage());
-  }
-  catch (Exception e)
-  {
-   if (so != null)
+   catch (Exception e)
    {
-    try
+    System.out.println("Exception caught, e=" + e.getMessage());
+    e.printStackTrace();
+    if (so != null)
     {
-     so.GetConnection().rollback();
+     try
+     {
+      so.GetConnection().rollback();
+     }
+     catch (SQLException e1)
+     {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+     }
     }
-    catch (SQLException e1)
-    {
-     // TODO Auto-generated catch block
-     e1.printStackTrace();
-    }
+    e.printStackTrace();
+    obj.add("success", false);
+    obj.add("error", e.toString());
    }
-   e.printStackTrace();
-   obj.add("success", false);
-   obj.add("error", e.toString());
-  }
-  finally
-  {
-   if (!delop)
+   finally
    {
-    // Delete operations call RemoveObject which writes success or failure JSON to the PrintWriter...
-    String ret = obj.getJSON();
-    System.out.println(ret);
-    out.println(ret);
+    if (!delop)
+    {
+     // Delete operations call RemoveObject which writes success or failure JSON to the PrintWriter...
+     String ret = obj.getJSON();
+     System.out.println(ret);
+     out.println(ret);
+    }
    }
   }
  }
@@ -2738,18 +3071,26 @@ public class API extends HttpServlet
   doGet(request, response);
  }
 
- protected int doDeployment(DMSession so, String[] elements, HttpServletRequest request) throws ApiException
+ 
+ private int doDeployment(DMSession so, String[] elements, HttpServletRequest request) throws ApiException
  {
+  String envName = null;
+  String appName = null;
+  int deploymentid = 0;
+
   System.out.println("doDeployment");
   if (elements.length < 2)
-  {
-   throw new ApiException("No application specified");
-  }
-  int deploymentid = 0;
-  Application app = getApplicationFromNameOrID(so, elements[1]);
+   appName = request.getParameter("app");
+  else
+   appName = elements[1];
+
+  if (appName == null)
+   throw new ApiException("application not specified");
+
+  Application app = getApplicationFromNameOrID(so, appName);
 
   System.out.println("Application found is " + app.getId());
-  String envName = request.getParameter("env");
+  envName = request.getParameter("env");
   if (envName == null)
   {
    // env not specified as parameter - get from elements array
@@ -2759,6 +3100,7 @@ public class API extends HttpServlet
    }
    envName = elements[2];
   }
+
   String waitstr = request.getParameter("wait");
   boolean wait = true;
   if (waitstr != null)

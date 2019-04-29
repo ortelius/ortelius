@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -53,7 +54,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.Set;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -65,6 +68,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.HttpEntity;
@@ -92,6 +96,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.sun.xml.internal.ws.org.objectweb.asm.Type;
+
 import dmadmin.json.CreatedModifiedField;
 import dmadmin.json.JSONArray;
 import dmadmin.json.JSONBoolean;
@@ -169,7 +174,7 @@ import dmadmin.util.CommandLine;
 import dmadmin.util.DynamicQueryBuilder;
 import dmadmin.util.DynamicQueryBuilder.Null;
 
-public class DMSession {
+public class DMSession implements AutoCloseable  {
 	
 	private String m_defaultdatefmt = "MM/dd/yyyy";
 	private String m_defaulttimefmt = "HH:mm";
@@ -288,8 +293,40 @@ public class DMSession {
 		m_context = session.getServletContext();
 	}
 	
-	
+	public static DMSession getInstance(HttpServletRequest request)
+	{
+	 DMSession session = null;
+  session = new DMSession(request.getSession().getServletContext());
+  request.getSession().setAttribute("session",session);
+  try
+  {
+   System.out.println("CLOSED=" + session.m_conn.isClosed());
+  }
+  catch (SQLException e)
+  {
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  }
 
+//	 if (session.m_conn == null)
+//	  session.connectToDatabase(request.getSession().getServletContext());
+
+		String username = ServletUtils.GetCookie(request,"p1");
+		String password = ServletUtils.GetCookie(request,"p2");
+		
+		session.setSession(request.getSession());
+		if (username != null && password != null) {
+			session.Login(username,password);
+ 	}
+		return session;
+	}
+
+    private void setSession(HttpSession session)
+    {
+     m_httpSession = session;
+    }
+
+	
 	public String GetSessionId()
 	{
 		return m_httpSession.getId();
@@ -7051,10 +7088,15 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return (UserGroup)getObjectByName(ObjectType.USERGROUP,groupName);
 	}
 	
-    public Repository getRepositoryByName(String repoName)
+ public Repository getRepositoryByName(String repoName)
 	{
 	 return (Repository)getObjectByName(ObjectType.REPOSITORY,repoName);
 	}
+ 
+ public Action getActionByName(String actionName)
+ {
+  return (Action)getObjectByName(ObjectType.ACTION,actionName);
+ }
 	
 	public Task getTaskByType(Domain domain,TaskType type)
 	{
@@ -8896,7 +8938,78 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Unable to retrieve component item " + ciid + " from database");	
 	}
 
-	
+ public void updateComponentAction(Component comp)
+ {
+
+  try
+  {
+   String sql = "update dm.dm_component set preactionid = ?, postactionid = ?, actionid = ? where id = ?";
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   
+   if (comp.getPreAction() == null)
+    stmt.setNull(1, Types.INTEGER);
+   else
+    stmt.setInt(1, comp.getPreAction().getId());
+
+   if (comp.getPostAction() == null)
+    stmt.setNull(2, Types.INTEGER);
+   else
+    stmt.setInt(2, comp.getPostAction().getId());
+
+   if (comp.getCustomAction() == null)
+    stmt.setNull(3, Types.INTEGER);
+   else
+    stmt.setInt(3, comp.getCustomAction().getId());
+
+   stmt.setInt(4, comp.getId());
+
+   stmt.execute();
+   m_conn.commit();
+   stmt.close();
+  }
+  catch(SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+ }
+ 
+ public void updateApplicationAction(Application app)
+ {
+  
+  try
+  {
+   String sql = "update dm.dm_application set preactionid = ?, postactionid = ?, actionid = ? where id = ?";
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   
+   if (app.getPreAction() == null)
+    stmt.setNull(1, Types.INTEGER);
+   else
+    stmt.setInt(1, app.getPreAction().getId());
+
+   if (app.getPostAction() == null)
+    stmt.setNull(2, Types.INTEGER);
+   else
+    stmt.setInt(2, app.getPostAction().getId());
+
+   if (app.getCustomAction() == null)
+    stmt.setNull(3, Types.INTEGER);
+   else
+    stmt.setInt(3, app.getCustomAction().getId());
+
+   stmt.setInt(4, app.getId());
+
+   stmt.execute();
+   m_conn.commit();
+   stmt.close();
+  }
+  catch(SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+ }
+ 
 	public boolean updateComponentItemSummary(ComponentItem ci, SummaryChangeSet changes)
 	{
 		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_componentitem ");
@@ -16840,6 +16953,25 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Unable to Remove Component from Server");
 	}
 	
+ public void removeAppVersionFromEnv(int deploymentid)
+ {
+  try
+  {
+   PreparedStatement st2 = m_conn.prepareStatement("DELETE FROM dm.dm_appsinenv WHERE deploymentid=?");
+   st2.setInt(1,deploymentid);
+   st2.execute();
+   st2.close();
+   m_conn.commit();
+   return;
+  }
+  catch (SQLException ex)
+  {
+   rollback();
+   ex.printStackTrace();
+  }
+  throw new RuntimeException("Unable to Application Deployment from Environment");
+ }
+	
 	public void AddConnector(int envid,int fromnode,int tonode,int fromside,int toside)
 	{
 		try
@@ -23906,6 +24038,11 @@ public void SyncAnsible(ServletContext context)
 	  return initialInstall;
   }
   
+  public String getDomainList()
+  {
+   return m_domainlist;
+  }
+  
 	public void processField(DMSession so, SummaryField field, String value, SummaryChangeSet changes)
 	{
 		ObjectType type = field.type();
@@ -23962,4 +24099,55 @@ public void SyncAnsible(ServletContext context)
 		//return new DMProperty(prop, value, (encr == 'Y'), (over == 'Y'), (apnd == 'Y'));
 		return new DMProperty(prop, pval, false, false, false);
 	}
+
+	  public void checkConnection(ServletContext context)
+	  {
+	  }
+	  
+	  @Override
+	  public void close()
+	  {
+	   if (m_conn != null)
+	   {
+	    try
+	    {
+	     m_conn.close();
+	    }
+	    catch (Exception e)
+	    {
+	     e.printStackTrace();
+	    }
+	    m_conn = null;
+	   }
+	  }
+
+	  private String streamToString(InputStream inputStream) {
+		   Scanner s = new Scanner(inputStream, "UTF-8");
+		   String text = s.useDelimiter("\\Z").next();
+		   s.close();
+		   return text;
+		 }
+
+	  public String jsonGetRequest(String access_token, String provider) {
+		   try {
+		    String urlQueryString = "https://oauth.io/auth/" + provider + "/me";
+		    
+		     URL url = new URL(urlQueryString);
+		     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		     connection.setDoOutput(true);
+		     connection.setInstanceFollowRedirects(false);
+		     connection.setRequestMethod("GET");
+		     connection.setRequestProperty("oauthio", "k=gBLM5pHlNyuYUYqV6IWBmWe3wcU&access_token=" + access_token);
+		     connection.setRequestProperty("Accept", "application/json");
+		     connection.setRequestProperty("Content-Type", "application/json");
+		     connection.setRequestProperty("charset", "utf-8");
+		     connection.connect();
+		     InputStream inStream = connection.getInputStream();
+		     return streamToString(inStream); 
+		     
+		   } catch (IOException ex) {
+		     ex.printStackTrace();
+		   }
+		   return "";
+		 }
 }

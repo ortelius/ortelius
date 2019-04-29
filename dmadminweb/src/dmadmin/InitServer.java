@@ -208,7 +208,8 @@ public class InitServer extends HttpServletBase
 
  public void init()
  {
-  DMSession session = new DMSession(getServletContext());
+  try (DMSession session = new DMSession(getServletContext()))
+  {
   String absoluteDiskPath = getServletContext().getRealPath("/WEB-INF") + "/localdeploy.reg";
   File regfile = new File(absoluteDiskPath);
 
@@ -409,7 +410,7 @@ public class InitServer extends HttpServletBase
     }
    }).start();
   }
-
+  }
  }
 
  String readFile(String filename) throws FileNotFoundException, IOException

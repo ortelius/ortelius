@@ -47,9 +47,11 @@ public class Login extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		DMSession session = new DMSession(request.getSession());
-		request.setAttribute("firstinstall",session.firstInstall());
-		request.getRequestDispatcher("WEB-INF/Home.jsp").forward(request, response);
+		try (DMSession session = new DMSession(request.getSession()))
+		{
+		 request.setAttribute("firstinstall",session.firstInstall());
+		 request.getRequestDispatcher("WEB-INF/Home.jsp").forward(request, response);
+		}
 	}
 
 	/**

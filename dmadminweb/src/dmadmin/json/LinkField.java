@@ -26,6 +26,7 @@ public class LinkField
 {
 	private String m_type;
 	private int m_objId;
+	private int m_deploymentid;
 	private String m_name;
 	private String m_tooltip;
 	private boolean m_showLink;
@@ -63,7 +64,23 @@ public class LinkField
 		m_kind = kind;
 	}
 	
-	public LinkField setShowLink(boolean showLink) {
+	public int getId()
+	{
+	 return m_objId;
+	}
+	
+	
+	public int getDeploymentid()
+ {
+  return m_deploymentid;
+ }
+
+ public void setDeploymentid(int m_deploymentid)
+ {
+  this.m_deploymentid = m_deploymentid;
+ }
+
+ public LinkField setShowLink(boolean showLink) {
 		m_showLink = showLink;
 		return this;
 	}

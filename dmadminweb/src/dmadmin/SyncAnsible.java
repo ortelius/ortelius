@@ -25,7 +25,9 @@ public class SyncAnsible
 
   public SyncAnsible(ServletContext context)
   {
-	  DMSession dm = new DMSession(context);
-	  dm.SyncAnsible(context);
+	  try (DMSession dm = new DMSession(context))
+	  {
+	   dm.SyncAnsible(context);
+	  }
   }
 }

@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import dmadmin.json.JSONObject;
+import dmadmin.model.LoginException;
+import dmadmin.model.LoginException.LoginExceptionType;
 
 /**
  * Servlet implementation class ChangePassword

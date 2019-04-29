@@ -29,6 +29,7 @@ public enum SummaryField
 	ATTACHMENTS		(4, ObjectType.ATTACHMENT_LIST),
 	// Engine
 	ENGINE_HOSTNAME (5, null),
+ ENGINE_CLIENTID (6, null),
 	
 	// Environment
 	AVAILABILITY	(10,  "Availability",		null),
@@ -37,6 +38,7 @@ public enum SummaryField
 	PRE_ACTION		(101, "Pre Action",					ObjectType.ACTION),
 	POST_ACTION		(102, "Post Action",				ObjectType.ACTION),
 	CUSTOM_ACTION	(103, "Custom Action",				ObjectType.ACTION),
+	APP_DATASOURCE	(104, "Change Request Datasource",	ObjectType.DATASOURCE),
 
 	// Server
 	SERVER_TYPE		(201, "Type",				ObjectType.SERVER_TYPE),
@@ -44,8 +46,15 @@ public enum SummaryField
 	SERVER_PROTOCOL	(203, "Protocol",			ObjectType.TRANSFER),
 	SERVER_BASEDIR	(204, "Base Directory",		null),
 	SERVER_CRED		(205, "Credentials",		ObjectType.CREDENTIALS),
+	SERVER_AUTOPING	(206, "Auto Ping",			ObjectType.BOOLEAN),
+	SERVER_AUTOMD5	(207, "Auto MD5",			ObjectType.BOOLEAN),
 	SERVER_COMPTYPE (208, "Component Types",	ObjectType.SERVERCOMPTYPE),
-	SERVER_SSHPORT	(214, "SSH Port",			null),
+	SERVER_PINGINTERVAL (209, "Ping Interval",	null),
+	SERVER_PINGSTART    (210, "Ping Start",		null),
+	SERVER_PINGEND      (211, "Ping End",		null),
+	SERVER_PINGTEMPLATE (212, "Ping Template",	ObjectType.TEMPLATE),
+	SERVER_MD5TEMPLATE  (213, "MD5 Template",	ObjectType.TEMPLATE),
+	SERVER_SSHPORT		(214, "SSH Port",		null),
 	
 	// Providers
 	PROVIDER_TYPE	(301, ObjectType.PROVIDERDEF),	// This is used in GetSummary.jsp for callback
@@ -60,6 +69,7 @@ public enum SummaryField
 	USER_CHNG_PASS  (406, null),
 	USER_DATE_FMT   (407, "Date Format",	null),
 	USER_TIME_FMT   (408, "Time Format",	null),
+	USER_DATASOURCE (409, "Data Source",	ObjectType.DATASOURCE),
 	
 	// UserGroup
 	GROUP_EMAIL		(501, "email address",	null),
