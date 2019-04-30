@@ -779,6 +779,8 @@ public class DMSession implements AutoCloseable  {
 			m_username = UserName;
 			m_domainlist = "";
 			User user = getUserByName(UserName);
+			GetDomains(m_userID);
+			
 	//		GetDomains(getUserID());
 			PreparedStatement st2 = getDBConnection().prepareStatement("SELECT g.acloverride,g.tabendpoints,g.tabapplications,g.tabactions,g.tabproviders,g.tabusers,g.id FROM dm.dm_usergroup g,dm.dm_usersingroup x WHERE x.userid=? AND g.id=x.groupid");
 			st2.setInt(1, getUserID());
