@@ -6942,8 +6942,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				sql = "SELECT b.id FROM dm.dm_buildengine b,dm_buildjob j WHERE j.builderid=b.id AND b.domainid in (" + m_domainlist + ") and j.name = ? AND j.status='N'";
 
 			} else {
-				sql = "SELECT id FROM dm."+table_name+" WHERE domainid in (" + m_domainlist+ ") and name = ?";
-				System.out.println("sql="+sql);
+    if (m_domainlist == "") {
+     sql = "SELECT id FROM dm."+table_name+" WHERE name = ?";
+    } else {
+     sql = "SELECT id FROM dm."+table_name+" WHERE domainid in (" + m_domainlist+ ") and name = ?";
+    }
+    System.out.println("sql="+sql);
 			}
 		} else {
 			if (ot == ObjectType.TEMPLATE) {
