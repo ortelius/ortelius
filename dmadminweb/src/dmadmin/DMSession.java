@@ -2967,89 +2967,91 @@ public class DMSession implements AutoCloseable  {
 		return (m_timefmt==null)?m_defaulttimefmt:m_timefmt;
 	}
 	
-	public User getUser(int userid) {
-		// Specific user
-		if (m_userhash != null && (System.currentTimeMillis() - m_userhashCreationTime) > 2000) {
-			// User hash is over 2 seconds old. Delete it. We only need this for caching of
-			// user when we're making the same call to getUser in rapid succession.
-			m_userhash.clear();
-			m_userhash = null;
-		}
-		 
-		if (m_userhash == null) {
-			  m_userhash = new Hashtable<Integer,User>();
-			  m_userhashCreationTime = System.currentTimeMillis();
-		}
-		User cached = m_userhash.get(userid);
-		if (cached != null) {
-			return cached;	// already found this domain previously
-		}
-		
-		String sql = "SELECT u.name, u.domainid, u.email, u.realname, "
-				+ "  u.phone, u.locked, u.forcechange, u.lastlogin, u.status, "
-				+ "  u.datefmt, u.timefmt, u.datasourceid, "
-				+ "  uc.id, uc.name, uc.realname, u.created, "
-				+ "  um.id, um.name, um.realname, u.modified "
-				//+ "  ,uo.id, uo.name, uo.realname, g.id, g.name "
-				+ "FROM dm.dm_user u "
-				+ "LEFT OUTER JOIN dm.dm_user uc ON u.creatorid = uc.id "		// creator
-				+ "LEFT OUTER JOIN dm.dm_user um ON u.modifierid = um.id "		// modifier
-				//+ "LEFT OUTER JOIN dm.dm_user uo ON u.ownerid = uo.id "		// owner user
-				//+ "LEFT OUTER JOIN dm.dm_usergroup g ON u.ogrpid = g.id "		// owner group
-				+ "WHERE u.id=?";
-		try
-		{
-			if (userid < 0)
-			{
-			 User ret = new User(this,-1,"","");
-			 ret.setEmail("");
-			 ret.setPhone("");
-			 ret.setAccountLocked(false);
-			 ret.setForceChangePass(false);
-			 return ret;
-			}
-			
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			stmt.setInt(1, userid);
-			ResultSet rs = stmt.executeQuery();
-			User ret = null;
-			if(rs.next()) {
-				int domainid = rs.getInt(2);
-				if(ValidDomain(domainid)) {
-					ret = new User(this, userid, rs.getString(1), rs.getString(4));
-					ret.setDomainId(domainid);
-					ret.setEmail(rs.getString(3));
-					ret.setPhone(rs.getString(5));
-					ret.setAccountLocked(getBoolean(rs, 6, false));
-					ret.setForceChangePass(getBoolean(rs, 7, false));
-					java.sql.Timestamp lastLogin = rs.getTimestamp(8);
-					
-					if(lastLogin != null) {
-						ret.setLastLogin((int) (lastLogin.getTime()/1000));
-					}
-					getStatus(rs, 9, ret);
-					ret.setDateFmt(rs.getString(10));
-					ret.setTimeFmt(rs.getString(11));
-					int dsid = getInteger(rs,12,0);
-					if (dsid>0) {
-						Datasource ds = this.getDatasource(dsid,true);
-						ret.setDatasource(ds);
-					}
-					// ret.setDomain(getDomainName(domainid));
-					getCreatorModifier(rs, 13, ret);
-				}
-			}
-			rs.close();
-			m_userhash.put(userid,ret);
-			return ret;
-		}
-		catch(SQLException e)
-		{
-			e.printStackTrace();
-			rollback();
-		}
-		throw new RuntimeException("Unable to retrieve user from database");
-	}
+ public User getUser(int userid) {
+  // Specific user
+  if (m_userhash != null && (System.currentTimeMillis() - m_userhashCreationTime) > 2000) {
+   // User hash is over 2 seconds old. Delete it. We only need this for caching of
+   // user when we're making the same call to getUser in rapid succession.
+   m_userhash.clear();
+   m_userhash = null;
+  }
+   
+  if (m_userhash == null) {
+     m_userhash = new Hashtable<Integer,User>();
+     m_userhashCreationTime = System.currentTimeMillis();
+  }
+  User cached = m_userhash.get(userid);
+  if (cached != null) {
+   return cached; // already found this domain previously
+  }
+  
+  String sql = "SELECT u.name, u.domainid, u.email, u.realname, "
+    + "  u.phone, u.locked, u.forcechange, u.lastlogin, u.status, "
+    + "  u.datefmt, u.timefmt, u.datasourceid, "
+    + "  uc.id, uc.name, uc.realname, u.created, "
+    + "  um.id, um.name, um.realname, u.modified "
+    //+ "  ,uo.id, uo.name, uo.realname, g.id, g.name "
+    + "FROM dm.dm_user u "
+    + "LEFT OUTER JOIN dm.dm_user uc ON u.creatorid = uc.id "  // creator
+    + "LEFT OUTER JOIN dm.dm_user um ON u.modifierid = um.id "  // modifier
+    //+ "LEFT OUTER JOIN dm.dm_user uo ON u.ownerid = uo.id "  // owner user
+    //+ "LEFT OUTER JOIN dm.dm_usergroup g ON u.ogrpid = g.id "  // owner group
+    + "WHERE u.id=?";
+  try
+  {
+   if (userid < 0)
+   {
+    User ret = new User(this,-1,"","");
+    ret.setEmail("");
+    ret.setPhone("");
+    ret.setAccountLocked(false);
+    ret.setForceChangePass(false);
+    return ret;
+   }
+   
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, userid);
+   ResultSet rs = stmt.executeQuery();
+   User ret = null;
+   if(rs.next()) {
+    int domainid = rs.getInt(2);
+    // if(ValidDomain(domainid)) {
+     ret = new User(this, userid, rs.getString(1), rs.getString(4));
+     ret.setDomainId(domainid);
+     ret.setEmail(rs.getString(3));
+     ret.setPhone(rs.getString(5));
+     ret.setAccountLocked(getBoolean(rs, 6, false));
+     ret.setForceChangePass(getBoolean(rs, 7, false));
+     java.sql.Timestamp lastLogin = rs.getTimestamp(8);
+     
+     if(lastLogin != null) {
+      ret.setLastLogin((int) (lastLogin.getTime()/1000));
+     }
+     getStatus(rs, 9, ret);
+     ret.setDateFmt(rs.getString(10));
+     ret.setTimeFmt(rs.getString(11));
+     int dsid = getInteger(rs,12,0);
+     if (dsid>0) {
+      Datasource ds = this.getDatasource(dsid,true);
+      ret.setDatasource(ds);
+     }
+     // ret.setDomain(getDomainName(domainid));
+     getCreatorModifier(rs, 13, ret);
+    // }
+   }
+   rs.close();
+   stmt.close();
+   m_conn.commit();
+   m_userhash.put(userid,ret);
+   return ret;
+  }
+  catch(SQLException e)
+  {
+   e.printStackTrace();
+   rollback();
+  }
+  throw new RuntimeException("Unable to retrieve user from database");
+ }
 	
 	
 	public boolean updateUser(User user, SummaryChangeSet changes)
