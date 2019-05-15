@@ -212,6 +212,7 @@ public class DMSession implements AutoCloseable  {
 	private String m_PasteError;
 	String username = "postgres";
 	String password = "postgres";
+ String DMHome = "";
 	
 	// For background syncing of defects
 	private Hashtable<Integer,int[]> m_pollhash = null;
@@ -278,6 +279,8 @@ public class DMSession implements AutoCloseable  {
 			whencol = "\"WHEN\"";	// Installer creates when as upper case
 			sizecol = "size";		// size is not a keyword in Postgres
 		}
+		
+		connectToDatabase(context);
 	}
 	
 	public DMSession(ServletContext context)
@@ -678,60 +681,110 @@ public class DMSession implements AutoCloseable  {
 			return strFileContent;
 	}
 	
-	private LoginException connectToDatabase(ServletContext context)
-	{
-		LoginException res = null;
-		//
-		// Connect to the database
-		//
-		System.out.println("connectToDatabase()");
-		String DMHome = context.getInitParameter("DMHOME");
-		String ConnectionString = context.getInitParameter("DBConnectionString");
-		String DriverName = context.getInitParameter("DBDriverName");
-		System.out.println("DMHOME="+DMHome);
-		try {
-			String base64Original   = readFile(DMHome+"/dm.odbc");
-			String base64passphrase = readFile(DMHome+"/dm.asc");
-		   
-			m_passphrase = Decrypt3DES(base64passphrase,"dm15k1ng".getBytes("UTF-8"));
-		    final byte[] plainText = Decrypt3DES(base64Original,m_passphrase);
-		    
-		    StringBuilder dDSN = new StringBuilder();
-		    StringBuilder dUserName = new StringBuilder();
-		    StringBuilder dPassword = new StringBuilder();
-		    for (int i=0,d=0;i<plainText.length;i++) {
-		    	if (plainText[i]!=0) {
-		    		if (d==0) dDSN.append(String.format("%c",plainText[i]));
-		    		if (d==1) dUserName.append(String.format("%c",plainText[i]));
-		    		if (d==2) dPassword.append(String.format("%c",plainText[i]));
-		    	} else d++;
-		    }
-		    // DSN is ignored for Postgres Driver
-			Class.forName(DriverName);
-		
-			System.out.println("DMHOME=" + DMHome);
-			System.out.println("DRIVERNAME=" + DriverName);
-			System.out.println("CONNECTIONSTRING=" + ConnectionString);
-			System.out.println("USERNAME=" + dUserName.toString());
-			System.out.println("PASSWORDNAME=" + dPassword.toString());
-			
-			setDBConnection(DriverManager.getConnection(ConnectionString,dUserName.toString(),dPassword.toString()));
-			getDBConnection().setAutoCommit(false);
-		} catch (FileNotFoundException e) {
-			res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,e.getMessage());
-			e.printStackTrace();
-	    } catch (IOException e) {
-			res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,e.getMessage());
-			e.printStackTrace();
-	    } catch (ClassNotFoundException e) {
-			res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,"Class not found for " + e.getMessage());
-			e.printStackTrace();
-		} catch (SQLException e) {
-			res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,"SQL Exception " + e.getMessage());
-			rollback();
-		}
-		return res;
-	}
+ private LoginException connectToDatabase(ServletContext context)
+ {
+  LoginException res = null;
+  if (m_conn == null)
+  {
+  //
+  // Connect to the database
+  //
+  String ConnectionString = "";
+  String DriverName = "";
+  
+  System.out.println("connectToDatabase()");
+  Map env = System.getenv();
+  
+  DMHome = System.getenv("DMHome");
+  if (DMHome == null)
+   DMHome = context.getInitParameter("DMHOME");
+  
+  ConnectionString = System.getenv("DBConnectionString");
+  if (ConnectionString == null)
+   ConnectionString = context.getInitParameter("DBConnectionString");
+  
+  DriverName = System.getenv("DBDriverName");
+  if (DriverName == null)
+   DriverName = context.getInitParameter("DBDriverName");
+ 
+  StringBuilder dUserName = new StringBuilder();
+  
+  String DBUserName = System.getenv("DBUserName");
+  if (DBUserName != null)
+   dUserName.append(DBUserName);
+  
+  StringBuilder dPassword = new StringBuilder();
+  
+  String DBPassword = System.getenv("DBPassword");
+  if (DBPassword != null)
+   dPassword.append(DBPassword);
+  
+  String dmasc = System.getenv("dmasc");
+  String dmodbc = System.getenv("dmodbc");
+  
+  try 
+  {
+   if (dUserName.length() == 0)
+   { 
+    String base64Original   = "";
+    String base64passphrase = "";
+
+    if (dmodbc == null)
+     base64Original = readFile(DMHome+"/dm.odbc");
+    else
+     base64Original = dmodbc;
+    
+    if (dmasc == null)
+      base64passphrase = readFile(DMHome+"/dm.asc");
+    else
+     base64passphrase = dmasc;
+    
+    m_passphrase = Decrypt3DES(base64passphrase,"dm15k1ng".getBytes("UTF-8"));
+    System.out.println("Read m_passpharse=" + new String(m_passphrase));
+    final byte[] plainText = Decrypt3DES(base64Original,m_passphrase);
+
+    StringBuilder dDSN = new StringBuilder();
+    dUserName = new StringBuilder();
+    dPassword = new StringBuilder();
+    for (int i=0,d=0;i<plainText.length;i++) {
+     if (plainText[i]!=0) {
+      if (d==0) dDSN.append(String.format("%c",plainText[i]));
+      if (d==1) dUserName.append(String.format("%c",plainText[i]));
+      if (d==2) dPassword.append(String.format("%c",plainText[i]));
+     } else d++;
+    }
+   }   
+   // DSN is ignored for Postgres Driver
+//   DriverName = DriverName.replaceAll("org\\.postgresql\\.Driver", "com.impossibl.postgres.jdbc.PGDriver");
+//   ConnectionString = ConnectionString.replaceAll("jdbc\\:postgresql", "jdbc:pgsql");
+   
+   Class.forName(DriverName);
+
+   System.out.println("DMHOME=" + DMHome);
+   System.out.println("DRIVERNAME=" + DriverName);
+   System.out.println("CONNECTIONSTRING=" + ConnectionString);
+   System.out.println("USERNAME=" + dUserName.toString());
+   System.out.println("PASSWORDNAME=" + dPassword.toString());
+   
+   m_conn = DriverManager.getConnection(ConnectionString,dUserName.toString(),dPassword.toString());  
+   m_conn.setAutoCommit(false);
+  } catch (FileNotFoundException e) {
+   res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,e.getMessage());
+   e.printStackTrace();
+  } catch (IOException e) {
+   res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,e.getMessage());
+   e.printStackTrace();
+  } catch (ClassNotFoundException e) {
+   res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,"Class not found for " + e.getMessage());
+   e.printStackTrace();
+  } catch (SQLException e) {
+   res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,"SQL Exception " + e.getMessage());
+   e.printStackTrace();
+   rollback();
+  }
+  }
+  return res;
+ }
 	
 	public LoginException Login(String UserName,String Password)
 	{
