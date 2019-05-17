@@ -1986,12 +1986,13 @@ public class API extends HttpServlet
     String a = request.getParameter("all");
     boolean all = (a == null) ? false : (a.charAt(0) == 'y' || a.charAt(0) == 'Y');
 
+    response.setContentType("application/json");
+    
     if (provider == null)
      provider = "";
 
     if (elements[0].equals("login"))
     {
-     response.setContentType("application/json");
      if (user == null)
      {
       throw new ApiException("user must be specified");
@@ -2056,7 +2057,6 @@ public class API extends HttpServlet
       // Outstanding SQL Query session - remove the session to prevent it being used
       request.getSession().invalidate();
      }
-     response.setContentType("application/json");
     }
 
     // END TEMP
