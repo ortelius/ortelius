@@ -10,5 +10,5 @@ if [ "$3" != "" ]; then
  git clone $1 $3
  git -c advice.detachedHead=false checkout -f $2 2>&1
 else
- echo NO TARGET DIRECTORY PASS TO SCRIPT
+ echo Skipping checkout no target directory specified
 fi

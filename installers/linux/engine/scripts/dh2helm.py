@@ -27,7 +27,6 @@ def main():
     """Main entry point <Chart Directory> <Override Values Toml>"""
 
     newvals = {}
-    my_env = os.environ.copy()
     releasename = sys.argv[1]
     chart       = sys.argv[2]
 
@@ -38,10 +37,11 @@ def main():
     rspfile     = sys.argv[3]
     releasename = releasename.replace(';','-v').replace('_','-').lower()
 
-    stream = open(chartvalues, 'r')
-    values = yaml.load(stream)
-    newvals.update(values)
-    stream.close()
+    if (os.path.exists(chartvalues)):
+      stream = open(chartvalues, 'r')
+      values = yaml.load(stream)
+      newvals.update(values)
+      stream.close()
 
     print("RSP="+ rspfile)
     lines = subprocess.run(['cat',rspfile], stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
@@ -55,28 +55,58 @@ def main():
 
     values = qtoml.loads(cleanvals)
     newvals.update(values)
-    os.rename(chartvalues, chartvalues + ".bak")
+    if (os.path.exists(chartvalues)):
+      os.rename(chartvalues, chartvalues + ".bak")
+
+    if not os.path.exists(os.path.dirname(chartvalues)):
+      os.makedirs(os.path.dirname(chartvalues))
 
     stream = open(chartvalues,"w")
     yaml.dump(newvals,stream)
     stream.close()
     
 #    pprint(newvals)
-    runcmd('gcloud config set compute/zone ' + newvals['compute']['zone'])
-    runcmd('gcloud config set container/cluster ' + newvals['container']['cluster'])
-    runcmd('gcloud config set core/account ' + newvals['core']['account'])
-    runcmd('gcloud config set core/disable_usage_reporting ' + newvals['core']['disable_usage_reporting'])
-    runcmd('gcloud config set core/project ' + newvals['core']['project'])
-    runcmd('gcloud auth activate-service-account ' + newvals['gcloud']['oauth']['account'] + ' --key-file=' + newvals['gcloud']['oauth']['keyfile'])
-    runcmd('gcloud container clusters get-credentials ' + newvals['container']['cluster'])
+    if ('compute' in newvals and 'zone' in newvals['compute']):
+      runcmd('gcloud config set compute/zone ' + newvals['compute']['zone'])
+
+    if ('container' in newvals and 'cluster' in newvals['container']):  
+      runcmd('gcloud config set container/cluster ' + newvals['container']['cluster'])
+
+    if ('core' in newvals and 'account' in newvals['core']):       
+      runcmd('gcloud config set core/account ' + newvals['core']['account'])
+
+    if ('core' in newvals and 'disable_usage_reporting' in newvals['core']):     
+      runcmd('gcloud config set core/disable_usage_reporting ' + newvals['core']['disable_usage_reporting'])
+
+    if ('core' in newvals and 'project' in newvals['core']):        
+      runcmd('gcloud config set core/project ' + newvals['core']['project'])
+
+    if ('gcloud' in newvals and 'oauth' in newvals['gcloud'] and 'account' in  newvals['gcloud']['oauth']):        
+      runcmd('gcloud auth activate-service-account ' + newvals['gcloud']['oauth']['account'] + ' --key-file=' + newvals['gcloud']['oauth']['keyfile'])
+
+    if ('container' in newvals and 'cluster' in newvals['container']):       
+      runcmd('gcloud container clusters get-credentials ' + newvals['container']['cluster'])
+
     runcmd('helm init --upgrade')
     runcmd('cat ' + chartvalues)
 
-    retry = runcmd('helm upgrade "' + releasename + '" "' + chart + '" --install --force --debug')
+    if ('helmrepo' in newvals and 'url' in newvals['helmrepo']):
+      mylogin = " "  
+
+      if ('username' in newvals['helmrepo']): 
+        mylogin = mylogin + "--username " + newvals['helmrepo']['username'] + " "
+
+      if ('password' in newvals['helmrepo']): 
+        mylogin = mylogin + "--password " + newvals['helmrepo']['password'] + " "
+
+      runcmd('helm repo add ' + mylogin + newvals['helmrepo']['name'] + " " + newvals['helmrepo']['url'])
+      runcmd('helm repo update')
+
+    retry = runcmd('helm upgrade -f ' + chartvalues + ' "' + releasename + '" "' + chart + '" --install --force --debug')
     
     if (retry):
       print("Retrying helm upgrade")
-      runcmd('helm upgrade "' + releasename + '" "' + chart + '" --install --force')
+      runcmd('helm upgrade -f ' + chartvalues + ' "' + releasename + '" "' + chart + '" --install --force')
 
     os.remove(chartvalues)
     os.remove(rspfile)
