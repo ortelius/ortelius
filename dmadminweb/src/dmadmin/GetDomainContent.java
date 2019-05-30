@@ -185,11 +185,6 @@ public class GetDomainContent extends HttpServletBase
       {
     	  reltypes.add(ObjectType.BUILDER);
       }
-      else if (typestr.equalsIgnoreCase("domains"))
-      {
-       reltypes.add(ObjectType.RPROXY);
-      }
-
 
       for (ObjectType reltype : reltypes)
       {
