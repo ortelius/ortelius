@@ -149,6 +149,10 @@ function CreateTree_Selection(nodename,typestr,readonly,frameid)
 	       return "GetComponentContent?compid="+id;
        } else if (objtype == "cy") {
         return "GetFragmentContent?domainid="+catdomain + "&catid=" + id + "&objtype=" + objtype;
+       } else if (objtype == "cp") {
+        return "GetFragmentContent?domainid="+catdomain + "&catid=" + id + "&objtype=" + objtype; 
+       } else if (objtype == "cf") {
+        return "GetFragmentContent?domainid="+catdomain + "&catid=" + id + "&objtype=" + objtype;  
        } else if (objtype == "cc") {
     	   console.log("cc >>> id="+id);
          return "GetCategoryContent?domainid="+catdomain + "&catid=" + id + "&objtype=" + objtype;
