@@ -25,6 +25,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -37,6 +38,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -48,6 +51,7 @@ import dmadmin.model.Action;
 import dmadmin.model.Application;
 import dmadmin.model.BuildJob;
 import dmadmin.model.Builder;
+import dmadmin.model.Category;
 import dmadmin.model.CompType;
 import dmadmin.model.Component;
 import dmadmin.model.ComponentItem;
@@ -1872,7 +1876,34 @@ public class API extends HttpServlet
 
  private Component newCompVersion(DMSession so, String compname, HttpServletRequest request) throws ApiException
  {
-  Component comp = getComponentFromNameOrID(so, compname);
+  Component comp = null;
+  try
+  {
+   comp = getComponentFromNameOrID(so, compname);
+  } 
+  catch (ApiException e)
+  {
+   ObjectTypeAndId otid = null;
+   int newid = so.getID("component");
+   String[] parts = compname.split("\\.");
+   
+   if (parts == null || parts.length == 1)
+    throw new ApiException("Component name needs to include full domain path");
+   
+   ArrayList<String> domparts = new ArrayList<String>(Arrays.asList(parts));
+   compname = domparts.get(domparts.size() - 1);
+   domparts.remove(domparts.size() - 1);
+   String domname = StringUtils.join(domparts,".");
+   
+   Domain dom = so.getDomainByName(domname);
+   
+   otid = so.CreateNewObject("component",compname,dom.getId(),0,newid,0,0,"");
+   int id = new Integer(otid.toString().substring(2)).intValue();
+   Category cat = so.getCompCategoryByName("General");
+   so.addToCategory(cat.getId(), otid, true);
+   return so.getComponent(id, true);
+  }
+  
   if (comp.getPredecessorId() == 0)
   {
    // This is a BASE version
@@ -2719,7 +2750,10 @@ public class API extends HttpServlet
       else if (elements[1].equals("appver"))
        newAppVersion(so, elements[2], request);
       else if (elements[1].equals("compver"))
-       newCompVersion(so, elements[2], request);
+      {
+       Component newComp = newCompVersion(so, elements[2], request);
+       obj.add("result", assembleJSONForComponent(so, newComp));
+      } 
       else if (elements[1].equals("environment"))
        AddEnvironment(so, elements[2], request);
       else if (elements[1].equals("domain"))

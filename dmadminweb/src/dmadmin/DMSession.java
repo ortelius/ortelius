@@ -7095,6 +7095,25 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return (Datasource)getObjectByName(ObjectType.DATASOURCE,dsName);	
 	}
 	
+ public Category getCompCategoryByName(String categoryName)
+ {
+  String sql = "select id from dm.dm_category where name = ?";
+  int catid = 0;
+  try {
+   PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+   stmt.setString(1,categoryName);
+   ResultSet rs = stmt.executeQuery();
+   if (rs.next()) {
+    catid = rs.getInt(1);
+   }
+  } catch(SQLException ex) {
+   throw new RuntimeException(ex.getMessage());
+  }
+  
+  Category cat = new Category(catid,categoryName);
+  return cat;
+ }
+ 
 	public Component getComponentByName(String componentName)
 	{
 		return (Component)getObjectByName(ObjectType.COMPONENT,componentName);	
