@@ -61,7 +61,7 @@ if NOT "%fileext%" == ".sql" goto :loop_ora
 
 echo.Running %sqlscript% in directory %sqldir%
 cd /d "%sqldir%"
-"%dbhome%\bin\sqlplus.exe" "%username%\%password%@%database%" @"%sqlscript%" 
+"%dbhome%\bin\sqlplus.exe" "%username%/%password%@%database%" @"%sqlscript%" 
 goto :loop_ora
 
 :end_loop_ora
