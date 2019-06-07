@@ -33,7 +33,7 @@ def main():
     if (not releasename or not chart):
        return 0
 
-    chartvalues = sys.argv[2] + "/values.yaml"
+    chartvalues = "override/" + sys.argv[2] + "/values.yaml"
     rspfile     = sys.argv[3]
     releasename = releasename.replace(';','-v').replace('_','-').lower()
 
@@ -48,10 +48,12 @@ def main():
     
     cleanvals = ""
     for line in lines:
-     (k,v) = line.split('=')
 
-     if ('?' not in k):
-       cleanvals = cleanvals + line + "\n" 
+     if ('=' in line):
+       (k,v) = line.split('=')
+
+       if ('?' not in k):
+          cleanvals = cleanvals + line + "\n" 
 
     values = qtoml.loads(cleanvals)
     newvals.update(values)
@@ -102,11 +104,11 @@ def main():
       runcmd('helm repo add ' + mylogin + newvals['helmrepo']['name'] + " " + newvals['helmrepo']['url'])
       runcmd('helm repo update')
 
-    retry = runcmd('helm upgrade -f ' + chartvalues + ' "' + releasename + '" "' + chart + '" --install --force --debug')
+    retry = runcmd('helm upgrade "' + releasename + '" "' + chart + '" --install --force --debug -f ' + chartvalues )
     
     if (retry):
       print("Retrying helm upgrade")
-      runcmd('helm upgrade -f ' + chartvalues + ' "' + releasename + '" "' + chart + '" --install --force')
+      runcmd('helm upgrade "' + releasename + '" "' + chart + '" --install --force --debug -f ' + chartvalues)
 
     os.remove(chartvalues)
     os.remove(rspfile)
