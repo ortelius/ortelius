@@ -7,7 +7,6 @@ workflows:
   btd:
     jobs:
       - orb-tools/increment:
-          context: sharedvars
           orb-path: orb/deployhub-orb.yml
           orb-ref: deployhub/deployhub-orb
           publish-token-variable: $CIRCLECI_DEV_API_TOKEN
