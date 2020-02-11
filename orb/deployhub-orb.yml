@@ -2,74 +2,151 @@ version: 2.1
 description: >
   DeployHub Integration. This Orb provides the ability to approve, move, 
   deploy and get logs in DeployHub. The source for this Orb is available 
-  at: https://github.com/DeployHubProject/DeployHub/orb/deployhub-orb.yml
+  at: https://github.com/ortelius/circleci-orb/orb/deployhub-orb.yml
 
 executors:
   default:
-    description: "CircleCI image for Python"
+    description: "Ortelius image for interacting with DeployHub"
     docker:
-      - image: circleci/python:3
+      - image: quay.io/deployhub/compupdate:latest
 
-commands:
-  install:
-    description: "Installs the DeployHub CLI python script"
+commands:  
+  compupdate:
+    description: "Update the component with git and build data"
+    parameters:
+      dhuser:
+        description: "Name of env var storing UserId to access DeployHub"
+        type: env_var_name
+        default: DH_USERID
+      dhpass:
+        description: "Name of env var storing dhpass to access DeployHub"
+        type: env_var_name
+        default: DH_PASSWORD
+      dhurl:
+        description: "Name of env var storing URL to the DeployHub Server"
+        type: env_var_name
+        default: DH_SERVERURL
+      application:
+        description: "Application Name to associate the component to"
+        type: string
+      appversion:
+        description: "Application Version to associate the component to"
+        type: string 
+      compname:
+        description: "Component Name being updated"
+        type: string
+      compversion:
+        description: "Component Version being updated"
+        type: string 
+      comptype:
+        description: "Type of component, --docker or --file"
+        type: string   
+      helmchart:
+        description: "Helm Chart Name"
+        type: string   
+      dockersha:
+        description: "sha of the container"
+        type: string  
+      dockerrepo:
+        description: "docker repo from push"
+        type: string    
+      builddate:
+        description: "Build Date"
+        type: string
+      gitrepo:
+        description: "Git Repo Name"
+        type: string
+      giturl:
+        description: "Git Url"
+        type: string
+      gitcommit:
+        description: "Git Commit"
+        type: string
+      buildid:
+        description: "Build Url"
+        type: string
+      buildnumber:
+        description: "Build Number"
+        type: string                                      
     steps:
       - run:
-          name: Download and install DeployHub
-          command: |
-            curl -L \
-              https://raw.githubusercontent.com/DeployHubProject/DeployHub/master/cli/deployhub.py \
-              -o /tmp/deployhub.py
-            pip3 install click requests --user
+          name: Update Component
+          command: >
+            dh  
+            compupdate
+            --dhuser $<< parameters.dhuser >>
+            --dhpass $<< parameters.dhpass >>
+            --dhurl $<< parameters.dhurl >>
+            --appname "<< parameters.application >>"
+            --appversion "<< parameters.appversion >>"
+            --compname "<< parameters.compname >>"
+            --compversion "<< parameters.compversion >>"
+            << parameters.comptype >>
+            --compattr "GitCommit:<< parameters.gitcommit >>" 
+            --compattr "GitUrl:<< parameters.giturl >>" 
+            --compattr "GitRepo:<< parameters.gitrepo >>" 
+            --compattr "Chart:<< parameters.helmchart >>"
+            --compattr "DockerSha:<< parameters.dockersha >>"
+            --compattr "DockerBuildDate:<< parameters.builddate >>"
+            --compattr "DockerRepo:<< parameters.dockerrepo >>"
+            --compattr "BuildId:<< parameters.buildid >>"
+            --compattr "BuildNumber:<< parameters.buildnumber >>"
 
   approve:
     description: "Approves an Application for the current stage of the pipeline"
     parameters:
-      userid:
+      dhuser:
         description: "Name of env var storing UserId to access DeployHub"
         type: env_var_name
         default: DH_USERID
-      password:
-        description: "Name of env var storing password to access DeployHub"
+      dhpass:
+        description: "Name of env var storing dhpass to access DeployHub"
         type: env_var_name
         default: DH_PASSWORD
-      serverurl:
+      dhurl:
         description: "Name of env var storing URL to the DeployHub Server"
         type: env_var_name
         default: DH_SERVERURL
       application:
-        description: "Application Version to Approve"
+        description: "Application Name to Approve"
         type: string
+      appversion:
+        description: "Application Version to Approve"
+        type: string        
 
     steps:
       - run:
-          name: Approve application 
+          name: Approve application version
           command: >
-            python3 /tmp/deployhub.py
-            --userid $<< parameters.userid >>
-            --password $<< parameters.password >>
-            --dhurl $<< parameters.serverurl >>
-            --app "<< parameters.application >>"
-            --cmd approve
+            dh
+            approve
+            --dhuser $<< parameters.dhuser >>
+            --dhpass $<< parameters.dhpass >>
+            --dhurl $<< parameters.dhurl >>
+            --appname "<< parameters.application >>"
+            --appversion "<< parameters.appversion >>"
 
   move:
     description: "Moves an Application from the 'from' stage of the pipeline to another stage using the move task"
     parameters:
-      userid:
+      dhuser:
         description: "Name of env var storing UserId to access DeployHub"
         type: env_var_name
         default: DH_USERID
-      password:
-        description: "Name of env var storing password to access DeployHub"
+      dhpass:
+        description: "Name of env var storing dhpass to access DeployHub"
         type: env_var_name
         default: DH_PASSWORD
-      serverurl:
+      dhurl:
         description: "Name of env var storing URL to the DeployHub Server"
         type: env_var_name
         default: DH_SERVERURL
       application:
-        description: "Application Version to Move"
+        description: "Application Name to Move"
         type: string
+      appversion:
+        description: "Application Version to Move"
+        type: string    
       from_domain:
         description: "Pipeline stage to move from"
         type: string
@@ -81,33 +158,37 @@ commands:
     - run:
         name: Move application along DeployHub pipeline
         command: >
-          python3 /tmp/deployhub.py
-          --userid $<< parameters.userid >>
-          --password $<< parameters.password >>
-          --dhurl $<< parameters.serverurl >>
-          --app "<< parameters.application >>"
+          dh
+          move
+          --dhuser $<< parameters.dhuser >>
+          --dhpass $<< parameters.dhpass >>
+          --dhurl $<< parameters.dhurl >>
+          --appname "<< parameters.application >>"
+          --appversion "<< parameters.appversion >>"
           --from_domain "<< parameters.from_domain >>"
-          --move_task "<< parameters.move_task >>"                
-          --cmd move
+          --task "<< parameters.move_task >>"                
 
   deploy:
     description: "Deploys an Application Version to an Environment"
     parameters:
-      userid:
+      dhuser:
         description: "Name of env var storing UserId to access DeployHub"
         type: env_var_name
         default: DH_USERID
-      password:
-        description: "Name of env var storing password to access DeployHub"
+      dhpass:
+        description: "Name of env var storing dhpass to access DeployHub"
         type: env_var_name
         default: DH_PASSWORD
-      serverurl:
+      dhurl:
         description: "Name of env var storing URL to the DeployHub Server"
         type: env_var_name
         default: DH_SERVERURL
       application:
-        description: "Application Version to Deploy"
+        description: "Application Name to Deploy"
         type: string
+      appversion:
+          description: "Application Version to Deploy"
+          type: string    
       environment:
         description: "Environment to Deploy to"
         type: string             
@@ -116,59 +197,65 @@ commands:
     - run:
         name: Deploy application
         command: >
-          python3 /tmp/deployhub.py
-          --userid << parameters.userid >>
-          --password << parameters.password >>
-          --dhurl << parameters.serverurl >>
-          --app "<< parameters.application >>"
+          dh
+          deploy
+          --dhuser $<< parameters.dhuser >>
+          --dhpass $<< parameters.dhpass >>
+          --dhurl $<< parameters.dhurl >>
+          --appname "<< parameters.application >>"
+          --appversion "<< parameters.appversion >>"          
           --env "<< parameters.environment >>"
-          --cmd deploy
 
 jobs:
   approvejob:
     description: "Approve an Application Version"
     parameters:
-      userid:
+      dhuser:
         description: "Name of env var storing UserId to access DeployHub"
         type: env_var_name
         default: DH_USERID
-      password:
-        description: "Name of env var storing password to access DeployHub"
+      dhpass:
+        description: "Name of env var storing dhpass to access DeployHub"
         type: env_var_name
         default: DH_PASSWORD
-      serverurl:
+      dhurl:
         description: "Name of env var storing URL to the DeployHub Server"
         type: env_var_name
         default: DH_SERVERURL
       application:
-        description: "Application Version to Approve"
+        description: "Application Name to Approve"
         type: string
+      appversion:
+        description: "Application Version to Approve"
+        type: string        
     executor: default
     steps:
-      - install
       - approve:
-          userid: << parameters.userid >>
-          password: << parameters.password >>
-          serverurl: << parameters.serverurl >>
+          dhuser: << parameters.dhuser >>
+          dhpass: << parameters.dhpass >>
+          dhurl: << parameters.dhurl >>
           application:  << parameters.application >>
+          appversion:  << parameters.appversion >>
   movejob:
     description: "Move an Application Version"
     parameters:
-      userid:
+      dhuser:
         description: "Name of env var storing UserId to access DeployHub"
         type: env_var_name
         default: DH_USERID
-      password:
-        description: "Name of env var storing password to access DeployHub"
+      dhpass:
+        description: "Name of env var storing dhpass to access DeployHub"
         type: env_var_name
         default: DH_PASSWORD
-      serverurl:
+      dhurl:
         description: "Name of env var storing URL to the DeployHub Server"
         type: env_var_name
-        default: DH_SERVERURL
       application:
-        description: "Application Version to Move"
+        description: "Application Name to move"
         type: string
+      appversion:
+        description: "Application Version to move"
+        type: string   
       from_domain:
         description: "Pipeline stage to move from"
         type: string
@@ -177,41 +264,121 @@ jobs:
         type: string 
     executor: default
     steps:
-      - install
       - move:
-          userid: << parameters.userid >>
-          password: << parameters.password >>
-          serverurl: << parameters.serverurl >>
+          dhuser: << parameters.dhuser >>
+          dhpass: << parameters.dhpass >>
+          dhurl: << parameters.dhurl >>
           application:  << parameters.application >>
+          appversion:  << parameters.appversion >>
           from_domain:  << parameters.from_domain >>
           move_task:  << parameters.move_task >>   
   deployjob:
     description: "Deploy an Application Version to an Environment"
     parameters:
-      userid:
+      dhuser:
         description: "Name of env var storing UserId to access DeployHub"
         type: env_var_name
         default: DH_USERID
-      password:
-        description: "Name of env var storing password to access DeployHub"
+      dhpass:
+        description: "Name of env var storing dhpass to access DeployHub"
         type: env_var_name
         default: DH_PASSWORD
-      serverurl:
+      dhurl:
         description: "Name of env var storing URL to the DeployHub Server"
         type: env_var_name
         default: DH_SERVERURL
       application:
-        description: "Application Version to Deploy"
+        description: "Application Name to Deploy"
         type: string
+      appversion:
+        description: "Application Version to Deploy"
+        type: string        
       environment:
         description: "Environment to Deploy to"
         type: string   
     executor: default
     steps:
-      - install
       - deploy:
-          userid: << parameters.userid >>
-          password: << parameters.password >>
-          serverurl: << parameters.serverurl >>
+          dhuser: << parameters.dhuser >>
+          dhpass: << parameters.dhpass >>
+          dhurl: << parameters.dhurl >>
           application:  << parameters.application >>
+          appversion:  << parameters.appversion >>          
           environment:  << parameters.environment >>                  
+  compupdate:
+    description: "Update the component with git and build data"
+    parameters:
+      dhuser:
+        description: "Name of env var storing UserId to access DeployHub"
+        type: env_var_name
+        default: DH_USERID
+      dhpass:
+        description: "Name of env var storing dhpass to access DeployHub"
+        type: env_var_name
+        default: DH_PASSWORD
+      dhurl:
+        description: "Name of env var storing URL to the DeployHub Server"
+        type: env_var_name
+        default: DH_SERVERURL
+      application:
+        description: "Application Name to associate the component to"
+        type: string
+      appversion:
+        description: "Application Version to associate the component to"
+        type: string 
+      compname:
+        description: "Component Name being updated"
+        type: string
+      compversion:
+        description: "Component Version being updated"
+        type: string 
+      comptype:
+        description: "Type of component, --docker or --file"
+        type: string   
+      helmchart:
+        description: "Helm Chart Name"
+        type: string   
+      dockersha:
+        description: "sha of the container"
+        type: string  
+      dockerrepo:
+        description: "docker repo from push"
+        type: string    
+      builddate:
+        description: "Build Date"
+        type: string
+      gitrepo:
+        description: "Git Repo Name"
+        type: string
+      giturl:
+        description: "Git Url"
+        type: string
+      gitcommit:
+        description: "Git Commit"
+        type: string
+      buildid:
+        description: "Build Url"
+        type: string
+      buildnumber:
+        description: "Build Number"
+        type: string          
+    executor: default         
+    steps:
+      - compupdate:
+          dhuser: << parameters.dhuser >>
+          dhpass: << parameters.dhpass >>
+          dhurl: << parameters.dhurl >>
+          application: << parameters.application >>
+          appversion: << parameters.appversion >>
+          compname: << parameters.compname >>
+          compversion: << parameters.compversion >>
+          comptype: << parameters.comptype >>
+          helmchart: << parameters.helmchart >>
+          dockersha: << parameters.dockersha >>
+          builddate: << parameters.builddate >>
+          dockerrepo: << parameters.dockerrepo >>
+          giturl: << parameters.giturl >>
+          gitrepo: << parameters.gitrepo >>
+          gitcommit: << parameters.gitcommit >>
+          buildid: << parameters.buildid >>
+          buildnumber: << parameters.buildnumber >>  
