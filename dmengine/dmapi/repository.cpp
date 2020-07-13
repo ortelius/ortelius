@@ -91,7 +91,6 @@ void RepositoryImplRegistry::registerFactory(const char *name, RepositoryImplFac
 // TODO: These will become DLLs/.so's which register themselves
 extern "C" int svn_PluginStart(DM &dm);
 extern "C" int filesystem_PluginStart(DM &dm);
-extern "C" int ftp_PluginStart(DM &dm);
 
 void RepositoryImplRegistry::registerBuiltIns(DM &dm)
 {
@@ -101,7 +100,6 @@ void RepositoryImplRegistry::registerBuiltIns(DM &dm)
 
 	svn_PluginStart(dm);
 	filesystem_PluginStart(dm);
-	ftp_PluginStart(dm);
 }
 
 
