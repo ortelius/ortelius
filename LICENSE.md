@@ -1,6 +1,7 @@
  
-   DeployHub is an Agile Application Release Automation Solution
-   Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
+   # License
+   Ortelius is a Microservice Management Solution
+   Copyright (C) 2018 DeployHub, Inc
  
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU Affero General Public License as
@@ -17,7 +18,7 @@
  
 -----------------------------------------------------------------------------  
   
-  GNU AFFERO GENERAL PUBLIC LICENSE
+##  GNU AFFERO GENERAL PUBLIC LICENSE
 
 Version 3, 19 November 2007
 
