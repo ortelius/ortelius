@@ -455,12 +455,6 @@
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
     </Dependency>
     <Dependency>
-        <Name>dmengine\repositories\ftp\ftp.cpp</Name>
-        <Type>37</Type>
-        <ParentBuildTask>Compile</ParentBuildTask>
-        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
-    </Dependency>
-    <Dependency>
         <Name>dmengine\repositories\svn\svn.cpp</Name>
         <Type>37</Type>
         <ParentBuildTask>Compile</ParentBuildTask>
