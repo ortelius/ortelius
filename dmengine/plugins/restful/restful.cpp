@@ -1,20 +1,3 @@
-/*
- *  DeployHub is an Agile Application Release Automation Solution
- *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
- *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 #ifdef WIN32
 #include "windows.h"
 #define RESTFUL_EXPORT __declspec(dllexport)
@@ -394,7 +377,8 @@ SSL_CTX* InitCTX(void)
 	SSL_CTX_set_options(ctx, SSL_OP_ALL);
     return ctx;
 }
-  
+
+
 
 
 int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
@@ -776,7 +760,7 @@ void DoRestfulPost(
 		cookieJar = ecookiesfrom->toArray();
 	}
 
-	if(DoHttpRequest(server, port, uri, encparams, mt, isSecure, server, soapaction, cookieJar, header, &httpStatus, contentType, content) != 0) {
+	if(DoHttpRequest(server, port, uri, encparams, mt, isSecure, server, soapaction, cookieJar, header, &httpStatus, contentType, content, NULL, NULL) != 0) {
 		throw RuntimeError(/*m_parent,*/ ctx.stack(), "Failed to send request to '%s'", (const char*) server);
 	}
 
@@ -786,6 +770,8 @@ void DoRestfulPost(
 		throw RuntimeError(/*m_parent, ctx.stack(),*/ "Server '%s' returned status %d", (const char*) server, httpStatus);
 	}
 }
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -829,6 +815,7 @@ void Restful_PostStmtImpl::execute(class Context &ctx)
 	SAFE_FREE(contentType);
 	SAFE_FREE(content);
 }
+
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1,20 +1,3 @@
-/*
- *  DeployHub is an Agile Application Release Automation Solution
- *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
- *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 #ifdef WIN32
 #include <windows.h>
 #else
@@ -392,12 +375,14 @@ void DMThread::run()
 		m_exitCode = execute(*m_ctx);
 		debug1("Execute called m_exitCode=%d",m_exitCode);
 		m_ctx->dm().writeToLogFile("Thread %x finished", m_id);
+		m_threadList.m_activeThreads->remove(this);
 	} catch(DMException &ex) {
 		debug3("CAUGHT EXCEPTION in thread %x DMThread::run()",m_id);
 		debug1("Thread %x threw exception (%s)", m_id, (ex.getMessage() ? ex.getMessage() : "(null)"));
 		m_ctx->dm().writeToLogFile("Thread %x threw exception (%s)", m_id, (ex.getMessage() ? ex.getMessage() : "(null)"));
 		m_ex = ex.clone();
 		m_exitCode = -1;
+		m_threadList.m_activeThreads->remove(this);
 		debug3("leaving exception handler");
 	} catch(...) {
 		debug1("unhandled exception");

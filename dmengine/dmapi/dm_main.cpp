@@ -1,21 +1,3 @@
-/*
- *  DeployHub is an Agile Application Release Automation Solution
- *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
- *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #ifdef WIN32
 #include "config.h"
 #include <stdio.h>
@@ -796,7 +778,6 @@ void setCurrentUser(DM &dm)
 			dm.exitWithError("Logon denied: invalid username or password");
 		}
 		*/
-        free(p);
 		dm.writeToLogFile("User '%s' authenticated", username);
 
 		char *fmt2 = "/dmadminweb/API/domains?user=%s&pass=%s";
@@ -812,7 +793,7 @@ void setCurrentUser(DM &dm)
 				if (V) 
 				{
 					const char *domainlist = V->getString();
-					if(!dm.setCurrentUser(username, domainlist))
+					if(!dm.setCurrentUser(username, domainlist, password))
 					{
 					 dm.exitWithError("Logon denied: invalid username or password");
 					}
@@ -1903,7 +1884,7 @@ void UpdateDB(triODBC &odbc,Context &ctx,int serverid,int status,char *ipaddr,un
 				Server *server = model->getServer(serverid);
 				if (server) {
 					NotifyTemplate *tmpl = server->getPingTemplate(ctx);
-					ctx.dm().setCurrentUser("admin",NULL);	// Mmmmm .... 
+					ctx.dm().setCurrentUser("admin",NULL, NULL);	// Mmmmm .... 
 					if (tmpl) ctx.dm().internalNotify(ctx,tmpl);
 				}
 			}
@@ -2005,7 +1986,7 @@ int CheckServerConnectivity(Model &model,DM &dm,triODBC &odbc,int serverid)
 		creds = env->getCredentials();
 	}
 
-	dm.setCurrentUser("admin",NULL);	// what happens if someone renames the admin user?
+	dm.setCurrentUser("admin",NULL, NULL);	// what happens if someone renames the admin user?
 
 	TransferProviderImplFactory *factory = TransferProviderImplRegistry::instance().getFactory(s->protocol());
 	if(!factory) {
@@ -2115,7 +2096,7 @@ void ScanServer(Model &model,DM &dm,triODBC &odbc,int serverid)
 		creds = env->getCredentials();
 	}
 
-	dm.setCurrentUser("admin",NULL);	// what happens if someone renames the admin user?
+	dm.setCurrentUser("admin",NULL, NULL);	// what happens if someone renames the admin user?
 
 	// printf("envid=%d name=[%s]\n",env->id(),env->name());
 
@@ -2349,7 +2330,7 @@ void ScanServer(Model &model,DM &dm,triODBC &odbc,int serverid)
 			ctx.stack().setGlobal("SERVER_STATUS","OK");
 			Model *model = ctx.dm().getModel();
 			if (model) {
-				ctx.dm().setCurrentUser("admin",NULL);	// Mmmmm .... 
+				ctx.dm().setCurrentUser("admin",NULL, NULL);	// Mmmmm .... 
 				ctx.dm().internalNotify(ctx,md5template);
 			}
 		}

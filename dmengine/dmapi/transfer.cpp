@@ -1,20 +1,3 @@
-/*
- *  DeployHub is an Agile Application Release Automation Solution
- *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
- *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -328,6 +311,7 @@ void RtiTransferProviderImpl::deleteFromServer(Component &comp,Context &ctx)
 
 		CapturedData *cd = NULL;
 		int tempExitStatus;
+		ctx.writeVars2File();
 		int ret = executeAndCapture(ctx.stream(), cmd, NULL, false, ctx.threadId(), &tempExitStatus, &cd, NULL);
 		debug1("dmtransfer complete, ret=%d tempexitstatus=%d",ret,tempExitStatus);
 
@@ -568,6 +552,7 @@ List<TransferResult> *RtiTransferProviderImpl::transferToServer(const char *drop
 
 	CapturedData *cd = NULL;
 	int tempExitStatus;
+	ctx.writeVars2File();
 	int ret = executeAndCapture(ctx.stream(), cmd, NULL, false, ctx.threadId(), &tempExitStatus, &cd, NULL);
 	debug1("dmtransfer complete, ret=%d",ret);
 
@@ -778,6 +763,7 @@ int RtiTransferProviderImpl::checkServer(Context &ctx)
 	Thread::lock(__LINE__,__FILE__,m_target.hostname());
 	CapturedData *cd = NULL;
 	int ExitStatus = -1;
+	ctx.writeVars2File();
 	int ret = executeAndCapture(ctx.stream(), cmd, NULL, true, ctx.threadId(), &ExitStatus, &cd, NULL);
 	debug1("ExitStatus=%d",ExitStatus);
 	Thread::unlock(__LINE__,__FILE__,m_target.hostname());
@@ -857,7 +843,7 @@ int RtiTransferProviderImpl::runScriptOnServer(
 		cmd.add(shell);
 	}
 	
-	cmd.add("-exec");
+	cmd.add("-execcmd");
 	cmd.add(script);
 
 	if(params) {
@@ -888,6 +874,7 @@ int RtiTransferProviderImpl::runScriptOnServer(
 
 	CapturedData *cd = NULL;
 	int tempExitStatus = 0;
+	ctx.writeVars2File();
 	int ret = executeAndCapture(ctx.stream(), cmd, NULL, bShowOutput, ctx.threadId(), &tempExitStatus, &cd, NULL);
 	if (ret == 0 && tempExitStatus < 0) tempExitStatus=0;	// getting negative results from some successful executions, not sure why
 

@@ -591,6 +591,9 @@ long triODBC::DisconnectFromDataSource()
 		{
     		// m_triSQL.CloseAnyOpenHandles(); // RHT - 28/11/2006 - this fixes a couple of IVRs in the destructor
 			res=SQLDisconnect(m_ConnHandle);
+			free(m_UserName);
+			free(m_Password);
+			free(m_dsn);
 		}
 		else
 		{

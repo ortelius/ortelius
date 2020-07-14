@@ -1,20 +1,3 @@
-/*
- *  DeployHub is an Agile Application Release Automation Solution
- *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
- *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -444,6 +427,34 @@ void CloseLogging(FILE *logfile)
 		fprintf(logfile,"--- HTTP LOGGING ENDS ---\n");
 		fclose(logfile);
 	}
+}
+
+int getDeploymentLog(triODBC &odbc, int logtoshow, char *logstring)
+{
+	AutoPtr<triSQL> sql = odbc.GetSQL();
+
+	int stream;
+	char line[2049];
+	SQLLEN ni_line = 0;
+	sql->BindColumn(1, SQL_INTEGER, &stream, sizeof(stream));
+	sql->BindColumn(2, SQL_CHAR, line, sizeof(line), &ni_line);
+
+	SQLRETURN res = sql->ExecuteSQL(
+		"SELECT stream, line FROM dm_deploymentlog "
+		"WHERE deploymentid=%d ORDER BY runtime", logtoshow);
+	if((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO)) {
+		fprintf(stderr, "Deployment log %d not found", logtoshow);
+		return 1;
+	}
+
+	for(res = sql->FetchRow(); (res == SQL_SUCCESS) || (res == SQL_SUCCESS_WITH_INFO); res = sql->FetchRow()) {
+		char *output = NULL_IND(line, NULL);
+		if(output) {
+			strcat(logstring,output);
+		}
+	}
+	sql->CloseSQL();
+	return 0;
 }
 
 int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
@@ -1055,6 +1066,10 @@ Model *DM::getModel()
 	return m_model;
 }
 
+ScopeStack &DM::getScopeStack()
+{
+	return m_stack;
+}
 
 class EngineConfig &DM::getEngineConfig()
 {
@@ -1170,7 +1185,7 @@ class Credentials *DM::getDialogCredentials()
 }
 
 
-bool DM::setCurrentUser(const char *username, const char *domainlist)
+bool DM::setCurrentUser(const char *username, const char *domainlist, const char *password)
 {
 	if(!m_model) {
 		return false;
@@ -1179,6 +1194,9 @@ bool DM::setCurrentUser(const char *username, const char *domainlist)
 	User *currentUser = m_model->getUser(username);
 	m_model->setCurrentUser(currentUser);
 	if (currentUser) {
+		if (password != NULL)
+		   m_stack.setGlobal("userpass",password);
+		   
 		m_stack.setGlobal("username",username);
 		m_stack.setGlobal("user",new ObjectReference(currentUser));
 		if (domainlist != NULL)
@@ -2846,6 +2864,12 @@ void DM::recordDeployedToEnvironment(class Application &app, bool success)
 
 int DM::internalNotify(Context &ctx,NotifyTemplate *t)
 {
+	 long buflen = 2097152L;
+	 char *logstr = (char *)malloc(buflen); // 2MB
+	 memset(logstr,'\0',buflen);
+	 ctx.dm().getAudit().getDeploymentLog(logstr,buflen);
+	 ctx.stack().setGlobal("DEPLOY_LOG", logstr);
+
 	writeToStdOut("INFO: Using template \"%s\" to notify users",t->getName());
 	const char **tos = t->getRecipients();
 	int nfyid=1;

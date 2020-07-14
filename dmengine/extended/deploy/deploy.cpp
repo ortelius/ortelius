@@ -1,20 +1,3 @@
-/*
- *  DeployHub is an Agile Application Release Automation Solution
- *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
- *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 #include <stdio.h>
 #ifndef WIN32
 #include <pthread.h>
@@ -124,6 +107,7 @@ int DeployThread::execute(Context &ctx)
 	}
 
 	int retcode=0;
+
 	//
 	// Execute any "Pre" action on the deploy TASK
 	try {
@@ -481,6 +465,7 @@ void DeployStmtImpl::executeComponentPre(Component &comp, Context &ctx)
 		try {
 			Audit &audit = ctx.dm().getDummyAudit();
 			AuditEntry *ae = audit.newAuditEntry("ComponentPre");
+			ae->m_compId = comp.id();
 			ae->start();
 			ExtendedStmt stmt(preAction);
 			stmt.execute(ctx);
@@ -504,6 +489,7 @@ void DeployStmtImpl::executeComponentPost(Component &comp, Context &ctx)
 		try {
 			Audit &audit = ctx.dm().getDummyAudit();
 			AuditEntry *ae = audit.newAuditEntry("ComponentPost");
+			ae->m_compId = comp.id();
 			ae->start();
 			ExtendedStmt stmt(postAction);
 			stmt.execute(ctx);
@@ -526,6 +512,7 @@ void DeployStmtImpl::executeComponentCustom(Component &comp, Context &ctx)
 		try {
 			Audit &audit = ctx.dm().getDummyAudit();
 			AuditEntry *ae = audit.newAuditEntry("ComponentCustom");
+			ae->m_compId = comp.id();
 			ae->start();
 			ExtendedStmt stmt(customAction);
 			stmt.execute(ctx);
@@ -751,6 +738,8 @@ void DeployStmtImpl::executeDeployComponent(
 		if (n==0) skipComponentItems = false;						// No parameters alongside component except dropzone and target
 	}
 	
+	// Add compid to audit entry
+	m_auditEntry->m_compId = comp->id();
 
 	// Calculate the intersect of the current list of servers and the servers
 	// upon which the component is deployed.  This will be copied when we
@@ -900,6 +889,8 @@ void DeployStmtImpl::executeDeployComponent(
 					}
 					debug1("deploy: compitem is %d, '%s'", item->id(), item->name());
 
+                   if (item->getKind() == NULL || strcmp(item->getKind(),"docker") != 0)
+				   {
 					Repository *repo = item->getRepository();
 					if(!repo) {
 						throw RuntimeError(m_parent, newctx.stack(),
@@ -913,10 +904,23 @@ void DeployStmtImpl::executeDeployComponent(
 					DropzoneCallback callback(repo, (item->id() * 1000 + m_auditEntry->stepId()), dz, ctx, item);
 					doCheckout(newparent, *repo, dz, target, callback, newctx);
 					summary->checkout_summary(callback.total(), callback.success(), callback.failed(), callback.notProcessed());
-					ctx.dm().writeToStdOut("INFO: Item \"%s\": Checked out %d file(s) from repository \"%s\"",
+
+				    if (callback.total() == 0)
+					{
+					  throw RuntimeError(m_parent, newctx.stack(),
+							"\"%s\" - Item \"%s\": Checked out %d file(s) from repository \"%s\"",comp->name(),
+						item->name() ? item->name() : "Unnamed",
+						callback.success(),repo->name());
+					}
+					ctx.dm().writeToStdOut("INFO: \"%s\" - Item \"%s\": Checked out %d file(s) from repository \"%s\"",comp->name(),
 						item->name() ? item->name() : "Unnamed",
 						callback.success(),repo->name());
 					FilesPulled = true;
+				   }
+				   else
+				   {
+					skipComponentItems = false;   
+				   }	
 				}
 			}
 		}

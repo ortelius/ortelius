@@ -1,20 +1,3 @@
-/*
- *  DeployHub is an Agile Application Release Automation Solution
- *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
- *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 #include <stdio.h>
 #include <string.h>
 #ifdef WIN32
@@ -756,6 +739,31 @@ DMArray *Scope::getVars() const
 	return ret;
 }
 
+DMArray *Scope::getVars(class Context &ctx) const
+{
+	DMArray *ret = new DMArray(false);
+	AutoPtr<StringList> keys = m_vars->keys();
+	StringListIterator iter(*keys);
+	for(const char *k = iter.first(); k; k = iter.next()) {
+		// Each Scope will have dep.success etc. That could be very confusing. Don't return them.
+		if (strcmp(k,"dep.success") && strcmp(k,"dep.failed") && strcmp(k,"dep.total") && strcmp(k,"dep.not_proc")) 
+		{
+			Variable *v = m_vars->get(k);
+			if (v->m_type == vartype_string && v->getString() != NULL)
+			{
+			 char *stext1;
+			 char *val = (char *)strdup(v->getString());
+			 Node expandedText1(NODE_STR, val, true);
+			 ExprPtr etext1 = expandedText1.evaluate(ctx);
+			 stext1 = etext1->stringify();
+			 v = new Variable(v->m_name,stext1);
+			} 
+			ret->put(k,v);
+		}
+	}
+	return ret;
+}
+
 int Scope::fileno() const
 {
 	return m_fileno;
@@ -1107,6 +1115,53 @@ void Scope::dump(DM &dm)
 	SAFE_DELETE(vars);
 }
 
+/**
+ * Dump the contents of the variables in this scope.
+ */
+void Scope::dump2File(class Context &ctx, FILE *fp)
+{
+	// fprintf(fp, "%s(%c%c):\n", m_name, (m_open ? 'o' : '-'), (m_closed ? 'c' : '-'));
+    
+	StringList *vars = m_vars->keys();
+	StringListIterator iter(*vars);
+	for(const char *name = iter.first(); name; name = iter.next())
+	{
+	    if (strstr(name,".") != NULL)
+		  continue;
+
+		Variable *var = m_vars->get(name);
+   	    if (var->m_type == vartype_string && var->getString() != NULL)
+		{
+		 char *stext1;
+		 char *val = (char *)strdup(var->getString());
+		 Node expandedText1(NODE_STR, val, true);
+		 ExprPtr etext1 = expandedText1.evaluate(ctx);
+		 stext1 = etext1->stringify();
+		 var = new Variable(var->m_name,stext1);
+		} 
+
+		switch(var->m_type)
+		{
+		case vartype_bool:
+			fprintf(fp,"%s=%s\n", name, var->m_ival?"true":"false");
+		case vartype_integer:
+			fprintf(fp,"%s=%d\n", name, var->m_ival);
+			break;
+		case vartype_string:
+			fprintf(fp,"%s=%s\n", name, (var->m_value ? var->m_value : ""));
+			break;
+		case vartype_array: 
+			break;
+		case vartype_object:
+			// fprintf(fp,"    <object>");
+			break;
+		case vartype_stream:
+			// fprintf(fp,"    <stream>");
+			break;
+		}
+	}
+	SAFE_DELETE(vars);
+}
 
 void Scope::addRef()
 {
@@ -1257,7 +1312,7 @@ void ScopeStack::push(Scope *scope)
 	if(!scope) {
 		throw RuntimeError(*this, "push failed: scope was null");
 	}
-
+  
 	if(m_top >= (m_size-1)) {
 		if(m_size >= SCOPE_STACK_MAX_SIZE) {
 			throw RuntimeError(*this, "push failed: scope stack size exceeded");
@@ -1326,6 +1381,59 @@ Scope *ScopeStack::getScope(const char *name)
 	return NULL;
 }
 
+Variable *ScopeStack::expand(Variable *v)
+{
+ int addTicks = 0;
+ char value[4096] = {""};
+
+ if (v->getString() == NULL)
+  return v;
+
+ strcpy(value,v->getString());
+ debug1("RESET2 [%s]", value);
+
+ if (*value == '\'' && *(value+1) == '$')
+ {
+  strcpy(value,v->getString()+1);
+  *(value + strlen(value)-1) = '\0';
+  addTicks = 1;
+ }
+
+ if (*value == '$')
+ {
+  char workVar[4096] = {""};
+
+  if (*value == '$' && *(value+1) == '{')
+  {
+   strcpy(workVar,value+2);
+	*(workVar + strlen(workVar)-1) = '\0';   
+  }
+  else
+    strcpy(workVar,value+1);
+
+  Variable *ret = NULL;
+
+  debug1("RESET3 [%s]", workVar);
+
+  for(int n = m_top-1; n >= 0; n--) 
+  {
+   if ((ret = m_stack[n]->get(workVar)) != NULL) 
+	break;
+  }
+
+  if (ret != NULL)
+  {
+   debug1("RESET %s [%s]", value, ret->getString());
+   if (addTicks)
+   {
+	sprintf(workVar,"'%s'", ret->getString());  
+	return new Variable(ret->m_name,workVar);  
+   }
+   return new Variable(ret->m_name,ret->getString());
+  }  
+ } 
+ return v;	 
+}
 
 /**
  * Navigates the stack from top to bottom looking for a variable with
@@ -1342,7 +1450,7 @@ Variable *ScopeStack::get(const char *name)
 
 	for(int n = m_top-1; n >= 0; n--) {
 		if((first || m_stack[n]->isOpen()) && ((ret = m_stack[n]->get(name)) != NULL)) {
-			//m_dm.writeToLogFile("%d %s: %s=[%s]", n, m_stack[n]->name(), name, ret);
+			// debug1("RESET1 %d %s: %s=[%s]", n, m_stack[n]->name(), name, ret->getString());
 			break;
 		}
 		if(m_stack[n]->isClosed()) {
@@ -1354,7 +1462,7 @@ Variable *ScopeStack::get(const char *name)
 		ret = new Variable("?",0);
 	}
 
-	return ret;
+  return ret;
 }
 
 
@@ -2011,6 +2119,7 @@ OutputStream *ScopeStack::newStream(const char *name)
 }
 
 
+
 /**
  * Dumps the stack so that we can see the current state of it.
  */
@@ -2019,6 +2128,23 @@ void ScopeStack::dump()
 	for(int n = m_top-1; n >= 0; n--) {
 		m_stack[n]->dump(m_dm);
 	}
+}
+
+/**
+ * Dumps the stack so that we can see the current state of it.
+ */
+void ScopeStack::dump2File(class Context &ctx)
+{
+	FILE *fp;
+    char name[1024] = {""};
+
+	if ((fp=fopen("/tmp/remote.env","w")) != NULL)
+	{
+	 for(int n = 1; n < m_top; n++)  {
+		m_stack[n]->dump2File(ctx,fp);
+	 }
+	 fclose(fp);
+	} 
 }
 
 

@@ -1,20 +1,3 @@
-/*
- *  DeployHub is an Agile Application Release Automation Solution
- *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
- *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -187,11 +170,11 @@ void DropzoneFile::calcSizeAndSum()
 DateTime *DropzoneFile::getCreationTime()
 {
 	if (!m_zipfile) {
-	CharPtr dzpath = dropzoneFilename();
-	struct stat sb;
-	if(stat(dzpath, &sb) != -1) {
-		return new DateTime(sb.st_ctime);
-	}
+		CharPtr dzpath = dropzoneFilename();
+		struct stat sb;
+		if(stat(dzpath, &sb) != -1) {
+			return new DateTime(sb.st_ctime);
+		}
 	} else {
 		// zip file - return the stored mod time (no creation time in a zipfile)
 		return new DateTime(m_modtime);
@@ -203,11 +186,11 @@ DateTime *DropzoneFile::getCreationTime()
 DateTime *DropzoneFile::getModifiedTime()
 {
 	if (!m_zipfile) {
-	CharPtr dzpath = dropzoneFilename();
-	struct stat sb;
-	if(stat(dzpath, &sb) != -1) {
-		return new DateTime(sb.st_mtime);
-	}
+		CharPtr dzpath = dropzoneFilename();
+		struct stat sb;
+		if(stat(dzpath, &sb) != -1) {
+			return new DateTime(sb.st_mtime);
+		}
 	} else {
 		// zip file - return the stored mod time
 		return new DateTime(m_modtime);

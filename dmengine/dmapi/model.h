@@ -1,20 +1,3 @@
-/*
- *  DeployHub is an Agile Application Release Automation Solution
- *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
- *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 #ifndef __model_h
 
 #define __model_h
@@ -307,6 +290,7 @@ public:
 	OBJECT_KIND kind()	 { return OBJ_KIND_CREDENTIALS; }
 	class Expr *getAttribute(const char *name, class Context &ctx);
 
+	char *kindname(class Context &ctx);
 	char *getDecryptedUsername(class Context &ctx);
 	char *getDecryptedPassword(class Context &ctx);
 	bool hasUsername();
@@ -683,6 +667,7 @@ private:
 	class Component &m_parent;
 	int m_repoid;
 	char *m_target;
+	char *m_kind;
 	ComponentFilter m_rollup;
 	ComponentFilter m_rollback;
 	Hashtable<class Property> *m_props;
@@ -690,7 +675,7 @@ private:
 
 	ComponentItem(
 		class Model &model, int id, const char *name, class Component &parent,
-		int repoid, const char *target, ComponentFilter rollup, ComponentFilter rollback);
+		int repoid, const char *target, ComponentFilter rollup, ComponentFilter rollback, const char *kind);
 
 	const char *table()  { return "dm_componentitem"; }
 	const char *fk()     { return "compitemid"; }
@@ -707,6 +692,7 @@ public:
 	//Object *toObject()				{ return NULL; }
 
 	const char *getTargetFolder()  { return m_target; }
+	const char *getKind()  { return m_kind; }	
 	class Repository *getRepository();
 
 	ComponentFilter getRollup()    { return m_rollup; }

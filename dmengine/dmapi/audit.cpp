@@ -1,20 +1,3 @@
-/*
- *  DeployHub is an Agile Application Release Automation Solution
- *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
- *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +38,6 @@ Audit::~Audit()
 	SAFE_FREE(m_status);
 }
 
-
 AuditEntry *Audit::newAuditEntry(const char *type)
 {
 	return new AuditEntry(*this, ++m_currStepId, type);
@@ -79,6 +61,9 @@ void Audit::writevToAuditLog(int stream, long threadId, const char* buffer)
 
 
 void Audit::writeBufferToAuditLog(int stream, long threadId, const char* buffer, int len)
+{}
+
+int Audit::getDeploymentLog(char *logstr, long buflen)
 {}
 
 
@@ -108,6 +93,36 @@ void Audit::recordTransfer(AuditEntry &entry, Server &target, TransferResult &tr
 void Audit::recordRemoteScript(AuditEntry &entry, Server &target, const char *cmd, int exitCode)
 {}
 
+
+int DatabaseAudit::getDeploymentLog(char *logstr,long buflen)
+{
+	int deployid = this->deploymentId();
+	AutoPtr<triSQL> sql = m_odbc.GetSQL();
+
+	int stream;
+	char line[2049];
+	SQLLEN ni_line = 0;
+	sql->BindColumn(1, SQL_INTEGER, &stream, sizeof(stream));
+	sql->BindColumn(2, SQL_CHAR, line, sizeof(line), &ni_line);
+
+	SQLRETURN res = sql->ExecuteSQL(
+		"SELECT stream, line FROM dm_deploymentlog "
+		"WHERE deploymentid=%d ORDER BY runtime", deployid);
+	if((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO)) {
+		fprintf(stderr, "Deployment log %d not found", deployid);
+		return 1;
+	}
+
+    strcat(logstr,"<pre><code>");
+	for(res = sql->FetchRow(); (res == SQL_SUCCESS) || (res == SQL_SUCCESS_WITH_INFO); res = sql->FetchRow()) {
+		char *output = NULL_IND(line, NULL);
+		if(output && (strlen(logstr) + strlen(output) < buflen-20)) 
+		  strcat(logstr,output);
+	}
+	strcat(logstr,"</code></pre>");
+	sql->CloseSQL();
+	return 0;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // DatabaseAudit
@@ -338,9 +353,10 @@ void DatabaseAudit::recordAction(class Action &action)
 				changed = false;
 			}
 		}
-		sql->CloseSQL();
 	}
-
+	sql->CloseSQL();
+	sql = m_odbc.GetSQL();
+	
 	res = sql->ExecuteSQL("INSERT INTO dm_deploymentaction("
 		"deploymentid, actionid, runtime, changed, checksum) VALUES("
 		"%d, %d, %s, '%c', '%s')",
@@ -412,8 +428,8 @@ void DatabaseAudit::startAuditEntry(AuditEntry &entry)
 {
 	AutoPtr<triSQL> sql = m_odbc.GetSQL();
 	SQLRETURN res = sql->ExecuteSQL("INSERT INTO dm_deploymentstep("
-		"deploymentid, stepid, type, startts, started) VALUES ("
-		"%d, %d, '%s', %s, %ld)", m_deployId, entry.stepId(), entry.type(), m_odbc.getNowCol(), (long) time(NULL));
+		"deploymentid, stepid, type, startts, started, compid) VALUES ("
+		"%d, %d, '%s', %s, %ld, %d)", m_deployId, entry.stepId(), entry.type(), m_odbc.getNowCol(), (long) time(NULL), entry.compId());
 	sql->CloseSQL();
 	if(res != SQL_SUCCESS) {
 		throw RuntimeError("Failed to insert audit entry");
@@ -593,7 +609,6 @@ AuditEntry::~AuditEntry()
 {
 	SAFE_FREE(m_type);
 }
-
 
 void AuditEntry::start()
 {

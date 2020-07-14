@@ -1,20 +1,3 @@
-/*
- *  DeployHub is an Agile Application Release Automation Solution
- *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
- *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -638,6 +621,7 @@ void Object::printObject(int ind)
 
 /*virtual*/ Expr *Object::getAttribute(const char *name, class Context &ctx)
 {
+
 	if(strcmp(name, "id") == 0) {
 		return new Expr(m_id);
 	} else if(strcmp(name, "name") == 0) {
@@ -656,7 +640,7 @@ void Object::printObject(int ind)
 		return domain ? new Expr(domain) : NULL;
 	} else if(strcmp(name,"attributes") == 0) {
 		Scope *scope = getVars();
-		DMArray *arr = scope->getVars();
+		DMArray *arr = scope->getVars(ctx);
 		return new Expr(arr);
 	} else if (strcmp(name,"ctime") == 0) {
 		DateTime *res = getCreationTime();
@@ -1107,8 +1091,12 @@ Expr *Credentials::getAttribute(const char *name, class Context &ctx)
 		return new Expr(getDecryptedUsername(ctx));
 	} else if(strcmp(name, "password") == 0) {
 		return new Expr(getDecryptedPassword(ctx));
+	} else if (strcmp(name,"kindname") == 0) {
+		return new Expr(kindname(ctx));
 	} else if (strcmp(name,"kind") == 0) {
-		return new Expr(kind());
+		return new Expr(kind());		
+	} else if (strcmp(name,"filename") == 0) {
+		return new Expr(filename(ctx));	
 	} else if (strcmp(name,"b64auth") == 0) {
 		char *username = getDecryptedUsername(ctx);
 		char *password = getDecryptedPassword(ctx);
@@ -1166,6 +1154,29 @@ char *Credentials::filename(class Context &ctx)
 	}
 }
 
+
+char *Credentials::kindname(class Context &ctx)
+{
+	char kindstr[50] = {""};
+
+	if (m_credkind) {
+		switch(m_credkind) {
+	      case CREDENTIALS_USE_DIALOG:				strcpy(kindstr,"Use dialog"); break;
+	      case CREDENTIALS_ENCRYPTED:				strcpy(kindstr,"Encrypted"); break;
+	      case CREDENTIALS_IN_DATABASE:				strcpy(kindstr,"In database"); break;
+	      case CREDENTIALS_RTI3_DFO_IN_FILESYSTEM:	strcpy(kindstr,"RTI DFO"); break;
+	      case CREDENTIALS_HARVEST_DFO_IN_FILESYSTEM: strcpy(kindstr,"Harvest DFO"); break;
+	      case CREDENTIALS_PRIVATE_KEY:				strcpy(kindstr,"Private Key"); break;
+	      default: strcpy(kindstr,"Unknown"); break;
+	     }
+
+		Node kindvar(NODE_STR, strdup(kindstr), true);
+		ExprPtr ekind = kindvar.evaluate(ctx);
+		return (ekind ? ekind->toString() : NULL);
+	} else {
+		return NULL;
+	}
+}
 
 char *Credentials::getDecryptedPassword(class Context &ctx)
 {
@@ -2580,11 +2591,11 @@ void ApplicationVersion::alterVars(class DMArray *attrs)
 
 ComponentItem::ComponentItem(
 		Model &model, int id, const char *name, Component &parent, int repoid,
-		const char *target, ComponentFilter rollup, ComponentFilter rollback
+		const char *target, ComponentFilter rollup, ComponentFilter rollback, const char *kind
 	)
 	: /*m_model(model), m_id(id),*/ Object(model, id, name), m_parent(parent), m_repoid(repoid),
 	  m_target(DUP_NULL(target)), m_rollup(rollup), m_rollback(rollback),
-	  m_repo(NULL), m_props(NULL)
+	  m_repo(NULL), m_props(NULL), m_kind(DUP_NULL(kind))
 {}
 
 
@@ -5217,7 +5228,16 @@ void ActionArg::process(const char *val, StringList &params, Context &ctx)
 				ConstCharPtr theswitch = getExpandedSwitch(ctx);
 				params.add(theswitch);
 			}
-			if(val) { params.add(val); return; }
+			if(val) 
+			{
+			 char *stext1;
+		     char *v = (char *)strdup(val);
+		     Node expandedText1(NODE_STR, v, true);
+		     ExprPtr etext1 = expandedText1.evaluate(ctx);
+		     stext1 = etext1->stringify();
+			 params.add(stext1); 
+			 return; 
+			}
 			// fall thru for pad
 		} else if(m_negswitch) {
 			ConstCharPtr negswitch = getExpandedNegSwitch(ctx);
@@ -5971,7 +5991,7 @@ List<Environment> *Model::internalGetEnvironments(const char *whereClause, bool 
 		Environment *env = findOrCreateEnvironment(id, envName, NULL_IND(envBasedir, NULL));
 		ret->add(env);
 	}
-
+    sql->CloseSQL();
 	return ret;
 }
 
@@ -6014,6 +6034,7 @@ int Model::getDomainID2(char *DomainName,int parent)
 		else
 		{
 			free(dn);
+			sql->CloseSQL();
 			return p2;
 		}
 	}
@@ -6295,7 +6316,7 @@ List<Server> *Model::internalGetServers(const char *fromClause, const char *wher
 		}
 		ret->add(srv);
 	}
-
+	sql->CloseSQL();
 	return ret;
 }
 
@@ -6331,7 +6352,7 @@ List<Domain> *Model::internalGetDomains(const char *fromClause, const char *wher
 		domain->setLifecycle(BOOL_NULL_IND(lifecycle,false));
 		ret->add(domain);
 	}
-
+	sql->CloseSQL();
 	return ret;
 }
 
@@ -6479,7 +6500,7 @@ List<Component> *Model::internalGetComponents(const char *fromClause, const char
 			NULL_IND(predecessorid,0),NULL_IND(datasourceid,0),NULL_IND(buildid,0));
 		ret->add(comp);
 	}
-
+	sql->CloseSQL();
 	return ret;
 }
 
@@ -6528,7 +6549,7 @@ List<User> *Model::internalGetUsers(
 			NULL_IND(realName, NULL), NULL_IND(userPhone,NULL));
 		ret->add(user);
 	}
-
+	sql->CloseSQL();
 	return ret;
 }
 
@@ -6571,7 +6592,7 @@ List<UserGroup> *Model::internalGetUserGroups(const char *fromClause, const char
 		UserGroup *group = findOrCreateUserGroup(id, groupName, NULL_IND(groupEmail, NULL));
 		ret->add(group);
 	}
-
+	sql->CloseSQL();
 	return ret;
 }
 
@@ -6618,7 +6639,7 @@ Credentials *Model::internalGetCredentials(const char *fromClause, const char *w
 			NULL_IND(encusername, NULL), NULL_IND(encpassword, NULL),
 			NULL_IND(filename, NULL));
 	}
-
+	sql->CloseSQL();
 	return NULL;
 }
 
@@ -6689,7 +6710,7 @@ Action *Model::internalGetAction(const char *fromClause, const char *whereClause
 			NULL_IND(shell, NULL),
 			BOOL_NULL_IND(useTTY,false));
 	}
-
+	sql->CloseSQL();
 	return NULL;
 }
 
@@ -6732,7 +6753,7 @@ List<Property> *Model::internalGetProperties(const char *table, const char *fk, 
 			NULL_IND(propValue, NULL), BOOL_NULL_IND(propEnc, false),
 			BOOL_NULL_IND(propOver, false), BOOL_NULL_IND(propApnd, false)));
 	}
-
+	sql->CloseSQL();
 	return ret;
 }
 
@@ -7251,7 +7272,7 @@ Field *Model::getField(const char *name)
 		m_fldCache.put(ret);
 		return ret;
 	}
-
+	sql->CloseSQL();
 	return NULL;
 }
 
@@ -7275,7 +7296,7 @@ StringList *Model::getFieldValuesForField(Field &field)
 	for(res = sql->FetchRow(); IS_SQL_SUCCESS(res); res = sql->FetchRow()) {
 		ret->add(fldValue);
 	}
-
+	sql->CloseSQL();
 	return ret;
 }
 
@@ -7298,7 +7319,7 @@ StringList *Model::getFieldValuesForField(const char *querystring)
 	for(res = sql->FetchRow(); IS_SQL_SUCCESS(res); res = sql->FetchRow()) {
 		ret->add(fldValue);
 	}
-
+	sql->CloseSQL();
 	return ret;
 }
 
@@ -7435,7 +7456,8 @@ void Model::getArgsForAction(Action &action)
 		action.add(new ActionArg(argName, NULL_IND(argPos, -1), BOOL_NULL_IND(argReqd, false),
 			((argPad[0] == 'Y') ? true : false), decodeSwitchMode(NULL_IND(argMode, NULL)),
 			NULL_IND(argSwitch, NULL), NULL_IND(argNegSwitch, NULL),NULL_IND(argType,"")));
-	}	
+	}
+	sql->CloseSQL();		
 }
 
 
@@ -7474,6 +7496,7 @@ void Model::getScriptForAction(Action *action)
 			break;
 		}
 	}
+	sql->CloseSQL();
 }
 
 
@@ -7540,6 +7563,7 @@ void Model::getPluginForAction(Action &act)
 			NULL_IND(library, NULL));
 		act.setPlugin(plugin);
 	}
+	sql->CloseSQL();
 }
 
 
@@ -7570,6 +7594,7 @@ void Model::getServerTypeFilepathsForAction(Action &act)
 	}
 
 	act.setServerTypeFilepaths(filepaths);
+	sql->CloseSQL();
 }
 
 
@@ -7603,9 +7628,10 @@ Task *Model::getTask(const char *name)
 	res = sql->FetchRow();
 	if(IS_SQL_SUCCESS(res)) {
 		ret = findOrCreateTask(id, taskName, taskKind);
+		sql->CloseSQL();
 		return ret;
 	}
-
+	sql->CloseSQL();
 	return NULL;
 }
 
@@ -7633,9 +7659,10 @@ Task *Model::getTask(int id)
 	res = sql->FetchRow();
 	if(IS_SQL_SUCCESS(res)) {
 		ret = findOrCreateTask(id, taskName, taskKind);
+		sql->CloseSQL();
 		return ret;
 	}
-
+	sql->CloseSQL();
 	return NULL;
 }
 
@@ -7754,7 +7781,7 @@ List<Defect> *Model::getDefectsForApp(Application &app,bool onlyAppDefects /* = 
 		Defect *defect = new Defect(*this,bugid,title,(char *)(NULL_IND(status,"")),(char *)(NULL_IND(apiurl,"")),(char *)(NULL_IND(htmlurl,"")));
 		ret->add(defect);
 	}
-
+	sql->CloseSQL();
 	return ret;
 }
 
@@ -7785,7 +7812,7 @@ List<Defect> *Model::getDefectsForComp(Component &comp)
 		Defect *defect = new Defect(*this,bugid,title,(char *)(NULL_IND(status,"")),(char *)(NULL_IND(apiurl,"")),(char *)(NULL_IND(htmlurl,"")));
 		ret->add(defect);
 	}
-
+	sql->CloseSQL();
 	return ret;
 }
 
@@ -7887,7 +7914,7 @@ Task *Model::getLinkedTaskForRequestTask(Task &task)
 	if(IS_SQL_SUCCESS(res)) {
 		return findOrCreateTask(linkedTaskId, linkedTaskName, linkedTaskKind);
 	}
-
+	sql->CloseSQL();
 	return NULL;
 }
 
@@ -8180,6 +8207,7 @@ bool Model::moveApplication(
 				return false;
 			}
 			sql->CloseSQL();
+			sql = m_odbc.GetSQL();
 			//
 			// Now add the record to the dm_historymove table
 			//
@@ -8246,7 +8274,7 @@ ApplicationVersion* Model::newVersionOfApplication(
 
 	if(!m_currentUser) {
 		debug1("Current user not set");
-		return false;
+		return NULL;
 	}
 
 	AutoPtr<triSQL> sql = m_odbc.GetSQL();
@@ -8273,6 +8301,7 @@ ApplicationVersion* Model::newVersionOfApplication(
 		c = 0;
 	}
 	sql->CloseSQL();
+	sql = m_odbc.GetSQL();
 
 	int xpos = 0, ypos = 0;
 
@@ -8299,6 +8328,7 @@ ApplicationVersion* Model::newVersionOfApplication(
 		ypos = 0;
 	}
 	sql->CloseSQL();
+	sql = m_odbc.GetSQL();
 
 	debug1("xpos = %d ypos = %d",xpos,ypos);
 
@@ -8322,6 +8352,7 @@ ApplicationVersion* Model::newVersionOfApplication(
 		maxxpos = -1;
 	}
 	sql->CloseSQL();
+	sql = m_odbc.GetSQL();
 
 	if(maxxpos > 0) {
 		xpos = maxxpos + BOX_WIDTH*1.5;
@@ -8370,6 +8401,7 @@ ApplicationVersion* Model::newVersionOfApplication(
 		return NULL;
 	}
 	sql->CloseSQL();
+	sql = m_odbc.GetSQL();
 
 	//
 	// Add the components from the predecessor OR the applications if this is a release
@@ -8388,6 +8420,7 @@ ApplicationVersion* Model::newVersionOfApplication(
 		}
 	}
 	sql->CloseSQL();
+	sql = m_odbc.GetSQL();
 
 	// Add the component/application flows from the predecessor
 	res = sql->PrepareStatement(
@@ -8404,6 +8437,7 @@ ApplicationVersion* Model::newVersionOfApplication(
 		}
 	}
 	sql->CloseSQL();
+	sql = m_odbc.GetSQL();
 	// Now copy all the attributes from the predecessor application
 	res = sql->PrepareStatement(
 		"INSERT INTO dm_applicationvars(appid,name,value,arrayid,nocase) "
@@ -8440,6 +8474,7 @@ ApplicationVersion* Model::newVersionOfApplication(
 	//
 	printf("Created new Application Version %s (id %d)\n", newName,newid);
 	debug1("New Application Version is %d '%s'", newid, newName);
+	sql->CloseSQL();
 	return findOrCreateApplicationVersion(newid, newName, newName, (Application*) app.toObject());
 }
 
@@ -8469,6 +8504,7 @@ ApplicationVersion* Model::getLatestVersionOfApplication(Application &app, char 
 		}
 		res = sql->FetchRow();
 		sql->CloseSQL();
+		sql = m_odbc.GetSQL();
 		id = NULL_IND(id,0);
 		while (id > 0) {
 			// Descend this branch until there's no more versions
@@ -8483,6 +8519,7 @@ ApplicationVersion* Model::getLatestVersionOfApplication(Application &app, char 
 			sql->CloseSQL();
 			id = NULL_IND(cid,0);
 		}
+		sql->CloseSQL();
 	} else {	
 		sprintf(whereClause,
 			"a.id = (select max(a2.id) from dm_application a2 "
@@ -8495,7 +8532,6 @@ ApplicationVersion* Model::getLatestVersionOfApplication(Application &app, char 
 		Application *ret = iter.first();
 		return ret ? ret->toApplicationVersion() : NULL;
 	}
-
 	return NULL;
 }
 
@@ -8527,6 +8563,7 @@ void Model::recordAppInEnv(class DM &dm, Application &app, Environment &env, boo
 		res = sql->ExecuteIgnoringErrors();
 		debug2("res = %d", res);
 		sql->CloseSQL();
+		sql = m_odbc.GetSQL();
 		if(IS_NOT_SQL_SUCCESS(res)) {
 			if((res != SQL_ERROR) && (res != SQL_NO_DATA)) {
 				throw RuntimeError("Failed to update app in env (2), %d", res);
@@ -8611,6 +8648,7 @@ void Model::recordCompOnServ(class DM &dm, Component &comp, Server &server, bool
 		res = sql->ExecuteIgnoringErrors();
 		debug2("res = %d", res);
 		sql->CloseSQL();
+		sql = m_odbc.GetSQL();
 		if(IS_NOT_SQL_SUCCESS(res)) {
 			if((res != SQL_ERROR) && (res != SQL_NO_DATA)) {
 				throw RuntimeError("Failed to update comp on serv (2), %d", res);
@@ -8728,6 +8766,7 @@ void Model::updateUserLastLogin(User &user)
 {
 	AutoPtr<triSQL> sql = m_odbc.GetSQL();
 	sql->ExecuteSQL("update dm_user set lastlogin = %s where id = %d ", m_odbc.getNowCol(),user.id());
+	sql->CloseSQL();
 }
 
 
@@ -8753,6 +8792,7 @@ void Model::addDeploymentAction(Action *action)
 			m_audit->currStepId(),
 			action->id()
 		);
+		sql->CloseSQL();
 	}
 }
 
@@ -8798,7 +8838,7 @@ bool Model::validateHashedPassword(User &user, const char *passhash)
 	if(IS_SQL_SUCCESS(res)) {
 		return (id == user.id());
 	}
-
+	sql->CloseSQL();
 	return false;
 }
 
@@ -8882,6 +8922,7 @@ int Model::getNextObjectId(const char *objectType)
 	}
 	
 	sql->SetAutoCommitMode(true);
+	sql->CloseSQL();
 	throw RuntimeError("Select for update failed");
 }
 
@@ -9386,6 +9427,7 @@ bool Model::isEnvironmentAvailable(Environment &env)
 
 	int unavailstart = 0;
 	int unavailend = 0;
+	int ret = 0;
 	sql->BindColumn(1, SQL_INTEGER, &unavailstart, sizeof(unavailstart));
 	sql->BindColumn(2, SQL_INTEGER, &unavailend, sizeof(unavailend));
 
@@ -9396,8 +9438,9 @@ bool Model::isEnvironmentAvailable(Environment &env)
 	if(IS_NOT_SQL_SUCCESS(res)) {
 		return NULL;
 	}
-
-	return (sql->FetchRow() == SQL_NO_DATA);
+	ret = (sql->FetchRow() == SQL_NO_DATA);
+	sql->CloseSQL();
+	return ret;
 }
 
 
@@ -9687,7 +9730,7 @@ void Model::getComponentsForApplication(Application &app)
 	if(count != count2) {
 		debug1("WARNING: Component counts differ %d != %d", count, count2);
 	}
-
+	sql->CloseSQL();
 }
 
 
@@ -9746,6 +9789,7 @@ ApplicationComponentGraph *Model::getApplicationComponentGraph(Application &app)
 	}
 
 	sql->CloseSQL();
+	sql = m_odbc.GetSQL();
 
 	int compfromid;
 	int comptoid;
@@ -9884,6 +9928,7 @@ bool Model::isApplicationAvailable(Application &app, Environment &env)
 		okay = false;
 	}
 	sql->CloseSQL();
+	sql = m_odbc.GetSQL();
 	if (rows==0) {
 		// No calendar reservations at all for this app. Is the environment "open for business"?
 		char calusage[2];
@@ -9999,6 +10044,7 @@ void Model::alterObjectVars(Object *obj, class DMArray *attrs)
 			sql->BindParameter(3, SQL_CHAR, strlen(key), (char*) key, strlen(key));
 			res = sql->ExecuteIgnoringErrors();
 			sql->CloseSQL();
+			sql = m_odbc.GetSQL();
 			if(IS_NOT_SQL_SUCCESS(res)) {
 				if((res != SQL_ERROR) && (res != SQL_NO_DATA)) {
 					throw RuntimeError("Failed to update object vars (2), %d", res);
@@ -10020,6 +10066,7 @@ void Model::alterObjectVars(Object *obj, class DMArray *attrs)
 			}
 		}
 	}
+	sql->CloseSQL();
 }
 
 
@@ -10114,12 +10161,13 @@ void Model::getItemsForComponent(Component &comp)
 	char ciName[DB_NAME_LEN];
 	int ciRepoId = 0;
 	char ciTarget[DB_PATH_LEN];
+	char ciKind[10];
 	int rollup;
 	int rollback;
 	int predecessorid = 0;
 	SQLLEN ni_ciRepoId = 0, ni_ciTarget = 0,
 		ni_rollup = 0, ni_rollback = 0,
-		ni_predecessorid = 0;
+		ni_predecessorid = 0, ni_ciKind = 0;
 
 	sql->BindColumn(1, SQL_INTEGER, &id, sizeof(id));
 	sql->BindColumn(2, SQL_CHAR, ciName, sizeof(ciName));
@@ -10128,9 +10176,10 @@ void Model::getItemsForComponent(Component &comp)
 	sql->BindColumn(5, SQL_INTEGER, &rollup, sizeof(rollup), &ni_rollup);
 	sql->BindColumn(6, SQL_INTEGER, &rollback, sizeof(rollback), &ni_rollback);
 	sql->BindColumn(7, SQL_INTEGER, &predecessorid, sizeof(predecessorid), &ni_predecessorid);
+	sql->BindColumn(8, SQL_CHAR, ciKind, sizeof(ciKind), &ni_ciKind);
 
 	int res = sql->ExecuteSQL(
-			"select ci.id, ci.name, ci.repositoryid, ci.target, ci.rollup, ci.rollback, ci.predecessorid "
+			"select ci.id, ci.name, ci.repositoryid, ci.target, ci.rollup, ci.rollback, ci.predecessorid, ci.kind "
 			"from dm_componentitem ci "
 			"where ci.compid = %d and ci.status = 'N' "
 			"order by 1 ", comp.id());
@@ -10144,7 +10193,7 @@ void Model::getItemsForComponent(Component &comp)
 	for(res = sql->FetchRow(); IS_SQL_SUCCESS(res); res = sql->FetchRow()) {
 		ComponentItem *ci = new ComponentItem(
 			*this, id, ciName, comp, NULL_IND(ciRepoId, 0), NULL_IND(ciTarget, NULL),
-			(ComponentFilter) NULL_IND(rollup, 0), (ComponentFilter) NULL_IND(rollback, 0));
+			(ComponentFilter) NULL_IND(rollup, 0), (ComponentFilter) NULL_IND(rollback, 0), NULL_IND(ciKind, NULL));
 		if(NULL_IND(predecessorid, 0) != 0) {
 			//debug1("ComponentItem %d, '%s' with predecessor %d", id, ciName, predecessorid);
 			preds.put(predecessorid, ci);
@@ -10166,6 +10215,7 @@ void Model::getItemsForComponent(Component &comp)
 			comp.add(pi);
 		}
 	}
+	sql->CloseSQL();
 }
 
 
@@ -10254,6 +10304,7 @@ void Model::getUserGroupsForUser(User &user)
 		UserGroup *group = findOrCreateUserGroup(id, groupName, NULL_IND(groupEmail, NULL));
 		user.add(group);
 	}
+	sql->CloseSQL();
 }
 
 
@@ -10332,6 +10383,7 @@ void Model::getOwnerForObject(Object &obj)
 			obj.setOwner(owngrp);
 		}
 	}
+	sql->CloseSQL();
 }
 
 void Model::getMetaDataForObject(Object &obj)
@@ -10398,6 +10450,7 @@ void Model::getMetaDataForObject(Object &obj)
 		obj.setCreationTime(created);
 		obj.setModifiedTime(modified);
 	}
+	sql->CloseSQL();
 }
 
 bool stringIsNumber(const char *str)
@@ -10430,6 +10483,7 @@ void Model::getVariablesForObject(Object &obj, Scope &vars)
 		return;
 	}
 
+	
 	int deferred_arrayid[1000];
 	DMArray *deferred_array[1000];
 	int deferred_arrays = 0;
@@ -10454,6 +10508,7 @@ void Model::getVariablesForObject(Object &obj, Scope &vars)
 	}
 
 	sql->CloseSQL();
+	sql = m_odbc.GetSQL();
 
 	// Now run queries for each array after we have finished with the variables query
 	for(int a = 0; a < deferred_arrays; a++) {
@@ -10472,9 +10527,152 @@ void Model::getVariablesForObject(Object &obj, Scope &vars)
 				deferred_array[a]->put(arrName, new Variable(NULL, NULL_IND(arrValue, NULL)));
 			}
 		}
-
-		sql->CloseSQL();
 	}
+	sql->CloseSQL();
+	sql = m_odbc.GetSQL();
+
+	    debug1("TABLE_XXX=%s", obj.table());
+
+    if (strcmp(obj.table(),"dm_component") == 0)
+	{
+	 char buildid[1024];
+	 char buildurl[1024];
+	 char chart[100];
+	 char chartversion[1024];
+	 char chartnamespace[1024];
+	 char oper[100];
+	 char builddate[100];
+	 char dockersha[1024];
+	 char dockertag[1024];
+	 char gitcommit[1024];
+	 char dockerrepo[1024];
+	 char gitrepo[100];
+	 char gittag[100];
+	 char giturl[1024];
+     SQLLEN ni_buildid = 0, ni_buildurl = 0, ni_chart = 0, ni_chartversion = 0, ni_chartnamespace = 0, ni_oper = 0, ni_builddate = 0, ni_dockersha = 0, ni_dockertag = 0, ni_gitcommit = 0, ni_gitrepo = 0, ni_gittag = 0, ni_giturl = 0, ni_dockerrepo =0;
+
+	 sql->BindColumn(1, SQL_CHAR, buildid, sizeof(buildid), &ni_buildid);
+	 sql->BindColumn(2, SQL_CHAR, buildurl, sizeof(buildurl), &ni_buildurl);
+	 sql->BindColumn(3, SQL_CHAR, chart, sizeof(chart), &ni_chart);
+	 sql->BindColumn(4, SQL_CHAR, oper, sizeof(oper), &ni_oper);
+	 sql->BindColumn(5, SQL_CHAR, builddate, sizeof(builddate), &ni_builddate);
+	 sql->BindColumn(6, SQL_CHAR, dockersha, sizeof(dockersha), &ni_dockersha);
+	 sql->BindColumn(7, SQL_CHAR, gitcommit, sizeof(gitcommit), &ni_gitcommit);
+	 sql->BindColumn(8, SQL_CHAR, gitrepo, sizeof(gitrepo), &ni_gitrepo);
+	 sql->BindColumn(9, SQL_CHAR, gittag, sizeof(gittag), &ni_gittag);
+	 sql->BindColumn(10, SQL_CHAR, giturl, sizeof(giturl), &ni_giturl);	 
+	 sql->BindColumn(11, SQL_CHAR, chartversion, sizeof(chartversion), &ni_chartversion);
+	 sql->BindColumn(12, SQL_CHAR, chartnamespace, sizeof(chartnamespace), &ni_chartnamespace);	 
+	 sql->BindColumn(13, SQL_CHAR, dockertag, sizeof(dockertag), &ni_dockertag);	
+	 sql->BindColumn(14, SQL_CHAR, dockerrepo, sizeof(dockerrepo), &ni_dockerrepo);	 
+
+	 int res = sql->ExecuteSQL("select buildid, buildurl, chart, operator, builddate, dockersha, gitcommit, gitrepo, gittag, giturl, chartversion, chartnamespace, dockertag, dockerrepo from dm_componentitem where compid = %d and kind = 'docker'",obj.id());
+	 res = sql->FetchRow();
+	 if (IS_SQL_SUCCESS(res))
+	 {
+	  char *value;
+	  bool nc = BOOL_NULL_IND(nocase, false); 
+
+      value = NULL_IND(buildid, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("buildid", value, nc);
+      debug1("TABLE_buildid=%s", buildid);
+
+      value = NULL_IND(buildurl, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("buildurl", value, nc);
+
+      value = NULL_IND(chart, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("chart", value, nc);
+	  
+	  value = NULL_IND(chartversion, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("chartversion", value, nc);
+
+	  value = NULL_IND(chartnamespace, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("chartnamespace", value, nc);
+
+      value = NULL_IND(oper, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("oper", value, nc);
+
+      value = NULL_IND(builddate, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("builddate", value, nc);
+
+      value = NULL_IND(dockersha, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("dockersha", value, nc);
+
+      value = NULL_IND(dockertag, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("dockertag", value, nc);
+
+      value = NULL_IND(dockerrepo, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("dockerrepo", value, nc);
+	  
+      value = NULL_IND(gitcommit, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("gitcommit", value, nc);
+	  
+      value = NULL_IND(gitrepo, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("gitrepo", value, nc);
+
+      value = NULL_IND(gittag, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("gittag", value, nc);
+	  
+      value = NULL_IND(giturl, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("giturl", value, nc);
+
+	// Mixed Case Names
+      value = NULL_IND(dockersha, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("DockerSha", value, nc);
+
+      value = NULL_IND(dockertag, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("DockerTag", value, nc);
+
+      value = NULL_IND(dockerrepo, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("DockerRepo", value, nc);
+
+      value = NULL_IND(gitcommit, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("GitCommit", value, nc);
+
+      value = NULL_IND(gitrepo, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("GitRepo", value, nc);
+
+      value = NULL_IND(gittag, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("GitTag", value, nc);
+
+      value = NULL_IND(giturl, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("GitUrl", value, nc);
+
+	  value = NULL_IND(chart, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("Chart", value, nc);
+	  
+	  value = NULL_IND(chartversion, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("ChartVersion", value, nc);
+
+	  value = NULL_IND(chartnamespace, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("ChartNamespace", value, nc);			
+	 }
+	}
+	sql->CloseSQL();
 }
 
 void Model::setVariableForObject(Object *obj,const char *attname,Expr *attval)
@@ -10557,6 +10755,7 @@ void Model::addAccessForDomain(Domain &dom, HashtableById<ObjectAccess> &ia)
 	if(pdom) {
 		addAccessForDomain(*pdom, ia);
 	}
+	sql->CloseSQL();
 }
 
 
@@ -10597,7 +10796,7 @@ HashtableById<ObjectAccess> *Model::getAccessForObject(Object &obj)
 	if(dom) {
 		addAccessForDomain(*dom, *ret);
 	}
-
+	sql->CloseSQL();
 	return ret;
 }
 
@@ -10636,6 +10835,7 @@ void Model::getSummaryForObject(Object &obj)
 	if(IS_SQL_SUCCESS(res)) {
 		obj.setSummary(NULL_IND(summary, ""));
 	}
+	sql->CloseSQL();
 }
 
 
@@ -10658,6 +10858,7 @@ void Model::getNotesForObject(Object &obj)
 	if(IS_SQL_SUCCESS(res)) {
 		obj.setNotes(NULL_IND(notes, ""));
 	}
+	sql->CloseSQL();
 }
 
 
@@ -10706,7 +10907,7 @@ List<RepositoryIgnorePattern> *Model::getIgnorePatternsForRepositoryDef(Provider
 		ret->add(new RepositoryIgnorePattern(pattern,
 			((isdir[0] == 'Y') ? true : false)));
 	}
-
+	sql->CloseSQL();
 	return ret;
 }
 
@@ -10742,10 +10943,12 @@ ProviderObjectDef *Model::getDefForProviderObject(ProviderObject &obj)
 		if(NULL_IND(pluginId, 0)) {
 			plugin = findOrCreatePlugin(pluginId, NULL_IND(pluginVer, 0), NULL_IND(pluginLib, NULL));
 		}
+		sql->CloseSQL();
 		return findOrCreateProviderObjectDef(id, defName, obj.def_kind(), plugin);
 	}
 
 	debug1("No def for %s with id %d found - have you set it up correctly?", obj.def_kind(), obj.id());
+	sql->CloseSQL();
 	return NULL;
 }
 
@@ -10773,6 +10976,7 @@ void Model::getPropertyDefsForProviderObjectDef(ProviderObjectDef &pod)
 			((pdReqd[0] == 'Y') ? true : false),
 			((pdApnd[0] == 'Y') ? true : false)));
 	}
+	sql->CloseSQL();
 }
 
 
@@ -10820,6 +11024,7 @@ List<RepositoryTextPattern> *Model::getTextPatternsForRepositoryPath(
 	}
 
 	debug3("returning ret->size=%d",ret->size());
+	sql->CloseSQL();
 	return ret;
 }
 
@@ -10942,10 +11147,11 @@ bool Model::checkPropertyDefs(const char *name, List<class PropertyDef> *propdef
 					printf("ERROR: Statement '%s' is already registered, but property '%s' is missing\n", name, pdef->name());
 				}
 			}
+			sql->CloseSQL();
 			return false;
 		}
 	}
-
+	sql->CloseSQL();
 	return true;
 }
 

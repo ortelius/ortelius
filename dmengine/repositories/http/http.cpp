@@ -1,20 +1,3 @@
-/*
- *  DeployHub is an Agile Application Release Automation Solution
- *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
- *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 #ifdef WIN32
 #include "windows.h"
 #include <io.h>
@@ -143,7 +126,7 @@ static char *url_encode(char *str)
 	char *buf = (char *)malloc(strlen(str) * 3 + 1);
 	char *pbuf = buf;
 	while (*pstr) {
-		if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~' || *pstr == '&' || *pstr=='=') 
+		if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~' || *pstr == '&' || *pstr=='=' || *pstr=='?') 
 			*pbuf++ = *pstr;
 		else if (*pstr == '/')
 			*pbuf++ = '/';
@@ -439,7 +422,8 @@ static int local_mkdir(const char *dirname)
 void createDropZoneFile(void *buf,int buflen,const char *path,const char *BaseName)
 {
 	struct stat s;
-	debug1("path=[%s]",path);
+	
+    debug1("path=[%s]",path);
 	debug1("BaseName=[%s]",BaseName);
 	if (stat(path,&s) != 0 && errno == ENOENT) {
 		// target path does not exist - create it
@@ -451,6 +435,12 @@ void createDropZoneFile(void *buf,int buflen,const char *path,const char *BaseNa
 	debug1("About to write %d bytes",buflen);
 	int res = write(f,buf,buflen);
 	debug1("res=%d",res);
+#ifndef WIN32
+	char *tgtuser = getenv("DM_TARGET_USER");
+	if (!tgtuser) tgtuser="omreleng";
+	struct passwd *pwd = getpwnam(tgtuser);
+	if (pwd) fchown(f,pwd->pw_uid,pwd->pw_gid);
+#endif
 	close(f);
 }
 
@@ -525,7 +515,7 @@ int ConnectToServer(char *host,int port)
 	int sock;
 	if(!hp)
 	{
-		// gethostbyname fails	
+		// gethostbyname fails
 		errno = h_errno;
 		throw RuntimeError("Failed to resolve webserver name");
 	}
@@ -666,6 +656,7 @@ void HttpRepositoryImpl::checkout(
 	Context &ctx)
 {
 	// Gets a file from an HTTP server
+
 
 	FILE *logout = (FILE *)0;
 	if (m_logfile) {
@@ -917,14 +908,19 @@ void HttpRepositoryImpl::checkout(
 						// CLOSESOCKET(sock);
 						if (status>=200 && status <=299) {
 							// Success
-							createDropZoneFile((void *)content,retlen,dzpath,patt);
+							char workFile[1024] = {""};
+							strcpy(workFile,patt);
+							char *c = strchr(workFile,'?');
+							if (c != NULL)
+	  							*c = '\0';
+							createDropZoneFile((void *)content,retlen,dzpath,workFile);
 							//
 							// Since we can only grab one file at a time from http protocol and since
 							// there is no recursion, we don't have to worry about folders.
 							//
-							char *repopath = (char *)malloc(strlen(offset)+strlen(patt)+10);
-							sprintf(repopath,"%s%s%s",offset,offset[0]?"/":"",patt);
-							callback.checked_out_file(this, repopath, patt, m_version?m_version:"0");	// need to take version from parameter
+							char *repopath = (char *)malloc(strlen(offset)+strlen(workFile)+10);
+							sprintf(repopath,"%s%s%s",offset,offset[0]?"/":"",workFile);
+							callback.checked_out_file(this, repopath, workFile, m_version?m_version:"0");	// need to take version from parameter
 							callback.checkout_summary(1,1,0,0);						// Record 1 of 1 files checked out successfully
 							free(repopath);
 						} else {
@@ -1060,13 +1056,11 @@ RepositoryImpl *HttpRepositoryImplFactory::create(
 		port=atoi(cp+1);
 		*cp='\0';	// terminate hostname before the port number
 	}
-	
+	*/
 	if(portstr && portstr[0]) {
 		port = atoi(portstr);
 	}
-	*/
 	if (params && !params[0]) params = NULL;
-
 	return new HttpRepositoryImpl(*this, implId, parent, host, port, ssl, uri, params, version, logfile);
 }
 

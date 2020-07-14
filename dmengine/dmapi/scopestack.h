@@ -1,20 +1,3 @@
-/*
- *  DeployHub is an Agile Application Release Automation Solution
- *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
- *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 #ifndef _SCOPESTACK_H
 
 #define _SCOPESTACK_H
@@ -168,6 +151,7 @@ public:
 	virtual ~Scope();
 
 	virtual DMArray *getVars() const;
+	DMArray *getVars(class Context &ctx) const;
 	virtual const char* name() const;
 	virtual int fileno() const;
 	virtual int lineno() const;
@@ -200,7 +184,7 @@ public:
 	virtual void append(const char *name, const char *svalue, const char *sep);
 
 	virtual void dump(class DM &dm);
-
+    virtual void dump2File(class Context &ctx, FILE *fp);
 	virtual void addRef();
 	virtual void releaseRef();
 
@@ -276,6 +260,7 @@ public:
 
 	//const char *get(const char *name);
 	Variable *get(const char *name);
+	Variable *expand(Variable *v);
 	Variable *getXML(const char *name, class Context &ctx);
 
 	// Overloaded - just pass a string or an int
@@ -327,6 +312,7 @@ public:
 	class OutputStream *newStream(const char *name);
 
 	void dump();
+	void dump2File(class Context &ctx);
 	void trace(class IOutputStream &out, class ILocatable &loc);
 	void trace();
 };
