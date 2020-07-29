@@ -70,7 +70,7 @@ public class TaskUserDefined
 		} else {
 			m_cmd = engine.doUserDefined(this, m_aps);
 		}
-		return (m_cmd.run(true, null, true) == 0);
+		return (m_cmd.runWithTrilogy(true, null) == 0);
 	}
 
 	public String getOutput() {

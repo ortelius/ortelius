@@ -16,6 +16,7 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package dmadmin.model;
 
 import java.util.List;
@@ -63,11 +64,20 @@ public abstract class DMObject
 		m_name = name;
 	}
 	
+	public void setSession(DMSession sess) {m_session = sess; }
+	
 	public int getId()  { return m_id; }
 	public void setId(int id)  { m_id = id; }
 	
 	public void setName(String name)  { m_name = name; }
 	public String getName()  { return m_name; }
+ public String getFullName()  
+ {
+  if (this.getDomain() != null)
+   return this.getDomain().getFullDomain() + "." + m_name; 
+  else
+   return m_name;
+ }
 	
 	public abstract ObjectType getObjectType();
 
@@ -145,6 +155,11 @@ public abstract class DMObject
 	}
 
 	public IJSONSerializable getLinkJSON() {
+	 if (this instanceof Component)
+	 {
+	  Component comp = m_session.getComponent(this.getId(), true);
+	  return new LinkField(comp.getObjectType(), m_id, comp.getDomain().getFullDomain() + "." + m_name);
+	 }
 		return new LinkField(getObjectType(), m_id, m_name);
 	}
 	
@@ -184,6 +199,9 @@ public abstract class DMObject
 	}
 
 	public boolean isUpdatable(boolean inherit)  {
+	 if (this instanceof Category || this instanceof NotifyTemplate)
+	  return true;
+	 
 		// Check domain access first
 		if(!m_session.isValidDomainForObject(this)) {
 			// System.out.println("a) false");
@@ -314,4 +332,5 @@ public abstract class DMObject
 	public String getActOrFuncText() {
 		return null;
 	}
+ 
 }

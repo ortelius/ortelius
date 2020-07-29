@@ -18,14 +18,6 @@
  */
 package com.openmakesoftware.XDR;
 
-/**
- * Copyright 2005-2006 Trinem Consulting Limited ( www.trinem.com ) All rights
- * reserved. This is part of a Java port of the Trilogy scripting client.
- * 
- * @author <a href="mailto:akeilhauer@trinem.com">Andreas Keilhauer</a>
- * 
- */
-
 public class EncryptedXDR extends XDR
 {
     private boolean encoding = false;

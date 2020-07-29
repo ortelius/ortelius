@@ -42,6 +42,18 @@ public class Repository extends ProviderObject
 		super(sess, id, name);
 		this.setDomainId(domainid);
 	}
+	
+ public String toString()
+ {
+  Domain d = m_session.getDomain(this.getDomainId());
+  String name = m_name;
+  if (d!=null) 
+  {
+   String fd = d.getFullDomain();
+   if (fd.length()>0) name = fd+"."+m_name;
+  }
+  return name;
+ }
  
 	@Override
 	public ObjectType getObjectType() {

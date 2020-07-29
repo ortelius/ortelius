@@ -27,6 +27,7 @@ public class LoginException	extends Exception
 		LOGIN_USER_LOCKED,
 		LOGIN_CHANGE_PASSWORD,
 		LOGIN_BAD_PASSWORD,
+  LOGIN_BAD_USER,
 		LOGIN_DATABASE_FAILURE,
 		LDAP_ERROR
 	};

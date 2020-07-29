@@ -21,7 +21,6 @@ package dmadmin;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -54,20 +53,29 @@ public class Logout extends HttpServlet {
 		// the DM cookies specifying selected tab(s) etc.
 		//
 		response.setContentType("text/html");
-		Cookie[] cookies = request.getCookies();
-		if (cookies != null) {
-			for (Cookie usercookie : cookies) {
-				System.out.println("Clearing cookie "+usercookie.getName());
-				usercookie.setValue(null);
-				usercookie.setMaxAge(0);
-				response.addCookie(usercookie);
-		    }
-		}
+//		Cookie[] cookies = request.getCookies();
+//		String srv = "console.deployhub.com";
+//		
+//		if (cookies != null) {
+//			for (Cookie usercookie : cookies) {
+//				System.out.println("Clearing cookie "+ srv + ":" + usercookie.getName());
+//				Cookie c = new Cookie(usercookie.getName(), null);
+//				c.setMaxAge(0);
+//				c.setPath("/");
+//				c.setDomain(srv);
+//				response.addCookie(c);
+//		    }
+//		}
 		response.getWriter().write("<html>");
 		response.getWriter().write("<head>");
-		response.getWriter().write("<meta http-equiv=\"refresh\" content=\"1;URL=Home\">");
+		response.getWriter().write("<script type=\"text/javascript\" src=\"js/jquery.min.js\"></script>\n");
+		response.getWriter().write("<script type=\"text/javascript\" src=\"js/jquery-ui.js\"></script>\n");
+		response.getWriter().write("<script type=\"text/javascript\" src=\"jquery.jstree.js\"></script>\n");
+		response.getWriter().write("<script type=\"text/javascript\" src=\"js/jquery.cookie.js\"></script>\n");
+		response.getWriter().write("<script type=\"text/javascript\" src=\"js/cookies.js\"></script>\n");
+//		response.getWriter().write("<meta http-equiv=\"refresh\" content=\"1;URL=Home\">");
 		response.getWriter().write("</head>");
-		response.getWriter().write("<body>");
+		response.getWriter().write("<body onload=\"DeleteCookies()\">\n");
 		response.getWriter().write("You have been logged out of DeployHub.");
   response.getWriter().write("</body>");
 		response.getWriter().write("</html>"); 

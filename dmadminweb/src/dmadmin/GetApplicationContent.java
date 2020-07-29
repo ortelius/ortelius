@@ -35,7 +35,8 @@ import dmadmin.model.Application;
  */
 public class GetApplicationContent extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+ DMSession so = null;
+ HttpSession session = null;       
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -52,8 +53,12 @@ public class GetApplicationContent extends HttpServlet {
 		Integer appid = ServletUtils.getIntParameter(request,"appid"); 
 
 		PrintWriter out = response.getWriter();
-		HttpSession session = request.getSession();
-		DMSession so = (DMSession)session.getAttribute("session");
+
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
+
 		Application app = so.getApplication(appid,false);
 		List<Application> a = so.getApplicationVersions(app);
 		boolean isRelease = false;
@@ -78,6 +83,7 @@ public class GetApplicationContent extends HttpServlet {
 			}
 		}
 		out.println("]");
+  }
 	}
 
 	/**

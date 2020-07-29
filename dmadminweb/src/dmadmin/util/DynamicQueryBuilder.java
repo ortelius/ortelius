@@ -46,6 +46,7 @@ public class DynamicQueryBuilder
 	public DynamicQueryBuilder(Connection conn, String baseSql)
 	{
 		m_conn = conn;
+		
 		if(countParams(baseSql) != 0) {
 			throw new RuntimeException("Base SQL Fragmnent must not contain params");
 		}
@@ -165,6 +166,11 @@ public class DynamicQueryBuilder
 		return m_sql.toString();
 	}
 	
+ public ArrayList<Object> getQueryParams()
+ {
+  return (ArrayList<Object>) m_params;
+ }
+ 
 	public int getUpdateCount()
 		throws SQLException
 	{

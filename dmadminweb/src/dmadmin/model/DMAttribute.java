@@ -22,6 +22,7 @@ import java.io.Serializable;
 
 import dmadmin.json.IJSONSerializable;
 import dmadmin.json.JSONArray;
+import dmadmin.json.JSONObject;
 
 public class DMAttribute
 	implements Serializable, IJSONSerializable
@@ -48,13 +49,35 @@ public class DMAttribute
 	
 	public DMAttribute(String name, int arrid, String key, String value) {
 		m_name = name;
-		m_key = key;
-		m_value = value;
-		m_arrayId = arrid;
+		
+		if (name.contains("["))
+		{
+		 String[] parts = name.split("\\[|\\]");
+		 m_name = parts[0];
+		 m_key = parts[1].replaceAll("^[\"']+|[\"']+$", "");
+		 m_value = value;
+   m_arrayId = arrid;
+		}
+		else
+		{
+		 m_key = key;
+		 m_value = value;
+		 m_arrayId = arrid;
+		}
 	}
 	
 	public String getName()  { return m_name; }
-	public void setName(String name)  { m_name = name; }
+	public void setName(String name)  
+	{
+  if (name.contains("["))
+  {
+   String[] parts = name.split("\\[|\\]");
+   m_name = parts[0];
+   m_key = parts[1].replaceAll("^[\"']+|[\"']+$", "");;
+  }
+  else
+	  m_name = name; 
+	}
 	
  public String getKey()  { return m_key; }
  public void setKey(String key)  { m_key = key; }
@@ -63,7 +86,10 @@ public class DMAttribute
 	public void setValue(String value)  { m_value = value; }
 	
 	public boolean isArray() {
-		return (m_arrayId != 0);
+	 if (m_key != null && m_key.length() > 0)
+	  return true;
+	 
+		return (m_arrayId > 0);
 	}
 	
 	public int getArrayId()  { return m_arrayId; }
@@ -80,8 +106,19 @@ public class DMAttribute
 		return arr;
 	}
 	
+ public JSONObject toJSON() {
+  JSONObject obj = new JSONObject();
+  if (isArray())
+   obj.add( m_name + "['"+ m_key + "']", m_value);
+  else
+   obj.add(m_name, m_value);
+  return obj;
+ }
+ 
+	
 	@Override
 	public String getJSON() {
 		return toJSONArray().getJSON();
 	}
+	
 }

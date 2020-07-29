@@ -38,7 +38,8 @@ import dmadmin.model.UserGroup;
  */
 public class GetNotifyRecipientList extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+ DMSession so = null;
+ HttpSession session = null;      
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -58,8 +59,11 @@ public class GetNotifyRecipientList extends HttpServlet {
 		
 		PrintWriter out = response.getWriter();
 		
-		HttpSession session = request.getSession();
-		DMSession so = (DMSession)session.getAttribute("session");
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
+  
 		List<UserGroup> usergroups = so.getGroupsForTemplate(tid,true);
 		List<User> users = so.getUsersForTemplate(tid,true);
 		List<UserGroup> avgroups = so.getGroupsForTemplate(tid,false);
@@ -68,67 +72,68 @@ public class GetNotifyRecipientList extends HttpServlet {
 		JSONObject obj = new JSONObject();
 		JSONArray arr1 = new JSONArray();
 		JSONArray arr2 = new JSONArray();
-		JSONArray arr3 = new JSONArray();
-		JSONArray arr4 = new JSONArray();
-		
-		int NumSpecials=0;
-		int NumUsers=0;
 		
 		for (UserGroup g: usergroups) {
 			JSONObject gobj = new JSONObject();
-			gobj.add("id",g.getId());
+			String id = "ag" + g.getId();
+   gobj.add("id",id);
 			gobj.add("name", g.getName());
-			gobj.add("type","group");
 			arr1.add(gobj);
+			arr2.add(gobj);
 		}
 		for (User u: users) {
-			JSONObject uobj = new JSONObject();
-			uobj.add("id",u.getId());
-			uobj.add("name", u.getName());
-			uobj.add("type","user");
-			arr1.add(uobj);
+	  if (u.getId()<0) {
+    JSONObject gobj = new JSONObject();
+    String id = "as" + u.getId()*-1;
+    gobj.add("id",id);
+    gobj.add("name", u.getName());
+    arr1.add(gobj);
+    arr2.add(gobj);
+   }
+	  else
+	  {
+			 JSONObject uobj = new JSONObject();
+			 String id = "au" + u.getId();
+    uobj.add("id",id);
+			 uobj.add("name", u.getName());
+			 arr1.add(uobj);
+    arr2.add(uobj);
+	  }
 		}
 		
-		for (User u: avusers) {
-			if (u.getId()>0) {
-				JSONObject uobj = new JSONObject();
-				uobj.add("id",u.getId());
-				uobj.add("name", u.getName());
-				arr2.add(uobj);
-				NumUsers++;
-			}
-		}
 		for (UserGroup g: avgroups) {
 			JSONObject gobj = new JSONObject();
-			gobj.add("id",g.getId());
+			String id = "ag" + g.getId();
+   gobj.add("id",id);
 			gobj.add("name", g.getName());
-			arr3.add(gobj);
+			arr2.add(gobj);
 		}
 		for (User s: avusers) {
-			if (s.getId()<0) {
+			if (s.getId()<0) 
+			{
 				JSONObject gobj = new JSONObject();
-				gobj.add("id",0-s.getId());
+				String id = "as" + s.getId()*-1;
+				gobj.add("id",id);
 				gobj.add("name", s.getName());
-				arr4.add(gobj);
-				NumSpecials++;
+				arr2.add(gobj);
 			}
+			else
+			{
+    JSONObject uobj = new JSONObject();
+    String id = "au" + s.getId();
+    uobj.add("id",id);
+    uobj.add("name", s.getName());
+    arr2.add(uobj);
+   }
 		}
 		
-		
 		obj.add("Recipients", arr1);
-		obj.add("RecipientCount", usergroups.size() + users.size());
-		obj.add("AvailableUsers", arr2);
-		obj.add("UserCount", NumUsers);
-		obj.add("AvailableGroups", arr3);
-		obj.add("UserGroupCount", avgroups.size());
-		obj.add("SpecialUsers", arr4);
-		obj.add("SpecialCount", NumSpecials);
+		obj.add("Available", arr2);
 		
 		String ret = obj.getJSON();
 		System.out.println(ret);
 		out.println(ret);
-
-		
+  }
 	}
 
 	/**

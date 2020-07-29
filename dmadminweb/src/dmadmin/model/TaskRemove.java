@@ -70,12 +70,17 @@ public class TaskRemove
 			return false;
 		}
 		m_cmd = engine.doRemove(this, m_application,m_environment,m_aps);
-		return (m_cmd.run(true, m_text + "\n", true) == 0);
+		return (m_cmd.runWithTrilogy(true, m_text + "\n") == 0);
 	}
 
  @Override
  public IJSONSerializable getSummaryJSON() {
   PropertyDataSet ds = new PropertyDataSet();
+  Domain dom = getDomain();
+  if (dom == null)
+    ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", "");
+  else
+   ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", dom.getFullDomain());
   ds.addProperty(SummaryField.NAME, "Name", getName());
   addCreatorModifier(ds);
   ds.addProperty(SummaryField.PRE_ACTION, "Pre-action", ((getPreAction() != null) ? getPreAction().getLinkJSON() : null));

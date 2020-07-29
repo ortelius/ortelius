@@ -35,6 +35,9 @@ import dmadmin.json.JSONObject;
 public abstract class JSONServletBase
 	extends HttpServlet
 {
+ DMSession so = null;
+ HttpSession session = null;
+ 
 	public JSONServletBase()
 	{
 		super();
@@ -62,12 +65,10 @@ public abstract class JSONServletBase
 	{		
 		response.setContentType("application/json");
 
-		HttpSession session = request.getSession();
-		DMSession so = (DMSession)session.getAttribute("session");
-		if (so == null)  {
-			System.out.println("SESSION TIMED OUT");
-			return;
-		}
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
 
 		response.setHeader("Content-Disposition", "inline");
 		response.setHeader("Cache-Control", "no-cache");
@@ -105,6 +106,7 @@ public abstract class JSONServletBase
 			// This really is unrecoverable!
 			e.printStackTrace();
 		}
+  }
 	}
 
 	

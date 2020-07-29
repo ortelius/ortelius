@@ -23,6 +23,7 @@ import java.io.Serializable;
 import dmadmin.json.IJSONSerializable;
 import dmadmin.json.JSONArray;
 import dmadmin.json.JSONBoolean;
+import dmadmin.json.JSONObject;
 
 public class DMProperty
 	implements Serializable, IJSONSerializable
@@ -69,6 +70,8 @@ public class DMProperty
 
 	public boolean isAppendable()  { return m_appendable; }
 	
+ public boolean isRequired()  { return m_addedRequired ; }
+	
 	private JSONArray toJSONArray() {
 		return new JSONArray()
 			.add(new JSONBoolean(false))			// dirty
@@ -82,4 +85,16 @@ public class DMProperty
 	public String getJSON() {
 		return toJSONArray().getJSON();
 	}
+
+ public JSONObject toJSON()
+ {
+  JSONObject obj = new JSONObject();
+  obj.add("name", getName());
+  obj.add("value", getValue());
+  obj.add("encrypted", new JSONBoolean(isEncrypted()));
+  obj.add("overridable", new JSONBoolean(isOverridable())); 
+  obj.add("appendable", new JSONBoolean(isAppendable())); 
+  
+  return obj;
+ }
 }

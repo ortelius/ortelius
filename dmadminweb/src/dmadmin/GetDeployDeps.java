@@ -26,29 +26,78 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import dmadmin.json.IJSONSerializable;
+import dmadmin.json.JSONArray;
 import dmadmin.json.JSONObject;
+import dmadmin.model.Application;
+import dmadmin.model.Environment;
 
 /**
  * Servlet implementation class GetDeploymentStepsGantt
  */
 public class GetDeployDeps extends JSONServletBase
 {
- private static final long serialVersionUID = 1L;
-
- /**
-  * @see HttpServlet#HttpServlet()
-  */
- public GetDeployDeps()
- {
-  super();
- }
-
- @Override
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public GetDeployDeps() {
+        super();
+    }
+    
+@Override    
  public IJSONSerializable handleRequest(DMSession session, boolean isPost, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
  {
   response.setContentType("application/json");
-  int deployid = ServletUtils.getIntParameter(request, "deployid");
-  JSONObject data = session.getDeploymentDepsNodesEdges(deployid);
+  int deployid = -1;
+  String appid = request.getParameter("appid");
+  String compid = request.getParameter("compid");
+  JSONObject data = null;
+
+  String envid = request.getParameter("envid");
+  
+  if (envid != null && appid != null)
+  {
+   if (envid.isEmpty() || appid.isEmpty())
+   { 
+    data = new JSONObject();   
+    JSONArray nodes = new JSONArray();
+    JSONArray edges = new JSONArray();
+    data.add("nodes",nodes);
+    data.add("edges",edges);
+    return data;
+   }
+   
+   Application found = null;
+   Application app = session.getApplication(new Integer(appid).intValue(), true);
+   Application curr = app;
+   Environment env = session.getEnvironment(new Integer(envid).intValue(), false);
+   
+   while (curr.getParentId() > 0)
+   {
+    curr = session.getApplication(curr.getParentId(), true);
+    if (session.isAppInEnv(curr, env))
+    {
+     found = curr;
+     break;
+    } 
+   }
+   data = session.getDiffDepsNodesEdges(app, found, env);
+  }
+  else if (envid != null)
+  {
+   data = session.getEnvironmentDepsNodesEdges(envid);
+  }
+  else if (compid != null)
+  {
+   data = session.getComponentDepsNodesEdges(compid);
+  }
+  else
+  {
+   deployid = ServletUtils.getIntParameter(request, "deployid");
+
+   data = session.getDeploymentDepsNodesEdges(deployid);
+  }
   String ret = data.getJSON();
   System.out.println(ret);
   return data;

@@ -31,6 +31,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -39,19 +40,28 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
@@ -63,14 +73,30 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.naming.AuthenticationException;
+// For LDAP Integration
+import javax.naming.Context;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+import javax.naming.ldap.InitialLdapContext;
+import javax.naming.ldap.LdapContext;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.xml.parsers.DocumentBuilder;
+// For XML parsing (procedure/function import)
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.Crypt;
+// End LDAP Integration imports
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.config.RequestConfig;
@@ -81,8 +107,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
-import org.postgresql.largeobject.LargeObject;
-import org.postgresql.largeobject.LargeObjectManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -95,12 +119,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.sun.xml.internal.ws.org.objectweb.asm.Type;
+import com.sun.jndi.ldap.LdapCtxFactory;
+// import com.sun.xml.internal.ws.org.objectweb.asm.Type;
 
+// import dmadmin.API.ApiException;
 import dmadmin.json.CreatedModifiedField;
 import dmadmin.json.JSONArray;
 import dmadmin.json.JSONBoolean;
 import dmadmin.json.JSONObject;
+import dmadmin.json.LinkField;
 import dmadmin.model.Action;
 import dmadmin.model.Action.ActionArg;
 import dmadmin.model.Action.SwitchMode;
@@ -108,18 +135,16 @@ import dmadmin.model.ActionKind;
 import dmadmin.model.ActionParameter;
 import dmadmin.model.Application;
 import dmadmin.model.Attachment;
-import dmadmin.model.BuildJob;
-import dmadmin.model.Builder;
 import dmadmin.model.Category;
 import dmadmin.model.CompType;
 import dmadmin.model.Component;
 import dmadmin.model.ComponentFilter;
 import dmadmin.model.ComponentItem;
+import dmadmin.model.ComponentItemKind;
 import dmadmin.model.ComponentLink;
 import dmadmin.model.Credential;
 import dmadmin.model.CredentialKind;
 import dmadmin.model.DMAttribute;
-import dmadmin.model.DMCalendarEvent;
 import dmadmin.model.DMObject;
 import dmadmin.model.DMProperty;
 import dmadmin.model.DMPropertyDef;
@@ -131,10 +156,10 @@ import dmadmin.model.Deployment;
 import dmadmin.model.Domain;
 import dmadmin.model.Engine;
 import dmadmin.model.Environment;
-import dmadmin.model.Fragment;
 import dmadmin.model.FragmentAttributes;
 import dmadmin.model.FragmentDetails;
 import dmadmin.model.FragmentListValues;
+import dmadmin.model.GetObjectException;
 import dmadmin.model.IPrePostAction;
 import dmadmin.model.LoginException;
 import dmadmin.model.LoginException.LoginExceptionType;
@@ -145,6 +170,8 @@ import dmadmin.model.Plugin;
 import dmadmin.model.ProviderDefinition;
 import dmadmin.model.ProviderObject;
 import dmadmin.model.Repository;
+import dmadmin.model.SaasClient;
+// import dmadmin.model.SearchResult;
 import dmadmin.model.Server;
 import dmadmin.model.ServerLink;
 import dmadmin.model.ServerStatus;
@@ -170,21 +197,21 @@ import dmadmin.model.UserGroup;
 import dmadmin.model.UserGroupList;
 import dmadmin.model.UserList;
 import dmadmin.model.UserPermissions;
+import dmadmin.model.ldapfastbind;
 import dmadmin.util.CommandLine;
 import dmadmin.util.DynamicQueryBuilder;
 import dmadmin.util.DynamicQueryBuilder.Null;
 
-public class DMSession implements AutoCloseable  {
+public class DMSession implements AutoCloseable {
 	
 	private String m_defaultdatefmt = "MM/dd/yyyy";
 	private String m_defaulttimefmt = "HH:mm";
 	
 	private Map<Integer, String> m_domains;
-	private Connection m_conn;
+	protected Connection m_conn;
 	private String m_domainlist;
 	private String m_parentdomains;
-	private HttpSession m_httpSession;
-    private ServletContext m_context;
+	private HttpSession m_httpSession; 
 	
 	// Copy/Paste
 	private String m_copyobjtype;
@@ -197,7 +224,10 @@ public class DMSession implements AutoCloseable  {
 	private String m_timefmt;
 	private String m_username;
 	private String m_password;
-
+ private String m_license_type;
+ private int m_license_cnt;
+ private String m_logintime;
+	
 	private boolean m_OverrideAccessControl;
 	private boolean m_EndPointsTab;
 	private boolean m_ApplicationsTab;
@@ -214,8 +244,7 @@ public class DMSession implements AutoCloseable  {
 	String password = "postgres";
  String DMHome = "";
 	
-	// For background syncing of defects
-	private Hashtable<Integer,int[]> m_pollhash = null;
+
 	
 	// For caching objects that we request over and over
 	Hashtable<Integer,Domain> m_domainhash = null;
@@ -224,6 +253,11 @@ public class DMSession implements AutoCloseable  {
 	long m_userhashCreationTime = 0;
 	Hashtable <Integer,List<Domain>> m_cdhash = null;
 	long m_cdhashCreationTime = 0;
+	Hashtable<Integer,Application> m_apphash = null;
+	long m_apphashCreationTime = 0;
+	
+	
+	String m_clientid = null;				// Saas Client for this session.
 	
 	byte[] m_passphrase;			// Moved to global to allow partial credential decryption
 	
@@ -261,42 +295,165 @@ public class DMSession implements AutoCloseable  {
 	public static final int DOMAIN_NOT_SPECIFIED = -2;
 	public static final int DOMAIN_OBJECT_AMBIGUOUS = -3;
 	
-	// mutex locks for GetID()
+	// mutex locks for GetID() - since "SELECT FOR UPDATE" doesn't seem to be working properly
 	private Object mutex = null;
+	
+	private static final int N=624;
+	private static final int M=397;
+
+	private int mt[] = new int[N]; /* the array for the state vector  */
+	static int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
+	
+	private void sgenrand(int seed)
+	{
+	    mt[0]= seed & 0xffffffff;
+	    for (mti=1; mti<N; mti++)
+	        mt[mti] = (69069 * mt[mti-1]) & 0xffffffff;
+	}
+	
+	private int genrand()
+	{
+	    int y;
+	    int mag01[]={0x0, 0x9908b0df};
+
+	    if (mti >= N) { /* generate N words at one time */
+	        int kk;
+
+	        if (mti == N+1)   /* if sgenrand() has not been called, */
+	            sgenrand(4357); /* a default initial seed is used   */
+
+	        for (kk=0;kk<N-M;kk++) {
+	            y = (mt[kk]&0x80000000)|(mt[kk+1]&0x7fffffff);
+	            mt[kk] = mt[kk+M] ^ (y >>> 1) ^ mag01[(int)y & 0x1];
+	        }
+	        for (;kk<N-1;kk++) {
+	            y = (mt[kk]&0x80000000)|(mt[kk+1]&0x7fffffff);
+	            mt[kk] = mt[kk+(M-N)] ^ (y >>> 1) ^ mag01[(int)y & 0x1];
+	        }
+	        y = (mt[N-1]&0x80000000)|(mt[0]&0x7fffffff);
+	        mt[N-1] = mt[M-1] ^ (y >>> 1) ^ mag01[(int)y & 0x1];
+
+	        mti = 0;
+	    }
+
+	    y = mt[mti++];
+	    y ^= (y >>> 11);
+	    y ^= (y << 7) & 0x9d2c5680;
+	    y ^= (y << 15) & 0xefc60000;
+	    y ^= (y >>> 18);
+	    return y; 
+	}
+	
+	private boolean ValidateKey(String key)
+	{
+		// Validate key
+		int cs=0;
+		for (int i=0;i<key.length()-1;i++)
+		{
+			if (key.charAt(i)!='-') {
+				cs=cs+(int)(key.charAt(i));
+			}
+		}
+		int cc1 = (cs % 26)+1;
+		int cc2 = cc1>25?(cc1-25)+'0':cc1+'A';
+		return ((char)cc2 == key.charAt(key.length()-1));
+	}
+
+	private String ZipKey(String finalkey)
+	{
+		return finalkey.replaceAll("-", "");
+	}
+	
+	private long DecryptLong(String ed,int rcc)
+	{
+		// Turns a 7 character encrypted long back into long
+		short ip[] = new short[4];
+		int c1 = (ed.charAt(0)>='0' && ed.charAt(0)<='9')?(ed.charAt(0)-'0')+25:(ed.charAt(0)-'A');
+		int c2 = (ed.charAt(1)>='0' && ed.charAt(1)<='9')?(ed.charAt(1)-'0')+25:(ed.charAt(1)-'A');
+		int c3 = (ed.charAt(2)>='0' && ed.charAt(2)<='9')?(ed.charAt(2)-'0')+25:(ed.charAt(2)-'A');
+		int c4 = (ed.charAt(3)>='0' && ed.charAt(3)<='9')?(ed.charAt(3)-'0')+25:(ed.charAt(3)-'A');
+		int c5 = (ed.charAt(4)>='0' && ed.charAt(4)<='9')?(ed.charAt(4)-'0')+25:(ed.charAt(4)-'A');
+		int c6 = (ed.charAt(5)>='0' && ed.charAt(5)<='9')?(ed.charAt(5)-'0')+25:(ed.charAt(5)-'A');
+		int c7 = (ed.charAt(6)>='0' && ed.charAt(6)<='9')?(ed.charAt(6)-'0')+25:(ed.charAt(6)-'A');
+		
+		ip[0] = (short) ((c1 << 3) | ((c2 & 0x1c) >> 2));
+		ip[1] = (short) (((c2 & 0x03) << 6) | (c3 << 1) | ((c4 & 80) >> 4));
+		ip[2] = (short) (((c4 & 0x0f) << 4) | ((c5 & 0x1e) >> 1));
+		ip[3] = (short) (((c5 & 0x01) << 7) | (c6 << 2) | (c7 & 0x03));
+		
+		sgenrand(89771+rcc);	// random-ish seed
+
+		for (int k=0;k<=3;k++) {
+			int x = genrand();
+			// short g = (short) ((genrand() & 0xff));
+			short g = (short) (x & 0xff);
+			ip[k] = (short) (ip[k] ^ g);
+		}
+		
+		return (ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3];
+	}
+
+	public long DecryptLicenseDate(String finalkey)
+	{
+		if (ValidateKey(finalkey)) {
+			String zk = ZipKey(finalkey);
+			char rcc = (char) ((zk.charAt(7)>='0' && zk.charAt(7)<='9')?(zk.charAt(7)-'0')+25:(zk.charAt(7)-'A'));
+			return DecryptLong(zk,rcc);
+		} else {
+			return 0;
+		}
+	}
+
+	private long GetLicenseField(String finalkey,int fieldno)
+	{
+		if (ValidateKey(finalkey)) {
+			String zk = ZipKey(finalkey);
+			char rcc = (char) ((zk.charAt(7)>='0' && zk.charAt(7)<='9')?(zk.charAt(7)-'0')+25:(zk.charAt(7)-'A'));
+			int sp=8;
+			boolean f=false;
+			while (fieldno>0) {
+				fieldno--;
+				if (fieldno==0) {
+					if (sp+7 > zk.length()) return -1;	// out of fields
+					long f1 = DecryptLong(zk.substring(sp),rcc);
+					return f?f1 & 0xffff:(f1 >> 16);
+				}
+				f=!f;
+				if (!f) sp=sp+7;
+			}
+		}
+		return -1;
+	}
 	
 	private void initSession(ServletContext context)
 	{
 		m_domains = new HashMap<Integer, String>();
 		m_userDomain = 0;
-		setUserID(0);
+		m_userID = 0;
 		m_domainlist="";
 		m_parentdomains="";	
 		dbdriver = context.getInitParameter("DBDriverName");
-		if (dbdriver.toLowerCase().contains("oracle")) {
+		if (dbdriver.toLowerCase().contains("oracle") || dbdriver.toLowerCase().contains("mysql") ) {
 			whencol = "\"WHEN\"";	// Quoted name must be upper case for Oracle
 			sizecol = "\"SIZE\"";	// size is keyword in Oracle and must be quoted.
 		} else {
 			whencol = "\"WHEN\"";	// Installer creates when as upper case
 			sizecol = "size";		// size is not a keyword in Postgres
 		}
-		
 		connectToDatabase(context);
+		// dbconnectionstring = context.getInitParameter("DBCONNECTIONSTRING");
 	}
 	
 	public DMSession(ServletContext context)
 	{
 		initSession(context);
-		m_context = context;
 	}
-	
-	public DMSession(HttpSession session)
-	{
-		initSession(session.getServletContext());
-		m_httpSession = session;
-		m_context = session.getServletContext();
-	}
-	
-	public static DMSession getInstance(HttpServletRequest request)
+		
+ public DMSession()
+ {
+ }
+
+ public static DMSession getInstance(HttpServletRequest request)
 	{
 	 DMSession session = null;
   session = new DMSession(request.getSession().getServletContext());
@@ -316,20 +473,31 @@ public class DMSession implements AutoCloseable  {
 
 		String username = ServletUtils.GetCookie(request,"p1");
 		String password = ServletUtils.GetCookie(request,"p2");
+		String logintime = ServletUtils.GetCookie(request,"p3");
 		
 		session.setSession(request.getSession());
 		if (username != null && password != null) {
-			session.Login(username,password);
- 	}
+			session.Login(username,password,logintime);
+		}
 		return session;
 	}
-
-    private void setSession(HttpSession session)
-    {
-     m_httpSession = session;
-    }
-
 	
+	private void setSession(HttpSession session)
+ {
+  m_httpSession = session;
+  
+ }
+
+ public String GetDBUserName()
+	{
+	 return username;
+	}
+	
+	public String GetDBPassword()
+	{
+	 return password;
+	}
+
 	public String GetSessionId()
 	{
 		return m_httpSession.getId();
@@ -337,12 +505,36 @@ public class DMSession implements AutoCloseable  {
 	
 	public Connection GetConnection()
 	{
-		return getDBConnection();
+		return m_conn;
 	}
 	
+ public void SetConnection(Connection conn)
+ {
+  m_conn = conn;
+ }
+ 
+ public void setUserId(int id)
+ {
+  m_userID = id;
+ }
+	
+// public void CloseConnection()
+// {
+//  if (m_conn != null)
+//   try
+//   {
+//    m_conn.close();
+//   }
+//   catch (SQLException e)
+//   {
+//    e.printStackTrace();
+//   } 
+//  m_conn = null;
+// }
+ 
 	public int GetUserID()
 	{
-		return getUserID();
+		return m_userID;
 	}
 	
 	public String getNewUser()
@@ -350,12 +542,23 @@ public class DMSession implements AutoCloseable  {
 		return m_newUser?"Y":"N";
 	}
 	
+ public String getLicType()
+ {
+  return m_license_type;
+ }
+ 
+ public int getLicCnt()
+ {
+  return m_license_cnt;
+ }
+ 	
 	public void setWebHostName(HttpServletRequest request)
 	{
 		
 		String hn = request.getServerName();
 		System.out.println("server name frm request="+hn);
 		if (hn.equalsIgnoreCase("localhost")) {
+			// This will be no good for a remote engine - get the "real" hostname
 			try {
 				InetAddress ip = InetAddress.getLocalHost();
 	            hn = ip.getHostName();
@@ -408,81 +611,142 @@ public class DMSession implements AutoCloseable  {
 		String tabname = obj.getDatabaseTable();
 		int id = obj.getId();
 		long t = timeNow();
-		String sql = "UPDATE "+tabname+" SET modified=?, modifierid=? WHERE id=?";
+		String sql = "UPDATE dm." +tabname+" SET modified=?, modifierid=? WHERE id=?";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setLong(1,t);
-			stmt.setInt(2,getUserID());
+			stmt.setInt(2,m_userID);
 			stmt.setInt(3,id);
 			stmt.execute();
+			stmt.close();
 		} catch(SQLException e) {
 			e.printStackTrace();
 			rollback();
 		}
 	}
 	
-	private void GetSubDomains(Map<Integer,String>domainlist,Integer DomainID)
-	{   
-		 try
-		 {
-			 	Statement st = getDBConnection().createStatement();
-				ResultSet rs = st.executeQuery("SELECT id FROM dm.dm_domain where domainid = "+DomainID);
-				while (rs.next())
-				{
-					domainlist.put(rs.getInt(1),"Y");
-					//
-					// Recurse
-					//
-					GetSubDomains(domainlist,rs.getInt(1));
-				}
-				rs.close();
-				st.close();
-	     }
-	     catch (Exception e)
-	     {
-	         //out.println("An exception occurred: " + e.getMessage());
-	     }
-	}
+ private void GetSubDomains(Map<Integer, String> domainlist, Integer DomainID)
+ {
+  if ((dbdriver.toLowerCase().contains("oracle") || dbdriver.toLowerCase().contains("mysql")))
+  {
+   try
+   {
+    Statement st = m_conn.createStatement();
+    ResultSet rs = st.executeQuery("SELECT id FROM dm.dm_domain where domainid = " + DomainID);
+    while (rs.next())
+    {
+     domainlist.put(rs.getInt(1), "Y");
+     //
+     // Recurse
+     //
+     GetSubDomains(domainlist, rs.getInt(1));
+    }
+    rs.close();
+    st.close();
+   }
+   catch (Exception e)
+   {
+   }
+  }
+  else
+  {
+   try
+   {
+    PreparedStatement st = m_conn.prepareStatement("with recursive subdomains as ( select id, domainid, name from dm.dm_domain where domainid=? and status = 'N' union select e.id, e.domainid, e.name from dm.dm_domain e inner join subdomains s ON s.id = e.domainid) select * from subdomains");
+    st.setInt(1, DomainID);
+    
+    ResultSet rs = st.executeQuery();
+    while (rs.next())
+     domainlist.put(rs.getInt(1), "Y");
+    rs.close();
+    st.close();
+   }
+   catch (Exception e)
+   {
+    // out.println("An exception occurred: " + e.getMessage());
+   }
+  }
+ }
 
-	private void GetParentDomains(Integer DomainID)
-	{   
-		 try
-		 {		
-			 	Statement st = getDBConnection().createStatement();
-				ResultSet rs = st.executeQuery("SELECT domainid FROM dm.dm_domain WHERE id= "+DomainID);
-				rs.next();
-				int parentid = getInteger(rs, 1, 0);
-				System.out.println("parentid="+parentid);
-				if (parentid != 0)
-				{
-					m_domains.put(parentid,"N");
-					//
-					// Recurse
-					//
-					GetParentDomains(parentid);
-				}
-				rs.close();
-				st.close();
-	     }
-	     catch (Exception e)
-	     {
-	    	 rollback();
-	    	 e.printStackTrace();
-	     }
-	}
+ private void GetParentDomains(Integer DomainID)
+ {
+  if ((dbdriver.toLowerCase().contains("oracle") || dbdriver.toLowerCase().contains("mysql")))
+  {
+   try
+   {
+    Statement st = m_conn.createStatement();
+    ResultSet rs = st.executeQuery("SELECT domainid FROM dm.dm_domain WHERE id= " + DomainID);
+    rs.next();
+    int parentid = getInteger(rs, 1, 0);
+    System.out.println("parentid=" + parentid);
+    if (parentid != 0)
+    {
+     m_domains.put(parentid, "N");
+     //
+     // Recurse
+     //
+     GetParentDomains(parentid);
+    }
+    rs.close();
+    st.close();
+   }
+   catch (Exception e)
+   {
+    rollback();
+    e.printStackTrace();
+   }
+  }
+  else
+  {
+   try
+   {
+    System.out.println("CLOSED2=" + m_conn.isClosed());
+    PreparedStatement st = m_conn.prepareStatement("with recursive parentdomains as (select id, domainid, name from dm.dm_domain where id =? and status = 'N' union select e.id, e.domainid, e.name from dm.dm_domain e inner join parentdomains s ON e.id = s.domainid) select * from parentdomains");
+    st.setInt(1, DomainID);
+    
+    ResultSet rs = st.executeQuery();
+    while (rs.next())
+    {
+     int parentid = getInteger(rs, 1, 0);
+     System.out.println("parentid=" + parentid);
+     if (parentid != 0)
+     {
+      m_domains.put(parentid, "N");
+     }
+    } 
+    rs.close();
+    st.close();
+   }
+   catch (Exception e)
+   {
+    rollback();
+    e.printStackTrace();
+   }
+  }
+ }
 	
-	private void GetDomains(int UserID)
+	public void GetDomains(int UserID)
 	{
 		try
 		{
-			synchronized(this) {
-				m_domains = new HashMap<Integer,String>();
+			// We could be getting called in parallel with async calls from client forcing a relogin
+			System.out.println("GetDomains ("+UserID+") - grabbing lock");
+			synchronized (this) {
+				m_domains = new HashMap<Integer, String>();
 				m_domainlist="";
-				m_parentdomains="";
-				Statement st = getDBConnection().createStatement();
+				m_parentdomains="";	
+				
+				Statement st = m_conn.createStatement();
 				ResultSet rs = st.executeQuery("SELECT domainid FROM dm.dm_user where id = "+UserID);
-				rs.next();
-				m_userDomain = rs.getInt(1);
+				if (rs.next())
+							m_userDomain = rs.getInt(1);
+				else
+				{
+	    rs.close();
+	    st.close();
+				 return;
+				}  
+				
 				System.out.println("user domain = " + m_userDomain);
 				rs.close();
 				st.close();
@@ -515,6 +779,8 @@ public class DMSession implements AutoCloseable  {
 				    Map.Entry<Integer,String> pairs = it.next();
 				    m_domainlist=m_domainlist+sep+pairs.getKey();
 				    sep=",";
+				    m_domainlist = StringUtils.stripStart(m_domainlist, ",");
+				    m_domainlist = StringUtils.stripEnd(m_domainlist, ",");
 				}
 				System.out.println("domainlist="+m_domainlist);
 			}
@@ -543,7 +809,7 @@ public class DMSession implements AutoCloseable  {
 	    return res;
 	}
 	
-	private static String encryptPassword(String password)
+ public static String encryptPassword(String password)
 	{
 		return encryptPassword("SHA-256",password);
 	}
@@ -664,7 +930,7 @@ public class DMSession implements AutoCloseable  {
 		}
 		catch (BadPaddingException e) {
 			System.out.println("BAD PADDING EXCEPTION");
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 		return null;
 	}
@@ -681,32 +947,431 @@ public class DMSession implements AutoCloseable  {
 			return strFileContent;
 	}
 	
- private LoginException connectToDatabase(ServletContext context)
- {
+	// LDAP Stuff
+	public SearchResult findAccount(DirContext ctx, String ldapSearchBase, String searchFilter) throws NamingException
+	{
+        // String searchFilter = "(&(objectClass=person)(cn=" + accountName + "))";
+
+        SearchControls searchControls = new SearchControls();
+        searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        NamingEnumeration<SearchResult> results = ctx.search(ldapSearchBase, searchFilter, searchControls);
+
+        SearchResult searchResult = null;
+        if (results.hasMoreElements()) {
+             searchResult = (SearchResult) results.nextElement();
+
+            //make sure there is not another item available, there should be only 1 match
+            if(results.hasMoreElements()) {
+                System.err.println("Matched multiple users for the searchFilter: " + searchFilter);
+                return null;
+            }
+        }       
+        return searchResult;
+    }
+	
+	private static String toDC(String domainName) {
+        StringBuilder buf = new StringBuilder();
+        for (String token : domainName.split("\\.")) {
+            if(token.length()==0) continue;
+            if(buf.length()>0)  buf.append(",");
+            buf.append("DC=").append(token);
+        }
+        System.out.println("toDC("+domainName+") returns "+buf.toString());
+        return buf.toString();
+    }
+	
+ 
+	private boolean DoLDAP(int datasourceid,int userid,String username,String password, String logintime) throws LoginException
+	{   
+        String ATTRS[] = {"userPassword", "authPassword", "mail", "cn", "telephoneNumber"};
+        
+       
+        
+        class algorithm {
+        	public String sourceAlgorithm;
+        	public String targetAlgorithm;
+        	public int hashlen;
+        	
+        	algorithm(String source, String target, int len) {
+        		sourceAlgorithm=source;
+        		targetAlgorithm=target;
+        		hashlen=len;
+        	}
+        };
+        
+        algorithm[] Algorithms = {
+        	new algorithm("{SHA}",		"SHA-1",	0),
+        	new algorithm("{MD2}",		"MD2",		0),
+        	new algorithm("{MD5}",		"MD5",		0),
+        	new algorithm("{CRYPT}",	"CRYPT",	0),
+        	new algorithm("{SSHA}",		"SHA",		20),
+        	new algorithm("{SMD5}",		"MD5",		16)
+        };
+
+        try {
+        	PreparedStatement updmail = m_conn.prepareStatement("UPDATE dm.dm_user SET email=? WHERE id=?");
+        	PreparedStatement updname = m_conn.prepareStatement("UPDATE dm.dm_user SET realname=? WHERE id=?");
+        	PreparedStatement updtel = m_conn.prepareStatement("UPDATE dm.dm_user SET phone=? WHERE id=?");
+        	updmail.setInt(2,userid);
+        	updname.setInt(2,userid);
+        	updtel.setInt(2,userid);
+        	PreparedStatement stmt = m_conn.prepareStatement("select name,value from dm.dm_datasourceprops where datasourceid=?");
+        	stmt.setInt(1,datasourceid);
+        	ResultSet rs = stmt.executeQuery();
+        	String servername = null;
+        	String portnum = "389";		// default
+        	String searchbase = null;
+        	String searchfilter = null;
+        	String domain = null;			// PAG MOD - for AD
+        	while (rs.next()) {
+        		String attname = rs.getString(1);
+        		String attval  = rs.getString(2);
+        		if (attname.equalsIgnoreCase("ldap server")) {
+        			servername = attval;
+        		}
+        		else
+        		if (attname.equalsIgnoreCase("port number")) {
+        			portnum = attval;
+        		}
+        		else
+        		if (attname.equalsIgnoreCase("search base")) {
+        			searchbase = attval;
+        		}
+        		else
+        		if (attname.equalsIgnoreCase("search filter")) {
+        			searchfilter = attval;
+        		}
+        		else
+        		if (attname.equalsIgnoreCase("active directory domain")) {
+        			domain = attval;
+        		}
+        	}
+        	rs.close();
+        	stmt.close();
+        	
+        	if (domain == null) {
+        		// Not an AD instance - check search criteria for LDAP
+	        	if (servername == null) throw new LoginException(LoginExceptionType.LDAP_ERROR,"LDAP Server Not Specified");
+	        	if (searchbase == null) throw new LoginException(LoginExceptionType.LDAP_ERROR,"Search Base Not Specified");
+	        	if (searchfilter == null) throw new LoginException(LoginExceptionType.LDAP_ERROR,"Search Filter Not Specified");
+        	}
+        	//
+        	// Assemble the LDAP server URI from what we know
+        	//
+        	if (servername.indexOf(":")<0) {
+        		servername=servername+":"+portnum;
+        	}
+
+        	if (!servername.startsWith("ldap://") && !servername.startsWith("ldaps://")) {
+        		servername="ldap://"+servername;
+        	}
+        	
+        	if (logintime != null)
+        	{
+        	 Long timestamp = new Long(logintime);
+        	 long now = new Date().getTime();
+        	 
+        	 if (now - timestamp.longValue() < 30000)
+        	  return true;
+        	}
+        	
+        	String principalName = "";
+        	 
+         if (domain != null) 
+           principalName = username + "@" + domain;
+         else
+          principalName = username;
+         
+         System.out.println("Trying AD fast bind " + principalName);
+         ldapfastbind ctxfast = new ldapfastbind(servername);
+         boolean IsAuthenticated = ctxfast.Authenticate(principalName,password);
+
+         if (IsAuthenticated)
+            return true;
+
+         Hashtable<String, String> props2 = new Hashtable<String, String>();
+         String fullname = "uid=" + username + "," + searchbase;
+         props2.put(Context.SECURITY_PRINCIPAL, fullname);
+         props2.put(Context.SECURITY_CREDENTIALS, password);
+
+         
+         System.out.println("Trying basic bind " + fullname);
+         //try to authenticate
+         try 
+         {
+          DirContext context;
+          context = com.sun.jndi.ldap.LdapCtxFactory.getLdapCtxInstance(servername + '/', props2);
+          context.close();
+          return true;
+         }
+         catch (javax.naming.AuthenticationException ae)
+         {
+          throw new LoginException(LoginExceptionType.LDAP_ERROR,ae.getMessage());
+         }
+         catch (Exception e)
+         {
+          e.printStackTrace();
+         }
+           
+        	System.out.println("******** LDAP COMMUNICATION STARTS **********");
+        	System.out.println("servername=["+servername+"]");
+        	System.out.println("searchbase=["+searchbase+"]");
+        	
+        	
+        	Hashtable<String, Object> env = new Hashtable<String, Object>();
+        	
+        	if (domain != null) {
+        		// Domain set - use Active Directory technique
+	        	   principalName = username + "@" + domain;
+	            env.put(Context.SECURITY_PRINCIPAL, principalName);
+	            env.put(Context.SECURITY_CREDENTIALS, password);
+	            DirContext context;
+	
+	            try {
+	            	System.out.println("Domain is set - Connecting to Active Directory Server ["+servername+"]");
+	            	context =  LdapCtxFactory.getLdapCtxInstance(servername + '/', env);
+	                // No exception - successful authentication
+	            	System.out.println("Successful authentication, finding user object");
+	            	String adSB;
+	            	if (searchbase != null) {
+	            		// Use searchbase (override domain)
+	            		adSB = searchbase;
+	            	} else {
+	            		// no searchbase specified, default to domain
+	            		adSB = toDC(domain);
+	            	}
+	            	System.out.println("Searching using search base "+adSB);
+	                SearchControls controls = new SearchControls();
+	                controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+	                if (searchfilter == null) {
+	                	searchfilter = "(& (userPrincipalName=" + principalName + ")(objectClass=user))";
+	                } else {
+	                	searchfilter = searchfilter.replaceAll("[$]USERNAME",username);
+	        	        searchfilter = searchfilter.replaceAll("[$][{]user.name[}]",username);
+	                }
+	                System.out.println("searchfilter=["+searchfilter+"]");
+	                NamingEnumeration<SearchResult> renum = context.search(adSB,searchfilter,controls);
+	                if (!renum.hasMore()) {
+	                	throw new LoginException(LoginExceptionType.LDAP_ERROR,"Cannot locate user information for " + username);
+	                }
+	                SearchResult result = renum.next();
+	                Attributes atts = result.getAttributes();
+	                System.out.println("There are "+atts.size()+" attributes");
+	                String mail = atts.get("mail").toString();
+	                String telno = atts.get("telephoneNumber").toString();
+	                String cn = atts.get("cn").toString();
+	                if (mail != null) {
+                		updmail.setString(1,mail.substring(mail.indexOf(":")+1));
+                		updmail.execute();
+                	}
+                	if (cn != null) {
+                    	updname.setString(1,cn.substring(cn.indexOf(":")+1));
+                    	updname.execute();
+                	}
+                	if (telno != null) {
+                    	updtel.setString(1,telno.substring(telno.indexOf(":")+1));
+                    	updtel.execute();
+                	}
+	                return true;	// no exception = successful authentication
+	            } catch (AuthenticationException a) {
+	            	// failed to authenticate
+	            	System.out.println("Active Directory server returned AuthenticationException");
+	                return false;
+	            } catch (NamingException ex) {
+	            	System.out.println("Active Directory server return NamingException: "+ex.getMessage());
+	            	throw new LoginException(LoginExceptionType.LDAP_ERROR,ex.getMessage());
+	            }
+        	} 
+        	// Basic LDAP Authentication (old mechanism)
+        	System.out.println("Domain is not set - Connecting to LDAP Server ["+servername+"]");
+        	env.put(Context.SECURITY_AUTHENTICATION, "simple");
+        	//
+        	// Now get the username/password to connect to the LDAP server
+        	//
+        	PreparedStatement stmt2 = m_conn.prepareStatement("select encusername,encpassword from dm.dm_credentials a, dm_datasource b where a.id=b.credid and b.id=?");
+        	stmt2.setInt(1,datasourceid);
+        	ResultSet rs2 = stmt2.executeQuery();
+        	if (rs2.next()) {
+        		String un = rs2.getString(1);
+        		String up = rs2.getString(2);
+        		byte[] dun = Decrypt3DES(un,m_passphrase);
+        		byte[] dup = Decrypt3DES(up,m_passphrase);
+        		String ldapUsername = new String(dun);
+        		String ldapPassword = new String(dup);
+        		if (ldapUsername != null) {
+        			System.out.println("ldapUsername (from credential)=["+ldapUsername+"]");
+        			if (!ldapUsername.contains("dc=")) {
+        				// We're going to try and be helpful here and append the basename
+        				ldapUsername = ldapUsername + "," + searchbase;
+        			}
+        			System.out.println("ldapUsername (after appending searchbase)=["+ldapUsername+"]");
+                    env.put(Context.SECURITY_PRINCIPAL, ldapUsername);
+                }
+                if (ldapPassword != null) {
+                    env.put(Context.SECURITY_CREDENTIALS, ldapPassword);
+                }
+        	}
+        	rs2.close();
+            
+            env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+            env.put(Context.PROVIDER_URL, servername);
+            
+            // the following is helpful in debugging errors
+            //env.put("com.sun.jndi.ldap.trace.ber", System.err);
+            
+	        LdapContext ctx = new InitialLdapContext(env,null);
+	        //
+	        // Replace our username in the search filter
+	        //
+	        searchfilter = searchfilter.replaceAll("[$]USERNAME",username);
+	        searchfilter = searchfilter.replaceAll("[$][{]user.name[}]",username);
+	        
+	        System.out.println("searchfilter=["+searchfilter+"]");
+	        System.out.println("Searching....");
+	        
+	        SearchResult srLdapUser = findAccount(ctx, searchbase, searchfilter);
+	        boolean match=false;
+	        if (srLdapUser != null) {
+	        	System.out.println("Found matching record");
+	        	Attributes atts = srLdapUser.getAttributes();
+		        if (atts != null) {
+		        	System.out.println("Found Attributes");
+                    for (int i=0;i<ATTRS.length;i++) {
+                        Attribute attr = atts.get(ATTRS[i]);
+                        System.out.println("Checking Attribute "+ATTRS[i]);
+                        if (attr != null) {
+                        	for (Enumeration<?> vals=attr.getAll(); vals.hasMoreElements();) {
+		                        if (i<2) {
+		                        	// userPassword and authPassword
+		                            String pwd = new String((byte[]) vals.nextElement());
+		                            System.out.println(ATTRS[i] + ":" + pwd);
+		                            // Now loop through the available encryption algorithms
+		                            for (int n=0;n<Algorithms.length;n++) {
+		                            	if (pwd.toUpperCase().startsWith(Algorithms[n].sourceAlgorithm)) {
+		                            		System.out.println("Password is of type "+Algorithms[n].sourceAlgorithm);
+		                            		String encryptedPassword=pwd.substring(Algorithms[n].sourceAlgorithm.length());
+		                            		System.out.println("encryptedPassword="+encryptedPassword);
+		                            		if (Algorithms[n].targetAlgorithm.equalsIgnoreCase("crypt")) {
+		                            			System.out.println("Running CRYPT");
+		                            			// Old "crypt" algorithm
+		                            			String testPW = Crypt.crypt(password,encryptedPassword);
+		                            			match = testPW.equals(encryptedPassword);
+		                            		} else if (Algorithms[n].hashlen > 0) {
+		                            			System.out.println("Salted "+Algorithms[n].targetAlgorithm);
+		                            			// SSHA - Salted SHA-1 or SMD5 - Salted MD5. Need to extract the salt
+		                            			byte[] db = javax.xml.bind.DatatypeConverter.parseBase64Binary(encryptedPassword);
+		                            			System.out.println("db.length="+db.length);
+		                            			int saltLength = db.length - Algorithms[n].hashlen;
+		                            			System.out.println("salt length="+saltLength);
+		                            			byte[] salt = new byte[saltLength];
+		                            			int len=db.length;
+		                            			for (int x=0,p=len-saltLength;p<len;p++) {
+		                            				salt[x++]=db[p];
+		                            			}
+		                            			// Now append our salt to our original test password
+		                            			int y=password.length();
+		                            			byte[] pwandsalt = new byte[y+saltLength];
+		                            			for (int e=0;e<y;e++) {
+		                            				pwandsalt[e]=(byte) password.charAt(e);
+		                            			}
+		                            			for (int f=0;f<saltLength;f++) {
+		                            				pwandsalt[y+f]=salt[f];
+		                            			}
+		                            			// Now encrypt with the relevant algorithm (SHA or MD5)
+		                            			MessageDigest crypt = MessageDigest.getInstance(Algorithms[n].targetAlgorithm);
+												crypt.reset();
+												crypt.update(pwandsalt);
+												byte[] res = crypt.digest();
+												// Compare
+												match=true;
+												System.out.println("res.length="+res.length);
+												for (int c=0;c<res.length;c++) {
+													if (res[c]!=db[c]) {
+														// mismatch
+														match=false;
+													}
+												}
+		                            		} else {
+		                            			System.out.println("DEFAULT: targetAlgorithm="+Algorithms[n].targetAlgorithm);
+			                            		// Try encrypting our test password and comparing
+			                            		String testPW = encryptPassword(Algorithms[n].targetAlgorithm, password);
+			                            		System.out.println("testPW="+testPW);
+			                            		match = testPW.equals(encryptedPassword);
+		                            		}
+		                            	}
+		                            }
+		                        } else {
+		                        	// Any other attribute we look for....
+		                        	String val = (String)vals.nextElement();
+		                        	System.out.println(ATTRS[i]+":"+val);
+		                        	if (match && ATTRS[i].equalsIgnoreCase("mail")) {
+		                        		updmail.setString(1,val);
+		                        		updmail.execute();
+		                        	}
+		                        	else
+		                        	if (match && ATTRS[i].equalsIgnoreCase("cn")) {
+		                            	updname.setString(1,val);
+		                            	updname.execute();
+		                        	}
+		                        	else
+		                        	if (match && ATTRS[i].equalsIgnoreCase("telephonenumber")) {
+		                            	updtel.setString(1,val);
+		                            	updtel.execute();
+		                        	}
+		                        }
+	                        }
+                        } else {
+                        	System.out.println("Attribute "+ATTRS[i]+" not found");
+                        }
+                    }
+                } else {
+                	System.out.println("Matching record had no attributes");
+                }
+	        } else {
+	        	System.out.println("Search not find any matching entries");
+	        }
+	        System.out.println("Finished LDAP lookup, match="+match);
+	        updmail.close();
+	        updtel.close();
+	        updname.close();
+	        if (match) m_conn.commit();
+	        return match;
+        } catch(NamingException ex) {
+        	throw new LoginException(LoginExceptionType.LDAP_ERROR,ex.getMessage());
+        } catch(NoSuchAlgorithmException ex) {
+        	throw new LoginException(LoginExceptionType.LDAP_ERROR,ex.getMessage());
+        } catch (SQLException ex) {
+			// TODO Auto-generated catch block
+        	throw new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,"SQL Exception " + ex.getMessage());
+		}
+	}
+	
+	private LoginException connectToDatabase(ServletContext context)
+	{
   LoginException res = null;
-  if (m_conn == null)
-  {
-  //
-  // Connect to the database
-  //
+	 if (m_conn == null)
+	 {
+		//
+		// Connect to the database
+		//
   String ConnectionString = "";
   String DriverName = "";
   
-  System.out.println("connectToDatabase()");
-  Map env = System.getenv();
-  
-  DMHome = System.getenv("DMHome");
-  if (DMHome == null)
-   DMHome = context.getInitParameter("DMHOME");
-  
-  ConnectionString = System.getenv("DBConnectionString");
+		System.out.println("connectToDatabase()");
+		Map env = System.getenv();
+		
+		DMHome = System.getenv("DMHome");
+		if (DMHome == null)
+		 DMHome = context.getInitParameter("DMHOME");
+		
+		ConnectionString = System.getenv("DBConnectionString");
   if (ConnectionString == null)
    ConnectionString = context.getInitParameter("DBConnectionString");
   
   DriverName = System.getenv("DBDriverName");
   if (DriverName == null)
    DriverName = context.getInitParameter("DBDriverName");
- 
+	
   StringBuilder dUserName = new StringBuilder();
   
   String DBUserName = System.getenv("DBUserName");
@@ -714,7 +1379,7 @@ public class DMSession implements AutoCloseable  {
    dUserName.append(DBUserName);
   
   StringBuilder dPassword = new StringBuilder();
-  
+		
   String DBPassword = System.getenv("DBPassword");
   if (DBPassword != null)
    dPassword.append(DBPassword);
@@ -755,8 +1420,8 @@ public class DMSession implements AutoCloseable  {
     }
    }   
    // DSN is ignored for Postgres Driver
-//   DriverName = DriverName.replaceAll("org\\.postgresql\\.Driver", "com.impossibl.postgres.jdbc.PGDriver");
-//   ConnectionString = ConnectionString.replaceAll("jdbc\\:postgresql", "jdbc:pgsql");
+   DriverName = DriverName.replaceAll("org\\.postgresql\\.Driver", "com.impossibl.postgres.jdbc.PGDriver");
+   ConnectionString = ConnectionString.replaceAll("jdbc\\:postgresql", "jdbc:pgsql");
    
    Class.forName(DriverName);
 
@@ -782,61 +1447,225 @@ public class DMSession implements AutoCloseable  {
    e.printStackTrace();
    rollback();
   }
-  }
-  return res;
- }
+	 }
+		return res;
+	}
 	
-	public LoginException Login(String UserName,String Password)
+	public LoginException Login(String UserName,String Password, String LoginTime)
 	{
+	 String provider = "";
 		LoginException res;
+		System.out.println("Login UserName=["+UserName+"] m_username=["+m_username+"]");
+		
+		if (Password == null)
+		 Password = "";
+		
+		if (UserName == null)
+		 UserName = "";
+		
+  if (Password.startsWith("github"))
+  {
+   provider = "github";
+   if (Password.contains("%3A") || Password.contains("%3a"))
+   {
+    try
+    {
+     Password = java.net.URLDecoder.decode(Password, "UTF-8");
+    }
+    catch (UnsupportedEncodingException e)
+    {
+    }
+   }
+   Password = Password.substring("github".length() + 1);
+   
+   String j = jsonGetRequest(Password,provider);
+   System.err.println(j);
+   
+   if (j == null)
+    return new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD,""); 
+   
+   JsonObject json = null;
+   try
+   {
+    json = new JsonParser().parse(j).getAsJsonObject();
+   }
+   catch (JsonSyntaxException je)
+   {
+    json = null;
+   }
+   
+   String u = "";
+   if (json != null && json.toString().contains("data") && json.toString().contains("alias"))
+     u = json.getAsJsonObject("data").get("alias").getAsString();
+    
+    if (!UserName.equals(u))
+     return new LoginException(LoginExceptionType.LOGIN_BAD_USER,""); 
+
+   password = "";
+  }
+  else if (Password.startsWith("google"))
+  {
+   provider = "google";
+   if (Password.contains("%3A") || Password.contains("%3a"))
+   {
+    try
+    {
+     Password = java.net.URLDecoder.decode(Password, "UTF-8");
+    }
+    catch (UnsupportedEncodingException e)
+    {
+    }
+   }
+   Password = Password.substring("google".length() + 1);
+   
+   String j = jsonGetRequest(Password,provider);
+   if (j == null)
+    return new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD,""); 
+   
+   JsonObject json = null;
+   try
+   {
+    json = new JsonParser().parse(j).getAsJsonObject();
+   }
+   catch (JsonSyntaxException je)
+   {
+    json = null;
+   }
+   
+   String u = "";
+   if (json != null && json.toString().contains("data") && json.toString().contains("email"))
+     u = json.getAsJsonObject("data").get("email").getAsString();
+    
+   if (!UserName.equals(u))
+    return new LoginException(LoginExceptionType.LOGIN_BAD_USER,""); 
+   password = "";
+  }
+  
 		try
 		{
+			/*
 			res = connectToDatabase(m_httpSession.getServletContext());
 			if (res != null) throw new LoginException(res.getExceptionType(),res.getMessage());
 			if (m_username != null && UserName.equals(m_username)) {
 				System.out.println("Already logged in, returning success");
 				return new LoginException(LoginExceptionType.LOGIN_OKAY,"");
 			}
-			PreparedStatement st = m_conn.prepareStatement("SELECT id,passhash,locked,forcechange,datefmt,timefmt,datasourceid,lastlogin FROM dm.dm_user where name = ? and status='N'");	 
+			PreparedStatement st = m_conn.prepareStatement("SELECT id,passhash,locked,forcechange,datefmt,timefmt,datasourceid,lastlogin FROM dm.dm_user where name = ? and status='N'");
 			st.setString(1,UserName);
+			*/
+   
+//			res = connectToDatabase(m_httpSession.getServletContext());
+//			if (res != null) throw new LoginException(res.getExceptionType(),res.getMessage());
+//			
+			UserName = UserName.replace('\\','.');	// in case user is specifying domain with domain\\user
+			m_domainlist = "";
+			User user = getUserByName(UserName);	// will throw runtime error if user does not exist or is not unique
+		 // GetDomains(user.getId());
+   
+		 if (user.getDateFmt() == null)
+		  m_datefmt = m_defaultdatefmt;
+		 else
+		  m_datefmt = user.getDateFmt();
+		  
+   if (user.getTimeFmt() == null)
+    m_timefmt = m_defaulttimefmt;
+   else
+    m_timefmt = user.getTimeFmt();
+   
+   m_username = user.getName();
+   m_userID   = user.getId();
+   m_password = Password;
+   
+// 		 if (m_username != null && UserName.equals(m_username)) {
+//    System.out.println("Already logged in, returning success");
+//    return new LoginException(LoginExceptionType.LOGIN_OKAY,"");
+//   }
+   
+			PreparedStatement st = m_conn.prepareStatement("SELECT id,passhash,locked,forcechange,datefmt,timefmt,datasourceid,lastlogin FROM dm.dm_user where id = ?");
+			st.setInt(1,user.getId());
+
 			ResultSet rs = st.executeQuery();
 			if (!rs.next()) throw new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD,"");	// No row retrieved
+			int datasourceid = getInteger(rs,7,0);
+			System.out.println("datasourceid="+datasourceid);
 			//
 			// User exists
 			// -----------
 			//
-			// Encrypt the passed password (SHA-256)
-			//
-			String base64pw = encryptPassword(Password);
-			//
-			// Compare the encrypted passwords
-			//
-			String hash = rs.getString(2);
-			if((hash == null) || (!base64pw.equals(hash))) throw new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD,"");
+
+    if (datasourceid > 0)
+    {
+     // This user is externally authenticated.
+     try
+     {
+      boolean match = DoLDAP(datasourceid, rs.getInt(1), UserName, Password, LoginTime);
+      if (!match)
+       return new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD, "");
+     }
+     catch (LoginException ex)
+     {
+      System.out.println("LDAP Login Exception caught - returning " + ex.getMessage());
+      return new LoginException(LoginExceptionType.LDAP_ERROR, ex.getMessage());
+     }
+    }
+    else if (provider.length() == 0)
+    {
+     //
+     // Internal authentication
+     // Encrypt the passed password (SHA-256)
+     //
+     String base64pw = encryptPassword(Password);
+     //
+     // Compare the encrypted passwords
+     //
+     String hash = rs.getString(2);
+     if ((hash == null) || (!base64pw.equals(hash)))
+      throw new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD, "Invalid password");
+    }
+
 			//
 			// Passwords match
 			//
 			boolean locked = getBoolean(rs,3,false);
-			if (locked) throw new LoginException(LoginExceptionType.LOGIN_USER_LOCKED,"");
+			if (locked) throw new LoginException(LoginExceptionType.LOGIN_USER_LOCKED,"Account is locked");
 			boolean forcechange = getBoolean(rs,4,false);
 			m_datefmt = rs.getString(5);
 			if (rs.wasNull()) m_datefmt = m_defaultdatefmt;
 			m_timefmt = rs.getString(6);
 			if (rs.wasNull()) m_timefmt = m_defaulttimefmt;
-			setUserID(rs.getInt(1));
+			m_userID = rs.getInt(1);
 			rs.getTimestamp(8);
 			m_newUser = (rs.wasNull());
 			m_OverrideAccessControl = false;
 			m_UserPermissions = new UserPermissions(this,0);
 			m_password = Password;
 			m_username = UserName;
-			m_domainlist = "";
-			User user = getUserByName(UserName);
+			
 			GetDomains(m_userID);
 			
-	//		GetDomains(getUserID());
-			PreparedStatement st2 = getDBConnection().prepareStatement("SELECT g.acloverride,g.tabendpoints,g.tabapplications,g.tabactions,g.tabproviders,g.tabusers,g.id FROM dm.dm_usergroup g,dm.dm_usersingroup x WHERE x.userid=? AND g.id=x.groupid");
-			st2.setInt(1, getUserID());
+			String domlist = new Integer(m_userDomain).toString();
+			
+			if (!m_parentdomains.isEmpty())
+			 domlist += "," + m_parentdomains;
+
+			m_license_type = "PRO";
+			m_license_cnt  = 9999999;
+			
+   PreparedStatement sta = m_conn.prepareStatement("SELECT distinct license_type, license_cnt FROM dm.dm_domain where id in (" + domlist + ") and license_type is not null");
+
+   ResultSet rsa = sta.executeQuery();
+   while (rsa.next()) { 
+    m_license_type = rsa.getString(1);
+    m_license_cnt = rsa.getInt(2);
+    if (rsa.wasNull()) 
+     m_license_cnt = 9999999;
+    break;  // take first row
+   }
+   rsa.close();
+   sta.close();
+			
+			PreparedStatement st2 = m_conn.prepareStatement("SELECT g.acloverride,g.tabendpoints,g.tabapplications,g.tabactions,g.tabproviders,g.tabusers,g.id FROM dm.dm_usergroup g,dm.dm_usersingroup x WHERE x.userid=? AND g.id=x.groupid");
+			st2.setInt(1, m_userID);
 			ResultSet rs2 = st2.executeQuery();
 			while (rs2.next()) {
 				// Loop through each group to which this user belongs
@@ -862,6 +1691,7 @@ public class DMSession implements AutoCloseable  {
 					m_UserPermissions.setCreateDatasrc(true);
 					m_UserPermissions.setCreateNotifiers(true);
 					m_UserPermissions.setCreateEngines(true);
+					m_UserPermissions.setCreateServerCompType(true);
 				} else {
 					setUserPermissions(rs2.getInt(7),m_UserPermissions);
 				}
@@ -873,20 +1703,20 @@ public class DMSession implements AutoCloseable  {
 			} else {
 				// Login okay - update last login
 				String ullsql = 
-				(dbdriver.toLowerCase().contains("oracle"))?
+				(dbdriver.toLowerCase().contains("oracle") || dbdriver.toLowerCase().contains("mysql"))?
 				"UPDATE dm.dm_user SET lastlogin = sysdate WHERE id=?":
 				"UPDATE dm.dm_user SET lastlogin = localtimestamp WHERE id=?";	
 				System.out.println("ullsql="+ullsql);
-				PreparedStatement ull = getDBConnection().prepareStatement(ullsql);
-				ull.setInt(1, getUserID());
+				PreparedStatement ull = m_conn.prepareStatement(ullsql);
+				ull.setInt(1, m_userID);
 				ull.execute();
-				getDBConnection().commit();
-				System.out.println("commited");
+				ull.close();
 				res = new LoginException(LoginExceptionType.LOGIN_OKAY,"");
 			}
 			rs.close();
 			st.close();
-			System.out.println("User "+getUserID()+" logged in, domains="+m_domainlist);
+			m_conn.commit();
+			System.out.println("#############  User "+m_userID+" logged in, domains="+m_domainlist + " ##################");
 		}
 		catch (SQLException e)
 		{
@@ -896,6 +1726,13 @@ public class DMSession implements AutoCloseable  {
 		catch (LoginException e)
 		{
 			res = e;
+		}
+		catch(RuntimeException ex) {
+			// If getUserByName throws an exception (including not-unique)
+		 if (ex.getMessage().contains("Not Found") || ex.getMessage().contains("Ambiguous"))
+	   res = new LoginException(LoginExceptionType.LOGIN_BAD_USER,ex.getMessage());
+		 else
+			 res = new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD,ex.getMessage());
 		}
 		return res;
 	}
@@ -918,7 +1755,7 @@ public class DMSession implements AutoCloseable  {
 				stmt.setString(1,base64pw);
 				stmt.execute();
 				stmt.close();
-				getDBConnection().commit();
+				m_conn.commit();
 			} catch (SQLException ex) {
 				System.out.println("Setting initial admin password throws SQLException:"+ex.getMessage());
 			}
@@ -927,7 +1764,7 @@ public class DMSession implements AutoCloseable  {
 			System.out.println("First install is N");
 		}
 		System.out.println("logging in with admin/"+password);
-		return Login("admin",password);
+		return Login("admin",password,null);
 	}
 	
 	public String getPassword()
@@ -937,7 +1774,7 @@ public class DMSession implements AutoCloseable  {
 	
 	public boolean ValidDomain(int DomainID,Boolean Inherit)
 	{
-		if (DomainID<=0) return true;	// Any Domain ID 0 or below is considered valid
+		if (DomainID >= -9999) return true;	// Any Domain ID 0 or below is considered valid
 		
 		boolean res = false;
 		Iterator<Map.Entry<Integer,String>> it = m_domains.entrySet().iterator();
@@ -980,6 +1817,10 @@ public class DMSession implements AutoCloseable  {
 	{
 		int res = 0;
 		boolean KeyFound=false;
+		
+		if (objectType == null)
+		 System.out.println("null");
+		
 		objectType = objectType.toLowerCase();
 		
 		if (objectType.equalsIgnoreCase("release") || objectType.equalsIgnoreCase("appversion"))
@@ -988,14 +1829,15 @@ public class DMSession implements AutoCloseable  {
 		if (objectType.equalsIgnoreCase("function") || objectType.equalsIgnoreCase("procedure"))
 		 objectType = "action";
 		
-		if (objectType.equalsIgnoreCase("builder"))
-		 objectType = "buildengine";
-		
+	
 		if (mutex == null) mutex = new Object();
+		
+		System.out.println("Checking mutex");
 		
 		synchronized (mutex) {
 			try {
-				PreparedStatement st = getDBConnection().prepareStatement("SELECT id FROM dm.dm_keys WHERE lower(object)=? FOR UPDATE");
+				System.out.println("mutex clear");
+				PreparedStatement st = m_conn.prepareStatement("SELECT id FROM dm.dm_keys WHERE lower(object)=? FOR UPDATE");
 				st.setString(1, objectType);
 				ResultSet rs = st.executeQuery();
 				if (rs.next())
@@ -1004,16 +1846,17 @@ public class DMSession implements AutoCloseable  {
 					res = rs.getInt(1);
 					System.out.println("Key found, res="+res);
 					
-					Statement st4 = getDBConnection().createStatement();
+					Statement st4 = m_conn.createStatement();
 					ResultSet rs4 = st4.executeQuery("SELECT coalesce(max(id),0) FROM dm.dm_"+objectType);
 					int key2 = 0;
 					if(rs4.next()) {
 						key2 = rs4.getInt(1);
 					} 
 					rs4.close();
+					st4.close();
 					if (key2 > res && key2 > 0) res = key2;	// only use the max val if it's greater than the value in dm_keys
 					res++;					// next key
-					PreparedStatement st3 = getDBConnection().prepareStatement("UPDATE dm.dm_keys SET id=? WHERE lower(object)=?");
+					PreparedStatement st3 = m_conn.prepareStatement("UPDATE dm.dm_keys SET id=? WHERE lower(object)=?");
 					st3.setInt(1,res);
 					st3.setString(2, objectType);
 					st3.execute();
@@ -1029,10 +1872,10 @@ public class DMSession implements AutoCloseable  {
 				if (!KeyFound)
 				{
 					// key does not exist - create it
-					PreparedStatement st2 = getDBConnection().prepareStatement("INSERT INTO dm.dm_keys(object,id) VALUES (?,?)");
+					PreparedStatement st2 = m_conn.prepareStatement("INSERT INTO dm.dm_keys(object,id) VALUES (?,?)");
 					st2.setString(1, objectType);
 					
-					Statement st3 = getDBConnection().createStatement();
+					Statement st3 = m_conn.createStatement();
 					ResultSet rs3 = st3.executeQuery("SELECT coalesce(max(id),0)+1 FROM dm.dm_"+objectType);
 					if(rs3.next()) {
 						res = rs3.getInt(1);	// return the new value NOT 0!!!
@@ -1041,13 +1884,13 @@ public class DMSession implements AutoCloseable  {
 						res = 1;
 						System.out.println("Key not found, max failed, inserting ('"+objectType+"',"+res+")");
 					}
+     rs3.close();
 					st2.setInt(2, res);
-					rs3.close();
 					st2.execute();
 					st2.close();
 				}
 				rs.close();
-				// m_conn.commit();	// we probably don't want to commit here.
+		  m_conn.commit();
 			}
 			catch (SQLException e)
 			{
@@ -1064,13 +1907,13 @@ public class DMSession implements AutoCloseable  {
 		boolean KeyFound=false;
 		try
 		{
-			PreparedStatement st = getDBConnection().prepareStatement("SELECT id FROM dm.dm_keys WHERE object=? FOR UPDATE");
+			PreparedStatement st = m_conn.prepareStatement("SELECT id FROM dm.dm_keys WHERE object=? FOR UPDATE");
 			st.setString(1,ObjectType);
 			ResultSet rs = st.executeQuery();
 			if (rs.next())
 			{
 				KeyFound=true;
-				PreparedStatement st3 = getDBConnection().prepareStatement("UPDATE dm.dm_keys SET id=? WHERE object=?");
+				PreparedStatement st3 = m_conn.prepareStatement("UPDATE dm.dm_keys SET id=? WHERE object=?");
 				st3.setInt(1,newval);
 				st3.setString(2, ObjectType);
 				st3.execute();
@@ -1087,14 +1930,14 @@ public class DMSession implements AutoCloseable  {
 			{
 				// key does not exist - create it
 				System.out.println("Key not found, inserting ("+ObjectType+",1");
-				PreparedStatement st2 = getDBConnection().prepareStatement("INSERT INTO dm.dm_keys(object,id) VALUES (?,?)");
+				PreparedStatement st2 = m_conn.prepareStatement("INSERT INTO dm.dm_keys(object,id) VALUES (?,?)");
 				st2.setString(1, ObjectType);
 				st2.setInt(2, newval);
 				st2.execute();
 				st2.close();
 			}
 			rs.close();
-			getDBConnection().commit();
+			m_conn.commit();
 		}
 		catch (SQLException e)
 		{
@@ -1109,13 +1952,13 @@ public class DMSession implements AutoCloseable  {
   int res = 0;
   try
   {
-   PreparedStatement st = getDBConnection().prepareStatement("SELECT schemaver FROM dm.dm_tableinfo");
-   ResultSet rs = st.executeQuery();
-   if(rs.next()) {
-    res = rs.getInt(1);
-    rs.close();
-    return res;
-   } 
+    PreparedStatement st = m_conn.prepareStatement("SELECT schemaver FROM dm.dm_tableinfo"); 
+    ResultSet rs = st.executeQuery();
+    if (rs.next())
+    {
+     res = rs.getInt(1);
+     return res;
+    }
   }
   catch (SQLException e)
   {
@@ -1129,30 +1972,57 @@ public class DMSession implements AutoCloseable  {
  {
 	 String res = "";
 	 try {
-		 PreparedStatement st = getDBConnection().prepareStatement("SELECT status FROM dm.dm_tableinfo");
+	  PreparedStatement st = m_conn.prepareStatement("SELECT status FROM dm.dm_tableinfo");
 		 ResultSet rs = st.executeQuery();
-		 if(rs.next()) {
-			 res = rs.getString(1);
-			 rs.close();
-			 return res;
-		 } 
+		  if(rs.next()) {
+			  res = rs.getString(1);
+	  }
+	  rs.close();
+	  st.close();
+   return res;
 	 } catch (SQLException e) {
 		 e.printStackTrace();
 		 rollback();
 	 }
 	 return res;
  }
+ 
+ public String getDatabaseId()
+ {
+  String res = "";
+  try {
+   PreparedStatement st = m_conn.prepareStatement("SELECT (extract(epoch from (pg_stat_file('base/'||oid ||'/PG_VERSION')).modification) :: bigint) FROM pg_database where datname = 'postgres'");
+   ResultSet rs = st.executeQuery();
+    if(rs.next()) {
+     res = rs.getString(1);
+     res = res.substring(res.length()-4);
+     byte[] encryptArray = Base64.encodeBase64(res.getBytes());        
+     try
+     {
+      res = new String(encryptArray,"UTF-8");
+     }
+     catch (UnsupportedEncodingException e)
+     {
+      e.printStackTrace();
+     }  
+   }
+   rs.close();
+   st.close();
+  } catch (SQLException e) {
+   e.printStackTrace();
+   rollback();
+  }
+  return res;
+ }
 	
 	public int GetDomainForObject(String objtype,int id)
 	{
 	 if (objtype.equalsIgnoreCase("release"))
 	  objtype = "application";
-	 else if (objtype.equalsIgnoreCase("builder"))
-	  objtype = "buildengine";
 	 
 		try
 		{
-			PreparedStatement st = getDBConnection().prepareStatement("SELECT domainid FROM dm.dm_"+objtype+" WHERE id=?");
+			PreparedStatement st = m_conn.prepareStatement("SELECT domainid FROM dm.dm_"+objtype+" WHERE id=?");
 			st.setInt(1, id);
 			ResultSet rs = st.executeQuery();
 			if (rs.next())
@@ -1177,7 +2047,7 @@ public class DMSession implements AutoCloseable  {
 	{
 		System.out.println("CreateNewObject(objtype="+objtype+" objname="+objname+" domainid="+domainid+" parentid="+parentid+" id="+id + " treeid=" + treeid);
 		ObjectTypeAndId ret = null;
-
+		
 		if (objname.replaceAll("[-A-Za-z0-9_(); ]","").length()>0) {
 			throw new RuntimeException("Invalid Object Name");
 		}
@@ -1189,29 +2059,37 @@ public class DMSession implements AutoCloseable  {
 			long t = timeNow();
 			if (objtype.equalsIgnoreCase("user"))
 			{
-				cs = getDBConnection().prepareStatement("SELECT count(*) from dm.dm_user WHERE name=? AND status='N'");
-				st = getDBConnection().prepareStatement("INSERT INTO dm.dm_user(id,name,domainid,creatorid,modifierid,created,modified,locked,status) VALUES(?,?,?,?,?,?,?,'N','N')");
+				if (isSaaS(m_conn)) {
+					// In SaaS version user names are allowed to be non-unique as long as they're in different domains.
+					cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_user WHERE name=? AND domainid=? AND status='N'");
+					cs.setString(1,objname);
+					cs.setInt(2,domainid);
+				} else {
+					// In the on-prem version, user names have to be unique across the system.
+					cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_user WHERE name=? AND status='N'");
+					cs.setString(1,objname);
+				}
+				st = m_conn.prepareStatement("INSERT INTO dm.dm_user(id,name,domainid,creatorid,modifierid,created,modified,locked,status) VALUES(?,?,?,?,?,?,?,'N','N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
 				st.setInt(3,domainid);
-				st.setInt(4, getUserID());
-				st.setInt(5,getUserID());
+				st.setInt(4, m_userID);
+				st.setInt(5,m_userID);
 				st.setLong(6,t);
 				st.setLong(7,t);
-				cs.setString(1,objname);
 				ret = new ObjectTypeAndId(ObjectType.USER, id);
 			}
 			else
 			if (objtype.equalsIgnoreCase("release"))
 			{
-				cs = getDBConnection().prepareStatement("SELECT count(*) from dm.dm_application WHERE name=? AND domainid=? AND status='N'");
-				st = getDBConnection().prepareStatement("INSERT INTO dm.dm_application(id,name,domainid,ownerid,creatorid,modifierid,created,modified,status,isRelease) VALUES(?,?,?,?,?,?,?,?,'N','Y')");
+				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_application WHERE name=? AND domainid=? AND status='N'");
+				st = m_conn.prepareStatement("INSERT INTO dm.dm_application(id,name,domainid,ownerid,creatorid,modifierid,created,modified,status,isRelease) VALUES(?,?,?,?,?,?,?,?,'N','Y')");
 				st.setInt(1, id);
 				st.setString(2,objname);
 				st.setInt(3,domainid);
-				st.setInt(4, getUserID());
-				st.setInt(5,getUserID());
-				st.setInt(6,getUserID());
+				st.setInt(4, m_userID);
+				st.setInt(5,m_userID);
+				st.setInt(6,m_userID);
 				st.setLong(7,t);
 				st.setLong(8,t);
 				cs.setString(1,objname);
@@ -1221,14 +2099,14 @@ public class DMSession implements AutoCloseable  {
 			else
 			if (objtype.equalsIgnoreCase("application"))
 			{
-				cs = getDBConnection().prepareStatement("SELECT count(*) from dm.dm_application WHERE name=? AND domainid=? AND status='N'");
-				st = getDBConnection().prepareStatement("INSERT INTO dm.dm_application(id,name,domainid,ownerid,creatorid,modifierid,created,modified,status,isRelease) VALUES(?,?,?,?,?,?,?,?,'N','N')");
+				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_application WHERE name=? AND domainid=? AND status='N'");
+				st = m_conn.prepareStatement("INSERT INTO dm.dm_application(id,name,domainid,ownerid,creatorid,modifierid,created,modified,status,isRelease) VALUES(?,?,?,?,?,?,?,?,'N','N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
 				st.setInt(3,domainid);
-				st.setInt(4, getUserID());
-				st.setInt(5,getUserID());
-				st.setInt(6,getUserID());
+				st.setInt(4, m_userID);
+				st.setInt(5,m_userID);
+				st.setInt(6,m_userID);
 				st.setLong(7,t);
 				st.setLong(8,t);
 				cs.setString(1,objname);
@@ -1238,14 +2116,14 @@ public class DMSession implements AutoCloseable  {
 			else			 
 			if (objtype.equalsIgnoreCase("appversion"))
 			{
-				cs = getDBConnection().prepareStatement("SELECT count(*) from dm.dm_application WHERE name=? AND domainid=? AND status='N'");
-				st = getDBConnection().prepareStatement("INSERT INTO dm.dm_application(id,name,domainid,ownerid,creatorid,modifierid,created,modified,parentid,predecessorid,status,isRelease) VALUES(?,?,?,?,?,?,?,?,?,?,'N','N')");
+				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_application WHERE name=? AND domainid=? AND status='N'");
+				st = m_conn.prepareStatement("INSERT INTO dm.dm_application(id,name,domainid,ownerid,creatorid,modifierid,created,modified,parentid,predecessorid,status,isRelease) VALUES(?,?,?,?,?,?,?,?,?,?,'N','N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
 				st.setInt(3,domainid);
-				st.setInt(4, getUserID());
-				st.setInt(5,getUserID());
-				st.setInt(6,getUserID());
+				st.setInt(4, m_userID);
+				st.setInt(5,m_userID);
+				st.setInt(6,m_userID);
 				st.setLong(7,t);
 				st.setLong(8,t);
 				st.setInt(9,parentid);
@@ -1257,14 +2135,14 @@ public class DMSession implements AutoCloseable  {
 			else
 			if (objtype.equalsIgnoreCase("relversion"))
 			{
-				cs = getDBConnection().prepareStatement("SELECT count(*) from dm.dm_application WHERE name=? AND domainid=? AND status='N'");
-				st = getDBConnection().prepareStatement("INSERT INTO dm.dm_application(id,name,domainid,ownerid,creatorid,modifierid,created,modified,parentid,predecessorid,status,isRelease) VALUES(?,?,?,?,?,?,?,?,?,?,'N','Y')");
+				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_application WHERE name=? AND domainid=? AND status='N'");
+				st = m_conn.prepareStatement("INSERT INTO dm.dm_application(id,name,domainid,ownerid,creatorid,modifierid,created,modified,parentid,predecessorid,status,isRelease) VALUES(?,?,?,?,?,?,?,?,?,?,'N','Y')");
 				st.setInt(1, id);
 				st.setString(2,objname);
 				st.setInt(3,domainid);
-				st.setInt(4, getUserID());
-				st.setInt(5,getUserID());
-				st.setInt(6,getUserID());
+				st.setInt(4, m_userID);
+				st.setInt(5,m_userID);
+				st.setInt(6,m_userID);
 				st.setLong(7,t);
 				st.setLong(8,t);
 				st.setInt(9,parentid);
@@ -1276,11 +2154,11 @@ public class DMSession implements AutoCloseable  {
 			else			 
 			if (objtype.equalsIgnoreCase("componentitem"))
 			{
-				st = getDBConnection().prepareStatement("INSERT INTO dm.dm_componentitem(id,name,creatorid,modifierid,created,modified,compid,status) VALUES(?,?,?,?,?,?,?,'N')");
+				st = m_conn.prepareStatement("INSERT INTO dm.dm_componentitem(id,name,creatorid,modifierid,created,modified,compid,status) VALUES(?,?,?,?,?,?,?,'N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
-				st.setInt(3,getUserID());
-				st.setInt(4,getUserID());
+				st.setInt(3,m_userID);
+				st.setInt(4,m_userID);
 				st.setLong(5,t);
 				st.setLong(6,t);
 				st.setInt(7,parentid);
@@ -1288,14 +2166,14 @@ public class DMSession implements AutoCloseable  {
 			}
 			else if(objtype.equalsIgnoreCase("credentials"))
 			{
-				cs = getDBConnection().prepareStatement("SELECT count(*) from dm.dm_credentials WHERE name=? AND domainid=? AND status='N'");
-				st = getDBConnection().prepareStatement("INSERT INTO dm.dm_credentials(id,name,domainid,kind,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,?,'N')");	// ,status ,'N'
+				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_credentials WHERE name=? AND domainid=? AND status='N'");
+				st = m_conn.prepareStatement("INSERT INTO dm.dm_credentials(id,name,domainid,kind,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,?,'N')");	// ,status ,'N'
 				st.setInt(1, id);
 				st.setString(2, objname);
 				st.setInt(3, domainid);
 				st.setInt(4, 0);	// unconfigured
-				st.setInt(5,getUserID());
-				st.setInt(6,getUserID());
+				st.setInt(5,m_userID);
+				st.setInt(6,m_userID);
 				st.setLong(7,t);
 				st.setLong(8,t);
 				cs.setString(1,objname);
@@ -1306,15 +2184,15 @@ public class DMSession implements AutoCloseable  {
 					|| objtype.equalsIgnoreCase("datasource") || objtype.equalsIgnoreCase("buildengine"))
 			{
 				// TODO: Status should be 'U' for unconfigured - can only do this when we have a mechanism to test it and change status to Normal
-				cs = getDBConnection().prepareStatement("SELECT count(*) FROM dm.dm_"+objtype+" WHERE name=? AND domainid=?");
-				st = getDBConnection().prepareStatement("INSERT INTO dm.dm_"+objtype+"(id,name,domainid,ownerid,defid,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,?,?,'N')");
+				cs = m_conn.prepareStatement("SELECT count(*) FROM dm.dm_"+objtype+" WHERE name=? AND domainid=?");
+				st = m_conn.prepareStatement("INSERT INTO dm.dm_"+objtype+"(id,name,domainid,ownerid,defid,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,?,?,'N')");
 				st.setInt(1, id);
 				st.setString(2, objname);
 				st.setInt(3, domainid);
-				st.setInt(4, getUserID());
+				st.setInt(4, m_userID);
 				st.setInt(5, 0);	// unconfigured
-				st.setInt(6, getUserID());
-				st.setInt(7, getUserID());
+				st.setInt(6, m_userID);
+				st.setInt(7, m_userID);
 				st.setLong(8, t);
 				st.setLong(9, t);
 				cs.setString(1,objname);
@@ -1327,13 +2205,13 @@ public class DMSession implements AutoCloseable  {
 			}
 			else if (objtype.equalsIgnoreCase("template"))
 			{
-				cs = getDBConnection().prepareStatement("SELECT count(*) from dm.dm_template WHERE name=? AND notifierid=? AND status='N'");
-				st = getDBConnection().prepareStatement("INSERT INTO dm.dm_template(id,name,notifierid,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,'N')");
+				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_template WHERE name=? AND notifierid=? AND status='N'");
+				st = m_conn.prepareStatement("INSERT INTO dm.dm_template(id,name,notifierid,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,'N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
 				st.setInt(3,parentid);
-				st.setInt(4,getUserID());
-				st.setInt(5,getUserID());
+				st.setInt(4,m_userID);
+				st.setInt(5,m_userID);
 				st.setLong(6,t);
 				st.setLong(7,t);
 				cs.setString(1,objname);
@@ -1346,14 +2224,14 @@ public class DMSession implements AutoCloseable  {
 			}
 			else if (objtype.equalsIgnoreCase("component"))
 			{
-				cs = getDBConnection().prepareStatement("SELECT count(*) from dm.dm_component WHERE name=? AND domainid=? AND status='N'");
-				st = getDBConnection().prepareStatement("INSERT INTO dm.dm_component(id,name,domainid,ownerid,creatorid,modifierid,created,modified,status,filteritems,deployalways) VALUES(?,?,?,?,?,?,?,?,'N','Y','Y')");
+				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_component WHERE name=? AND domainid=? AND status='N'");
+				st = m_conn.prepareStatement("INSERT INTO dm.dm_component(id,name,domainid,ownerid,creatorid,modifierid,created,modified,status,filteritems,deployalways) VALUES(?,?,?,?,?,?,?,?,'N','Y','N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
 				st.setInt(3,domainid);
-				st.setInt(4, getUserID());
-				st.setInt(5,getUserID());
-				st.setInt(6,getUserID());
+				st.setInt(4, m_userID);
+				st.setInt(5,m_userID);
+				st.setInt(6,m_userID);
 				st.setLong(7,t);
 				st.setLong(8,t);
 				cs.setString(1,objname);
@@ -1362,13 +2240,13 @@ public class DMSession implements AutoCloseable  {
 			}
 			else if (objtype.equalsIgnoreCase("buildjob"))
 			{
-				cs = getDBConnection().prepareStatement("SELECT count(*) from dm.dm_buildjob WHERE name=? AND builderid=? AND status='N'");
-				st = getDBConnection().prepareStatement("INSERT INTO dm.dm_buildjob(id,name,builderid,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,'N')");
+				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_buildjob WHERE name=? AND builderid=? AND status='N'");
+				st = m_conn.prepareStatement("INSERT INTO dm.dm_buildjob(id,name,builderid,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,'N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
 				st.setInt(3,parentid);
-				st.setInt(4,getUserID());
-				st.setInt(5,getUserID());
+				st.setInt(4,m_userID);
+				st.setInt(5,m_userID);
 				st.setLong(6,t);
 				st.setLong(7,t);
 				cs.setString(1,objname);
@@ -1379,16 +2257,51 @@ public class DMSession implements AutoCloseable  {
 				}
 				ret = new ObjectTypeAndId(ot, id);
 			}
+   else if (objtype.equalsIgnoreCase("engine"))
+   {
+    cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_engine WHERE name=? AND domainid=? AND status='N'");
+    st = m_conn.prepareStatement("INSERT INTO dm.dm_engine(id,name,domainid,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,'N')");
+    st.setInt(1, id);
+    st.setString(2,objname);
+    st.setInt(3,domainid);
+    st.setInt(4, m_userID);
+    st.setInt(5,m_userID);
+    st.setLong(6,t);
+    st.setLong(7,t);
+    cs.setString(1,objname);
+    cs.setInt(2,domainid);
+    ret = new ObjectTypeAndId(ObjectType.ENGINE, id);
+   }
+   else  if (objtype.equalsIgnoreCase("task"))
+   {
+    cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_"+objtype+" WHERE name=? AND domainid=?");
+    st = m_conn.prepareStatement("INSERT INTO dm.dm_"+objtype+"(id,name,domainid,ownerid,creatorid,modifierid,created,modified) VALUES(?,?,?,?,?,?,?,?)");
+    st.setInt(1, id);
+    st.setString(2,objname);
+    st.setInt(3,domainid);
+    st.setInt(4, m_userID);
+    st.setInt(5,m_userID);
+    st.setInt(6,m_userID);
+    st.setLong(7,t);
+    st.setLong(8,t);
+    cs.setString(1,objname);
+    cs.setInt(2,domainid);
+    ObjectType ot = ObjectType.fromTableName(objtype);
+    if (ot == null) {
+     throw new RuntimeException("Unable to create object of type '" + objtype + "'");
+    }
+    ret = new ObjectTypeAndId(ot, id);
+   }
 			else
 			{
-				cs = getDBConnection().prepareStatement("SELECT count(*) from dm.dm_"+objtype+" WHERE name=? AND domainid=? AND status='N'");
-				st = getDBConnection().prepareStatement("INSERT INTO dm.dm_"+objtype+"(id,name,domainid,ownerid,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,?,'N')");
+				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_"+objtype+" WHERE name=? AND domainid=? AND status='N'");
+				st = m_conn.prepareStatement("INSERT INTO dm.dm_"+objtype+"(id,name,domainid,ownerid,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,?,'N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
 				st.setInt(3,domainid);
-				st.setInt(4, getUserID());
-				st.setInt(5,getUserID());
-				st.setInt(6,getUserID());
+				st.setInt(4, m_userID);
+				st.setInt(5,m_userID);
+				st.setInt(6,m_userID);
 				st.setLong(7,t);
 				st.setLong(8,t);
 				cs.setString(1,objname);
@@ -1451,7 +2364,7 @@ public class DMSession implements AutoCloseable  {
 				int ServerHeight=70;
 				ArrayList<Integer> cx=new ArrayList<Integer>();
 				ArrayList<Integer> cy=new ArrayList<Integer>();
-				PreparedStatement st2 = getDBConnection().prepareStatement("SELECT xpos,ypos FROM dm.dm_serversinenv WHERE envid=?");
+				PreparedStatement st2 = m_conn.prepareStatement("SELECT xpos,ypos FROM dm.dm_serversinenv WHERE envid=?");
 				st2.setInt(1,parentid);
 				ResultSet rs2 = st2.executeQuery();
 				while (rs2.next()) {
@@ -1492,18 +2405,23 @@ public class DMSession implements AutoCloseable  {
 					tgtx=xp;
 					tgty=yp;
 				}
-				PreparedStatement st3 = getDBConnection().prepareStatement("INSERT INTO dm.dm_serversinenv(envid,serverid,xpos,ypos) values(?,?,?,?);");
-				st3.setInt(1,parentid);
-				st3.setInt(2,id);
-				st3.setInt(3,tgtx);
-				st3.setInt(4,tgty);
-				st3.execute();
-				st3.close();
-				PreparedStatement st4 = getDBConnection().prepareStatement("UPDATE dm.dm_environment SET modified=?,modifierid=?");
-				st4.setLong(1,t);
-				st4.setInt(2, getUserID());
-				st4.execute();
-				st4.close();
+				
+				if (parentid >= 0)
+				{
+				 PreparedStatement st3 = m_conn.prepareStatement("INSERT INTO dm.dm_serversinenv(envid,serverid,xpos,ypos) values(?,?,?,?);");
+				 st3.setInt(1,parentid);
+				 st3.setInt(2,id);
+				 st3.setInt(3,tgtx);
+				 st3.setInt(4,tgty);
+				 st3.execute();
+				 st3.close();
+				 PreparedStatement st4 = m_conn.prepareStatement("UPDATE dm.dm_environment SET modified=?,modifierid=? where id = ?");
+				 st4.setLong(1,t);
+				 st4.setInt(2, m_userID);
+				 st4.setInt(3,parentid);
+				 st4.execute();
+				 st4.close();
+				}
 			}
 			
 			if (objtype.equalsIgnoreCase("domain"))
@@ -1511,10 +2429,11 @@ public class DMSession implements AutoCloseable  {
 				// need to add this domain to our allowed domain list.
 				m_domains.put(id,"Y");
 				m_domainlist=m_domainlist+","+id;
-				
+				m_domainlist = StringUtils.stripStart(m_domainlist, ",");
+				m_domainlist = StringUtils.stripEnd(m_domainlist, ",");
 			}
 			if (commit) {
-				getDBConnection().commit();
+				m_conn.commit();
 			}
 		}
 		catch (SQLException e)
@@ -1545,6 +2464,7 @@ public class DMSession implements AutoCloseable  {
 		case ACTION:
 			cattab="dm_action_categories";
 			break;
+		case COMPVERSION:
 		case COMPONENT:
 			cattab="dm_component_categories";
 			break;
@@ -1554,17 +2474,17 @@ public class DMSession implements AutoCloseable  {
 		default:
 			break;
 		} 
-		String csql = "SELECT count(*) FROM "+cattab+" WHERE id=? AND categoryid=?";
-		String isql = "INSERT INTO "+cattab+"(id,categoryid) VALUES(?,?)";
+		String csql = "SELECT count(*) FROM dm."+cattab+" WHERE id=? AND categoryid=?";
+		String isql = "INSERT INTO dm."+cattab+"(id,categoryid) VALUES(?,?)";
 		try {
-			PreparedStatement cstmt = getDBConnection().prepareStatement(csql);
+			PreparedStatement cstmt = m_conn.prepareStatement(csql);
 			cstmt.setInt(1,otid.getId());
 			cstmt.setInt(2,catid);
 			ResultSet rs = cstmt.executeQuery();
 			if (rs.next()) {
 				if (rs.getInt(1)==0) {
 					// No existing row - insert it
-					PreparedStatement istmt = getDBConnection().prepareStatement(isql);
+					PreparedStatement istmt = m_conn.prepareStatement(isql);
 					istmt.setInt(1,otid.getId());
 					istmt.setInt(2,catid);
 					istmt.execute();
@@ -1574,7 +2494,7 @@ public class DMSession implements AutoCloseable  {
 			rs.close();
 			cstmt.close();
 			if (commit) {
-				getDBConnection().commit();
+				m_conn.commit();
 			}
 		} catch(SQLException ex) {
 			ex.printStackTrace();
@@ -1611,7 +2531,7 @@ public class DMSession implements AutoCloseable  {
 				f="Y";
 			}
 			// Check the Action/Function/Procedure doesn't already exist in this domain
-			PreparedStatement cs = getDBConnection().prepareStatement(csql);
+			PreparedStatement cs = m_conn.prepareStatement(csql);
 			cs.setString(1,objname);
 			cs.setInt(2,domainid);
 			ResultSet rs = cs.executeQuery();
@@ -1631,21 +2551,21 @@ public class DMSession implements AutoCloseable  {
 			if (kind == ActionKind.IN_DB) {
 				// Create an entry in dm_actiontext (stored procedure/function)
 				atval = getID("actiontext");
-				PreparedStatement at = getDBConnection().prepareStatement("INSERT INTO dm.dm_actiontext(id) VALUES(?)");
+				PreparedStatement at = m_conn.prepareStatement("INSERT INTO dm.dm_actiontext(id) VALUES(?)");
 				at.setInt(1,atval);
 				at.execute();
 				
 			}
-			PreparedStatement st = getDBConnection().prepareStatement((kind == ActionKind.IN_DB)?sql2:sql1);
+			PreparedStatement st = m_conn.prepareStatement((kind == ActionKind.IN_DB)?sql2:sql1);
 			st.setInt(1, id);
 			st.setString(2,objname);
 			st.setInt(3,domainid);
-			st.setInt(4, getUserID());
+			st.setInt(4, m_userID);
 			st.setString(5, f);
 			st.setString(6, g);
-			st.setInt(7, getUserID());
+			st.setInt(7, m_userID);
 			st.setLong(8, t);
-			st.setInt(9, getUserID());
+			st.setInt(9, m_userID);
 			st.setLong(10, t);
 			st.setInt(11, kind.value());
 			if (kind == ActionKind.IN_DB) {
@@ -1654,7 +2574,7 @@ public class DMSession implements AutoCloseable  {
 			st.execute();
 			st.close();
 			
-			getDBConnection().commit();
+			m_conn.commit();
 			ret = new ObjectTypeAndId(ot, id);
 		}
 		catch (SQLException e)
@@ -1670,7 +2590,7 @@ public class DMSession implements AutoCloseable  {
 		try
 		{
 			System.out.println("tasktype="+tasktype);
-			PreparedStatement st = getDBConnection().prepareStatement("SELECT id FROM dm.dm_tasktypes WHERE name=?");
+			PreparedStatement st = m_conn.prepareStatement("SELECT id FROM dm.dm_tasktypes WHERE name=?");
 			st.setString(1,tasktype);
 			ResultSet rs = st.executeQuery();
 			if(rs.next()) {
@@ -1678,6 +2598,7 @@ public class DMSession implements AutoCloseable  {
 				rs.close();
 				return res;
 			}
+			rs.close();
 			throw new RuntimeException("Unable to retrieve task type '" + tasktype + "' from database");
 		}
 		catch (SQLException e)
@@ -1694,27 +2615,30 @@ public class DMSession implements AutoCloseable  {
 		try
 		{
 			long t = timeNow();
-			PreparedStatement st = getDBConnection().prepareStatement("INSERT INTO dm.dm_task(id,name,typeid,domainid,ownerid,creatorid,created,modifierid,modified,logoutput,subdomains) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
+			PreparedStatement st = m_conn.prepareStatement("INSERT INTO dm.dm_task(id,name,typeid,domainid,ownerid,creatorid,created,modifierid,modified,logoutput,subdomains) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
 			st.setInt(1, id);
 			st.setString(2,taskname);
 			st.setInt(3, typeid);
 			st.setInt(4,domainid);
-			st.setInt(5, getUserID());
-			st.setInt(6,getUserID());
+			st.setInt(5, m_userID);
+			st.setInt(6,m_userID);
 			st.setLong(7,t);
-			st.setInt(8,getUserID());
+			st.setInt(8,m_userID);
 			st.setLong(9,t);
 			st.setString(10,"N");
 			st.setString(11,"N");
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 		}
 		catch (SQLException e)
 		{
 			e.printStackTrace();
 			rollback();
 		}
+		
+		UserGroup group = this.getGroupByName("Everyone");
+		AddGroupToTask(id,group.getId());
 	}
 	
 	public void DeleteTask(int taskid,int domainid)
@@ -1723,7 +2647,7 @@ public class DMSession implements AutoCloseable  {
 		{
 			Task task = getTask(taskid,true);
 			System.out.println("tasktype="+task.getTaskType());
-			PreparedStatement st = getDBConnection().prepareStatement("DELETE FROM dm.dm_taskaccess WHERE taskid=?");
+			PreparedStatement st = m_conn.prepareStatement("DELETE FROM dm.dm_taskaccess WHERE taskid=?");
 			st.setInt(1, taskid);
 			st.execute();
 			st.close();
@@ -1736,30 +2660,30 @@ public class DMSession implements AutoCloseable  {
 			default: break;
 			}
 			if(table != null) {
-				PreparedStatement st2 = getDBConnection().prepareStatement("DELETE FROM dm.dm_task" + table + " WHERE id=?");
+				PreparedStatement st2 = m_conn.prepareStatement("DELETE FROM dm.dm_task" + table + " WHERE id=?");
 				st2.setInt(1, taskid);
 				st2.execute();
 				st2.close();
 			}
-			PreparedStatement st3 = getDBConnection().prepareStatement("DELETE FROM dm.dm_request WHERE taskid=?");
+			PreparedStatement st3 = m_conn.prepareStatement("DELETE FROM dm.dm_request WHERE taskid=?");
 			st3.setInt(1, taskid);
 			st3.execute();
 			st3.close();
-			PreparedStatement st4 = getDBConnection().prepareStatement("DELETE FROM dm.dm_taskparams WHERE taskid=?");
+			PreparedStatement st4 = m_conn.prepareStatement("DELETE FROM dm.dm_taskparams WHERE taskid=?");
 			st4.setInt(1, taskid);
 			st4.execute();
 			st4.close();
-			PreparedStatement st5 = getDBConnection().prepareStatement("DELETE FROM dm.dm_task WHERE id=? and domainid=?");
+			PreparedStatement st5 = m_conn.prepareStatement("DELETE FROM dm.dm_task WHERE id=? and domainid=?");
 			st5.setInt(1, taskid);
 			st5.setInt(2,domainid);
 			st5.execute();
 			st5.close();
 			// Update any linked task so it can be modified
-			PreparedStatement st6 = getDBConnection().prepareStatement("UPDATE dm.dm_taskrequest SET linkedtaskid = NULL WHERE linkedtaskid=?");
+			PreparedStatement st6 = m_conn.prepareStatement("UPDATE dm.dm_taskrequest SET linkedtaskid = NULL WHERE linkedtaskid=?");
 			st6.setInt(1, taskid);
 			st6.execute();
 			st6.close();
-			getDBConnection().commit();
+			m_conn.commit();
 		}
 		catch (SQLException e)
 		{
@@ -1774,7 +2698,7 @@ public class DMSession implements AutoCloseable  {
 		TaskList res = new TaskList();
 		try
 		{
-			PreparedStatement st = getDBConnection().prepareStatement("SELECT a.id,a.name,b.name FROM dm.dm_task a,dm.dm_tasktypes b where b.id=a.typeid and a.domainid=?");
+			PreparedStatement st = m_conn.prepareStatement("SELECT a.id,a.name,b.name, a.logoutput, a.subdomains FROM dm.dm_task a,dm.dm_tasktypes b where b.id=a.typeid and a.domainid=?");
 			st.setInt(1,domainid);
 			ResultSet rs = st.executeQuery();
 			while (rs.next())
@@ -1783,6 +2707,18 @@ public class DMSession implements AutoCloseable  {
 				t.setId(rs.getInt(1));
 				t.setName(rs.getString(2));
 				t.setTaskType(rs.getString(3));
+				t.setDomainId(domainid);
+				t.setSession(this);
+				if (rs.getString(4) != null && rs.getString(4).equalsIgnoreCase("Y"))
+				   t.setShowOutput(true);
+				else
+				   t.setShowOutput(false);
+	
+    if (rs.getString(5) != null && rs.getString(5).equalsIgnoreCase("Y"))
+       t.setSubDomains(true);
+    else
+       t.setSubDomains(false);				
+
 				res.add(t);
 			}
 			rs.close();
@@ -1800,7 +2736,7 @@ public class DMSession implements AutoCloseable  {
 	{
 		try {
 			int pos=1;
-			PreparedStatement ct = getDBConnection().prepareStatement("SELECT max(pos) FROM dm.dm_taskparams WHERE taskid=?");
+			PreparedStatement ct = m_conn.prepareStatement("SELECT max(pos) FROM dm.dm_taskparams WHERE taskid=?");
 			ct.setInt(1,tid);
 			ResultSet rs = ct.executeQuery();
 			if (rs.next()) {
@@ -1809,7 +2745,7 @@ public class DMSession implements AutoCloseable  {
 			}
 			rs.close();
 			ct.close();
-			PreparedStatement st = getDBConnection().prepareStatement("INSERT INTO dm.dm_taskparams(taskid,pos,label,variable,type,arrname) VALUES(?,?,?,?,?,?)");
+			PreparedStatement st = m_conn.prepareStatement("INSERT INTO dm.dm_taskparams(taskid,pos,label,variable,type,arrname) VALUES(?,?,?,?,?,?)");
 			st.setInt(1,tid);
 			st.setInt(2,pos);
 			st.setString(3,label);
@@ -1818,11 +2754,11 @@ public class DMSession implements AutoCloseable  {
 			if (arrname != null) {
 				st.setString(6,arrname);
 			} else {
-				st.setNull(6,Type.CHAR);
+				st.setNull(6,Types.CHAR);
 			}
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return pos;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -1833,20 +2769,20 @@ public class DMSession implements AutoCloseable  {
 	public void editTaskParameter(int tid,int pos,String label,String varname,String vartype,String arrname)
 	{
 		try {
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_taskparams set label=?,variable=?,type=?,arrname=? WHERE taskid=? AND pos=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_taskparams set label=?,variable=?,type=?,arrname=? WHERE taskid=? AND pos=?");
 			st.setString(1,label);
 			st.setString(2,varname);
 			st.setString(3,vartype);
 			if (arrname != null) {
 				st.setString(4,arrname);
 			} else {
-				st.setNull(4,Type.CHAR);
+				st.setNull(4,Types.CHAR);
 			}
 			st.setInt(5,tid);
 			st.setInt(6,pos);
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -1855,18 +2791,18 @@ public class DMSession implements AutoCloseable  {
 	public void deleteTaskParameter(int tid,String varname)
 	{
 		try {
-			PreparedStatement st1 = getDBConnection().prepareStatement("SELECT pos FROM dm.dm_taskparams WHERE taskid=? AND variable=?");
+			PreparedStatement st1 = m_conn.prepareStatement("SELECT pos FROM dm.dm_taskparams WHERE taskid=? AND variable=?");
 			st1.setInt(1,tid);
 			st1.setString(2,varname);
 			ResultSet rs1 = st1.executeQuery();
 			if (rs1.next()) {
 				int pos = rs1.getInt(1);
-				PreparedStatement st2 = getDBConnection().prepareStatement("UPDATE dm.dm_taskparams SET pos=pos-1 WHERE taskid=? AND pos>?");
+				PreparedStatement st2 = m_conn.prepareStatement("UPDATE dm.dm_taskparams SET pos=pos-1 WHERE taskid=? AND pos>?");
 				st2.setInt(1,tid);
 				st2.setInt(2,pos);
 				st2.execute();
 				st2.close();
-				PreparedStatement st3 = getDBConnection().prepareStatement("DELETE FROM dm.dm_taskparams WHERE taskid=? AND variable=?");
+				PreparedStatement st3 = m_conn.prepareStatement("DELETE FROM dm.dm_taskparams WHERE taskid=? AND variable=?");
 				st3.setInt(1,tid);
 				st3.setString(2,varname);
 				st3.execute();
@@ -1874,7 +2810,7 @@ public class DMSession implements AutoCloseable  {
 			}
 			rs1.close();
 			st1.close();
-			getDBConnection().commit();
+			m_conn.commit();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -1883,14 +2819,14 @@ public class DMSession implements AutoCloseable  {
 	public void changeTaskParameterPos(int tid,String varname,int newpos)
 	{
 		try {
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_taskparams set pos=? WHERE taskid=? AND variable=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_taskparams set pos=? WHERE taskid=? AND variable=?");
 			st.setInt(1,newpos);
 			st.setInt(2,tid);
 			st.setString(3,varname);
 			System.out.println("Changing variable "+varname+" to position "+newpos+" for task id "+tid);
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -1900,7 +2836,7 @@ public class DMSession implements AutoCloseable  {
 	{
 		List <TaskParameter> ret = new ArrayList<TaskParameter>();
 		try {
-			PreparedStatement st = getDBConnection().prepareStatement("SELECT pos,label,variable,type,arrname FROM dm.dm_taskparams WHERE taskid=? ORDER BY pos");
+			PreparedStatement st = m_conn.prepareStatement("SELECT pos,label,variable,type,arrname FROM dm.dm_taskparams WHERE taskid=? ORDER BY pos");
 			st.setInt(1,tid);
 			ResultSet rs = st.executeQuery();
 			while (rs.next()) {
@@ -1937,7 +2873,7 @@ public class DMSession implements AutoCloseable  {
 			default:
 				break;
 			}
-			PreparedStatement st = getDBConnection().prepareStatement("select b.name,b.value from "+tn+" a,dm_arrayvalues b where a."+cn+" = ? and a.arrayid=b.id and a.name=? order by b.id");
+			PreparedStatement st = m_conn.prepareStatement("select b.name,b.value from "+tn+" a,dm_arrayvalues b where a."+cn+" = ? and a.arrayid=b.id and a.name=? order by b.id");
 			st.setInt(1,objid);
 			st.setString(2,arrname);
 			ResultSet rs = st.executeQuery();
@@ -1958,7 +2894,7 @@ public class DMSession implements AutoCloseable  {
   TaskList res = new TaskList();
   try
   {
-   PreparedStatement st = getDBConnection().prepareStatement("SELECT a.id,a.name,b.name FROM dm.dm_task a,dm.dm_tasktypes b where b.id=a.typeid and a.domainid in (" + m_domainlist + ") order by 2");
+   PreparedStatement st = m_conn.prepareStatement("SELECT a.id,a.name,b.name FROM dm.dm_task a,dm.dm_tasktypes b where b.id=a.typeid and a.domainid in (" + m_domainlist + ") order by 2");
    ResultSet rs = st.executeQuery();
    while (rs.next())
    {
@@ -1981,7 +2917,7 @@ public class DMSession implements AutoCloseable  {
  
  	private void GetWorkbenchTasksInternal(int domainid,String objecttype, PropertyDataSet ds, boolean inherit)
  	{
- 		System.out.println("GetWorkbenchTasksInternal - objectype="+objecttype+" domainid="+domainid+" m_userID="+getUserID());
+ 		System.out.println("GetWorkbenchTasksInternal - objectype="+objecttype+" domainid="+domainid+" m_userID="+m_userID);
 		 
 		if (objecttype.equalsIgnoreCase("release"))
 		objecttype = "application";
@@ -2004,15 +2940,15 @@ public class DMSession implements AutoCloseable  {
 			
 			if (inherit) sql+= " AND a.subdomains='Y'";
 			System.out.println(sql);
-			PreparedStatement st = getDBConnection().prepareStatement(sql);
+			PreparedStatement st = m_conn.prepareStatement(sql);
 			st.setInt(1,domainid);
-			st.setInt(2,getUserID());
+			st.setInt(2,m_userID);
 			ResultSet rs = st.executeQuery();
 			while (rs.next())
 			{
 				System.out.println("rs.getString(1)="+rs.getString(1));
 				String tasktype = rs.getString(3);
-				ds.addProperty(rs.getString(2), tasktype+"-"+rs.getString(1));
+		  ds.addProperty(rs.getString(2), tasktype+"-"+rs.getString(1));
 			}
 			rs.close();
 			st.close();
@@ -2046,7 +2982,7 @@ public class DMSession implements AutoCloseable  {
 		String UserName = "";
 		try
 		{
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT name,domainid FROM dm.dm_user where id="+uid);
 			while (rs.next())
 			{
@@ -2068,17 +3004,18 @@ public class DMSession implements AutoCloseable  {
 	
 	public String GetUserName()
 	{
-		return GetUserName(getUserID());
+		System.out.println("GetUserName - m_userID="+m_userID);
+		return GetUserName(m_userID);
 	}
 	
 	public String getDomainName(int domainid)
 	{
 		String res = "";
-		if (ValidDomain(domainid))
-		{
+//		if (ValidDomain(domainid))
+//		{
 			try
 			{
-				PreparedStatement st = getDBConnection().prepareStatement("select name,domainid from dm.dm_domain where id=?");
+				PreparedStatement st = m_conn.prepareStatement("select name,domainid from dm.dm_domain where id=?");
 				st.setInt(1, domainid);
 				ResultSet rs = st.executeQuery();
 				if (rs.next())
@@ -2094,21 +3031,23 @@ public class DMSession implements AutoCloseable  {
 					}
 				}
 				rs.close();
+				st.close();
+				m_conn.commit();
 			}
 			catch (Exception e)
 		    {
 				e.printStackTrace();
 		    }
-		}
+//		}
 		return res;
 	}
 	
-	public boolean userIsReferenced(int id)
+	private boolean userIsReferenced(int id)
 	{
 		return true;
 	}
 	
-	public boolean userGroupIsReferenced(int id)
+	private boolean userGroupIsReferenced(int id)
 	{
 		return true;
 	}
@@ -2119,7 +3058,7 @@ public class DMSession implements AutoCloseable  {
 		{
 			boolean res=false;
 			for (int i=0;i<sql.length;i++) {
-				PreparedStatement stmt = getDBConnection().prepareStatement(sql[i]);
+				PreparedStatement stmt = m_conn.prepareStatement(sql[i]);
 				stmt.setInt(1,id);
 				ResultSet rs = stmt.executeQuery();
 				if (rs.next()) {
@@ -2243,15 +3182,21 @@ public class DMSession implements AutoCloseable  {
 	  "SELECT count(*) FROM dm.dm_application where failuretemplateid=?",
 	  "SELECT count(*) FROM dm.dm_task where successtemplateid=?",
 	  "SELECT count(*) FROM dm.dm_task where failuretemplateid=?"
-	  };      
+	  };
 	  return CheckObjects(sql,id);
- }  
+ }
  
- public boolean datasourceIsReferenced(int id) {
-     String sql[] = {
-      "SELECT count(*) FROM dm.dm_user where datasourceid=?"
-     };
-     return CheckObjects(sql,id);
+ public boolean datasourceIsReferenced(int id,boolean checkDefects) {
+	 System.out.println("datasourceisReferenced, id="+id+" checkDefects="+checkDefects);
+	 String sql1[] = {
+	  "SELECT count(*) FROM dm.dm_component where datasourceid=?",
+	  "SELECT count(*) FROM dm.dm_application where datasourceid=?",
+	  "SELECT count(*) FROM dm.dm_user where datasourceid=?"
+	 };
+	 String sql2[] = {
+	  "SELECT count(*) FROM dm.dm_defects where datasourceid=?"
+	 };
+	 return CheckObjects(checkDefects?sql2:sql1,id);
  }
  
  public boolean comptypeIsReferenced(int id) {
@@ -2281,7 +3226,6 @@ public class DMSession implements AutoCloseable  {
    "SELECT count(*) FROM dm.dm_repository r WHERE credid=? AND r.status <> 'D'",
    "SELECT count(*) FROM dm.dm_notify WHERE credid=? AND status <> 'D'",
    "SELECT count(*) FROM dm.dm_environment e WHERE credid=? and e.status <> 'D'",
-   "SELECT count(*) FROM dm.dm_buildengine e WHERE credid=? and e.status <> 'D'"
   };
   return CheckObjects(sql,id);
 }
@@ -2298,9 +3242,9 @@ public class DMSession implements AutoCloseable  {
 }
 
  
-	public int DeleteFromTable(String TableName,String ColName,int id) throws SQLException
+	private int DeleteFromTable(String TableName,String ColName,int id) throws SQLException
 	{
-		PreparedStatement stmt = getDBConnection().prepareStatement("DELETE FROM "+TableName+" where "+ColName+"=?");
+		PreparedStatement stmt = m_conn.prepareStatement("DELETE FROM "+TableName+" where "+ColName+"=?");
 		System.out.println("DELETE FROM "+TableName+" where "+ColName+"=?" + id);
 		
 		stmt.setInt(1,id);
@@ -2310,9 +3254,9 @@ public class DMSession implements AutoCloseable  {
 		return res;
 	}
 	
-	public int DeleteFromTableWhere(String TableName,String WhereClause,int id) throws SQLException
+	private int DeleteFromTableWhere(String TableName,String WhereClause,int id) throws SQLException
 	{
-		PreparedStatement stmt = getDBConnection().prepareStatement("DELETE FROM "+TableName+" WHERE "+WhereClause);
+		PreparedStatement stmt = m_conn.prepareStatement("DELETE FROM "+TableName+" WHERE "+WhereClause);
 		stmt.setInt(1,id);
 		stmt.execute();
 		int res = (stmt.getUpdateCount()<1)?1:0;
@@ -2336,7 +3280,6 @@ public class DMSession implements AutoCloseable  {
 			if (Type.equalsIgnoreCase("release")) Type="application";
 			if (Type.equalsIgnoreCase("relversion")) Type="application";
 			if (Type.equalsIgnoreCase("compversion")) Type="component";
-			if (Type.equalsIgnoreCase("builder")) Type="buildengine";
    
 			String AccessColumn;
 			if (Type.equalsIgnoreCase("component")) {
@@ -2353,10 +3296,6 @@ public class DMSession implements AutoCloseable  {
 			else
 			if (Type.equalsIgnoreCase("application")) {
 				AccessColumn="appid";
-			}
-			else
-			if (Type.equalsIgnoreCase("buildengine")) {
-				AccessColumn="builderid";
 			}
 			else
 			{
@@ -2456,28 +3395,31 @@ public class DMSession implements AutoCloseable  {
 			}
 			else
 			if (Type.equalsIgnoreCase("notify"))
-			{
-				if (notifierIsReferenced(id)) {
-					out.print("{\"error\" : \"Cannot delete this Notifier - one or more of its associated templates are in use.\", \"success\" : false}");
-					return;
-				}
+			{       
+		        if (notifierIsReferenced(id)) { 
+	                out.print("{\"error\" : \"Cannot delete this Notifier - one or more of its associated templates are in use.\", \"success\" : false}");
+	                return;
+		        }
 			}
 			else
 			if (Type.equalsIgnoreCase("template"))
-			{       
+			{
 				if (templateIsReferenced(id)) {
 					out.print("{\"error\" : \"Cannot delete this Template - it is in use.\", \"success\" : false}");
-					return; 
-				}       
+	                return;
+				}
 			}
 			else
 			if (Type.equalsIgnoreCase("datasource"))
-			{       
-		        if (datasourceIsReferenced(id)) {
-		                out.print("{\"error\": \"Cannot delete this Datasource - it is in use.\", \"success\" : false}");
-		                return; 
-		        }       
-			} 
+			{
+				if (datasourceIsReferenced(id,false)) {
+					out.print("{\"error\": \"Cannot delete this Datasource - it is in use.\", \"success\" : false}");
+					return;
+				}
+				// Datasource may still be referenced by a defect which we want to keep. If so, D tag it
+				bSetStatus = datasourceIsReferenced(id,true);
+			}
+		
 
 			if (Type.equalsIgnoreCase("procedure") || Type.equalsIgnoreCase("function"))
 			{
@@ -2489,7 +3431,7 @@ public class DMSession implements AutoCloseable  {
 			if (Type.equalsIgnoreCase("ServerCompType"))
 			{
 				if (comptypeIsReferenced(id)) { 
-					out.print("{\"error\" : \"Cannot delete the Component Type at this time since it is in use.\", \"success\" : false}");
+					out.print("{\"error\" : \"Cannot delete the Endpoint Type at this time since it is in use.\", \"success\" : false}");
 					return;
 				} 
 				Type="type";
@@ -2499,7 +3441,7 @@ public class DMSession implements AutoCloseable  {
    
 			int res=0;
 			// Delete from the access control table
-			if (!Type.equalsIgnoreCase("template") && !Type.equalsIgnoreCase("user") && !Type.equalsIgnoreCase("usergroup")) 
+			if (!Type.equalsIgnoreCase("template") && !Type.equalsIgnoreCase("user") && !Type.equalsIgnoreCase("usergroup") && !Type.equalsIgnoreCase("buildjob")) 
 			{
 				DeleteFromTable(AccessTable,AccessColumn,id);
 			}
@@ -2532,7 +3474,7 @@ public class DMSession implements AutoCloseable  {
 			System.out.println("Type=["+Type+"]");
 			if (bSetStatus) {
 				System.out.println("UPDATE dm.dm_"+Type+" SET status='D' WHERE id="+id);
-				PreparedStatement stmt = getDBConnection().prepareStatement("UPDATE dm.dm_"+Type+" SET status='D' WHERE id=?");
+				PreparedStatement stmt = m_conn.prepareStatement("UPDATE dm.dm_"+Type+" SET status='D' WHERE id=?");
 				stmt.setInt(1,id);
 				stmt.execute();
 				res = (stmt.getUpdateCount()<1)?1:0;
@@ -2553,6 +3495,8 @@ public class DMSession implements AutoCloseable  {
 							DeleteFromTable("dm.dm_componentitem","compid",cc.getId());
 							DeleteFromTable("dm.dm_component_categories","id",cc.getId());
 							DeleteFromTable("dm.dm_buildhistory","compid",cc.getId());
+							DeleteFromTable("dm.dm_defects","compid",cc.getId());
+							DeleteFromTable("dm.dm_defecthistory","compid",cc.getId());
 							DeleteFromTable("dm.dm_component","id",cc.getId());
 						}
 					}
@@ -2561,6 +3505,8 @@ public class DMSession implements AutoCloseable  {
 					DeleteFromTable("dm.dm_componentitem","compid",id);
 					DeleteFromTable("dm.dm_component_categories","id",id);
 					DeleteFromTable("dm.dm_buildhistory","compid",id);
+					DeleteFromTable("dm.dm_defects","compid",id);
+					DeleteFromTable("dm.dm_defecthistory","compid",id);
 					DeleteFromTable("dm.dm_component","id",id);
 					if (cat != null) {
 						boolean removeCategory = !CategoryInDomain(id, cat.getId(), domainid, 1);
@@ -2607,10 +3553,10 @@ public class DMSession implements AutoCloseable  {
 				}
 				else
 				if (Type.equalsIgnoreCase("notify")) {
-					DeleteFromTable("dm.dm_notifyaccess","notifyid",id);
-					DeleteFromTable("dm.dm_notifyprops","notifyid",id);
-					DeleteFromTable("dm.dm_template","notifierid",id);
-					res = DeleteFromTable("dm.dm_"+Type,"id",id);
+			        DeleteFromTable("dm.dm_notifyaccess","notifyid",id);
+			        DeleteFromTable("dm.dm_notifyprops","notifyid",id);
+			        DeleteFromTable("dm.dm_template","notifierid",id);
+			        res = DeleteFromTable("dm.dm_"+Type,"id",id);
 				}
 				else
 				{
@@ -2619,7 +3565,7 @@ public class DMSession implements AutoCloseable  {
 					res = DeleteFromTable("dm.dm_"+Type,"id",id);
 				}
 			}		
-			getDBConnection().commit();
+			m_conn.commit();
 			if (fromAPI) {
 				out.print("{\"success\" : true}");
 			} else {
@@ -2641,13 +3587,13 @@ public class DMSession implements AutoCloseable  {
 		{
 			System.out.println("MoveObjectByTable table="+table+" id="+id+" TargetDomain="+TargetDomain);
 			
-			PreparedStatement stmt = getDBConnection().prepareStatement("UPDATE dm."+table+" SET domainid=? WHERE id=?");
+			PreparedStatement stmt = m_conn.prepareStatement("UPDATE dm."+table+" SET domainid=? WHERE id=?");
 			stmt.setInt(1,TargetDomain);
 			stmt.setInt(2,id);
 			stmt.execute();
 			String res=(stmt.getUpdateCount()<1)?"Failed to update "+table+" domain":"";
 			stmt.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return res;
 		}
 		catch (SQLException e)
@@ -2664,13 +3610,13 @@ public class DMSession implements AutoCloseable  {
 		{
 			System.out.println("MoveTemplate id="+id+" TargetNotifier="+TargetNotifier);
 			
-			PreparedStatement stmt = getDBConnection().prepareStatement("UPDATE dm.dm_template SET notifierid=? WHERE id=?");
+			PreparedStatement stmt = m_conn.prepareStatement("UPDATE dm.dm_template SET notifierid=? WHERE id=?");
 			stmt.setInt(1,TargetNotifier);
 			stmt.setInt(2,id);
 			stmt.execute();
 			String res=(stmt.getUpdateCount()<1)?"Failed to update notification template":"";
 			stmt.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return res;
 		}
 		catch (SQLException e)
@@ -2690,7 +3636,7 @@ public class DMSession implements AutoCloseable  {
 			// Check if the server is already associated with the target environment. If so, reject the move
 			//
 			String res = "";
-			PreparedStatement ck = getDBConnection().prepareStatement("SELECT count(*) FROM dm.dm_serversinenv WHERE serverid=? AND envid=?");
+			PreparedStatement ck = m_conn.prepareStatement("SELECT count(*) FROM dm.dm_serversinenv WHERE serverid=? AND envid=?");
 			ck.setInt(1,id);
 			ck.setInt(2,TargetEnvironment);
 			ResultSet rs = ck.executeQuery();
@@ -2700,7 +3646,7 @@ public class DMSession implements AutoCloseable  {
 			rs.close();
 			ck.close();
 			if (res.length()==0) {
-				PreparedStatement stmt = getDBConnection().prepareStatement("UPDATE dm.dm_serversinenv SET envid=? WHERE serverid=? AND envid=?");
+				PreparedStatement stmt = m_conn.prepareStatement("UPDATE dm.dm_serversinenv SET envid=? WHERE serverid=? AND envid=?");
 				stmt.setInt(1,TargetEnvironment);
 				stmt.setInt(2,id);
 				stmt.setInt(3,SourceEnvironment);
@@ -2708,9 +3654,9 @@ public class DMSession implements AutoCloseable  {
 				res=(stmt.getUpdateCount()<1)?"Failed to update dm_serversinenv domain":"";
 				stmt.close();
 				if (res.length()==0) {
-					PreparedStatement stmt2 = getDBConnection().prepareStatement("UPDATE dm.dm_environment SET modified=?,modifierid=? WHERE id IN (?,?)");
+					PreparedStatement stmt2 = m_conn.prepareStatement("UPDATE dm.dm_environment SET modified=?,modifierid=? WHERE id IN (?,?)");
 					stmt2.setLong(1,timeNow());
-					stmt2.setInt(2,getUserID());
+					stmt2.setInt(2,m_userID);
 					stmt2.setInt(3,TargetEnvironment);
 					stmt2.setInt(4,SourceEnvironment);
 					stmt2.execute();
@@ -2726,7 +3672,7 @@ public class DMSession implements AutoCloseable  {
 					RecordObjectUpdate(server, "Moved from Environment "+linkval2+" to Environment "+linkval3,TargetEnvironment);
 
 				}
-				getDBConnection().commit();
+				m_conn.commit();
 			}
 			return res;
 		}
@@ -2775,7 +3721,7 @@ public class DMSession implements AutoCloseable  {
 		{
 			System.out.println("MoveComponent id="+id+" TargetDomain="+TargetDomain);
 			
-			PreparedStatement stmt = getDBConnection().prepareStatement("UPDATE dm.dm_component SET domainid=? WHERE id=? OR parentid=?");
+			PreparedStatement stmt = m_conn.prepareStatement("UPDATE dm.dm_component SET domainid=? WHERE id=? OR parentid=?");
 			stmt.setInt(1,TargetDomain);
 			stmt.setInt(2,id);
 			stmt.setInt(3,id);
@@ -2787,7 +3733,7 @@ public class DMSession implements AutoCloseable  {
 				Domain domain = getDomain(TargetDomain);
 				RecordObjectUpdate(comp,"Moved from domain "+comp.getDomain().getName()+" to domain "+domain.getName());
 			}
-			getDBConnection().commit();
+			m_conn.commit();
 			return res;
 		}
 		catch (SQLException e)
@@ -2799,6 +3745,13 @@ public class DMSession implements AutoCloseable  {
 		
 	}
 	
+ public String MoveApplication(Application app,Domain TargetDomain, String note)
+ {
+  RecordObjectUpdate(app,"Moved from domain "+app.getDomain().getName()+" to domain "+TargetDomain.getName());
+  RecordObjectUpdate(app,note);
+  return MoveObjectByTable("dm_application",app.getId(),TargetDomain.getId());
+ }
+ 
 	private String MoveEnvironment(int id,int TargetDomain)
 	{
 		Environment env = getEnvironment(id,false);
@@ -2882,12 +3835,12 @@ public class DMSession implements AutoCloseable  {
 			int Exists=0;
 			try
 			{
-				PreparedStatement st1 = getDBConnection().prepareStatement("SELECT notifierid FROM dm.dm_template where id=?");
+				PreparedStatement st1 = m_conn.prepareStatement("SELECT notifierid FROM dm.dm_template where id=?");
 				st1.setInt(1, id);
 				ResultSet rs1 = st1.executeQuery();
 				if (rs1.next()) {
 					// notifier found
-					PreparedStatement st = getDBConnection().prepareStatement("SELECT id,name FROM dm.dm_template where name=? AND id<>? AND notifierid=?");
+					PreparedStatement st = m_conn.prepareStatement("SELECT id,name FROM dm.dm_template where name=? AND id<>? AND notifierid=?");
 					st.setString(1,NewName);
 					st.setInt(2,id);
 					st.setInt(3,rs1.getInt(1));
@@ -2901,12 +3854,12 @@ public class DMSession implements AutoCloseable  {
 						//
 						// template name doesn't exist in the same notifier - rename it
 						//
-						PreparedStatement st2 = getDBConnection().prepareStatement("UPDATE dm.dm_template SET name=? WHERE id=?");
+						PreparedStatement st2 = m_conn.prepareStatement("UPDATE dm.dm_template SET name=? WHERE id=?");
 						st2.setString(1,NewName);
 						st2.setInt(2,id);
 						st2.execute();
 						st2.close();
-						getDBConnection().commit();
+						m_conn.commit();
 					}
 				}
 				rs1.close();
@@ -2934,12 +3887,12 @@ public class DMSession implements AutoCloseable  {
     if (Type.equalsIgnoreCase("procedure")) Type="action";
     if (Type.equalsIgnoreCase("function")) Type="action";
     
-				PreparedStatement st1 = getDBConnection().prepareStatement("SELECT domainid FROM dm.dm_"+Type+" where id=?");
+				PreparedStatement st1 = m_conn.prepareStatement("SELECT domainid FROM dm.dm_"+Type+" where id=?");
 				st1.setInt(1, id);
 				ResultSet rs1 = st1.executeQuery();
 				if (rs1.next()) {
 					// id is valid and we have its domain
-					PreparedStatement st = getDBConnection().prepareStatement("SELECT id,name FROM dm.dm_"+Type+" where name=? AND id<>? AND domainid=?");
+					PreparedStatement st = m_conn.prepareStatement("SELECT id,name FROM dm.dm_"+Type+" where name=? AND id<>? AND domainid=?");
 					st.setString(1,NewName);
 					st.setInt(2,id);
 					st.setInt(3,rs1.getInt(1));
@@ -2953,12 +3906,12 @@ public class DMSession implements AutoCloseable  {
 						//
 						// doesn't exist in one of our domains - rename it
 						//
-						PreparedStatement st2 = getDBConnection().prepareStatement("UPDATE dm.dm_"+Type+" SET name=? WHERE id=?");
+						PreparedStatement st2 = m_conn.prepareStatement("UPDATE dm.dm_"+Type+" SET name=? WHERE id=?");
 						st2.setString(1,NewName);
 						st2.setInt(2,id);
 						st2.execute();
 						st2.close();
-						getDBConnection().commit();
+						m_conn.commit();
 					}
 				}
 				rs1.close();
@@ -2984,12 +3937,12 @@ public class DMSession implements AutoCloseable  {
   {
    System.out.println("CheckIfObjectExists Type="+Type+" NewName="+NewName);
    if (Type.equalsIgnoreCase("lifecycle")) Type="domain";
-   PreparedStatement st1 = getDBConnection().prepareStatement("SELECT domainid FROM dm.dm_"+Type+" where id=?");
+   PreparedStatement st1 = m_conn.prepareStatement("SELECT domainid FROM dm.dm_"+Type+" where id=?");
    st1.setInt(1, id);
    ResultSet rs1 = st1.executeQuery();
    if (rs1.next()) {
     // id is valid and we have its domain
-    PreparedStatement st = getDBConnection().prepareStatement("SELECT id,name FROM dm.dm_"+Type+" where name=? AND id<>? AND domainid=? AND status<>'D'");
+    PreparedStatement st = m_conn.prepareStatement("SELECT id,name FROM dm.dm_"+Type+" where name=? AND id<>? AND domainid=? AND status<>'D'");
     st.setString(1,NewName);
     st.setInt(2,id);
     st.setInt(3,rs1.getInt(1));
@@ -3022,106 +3975,125 @@ public class DMSession implements AutoCloseable  {
 		return (m_timefmt==null)?m_defaulttimefmt:m_timefmt;
 	}
 	
- public User getUser(int userid) {
-  // Specific user
-  if (m_userhash != null && (System.currentTimeMillis() - m_userhashCreationTime) > 2000) {
-   // User hash is over 2 seconds old. Delete it. We only need this for caching of
-   // user when we're making the same call to getUser in rapid succession.
-   m_userhash.clear();
-   m_userhash = null;
-  }
-   
-  if (m_userhash == null) {
-     m_userhash = new Hashtable<Integer,User>();
-     m_userhashCreationTime = System.currentTimeMillis();
-  }
-  User cached = m_userhash.get(userid);
-  if (cached != null) {
-   return cached; // already found this domain previously
-  }
-  
-  String sql = "SELECT u.name, u.domainid, u.email, u.realname, "
-    + "  u.phone, u.locked, u.forcechange, u.lastlogin, u.status, "
-    + "  u.datefmt, u.timefmt, u.datasourceid, "
-    + "  uc.id, uc.name, uc.realname, u.created, "
-    + "  um.id, um.name, um.realname, u.modified "
-    //+ "  ,uo.id, uo.name, uo.realname, g.id, g.name "
-    + "FROM dm.dm_user u "
-    + "LEFT OUTER JOIN dm.dm_user uc ON u.creatorid = uc.id "  // creator
-    + "LEFT OUTER JOIN dm.dm_user um ON u.modifierid = um.id "  // modifier
-    //+ "LEFT OUTER JOIN dm.dm_user uo ON u.ownerid = uo.id "  // owner user
-    //+ "LEFT OUTER JOIN dm.dm_usergroup g ON u.ogrpid = g.id "  // owner group
-    + "WHERE u.id=?";
-  try
-  {
-   if (userid < 0)
-   {
-    User ret = new User(this,-1,"","");
-    ret.setEmail("");
-    ret.setPhone("");
-    ret.setAccountLocked(false);
-    ret.setForceChangePass(false);
-    return ret;
-   }
-   
-   PreparedStatement stmt = m_conn.prepareStatement(sql);
-   stmt.setInt(1, userid);
-   ResultSet rs = stmt.executeQuery();
-   User ret = null;
-   if(rs.next()) {
-    int domainid = rs.getInt(2);
-    // if(ValidDomain(domainid)) {
-     ret = new User(this, userid, rs.getString(1), rs.getString(4));
-     ret.setDomainId(domainid);
-     ret.setEmail(rs.getString(3));
-     ret.setPhone(rs.getString(5));
-     ret.setAccountLocked(getBoolean(rs, 6, false));
-     ret.setForceChangePass(getBoolean(rs, 7, false));
-     java.sql.Timestamp lastLogin = rs.getTimestamp(8);
-     
-     if(lastLogin != null) {
-      ret.setLastLogin((int) (lastLogin.getTime()/1000));
-     }
-     getStatus(rs, 9, ret);
-     ret.setDateFmt(rs.getString(10));
-     ret.setTimeFmt(rs.getString(11));
-     int dsid = getInteger(rs,12,0);
-     if (dsid>0) {
-      Datasource ds = this.getDatasource(dsid,true);
-      ret.setDatasource(ds);
-     }
-     // ret.setDomain(getDomainName(domainid));
-     getCreatorModifier(rs, 13, ret);
-    // }
-   }
-   rs.close();
-   stmt.close();
-   m_conn.commit();
-   m_userhash.put(userid,ret);
-   return ret;
-  }
-  catch(SQLException e)
-  {
-   e.printStackTrace();
-   rollback();
-  }
-  throw new RuntimeException("Unable to retrieve user from database");
- }
+	public User getUser(int userid) {
+		// Specific user
+		if (m_userhash != null && (System.currentTimeMillis() - m_userhashCreationTime) > 2000) {
+			// User hash is over 2 seconds old. Delete it. We only need this for caching of
+			// user when we're making the same call to getUser in rapid succession.
+			m_userhash.clear();
+			m_userhash = null;
+		}
+		 
+		if (m_userhash == null) {
+			  m_userhash = new Hashtable<Integer,User>();
+			  m_userhashCreationTime = System.currentTimeMillis();
+		}
+		User cached = m_userhash.get(userid);
+		if (cached != null) {
+			return cached;	// already found this domain previously
+		}
+		
+		String sql = "SELECT u.name, u.domainid, u.email, u.realname, "
+				+ "  u.phone, u.locked, u.forcechange, u.lastlogin, u.status, "
+				+ "  u.datefmt, u.timefmt, u.datasourceid, "
+				+ "  uc.id, uc.name, uc.realname, u.created, "
+				+ "  um.id, um.name, um.realname, u.modified "
+				//+ "  ,uo.id, uo.name, uo.realname, g.id, g.name "
+				+ "FROM dm.dm_user u "
+				+ "LEFT OUTER JOIN dm.dm_user uc ON u.creatorid = uc.id "		// creator
+				+ "LEFT OUTER JOIN dm.dm_user um ON u.modifierid = um.id "		// modifier
+				//+ "LEFT OUTER JOIN dm.dm_user uo ON u.ownerid = uo.id "		// owner user
+				//+ "LEFT OUTER JOIN dm.dm_usergroup g ON u.ogrpid = g.id "		// owner group
+				+ "WHERE u.id=?";
+		try
+		{
+			if (userid < 0)
+			{
+			 User ret = new User(this,-1,"","");
+			 ret.setEmail("");
+			 ret.setPhone("");
+			 ret.setAccountLocked(false);
+			 ret.setForceChangePass(false);
+			 return ret;
+			}
+			
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
+			stmt.setInt(1, userid);
+			ResultSet rs = stmt.executeQuery();
+			User ret = null;
+			if(rs.next()) {
+				int domainid = rs.getInt(2);
+				// if(ValidDomain(domainid)) {
+					ret = new User(this, userid, rs.getString(1), rs.getString(4));
+					ret.setDomainId(domainid);
+					ret.setEmail(rs.getString(3));
+					ret.setPhone(rs.getString(5));
+					ret.setAccountLocked(getBoolean(rs, 6, false));
+					ret.setForceChangePass(getBoolean(rs, 7, false));
+					java.sql.Timestamp lastLogin = rs.getTimestamp(8);
+					
+					if(lastLogin != null) {
+						ret.setLastLogin((int) (lastLogin.getTime()/1000));
+					}
+					getStatus(rs, 9, ret);
+					ret.setDateFmt(rs.getString(10));
+					ret.setTimeFmt(rs.getString(11));
+					int dsid = getInteger(rs,12,0);
+					if (dsid>0) {
+						Datasource ds = this.getDatasource(dsid,true);
+						ret.setDatasource(ds);
+					}
+					// ret.setDomain(getDomainName(domainid));
+					getCreatorModifier(rs, 13, ret);
+				// }
+			}
+			rs.close();
+			stmt.close();
+			m_conn.commit();
+			m_userhash.put(userid,ret);
+			return ret;
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+			rollback();
+		}
+		throw new RuntimeException("Unable to retrieve user from database");
+	}
 	
 	
 	public boolean updateUser(User user, SummaryChangeSet changes)
 	{
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_user ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
+		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_user ");
+		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
+		
+		String newpassword = null;
+		boolean changeOwnPassword = false;
 				
 		for(SummaryField field : changes) {
 			switch(field) {
+	   case DOMAIN_FULLNAME: {
+     if (changes.get(field) == null)
+       update.add(", domainid = ?", Null.INT);
+     else
+     {
+      int id =  new Integer((String)changes.get(field)).intValue();
+      update.add(", domainid = ?", id);
+     }
+    } 
+    break; 
 			case USER_REALNAME:  update.add(", realname = ?", changes.get(field)); break;
 			case USER_EMAIL:	 update.add(", email = ?", changes.get(field)); break;
 			case USER_PHONE:	 update.add(", phone = ?", changes.get(field)); break;
 			case USER_PASSWORD: {
-				String hash = encryptPassword((String) changes.get(field));
+				newpassword = (String)changes.get(field);
+				String hash = encryptPassword(newpassword);
+				System.out.println("PASS=" + newpassword + "," + hash);
 				update.add(", passhash = ?", hash);
+				// If we're changing our own password, ensure the p2 cookie is updated
+				if (user.getId() == m_userID) {
+					changeOwnPassword = true;
+				}
 				}
 				break;
 			case USER_LOCKED:	 update.add(", locked = ?", changes.getBoolean(field)); break;
@@ -3134,6 +4106,10 @@ public class DMSession implements AutoCloseable  {
 			case USER_TIME_FMT: 
 				update.add(", timefmt = ?",changes.get(field));
 				m_timefmt = (String) changes.get(field);
+				break;
+			case USER_DATASOURCE:
+				DMObject ds = (Datasource) changes.get(field);
+				update.add(", datasourceid = ?", (ds != null) ? ds.getId() : Null.INT);
 				break;
 			default:
 				if(field.value() <= SummaryField.OBJECT_MAX) {
@@ -3150,9 +4126,12 @@ public class DMSession implements AutoCloseable  {
 		try {
 			update.execute();
 			RecordObjectUpdate(user,changes);
-			getDBConnection().commit();
+			m_conn.commit();
 			update.close();
 			m_userhash.remove(user.getId());	// in case it's cached.
+			if (changeOwnPassword) {
+				m_password = newpassword;
+			}
 			return true;
 		} catch(SQLException e) {
 			e.printStackTrace();
@@ -3176,14 +4155,13 @@ public class DMSession implements AutoCloseable  {
 				sql = 		"select a.id,a.name,a.email,a.domainid from dm.dm_usergroup a "
 						+	"where a.domainid in ("+m_domainlist+") "
 						+ 	"and a.id not in (select b.groupid from dm.dm_usersingroup b where b.userid=?) "
-						+	"and a.id in (select c.groupid from dm.dm_usersingroup c where c.userid="+getUserID()+") "
-						+	"and a.status='N'"
-						+	"order by a.name";
+						+	" and a.status='N'"
+						+	" order by a.name";
 			}
 		}
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, uid);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next())
@@ -3193,10 +4171,13 @@ public class DMSession implements AutoCloseable  {
 				if(gid != UserGroup.EVERYONE_ID) {
 					UserGroup group = new UserGroup(this,gid,rs.getString(2));
 					group.setEmail(rs.getString(4));
+					group.setDomainId(rs.getInt(4));
 					ret.add(group);
 				}
 			}
 			rs.close();
+			stmt.close();
+			m_conn.commit();
 			System.out.println("returning ret size="+ret.size());
 			return ret;
 		}
@@ -3221,7 +4202,7 @@ public class DMSession implements AutoCloseable  {
 	// This is only used for access control checking - so we add automatic membership of the EVERYONE group here
 	public UserGroupList getGroupsForCurrentUser()
 	{
-		UserGroupList ret = getAssociatedGroups(getUserID(), true);
+		UserGroupList ret = getAssociatedGroups(m_userID, true);
 		if(ret == null) {
 			ret = new UserGroupList();
 		}
@@ -3240,7 +4221,7 @@ public class DMSession implements AutoCloseable  {
 		}
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, tid);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next())
@@ -3268,13 +4249,13 @@ public class DMSession implements AutoCloseable  {
 		String sql= "insert into dm.dm_taskaccess(taskid,usrgrpid) values(?,?)";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(csql);
+			PreparedStatement stmt = m_conn.prepareStatement(csql);
 			stmt.setInt(1, taskid);
 			stmt.setInt(2, groupid);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
 				if (rs.getInt(1)==0) {
-					PreparedStatement stmt2 = getDBConnection().prepareStatement(sql);
+					PreparedStatement stmt2 = m_conn.prepareStatement(sql);
 					stmt2.setInt(1, taskid);
 					stmt2.setInt(2, groupid);
 					stmt2.execute();
@@ -3282,7 +4263,7 @@ public class DMSession implements AutoCloseable  {
 				}
 			}
 			stmt.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch(SQLException e)
@@ -3298,12 +4279,12 @@ public class DMSession implements AutoCloseable  {
 		String sql= "delete from dm.dm_taskaccess where taskid=? and usrgrpid=?";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, taskid);
 			stmt.setInt(2, groupid);
 			stmt.execute();
 			stmt.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch(SQLException e)
@@ -3337,7 +4318,7 @@ public class DMSession implements AutoCloseable  {
 			}
    
 			UserGroup ret = null;
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, groupid);
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()) {
@@ -3362,6 +4343,7 @@ public class DMSession implements AutoCloseable  {
 				// 	}
 			}
 			rs.close();
+			stmt.close();
 			return ret;
 		}
 		catch(SQLException e)
@@ -3375,11 +4357,21 @@ public class DMSession implements AutoCloseable  {
 	
 	public boolean updateGroup(UserGroup group, SummaryChangeSet changes)
 	{
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_usergroup ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
+		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_usergroup ");
+		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
 				
 		for(SummaryField field : changes) {
 			switch(field) {
+	   case DOMAIN_FULLNAME: {
+     if (changes.get(field) == null)
+       update.add(", domainid = ?", Null.INT);
+     else
+     {
+      int id =  new Integer((String)changes.get(field)).intValue();
+      update.add(", domainid = ?", id);
+     }
+    } 
+    break; 
 			case GROUP_EMAIL:	update.add(", email = ?", changes.get(field)); break;
 			default:
 				if(field.value() <= SummaryField.OBJECT_MAX) {
@@ -3395,7 +4387,7 @@ public class DMSession implements AutoCloseable  {
 		
 		try {
 			update.execute();
-			getDBConnection().commit();
+			m_conn.commit();
 			update.close();
 			return true;
 		} catch(SQLException e) {
@@ -3407,7 +4399,7 @@ public class DMSession implements AutoCloseable  {
 
 	
 	public List<UserGroup> getGroups(Integer userid) {
-		String sql="select id,name,domainid,email from dm.dm_usergroup where status<> 'D' domainid in ("+m_domainlist+")";
+		String sql="select id,name,domainid,email from dm.dm_usergroup where status<> 'D' and domainid in ("+m_domainlist+")";
 		if (userid > 0)
 		{
 			sql=sql+ " and id in (select groupid from dm.dm_usersingroup where userid="+userid+")";
@@ -3415,7 +4407,7 @@ public class DMSession implements AutoCloseable  {
 		try
 		{
 			UserGroupList ret = new UserGroupList();
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next())
 			{
@@ -3448,7 +4440,7 @@ public class DMSession implements AutoCloseable  {
 		try
 		{
 			System.out.println("getGroupsInDomain("+domainid+")");
-			PreparedStatement stmt = getDBConnection().prepareStatement("select id,name,email from dm.dm_usergroup where domainid=?");
+			PreparedStatement stmt = m_conn.prepareStatement("select id,name,email from dm.dm_usergroup where status = 'N' and domainid=?");
 			stmt.setInt(1, domainid);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next())
@@ -3459,6 +4451,7 @@ public class DMSession implements AutoCloseable  {
 				ret.add(group);
 			}
 			rs.close();
+			stmt.close();
 			//
 			// Now recurse upwards to grab the usergroups in the parent domains
 			//
@@ -3492,15 +4485,15 @@ public class DMSession implements AutoCloseable  {
 		if (gid == 1) {
 			if (ingroup) {
 				// Everyone - just list all users in our domain list
-				sql = "select a.id,a.name,a.realname,a.email,a.domainid from dm.dm_user a where a.domainid in ("+m_domainlist+") order by a.name";
+				sql = "select a.id,a.name,a.realname,a.email,a.domainid from dm.dm_user a where a.domainid in ("+m_domainlist+") and a.status = 'N' order by a.name";
 			} else {
 				sql = null;	// No one is NOT in  the "Everyone" group
 			}
 		} else {
 			if (ingroup) {
-				sql = "select a.id,a.name,a.realname,a.email,a.domainid from dm.dm_user a,dm.dm_usersingroup b where b.groupid=? and a.id=b.userid order by a.name";
+				sql = "select a.id,a.name,a.realname,a.email,a.domainid from dm.dm_user a,dm.dm_usersingroup b where b.groupid=? and a.id=b.userid  and a.status = 'N' order by a.name";
 			} else {
-				sql = "select a.id,a.name,a.realname,a.email,a.domainid from dm.dm_user a where a.domainid in ("+m_domainlist+") and a.id not in (select b.userid from dm.dm_usersingroup b where b.groupid=?) order by a.name";
+				sql = "select a.id,a.name,a.realname,a.email,a.domainid from dm.dm_user a where a.domainid in ("+m_domainlist+") and a.id not in (select b.userid from dm.dm_usersingroup b where b.groupid=?)  and a.status = 'N' order by a.name";
 			}
 		}
 		System.out.println("sql="+sql);
@@ -3508,19 +4501,22 @@ public class DMSession implements AutoCloseable  {
 		try
 		{
 			if (sql != null) {
-				PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+				PreparedStatement stmt = m_conn.prepareStatement(sql);
 				if (gid != 1) stmt.setInt(1, gid);
 				ResultSet rs = stmt.executeQuery();
 				while (rs.next())
 				{
 					User user = new User();
+					user.setSession(this);
 					user.setEmail(rs.getString(4));
 					user.setId(rs.getInt(1));
 					user.setName(rs.getString(2));;
 					user.setRealName(rs.getString(3));
+					user.setDomainId(rs.getInt(5));
 					ret.add(user);
 				}
 				rs.close();
+				stmt.close();
 			}
 			System.out.println("returning ret size="+ret.size());
 			ret.sort();
@@ -3545,10 +4541,29 @@ public class DMSession implements AutoCloseable  {
 	public int AddUserToGroup(int gid,int uid)
 	{
 		System.out.println("AddUserToGroup, gid="+gid+" uid="+uid);
+		
+		String exists = "select count(*) from dm.dm_usersingroup where userid = ? and groupid = ?";
+		
 		String sql="insert into dm.dm_usersingroup(userid,groupid) values(?,?)";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+   PreparedStatement estmt = m_conn.prepareStatement(exists);
+   estmt.setInt(1, uid);
+   estmt.setInt(2, gid);
+   ResultSet rs = estmt.executeQuery();
+   if (rs.next()) 
+   {
+    if (rs.getInt(1)>0)
+    {
+     rs.close();
+     estmt.close();
+     return 0;
+    }
+   }
+   rs.close();
+   estmt.close();
+   
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, uid);
 			stmt.setInt(2, gid);
 			stmt.execute();
@@ -3557,7 +4572,7 @@ public class DMSession implements AutoCloseable  {
 			User user = getUser(uid);
 			RecordObjectUpdate(grp,"Added user "+user.getName()+" to Group");
 			RecordObjectUpdate(user,"Added to Group "+grp.getName());
-			getDBConnection().commit();
+			m_conn.commit();
 			return 0;
 		}
 		catch(SQLException e)
@@ -3574,7 +4589,7 @@ public class DMSession implements AutoCloseable  {
 		String sql="delete from dm.dm_usersingroup where userid=? and groupid=?";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, uid);
 			stmt.setInt(2, gid);
 			stmt.execute();
@@ -3583,7 +4598,7 @@ public class DMSession implements AutoCloseable  {
 			User user = getUser(uid);
 			RecordObjectUpdate(grp,"Removed user "+user.getName()+" from Group");
 			RecordObjectUpdate(user,"Removed from Group "+grp.getName());
-			getDBConnection().commit();
+			m_conn.commit();
 			return 0;
 		}
 		catch(SQLException e)
@@ -3594,499 +4609,69 @@ public class DMSession implements AutoCloseable  {
 		throw new RuntimeException("Unable to remove user from group in database");
 	}
 	
-	public String getBuildLog(int jobid,int buildid)
-	{
-		String sql1="select	a.value,a.encrypted,b.id	"
-				+	"from	dm.dm_buildengineprops	a,	"
-				+	"	dm.dm_buildjob		b	"
-				+	"where	a.builderid=b.builderid	"
-				+	"and	b.id=?";
-		try {
-			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
-			stmt1.setInt(1,jobid);
-			ResultSet rs1 = stmt1.executeQuery();
-			if (rs1.next()) {
-				String serverurl = rs1.getString(1);
-				String encrypted = rs1.getString(2);
-				int buildjobid=rs1.getInt(3);
-				if (encrypted != null && encrypted.equalsIgnoreCase("y")) {
-					serverurl = new String(Decrypt3DES(serverurl, m_passphrase));
-				}
-				BuildJob buildjob = getBuildJob(buildjobid);
-				Builder engine = getBuilder(buildjob.getBuilderId());
-				Credential cred = engine.getCredential();
-				// http://localhost:8081/job/IT%20Guys/142/consoleText
-				String project = buildjob.getProjectName().replaceAll(" ", "%20");
-				
-				if (project.contains("/"))
-				 project = project.replace("/", "/job/");
-				
-				String res = getJSONFromServer(serverurl+"/job/"+project+"/"+buildid+"/consoleText",cred);
-				System.out.println("got console output:");
-				System.out.println(res);
-				return res;
-			}
-			rs1.close();
-			stmt1.close();
-		} catch(SQLException ex) {
-			ex.printStackTrace();
-			rollback();
-		}
-		return null;
-	}
 	
-	public int getBuildTime(int jobid,int buildid)
-	{		
-		BuildJob buildjob = getBuildJob(jobid);
-		Builder builder = getBuilder(buildjob.getBuilderId());
-		Credential cred = builder.getCredential();
-		String server = getBuildServerURL(buildjob.getBuilderId());
-		String project = buildjob.getProjectName().replaceAll(" ", "%20");
-  
-		if (project.contains("/"))
-          project = project.replace("/", "/job/");
-  
-		String url = server + "/job/"+project+"/"+buildid+"/api/json";
-		System.out.println("getBuildTime, url="+url);
-		String res = getJSONFromServer(url, cred);
-		int timestamp=0;
-		try {
-			JsonObject buildObject = new JsonParser().parse(res).getAsJsonObject();
-			timestamp = (int)(buildObject.get("timestamp").getAsLong() / 1000);
-			System.out.println("result is "+timestamp);
-		} catch(JsonSyntaxException ex) {
-			System.out.println("JSON syntax exception:");
-			System.out.println(res);
-		}
-		return timestamp;
-	}
-	
-	
-	public JSONObject getBuildDetails(int jobid,int buildid)
-	{
-		JSONObject ret = new JSONObject();
-		BuildJob buildjob = getBuildJob(jobid);
-		ret.add("buildjob",buildjob.getLinkJSON());
-		Builder builder = getBuilder(buildjob.getBuilderId());
-		ret.add("builder", builder.getLinkJSON());
-		ret.add("commit",buildjob.getBuildCommitID(buildid));
-		ret.add("timestamp",formatDateToUserLocale(buildjob.getBuildTime(buildid)));
-		ret.add("duration", buildjob.getBuildDuration(buildid));
-		return ret;
-	}
-	
-	private String getBuildServerURL(int builderid)
-	{
-		String sql1="select value,encrypted from dm.dm_buildengineprops where name='Server URL' and builderid = ?";
-		String server=null;
-		try {
-			PreparedStatement stmt1=getDBConnection().prepareStatement(sql1);
-			stmt1.setInt(1,builderid);
-			ResultSet rs1 = stmt1.executeQuery();
-			if (rs1.next()) {
-				server = rs1.getString(1);
-				String encrypted = getString(rs1,2,"N");
-				if (encrypted.equalsIgnoreCase("y")) {
-					server = new String(Decrypt3DES(server,m_passphrase));
-				}
-			}
-			rs1.close();
-			stmt1.close();
-		} catch (SQLException ex) {
-			
-		}
-		return server;
-	}
-	
-	public int getBuildDuration(int jobid,int buildid)
-	{
-		BuildJob buildjob = getBuildJob(jobid);
-		Builder builder = getBuilder(buildjob.getBuilderId());
-		Credential cred = builder.getCredential();
-		String server = getBuildServerURL(buildjob.getBuilderId());
-		String project = buildjob.getProjectName().replaceAll(" ", "%20");
-		
-        if (project.contains("/"))
-          project = project.replace("/", "/job/");
-  
-		String url = server + "/job/"+project+"/"+buildid+"/api/json";
-		System.out.println("getBuildDuration, url="+url);
-		String res = getJSONFromServer(url, cred);
-		int duration=0;
-		try {
-			JsonObject buildObject = new JsonParser().parse(res).getAsJsonObject();
-			duration = buildObject.get("duration").getAsInt();
-			System.out.println("result is "+duration);
-		} catch(JsonSyntaxException ex) {
-			System.out.println("JSON syntax exception:");
-			System.out.println(res);
-		}
-		return duration;
-	}
-
-	
-	public String getBuildCommitID(int jobid,int buildid)
-	{
-		String ret = "";
-		String sql = "SELECT commit FROM dm.dm_buildhistory WHERE buildjobid=? AND buildnumber=?";
-		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			stmt.setInt(1,jobid);
-			stmt.setInt(2,buildid);
-			ResultSet rs = stmt.executeQuery();
-			while (rs.next()) {
-				// Should only be one row
-				ret = rs.getString(1);
-			}
-			rs.close();
-			stmt.close();
-		} catch(SQLException ex) {
-			System.out.println("Failed to get commit id from build("+jobid+","+buildid+") - "+ex.getMessage());
-			ex.printStackTrace();
-		}
-		return ret;
-	}
-	
-	public JSONArray getBuildFiles(int jobid,int buildid)
-	{
-		System.out.println("getBuildFiles("+jobid+","+buildid+")");
-		JSONArray ret = new JSONArray();
-		String sql = "select filename from dm.dm_buildfiles where buildnumber=? and buildjobid=?";
-		try {
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql);
-			stmt1.setInt(1,buildid);
-			stmt1.setInt(2,jobid);
-			ResultSet rs1 = stmt1.executeQuery();
-			while (rs1.next()) {
-				ret.add(rs1.getString(1));
-			}
-			rs1.close();
-			stmt1.close();
-			return ret;
-		} catch(SQLException ex) {
-			
-		}
-		return null;
-	}
-	
- 
- public ArrayList<String> getBuildFilesList(int jobid,int buildid)
+ public JSONObject getSaasEnginesStatus(int userid)
  {
-  System.out.println("getBuildFiles("+jobid+","+buildid+")");
-  ArrayList<String> ret = new ArrayList<String>();
-  String sql = "select filename from dm.dm_buildfiles where buildnumber=? and buildjobid=?";
-  try {
-   PreparedStatement stmt1 = getDBConnection().prepareStatement(sql);
-   stmt1.setInt(1,buildid);
-   stmt1.setInt(2,jobid);
-   ResultSet rs1 = stmt1.executeQuery();
-   while (rs1.next()) {
-    ret.add(rs1.getString(1));
+  JSONObject ret = new JSONObject();
+
+  if (m_domainlist == null || m_domainlist.length() == 0)
+   GetDomains(userid);
+  
+  String[] parts = m_domainlist.split(",");
+
+  
+  int runningcnt = 0;
+  int totalcnt = 0;
+
+  Long curtime = timeNow();
+ 
+  String sql = "select lastseen from dm.dm_engine a, dm.dm_saasclients b, dm.dm_domain c where a.clientid = b.clientid and a.domainid = c.id and c.status = 'N' and a.status = 'N' and a.domainid = ?";
+
+  if (parts != null)
+  { 
+  for (int i=0;i<parts.length;i++)
+  {
+   Integer child = 0;
+   try
+   {
+    child = new Integer(parts[i]).intValue();
    }
-   rs1.close();
-   stmt1.close();
-   return ret;
-  } catch(SQLException ex) {
+   catch (NumberFormatException e)
+   {
+    
+   }
    
+   try
+   {
+    PreparedStatement stmt1 = m_conn.prepareStatement(sql);
+    stmt1.setInt(1, child);
+    ResultSet rs1 = stmt1.executeQuery();
+    if (rs1.next())
+    {
+     Long lastseen = rs1.getLong(1);
+
+     totalcnt++;
+     
+     if (!rs1.wasNull())
+     {
+      if ((curtime - lastseen) < 120)
+       runningcnt++;
+     }
+    }
+    rs1.close();
+    stmt1.close();
+   }
+   catch (SQLException ex)
+   {
+   }
   }
+  }
+  ret.add("runningcnt", runningcnt);
+  ret.add("totalcnt", totalcnt);
   return ret;
  }
  
 
- 
-	public JSONArray getBuildTargets(int jobid,int buildid)
-	{
-		System.out.println("getBuildTargetsForJob("+jobid+","+buildid+")");
-		JSONArray ret = new JSONArray();
-		String sql1 = "select	a.id,a.name,a.parentid,b.deploymentid,c.id,c.name,coalesce(d.started,0)	"
-				+	"from	dm.dm_component	a	"
-				+	"left outer join dm.dm_compsonserv b on b.buildnumber=? and a.id=b.compid	"
-				+	"left outer join dm.dm_server c on c.id=b.serverid	"
-				+	"left outer join dm.dm_deployment d on d.deploymentid=b.deploymentid "
-				+	"where	a.buildjobid=? and b.deploymentid is not null order by 7 desc";
-		try {
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
-			stmt1.setInt(1,buildid);
-			stmt1.setInt(2,jobid);
-			ResultSet rs1 = stmt1.executeQuery();
-			while (rs1.next()) {
-				JSONObject rowobj = new JSONObject();
-				JSONObject compobj = new JSONObject();
-				compobj.add("id",rs1.getInt(1));
-				compobj.add("name", rs1.getString(2));
-				compobj.add("type",getInteger(rs1,3,0)>0?"cv":"co");
-				JSONObject servobj = new JSONObject();
-				servobj.add("id",rs1.getInt(5));
-				servobj.add("name",rs1.getString(6));
-				rowobj.add("component", compobj);
-				rowobj.add("server",servobj);
-				rowobj.add("deploymentid", rs1.getInt(4));
-				int dt = getInteger(rs1,7,0);
-				if (dt>0) {
-					rowobj.add("dt",formatDateToUserLocale(dt));
-				} else {
-					rowobj.add("dt","");
-				}
-				ret.add(rowobj);
-			}
-			rs1.close();
-			stmt1.close();
-			return ret;
-		} catch(SQLException ex) {
-			
-		}
-		return null;
-	}
-	
-	public JSONArray recordJenkinsBuild(String encodedurl) throws Exception
-	{
-		JSONArray ret = new JSONArray();
-		System.out.println("recordJenkinsBuild encodedurl=["+encodedurl+"]");
-    	try {
-			String buildurl = java.net.URLDecoder.decode(encodedurl, "UTF-8");
-			System.out.println("buildurl=["+buildurl+"]");
-			int jns = buildurl.lastIndexOf("/job/")+5;	// Job Name Start
-	    	String jobname = buildurl.substring(jns,buildurl.indexOf("/",jns));
-	    	
-	    	if (buildurl.indexOf("/job/") != buildurl.lastIndexOf("/job/"))
-	    	{
-	    	 String work = buildurl.substring(buildurl.indexOf("/job/")+5);
-	    	 work = work.substring(0, work.lastIndexOf("/"));
-	    	 work = work.substring(0, work.lastIndexOf("/"));
-	    	 work = work.replaceAll("/job/", "/");
-	    	 jobname=work;
-	    	}
-	    	
-	    	System.out.println("jobname=["+jobname+"]");
-	    	int bns = buildurl.lastIndexOf('/',buildurl.length()-2);
-	    	int buildno = Integer.parseInt(buildurl.substring(bns+1,buildurl.length()-1));
-	    	System.out.println("build number="+buildno);
-	    	int sp=(buildurl.startsWith("http://"))?7:8;	
-	    	String server = buildurl.substring(0,buildurl.indexOf('/',sp));
-	    	System.out.println("Jenkins Server=["+server+"]");
-	    	//
-	    	// Note, this just updates the builds for the latest version of any component
-	    	// with the specified build job. The Jenkins plug-in may need to pass Branch
-	    	// along to make sure this works with the latest version of a component on the
-	    	// Branch. Worry about this later
-	    	//
-	    	System.out.println("Looking for Build Engine with Server URL or Jenkins Match URL of ["+server+"]");
-	    	String sql1 = 	"select a.id,a.name,b.value,b.encrypted,c.id,c.name,d.id	"	+
-					"from 	dm.dm_buildjob	a,			"	+
-					"		dm.dm_buildengineprops b,	"	+
-					"		dm.dm_component c,			"	+
-					"		dm.dm_buildengine d			"	+
-					"where	a.projectname=?				"	+
-					"and	a.builderid=b.builderid		"	+
-					"and	b.name='Server URL'			"	+
-					"and	c.buildjobid = a.id			"	+
-					"and	d.id = a.builderid			"	+
-					"and	c.status='N'				"	+
-					"and    not exists (select x.id from dm.dm_component x where x.predecessorid = c.id and x.status='N') " +
-					"and	d.domainid in ("+m_domainlist+")";
-	    	String sql2 = "INSERT INTO dm.dm_buildhistory(buildjobid,buildnumber,compid,userid,timestamp,success) VALUES(?,?,?,?,?,?)";
-	    	String sql3 = "UPDATE dm.dm_component SET lastbuildnumber=? WHERE id=?";
-	    	String sql4 = "SELECT value,encrypted FROM dm.dm_buildengineprops WHERE name='Jenkins Match URL' AND builderid=?";
-	    	PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
-	    	stmt1.setString(1,jobname);
-	    	ResultSet rs1 = stmt1.executeQuery();
-	    	while (rs1.next()) {
-	    		int buildjobid = rs1.getInt(1);
-	    		// String buildjobname = rs1.getString(2);
-	    		String serverurl = rs1.getString(3);
-	    		String encrypted = rs1.getString(4);
-	    		int compid = rs1.getInt(5);
-	    		// String compname = rs1.getString(6);
-	    		int buildengineid = rs1.getInt(7);
-	    		
-	    		boolean match=false;
-	    		if (encrypted != null && encrypted.equalsIgnoreCase("y")) {
-	    			// This server URL is encrypted
-	    			byte[] sun = Decrypt3DES(serverurl,m_passphrase);
-	    			serverurl = new String(Decrypt3DES(serverurl, m_passphrase));
-	    			String comparevalue = new String(sun).replaceAll("/*$","");	// remove any trailing / chars;
-	    			System.out.println("Comparing ["+server+"] with ["+comparevalue+"] (was encrypted)");
-	    			match = comparevalue.equalsIgnoreCase(server);
-	    		} else {
-	    			// Server URL is not encrypted - straight forward compare
-	    			String comparevalue = serverurl.replaceAll("/*$","");
-	    			System.out.println("Comparing ["+server+"] with ["+comparevalue+"]");
-	    			match = comparevalue.equalsIgnoreCase(server);
-	    		}
-	    		System.out.println("\"Server URL\" match="+match);
-	    		if (!match) {
-	    			// No match yet - check if there's a Jenkins Match URL to compare instead
-	    			PreparedStatement stmt4 = m_conn.prepareStatement(sql4);
-	    			stmt4.setInt(1,buildengineid);
-	    			ResultSet rs4 = stmt4.executeQuery();
-	    			if (rs4.next()) {
-	    				System.out.println("Jenkins Match URL seen");
-	    				String matchURL = rs4.getString(1);
-	    				String enc = rs4.getString(2);
-	    				if (enc != null && enc.equalsIgnoreCase("y")) {
-	    	    			// This matchURL address is encrypted
-	    					System.out.println("matchURL is encrypted");
-	    	    			matchURL = new String(Decrypt3DES(matchURL, m_passphrase));
-	    	    		}
-	    				matchURL = matchURL.replaceAll("/*$","");	// get rid of any trailing / chars
-	    				System.out.println("Comparing ["+server+"] with ["+matchURL+"]");
-	    				match = matchURL.equalsIgnoreCase(server);
-	    				if (match) {
-	    					// Replace the server part in the encoded URL with our Server URL for
-	    					// the subsequent ping back to Jenkins. Format of encodedurl is:
-	    					// http[s]://server:port/blah/job/<project>/<buildno>
-	    					// Format of matchURL will be
-	    					// http[s]://server:port/blah
-	    					int soj = encodedurl.indexOf("/job/");
-	    					encodedurl = serverurl.replaceAll("/*$", "")+encodedurl.substring(soj);
-	    					System.out.println("encodedurl now ["+encodedurl+"] (for callback)");
-	    				}
-	    			}
-	    			rs4.close();
-	    			stmt4.close();
-	    			System.out.println("\"Jenkins Match URL\" match="+match);
-	    		}
-	    		if (match) {
-	    			// Found a matching build job for this server URL
-	    			// Ping Jenkins back and see if this build was successful or not.
-	    			Builder builder = getBuilder(buildengineid);
-	    			Credential cred = builder.getCredential();
-	    			String res = getJSONFromServer(encodedurl+"/api/json",cred);
-					System.out.println("Found a match - build job "+buildjobid+" component "+compid);
-					System.out.println("result from Jenkins is "+res);
-					JsonObject issueObject = new JsonParser().parse(res).getAsJsonObject();
-					String result = issueObject.get("result").getAsString();
-					System.out.println("result is "+result);
-					boolean success = result.equalsIgnoreCase("success");
-					PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
-					stmt2.setInt(1,buildjobid);
-					stmt2.setInt(2,buildno);
-					stmt2.setInt(3,compid);
-					stmt2.setInt(4, m_userID);
-					stmt2.setLong(5,timeNow());
-					stmt2.setString(6,success?"Y":"N");
-					stmt2.execute();
-					stmt2.close();
-					if (success) {
-						// Update "lastbuildnumber" for component
-						PreparedStatement stmt3 = m_conn.prepareStatement(sql3);
-						stmt3.setInt(1,buildno);
-						stmt3.setInt(2,compid);
-						stmt3.execute();
-						stmt3.close();
-					}
-					//
-					// Return a list of Components associated with this build job
-					//
-					JSONObject tbobj = new JSONObject();
-		    		Component comp = getComponent(compid,true);		
-		    		BuildJob buildjob = getBuildJob(buildjobid);
-		    		tbobj.add("component", comp.getLinkJSON());
-		    		tbobj.add("buildengine", builder.getLinkJSON());
-		    		tbobj.add("buildjob", buildjob.getLinkJSON());
-					ret.add(tbobj);
-	    		} else {
-	   				System.out.println("no match");
-	    		}
-	    	}
-	    	rs1.close();
-	    	stmt1.close();
-	    	System.out.println("end of sql1 loop");
-	    	m_conn.commit();
-	    	return ret;	
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			throw new Exception("Unsupported Encoding Exception: URL="+encodedurl);
-		} catch (NumberFormatException e) {
-			throw new Exception("Invalid Build number");
-		} catch (SQLException ex) {
-			ex.printStackTrace();
-			rollback();
-		}
-		return null;
-	}
-
-
-	
-	public void AddBuildToComponent(Component comp,int buildno,String [] files,String commit,boolean success)
-	{
-		String sql1="SELECT count(*) FROM dm.dm_buildhistory WHERE compid=? AND buildnumber=?";
-		String sql2="UPDATE dm.dm_buildhistory SET buildjobid=?, commit=?, userid=?, timestamp=?, success=? WHERE compid=? AND buildnumber=?";
-		String sql3="INSERT INTO dm.dm_buildhistory(buildjobid,buildnumber,commit,compid,userid,timestamp,success) VALUES(?,?,?,?,?,?,?)";
-		String sql4="UPDATE dm.dm_component SET lastbuildnumber=? WHERE id=?";
-		String sql5="DELETE FROM dm.dm_buildfiles WHERE buildjobid=? AND buildnumber=?";
-		String sql7="INSERT INTO dm.dm_buildfiles(buildjobid,buildnumber,filename) VALUES(?,?,?)";
-	
-		BuildJob buildjob = comp.getBuildJob();
-		if (buildjob == null) return;	// Already checked for this in the API code - belt and braces
-		try {
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
-			stmt1.setInt(1,comp.getId());
-			stmt1.setInt(2,buildno);
-			ResultSet rs1 = stmt1.executeQuery();
-			if (rs1.next()) {
-				if (rs1.getInt(1)==0) {
-					// First time for this build number against this component
-					PreparedStatement stmt3 = getDBConnection().prepareStatement(sql3);
-					stmt3.setInt(1,buildjob.getId());
-					stmt3.setInt(2,buildno);
-					if (commit == null) {
-						stmt3.setNull(3,Types.CHAR);
-					} else {
-						stmt3.setString(3,commit);
-					}
-					stmt3.setInt(4,comp.getId());
-					stmt3.setInt(5,getUserID());
-					stmt3.setLong(6,timeNow());
-					stmt3.setString(7,success?"Y":"N");
-					stmt3.execute();
-					stmt3.close();
-				} else {
-					// This build number has already been associated with this component
-					PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
-					stmt2.setInt(1,buildjob.getId());
-					stmt2.setString(2,commit);
-					stmt2.setInt(3,getUserID());
-					stmt2.setLong(4,timeNow());
-					stmt2.setString(5,success?"Y":"N");
-					stmt2.setInt(6,comp.getId());
-					stmt2.setInt(7,buildno);
-					stmt2.execute();
-					stmt2.close();
-				}
-				// Add the defects and files for this build
-				PreparedStatement stmt5 = getDBConnection().prepareStatement(sql5);
-				PreparedStatement stmt7 = getDBConnection().prepareStatement(sql7);
-				stmt5.setInt(1,buildjob.getId());
-				stmt5.setInt(2,buildno);
-				stmt5.execute();
-				stmt7.setInt(1,buildjob.getId());
-				stmt7.setInt(2,buildno);
-				for (int i=0;i<files.length;i++) {
-					stmt7.setString(3,files[i]);
-					stmt7.execute();
-				}
-
-				if (success) {
-					System.out.println("Updating lastbuildnumber to "+buildno+" for component "+comp.getId());
-					PreparedStatement stmt4 = getDBConnection().prepareStatement(sql4);
-					stmt4.setInt(1,buildno);
-					stmt4.setInt(2,comp.getId());
-					stmt4.execute();
-					stmt4.close();
-				}
-				getDBConnection().commit();
-			}
-			rs1.close();
-			stmt1.close();
-		} catch(SQLException e) {
-			e.printStackTrace();
-			rollback();
-		}
-	}
-	
-	
-	
 	public boolean domainHasObjects(int domainid) {
 		System.out.println("in domainHasObjects("+domainid+")");
 		// Returns true if domain has objects has associated with it, false otherwise
@@ -4123,7 +4708,7 @@ public class DMSession implements AutoCloseable  {
 		 AssociatedMsg = "The following are associated to the Domain:,";
 		 
 			for (int i=0;i<sql.length;i++) {
-				PreparedStatement stmt = getDBConnection().prepareStatement(sql[i]);
+				PreparedStatement stmt = m_conn.prepareStatement(sql[i]);
 				stmt.setInt(1,domainid);
 				ResultSet rs = stmt.executeQuery();
 				if (rs.next()) {
@@ -4150,6 +4735,8 @@ public class DMSession implements AutoCloseable  {
 
  public boolean objHasChildren(TreeObject node, String typestr) 
  {
+  int domcnt = 0;
+  int objcnt = 0;
   int id = node.getId();
   int i = 0;
   if (id ==9)
@@ -4202,8 +4789,6 @@ public class DMSession implements AutoCloseable  {
    i = 4;
   else if (node.GetObjectType() == ObjectType.PROCEDURE)
    i = 4;
-  else if (node.GetObjectType() == ObjectType.BUILDER)
-   i = 5;
   else if (node.GetObjectType() == ObjectType.FRAGMENT)
    return false;
   else 
@@ -4212,14 +4797,17 @@ public class DMSession implements AutoCloseable  {
   try
   {   
 	  System.out.println("sql["+i+"]="+sql[i]);
-    PreparedStatement stmt = getDBConnection().prepareStatement(sql[i]);
+    PreparedStatement stmt = m_conn.prepareStatement(sql[i]);
     stmt.setInt(1,id);
     ResultSet rs = stmt.executeQuery();
     if (rs.next()) 
     {
     	System.out.println("count = "+rs.getInt(1));
      if (rs.getInt(1)>0) 
+     { 
       res=true;
+      domcnt = rs.getInt(1);
+     }
      
      rs.close();
     }
@@ -4227,8 +4815,8 @@ public class DMSession implements AutoCloseable  {
     
     System.out.println("res="+res);
     
-   if (node.GetObjectType() == ObjectType.DOMAIN && res == false)
-   {
+ //  if (node.GetObjectType() == ObjectType.DOMAIN && res == false)
+ //  {
     System.out.println("TYPE="+typestr);
     if (typestr.equalsIgnoreCase("environments"))
      i=0;
@@ -4262,6 +4850,8 @@ public class DMSession implements AutoCloseable  {
      i=14;    
     else if (typestr.equalsIgnoreCase("procedures"))
      i=14; 
+    else if (typestr.equalsIgnoreCase("fragments"))
+     i=14; 
     else if (typestr.equalsIgnoreCase("types"))
      i=15;  
     else if (typestr.equalsIgnoreCase("builders"))
@@ -4269,17 +4859,32 @@ public class DMSession implements AutoCloseable  {
     else
      return res;
     
-    stmt = getDBConnection().prepareStatement(sql2[i]);
+    stmt = m_conn.prepareStatement(sql2[i]);
     stmt.setInt(1,id);
     rs = stmt.executeQuery();
     if (rs.next()) 
     {
      if (rs.getInt(1)>0) 
+     {
+      objcnt = rs.getInt(1);
       res=true;
+     }
      
      rs.close();
     }
     stmt.close();    
+ //  }
+   
+   if (node.GetObjectType() == ObjectType.DOMAIN && objcnt == 0 && domcnt > 0 &&
+      (typestr.equalsIgnoreCase("fragments") || typestr.equalsIgnoreCase("components") || typestr.equalsIgnoreCase("actions") ||
+       typestr.equalsIgnoreCase("functions") || typestr.equalsIgnoreCase("procedures") || typestr.equalsIgnoreCase("notifiers")))
+   {
+    Domain d = getDomain(id);
+    System.out.println(typestr + " : " + d.getName() + " : " + d.getLifecycle());
+    if (d.getLifecycle())
+      return false;
+    else
+     return res;
    }
    return res;
   }
@@ -4309,7 +4914,7 @@ public class DMSession implements AutoCloseable  {
   try
   {   
    for (int i=0;i<sql.length;i++) {
-    PreparedStatement stmt = getDBConnection().prepareStatement(sql[i]);
+    PreparedStatement stmt = m_conn.prepareStatement(sql[i]);
     stmt.setInt(1,domainid);
     ResultSet rs = stmt.executeQuery();
     if (rs.next()) {
@@ -4346,6 +4951,89 @@ public class DMSession implements AutoCloseable  {
  }
 
  public Domain getDomain(int domainid) {
+  try {
+   if (domainid < 0) {
+    Domain ret = new Domain(this, 0, "");
+    ret.setName("");
+    ret.setSummary("");
+    return ret;
+  }
+   
+  if (m_domainhash != null && (System.currentTimeMillis() - m_domainhashCreationTime) > 2000) {
+   // Domain hash is over 2 seconds old. Delete it. We only need this for caching of
+   // domains when we're making the same call to getDomain in rapid succession when
+   // populating fully qualified domains in drop-down lists of actions (for example).
+   m_domainhash.clear();
+   m_domainhash = null;
+  }
+   
+  if (m_domainhash == null) {
+     m_domainhash = new Hashtable<Integer,Domain>();
+     m_domainhashCreationTime = System.currentTimeMillis();
+  }
+  Domain ret = m_domainhash.get(domainid);
+  if (ret != null) return ret; // already found this domain previously
+  
+  PreparedStatement stmt = m_conn.prepareStatement(
+   "SELECT d.name, d.domainid, d.summary, d.lifecycle, "
+   + "  uc.id, uc.name, uc.realname, d.created, "
+   + "  um.id, um.name, um.realname, d.modified, "
+   + "  uo.id, uo.name, uo.realname, g.id, g.name, "
+   + "  x.id, x.name, x.hostname, x.clientid "
+   + "FROM dm.dm_domain d "
+   + "LEFT OUTER JOIN dm.dm_user uc ON d.creatorid = uc.id "  // creator
+   + "LEFT OUTER JOIN dm.dm_user um ON d.modifierid = um.id "  // modifier
+   + "LEFT OUTER JOIN dm.dm_user uo ON d.ownerid = uo.id "   // owner user
+   + "LEFT OUTER JOIN dm.dm_usergroup g ON d.ogrpid = g.id "  // owner group
+   + "LEFT OUTER JOIN dm.dm_engine x ON x.domainid = d.id WHERE d.id=?");
+  stmt.setInt(1, domainid);
+  ResultSet rs = stmt.executeQuery();
+  if (rs.next()) {
+   int parentdomainid = getInteger(rs, 2, 0); 
+   if ((parentdomainid == 0) || ValidDomain(parentdomainid, true)) { // RHT 14/02/2014 - this stops Global being an invalid parent!!!
+    ret = new Domain(this, domainid, rs.getString(1));
+    ret.setDomainId(parentdomainid);
+    ret.setSummary(rs.getString(3));
+    ret.setLifecycle(getBoolean(rs,4,false));
+    if(parentdomainid != 0) {
+     ret.setParentDomain(getDomainName(parentdomainid));
+    }
+    getCreatorModifierOwner(rs, 5, ret); 
+    int engineid = getInteger(rs, 18, 0);
+    if(engineid != 0) {
+     Engine eng = new Engine(this, engineid, rs.getString(19));
+     eng.setHostname(rs.getString(20));
+     eng.setClientID(rs.getString(21));
+     ret.setEngine(eng);
+    } else {
+     Engine eng = ret.findNearestEngine(); 
+     if (eng == null) {
+      eng = new Engine(this, 0, "");
+      eng.setHostname("");
+      eng.setClientID(null);
+     } 
+     ret.setEngine(eng);      
+    }
+   } else {
+    System.out.println(parentdomainid + " is not a valid domain for user " + m_userID);
+   }
+  }
+  rs.close();
+  stmt.close();
+  m_conn.commit();
+  if (ret != null) {
+   m_domainhash.put(domainid,ret); // save for subsequent retrieval
+  }
+  return ret;
+ }
+ catch(SQLException e) {
+  e.printStackTrace();
+  rollback();
+ }
+ throw new RuntimeException("Unable to retrieve domain " + domainid + " from database");
+}
+ 
+ public Domain getDomainDetails(int domainid) {
 	 try {
 		 if (domainid < 0) {
 			 Domain ret = new Domain(this, 0, "");
@@ -4354,27 +5042,14 @@ public class DMSession implements AutoCloseable  {
 			 return ret;
 		}
 		 
-		if (m_domainhash != null && (System.currentTimeMillis() - m_domainhashCreationTime) > 2000) {
-			// Domain hash is over 2 seconds old. Delete it. We only need this for caching of
-			// domains when we're making the same call to getDomain in rapid succession when
-			// populating fully qualified domains in drop-down lists of actions (for example).
-			m_domainhash.clear();
-			m_domainhash = null;
-		}
-		 
-		if (m_domainhash == null) {
-			  m_domainhash = new Hashtable<Integer,Domain>();
-			  m_domainhashCreationTime = System.currentTimeMillis();
-		}
-		Domain ret = m_domainhash.get(domainid);
-		if (ret != null) return ret;	// already found this domain previously
+		Domain ret = new Domain(this, 0, "");
 		
-		PreparedStatement stmt = getDBConnection().prepareStatement(
+		PreparedStatement stmt = m_conn.prepareStatement(
 			"SELECT d.name, d.domainid, d.summary, d.lifecycle, "
 			+ "  uc.id, uc.name, uc.realname, d.created, "
 			+ "  um.id, um.name, um.realname, d.modified, "
 			+ "  uo.id, uo.name, uo.realname, g.id, g.name, "
-			+ "	 x.id, x.name, x.hostname "
+			+ "	 x.id, x.name, x.hostname, x.clientid "
 			+ "FROM dm.dm_domain d "
 			+ "LEFT OUTER JOIN dm.dm_user uc ON d.creatorid = uc.id "		// creator
 			+ "LEFT OUTER JOIN dm.dm_user um ON d.modifierid = um.id "		// modifier
@@ -4385,7 +5060,7 @@ public class DMSession implements AutoCloseable  {
 		ResultSet rs = stmt.executeQuery();
 		if (rs.next()) {
 			int parentdomainid = getInteger(rs, 2, 0);	
-			if ((parentdomainid == 0) || ValidDomain(parentdomainid, true)) {	// RHT 14/02/2014 - this stops Global being an invalid parent!!!
+			if ((parentdomainid >= 0)) {	// RHT 14/02/2014 - this stops Global being an invalid parent!!!
 				ret = new Domain(this, domainid, rs.getString(1));
 				ret.setDomainId(parentdomainid);
 				ret.setSummary(rs.getString(3));
@@ -4398,23 +5073,23 @@ public class DMSession implements AutoCloseable  {
 				if(engineid != 0) {
 					Engine eng = new Engine(this, engineid, rs.getString(19));
 					eng.setHostname(rs.getString(20));
+					eng.setClientID(rs.getString(21));
 					ret.setEngine(eng);
 				} else {
 					Engine eng = ret.findNearestEngine(); 
 					if (eng == null) {
 						eng = new Engine(this, 0, "");
 						eng.setHostname("");
+						eng.setClientID(null);
 					} 
 					ret.setEngine(eng);					 
 				}
 			} else {
-				System.out.println(parentdomainid + " is not a valid domain for user " + getUserID());
+				System.out.println(parentdomainid + " is not a valid domain for user " + m_userID);
 			}
 		}
 		rs.close();
-		if (ret != null) {
-			m_domainhash.put(domainid,ret);	// save for subsequent retrieval
-		}
+		stmt.close();
 		return ret;
 	}
 	catch(SQLException e) {
@@ -4427,11 +5102,21 @@ public class DMSession implements AutoCloseable  {
 	 
 	public boolean updateDomain(Domain dom, SummaryChangeSet changes)
 	{
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_domain ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
+		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_domain ");
+		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
 				
 		for(SummaryField field : changes) {
 			switch(field) {
+	   case DOMAIN_FULLNAME: {
+     if (changes.get(field) == null)
+       update.add(", domainid = ?", Null.INT);
+     else
+     {
+      int id =  new Integer((String)changes.get(field)).intValue();
+      update.add(", domainid = ?", id);
+     }
+    } 
+    break; 
 			case DOMAIN_LIFECYCLE: {
 				Boolean lifecycle = (Boolean) changes.get(field);
 				update.add(", lifecycle = ?", ((lifecycle != null) && lifecycle.booleanValue()) ? "Y" : "N");
@@ -4451,7 +5136,7 @@ public class DMSession implements AutoCloseable  {
 		
 		try {
 			update.execute();
-			getDBConnection().commit();
+			m_conn.commit();
 			update.close();
 			m_domainhash.remove(dom.getId());	// in case it's cached.
 			return true;
@@ -4465,7 +5150,7 @@ public class DMSession implements AutoCloseable  {
 	public void updateDomainOrder(String [] domorder) {
 		String sql="UPDATE dm.dm_domain SET position=? WHERE id=?";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			for (int i=0;i<domorder.length;i++) {
 				System.out.println("UPDATE dm.dm_domain SET position="+i+" WHERE id="+domorder[i]);	
 				stmt.setInt(1,i);
@@ -4473,7 +5158,7 @@ public class DMSession implements AutoCloseable  {
 				stmt.execute();
 				System.out.println("UPDATE COUNT = "+stmt.getUpdateCount());
 			}
-			getDBConnection().commit();
+			m_conn.commit();
 		} catch(SQLException e) {
 			e.printStackTrace();
 			rollback();
@@ -4482,8 +5167,20 @@ public class DMSession implements AutoCloseable  {
 	}
 
 	public List<TreeObject> getDomains(Integer domainid) {
-		return getTreeObjects(ObjectType.DOMAIN,domainid,-1);
+	 String nobuiltins = null;
+		return getTreeObjects(ObjectType.DOMAIN,domainid,-1,nobuiltins);
 	}
+	
+ void getAllChildDomains(int domainid, HashMap<Integer, Integer> hmap)
+ {
+     List<TreeObject> d = getDomains(Integer.valueOf(domainid));
+
+     for (TreeObject xd : d)
+     {
+      hmap.put(Integer.valueOf(xd.getId()),Integer.valueOf(domainid));
+      getAllChildDomains(xd.getId(), hmap);
+     }
+ } 
 	
 	public List<Domain> getChildDomains(Domain tdomain) {
 		int domainid = tdomain.getId();
@@ -4510,7 +5207,7 @@ public class DMSession implements AutoCloseable  {
 		{
 			System.out.println("cd) sql="+sql);
 			List <Domain> ret = new ArrayList<Domain>();
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next())
 			{
@@ -4540,6 +5237,7 @@ public class DMSession implements AutoCloseable  {
 				}
 			}
 			rs.close();
+			stmt.close();
 			m_cdhash.put(domainid,ret);
 			return ret;
 		}
@@ -4604,8 +5302,8 @@ private List<Integer> GetGroupMembership()
 	res.add(UserGroup.EVERYONE_ID);	// Everyone group - implicit membership
 	try
 	{
-		PreparedStatement stmt = getDBConnection().prepareStatement("SELECT groupid FROM dm.dm_usersingroup WHERE userid=?");
-		stmt.setInt(1,getUserID());
+		PreparedStatement stmt = m_conn.prepareStatement("SELECT groupid FROM dm.dm_usersingroup WHERE userid=?");
+		stmt.setInt(1,m_userID);
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
 			res.add(rs.getInt(1));
@@ -4623,7 +5321,7 @@ private List<Integer> GetGroupMembership()
 	throw new RuntimeException("Unable to retrieve user groups from database");
 }
 
-public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
+public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, String nobuiltins)
 {
 	System.out.println("getTreeObjects, ot="+ot);
  List<TreeObject> ret = new ArrayList<TreeObject>();
@@ -4641,14 +5339,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    sql = "select a.id, a.name from dm.dm_application a where a.domainid=? and a.predecessorid is null and a.status='N' and a.isRelease <> 'Y'";
    sql_access = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'Y'";   
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case RELEASE:
    sql = "select a.id, a.name from dm.dm_application a where a.domainid=? and a.predecessorid is null and a.status='N' and a.isRelease='Y'";
    sql_access = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'Y'";   
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;   
   case RELVERSION:
@@ -4656,58 +5354,60 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
      + "exists (select x.id from dm.dm_application x where x.id=a.parentid and x.domainid <> a.domainid) order by name";
    sql_access = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'Y'";   
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case APPVERSION:
    sql = "select a.id, a.name from dm.dm_application a where a.isRelease<> 'Y' and a.status='N' and a.domainid=? and "
-    + "exists (select x.id from dm.dm_application x where x.id=a.parentid and x.domainid <> a.domainid and x.status='N') order by name";
+     + "exists (select x.id from dm.dm_application x where x.id=a.parentid and x.domainid <> a.domainid and x.status='N') order by name";
    sql_access = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'Y'";   
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case COMPONENT:
    if (catid != -1) {
-	   // Category set.
-	   if (domainID == 0) {
-		   // Any Domain up from our home domain
-		   sql = "select a.id,a.name,b.usrgrpid,b.viewaccess   "
-			 + "from     dm.dm_component a   "
-			 + "left outer join  dm.dm_componentaccess b on a.id=b.compid "
-			 + "inner join dm.dm_component_categories c on a.id=c.id "
-			 + " where    a.status='N' and c.categoryid=? and a.domainid in ("+m_parentdomains+") and predecessorid is null order by a.name ";
-		   stmt = getDBConnection().prepareStatement(sql);
-		   stmt.setInt(1,catid);
-	   } else {
-		   // Specific Domain
-		   sql = "select a.id,a.name,b.usrgrpid,b.viewaccess   "
-		     + "from     dm.dm_component a   "
-		     + "left outer join  dm.dm_componentaccess b on a.id=b.compid "
-		     + "inner join dm.dm_component_categories c on a.id=c.id "
-		     + " where    a.status='N' and a.domainid=? and c.categoryid=? and predecessorid is null order by a.name ";
-		   stmt = getDBConnection().prepareStatement(sql);
-		   stmt.setInt(1,domainID);
-		   stmt.setInt(2,catid);
-	   }
+    // Category set.
+    if (domainID == 0) {
+     // Any Domain up from our home domain
+     sql = "select a.id,a.name,b.usrgrpid,b.viewaccess   "
+       + "from     dm.dm_component a   "
+       + "left outer join  dm.dm_componentaccess b on a.id=b.compid "
+       + "inner join dm.dm_component_categories c on a.id=c.id "
+       + " where    a.status='N' and c.categoryid=? and a.domainid in ("+m_parentdomains+") and predecessorid is null order by a.name ";
+     System.out.println("sql=["+sql+"]");
+     System.out.println("parentdomains="+m_parentdomains);
+     stmt = m_conn.prepareStatement(sql);
+     stmt.setInt(1,catid);
+    } else {
+     // Specific Domain
+     sql = "select a.id,a.name,b.usrgrpid,b.viewaccess   "
+       + "from     dm.dm_component a   "
+       + "left outer join  dm.dm_componentaccess b on a.id=b.compid "
+       + "inner join dm.dm_component_categories c on a.id=c.id "
+       + " where    a.status='N' and a.domainid=? and c.categoryid=? and predecessorid is null order by a.name ";
+     stmt = m_conn.prepareStatement(sql);
+     stmt.setInt(1,domainID);
+     stmt.setInt(2,catid);
+    }
    } else {
-	   // Any Category.
-	   if (domainID == 0) {
-		   // Any Domain
-		   sql = "select a.id,a.name,b.usrgrpid,b.viewaccess   "
-				     + "from     dm.dm_component a   "
-				     + "left outer join  dm.dm_componentaccess b on a.id=b.compid "
-				     + " where    a.status='N' and a.domainid in ("+m_parentdomains+") and predecessorid is null order by a.name ";
-		   stmt = getDBConnection().prepareStatement(sql);
-	   } else {
-		   // Specific Domain
-		   sql = "select a.id,a.name,b.usrgrpid,b.viewaccess   "
-		     + "from     dm.dm_component a   "
-		     + "left outer join  dm.dm_componentaccess b on a.id=b.compid "
-		     + " where    a.status='N' and a.domainid=? and predecessorid is null order by a.name ";
-		   stmt = getDBConnection().prepareStatement(sql);
-		   stmt.setInt(1,domainID);
-	   }
+    // Any Category.
+    if (domainID == 0) {
+     // Any Domain
+     sql = "select a.id,a.name,b.usrgrpid,b.viewaccess   "
+       + "from     dm.dm_component a   "
+       + "left outer join  dm.dm_componentaccess b on a.id=b.compid "
+       + " where    a.status='N' and a.domainid in ("+m_parentdomains+") and predecessorid is null order by a.name ";
+     stmt = m_conn.prepareStatement(sql);
+    } else {
+     // Specific Domain
+     sql = "select a.id,a.name,b.usrgrpid,b.viewaccess   "
+       + "from     dm.dm_component a   "
+       + "left outer join  dm.dm_componentaccess b on a.id=b.compid "
+       + " where    a.status='N' and a.domainid=? and predecessorid is null order by a.name ";
+     stmt = m_conn.prepareStatement(sql);
+     stmt.setInt(1,domainID);
+    }
    } 
    newQuery=true;
    break;
@@ -4719,22 +5419,22 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    // sql = "select id,name from dm.dm_component where status='N' and domainid=? and predecessorid >= 0 order by name";
    sql_access = "select count(*) from dm.dm_componentaccess where compid = ? and usrgrpid = ? and viewaccess = 'N'";   
    sql_hasaccess = "select count(*) from dm.dm_componentaccess where compid = ? and usrgrpid = ? and viewaccess = 'Y'";    
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    newQuery=true;
    break; 
   case CREDENTIALS:
    sql =  "select id,name from dm.dm_credentials where status='N' and domainid=? order by name";
    sql_access = "select count(*) from dm.dm_credentialsaccess where credid = ? and usrgrpid = ? and viewaccess = 'N'";
-    sql_hasaccess = "select count(*) from dm.dm_credentialsaccess where credid = ? and usrgrpid = ? and viewaccess = 'Y'";   
-   stmt = getDBConnection().prepareStatement(sql);
+   sql_hasaccess = "select count(*) from dm.dm_credentialsaccess where credid = ? and usrgrpid = ? and viewaccess = 'Y'";   
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case ACTION: // Graphical actions
    sql =  "select a.id,a.name from dm.dm_action a,dm.dm_action_categories b,  dm.dm_category c where status='N' and a.id = b.id and b.categoryid = c.id and a.domainid=? and c.id=? and a.kind="+ActionKind.GRAPHICAL.value()+" order by a.name";
    sql_access = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y'";   
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    stmt.setInt(2, catid);   
    break;
@@ -4742,7 +5442,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    sql =  "select id,name from dm.dm_type where status='N' and domainid=? order by name";
    sql_access = "select count(*) from dm.dm_typeaccess where comptypeid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_typeaccess where comptypeid = ? and usrgrpid = ? and viewaccess = 'Y'";   
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break; 
   case PROCEDURE:
@@ -4752,57 +5452,72 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    // sql_hasaccess = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y'";
    System.out.println("Opening category "+catid+" domain="+domainID);
    sql =  	"select a.id,a.name,b.usrgrpid,b.viewaccess,a.kind   "
-   +   		"from     			dm.dm_action a   "
-   +   		"left outer join 	dm.dm_actionaccess b on a.id=b.actionid "
-   +		"inner join			dm.dm_fragments f on a.id in (f.actionid,f.functionid) "		
-   + 		"inner join			dm.dm_fragment_categories c on f.id=c.id "
-   +   		"where				a.status='N' "
-   +  		"and    			a.domainid=? and c.categoryid=? "
-   +  		"and    			a.kind != "+ActionKind.GRAPHICAL.value()+" "
-   +  		"and     			a.function=? order by a.name ";
-   stmt = getDBConnection().prepareStatement(sql);
+     +   		"from     			dm.dm_action a   "
+     +   		"left outer join 	dm.dm_actionaccess b on a.id=b.actionid "
+     +		"inner join			dm.dm_fragments f on a.id in (f.actionid,f.functionid) "		
+     + 		"inner join			dm.dm_fragment_categories c on f.id=c.id "
+     +   		"where				a.status='N' "
+     +  		"and    			a.domainid=? and c.categoryid=? "
+     +  		"and    			a.kind != "+ActionKind.GRAPHICAL.value()+" "
+     +  		"and     			a.function=? order by a.name ";
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    stmt.setInt(2, catid);
    stmt.setString(3, (ot == ObjectType.FUNCTION) ? "Y" : "N");
    newQuery=true;
    break;
   case COMP_CATEGORY:
-	  System.out.println("Retrieving COMP_CATEGORY for domain "+domainID);
+   System.out.println("Retrieving COMP_CATEGORY for domain "+domainID);
    sql =  "select distinct c.id,c.name from dm.dm_component a, dm.dm_component_categories b,  dm.dm_category c where a.status='N' and a.domainid=? and predecessorid is null and a.id = b.id and b.categoryid = c.id order by c.name";
    sql_access = "select count(*) from dm.dm_componentaccess where compid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_componentaccess where compid = ? and usrgrpid = ? and viewaccess = 'Y'";   
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break; 
   case ACTION_CATEGORY:
    sql =  "select distinct c.id,c.name from dm.dm_action a, dm.dm_action_categories b,  dm.dm_category c where a.status='N' and a.domainid=? and kind="+ActionKind.GRAPHICAL.value()+" and a.id = b.id and b.categoryid = c.id order by c.name";
    sql_access = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y'";
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case PROCFUNC_CATEGORY:
-	  // was action_categories
+   // was action_categories
    // sql =  "select distinct c.id,c.name from dm.dm_action a, dm.dm_fragment_categories b,  dm.dm_category c where a.status='N' and a.domainid=? and NOT kind="+ActionKind.GRAPHICAL.value()+" and a.id = b.id and b.categoryid = c.id order by c.name";
-   sql = "select distinct c.id,c.name from dm.dm_fragments f, dm.dm_action a, dm.dm_fragment_categories b,  dm.dm_category c where a.status='N' and a.domainid=? and a.kind != "+ActionKind.GRAPHICAL.value()+" and a.id in (f.actionid,f.functionid) and f.id = b.id and b.categoryid = c.id order by c.name";
+   // sql = "select distinct c.id,c.name from dm.dm_fragments f, dm.dm_action a, dm.dm_fragment_categories b,  dm.dm_category c where a.status='N' and a.domainid=? and a.kind != "+ActionKind.GRAPHICAL.value()+" and a.id in (f.actionid,f.functionid) and f.id = b.id and b.categoryid = c.id order by c.name";
+   sql = "SELECT distinct b.id, b.name FROM dm.dm_fragment_categories a, dm.dm_category b where a.categoryid = b.id";
+
+   if (domainID != 1 || nobuiltins != null)
+    sql = "select distinct c.id,c.name from dm.dm_fragments f, dm.dm_action a, dm.dm_fragment_categories b,  dm.dm_category c where a.status='N' and a.domainid=? and a.kind != "+ActionKind.GRAPHICAL.value()+" and a.id in (f.actionid,f.functionid) and f.id = b.id and b.categoryid = c.id order by c.name";
+
    sql_access = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y'";
-   stmt = getDBConnection().prepareStatement(sql);
-   stmt.setInt(1, domainID);
+   stmt = m_conn.prepareStatement(sql);
+   if (domainID != 1 || nobuiltins != null)
+    stmt.setInt(1, domainID);
    break;
   case FRAGMENT:
-   sql =  "select distinct a.id,a.name, a.actionid,a.functionid from dm.dm_fragments a, dm.dm_fragment_categories b where a.id = b.id and b.categoryid = ? order by name";
+   sql = "select distinct f.id, f.name, f.actionid, f.functionid from dm.dm_fragments f, dm.dm_action a, dm.dm_fragment_categories b,  dm.dm_category c  where a.status='N' and a.domainid=? and a.kind != "+ActionKind.GRAPHICAL.value()+" and a.id in (f.actionid,f.functionid)  and  f.id = b.id and b.categoryid = c.id and c.id = ? " +
+     " union select distinct f.id, f.name, f.actionid, f.functionid from dm.dm_fragments f, dm.dm_fragment_categories b,  dm.dm_category c  where   f.id = b.id and b.categoryid = c.id and f.actionid is null and f.functionid is null and c.id = ?";
+
+   if (domainID != 1)
+    sql = "select distinct f.id, f.name, f.actionid, f.functionid from dm.dm_fragments f, dm.dm_action a, dm.dm_fragment_categories b,  dm.dm_category c  where a.status='N' and a.domainid=? and a.kind != "+ActionKind.GRAPHICAL.value()+" and a.id in (f.actionid,f.functionid)  and  f.id = b.id and b.categoryid = c.id and c.id = ? ";
+
+   //  sql =  "select distinct a.id,a.name, a.actionid,a.functionid from dm.dm_fragments a, dm.dm_fragment_categories b where a.id = b.id and b.categoryid = ? order by name";
    // sql_access = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N'";
    // sql_hasaccess = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y'";
-   stmt = getDBConnection().prepareStatement(sql);
-   stmt.setInt(1, catid);
+   stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, domainID);
+   stmt.setInt(2, catid);
+   if (domainID == 1)
+    stmt.setInt(3, catid);
    break;   
   case ENVIRONMENT:
    sql =  "select a.id,a.name,b.usrgrpid,b.viewaccess   "
      + "from     dm.dm_environment a   "
      + "left outer join  dm.dm_environmentaccess b on a.id=b.envid "
      + " where    a.status='N' and a.domainid=? order by a.name ";
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    newQuery=true;
    break;
@@ -4810,21 +5525,21 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    sql = "select a.id,a.name from dm.dm_usergroup a where a.status='N' and a.domainid=? order by a.name";
    sql_access = "select count(*) from dm.dm_usergroupaccess where usergroupid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_usergroupaccess where usergroupid = ? and usrgrpid = ? and viewaccess = 'Y'";
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case USER:
    sql = "select a.id,a.name from dm.dm_user a where a.status='N' and a.domainid=? order by a.name";
    sql_access = "select count(*) from dm.dm_useraccess where userid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_useraccess where userid = ? and usrgrpid = ? and viewaccess = 'Y'";   
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case DATASOURCE:
    sql = "select a.id,a.name from dm.dm_datasource a where a.status='N' and a.domainid=? order by a.name";
    sql_access = "select count(*) from dm.dm_datasourceaccess where datasourceid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_datasourceaccess where datasourceid = ? and usrgrpid = ? and viewaccess = 'Y'";   
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case DOMAIN:
@@ -4835,14 +5550,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
       + "from    dm.dm_domain a       "
       + "left outer join dm.dm_domainaccess b on a.id=b.domainid "
       + "where    a.status='N' and a.domainid=? order by a."+ordClause;
-    stmt = getDBConnection().prepareStatement(sql);
+    stmt = m_conn.prepareStatement(sql);
     stmt.setInt(1, domainID);
    } else if (domainID == 0) {
     sql =   "select    a.id,a.name,b.usrgrpid,b.viewaccess  "
       + "from    dm.dm_domain a       "
       + "left outer join dm.dm_domainaccess b on a.id=b.domainid "
       + "where    a.status='N' and a.id=? order by a.name";
-    stmt = getDBConnection().prepareStatement(sql);
+    stmt = m_conn.prepareStatement(sql);
     stmt.setInt(1,m_userDomain);
    } else {
     // domainID is < 0 - must be the "inherited" domain. No subdomains here
@@ -4854,28 +5569,28 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    sql = "select a.id,a.name from dm.dm_notify a where a.status='N' and a.domainid=? order by a.name";
    sql_access = "select count(*) from dm.dm_notifyaccess where notifyid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_notifyaccess where notifyid = ? and usrgrpid = ? and viewaccess = 'Y'";   
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case REPOSITORY:
    sql = "select a.id,a.name from dm.dm_repository a where a.status='N' and a.domainid=? order by a.name";
    sql_access = "select count(*) from dm.dm_repositoryaccess where repositoryid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_repositoryaccess where repositoryid = ? and usrgrpid = ? and viewaccess = 'Y'";   
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case SERVER:
    sql = "select a.id,a.name from dm.dm_server a where a.status='N' and a.domainid=? order by a.name";
    sql_access = "select count(*) from dm.dm_serveraccess where serverid = ? and usrgrpid = ? and viewaccess = 'N'";
    sql_hasaccess = "select count(*) from dm.dm_serveraccess where serverid = ? and usrgrpid = ? and viewaccess = 'Y'";
-   stmt = getDBConnection().prepareStatement(sql);
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
-  case BUILDER:
-   sql =  "select id,name from dm.dm_buildengine where status='N' and domainid=? order by name";
-   sql_access = "select count(*) from dm.dm_buildengineaccess where builderid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_buildengineaccess where builderid = ? and usrgrpid = ? and viewaccess = 'Y'";   
-   stmt = getDBConnection().prepareStatement(sql);
+  case RPROXY:
+   sql =  "select id, hostname from dm.dm_engine where status='N' and domainid=? order by name";
+   sql_access = "select count(*) from dm.dm_engineaccess where engineid = ? and usrgrpid = ? and viewaccess = 'N'";
+   sql_hasaccess = "select count(*) from dm.dm_engineaccess where engineid = ? and usrgrpid = ? and viewaccess = 'Y'";   
+   stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   default:
@@ -4918,7 +5633,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
      if (m_OverrideAccessControl) {
 //      System.out.println("1) User is SUPERUSER");
       // Ignore the access control
-      TreeObject treeObject = new TreeObject(lastid,lastobjname);
+      TreeObject treeObject = new TreeObject(lastid,lastobjname, domainID);
       treeObject.SetObjectType(ot);
       if (lastkind>0) treeObject.SetObjectKind(lastkind);
       if (!dups.contains(lastid)) {
@@ -4931,7 +5646,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
        if (vagc.containsKey(u) && vagc.get(u).equalsIgnoreCase("Y")) {
         // found a "Y" - we're allowed to view, add it and move on.
         // System.out.println("found u="+u+" in vagc, adding object "+lastid+"objname="+lastobjname);
-        TreeObject treeObject = new TreeObject(lastid,lastobjname);
+        TreeObject treeObject = new TreeObject(lastid,lastobjname, domainID);
         treeObject.SetObjectType(ot);
         if (lastkind>0) treeObject.SetObjectKind(lastkind);
         if (!dups.contains(lastid)) {
@@ -4966,7 +5681,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
     if (m_OverrideAccessControl) {
      // System.out.println("2) User is SUPERUSER");
      // Ignore the access control
-     TreeObject treeObject = new TreeObject(lastid,lastobjname);
+     TreeObject treeObject = new TreeObject(lastid,lastobjname,domainID);
      treeObject.SetObjectType(ot);
      if (lastkind>0) treeObject.SetObjectKind(lastkind);
      if (!dups.contains(lastid)) {
@@ -4979,7 +5694,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
       // System.out.println("Checking group "+u);
       if (vagc.containsKey(u) && vagc.get(u).equalsIgnoreCase("Y")) {
        // found a "Y" - we're allowed to view, add it and move on.
-       TreeObject treeObject = new TreeObject(lastid,lastobjname);
+       TreeObject treeObject = new TreeObject(lastid,lastobjname, domainID);
        treeObject.SetObjectType(ot);
        if (lastkind>0) treeObject.SetObjectKind(lastkind);
        if (!dups.contains(lastid)) {
@@ -5009,17 +5724,19 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
     int hasAllow = 0;
     
     if (sql_access.length() > 0) {
-     PreparedStatement stmt_access = getDBConnection().prepareStatement(sql_access);
-     PreparedStatement stmt_hasaccess = getDBConnection().prepareStatement(sql_hasaccess);
+
      for (Integer u: gm) {
+      PreparedStatement stmt_access = m_conn.prepareStatement(sql_access);
       stmt_access.setInt(1, rs.getInt(1));
       stmt_access.setInt(2, u);
       ResultSet rs2 = stmt_access.executeQuery();
       while (rs2.next()) {
        hasDeny  += rs2.getInt(1);
       }
-      rs2.close();
+      rs2.close();     
+      stmt_access.close();
 
+      PreparedStatement stmt_hasaccess = m_conn.prepareStatement(sql_hasaccess);
       stmt_hasaccess.setInt(1, rs.getInt(1));
       stmt_hasaccess.setInt(2, u);
       ResultSet rs3 = stmt_hasaccess.executeQuery();
@@ -5027,13 +5744,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
        hasAllow  += rs3.getInt(1);
       }
       rs3.close();
+      stmt_hasaccess.close();
      }
-     stmt_access.close();
-     stmt_hasaccess.close();
+
+     m_conn.commit();
     }
     if (hasAllow >= 1 || getAclOverride()) {
      // found a group with explicit view permission - add it and move on.
-     TreeObject treeObject = new TreeObject(rs.getInt(1),rs.getString(2));
+     TreeObject treeObject = new TreeObject(rs.getInt(1),rs.getString(2), domainID);
      treeObject.SetObjectType(ot);
      if (ot == ObjectType.PROCEDURE || ot == ObjectType.FUNCTION) {
       treeObject.SetObjectKind(rs.getInt(3));
@@ -5053,7 +5771,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
      for (Integer u: gm) {
       if (vag.containsKey(u) && vag.get(u).equalsIgnoreCase("Y")) {
        // found a "Y" - we're allowed to view, add it and move on.
-       TreeObject treeObject = new TreeObject(rs.getInt(1),rs.getString(2));
+       TreeObject treeObject = new TreeObject(rs.getInt(1),rs.getString(2), domainID);
        if (ot == ObjectType.FRAGMENT) {
         int actionid = rs.getInt(3);
         int functionid = rs.getInt(4);
@@ -5105,12 +5823,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		// moves up from the specified domain and finds objects of the specified type in each
 		// parent/grandparent etc
+		System.out.println("**** getInheritedTeeObjects domainid="+domainID);
 		List<TreeObject> ret = new ArrayList<TreeObject>();
 		Domain dom = getDomain(domainID);
+		System.out.println("domainName="+dom.getName());
 		dom = dom.getDomain();	// parent domain
+		System.out.println("Starting with objects in "+dom.getName());
 		while (dom != null) {
-			ret.addAll(getTreeObjects(ot,dom.getId(),-1));
+			ret.addAll(getTreeObjects(ot,dom.getId(),-1, null));
 			dom = dom.getDomain();	// parent domain
+			if (dom != null) System.out.println("Moving up to Domain "+dom.getName());
 		}
 		return ret;
 	}
@@ -5259,27 +5981,6 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			go = ds;
 		}
 		else
-		if (otid.substring(0,2).equalsIgnoreCase("be")) {
-			// Build Engine
-			Builder builder = getBuilder(Integer.parseInt(otid.substring(2)));
-			go = builder;	
-		}
-		else
-		if (otid.substring(0,2).equalsIgnoreCase("bj")) {
-			// Build Job
-			BuildJob buildjob = getBuildJob(Integer.parseInt(otid.substring(2)));
-			int builderid = buildjob.getBuilderId();
-			Builder builder = getBuilder(builderid);
-			if (builder != null) {
-				res+="be"+builder.getId();
-				sep=" do";
-				go = builder;
-			} else {
-				go = buildjob;
-			}
-						
-		}
-		else
 		if (otid.substring(0,2).equalsIgnoreCase("us")) {
 			// User
 			User user = getUser(Integer.parseInt(otid.substring(2)));
@@ -5295,8 +5996,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		if (otid.substring(0,2).equalsIgnoreCase("re")) {
 			// Repository
 			Repository repo = getRepository(Integer.parseInt(otid.substring(2)),false);
-			go = repo; 
-		} 
+			go = repo;
+		}
 		Domain dom = go.getDomain();
 		System.out.println("dom="+dom.getId());
 		while (dom != null) {
@@ -5338,14 +6039,24 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			}
 			*/
 			String sql = "SELECT id FROM dm.dm_"+ot.toString()+" WHERE status='N' and domainid in ("+domains+") order by name";
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			
+   if (ot == ObjectType.RELEASE)
+    sql = "SELECT id FROM dm.dm_application WHERE status='N' and domainid in ("+domains+") order by name";
+   
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next())
 			{
 				switch(ot) {
+	    case RELEASE:
+	     Application rel = getApplication(rs.getInt(1),true);
+	     if (rel.getIsRelease().compareToIgnoreCase("Y") == 0)
+	       ret.add(rel);
+	     break;
 				case APPLICATION:
-					Application app = getApplication(rs.getInt(1),true);
-					ret.add(app);
+     Application app = getApplication(rs.getInt(1),true);
+     if (app.getIsRelease().compareToIgnoreCase("Y") != 0)
+       ret.add(app);
 					break;
 				case COMPONENT:
 					Component comp = getComponent(rs.getInt(1),true);
@@ -5355,44 +6066,72 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					Environment env = getEnvironment(rs.getInt(1),true);
 					ret.add(env);
 					break;
+    case REPOSITORY:
+     Repository repo = getRepository(rs.getInt(1),true);
+     ret.add(repo);
+     break;	
 				case SERVER:
 					Server server = getServer(rs.getInt(1),true);
 					ret.add(server);
 					break;
-				default:
-					break;
-				}
-			}
-			rs.close();
-			return ret;
-		}
-		catch(SQLException e)
-		{
-			e.printStackTrace();
-			rollback();
-		}
-		throw new RuntimeException("Unable to retrieve object " +ot.toString()+" from database");
-	}
+    case USERGROUP:
+     UserGroup group = getGroup(rs.getInt(1));
+     ret.add(group);
+	    break;	
+    case USER:
+     User user = getUser(rs.getInt(1));
+     ret.add(user);
+     break; 
+    case DATASOURCE:
+     Datasource ds = getDatasource(rs.getInt(1),true);
+     ret.add(ds);
+     break;   
+    case NOTIFY:
+     Notify note = this.getNotify(rs.getInt(1),true);
+     ret.add(note);
+     break;         
+	   default:
+	    break;
+    }
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  }
+  catch(SQLException e)
+  {
+   e.printStackTrace();
+   rollback();
+  }
+  throw new RuntimeException("Unable to retrieve object " +ot.toString()+" from database");
+ }
 	
 	public List<Server> getServersInEnvironment(int EnvironmentID)
 	{
 		List <Server> ret = new ArrayList<Server>();
-		String sql="select a.id,a.name,a.summary,a.hostname,b.xpos,b.ypos from dm.dm_server a,dm.dm_serversinenv b where b.envid=? and a.id=b.serverid and a.status = 'N' order by name";
+  String domlist = "," + this.getDomainList() + ",";
+		String sql="select a.id,a.name,a.summary,a.hostname,b.xpos,b.ypos, a.domainid from dm.dm_server a,dm.dm_serversinenv b where b.envid=? and a.id=b.serverid and a.status = 'N' order by name";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, EnvironmentID);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next())
 			{
 				Server dmobject = new Server(this,rs.getInt(1),rs.getString(2));
+				int srvDom = rs.getInt(7);
+	   if (!domlist.contains("," + srvDom + ","))
+	    continue;
+	    
 				dmobject.setSummary(rs.getString(3));
 				dmobject.setHostName(rs.getString(4));
 				dmobject.setXpos(rs.getInt(5));
 				dmobject.setYpos(rs.getInt(6));
+				dmobject.setDomainId(rs.getInt(7));
 				ret.add(dmobject);
 			}
 			rs.close();
+			stmt.close();
 			return ret;
 		}
 		catch(SQLException e)
@@ -5406,10 +6145,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	List<ComponentLink> getComponentLinks(int appid)
 	{
 		List <ComponentLink> ret = new ArrayList<ComponentLink>();
-		String sql = "SELECT appid,objfrom,objto FROM dm.dm_applicationcomponentflows WHERE appid=?";
+		String sql = "SELECT distinct appid,objfrom,objto FROM dm.dm_applicationcomponentflows WHERE appid=?";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,appid);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next())
@@ -5422,6 +6161,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				ret.add(cl);
 			}
 			rs.close();
+			stmt.close();
 			return ret;
 		}
 		catch(SQLException e)
@@ -5454,14 +6194,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			break;
 		case APPLICATION:
 		 if (isRelease)
-			 sql="select a.id, a.name, a.domainid, a.summary, a.parentid, 0, 0, 'N',0,0,"
-			 	+ "b.xpos, b.ypos FROM dm.dm_application a, dm.dm_applicationcomponent b "
+			 sql="select a.id, a.name, a.domainid, a.summary, a.parentid, 0, 0, 'N',0,0, 'N', "
+			 	+ "b.xpos, b.ypos, a.predecessorid FROM dm.dm_application a, dm.dm_applicationcomponent b "
 			 	+ "where  a.status = 'N' and  b.appid=? and a.id = b.childappid";
 		 else
-			 sql="select a.id, a.name, a.domainid, a.summary, a.parentid, a.rollup, a.rollback, a.filteritems, a.lastbuildnumber, a.buildjobid, "
-				+ "b.xpos, b.ypos FROM dm.dm_component a, dm.dm_applicationcomponent b "
+			 sql="select a.id, a.name, a.domainid, a.summary, a.parentid, a.rollup, a.rollback, a.filteritems, a.lastbuildnumber, a.buildjobid, a.deployalways, "
+				+ "b.xpos, b.ypos, a.predecessorid FROM dm.dm_component a, dm.dm_applicationcomponent b "
 				+ "where  a.status = 'N' and b.appid=? and a.id = b.compid";
-			cols=12;
+			cols=13;
 			break;
 		default:
 			break;
@@ -5469,7 +6209,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, id);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next())
@@ -5482,18 +6222,21 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				comp.setRollback(ComponentFilter.fromInt(getInteger(rs, 7, 0)));
 				comp.setFilterItems(getBoolean(rs, 8));
 				comp.setLastBuildNumber(rs.getInt(9));
-				int buildjobid = getInteger(rs,10,0);
-				if (buildjobid > 0) {
-					BuildJob buildjob = getBuildJob(buildjobid);
-					comp.setBuildJob(buildjob);
-				}
+
 				if (cols>10) {
-					comp.setXpos(rs.getInt(11));
-					comp.setYpos(rs.getInt(12));
-					
+				 String deployalways = rs.getString(11);
+				 if (deployalways.equalsIgnoreCase("Y"))
+				  comp.setAlwaysDeploy(true);
+				 else
+				  comp.setAlwaysDeploy(false);
+					comp.setXpos(rs.getInt(12));
+					comp.setYpos(rs.getInt(13));
+					comp.setPredecessorId(rs.getInt(14));
 				}
+				
 				ret.add(comp);
 			}
+			stmt.close();
 			rs.close();
 			return ret;
 		}
@@ -5504,6 +6247,63 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		}
 		throw new RuntimeException("Unable to retrieve object components for server from database");
 	}
+	
+ public int getLastComp4App(int id)
+ {
+  Component comp = null;
+  String lastversql = "select objto from dm.dm_applicationcomponentflows a, dm.dm_component b where a.appid = ? and a.objto = b.id and b.status = 'N' and a.objfrom is null";
+  PreparedStatement stmt2;
+  try
+  {
+   stmt2 = m_conn.prepareStatement(lastversql);
+
+   stmt2.setInt(1, id);
+   ResultSet rs2 = stmt2.executeQuery();
+   while (rs2.next())
+   {
+    int objto = rs2.getInt(1);
+    comp = this.getComponent(objto, false);
+
+    boolean hasRows = false;
+
+    do
+    {
+     String childsql = "SELECT objto FROM dm.dm_applicationcomponentflows a where a.appid = ? and a.objfrom = ?";
+     PreparedStatement stmt = m_conn.prepareStatement(childsql);
+
+     stmt.setInt(1, id);
+     stmt.setInt(2, objto);
+     ResultSet rs = stmt.executeQuery();
+     hasRows = false;
+     while (rs.next())
+     {
+      int nextobj = rs.getInt(1);
+      Component tmp = this.getComponent(nextobj, false);
+      if (tmp != null)
+      {
+       comp = tmp;
+       objto = nextobj;
+       hasRows = true;
+      } 
+     }
+     rs.close();
+     stmt.close();
+    } while (hasRows);
+   }
+   rs2.close();
+   stmt2.close();
+
+   if (comp != null)
+    return comp.getId();
+   return -1;
+  }
+  catch (SQLException e)
+  {
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  }
+  return -1;
+ }
 	
 	public TableDataSet getComponentsOnServer(Server server)
 	{
@@ -5526,7 +6326,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		System.out.println("serverid="+server.getId());
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, server.getId());
 			ResultSet rs = stmt.executeQuery();
 			TableDataSet ret = new TableDataSet(5);
@@ -5589,7 +6389,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   System.out.println("serverid="+server.getId());
   try
   {
-   PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, server.getId());
    ResultSet rs = stmt.executeQuery();
    while(rs.next()) {
@@ -5619,7 +6419,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		List<Application> res = new ArrayList<Application>();
 		String sql="SELECT a.appid FROM dm.dm_applicationcomponent a,dm.dm_application b WHERE a.compid=? AND a.appid=b.id and b.status='N'";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,comp.getId());
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
@@ -5627,6 +6427,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				res.add(app);
 			}
 			rs.close();
+			stmt.close();
 			return res;
 		}
 		catch(SQLException ex)
@@ -5637,51 +6438,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Unable to retrieve associated applications for component '" + comp.getName() + "' from database");
 	}
 	
-	public TableDataSet getBuildsForComponent(Component comp)
-	{
-		System.out.println("Getting builds for component "+comp.getId());
-		String sql;
-		if (comp.getParentId()==0) {
-			// This is a base version - include all versions of component
-			sql="SELECT a.buildjobid,b.name,a.compid,c.name,c.parentid,a.buildnumber,a.timestamp,a.success " +
-				"FROM dm.dm_buildhistory a,dm_buildjob b,dm_component c WHERE a.compid IN " +
-				"(SELECT x.id FROM dm.dm_component x WHERE x.parentid = ? " +
-				"UNION SELECT y.id FROM dm.dm_component y WHERE y.id = ?) " +
-				"AND a.buildjobid=b.id AND c.id = a.compid AND c.status='N' ORDER BY buildnumber DESC";
-		} else {
-			// Specific Component Version - just include this version
-			sql="SELECT a.buildjobid,b.name,a.compid,c.name,c.parentid,a.buildnumber,a.timestamp,a.success " +
-				"FROM dm.dm_buildhistory a,dm_buildjob b, dm_component c WHERE a.compid=? " +
-				"AND a.buildjobid=b.id AND c.id = a.compid AND c.status='N' ORDER BY buildnumber DESC";
-		}
+
 		
-		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			stmt.setInt(1,comp.getId());
-			if (comp.getParentId()==0) stmt.setInt(2,comp.getId());
-			ResultSet rs = stmt.executeQuery();
-			TableDataSet ret = new TableDataSet(5);
-			int row = 0;
-			while(rs.next()) {
-				System.out.println("*** buildno="+rs.getInt(5)+" success="+rs.getString(7));
-				ret.put(row, 0, new BuildJob(this, rs.getInt(1), rs.getString(2)).getLinkJSON());
-				Component c = new Component(this, rs.getInt(3), rs.getString(4));
-				c.setParentId(rs.getInt(5));
-				ret.put(row, 1, c.getLinkJSON());
-				ret.put(row, 2, rs.getInt(6));
-				ret.put(row, 3, formatDateToUserLocale(rs.getInt(7)));
-				ret.put(row, 4, rs.getString(8));
-				row++;
-			}
-			rs.close();
-			stmt.close();
-			return ret;
-		} catch(SQLException ex) {
-			ex.printStackTrace();
-		}
-		throw new RuntimeException("Unable to retrieve component build history for component '" + comp.getName() + "' from database");
-	}
-	
 	public TableDataSet getComponentLocations(Component comp,String t, boolean isRelease)
 	{
 		String sql="";
@@ -5733,7 +6491,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println(sql);
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			if (bServers) {
 				stmt.setInt(1, comp.getId());
 				stmt.setInt(2, comp.getId());
@@ -5816,7 +6574,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			{
 				// Getting details for an application
 				String sql="select name,summary,actionid,ownerid,ogrpid from dm.dm_application where id=?";
-				PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+				PreparedStatement stmt = m_conn.prepareStatement(sql);
 				stmt.setInt(1, id);
 				ResultSet rs = stmt.executeQuery();
 				if (rs.next())
@@ -5832,7 +6590,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			{
 				// Getting details for a component
 				String sql="select name,summary from dm.dm_component where id=?";
-				PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+				PreparedStatement stmt = m_conn.prepareStatement(sql);
 				stmt.setInt(1, id);
 				ResultSet rs = stmt.executeQuery();
 				if (rs.next())
@@ -5848,7 +6606,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			{
 				// Getting details for a component item
 				String sql="select b.name from dm.dm_componentitem a,dm.dm_repository b where a.id=? and b.id=a.repositoryid";
-				PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+				PreparedStatement stmt = m_conn.prepareStatement(sql);
 				stmt.setInt(1, id);
 				ResultSet rs = stmt.executeQuery();
 				if (rs.next())
@@ -5861,7 +6619,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				//
 				System.out.println("second sql");
 				String sql2="SELECT	name,value FROM	dm.dm_compitemprops WHERE compitemid=?";
-				PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+				PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 				stmt2.setInt(1, id);
 				ResultSet rs2 = stmt2.executeQuery();
 				while (rs2.next())
@@ -5887,11 +6645,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		List <ComponentItem> ret = new ArrayList<ComponentItem>();
 		try
 		{
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery(
-					"SELECT	a.id, a.name, a.target, a.xpos, a.ypos, a.predecessorid, a.summary, a.rollup, a.rollback			" +
+					"SELECT	a.id, a.name, a.target, a.xpos, a.ypos, a.predecessorid, a.summary, a.rollup, a.rollback, a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace, a.operator, a.builddate, a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl			" +
 					"FROM	dm.dm_componentitem		a			" +
-					"WHERE	a.compid="+compid);
+					"WHERE	a.compid="+compid + " order by a.rollup desc");
 			while (rs.next())
 			{
 				ComponentItem ci = new ComponentItem();
@@ -5904,9 +6662,35 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				ci.setSummary(rs.getString(7));
 				ci.setRollup(ComponentFilter.fromInt(getInteger(rs, 8, 0)));
 				ci.setRollback(ComponentFilter.fromInt(getInteger(rs, 9, 0)));
+
+    String kind = rs.getString(10);
+    
+    if (kind != null && kind.equalsIgnoreCase("docker"))
+     ci.setItemkind(ComponentItemKind.DOCKER);
+    else if (kind != null && kind.equalsIgnoreCase("database"))
+     ci.setItemkind(ComponentItemKind.DATABASE);
+    else
+     ci.setItemkind(ComponentItemKind.FILE);
+    
+    ci.setBuildId(rs.getString(11));
+    ci.setBuildUrl(rs.getString(12));
+    ci.setChart(rs.getString(13));
+    ci.setChartVersion(rs.getString(14));
+    ci.setChartNamespace(rs.getString(15));
+    ci.setOperator(rs.getString(16));
+    ci.setBuildDate(rs.getString(17));
+    ci.setDockerRepo(rs.getString(18));
+    ci.setDockerSha(rs.getString(19));
+    ci.setDockerTag(rs.getString(20));
+    ci.setGitCommit(rs.getString(21));
+    ci.setGitRepo(rs.getString(22));
+    ci.setGitTag(rs.getString(23));
+    ci.setGitUrl(rs.getString(24));
+    
 				ret.add(ci);
 			}
 			rs.close();
+			st.close();
 			return ret;
 		}
 		
@@ -5935,9 +6719,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						"AND	userid=?		";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,ObjectType);
-			stmt.setInt(2,getUserID());
+			stmt.setInt(2,m_userID);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next())
 			{
@@ -5955,9 +6739,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						"AND	a.groupid = b.groupid			" +
 						"AND	b.userid = ?					";
 
-				PreparedStatement stmt2 = getDBConnection().prepareStatement(sql);
+				PreparedStatement stmt2 = m_conn.prepareStatement(sql);
 				stmt2.setInt(1,ObjectType);
-				stmt2.setInt(2,getUserID());
+				stmt2.setInt(2,m_userID);
 				ResultSet rs2 = stmt.executeQuery();
 				if (rs2.next())
 				{
@@ -5989,15 +6773,15 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				// Owner is a group - we're the "owner" if we're a member of this group
 				UserList users = getUsersInGroup(owner.getId());
 				for (User user: users) {
-					if (user.getId()==getUserID()) {
+					if (user.getId()==m_userID) {
 						envowner=true;
 						break;
 					}
 				}
 			} else {
 				// Owner must be a user
-				System.out.println("Owner is a user m_userID="+getUserID()+" owner.getId()="+owner.getId());
-				envowner = (getUserID() == owner.getId());
+				System.out.println("Owner is a user m_userID="+m_userID+" owner.getId()="+owner.getId());
+				envowner = (m_userID == owner.getId());
 			}
 		} else {
 			System.out.println("No owner - setting envowner to true");
@@ -6007,605 +6791,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return envowner;
 	}
 	
-	public void AddRequestEntry(int id,int appid,String Description,boolean cal)
-	{
-		String sql;
-		if (cal) {
-			sql="INSERT INTO dm.dm_request(id,userid,"+whencol+",note,calendarid,appid,status) VALUES(?,?,?,?,?,?,'N')";
-		} else {
-			sql="INSERT INTO dm.dm_request(id,userid,"+whencol+",note,taskid,appid,status) VALUES(?,?,?,?,?,?,'N')";
-		}
-		try
-		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			stmt.setInt(1,getID("request"));
-			stmt.setInt(2,getUserID());
-			stmt.setLong(3,timeNow());
-			stmt.setString(4,Description);
-			stmt.setInt(5,id);
-			stmt.setInt(6,appid);
-			stmt.execute();
-			getDBConnection().commit();
-			stmt.close();
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-	}
-	
-	public void AddPendingRequest(int id,int appid,String Description)
-	{
-		AddRequestEntry(id,appid,Description,true);
-	}
-	
-	public int AddEvent(DMCalendarEvent e)
-	{
-		//
-		// TO DO : Check Permissions
-		// TO DO: If insert is "P"ending then also put an entry into the requests table.
-		String sql = 	"INSERT INTO dm.dm_calendar(id,envid,eventname,eventtype,starttime,endtime,allday,status,appid,description,creatorid,created,modifierid,modified) " +
-						"VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-		try
-		{
-			boolean envowner=userOwnsEnvironment(e.getEnvID());
-			System.out.println("In AddEvent, envowner="+envowner);
-			String status=envowner?"N":"P";	// Normal (we are the environment owner) or Pending 
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			int id = getID("calendar");
-			long t = timeNow();
-			String EventType = e.getEventTypeString().toString();
-			EventType = Character.toUpperCase(EventType.charAt(0)) + EventType.substring(1).toLowerCase();
-			System.out.println("EventType="+EventType);
-			stmt.setInt(1,id);
-			stmt.setInt(2,e.getEnvID());
-			stmt.setString(3,e.getEventTitle());
-			stmt.setString(4,EventType);
-			stmt.setInt(5, e.getStart());
-			stmt.setInt(6, e.getEnd());
-			stmt.setString(7, e.getAllDayEvent()?"Y":"N");
-			stmt.setString(8, status);
-			int appid = e.getAppID();
-			if(appid != 0) {
-				stmt.setInt(9, appid);
-			} else {
-				stmt.setNull(9, Types.INTEGER);
-			}
-			stmt.setString(10, e.getEventDesc());
-			System.out.println("getEventDesc="+e.getEventDesc());
-			stmt.setInt(11,e.getCreatorID());
-			stmt.setLong(12,t);
-			stmt.setInt(13,e.getCreatorID());
-			stmt.setLong(14,t);
-			boolean res = stmt.execute();
-			System.out.println("res="+(res?"true":"false"));
-			stmt.close();
-			Environment env = getEnvironment(e.getEnvID(),false);
-			RecordObjectUpdate(env,"Calendar Entry <a href='javascript:SwitchToCalendar("+id+");'>\""
-			+e.getEventTitle()
-			+(status.equalsIgnoreCase("p")?"\"</a> Requested":"\"</a> Created"));
-			getDBConnection().commit();
-			return id;
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		return 0;
-	}
-	
-	public int DeleteEvent(int eventid)
-	{
-		//
-		// TO DO: Check Permissions
-		//
-		String sql1 = 	"UPDATE dm.dm_calendar SET status='D' WHERE id=?";
-		String sql2 = 	"UPDATE dm.dm_request SET status='C', completed=? where calendarid=?";
-		String sql3 =   "SELECT envid,eventname FROM dm.dm_calendar WHERE id=?";
- 		try
-		{
- 			int res=0;
- 			PreparedStatement stmt3 = getDBConnection().prepareStatement(sql3);
- 			stmt3.setInt(1,eventid);
- 			ResultSet rs3 = stmt3.executeQuery();
- 			if (rs3.next()) {
- 				Environment env = getEnvironment(rs3.getInt(1),false);
-				PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
-				stmt1.setInt(1,eventid);
-				stmt1.execute();
-				res = stmt1.getUpdateCount();
-				stmt1.close();
-				PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
-				stmt2.setLong(1,timeNow());
-				stmt2.setInt(2,eventid);
-				stmt2.execute();
-				RecordObjectUpdate(env,"Event \""+rs3.getString(2)+"\" Deleted");
-				getDBConnection().commit();
- 			}
-			return res;
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		return -1;
-	}
-	
-	private DMEventType getEventType(String et)
-	{
-		if (et.equalsIgnoreCase("reserved")) return DMEventType.RESERVED;
-		if (et.equalsIgnoreCase("unavailable")) return DMEventType.UNAVAILABLE;
-		if (et.equalsIgnoreCase("auto")) return DMEventType.AUTO;
-		System.out.println("Returning NoEvent");
-		return DMEventType.NOEVENT;
-	}
-	
-	
-	
-	public DMCalendarEvent getCalendarEvent(int eventid)
-	{
-		DMCalendarEvent ret = new DMCalendarEvent();
-		ret.setID(eventid);
-		String sql = 	"SELECT envid,eventname,rtrim(eventtype),starttime,endtime, "
-				+		"appid,description,allday,status "
-				+		"FROM dm.dm_calendar WHERE id=?";
-		try
-		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			stmt.setInt(1,eventid);
-			ResultSet rs = stmt.executeQuery();
-			while (rs.next()) {
-				ret.setEnvID(rs.getInt(1));
-				ret.setEventTitle(rs.getString(2));
-				System.out.println("event type = "+rs.getString(3));
-				ret.setEventType(getEventType(rs.getString(3)));
-				DMEventType t = getEventType(rs.getString(3));
-				
-				System.out.println("event type stored = "+ret.getEventTypeString()+" or "+t.toString());
-				ret.setStart(rs.getInt(4));
-				ret.setEnd(rs.getInt(5));
-				ret.setAppID(rs.getInt(6));
-				ret.setEventDesc(rs.getString(7));
-				ret.setAllDayEvent(rs.getString(8).equalsIgnoreCase("y"));
-			}
-			rs.close();
-			stmt.close();
-			return ret;
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		return null;
-	}
-	
-	public int ModifyEvent(DMCalendarEvent ce)
-	{
-		//
-		// TO DO: Check Permissions
-		//
-		String sql = "UPDATE dm.dm_calendar SET eventname=?, eventtype=?,starttime=?, endtime=?, appid=?, description=?, allday=?, modifierid=?, modified=?  WHERE id=?";
-		try
-		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			stmt.setString(1,ce.getEventTitle());
-			stmt.setString(2,ce.getEventTypeString());
-			stmt.setInt(3,ce.getStart());
-			stmt.setInt(4,ce.getEnd());
-			stmt.setInt(5,ce.getAppID());
-			stmt.setString(6,ce.getEventDesc());
-			stmt.setString(7,ce.getAllDayEvent()?"Y":"N");
-			stmt.setInt(8,getUserID());
-			stmt.setLong(9,timeNow());
-			stmt.setInt(10,ce.getID());
-			System.out.println("id to update = "+ce.getID());
-			stmt.execute();
-			int res = stmt.getUpdateCount();
-			System.out.println("UpdateCount="+stmt.getUpdateCount()+" ce.getEventTitle=["+ce.getEventTitle()+"]");
-			stmt.close();
-			Environment env = getEnvironment(ce.getEnvID(),false);
-			this.RecordObjectUpdate(env,"Calendar Entry \""+ce.getEventTitle()+"\" Changed");
-			getDBConnection().commit();
-			return res;
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		return -1;
-	}
-	
-	public int ApproveEvent(int eventid)
-	{
-		//
-		// TO DO: Check Permissions
-		//
-		String sql1 = "UPDATE dm.dm_calendar SET status='N' where id=?";
-		String sql2 = "UPDATE dm.dm_request SET status='C', completed=? where calendarid=?";
-		String sql3 = "SELECT envid,eventname FROM dm.dm_calendar WHERE id=?";
-		try
-		{
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
-			stmt1.setInt(1,eventid);
-			stmt1.execute();
-			int res = stmt1.getUpdateCount();
-			System.out.println("UpdateCount="+stmt1.getUpdateCount());
-			stmt1.close();
-			PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
-			stmt2.setLong(1,timeNow());
-			stmt2.setInt(2,eventid);
-			stmt2.execute();
-			PreparedStatement stmt3 = getDBConnection().prepareStatement(sql3);
-			stmt3.setInt(1,eventid);
-			ResultSet rs3 = stmt3.executeQuery();
-			if (rs3.next()) {
-				Environment env = getEnvironment(rs3.getInt(1),false);
-				this.RecordObjectUpdate(env, "Calendar Event \""+rs3.getString(2)+"\" Approved");
-			}
-			rs3.close();
-			getDBConnection().commit();
-			return res;
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		return -1;
-	}
-	
-	public List<DMCalendarEvent> getEvents(Environment env,Application app,long starttime,long endtime)
-	{
-		// Called from API - list all events
-		List <DMCalendarEvent> ret = new ArrayList<DMCalendarEvent>();
-		String sql1 = 	"SELECT c.id,c.envid,c.eventname,rtrim(c.eventtype),c.starttime,c.endtime,	"
-				+	"c.allday,c.status,c.appid,c.description,c.creatorid,c.created,c.modifierid,c.modified, "
-				+	"r.completed, r.completedby "
-				+	"FROM dm.dm_calendar c "
-				+	"LEFT OUTER JOIN dm.dm_request r ON r.calendarid = c.id "
-				+	"LEFT OUTER JOIN dm.dm_environment e on e.id = c.envid "
-				+	"LEFT OUTER JOIN dm.dm_application a on a.id = c.appid "
-				+	"WHERE c.status<>'D' AND e.domainid in ("+m_domainlist+") "
-				+	"AND a.domainid in ("+m_domainlist+") AND starttime>=?";
-		int ebv=0,abv=0,tbv=0;
-		int nbv=2;
-		if (env != null) {
-			sql1=sql1+" AND c.envid=?";
-			ebv=nbv++;
-		}
-		if (app != null) {
-			sql1=sql1+" AND c.appid=?";
-			abv=nbv++;
-		}
-		if (endtime>0) {
-			sql1=sql1+" AND c.endtime<=?";
-			tbv=nbv++;
-		}
-		// String sql2 = 	"SELECT envid,unavailstart,unavailend FROM dm.dm_availability WHERE envid=?";
-		String sql3 = 	"SELECT deploymentid,userid,exitcode,exitstatus,appid,started,finished FROM dm.dm_deployment " +
-						"WHERE started>=? AND finished<=?";
-		if (env != null) sql3=sql3+" AND envid=?";
-		if (app != null) sql3=sql3+" AND appid=?";
-		try
-		{
-			System.out.println("sql1="+sql1);
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql1);
-			stmt.setLong(1,starttime);
-			if (env != null) stmt.setInt(ebv,env.getId());
-			if (app != null) stmt.setInt(abv,app.getId());
-			if (endtime>0) stmt.setLong(tbv,endtime);
-			ResultSet rs = stmt.executeQuery();
-			while (rs.next())
-			{
-				DMCalendarEvent ce = new DMCalendarEvent();
-				String status = rs.getString(8);
-				String EventType = rs.getString(4);		// TODO: This needs to be used!
-				if (status != null && status.equalsIgnoreCase("p")) {
-					// Pending event
-					ce.setPending(true);
-				} else {
-					ce.setPending(false);
-				}
-				if (EventType.equalsIgnoreCase("reserved")) ce.setEventType(DMEventType.RESERVED);
-				else
-				if (EventType.equalsIgnoreCase("unavailable")) ce.setEventType(DMEventType.UNAVAILABLE);
-				else
-				if (EventType.equalsIgnoreCase("auto")) ce.setEventType(DMEventType.AUTO);
-				ce.setID(rs.getInt(1));
-				ce.setEnvID(rs.getInt(2));
-				ce.setEventTitle(getString(rs, 3, ""));
-				int eventStart = rs.getInt(5);
-				int eventEnd = rs.getInt(6);
-				ce.setStart(eventStart);
-				if (eventEnd < eventStart+900) {
-					eventEnd = eventEnd + (eventEnd % 900);
-				}
-				ce.setEnd(eventEnd);
-				ce.setAllDayEvent(getBoolean(rs,7,false));
-				
-				ce.setAppID(rs.getInt(9));
-				ce.setEventDesc(getString(rs, 10, ""));
-				ce.setCreatorID(rs.getInt(11));
-				ce.setCreated(rs.getInt(12));
-				ce.setModifierID(rs.getInt(13));
-				ce.setModified(rs.getInt(14));
-				ce.setApproved(getInteger(rs,15,0));
-				ce.setApprover(getInteger(rs,16,0));
-				ret.add(ce);
-			}
-			rs.close();
-			return ret;
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		throw new RuntimeException("Unable to retrieve calendar events from database");
-		
-	}
-	
-	List<DMCalendarEvent> getCalendarEvents(int envid,int start,int end)
-	{
-		List <DMCalendarEvent> ret = new ArrayList<DMCalendarEvent>();
-		String sql1 = 	"SELECT c.id,c.envid,c.eventname,rtrim(c.eventtype),c.starttime,c.endtime,	"
-					+	"c.allday,c.status,c.appid,c.description,c.creatorid,c.created,c.modifierid,c.modified, "
-					+	"r.completed, r.completedby "
-					+	"FROM dm.dm_calendar c "
-					+	"LEFT OUTER JOIN dm.dm_request r ON r.calendarid = c.id "
-					+	"LEFT OUTER JOIN dm.dm_application a ON a.id = c.appid "
-					+	"WHERE ((starttime>=? AND starttime<=?) OR (endtime>=? AND endtime<=?)) AND envid=? AND c.status <>'D' AND (a.status is null or a.status='N')";
-		String sql2 = 	"SELECT envid,unavailstart,unavailend FROM dm.dm_availability WHERE envid=?";
-		String sql3 = 	"SELECT d.deploymentid,d.userid,d.exitcode,d.exitstatus,d.appid,d.started,d.finished FROM dm.dm_deployment d,dm.dm_application a " +
-						"WHERE d.started>=? AND d.finished<=? AND d.envid=? AND d.appid=a.id AND a.status='N'";
-		try
-		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql1);
-			stmt.setInt(1,start);
-			stmt.setInt(2,end);
-			stmt.setInt(3,start);
-			stmt.setInt(4,end);
-			stmt.setInt(5,envid);
-			ResultSet rs = stmt.executeQuery();
-			while (rs.next())
-			{
-				DMCalendarEvent ce = new DMCalendarEvent();
-				String status = rs.getString(8);
-				String EventType = rs.getString(4);		// TODO: This needs to be used!
-				if (status != null && status.equalsIgnoreCase("p")) {
-					// Pending event
-					ce.setPending(true);
-				} else {
-					ce.setPending(false);
-				}
-				if (EventType.equalsIgnoreCase("reserved")) ce.setEventType(DMEventType.RESERVED);
-				else
-				if (EventType.equalsIgnoreCase("unavailable")) ce.setEventType(DMEventType.UNAVAILABLE);
-				else
-				if (EventType.equalsIgnoreCase("auto")) ce.setEventType(DMEventType.AUTO);
-				ce.setID(rs.getInt(1));
-				ce.setEnvID(rs.getInt(2));
-				ce.setEventTitle(getString(rs, 3, ""));
-				int eventStart = rs.getInt(5);
-				int eventEnd = rs.getInt(6);
-				ce.setStart(eventStart);
-				if (eventEnd < eventStart+900) {
-					eventEnd = eventEnd + (eventEnd % 900);
-				}
-				ce.setEnd(eventEnd);
-				ce.setAllDayEvent(getBoolean(rs,7,false));
-				
-				ce.setAppID(rs.getInt(9));
-				ce.setEventDesc(getString(rs, 10, ""));
-				ce.setCreatorID(rs.getInt(11));
-				ce.setCreated(rs.getInt(12));
-				ce.setModifierID(rs.getInt(13));
-				ce.setModified(rs.getInt(14));
-				ce.setApproved(getInteger(rs,15,0));
-				ce.setApprover(getInteger(rs,16,0));
-				ret.add(ce);
-			}
-			rs.close();
-			//
-			// Now overlay the availability events from the weekly availability calendar
-			//
-			PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
-			stmt2.setInt(1,envid);
-			ResultSet rs2 = stmt2.executeQuery();
-			int x=1;
-			while (rs2.next())
-			{
-				DMCalendarEvent ce = new DMCalendarEvent();
-				ce.setAllDayEvent(false);
-				ce.setID(-1-x);	// negative id = weekly "unavailable" event
-				ce.setEnvID(rs2.getInt(1));
-				ce.setEventTitle("Unavailable");
-				ce.setStart(rs2.getInt(2)+start);	// Start is start of week
-				ce.setEnd(rs2.getInt(3)+start);
-				ce.setAppID(0);
-				ce.setEventDesc("");
-				ce.setEventType(DMEventType.UNAVAILABLE);
-				ret.add(ce);
-				x++;
-			}
-			rs2.close();
-			//
-			// Now do any historic deployments
-			//
-			PreparedStatement stmt3 = getDBConnection().prepareStatement(sql3);
-			stmt3.setInt(1,start);
-			stmt3.setInt(2,end);
-			stmt3.setInt(3,envid);
-			ResultSet rs3 = stmt3.executeQuery();
-			while (rs3.next())
-			{
-				DMCalendarEvent ce = new DMCalendarEvent();
-				ce.setAllDayEvent(false);
-				ce.setID(rs3.getInt(1));	// need to differentiate this from normal calendar events
-				ce.setEnvID(envid);
-				ce.setEventTitle("Deployed");
-				int depStart = rs3.getInt(6);
-				int depEnd = rs3.getInt(7);
-				int interval = depEnd-depStart;
-				System.out.println("depstart="+depStart+" depend="+depEnd+" interval="+interval);
-				ce.setStart(depStart);
-				if (interval < 900) {
-					// interval between start & end should be at LEAST 900 secs (15 mins) and end on a 15 minute boundary
-					interval = 900 + (interval % 900);
-					System.out.println("Adding "+interval+" to depEnd");
-					depEnd = depEnd + interval;
-					System.out.println("depEnd now "+depEnd);
-				}
-				ce.setEnd(depEnd);
-				ce.setAppID(rs3.getInt(5));
-				ce.setEventDesc(rs3.getString(4));
-				ce.setEventType(DMEventType.DEPLOYMENT);
-				ce.setDeployID(rs3.getInt(1));
-				ret.add(ce);
-				x++;
-			}
-			rs3.close();
-			
-			return ret;
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		throw new RuntimeException("Unable to retrieve calendar events from database");
-	}
-	
-	
-	List<DMCalendarEvent> getWeeklySchedule(int envid)
-	{
-		List <DMCalendarEvent> ret = new ArrayList<DMCalendarEvent>();
-		String sql = "SELECT unavailstart,unavailend FROM dm.dm_availability WHERE envid=?";
-		try
-		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			stmt.setInt(1,envid);
-			ResultSet rs = stmt.executeQuery();
-			int x=1;
-			while (rs.next())
-			{
-				DMCalendarEvent ce = new DMCalendarEvent();
-				ce.setAllDayEvent(false);
-				ce.setID(0-x);
-				ce.setEnvID(rs.getInt(1));
-				ce.setEventTitle("Unavailable");
-				ce.setEventType(DMEventType.UNAVAILABLE);
-				ce.setStart(rs.getInt(1)+345600);
-				ce.setEnd(rs.getInt(2)+345600);
-				ret.add(ce);
-				x++;
-			}
-			rs.close();
-			return ret;
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		throw new RuntimeException("Unable to retrieve availability events from database");
-	}
-	
-	
-	public void DeleteAllAvailability(int envid)
-	{
-		String sql = "DELETE FROM dm.dm_availability WHERE envid=?";
-		try
-		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			stmt.setInt(1,envid);
-			stmt.execute();
-			stmt.close();
-			getDBConnection().commit();
-			return;
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		throw new RuntimeException("Unable to delete availability events from database");
-	}
-	
-	private void UpdateCalendarAttributes(int envid,String colname,int t,String newval)
-	{
-		String sql = "UPDATE dm.dm_environment SET "+colname+"=? WHERE id=?";
-		try
-		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			if (t==1) {
-				stmt.setInt(1,Integer.parseInt(newval));
-			} else {
-				stmt.setString(1,newval);
-			}
-			stmt.setInt(2,envid);
-			stmt.execute();
-			stmt.close();
-			getDBConnection().commit();
-			return;
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		throw new RuntimeException("Unable to update calendar attributes colname="+colname+" newval="+newval);
-	}
-	
-	public void setCalendarStartTime(int envid,int timeinmins)
-	{
-		UpdateCalendarAttributes(envid,"calstart",1,Integer.toString(timeinmins));
-	}
 
-	public void setCalendarEndTime(int envid, int timeinmins)
-	{
-		UpdateCalendarAttributes(envid,"calend",1,Integer.toString(timeinmins));
-	}
-
-	public void setCalendarAvailability(int envid,String na)
-	{
-		UpdateCalendarAttributes(envid,"calusage",2,na);
-	}
-	
-	public void AddAvailability(int envid,int start,int end)
-	{
-		String sql = "INSERT INTO dm.dm_availability(envid,unavailstart,unavailend) VALUES(?,?,?)";
-		try
-		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			stmt.setInt(1,envid);
-			stmt.setInt(2,start);
-			stmt.setInt(3,end);
-			stmt.execute();
-			stmt.close();
-			getDBConnection().commit();
-			return;
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		throw new RuntimeException("Unable to insert availability event into database");
-	}
-	
 	public String GetApplicationNameFromID(int appid)
 	{
 		String ret="";
 		String sql = "SELECT name FROM dm.dm_application WHERE id=?";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,appid);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next())
@@ -6623,38 +6816,39 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Unable to retrieve application name from database");
 	}
 	
-	//public boolean approveApplication(Application app, Domain tgtdomain, boolean approve, String note)
-	//{
-	//	if(approve) {
-	//		System.out.println("Approving application "+app.getId()+" for domain "+tgtdomain.getId());
-	//	} else {
-	//		System.out.println("Rejecting application "+app.getId()+" for domain "+tgtdomain.getId());
-	//	}
+	public boolean approveApplication(Application app, Domain tgtdomain, boolean approve, String note)
+	{
+		if(approve) {
+			System.out.println("Approving application "+app.getId()+" for domain "+tgtdomain.getId());
+		} else {
+			System.out.println("Rejecting application "+app.getId()+" for domain "+tgtdomain.getId());
+		}
 
-	//	int id = getID("Approval");
-	//	if(id == 0) {
-	//		return false;
-	//	}
-	//	
-	//	String sql = "INSERT INTO dm.dm_approval(id, appid, \"when\", userid, approved, note) VALUES (?,?,?,?,?,?)"; 
-	//	try {
-	//		PreparedStatement stmt = m_conn.prepareStatement(sql);
-	//		stmt.setInt(1, id);
-	//		stmt.setInt(2, app.getId());
-	//		stmt.setLong(3, timeNow());
-	//		stmt.setInt(4, m_userID);
-	//		stmt.setString(5, (approve ? "Y" : "N"));
-	//		stmt.setString(6, note);
-	//		stmt.execute();
-	//		stmt.close();
-	//		m_conn.commit();
-	//		return true;
-	//	} catch(SQLException e) {
-	//		e.printStackTrace();
-	//		rollback();
-	//	}		
-	//	return false;
-	//}
+		int id = getID("Approval");
+		if(id == 0) {
+			return false;
+		}
+		
+		String sql = "INSERT INTO dm.dm_approval(id, appid, " + whencol + ", userid, approved, note, domainid) VALUES (?,?,?,?,?,?,?)"; 
+		try {
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
+			stmt.setInt(1, id);
+			stmt.setInt(2, app.getId());
+			stmt.setLong(3, timeNow());
+			stmt.setInt(4, m_userID);
+			stmt.setString(5, (approve ? "Y" : "N"));
+			stmt.setString(6, note);
+			stmt.setInt(7, tgtdomain.getId());
+			stmt.execute();
+			stmt.close();
+			m_conn.commit();
+			return true;
+		} catch(SQLException e) {
+			e.printStackTrace();
+			rollback();
+		}		
+		return false;
+	}
 	
 	public List <Application> GetApplicationsInEnvironment(int envid, boolean isRelease)
 	{
@@ -6697,7 +6891,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		System.out.println("sql="+sql);
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			if (!isRelease)	stmt.setInt(1,envid);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
@@ -6710,6 +6904,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				ret.add(app);
 			}
 			rs.close();
+			stmt.close();
 			return ret;
 		}
 		catch(SQLException ex)
@@ -6718,104 +6913,6 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			rollback();
 		}
 		throw new RuntimeException("Unable to retrieve applications in environment from database");
-	}
-	
-	// Build Engine
-	public Builder getBuilder(int builderid)
-	{
-		if (builderid < 0) {
-			Builder ret = new Builder(this, builderid, "");
-			ret.setName("");
-			ret.setSummary("");
-			return ret;
-		}
-		String sql =  "SELECT	b.name,b.summary,b.domainid,b.status,b.credid, "
-				 	+ "			uc.id, uc.name, uc.realname, b.created, "
-					+ "			um.id, um.name, um.realname, b.modified, "
-					+ "			uo.id, uo.name, uo.realname, g.id, g.name "
-					+ "FROM		dm.dm_buildengine b  "
-					+ "LEFT OUTER JOIN dm.dm_user uc ON b.creatorid = uc.id "		// creator
-					+ "LEFT OUTER JOIN dm.dm_user um ON b.modifierid = um.id "		// modifier
-					+ "LEFT OUTER JOIN dm.dm_user uo ON b.ownerid = uo.id "			// owner user
-					+ "LEFT OUTER JOIN dm.dm_usergroup g ON b.ogrpid = g.id "		// owner group
-					+ "WHERE	b.id=?";
-		
-		try
-		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			stmt.setInt(1, builderid);
-			ResultSet rs = stmt.executeQuery();
-			Builder ret = null;
-			if(rs.next()) {
-				ret = new Builder(this, builderid, rs.getString(1));
-				ret.setSummary(rs.getString(2));
-				ret.setDomainId(getInteger(rs, 3, 0));
-				getStatus(rs, 4, ret);
-				int credid = getInteger(rs,5,0);
-				if (credid != 0) {
-					Credential cred = getCredential(credid,false);
-					ret.setCredential(cred);
-				}
-				getCreatorModifierOwner(rs, 6, ret);
-			}
-			rs.close();
-			stmt.close();
-			if(ret != null) {
-				return ret;
-			}
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		return null;
-		// throw new RuntimeException("Unable to retrieve builder " + builderid + " from database");	
-	}
-	// Build Job
-	public BuildJob getBuildJob(int buildjobid)
-	{
-		if (buildjobid < 0) {
-			BuildJob ret = new BuildJob(this, buildjobid, "");
-			ret.setName("");
-			ret.setSummary("");
-			return ret;
-		}
-		String sql =  "SELECT	b.name,b.summary,b.builderid,b.status,b.projectname, "
-				 	+ "			uc.id, uc.name, uc.realname, b.created, "
-					+ "			um.id, um.name, um.realname, b.modified "
-					+ "FROM		dm.dm_buildjob b  "
-					+ "LEFT OUTER JOIN dm.dm_user uc ON b.creatorid = uc.id "		// creator
-					+ "LEFT OUTER JOIN dm.dm_user um ON b.modifierid = um.id "		// modifier
-					+ "WHERE	b.id=?";
-		
-		try
-		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			stmt.setInt(1, buildjobid);
-			ResultSet rs = stmt.executeQuery();
-			BuildJob ret = null;
-			if(rs.next()) {
-				ret = new BuildJob(this, buildjobid, rs.getString(1));
-				ret.setSummary(rs.getString(2));
-				ret.setBuilderId(getInteger(rs, 3, 0));
-				getStatus(rs, 4, ret);
-				ret.setProjectName(rs.getString(5));
-				getCreatorModifier(rs, 6, ret);
-			}
-			rs.close();
-			stmt.close();
-			if(ret != null) {
-				return ret;
-			}
-			
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		throw new RuntimeException("Unable to retrieve build job " + buildjobid + " from database");	
 	}
 	
 	// Environment
@@ -6849,7 +6946,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, envid);
 			ResultSet rs = stmt.executeQuery();
 			Environment ret = null;
@@ -6867,6 +6964,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			}
 			rs.close();
 			stmt.close();
+			m_conn.commit();
 			if(ret != null) {
 				return ret;
 			}
@@ -6921,7 +7019,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		}
 		else
 		{
-			String sql = "SELECT id from dm.dm_domain where id in (" + m_domainlist + ") and name=?";
+			String sql;
+			if (m_domainlist == "") {
+				sql = "SELECT id from dm.dm_domain where name=? and status = 'N'";
+			} else {
+				sql = "SELECT id from dm.dm_domain where status = 'N' and id in (" + m_domainlist + ") and name=?";
+			}
 			if (parent > 0) {
 				sql = sql + " AND domainid=?";
 			}
@@ -6930,7 +7033,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				System.out.println("sql="+sql);
 				System.out.println("DomainName=["+DomainName+"]");
 				System.out.println("parent="+parent);
-				PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+				PreparedStatement stmt = m_conn.prepareStatement(sql);
 				stmt.setString(1, DomainName);
 				if (parent > 0) stmt.setInt(2,parent);
 				ResultSet rs = stmt.executeQuery();
@@ -6969,6 +7072,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		int dot = objName.lastIndexOf('.');
 		int domainid=DOMAIN_NOT_SPECIFIED;
+		
 		if (dot > 0) {
 			String dn = objName.substring(0,dot);
 			System.out.println("dn="+dn);
@@ -6987,45 +7091,57 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		String table_name="dm_"+ot.toString().toLowerCase();
 		String sql;
-		int domainid = getObjectDomainId(name);
+		int domainid = -1;
+		
+		if (ot == ObjectType.USER && name.contains("@"))
+		 domainid = DOMAIN_NOT_SPECIFIED;
+		else
+		 domainid = getObjectDomainId(name);
+		
 		if (domainid == DOMAIN_NOT_SPECIFIED) {
 			if (ot == ObjectType.TEMPLATE) {
 				// Templates don't have domains of their own
 				sql = "SELECT t.id FROM dm.dm_template t,dm_notify n WHERE t.notifierid=n.id AND n.domainid in (" + m_domainlist + ") and t.name = ? AND t.status='N'";
 			}
 			else
-			if (ot == ObjectType.BUILDJOB) {
-				// Build Jobs don't have domains of their own
-				sql = "SELECT b.id FROM dm.dm_buildengine b,dm_buildjob j WHERE j.builderid=b.id AND b.domainid in (" + m_domainlist + ") and j.name = ? AND j.status='N'";
+	   if (ot == ObjectType.COMP_CATEGORY || ot == ObjectType.ACTION_CATEGORY) {
+	    // Build Jobs don't have domains of their own
+	    sql = "SELECT id FROM dm.dm_category WHERE name = ?";
+	   } else 
+	    if (ot == ObjectType.SERVERCOMPTYPE) {
+	     // Build Jobs don't have domains of their own
+	     sql = "SELECT id FROM dm.dm_type WHERE name = ?";
 
-			} else {
-    if (m_domainlist == "") {
-     sql = "SELECT id FROM dm."+table_name+" WHERE name = ?";
-    } else {
-     sql = "SELECT id FROM dm."+table_name+" WHERE domainid in (" + m_domainlist+ ") and name = ?";
-    }
-    System.out.println("sql="+sql);
+	    }  else {
+				if (m_domainlist == "") {
+					sql = "SELECT id FROM dm."+table_name+" WHERE name = ?";
+				} else {
+					sql = "SELECT id FROM dm."+table_name+" WHERE domainid in (" + m_domainlist+ ") and name = ?";
+				}
+				System.out.println("sql="+sql);
 			}
 		} else {
+   if (ot == ObjectType.SERVERCOMPTYPE) {
+    // Build Jobs don't have domains of their own
+    sql = "SELECT id FROM dm.dm_type WHERE name = ? and domainid = ?";
+
+   } else 
 			if (ot == ObjectType.TEMPLATE) {
 				// Templates don't have domains of their own
 				sql = "SELECT t.id FROM dm.dm_template t,dm_notify n WHERE t.notifierid=n.id AND t.name = ? AND n.domainid=? AND t.status='N'";
 			}
-			else
-			if (ot == ObjectType.BUILDJOB) {
-				// Build Jobs don't have domains of their own
-				sql = "SELECT b.id FROM dm.dm_buildengine b,dm_buildjob j WHERE j.builderid=b.id AND j.name = ? AND b.domainid=? AND t.status='N'";
-			} else {
+   else {
 				sql = "SELECT id FROM dm."+table_name+" WHERE name = ? AND domainid=?";
 			}
 			name = name.substring(name.lastIndexOf('.')+1); 
 		}
 		try
 		{
-			if (ot != ObjectType.TEMPLATE && ot != ObjectType.TASK) {
-				sql = sql + "AND status='N'";
+			if (ot != ObjectType.TEMPLATE && ot != ObjectType.TASK && ot != ObjectType.COMP_CATEGORY && ot != ObjectType.ACTION_CATEGORY) {
+				sql = sql + " AND status='N'";
 			}
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			System.out.println("b) sql="+sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setString(1,name);
 			if (domainid != DOMAIN_NOT_SPECIFIED) stmt.setInt(2, domainid);
 			ResultSet rs = stmt.executeQuery();
@@ -7043,6 +7159,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				}
 				switch(ot)
 				{
+	   case ACTION:   ret = getAction(id,true);break;
 				case ENVIRONMENT:	ret = getEnvironment(id,true);break;
 				case SERVER:		ret = getServer(id,true);break;
 				case USER:			ret = getUser(id);break;
@@ -7054,7 +7171,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				case CREDENTIALS:	ret = getCredential(id,true);break;
 				case TEMPLATE:		ret = getTemplate(id);break;
 				case USERGROUP:		ret = getGroup(id);break;
-			    case REPOSITORY:    ret = getRepository(id,true);break;
+    case REPOSITORY:  ret = getRepository(id,true);break;
+    case COMP_CATEGORY: ret = getCategory(id);break;
+    case ACTION_CATEGORY: ret = getCategory(id);break;
+    case NOTIFY: ret = getNotify(id,true);break;
+    case SERVERCOMPTYPE: ret = getServerCompTypeDetail(id);break;
+    case ENGINE: ret = getEngine(id);break;
 				default:			break;
 				}
 			} else {
@@ -7090,34 +7212,62 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return (User)getObjectByName(ObjectType.USER,userName);	
 	}
 	
+ public User getUserByName4Domain(int domainid, String userName)
+ {
+  String sql = "SELECT id FROM dm.dm_user WHERE name = ? AND domainid=?";
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setString(1,userName);
+   stmt.setInt(2,domainid);
+   ResultSet rs = stmt.executeQuery();
+   
+   int id = -1;
+   if (rs.next())
+    id = rs.getInt(1);
+    
+   return getUser(id);
+  }
+  catch (Exception e){}
+  return null;
+ }
+	
 	public Datasource getDatasourceByName(String dsName)
 	{	
 		return (Datasource)getObjectByName(ObjectType.DATASOURCE,dsName);	
 	}
 	
- public Category getCompCategoryByName(String categoryName)
- {
-  String sql = "select id from dm.dm_category where name = ?";
-  int catid = 0;
-  try {
-   PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-   stmt.setString(1,categoryName);
-   ResultSet rs = stmt.executeQuery();
-   if (rs.next()) {
-    catid = rs.getInt(1);
-   }
-  } catch(SQLException ex) {
-   throw new RuntimeException(ex.getMessage());
-  }
-  
-  Category cat = new Category(catid,categoryName);
-  return cat;
- }
- 
 	public Component getComponentByName(String componentName)
 	{
 		return (Component)getObjectByName(ObjectType.COMPONENT,componentName);	
 	}
+	
+ public ComponentItem getComponentItemByName(int compid, String name)
+ {
+  String   sql = "SELECT id FROM dm.dm_componentitem WHERE name = ? and compid = ?";
+  try
+  {
+  PreparedStatement stmt = m_conn.prepareStatement(sql);
+  stmt.setString(1,name);
+  stmt.setInt(2,compid);
+  int itemid = -1;
+  
+  ResultSet rs = stmt.executeQuery();
+  if(rs.next()) {
+    itemid = rs.getInt(1);
+  }
+  rs.close();
+  stmt.close();
+  
+  if (itemid == -1)
+   return null;
+   
+  return this.getComponentItem(itemid, false);
+  }
+  catch (Exception e)
+  {}
+  return null;
+ }
 	
 	public Task getTaskByName(String taskName)
 	{
@@ -7125,15 +7275,17 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		// Now check we have execute access to the task, otherwise throw exception
 		String sql = "SELECT count(*) FROM dm.dm_taskaccess a,dm.dm_usersingroup b WHERE a.taskid=? and b.userid=? and a.usrgrpid in (b.groupid,1)";
 		try {
-			System.out.println("checking execute permissions for task "+t.getId()+" for user "+getUserID());
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			System.out.println("checking execute permissions for task "+t.getId()+" for user "+m_userID);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,t.getId());
-			stmt.setInt(2,getUserID());
+			stmt.setInt(2,m_userID);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
 				System.out.println("count is "+rs.getInt(1));
 				if (rs.getInt(1)==0) throw new RuntimeException("Task "+taskName+" Not Found or No Access");
 			}
+			rs.close();
+			stmt.close();
 		} catch(SQLException ex) {
 			throw new RuntimeException(ex.getMessage());
 		}
@@ -7149,8 +7301,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{	
 	 if (domainName.equalsIgnoreCase("GLOBAL"))
 	  return getDomain(1);
-			 
-	 return (Domain)getObjectByName(ObjectType.DOMAIN,domainName);	
+	 
+		return (Domain)getObjectByName(ObjectType.DOMAIN,domainName);	
 	}
 	
 	public Credential getCredentialByName(String credName)
@@ -7168,16 +7320,36 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return (UserGroup)getObjectByName(ObjectType.USERGROUP,groupName);
 	}
 	
+ public Category getCategoryByName(String catName)
+ {
+  return (Category)getObjectByName(ObjectType.ACTION_CATEGORY,catName);
+ }
+ 	
  public Repository getRepositoryByName(String repoName)
-	{
-	 return (Repository)getObjectByName(ObjectType.REPOSITORY,repoName);
-	}
+ {
+  return (Repository)getObjectByName(ObjectType.REPOSITORY,repoName);
+ }
+	
+ public CompType getCompTypeByName(String idOrName)
+ {
+  return (CompType)getObjectByName(ObjectType.SERVERCOMPTYPE, idOrName);
+ }
  
+ public Notify getNotifyByName(String idOrName)
+ {
+  return (Notify)getObjectByName(ObjectType.NOTIFY, idOrName);
+ }
+ 
+ public Engine getEngineByName(String idOrName)
+ {
+  return (Engine)getObjectByName(ObjectType.ENGINE, idOrName);
+ }
+
  public Action getActionByName(String actionName)
  {
   return (Action)getObjectByName(ObjectType.ACTION,actionName);
  }
-	
+ 
 	public Task getTaskByType(Domain domain,TaskType type)
 	{
 		Task t = null;
@@ -7187,9 +7359,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sql2 = "SELECT id,subdomains FROM dm.dm_task WHERE typeid=? AND domainid=?";
 		String sql3 = "SELECT COUNT(*) FROM dm.dm_taskaccess a,dm.dm_usersingroup b WHERE a.taskid=? AND b.userid=? and a.usrgrpid in (b.groupid,1)";
 		try {
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
-			PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
-			PreparedStatement stmt3 = getDBConnection().prepareStatement(sql3);
+			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
+			PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
+			PreparedStatement stmt3 = m_conn.prepareStatement(sql3);
 			stmt1.setString(1,tt);
 			ResultSet rs1 = stmt1.executeQuery();
 			if (rs1.next()) {
@@ -7205,7 +7377,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						System.out.println("found task "+rs2.getInt(1)+" checking access");
 						stmt3.setInt(1,rs2.getInt(1));
 						if (!checkInheritence || (checkInheritence && getString(rs2,2,"N").equalsIgnoreCase("y"))) {
-							stmt3.setInt(2,getUserID());
+							stmt3.setInt(2,m_userID);
 							ResultSet rs3 = stmt3.executeQuery();
 							if (rs3.next()) {
 								if (rs3.getInt(1)>0) {
@@ -7214,11 +7386,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 									t = this.getTask(rs2.getInt(1),false);
 								}
 							}
-							rs3.close();
+							if (!rs3.isClosed())	rs3.close();
+							if (!stmt3.isClosed()) stmt3.close();
 						}
 						if (t != null) break;	// found the first task with execute rights
 					}
-					rs2.close();
+					if (!rs2.isClosed())  rs2.close();
+							
 					if (t==null) {
 						// Didn't find a task in this domain - go up a domain and check for
 						// inherited tasks
@@ -7228,9 +7402,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					}
 				}
 				while (t==null);
+	   if (!stmt2.isClosed()) stmt2.close();
 			}
-			rs1.close();
-			stmt1.close();
+			if (!rs1.isClosed()) rs1.close();
+			if (!stmt1.isClosed()) stmt1.close();
+			
 			if (t != null) System.out.println("found task "+t.getName());
 			return t;
 		} catch(SQLException ex) {
@@ -7247,7 +7423,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql1);
+			PreparedStatement stmt = m_conn.prepareStatement(sql1);
 			stmt.setInt(1, app.getId());
 			ResultSet rs = stmt.executeQuery();
 			TableDataSet ret = new TableDataSet(5);
@@ -7266,7 +7442,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			}
 			rs.close();
 			stmt.close();
-			PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+			PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 			stmt2.setInt(1, app.getId());
 			ResultSet rs2 = stmt2.executeQuery();
 			while(rs2.next()) {
@@ -7309,7 +7485,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				+ "WHERE ai.envid = ? ORDER BY 2";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, envid);
 			ResultSet rs = stmt.executeQuery();
 			List<DeployedApplication> dal = new ArrayList<DeployedApplication>();
@@ -7341,7 +7517,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		String sql = "SELECT ai.appid, a1.name, a2.id, a2.name, a2.predecessorid, "
 			+ "  vi2.deploymentid, d.exitcode, d.finished, "
-			+ "  vi2.modifierid, u.name, u.realname, vi2.modified "
+			+ "  vi2.modifierid, u.name, u.realname, vi2.modified, a1.domainid "
 			+ "FROM dm.dm_appsallowedinenv ai "
 			+ "LEFT OUTER JOIN dm.dm_application a1 ON a1.id = ai.appid "
 			+ "LEFT OUTER JOIN dm.dm_application a2 ON (a2.id = ai.appid OR a2.parentid = ai.appid) AND a2.id IN ("
@@ -7354,12 +7530,19 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, env.getId());
 			ResultSet rs = stmt.executeQuery();
 			TableDataSet ret = new TableDataSet(4);
 			int row = 0;
+   String domlist = "," + this.getDomainList() + ",";
+   
 			while(rs.next()) {
+    
+			 int envDom = rs.getInt(13);
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+    
 				ret.put(row, 0, new JSONBoolean(false));
 				ret.put(row, 1, new Application(this, rs.getInt(1), rs.getString(2)).getLinkJSON());
 				int avid = getInteger(rs, 3, 0);
@@ -7408,75 +7591,219 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		String sql;
 		int parentid = app.getParentId();
-		if (parentid>0) {
-			// this is an application version
-			sql = "SELECT ai.envid, e.name, a2.id, a2.name, a2.predecessorid, "
-				+ "  vi2.deploymentid, d.exitcode, d.finished, "
-				+ "  vi2.modifierid, u.name, u.realname, vi2.modified "
-				+ "FROM dm.dm_appsallowedinenv ai "
-				+ "LEFT OUTER JOIN dm.dm_environment e ON e.id = ai.envid "
-				+ "LEFT OUTER JOIN dm.dm_application a2 ON (a2.id = ai.appid OR a2.parentid = ai.appid) AND a2.id IN ("
-				+ "  SELECT vi.appid FROM dm.dm_appsinenv vi WHERE vi.envid = ai.envid)"
-				+ "LEFT OUTER JOIN dm.dm_appsinenv vi2 ON vi2.envid = ai.envid AND vi2.appid = a2.id "
-				+ "LEFT OUTER JOIN dm.dm_deployment d ON d.deploymentid = vi2.deploymentid "
-				+ "LEFT OUTER JOIN dm.dm_user u ON u.id = vi2.modifierid "
-				+ "WHERE ai.appid = ? AND a2.id = ? ORDER BY 2";
-		} else {
-			// this is an application
-			sql = "SELECT ai.envid, e.name, a2.id, a2.name, a2.predecessorid, "
-				+ "  vi2.deploymentid, d.exitcode, d.finished, "
-				+ "  vi2.modifierid, u.name, u.realname, vi2.modified "
-				+ "FROM dm.dm_appsallowedinenv ai "
-				+ "LEFT OUTER JOIN dm.dm_environment e ON e.id = ai.envid "
-				+ "LEFT OUTER JOIN dm.dm_application a2 ON (a2.id = ai.appid OR a2.parentid = ai.appid) AND a2.id IN ("
-				+ "  SELECT vi.appid FROM dm.dm_appsinenv vi WHERE vi.envid = ai.envid)"
-				+ "LEFT OUTER JOIN dm.dm_appsinenv vi2 ON vi2.envid = ai.envid AND vi2.appid = a2.id "
-				+ "LEFT OUTER JOIN dm.dm_deployment d ON d.deploymentid = vi2.deploymentid "
-				+ "LEFT OUTER JOIN dm.dm_user u ON u.id = vi2.modifierid "
-				+ "WHERE ai.appid = ? ORDER BY 2";
-		}
 		
-		try
-		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			stmt.setInt(1, parentid>0?parentid:app.getId());
-			if (parentid>0) stmt.setInt(2,app.getId());
-			ResultSet rs = stmt.executeQuery();
-			TableDataSet ret = new TableDataSet(4);
-			int row = 0;
-			while(rs.next()) {
-				ret.put(row, 0, new JSONBoolean(false));
-				ret.put(row, 1, new Environment(this, rs.getInt(1), rs.getString(2)).getLinkJSON());
-				int avid = getInteger(rs, 3, 0);
-				if(avid != 0) {
-					Application av = new Application(this, avid, rs.getString(4));
-					av.setPredecessorId(getInteger(rs, 5, 0));
-					ret.put(row, 2, av.getLinkJSON());
-					int deploymentid = getInteger(rs, 6, 0);
-					if(deploymentid != 0) {
-						Deployment d = new Deployment(this, deploymentid, rs.getInt(7));
-						d.setFinished(rs.getInt(8));
-						ret.put(row, 3, d.getLinkJSON());
-					} else {
-						ret.put(row, 3, new CreatedModifiedField(
-								formatDateToUserLocale(rs.getInt(12)),
-								new User(this, rs.getInt(9), rs.getString(10), rs.getString(11))));						
-					}
-				}
-				row++;
-			}
-			rs.close();
-			stmt.close();
-			return ret;
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
+		if (parentid == 0)
+		 parentid = app.getId();
+		
+//		if (parentid>0) {
+//			// this is an application version
+//			sql = "SELECT ai.envid, e.name, a2.id, a2.name, a2.predecessorid, "
+//				+ "  vi2.deploymentid, d.exitcode, d.started, d.finished, "
+//				+ "  vi2.modifierid, u.name, u.realname, vi2.modified "
+//				+ "FROM dm.dm_appsallowedinenv ai "
+//				+ "LEFT OUTER JOIN dm.dm_environment e ON e.id = ai.envid "
+//				+ "LEFT OUTER JOIN dm.dm_application a2 ON (a2.id = ai.appid OR a2.parentid = ai.appid) AND a2.id IN ("
+//				+ "  SELECT vi.appid FROM dm.dm_appsinenv vi WHERE vi.envid = ai.envid)"
+//				+ "LEFT OUTER JOIN dm.dm_appsinenv vi2 ON vi2.envid = ai.envid AND vi2.appid = a2.id "
+//				+ "LEFT OUTER JOIN dm.dm_deployment d ON d.deploymentid = vi2.deploymentid "
+//				+ "LEFT OUTER JOIN dm.dm_user u ON u.id = vi2.modifierid "
+//				+ "WHERE ai.appid = ? AND a2.id = ? ORDER BY 2";
+//		} else {
+//			// this is an application
+//			sql = "SELECT ai.envid, e.name, a2.id, a2.name, a2.predecessorid, "
+//				+ "  vi2.deploymentid, d.exitcode, d.started, d.finished, "
+//				+ "  vi2.modifierid, u.name, u.realname, vi2.modified "
+//				+ "FROM dm.dm_appsallowedinenv ai "
+//				+ "LEFT OUTER JOIN dm.dm_environment e ON e.id = ai.envid "
+//				+ "LEFT OUTER JOIN dm.dm_application a2 ON (a2.id = ai.appid OR a2.parentid = ai.appid) AND a2.id IN ("
+//				+ "  SELECT vi.appid FROM dm.dm_appsinenv vi WHERE vi.envid = ai.envid)"
+//				+ "LEFT OUTER JOIN dm.dm_appsinenv vi2 ON vi2.envid = ai.envid AND vi2.appid = a2.id "
+//				+ "LEFT OUTER JOIN dm.dm_deployment d ON d.deploymentid = vi2.deploymentid "
+//				+ "LEFT OUTER JOIN dm.dm_user u ON u.id = vi2.modifierid "
+//				+ "WHERE ai.appid = ?  and a2.predecessorid is null ORDER BY 2";
+//		}
+		
+		// Select Base Version and check if allowedinenv
+		
+  try
+  {
+   TableDataSet ret = new TableDataSet(4);
+   String domlist = "," + this.getDomainList() + ",";
+   
+   int row = 0;
+   if (app.getObjectType() == ObjectType.APPLICATION)
+   { 
+   sql = "select envid from dm.dm_appsallowedinenv where appid = " + parentid;
+   
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+   while(rs.next()) {
+    Environment env = this.getEnvironment(rs.getInt(1), false);
+    
+    String envDom = "" + env.getDomainId();
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+       
+    ret.put(row, 0, new JSONBoolean(false));
+    ret.put(row, 1, new LinkField(env.getObjectType(), env.getId(), env.getDomain().getFullDomain() + "." + env.getName()));
+    ret.put(row, 2, new String(""));
+    ret.put(row, 3, new LinkField(ObjectType.HISTORY_NOTE, 0, "Environment enabled for deployments"));
+
+    row++;
+   }
+   rs.close();
+   stmt.close();
+   }
+   else
+   {
+   sql = "select envid, max(deploymentid) from dm.dm_deployment where deploymentid > 0 and appid = " + app.getId() + " group by envid";
+   
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+   
+   stmt = m_conn.prepareStatement(sql);
+   rs = stmt.executeQuery();
+   while(rs.next()) {
+    Environment env = this.getEnvironment(rs.getInt(1), false);
+    
+    String envDom = "" + env.getDomainId();
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+    
+    ret.put(row, 1, new LinkField(env.getObjectType(), env.getId(), env.getDomain().getFullDomain() + "." + env.getName()));
+    ret.put(row, 2, app.getLinkJSON());
+    int deploymentid = rs.getInt(2);
+    Deployment d = this.getDeployment(deploymentid, true);
+    ret.put(row, 3, d.getLinkJSON());
+    
+    row++;
+   }
+   rs.close();
+   stmt.close();
+   }
+   return ret;
+  }
+  catch(SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+  
+ 	// Select Version and see which env deployed to
+		// add app env data
+		
+		
+//		try
+//		{
+//			PreparedStatement stmt = m_conn.prepareStatement(sql);
+//			stmt.setInt(1, parentid>0?parentid:app.getId());
+//			if (parentid>0) stmt.setInt(2,app.getId());
+//			ResultSet rs = stmt.executeQuery();
+//			TableDataSet ret = new TableDataSet(4);
+//   String domlist = "," + this.getDomainList() + ",";
+//			int row = 0;
+//			while(rs.next()) {
+//    Environment env = this.getEnvironment(rs.getInt(1), false);
+//    String envDom = "" + env.getDomainId();
+//			 
+//    if (!domlist.contains("," + envDom + ","))
+//     continue;
+//			 
+//    int avid = getInteger(rs, 3, 0);
+//    
+//    if (avid != app.getId())
+//     continue;
+//    
+//				ret.put(row, 0, new JSONBoolean(false));
+//				ret.put(row, 1, new LinkField(env.getObjectType(), env.getId(), env.getDomain().getFullDomain() + "." + env.getName()));
+//
+//				if(avid != 0) {
+//					Application av = new Application(this, avid, rs.getString(4));
+//					av.setPredecessorId(getInteger(rs, 5, 0));
+//					ret.put(row, 2, av.getLinkJSON());
+//					int deploymentid = getInteger(rs, 6, 0);
+//					if(deploymentid != 0) {
+//						Deployment d = new Deployment(this, deploymentid, rs.getInt(7));
+//						d.setStarted(rs.getInt(8));
+//						d.setFinished(rs.getInt(9));
+//						ret.put(row, 3, d.getLinkJSON());
+//					} else {
+//						ret.put(row, 3, new CreatedModifiedField(
+//								formatDateToUserLocale(rs.getInt(13)),
+//								new User(this, rs.getInt(10), rs.getString(11), rs.getString(12))));						
+//					}
+//				}
+//				row++;
+//			}
+//			rs.close();
+//			stmt.close();
+//			return ret;
+//		}
+//		catch(SQLException ex)
+//		{
+//			ex.printStackTrace();
+//			rollback();
+//		}
 		throw new RuntimeException("Unable to retrieve application version info for environment '" + app.getName() + "' from database");				
 	}
 	
+	public ArrayList<String> getAppVersInEnv(Application app)
+ {
+	 ArrayList<String> ret = new ArrayList();
+  String sql;
+  int parentid = app.getParentId();
+  if (parentid>0) {
+   // this is an application version
+   sql = "SELECT ai.envid, e.name, a2.id, a2.name, a2.predecessorid, "
+    + "  vi2.deploymentid, d.exitcode, d.started, d.finished, "
+    + "  vi2.modifierid, u.name, u.realname, vi2.modified "
+    + "FROM dm.dm_appsallowedinenv ai "
+    + "LEFT OUTER JOIN dm.dm_environment e ON e.id = ai.envid "
+    + "LEFT OUTER JOIN dm.dm_application a2 ON (a2.id = ai.appid OR a2.parentid = ai.appid) AND a2.id IN ("
+    + "  SELECT vi.appid FROM dm.dm_appsinenv vi WHERE vi.envid = ai.envid)"
+    + "LEFT OUTER JOIN dm.dm_appsinenv vi2 ON vi2.envid = ai.envid AND vi2.appid = a2.id "
+    + "LEFT OUTER JOIN dm.dm_deployment d ON d.deploymentid = vi2.deploymentid "
+    + "LEFT OUTER JOIN dm.dm_user u ON u.id = vi2.modifierid "
+    + "WHERE ai.appid = ? AND a2.id = ? ORDER BY 2";
+  } else {
+   // this is an application
+   sql = "SELECT ai.envid, e.name, a2.id, a2.name, a2.predecessorid, "
+    + "  vi2.deploymentid, d.exitcode, d.started, d.finished, "
+    + "  vi2.modifierid, u.name, u.realname, vi2.modified "
+    + "FROM dm.dm_appsallowedinenv ai "
+    + "LEFT OUTER JOIN dm.dm_environment e ON e.id = ai.envid "
+    + "LEFT OUTER JOIN dm.dm_application a2 ON (a2.id = ai.appid OR a2.parentid = ai.appid) AND a2.id IN ("
+    + "  SELECT vi.appid FROM dm.dm_appsinenv vi WHERE vi.envid = ai.envid)"
+    + "LEFT OUTER JOIN dm.dm_appsinenv vi2 ON vi2.envid = ai.envid AND vi2.appid = a2.id "
+    + "LEFT OUTER JOIN dm.dm_deployment d ON d.deploymentid = vi2.deploymentid "
+    + "LEFT OUTER JOIN dm.dm_user u ON u.id = vi2.modifierid "
+    + "WHERE ai.appid = ? ORDER BY 2";
+  }
+  
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, parentid>0?parentid:app.getId());
+   if (parentid>0) stmt.setInt(2,app.getId());
+   ResultSet rs = stmt.executeQuery();
+   int row = 0;
+   while(rs.next()) {
+    Environment env = this.getEnvironment(rs.getInt(1), false);
+    ret.add(env.getDomain().getFullDomain() + "." + env.getName());
+   }
+   rs.close();
+   stmt.close();
+  }
+  catch(SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+  return ret; 
+ }
+ 	
 	public TableDataSet getPendingEnvData(Environment env)
 	{
 		long cutoff = (System.currentTimeMillis() / 1000) - 864000;	// 10 days ago
@@ -7495,7 +7822,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,env.getId());
 			stmt.setLong(2,cutoff);
 			ResultSet rs = stmt.executeQuery();
@@ -7611,7 +7938,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,app.getId());
 			stmt.setInt(2,app.getId());
 			stmt.setInt(3,app.getId());
@@ -7628,7 +7955,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			long now = timeNow();
 			System.out.println("timeNow="+now);
 			String csql = "SELECT count(*) FROM dm.dm_appsinenv WHERE envid=? AND appid=?";
-			PreparedStatement cstmt = getDBConnection().prepareStatement(csql);
+			PreparedStatement cstmt = m_conn.prepareStatement(csql);
 			while(rs.next()) {	
 				System.out.println(row+") got application "+rs.getString(2)+" (id "+rs.getInt(1)+")");
 				ret.put(row, 0, rs.getInt(8));		// start time
@@ -7690,7 +8017,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try {
 			boolean ret=false;;
 			String updsql = "UPDATE dm.dm_prerequisities SET compid=? WHERE appid=? AND (compid IN (SELECT id FROM dm.dm_component WHERE parentid=?) OR compid=?)";
-			PreparedStatement updstmt = getDBConnection().prepareStatement(updsql);
+			PreparedStatement updstmt = m_conn.prepareStatement(updsql);
 			updstmt.setInt(1,comp.getId());
 			updstmt.setInt(2,app.getId());
 			updstmt.setInt(3,parentid>0?parentid:comp.getId());
@@ -7700,7 +8027,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			updstmt.close();
 			System.out.println("upcount="+updcount);
 			if (updcount == 0) {
-				PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+				PreparedStatement stmt = m_conn.prepareStatement(sql);
 				stmt.setInt(1, app.getId());
 				stmt.setInt(2, comp.getId());
 				stmt.execute();
@@ -7710,7 +8037,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			} else {
 				ret = true;
 			}
-			getDBConnection().commit();	
+			m_conn.commit();	
 			return ret;
 		} catch(SQLException e) {
 			e.printStackTrace();
@@ -7730,7 +8057,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			//
 			boolean ret=false;;
 			String updsql = "UPDATE dm.dm_prerequisities SET depappid=? WHERE appid=? AND (depappid IN (SELECT id FROM dm.dm_application WHERE parentid=?) OR depappid=?)";
-			PreparedStatement updstmt = getDBConnection().prepareStatement(updsql);
+			PreparedStatement updstmt = m_conn.prepareStatement(updsql);
 			updstmt.setInt(1,depapp.getId());
 			updstmt.setInt(2,app.getId());
 			updstmt.setInt(3,parentid>0?parentid:depapp.getId());
@@ -7739,7 +8066,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			int updcount = updstmt.getUpdateCount();
 			updstmt.close();
 			if (updcount == 0) {
-				PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+				PreparedStatement stmt = m_conn.prepareStatement(sql);
 				stmt.setInt(1, app.getId());
 				stmt.setString(2, parentid > 0 ? "AV":"APP");
 				stmt.setInt(3, depapp.getId());
@@ -7750,7 +8077,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			} else {
 				ret = true;
 			}
-			getDBConnection().commit();
+			m_conn.commit();
 			return ret;
 		} catch(SQLException e) {
 			e.printStackTrace();
@@ -7766,14 +8093,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String colname = (coltype.equalsIgnoreCase("action"))?"option":"notes";
 		String sql = "UPDATE dm.dm_prerequisities SET "+colname+"=? WHERE appid=? AND "+keycol+"=?";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setString(1, colval);
 			stmt.setInt(2, app.getId());
 			stmt.setInt(3,id);
 			stmt.execute();
 			System.out.println(stmt.getUpdateCount() + " rows updated");
 			boolean ret = (stmt.getUpdateCount() == 1);
-			getDBConnection().commit();
+			m_conn.commit();
 			stmt.close();
 			return ret;
 		} catch(SQLException e) {
@@ -7792,8 +8119,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sql2 = "INSERT INTO dm.dm_appsallowedinenv(envid, appid) VALUES(?,?)";
 		boolean ret=false;
 		try {
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
-			PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
+			PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 			stmt1.setInt(1, env.getId());
 			stmt1.setInt(2, pappid>0?pappid:app.getId());
 			ResultSet rs1 = stmt1.executeQuery();
@@ -7813,7 +8140,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						RecordObjectUpdate(app,"Associated with Environment "+linkval2,env.getId());
 						RecordObjectUpdate(env,"Application "+linkval+" Associated",app.getId());
 					}
-					getDBConnection().commit();
+					m_conn.commit();
 					stmt2.close();
 				} else {
 					ret=true;
@@ -7836,7 +8163,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sql2 = "DELETE FROM dm.dm_appsinenv WHERE envid = ? AND appid IN "
 				+ "(select id FROM dm.dm_application WHERE parentid=?)";
 		try {
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
+			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
 			stmt1.setInt(1, env.getId());
 			stmt1.setInt(2, pappid>0?pappid:app.getId());
 			stmt1.execute();
@@ -7845,7 +8172,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			//
 			// Now remove any entry in appsinenv
 			//
-			PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+			PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 			stmt2.setInt(1, env.getId());
 			stmt2.setInt(2, pappid>0?pappid:app.getId());
 			stmt2.execute();
@@ -7855,7 +8182,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			String linkval2="<a href='javascript:SwitchDisplay(\"en"+env.getId()+"\");'><b>"+env.getName()+"</b></a>";
 			RecordObjectUpdate(app,"Disassociated from Environment "+linkval2,env.getId());
 			RecordObjectUpdate(env,"Application "+linkval+" Disassociated",app.getId());
-			getDBConnection().commit();
+			m_conn.commit();
 			stmt2.close();
 			return ret1;
 		} catch(SQLException e) {
@@ -7866,7 +8193,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	}
 	
 	
-	public boolean setAppInEnv(Environment env, Application app, String note)
+	public boolean setAppInEnv(Environment env, Application app, String note, int deployid)
 	{
 		System.out.println("in setAppInEnv");
 		System.out.println("setAppInEnv - " + env.getId() + ", " + app.getId() + ", " + note);
@@ -7878,9 +8205,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String isql2 = "insert into dm.dm_deployment(deploymentid,userid,startts,appid,envid,started) values(?,?,now(),?,?,?)";
 		try {
 			long t = timeNow();
-			PreparedStatement stmt = getDBConnection().prepareStatement(usql);
+			PreparedStatement stmt = m_conn.prepareStatement(usql);
 			stmt.setInt(1, app.getId());
-			stmt.setInt(2, getUserID());
+			stmt.setInt(2, m_userID);
 			stmt.setLong(3, t);
 			stmt.setString(4, note);
 			stmt.setInt(5, env.getId());
@@ -7888,23 +8215,30 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			stmt.execute();
 			System.out.println(stmt.getUpdateCount() + " rows updated");
 			if(stmt.getUpdateCount()==0) {
-				PreparedStatement stmt2 = getDBConnection().prepareStatement(isql);
+				PreparedStatement stmt2 = m_conn.prepareStatement(isql);
 				stmt2.setInt(1, env.getId());
 				stmt2.setInt(2, app.getId());
-				stmt2.setInt(3, getUserID());
+				stmt2.setInt(3, m_userID);
 				stmt2.setLong(4, t);
 				stmt2.setString(5, note);
 				stmt2.execute();
 				System.out.println(stmt.getUpdateCount() + " rows inserted");
 				stmt2.close();
 			}
+			
+			if (deployid > 0)
+			{
+	   m_conn.commit(); 
+    return true;
+			}
+			
 			// insert a "dummy" deployment row to indicate manual update
-			Statement mstmt = getDBConnection().createStatement();
+			Statement mstmt = m_conn.createStatement();
 			ResultSet rsm = mstmt.executeQuery(msql);
 			if (rsm.next()) {
-				PreparedStatement dstmt = getDBConnection().prepareStatement(isql2);
+				PreparedStatement dstmt = m_conn.prepareStatement(isql2);
 				dstmt.setInt(1,rsm.getInt(1)-1);
-				dstmt.setInt(2,getUserID());
+				dstmt.setInt(2,m_userID);
 				dstmt.setInt(3,app.getId());
 				dstmt.setInt(4,env.getId());
 				dstmt.setLong(5,t);
@@ -7914,7 +8248,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			}
 			mstmt.close();
 			stmt.close();		
-			getDBConnection().commit();		
+			m_conn.commit();		
 			return true;
 		} catch(SQLException e) {
 			e.printStackTrace();
@@ -7931,13 +8265,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ "(SELECT a.id FROM dm.dm_application a, dm.dm_application b "
 			+ "WHERE (a.parentid = b.parentid OR a.id = b.parentid OR a.parentid = b.id OR a.id = b.id) AND b.id = ?)";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(usql);
+			PreparedStatement stmt = m_conn.prepareStatement(usql);
 			stmt.setInt(1, env.getId());
 			stmt.setInt(2, app.getId());
 			stmt.execute();
 			System.out.println(stmt.getUpdateCount() + " rows updated");
 			boolean ret = (stmt.getUpdateCount()==1);
-			getDBConnection().commit();
+			m_conn.commit();
 			stmt.close();
 			return ret;
 		} catch(SQLException e) {
@@ -7958,7 +8292,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ "FROM dm.dm_user u ORDER BY u.name";
 		try
 		{	
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, envid);
 			stmt.setInt(2, envid);
 			ResultSet rs = stmt.executeQuery();
@@ -7986,7 +8320,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ "ORDER BY a.name";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, envid);
 			stmt.setInt(2, envid);
 			stmt.setInt(3, envid);
@@ -8011,7 +8345,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			if (appid>0) {
-				PreparedStatement stmt = getDBConnection().prepareStatement("SELECT a.branch,a.predecessorid FROM dm."+tablename+" a WHERE a.id = ?");
+				PreparedStatement stmt = m_conn.prepareStatement("SELECT a.branch,a.predecessorid FROM dm."+tablename+" a WHERE a.id = ?");
 				stmt.setInt(1, appid);
 				ResultSet rs = stmt.executeQuery();
 				if (rs.next()) {
@@ -8067,7 +8401,89 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	}
 	*/
 	
-
+	public int[] getDefectCountsForApplication(Application app)
+	{
+		int[] res = new int[2];
+		String sql =
+			"select 	0,count(a.*)	"
+		+	"from 	dm.dm_defects			a,	"
+		+	"			dm.dm_datasource		b,	"
+		+	"			dm.dm_bugtrackingstates	c	"
+		+	"where	a.datasourceid=b.id	"
+		+	"and	b.defid=c.defid	"
+		+	"and	c.isclosed='N'	"
+		+	"and	lower(a.status)=lower(c.status)	"
+		+	"and	(	"
+		+	"		a.appid=? or a.compid in (select x.compid from dm.dm_applicationcomponent x where x.appid=?)	"
+		+	")	"
+		+	"union	"
+		+	"select 	1,count(a.*)	"
+		+	"from 	dm.dm_defects		a,	"
+		+	"		dm.dm_datasource		b,	"
+		+	"		dm.dm_bugtrackingstates	c	"
+		+	"where	a.datasourceid=b.id		"
+		+	"and	b.defid=c.defid	"
+		+	"and	c.isclosed='Y'	"
+		+	"and	lower(a.status)=lower(c.status)	"
+		+	"and	(	"
+		+	"		a.appid=? or a.compid in (select x.compid from dm.dm_applicationcomponent x where x.appid=?)	"
+		+	")";
+		try {
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
+			stmt.setInt(1,app.getId());
+			stmt.setInt(2,app.getId());
+			stmt.setInt(3,app.getId());
+			stmt.setInt(4,app.getId());
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				res[rs.getInt(1)]=rs.getInt(2);
+			}
+			rs.close();
+			stmt.close();
+		} catch (SQLException ex) {
+			System.out.println("Failed to get bug open/closed counts for application "+app.getId()+":"+ex.getMessage());
+		}
+		return res;
+	}
+	
+	public int[] getDefectCountsForComponent(Component comp)
+	{
+		int[] res = new int[2];
+		String sql =
+			"	select  0,count(a.*)    "
+			+"	from    dm.dm_defects            a, "      
+			+"	        dm.dm_datasource         b, "    
+			+"	        dm.dm_bugtrackingstates	 c  "     
+			+"	where   a.datasourceid=b.id "    
+			+"	and     b.defid=c.defid "
+			+"	and     c.isclosed='N'  "
+			+"	and     lower(a.status)=lower(c.status) " 
+			+"	and     a.compid = ? "
+			+"	union   "
+			+"	select  1,count(a.*) "    
+			+"	from    dm.dm_defects           a, "      
+			+"	        dm.dm_datasource        b, "    
+			+"	        dm.dm_bugtrackingstates c  "    
+			+"	where   a.datasourceid=b.id "     
+			+"	and     b.defid=c.defid "
+			+"	and     c.isclosed='Y' "
+			+"	and     lower(a.status)=lower(c.status) " 
+			+"	and     a.compid = ?";
+		try {
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
+			stmt.setInt(1,comp.getId());
+			stmt.setInt(2,comp.getId());
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				res[rs.getInt(1)]=rs.getInt(2);
+			}
+			rs.close();
+			stmt.close();
+		} catch (SQLException ex) {
+			System.out.println("Failed to get bug open/closed counts for component "+comp.getId()+":"+ex.getMessage());
+		}
+		return res;
+	}
 	
 	public Application getApplication(int appid, boolean detailed)
 	{
@@ -8084,6 +8500,23 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			return ret;
 		}
 		String sql = null;
+		
+		if (m_apphash != null && (System.currentTimeMillis() - m_apphashCreationTime) > 2000) {
+			// Application hash is over 2 seconds old. Delete it. We only need this for caching of
+			// user when we're making the same call to getUser in rapid succession.
+			m_apphash.clear();
+			m_apphash = null;
+		}
+		 
+		if (m_apphash == null) {
+			  m_apphash = new Hashtable<Integer,Application>();
+			  m_apphashCreationTime = System.currentTimeMillis();
+		}
+		Application cached = m_apphash.get(appid);
+		if (cached != null) {
+			return cached;	// already found this app previously
+		}
+		
 		if(detailed) {
 			sql = "SELECT a.name, a.summary, a.predecessorid, a.parentid, a.domainid, a.branch, a.status, a.isrelease, a.datasourceid, "
 				+ "  uc.id, uc.name, uc.realname, a.created, " // 10 - 13
@@ -8111,7 +8544,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, appid);
 			ResultSet rs = stmt.executeQuery();
 			Application ret = null;
@@ -8158,6 +8591,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			rs.close();
 			stmt.close();
 			if(ret != null) {
+				m_apphash.put(appid,ret);
 				return ret;
 			}
 		}
@@ -8176,7 +8610,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			if (branch != null) {
 				// Branch id specified
 				String sql = "select max(id) from dm_application where parentid=? and branch=? and status<>'D'";
-				PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+				PreparedStatement stmt = m_conn.prepareStatement(sql);
 				stmt.setInt(1,app.getId());
 				stmt.setString(2, branch);
 				ResultSet rs = stmt.executeQuery();
@@ -8188,7 +8622,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					lvid=id;
 					// Descend this branch until there's no more versions
 					String sql2 = "select max(id) from dm_application where predecessorid=? and status<>'D'";
-					PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+					PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 					stmt2.setInt(1, id);
 					ResultSet rs2 = stmt2.executeQuery();
 					rs2.next();
@@ -8199,8 +8633,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			} else {
 				// No branch - just get latest version
 				String sql="select max(id) from dm_application where parentid=? and status<>'D'";
-				PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-				stmt.setInt(1,app.getId());
+				PreparedStatement stmt = m_conn.prepareStatement(sql);
+				if (app.getParentId() > 0)
+				 stmt.setInt(1,app.getParentId());
+				else
+     stmt.setInt(1,app.getId());
 				ResultSet rs = stmt.executeQuery();
 				rs.next();
 				lvid = rs.getInt(1);
@@ -8228,7 +8665,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				+		"b.domainid = c.domainid AND c.position > b.position ORDER BY a.id DESC";
 		String ret=null;
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,appid);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
@@ -8257,7 +8694,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		List<Domain> ret = new ArrayList<Domain>();
 		try {
 			String sql = "SELECT approved,domainid FROM dm_approval WHERE appid=? ORDER BY id DESC";
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,appid);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
@@ -8279,6 +8716,29 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Failed to get approval status for application "+appid);
 	}
 	
+ public boolean getApprovalNeeded(int tgtdomain)
+ {
+  boolean needed = false;
+  
+  try {
+   String sql = "SELECT count(*) FROM dm_taskapprove WHERE approvaldomain=?";
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1,tgtdomain);
+   ResultSet rs = stmt.executeQuery();
+   if (rs.next()) 
+   {
+    if (rs.getInt(1) > 0)
+     needed = true;
+   }
+   rs.close();
+   stmt.close();
+  } catch(SQLException ex) {
+   ex.printStackTrace();
+   rollback();
+  }
+  return needed;
+ }
+ 
 	public Component getLatestVersion(Component comp,String branch)
 	{
 		try {
@@ -8286,7 +8746,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			if (branch != null) {
 				// Branch id specified
 				String sql = "select max(id) from dm_component where parentid=? and branch=? and status='N'";
-				PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+				PreparedStatement stmt = m_conn.prepareStatement(sql);
 				stmt.setInt(1,comp.getId());
 				stmt.setString(2, branch);
 				ResultSet rs = stmt.executeQuery();
@@ -8298,7 +8758,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					lvid=id;
 					// Descend this branch until there's no more versions
 					String sql2 = "select max(id) from dm_component where predecessorid=? and branch is null and status='N'";
-					PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+					PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 					stmt2.setInt(1, id);
 					ResultSet rs2 = stmt2.executeQuery();
 					rs2.next();
@@ -8309,7 +8769,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			} else {
 				// No branch - just get latest version
 				String sql="select max(id) from dm_component where parentid=? and status='N'";
-				PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+				PreparedStatement stmt = m_conn.prepareStatement(sql);
 				stmt.setInt(1,comp.getId());
 				ResultSet rs = stmt.executeQuery();
 				rs.next();
@@ -8336,7 +8796,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			String sql 	= "select a.approved, a.domainid, d.name, u.name, a.note, a."+whencol+" from dm_approval a, dm_domain d, dm_user u "
 						+ "where a.id in (select max(b.id) from dm_approval b "
 						+ "where b.appid = ? AND b.domainid = a.domainid) and d.id = a.domainid and u.id = a.userid";
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,app.getId());
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
@@ -8353,6 +8813,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				}
 			}
 			rs.close();
+			stmt.close();
 			ret.add("approvals", a1);
 			ret.add("rejections", a2);
 			return ret;
@@ -8433,7 +8894,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						// and report that. Otherwise, it could be very confusing...
 						//
 						try {
-							PreparedStatement st = getDBConnection().prepareStatement("SELECT id FROM dm.dm_action WHERE domainid=? AND name=?");
+							PreparedStatement st = m_conn.prepareStatement("SELECT id FROM dm.dm_action WHERE domainid=? AND name=?");
 							st.setInt(1, act.getDomainId());
 							st.setString(2, name);
 							ResultSet rs = st.executeQuery();
@@ -8465,7 +8926,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					int domainid = notify.getDomainId();
 					String sql = "SELECT t.notifierid FROM dm.dm_template t WHERE t.name=? AND t.id<>? AND t.notifierid IN (SELECT x.id FROM dm.dm_notify x WHERE x.domainid=?)";
 					try {
-						PreparedStatement st = getDBConnection().prepareStatement(sql);
+						PreparedStatement st = m_conn.prepareStatement(sql);
 						st.setString(1, name);
 						st.setInt(2,template.getId());
 						st.setInt(3, domainid);		
@@ -8494,7 +8955,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						// Special processing - an application can also be a release
 						//
 						try {
-							PreparedStatement st = getDBConnection().prepareStatement("SELECT id FROM dm.dm_application WHERE domainid=? AND name=?");
+							PreparedStatement st = m_conn.prepareStatement("SELECT id FROM dm.dm_application WHERE domainid=? AND name=?");
 							st.setInt(1, app.getDomainId());
 							st.setString(2, name);
 							ResultSet rs = st.executeQuery();
@@ -8554,6 +9015,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		}
 		break;
 		
+  case ENGINE_CLIENTID:
+  {
+   String name = (String) changes.get(field);
+   update.add(", clientid = ?", name);
+  }
+  break;
+		
 		default: System.err.println("ERROR: Unhandled object summary field " + field); break;
 		}
 		return false;
@@ -8562,11 +9030,31 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public boolean updateApplication(Application app, SummaryChangeSet changes)
 	{
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_application ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
+		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_application ");
+		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
 				
 		for(SummaryField field : changes) {
 			switch(field) {
+	   case DOMAIN_FULLNAME: {
+     if (changes.get(field) == null)
+       update.add(", domainid = ?", Null.INT);
+     else
+     {
+      int id =  new Integer((String)changes.get(field)).intValue();
+      update.add(", domainid = ?", id);
+     }
+    } 
+    break; 
+	  case XPOS: {
+	    int id =  new Integer((String)changes.get(field)).intValue();
+	    update.add(", xpos = ?", id);
+	    }
+	    break;
+   case YPOS: {
+    int id =  new Integer((String)changes.get(field)).intValue();
+    update.add(", ypos = ?", id);
+    }
+    break;  
 			case PRE_ACTION: {
 				DMObject action = (DMObject) changes.get(field);
 				update.add(", preactionid = ?", (action != null) ? action.getId() : Null.INT);
@@ -8592,7 +9080,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				update.add(", failuretemplateid = ?", (template != null) ? template.getId() : Null.INT);
 				}
 				break;
-
+			case APP_DATASOURCE:
+				DMObject ds = (Datasource) changes.get(field);
+				update.add(", datasourceid = ?", (ds != null) ? ds.getId() : Null.INT);
+				break;
 			default:
 				if(field.value() <= SummaryField.OBJECT_MAX) {
 					updateObjectSummaryField(app, update, field, changes);
@@ -8608,8 +9099,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try {
 			update.execute();
 			RecordObjectUpdate(app,changes);
-			getDBConnection().commit();
+			m_conn.commit();
 			update.close();
+			m_apphash.remove(app.getId());	// in case it's cached.
 			return true;
 		} catch(SQLException e) {
 			e.printStackTrace();
@@ -8618,40 +9110,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return false;
 	}
 	
-	public boolean updateBuilder(Builder builder, SummaryChangeSet changes)
-	{
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_buildengine ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
-				
-		for(SummaryField field : changes) {
-			switch(field) {
-			
-			default:
-				if(field.value() <= SummaryField.OBJECT_MAX) {
-					updateObjectSummaryField(builder, update, field, changes);
-				} else {
-					System.err.println("ERROR: Unhandled summary field " + field);
-				}
-				break;
-			}
-		}
-		
-		update.add(" WHERE id = ?", builder.getId());
-		
-		try {
-			update.execute();
-			// RecordObjectUpdate(builder,changes);
-			getDBConnection().commit();
-			update.close();
-			return true;
-		} catch(SQLException e) {
-			e.printStackTrace();
-			rollback();
-		}
-		return false;
-	}
-	
-	
+
 	public Component getComponent(int compid, boolean detailed)
 	{
 		if (compid < 0) {
@@ -8702,7 +9161,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, compid);
 			ResultSet rs = stmt.executeQuery();
 			Component ret = null;
@@ -8731,11 +9190,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					Datasource ds = getDatasource(dsid,true);
 					ret.setDatasource(ds);
 				}
-				int bjid = getInteger(rs,15,0);
-				if (bjid>0) {
-					BuildJob bj = getBuildJob(bjid);
-					ret.setBuildJob(bj);
-				}
+
 				int lastbuildid = getInteger(rs,16,0);
 				ret.setLastBuildNumber(lastbuildid);
 				
@@ -8753,6 +9208,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					ret.setComptype(getString(rs,42,""));
 					Category cat = new Category(getInteger(rs,43,0),getString(rs,44,""));
 					ret.setCategory(cat);
+					
+					List<ComponentItem> items = this.getComponentItems(compid);
+					
+     if (items.size() > 0)
+     {
+					 ComponentItemKind kind = items.get(0).getItemkind();
+      ret.setKind(kind);
+					}
 				}
 			}
 			rs.close();
@@ -8774,11 +9237,21 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	public boolean updateComponent(Component comp, SummaryChangeSet changes)
 	{
 		Category cat = null;
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_component ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
+		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_component ");
+		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
 				
 		for(SummaryField field : changes) {
 			switch(field) {
+	   case DOMAIN_FULLNAME: {
+     if (changes.get(field) == null)
+       update.add(", domainid = ?", Null.INT);
+     else
+     {
+      int id =  new Integer((String)changes.get(field)).intValue();
+      update.add(", domainid = ?", id);
+     }
+    } 
+    break; 
 			case PRE_ACTION: {
 				DMObject action = (DMObject) changes.get(field);
 				update.add(", preactionid = ?", (action != null) ? action.getId() : Null.INT);
@@ -8801,7 +9274,17 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				String tmp = (String) changes.get(field);
 				Integer comptype = null;
 				if (tmp != null)
-					comptype = new Integer(tmp);
+				{
+				 CompType ct;
+     try
+     {
+      ct = (CompType) getObjectFromNameOrID(ObjectType.SERVERCOMPTYPE, tmp);
+      comptype = ct.getId();
+     }
+     catch (GetObjectException e)
+     {
+     }
+				}
     
 				update.add(", comptypeid = ?", (comptype != null) ? comptype.intValue() : Null.INT);
 				}
@@ -8841,10 +9324,46 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			case BASE_DIRECTORY:
 				update.add(", basedir = ?",(String)changes.get(field));
 				break;
-			case COMP_BUILDJOB:
-				BuildJob bj = (BuildJob) changes.get(field);
-				update.add(", buildjobid = ?", (bj != null) ? bj.getId() : Null.INT);
+			case COMP_DATASOURCE:
+				DMObject ds = (Datasource) changes.get(field);
+				update.add(", datasourceid = ?", (ds != null) ? ds.getId() : Null.INT);
 				break;
+   case COMP_LASTBUILDNUMBER:
+   {
+    String bldnumber = (String)changes.get(field);
+    
+    if (!bldnumber.isEmpty())
+    {
+     int bldnum =  new Integer(bldnumber).intValue();
+      update.add(", lastbuildnumber = ?", bldnum);
+    } 
+   }
+   break;	
+   case PARENT: 
+   case PREDECESSOR:
+    break;
+   case XPOS:
+   {
+    if (changes.get(field) == null)
+     update.add(", xpos = ?", Null.INT);
+    else
+    {
+     int id =  new Integer((String)changes.get(field)).intValue();
+     update.add(", xpos = ?", id);
+    }
+   } 
+   break;
+   case YPOS:
+   {
+    if (changes.get(field) == null)
+     update.add(", ypos = ?", Null.INT);
+    else
+    {
+     int id =  new Integer((String)changes.get(field)).intValue();
+     update.add(", ypos = ?", id);
+    }
+   } 
+   break;
 			default:
 				if(field.value() <= SummaryField.OBJECT_MAX) {
 					updateObjectSummaryField(comp,update, field, changes);
@@ -8863,14 +9382,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    if(cat != null) 
    {  
     String sql1="DELETE from dm.dm_component_categories where id = ?";  // only allow 1 category at this time
-    PreparedStatement stmt = getDBConnection().prepareStatement(sql1);
+    PreparedStatement stmt = m_conn.prepareStatement(sql1);
     stmt.setInt(1, comp.getId());
     stmt.execute();
     stmt.close();
     addToCategory(cat.getId(), comp.getOtid());
    }
    			RecordObjectUpdate(comp,changes);
-			getDBConnection().commit();
+			m_conn.commit();
 			update.close();
 			return true;
 		} catch(SQLException e) {
@@ -8880,15 +9399,113 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return false;
 	}
 	
-	public boolean updateTask(Task task, SummaryChangeSet changes)
+ public DMObject getObjectFromNameOrID(ObjectType ot, String idOrName) throws GetObjectException
+ {
+  int id;
+  try
+  {
+   id = Integer.parseInt(idOrName);
+  }
+  catch (NumberFormatException e)
+  {
+   id = 0;
+  }
+  DMObject obj = null;
+  try
+  {
+   switch (ot)
+   {
+    case TASK:
+     obj = (id > 0) ? getTask(id, true) : (Task)getObjectByName(ObjectType.TASK,idOrName);
+     break;
+    case COMPVERSION:
+    case COMPONENT:
+     obj = (id > 0) ? getComponent(id, false) : getComponentByName(idOrName);
+     break;
+    case RELEASE:
+    case APPLICATION:
+    case APPVERSION:
+     obj = (id > 0) ? getApplication(id, false) : getApplicationByName(idOrName);
+     break;
+    case ENVIRONMENT:
+     obj = (id > 0) ? getEnvironment(id, true) : getEnvironmentByName(idOrName);
+     break;
+    case SERVER:
+     obj = (id > 0) ? getServer(id, false) : getServerByName(idOrName);
+     break;
+    case DOMAIN:
+     obj = (id > 0) ? getDomain(id) : getDomainByName(idOrName);
+     break;
+    case USER:
+     obj = (id > 0) ? getUser(id) : getUserByName(idOrName);
+     break;
+    case DATASOURCE:
+     obj = (id > 0) ? getDatasource(id, false) : getDatasourceByName(idOrName);
+     break;
+    case CREDENTIALS:
+     obj = (id > 0) ? getCredential(id, false) : getCredentialByName(idOrName);
+     break;
+    case TEMPLATE:
+     obj = (id > 0) ? getTemplate(id) : getTemplateByName(idOrName);
+     break;
+    case USERGROUP:
+     obj = (id > 0) ? getGroup(id) : getGroupByName(idOrName);
+     break;
+    case REPOSITORY:
+     obj = (id > 0) ? getRepository(id, true) : getRepositoryByName(idOrName);
+     break;
+    case ACTION:
+     obj = (id > 0) ? getAction(id, true) : getActionByName(idOrName);
+     break;
+    case CATEGORY:
+     obj = (id > 0) ? getCategory(id) : getCategoryByName(idOrName);
+     break; 
+    case SERVERCOMPTYPE:
+     obj = (id > 0) ? getServerCompTypeDetail(id) : getCompTypeByName(idOrName);
+     break;  
+    case NOTIFY:
+     obj = (id > 0) ? getNotify(id,true) : getNotifyByName(idOrName);
+     break;   
+    case ENGINE:
+     obj = (id > 0) ? getEngine(id) : getEngineByName(idOrName);
+     break; 
+    default:
+     throw new GetObjectException(ot.toString() + " not supported in getObjectFromNameOrID");
+   }
+   if (obj == null)
+   {
+    String d = ot.toString();
+    String desc = d.substring(0, 1).toUpperCase() + d.substring(1).toLowerCase();
+    throw new GetObjectException(desc + " with id " + id + " not found");
+   }
+  }
+  catch (RuntimeException ex)
+  {
+   // getApplicationByName throws runtime exception
+   throw new GetObjectException(ex.getMessage());
+  }
+  return obj;
+ }
+ 
+ public boolean updateTask(Task task, SummaryChangeSet changes)
 	{
 		System.out.println("updateTask start");
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_task ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
+		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_task ");
+		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
 				
 		for(SummaryField field : changes) {
 			System.out.println("field="+field);
 			switch(field) {
+	   case DOMAIN_FULLNAME: {
+     if (changes.get(field) == null)
+       update.add(", domainid = ?", Null.INT);
+     else
+     {
+      int id =  new Integer((String)changes.get(field)).intValue();
+      update.add(", domainid = ?", id);
+     }
+    } 
+    break; 
 			case PRE_ACTION: {
 				DMObject action = (DMObject) changes.get(field);
 				update.add(", preactionid = ?", (action != null) ? action.getId() : Null.INT);
@@ -8933,7 +9550,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try {
 			update.execute();
-			getDBConnection().commit();
+			m_conn.commit();
 			update.close();
 			return true;
 		} catch(SQLException e) {
@@ -8952,7 +9569,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		System.out.println("getComponentItem, ciid="+ciid);		// +" compid="+compid
 		
 		if(detailed) {
-			sql = "SELECT a.name, a.summary, b.domainid, a.rollup, a.rollback, a.predecessorid, a.status, "
+			sql = "SELECT a.name, a.summary, b.domainid, a.rollup, a.rollback, a.predecessorid, a.status, a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace, a.operator, a.builddate, a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl, "
 				+ "  a.compid, a.repositoryid, a.target, "
 				+ "  uc.id, uc.name, uc.realname, a.created, "
 				+ "  um.id, um.name, um.realname, a.modified, "
@@ -8963,7 +9580,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				+ "LEFT OUTER JOIN dm.dm_component b ON a.compid=b.id "			// domain
 				+ "WHERE a.id = ?";		//  AND a.compid=?	
 		} else {
-			sql = "SELECT a.name, a.summary, b.domainid, a.rollup, a.rollback, a.predecessorid, a.status "
+			sql = "SELECT a.name, a.summary, b.domainid, a.rollup, a.rollback, a.predecessorid, a.status, a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace, a.operator, a.builddate, a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl "
 				+ "FROM dm.dm_componentitem a "
 				+ "LEFT OUTER JOIN dm.dm_component b ON a.compid=b.id "			// domain
 				+ "WHERE a.id = ?";		//  AND a.compid=?	
@@ -8973,7 +9590,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, ciid);
 			//stmt.setInt(2, compid);
 			ResultSet rs = stmt.executeQuery();
@@ -8986,19 +9603,43 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				ret.setRollback(ComponentFilter.fromInt(getInteger(rs, 5, 0)));
 				ret.setPredecessorId(getInteger(rs, 6, 0));
 				getStatus(rs, 7, ret);
+
+				String kind = rs.getString(8);
+				if (kind != null && kind.trim().equalsIgnoreCase("docker"))
+				 ret.setItemkind(ComponentItemKind.DOCKER);
+				else if (kind != null && kind.trim().equalsIgnoreCase("database"))
+     ret.setItemkind(ComponentItemKind.DATABASE);
+				else 
+     ret.setItemkind(ComponentItemKind.FILE);		
+
+				ret.setBuildId(rs.getString(9));
+				ret.setBuildUrl(rs.getString(10));
+				ret.setChart(rs.getString(11));
+    ret.setChartVersion(rs.getString(12));
+    ret.setChartNamespace(rs.getString(13));
+				ret.setOperator(rs.getString(14));
+				ret.setBuildDate(rs.getString(15));
+				ret.setDockerRepo(rs.getString(16));
+    ret.setDockerSha(rs.getString(17));
+    ret.setDockerTag(rs.getString(18));
+				ret.setGitCommit(rs.getString(19));
+				ret.setGitRepo(rs.getString(20));
+				ret.setGitTag(rs.getString(21));
+				ret.setGitUrl(rs.getString(22));
+				
 				if(detailed) {
-					int compid = getInteger(rs, 8, 0);
+					int compid = getInteger(rs, 23, 0);
 					if(compid != 0) {
 						ret.setParent(getComponent(compid, false));
 					}
-					int repoid = getInteger(rs, 9, 0);
+					int repoid = getInteger(rs, 24, 0);
 					if(repoid != 0) {
 						ret.setRepository(getRepository(repoid, false));
 					}
-					ret.setTargetDir(rs.getString(10));
-					getCreatorModifier(rs, 11, ret);
-					ret.setXpos(getInteger(rs, 19, 0));
-					ret.setYpos(getInteger(rs, 20, 0));
+					ret.setTargetDir(rs.getString(25));
+					getCreatorModifier(rs, 26, ret);
+					ret.setXpos(getInteger(rs, 34, 0));
+					ret.setYpos(getInteger(rs, 35, 0));
 				}
 			} else {
 				System.out.println("No rows retrieved");
@@ -9018,30 +9659,52 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Unable to retrieve component item " + ciid + " from database");	
 	}
 
- public void updateComponentAction(Component comp)
+	public void updateComponentAction(Component comp)
+	{
+
+	 try
+	 {
+	  String sql = "update dm.dm_component set preactionid = ?, postactionid = ?, actionid = ? where id = ?";
+	  PreparedStatement stmt = m_conn.prepareStatement(sql);
+	  
+	  if (comp.getPreAction() == null)
+	   stmt.setNull(1, Types.INTEGER);
+	  else
+	   stmt.setInt(1, comp.getPreAction().getId());
+
+	  if (comp.getPostAction() == null)
+	   stmt.setNull(2, Types.INTEGER);
+	  else
+	   stmt.setInt(2, comp.getPostAction().getId());
+
+	  if (comp.getCustomAction() == null)
+	   stmt.setNull(3, Types.INTEGER);
+	  else
+	   stmt.setInt(3, comp.getCustomAction().getId());
+
+	  stmt.setInt(4, comp.getId());
+
+	  stmt.execute();
+	  m_conn.commit();
+	  stmt.close();
+	 }
+	 catch(SQLException ex)
+	 {
+	  ex.printStackTrace();
+	  rollback();
+	 }
+	}
+	
+	public void updateComponentCompType(Component comp)
  {
 
   try
   {
-   String sql = "update dm.dm_component set preactionid = ?, postactionid = ?, actionid = ? where id = ?";
+   String sql = "update dm.dm_component set comptypeid = ? where id = ?";
    PreparedStatement stmt = m_conn.prepareStatement(sql);
    
-   if (comp.getPreAction() == null)
-    stmt.setNull(1, Types.INTEGER);
-   else
-    stmt.setInt(1, comp.getPreAction().getId());
-
-   if (comp.getPostAction() == null)
-    stmt.setNull(2, Types.INTEGER);
-   else
-    stmt.setInt(2, comp.getPostAction().getId());
-
-   if (comp.getCustomAction() == null)
-    stmt.setNull(3, Types.INTEGER);
-   else
-    stmt.setInt(3, comp.getCustomAction().getId());
-
-   stmt.setInt(4, comp.getId());
+   stmt.setInt(1, comp.getComptypeId());
+   stmt.setInt(2, comp.getId());
 
    stmt.execute();
    m_conn.commit();
@@ -9054,6 +9717,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   }
  }
  
+	
  public void updateApplicationAction(Application app)
  {
   
@@ -9089,56 +9753,162 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    rollback();
   }
  }
- 
+ 	
 	public boolean updateComponentItemSummary(ComponentItem ci, SummaryChangeSet changes)
 	{
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_componentitem ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
+		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_componentitem ");
+		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
 				
 		for(SummaryField field : changes) {
-			switch(field) {
-			case ROLLUP:
-			case ROLLBACK: {
-				ComponentFilter cf = ComponentFilter.OFF;
-				String scf = (String) changes.get(field);
-				if(scf != null) {
-					if(scf.equalsIgnoreCase("ON")) {
-						cf = ComponentFilter.ON;
-					} else if(scf.equalsIgnoreCase("ALL")) {
-						cf = ComponentFilter.ALL;
-					}
-				}
-				if(field == SummaryField.ROLLUP) {
-					update.add(", rollup = ?", cf.value());
-				} else {
-					update.add(", rollback = ?", cf.value());					
-				}}
-				break;
-			case ITEM_REPOSITORY: {
-				DMObject repo = (DMObject) changes.get(field);
-				update.add(", repositoryid = ?", (repo != null) ? repo.getId() : Null.INT);
-				}
-				break;
-			case ITEM_TARGETDIR: {
-				String targetDir = (String) changes.get(field);
-				update.add(", target = ?", (targetDir != null) ? targetDir : Null.STRING);
-				}
-				break;
-			default:
-				if(field.value() <= SummaryField.OBJECT_MAX) {
-					updateObjectSummaryField(ci,update, field, changes);
-				} else {
-					System.err.println("ERROR: Unhandled summary field " + field);
-				}
-				break;
-			}
+		 switch(field) {
+		  case DOMAIN_FULLNAME: {
+		   if (changes.get(field) == null)
+		    update.add(", domainid = ?", Null.INT);
+		   else
+		   {
+		    int id =  new Integer((String)changes.get(field)).intValue();
+		    update.add(", domainid = ?", id);
+		   }
+		  } 
+		  break; 
+		  case ROLLUP:
+		  case ROLLBACK: {
+		   ComponentFilter cf = ComponentFilter.OFF;
+		   String scf = (String) changes.get(field);
+		   if(scf != null) {
+		    if(scf.equalsIgnoreCase("ON")) {
+		     cf = ComponentFilter.ON;
+		    } else if(scf.equalsIgnoreCase("ALL")) {
+		     cf = ComponentFilter.ALL;
+		    }
+		   }
+		   if(field == SummaryField.ROLLUP) {
+		    update.add(", rollup = ?", cf.value());
+		   } else {
+		    update.add(", rollback = ?", cf.value());					
+		   }}
+		  break;
+		  case ITEM_REPOSITORY: {
+		   DMObject repo = (DMObject) changes.get(field);
+		   update.add(", repositoryid = ?", (repo != null) ? repo.getId() : Null.INT);
+		  }
+		  break;
+		  case ITEM_TARGETDIR: {
+		   String targetDir = (String) changes.get(field);
+		   update.add(", target = ?", (targetDir != null) ? targetDir : Null.STRING);
+		  }
+		  break;
+		  case DOCKER_BUILDID: {
+		   String str = (String) changes.get(field);
+		   update.add(", buildid = ?", (str != null) ? str : Null.STRING);
+		  }
+		  break;	
+		  case DOCKER_BUILDURL: {
+		   String str = (String) changes.get(field);
+		   update.add(", buildurl = ?", (str != null) ? str : Null.STRING);
+		  }
+		  break;  
+		  case DOCKER_CHART: {
+		   String str = (String) changes.get(field);
+		   update.add(", chart = ?", (str != null) ? str : Null.STRING);
+		  }
+		  break;  
+		  case DOCKER_CHARTVERSION: {
+		   String str = (String) changes.get(field);
+		   update.add(", chartversion = ?", (str != null) ? str : Null.STRING);
+		  }
+		  break;  
+		  case DOCKER_CHARTNAMESPACE: {
+		   String str = (String) changes.get(field);
+		   update.add(", chartnamespace = ?", (str != null) ? str : Null.STRING);
+		  }
+		  break;   
+		  case DOCKER_OPERATOR: {
+		   String str = (String) changes.get(field);
+		   update.add(", operator = ?", (str != null) ? str : Null.STRING);
+		  }
+		  break; 
+		  case DOCKER_BUILDDATE: {
+		   String str = (String) changes.get(field);
+		   update.add(", builddate = ?", (str != null) ? str : Null.STRING);
+		  }
+		  break; 
+		  case DOCKER_SHA: {
+		   String str = (String) changes.get(field);
+		   update.add(", dockersha = ?", (str != null) ? str : Null.STRING);
+		  }
+		  break; 
+    case DOCKER_TAG: {
+     String str = (String) changes.get(field);
+     update.add(", dockertag = ?", (str != null) ? str : Null.STRING);
+    }
+    break; 
+		  case DOCKER_REPO: {
+		   String str = (String) changes.get(field);
+		   update.add(", dockerrepo = ?", (str != null) ? str : Null.STRING);
+		  }
+		  break;  
+		  case DOCKER_GITCOMMIT: {
+		   String str = (String) changes.get(field);
+		   update.add(", gitcommit = ?", (str != null) ? str : Null.STRING);
+		  }
+		  break; 
+		  case DOCKER_GITREPO: {
+		   String str = (String) changes.get(field);
+		   update.add(", gitrepo = ?", (str != null) ? str : Null.STRING);
+		  }
+		  break; 
+		  case DOCKER_GITTAG: {
+		   String str = (String) changes.get(field);
+		   update.add(", gittag = ?", (str != null) ? str : Null.STRING);
+		  }
+		  break; 
+		  case DOCKER_GITURL: {
+		   String str = (String) changes.get(field);
+		   update.add(", giturl = ?", (str != null) ? str : Null.STRING);
+		  }
+		  break;  
+		  case PARENT: 
+		  case PREDECESSOR:
+		   break;
+		  case XPOS:
+		  {
+		   if (changes.get(field) == null)
+		    update.add(", xpos = ?", Null.INT);
+		   else
+		   {
+		    int id =  new Integer((String)changes.get(field)).intValue();
+		    update.add(", xpos = ?", id);
+		   }
+		  } 
+		  break;
+
+		  case YPOS:
+		  {
+		   if (changes.get(field) == null)
+		    update.add(", ypos = ?", Null.INT);
+		   else
+		   {
+		    int id =  new Integer((String)changes.get(field)).intValue();
+		    update.add(", ypos = ?", id);
+		   }
+		  } 
+		  break;
+		  default:
+		   if(field.value() <= SummaryField.OBJECT_MAX) {
+		    updateObjectSummaryField(ci,update, field, changes);
+		   } else {
+		    System.err.println("ERROR: Unhandled summary field " + field);
+		   }
+		   break;
+		 }
 		}
 		
 		update.add(" WHERE id = ?", ci.getId());
 		
 		try {
 			update.execute();
-			getDBConnection().commit();
+			m_conn.commit();
 			update.close();
 			return true;
 		} catch(SQLException e) {
@@ -9148,6 +9918,44 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return false;
 	}
 
+ public boolean updateComponentItemRelationship(int compid, int itemid, SummaryChangeSet changes)
+ {
+  DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_componentitem ");
+  update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
+    
+  for(SummaryField field : changes) {
+   switch(field) {
+    case PREDECESSOR: {
+     if (changes.get(field) == null)
+      update.add(", predecessorid = ?", Null.INT);
+     else
+     {
+      String name = (String)changes.get(field);
+      ComponentItem pred = this.getComponentItemByName(compid, name);  // find predecessor id
+      if (pred == null)
+       update.add(", predecessorid = ?", Null.INT);
+      else
+       update.add(", predecessorid = ?", pred.getId());
+     }
+    } 
+    break;
+    default:
+     break;
+   }
+  }
+ update.add(" WHERE id = ?", itemid);
+  
+  try {
+   update.execute();
+   m_conn.commit();
+   update.close();
+   return true;
+  } catch(SQLException e) {
+   e.printStackTrace();
+   rollback();
+  }
+  return false;
+ } 
 	
 	public List<DMProperty> getPropertiesForComponentItem(ComponentItem ci)
 	{
@@ -9155,7 +9963,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				+ "FROM dm.dm_compitemprops p WHERE p.compitemid = ? ORDER BY 1";	
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, ci.getId());
 			ResultSet rs = stmt.executeQuery();
 			List<DMProperty> ret = new ArrayList<DMProperty>();
@@ -9175,9 +9983,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	}
 
 	
-	public boolean updateComponentItemProperties(ComponentItem ci, ACDChangeSet<DMProperty> changes)
+	public boolean updateComponentItemProperties(ComponentItem ci, ACDChangeSet<DMProperty> changes, boolean deleteAll)
 	{
-		return internalUpdateProperties("dm_compitem", "compitemid", ci.getId(), ci.getDomain(),changes);
+		return internalUpdateProperties("dm_compitem", "compitemid", ci.getId(), ci.getDomain(),changes, deleteAll);
 	}
 
 	
@@ -9186,7 +9994,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sql = "SELECT id, isRelease FROM dm.dm_application WHERE predecessorid=? and status='N'";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, app.getId());
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
@@ -9216,14 +10024,52 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return ret;
 		
 	}
+	public void assignComponentVersion(Component parent, Component predecessor, Component child)
+	{
+  String sql = "UPDATE dm.dm_component set parentid=?, predecessorid=? where id=?";
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, parent.getId());
+   stmt.setInt(2, predecessor.getId());
+   stmt.setInt(3, child.getId());
+   stmt.executeQuery();
+   stmt.close();
+   m_conn.commit();
+  }
+  catch (Exception ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+	}
 	
-	
+ public void assignApplicationVersion(Application parent, Application predecessor, Application child)
+ {
+  String sql = "UPDATE dm.dm_application set parentid=?, predecessorid=? where id=?";
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, parent.getId());
+   stmt.setInt(2, predecessor.getId());
+   stmt.setInt(3, child.getId());
+   stmt.executeQuery();
+   stmt.close();
+   m_conn.commit();
+  }
+  catch (Exception ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+ }
+ 
 	private void addComponentVersions(Component comp,List<Component> complist)
 	{
 		String sql = "SELECT id FROM dm.dm_component WHERE predecessorid=? and status='N' ORDER BY id";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, comp.getId());
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
@@ -9249,7 +10095,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sql = "SELECT id FROM dm.dm_action WHERE parentid=? and status='A' ORDER BY id";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, action.getId());
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
@@ -9287,7 +10133,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		List<Environment> res = new ArrayList<Environment>();
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement("SELECT envid FROM dm.dm_serversinenv WHERE serverid=?");
+			PreparedStatement stmt = m_conn.prepareStatement("SELECT envid FROM dm.dm_serversinenv WHERE serverid=?");
 			stmt.setInt(1,server.getId());
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
@@ -9346,7 +10192,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				// Now add any sibling domains that are prior to this one
 				String sqld = "SELECT id FROM dm_domain WHERE domainid=? AND position<"
 						+ "(select position FROM dm.dm_domain WHERE id=?)";
-				PreparedStatement psd = getDBConnection().prepareStatement(sqld);
+				PreparedStatement psd = m_conn.prepareStatement(sqld);
 				System.out.println(sqld);
 				System.out.println("pdid="+pdid);
 				System.out.println("taskdomain="+dom.getId());
@@ -9384,11 +10230,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						+ "AND (aie.appid = a.id OR aie.appid= a.parentid) "
 						+ "GROUP BY e.id,e.name,e.summary HAVING count(*)=?";
 			}
-			PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+			PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 			stmt2.setInt(1, app.getId());
 			if (isRelease) {
 				stmt2.setInt(2, app.getId());
-				PreparedStatement stmtc = getDBConnection().prepareStatement(sqlc);
+				PreparedStatement stmtc = m_conn.prepareStatement(sqlc);
 				stmtc.setInt(1, app.getId());
 				ResultSet rsc = stmtc.executeQuery();
 				if (rsc.next()) {
@@ -9429,11 +10275,26 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public List<Environment> getEnvironmentsForApplication(Application app,int taskid)
 	{
-		
+		// Find base version since that is the one that should be assoc to env
+	 
+	 int pred = app.getPredecessorId();
+	 
+	 while (pred > 0)
+	 {
+	  Application p = this.getApplication(pred, true);
+	  if (p != null)
+	  {
+	   pred = p.getPredecessorId();
+	   app = p;
+	  }
+	  else
+	   pred = -1;
+	 }
+	 
 		String sql1 = "SELECT domainid FROM dm.dm_task WHERE id=?";
 		List<Environment> ret = null;
 		try {
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
+			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
 			stmt1.setInt(1, taskid);
 			ResultSet rs1 = stmt1.executeQuery();
 			if (rs1.next()) {
@@ -9475,7 +10336,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			// task being executed or in one of its sub-domains.
 			//
 			String sql1 = "SELECT domainid FROM dm.dm_task WHERE id=?";
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
+			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
 			stmt1.setInt(1, taskid);
 			ResultSet rs1 = stmt1.executeQuery();
 			if (rs1.next()) {
@@ -9505,7 +10366,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			
 			System.out.println("sql2="+sql2);
 			
-			PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+			PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 			stmt2.setInt(1, app.getId());
 			ResultSet rs2 = stmt2.executeQuery();
 			List<Environment> ret = new ArrayList<Environment>();
@@ -9537,11 +10398,21 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public boolean updateEnvironment(Environment env, SummaryChangeSet changes)
 	{
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_environment ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
+		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_environment ");
+		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
 				
 		for(SummaryField field : changes) {
 			switch(field) {
+	   case DOMAIN_FULLNAME: {
+     if (changes.get(field) == null)
+       update.add(", domainid = ?", Null.INT);
+     else
+     {
+      int id =  new Integer((String)changes.get(field)).intValue();
+      update.add(", domainid = ?", id);
+     }
+    } 
+    break; 
 			case AVAILABILITY:
 				update.add(", calusage = ?", (String)changes.get(field));
 				break;
@@ -9560,7 +10431,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try {
 			RecordObjectUpdate(env,changes);
 			update.execute();
-			getDBConnection().commit();
+			m_conn.commit();
 			update.close();
 			return true;
 		} catch(SQLException e) {
@@ -9576,7 +10447,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ "FROM dm.dm_deployment d WHERE d.appid = ? order by d.deploymentid desc";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, appid);
 			ResultSet rs = stmt.executeQuery();
 			ReportDataSet ret = new ReportDataSet(rs,10);
@@ -9593,18 +10464,20 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public ReportDataSet getTimeToDeployForServer(int servid)
 	{	
-		String sql = 	"SELECT		st.deploymentid,sum(st.finished-st.started)	"
-				+		"FROM		dm.dm_deploymentstep st,	"
-				+		"			dm.dm_deploymentxfer xf		"
-				+		"WHERE		st.deploymentid = xf.deploymentid	"
-				+		"AND		st.stepid = xf.stepid	"
-				+		"AND		xf.serverid = ?	"
-				+		"GROUP BY 	st.deploymentid	"
-				+		"ORDER BY 	st.deploymentid DESC";
+//		String sql = 	"SELECT		st.deploymentid,sum(st.finished-st.started)	"
+//				+		"FROM		dm.dm_deploymentstep st,	"
+//				+		"			dm.dm_deploymentxfer xf		"
+//				+		"WHERE		st.deploymentid = xf.deploymentid	"
+//				+		"AND		st.stepid = xf.stepid	"
+//				+		"AND		xf.serverid = ?	"
+//				+		"GROUP BY 	st.deploymentid	"
+//				+		"ORDER BY 	st.deploymentid DESC";
 		
+  String sql = "SELECT distinct d.deploymentid, d.finished - d.started FROM dm.dm_deployment d, dm.dm_compsonserv b WHERE d.deploymentid = b.deploymentid and b.serverid = ? order by d.deploymentid desc";
+  
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, servid);
 			ResultSet rs = stmt.executeQuery();
 			ReportDataSet ret = new ReportDataSet(rs,10);
@@ -9625,7 +10498,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				+ "FROM dm.dm_deployment d WHERE d.envid = ? order by d.deploymentid desc";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, envid);
 			ResultSet rs = stmt.executeQuery();
 			ReportDataSet ret = new ReportDataSet(rs,10);
@@ -9656,7 +10529,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		"		and	c.id=coalesce(b.parentid,b.id)	" +
 		"		order by 3,4";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,envid);
 			ResultSet rs = stmt.executeQuery();
 			int lastappid = -1;
@@ -9733,7 +10606,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		"and	c.id=coalesce(b.parentid,b.id)	" +
 		"order by 3,4";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,servid);
 			ResultSet rs = stmt.executeQuery();
 			int lastcompid = -1;
@@ -9800,7 +10673,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ "ORDER BY 1 DESC";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, appid);
 			stmt.setInt(2, appid);
 			ResultSet rs = stmt.executeQuery();
@@ -9823,7 +10696,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ "ORDER BY 1 DESC";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, envid);
 			stmt.setInt(2, envid);
 			ResultSet rs = stmt.executeQuery();
@@ -9844,14 +10717,15 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public ReportDataSet getSuccessFailureForServer(int servid)
 	{
+ 
 		String sql = 
-				"SELECT 'success', count(*) FROM dm.dm_deployment d WHERE d.exitcode = 0 AND d.deploymentid IN (SELECT x.deploymentid FROM dm.dm_deploymentxfer x WHERE x.serverid=?) "
+				"SELECT 'success', count(*) FROM dm.dm_deployment d WHERE d.exitcode = 0 AND d.deploymentid IN (SELECT distinct d.deploymentid FROM dm.dm_deployment d, dm.dm_compsonserv b WHERE d.deploymentid = b.deploymentid and b.serverid=?) "
 			+ 	"UNION "
-			+	"SELECT 'failure', count(*) FROM dm.dm_deployment d WHERE d.exitcode <> 0 AND d.deploymentid IN (SELECT x.deploymentid FROM dm.dm_deploymentxfer x WHERE x.serverid=?) "
+			+	"SELECT 'failure', count(*) FROM dm.dm_deployment d WHERE d.exitcode <> 0 AND d.deploymentid IN (SELECT distinct d.deploymentid FROM dm.dm_deployment d, dm.dm_compsonserv b WHERE d.deploymentid = b.deploymentid and b.serverid=?) "
 			+ 	"ORDER BY 1 DESC";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, servid);
 			stmt.setInt(2, servid);
 			ResultSet rs = stmt.executeQuery();
@@ -9882,7 +10756,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   
   try
   {
-   PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, comptypeid);
    ResultSet rs = stmt.executeQuery();
    CompType ret = null;
@@ -9930,7 +10804,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				+ "  uc.id, uc.name, uc.realname, s.created, "
 				+ "  um.id, um.name, um.realname, s.modified, "
 				+ "  uo.id, uo.name, uo.realname, g.id, g.name, c.domainid, "
-				+ "	 s.sshport "
+				+ "  ss.autoping, ss.automd5, ss.checkinterval, ss.starttime, ss.endtime, "
+				+ "	 t1.id,t2.id, s.sshport "
 				+ "FROM dm.dm_server s "
 				+ "LEFT OUTER JOIN dm.dm_serverstatus ss ON s.id = ss.serverid " 	// server status
 				+ "LEFT OUTER JOIN dm.dm_servertype t ON s.typeid = t.id "			// server type
@@ -9939,6 +10814,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				+ "LEFT OUTER JOIN dm.dm_user um ON s.modifierid = um.id "			// modifier
 				+ "LEFT OUTER JOIN dm.dm_user uo ON s.ownerid = uo.id "				// owner user
 				+ "LEFT OUTER JOIN dm.dm_usergroup g ON s.ogrpid = g.id "			// owner group
+				+ "LEFT OUTER JOIN dm.dm_template t1 ON ss.pingtemplateid = t1.id "	// ping template
+				+ "LEFT OUTER JOIN dm.dm_template t2 ON ss.md5templateid = t2.id "	// md5 template
 				+ "WHERE s.id = ?";	
 		} else {
 			sql = "SELECT s.name, s.summary, s.domainid, s.status "
@@ -9947,7 +10824,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, serverid);
 			ResultSet rs = stmt.executeQuery();
 			Server ret = null;
@@ -9969,7 +10846,6 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						ret.setCredential(new Credential(this, credid, rs.getString(13),rs.getInt(27)));
 					}
 					getCreatorModifierOwner(rs, 14, ret);
-					/*
 					String ap = rs.getString(28);
 					String amd5 = rs.getString(29);
 					ret.setAutoPing(ap!=null?ap.equalsIgnoreCase("y"):false);
@@ -9979,15 +10855,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					ret.setPingEnd(rs.getInt(32));
 					int pingtid = getInteger(rs,33,0);
 					int md5tid = getInteger(rs,34,0);
-					*/
-					int sshport = getInteger(rs,28,22);
+					int sshport = getInteger(rs,35,22);
 					ret.setSSHPort(sshport);
-					/*
 					NotifyTemplate pingt = pingtid>0?getTemplate(pingtid):null;
 					NotifyTemplate md5t = md5tid>0?getTemplate(md5tid):null;
 					ret.setPingTemplate(pingt);
 					ret.setMD5Template(md5t);
-					*/
 					ret.setServerCompType(getServerCompType(serverid));
 				}
 			}
@@ -10008,11 +10881,35 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public boolean updateServer(Server srv, SummaryChangeSet changes)
 	{
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_server ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
+		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_server ");
+		DynamicQueryBuilder updatess = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_serverstatus SET ");
+		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
+		boolean addss=false;
+		boolean autoping=false;
+		boolean md5set=false;
+		boolean aps=false;
+		String sping="N";
+		String smd5="N";
 		String servercomptype = "";
 		
 		ServerType st = srv.getServerType();
+		
+		for(SummaryField field : changes) {
+			// Check if SERVER_AUTOPING is off. If so, switch off SERVER_AUTOMD5
+			switch(field) {
+			case SERVER_AUTOPING:
+				if ((Boolean) changes.get(field)) {
+					// Auto Ping is on - switch off SERVER_AUTOMD5
+					System.out.println("Autoping is ON");
+					autoping=true;
+				}
+				aps=true;
+			default:
+				break;
+			}
+		}
+		// autoping wasn't changed - get old value from server.
+		if (!aps) autoping = srv.getAutoPing();
 		
 		boolean basedirChanged=false;
 		boolean serverTypeChanged=false;
@@ -10022,6 +10919,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		for(SummaryField field : changes) {
 			System.out.println("field = " + field.toString());
 			switch(field) {
+	   case DOMAIN_FULLNAME: {
+     if (changes.get(field) == null)
+       update.add(", domainid = ?", Null.INT);
+     else
+     {
+      int id =  new Integer((String)changes.get(field)).intValue();
+      update.add(", domainid = ?", id);
+     }
+    } 
+    break; 
 			case SERVER_TYPE: {
 				ServerType type = (ServerType) changes.get(field);
 				update.add(", typeid = ?", (type != null) ? type.getId() : Null.INT);
@@ -10055,6 +10962,59 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				DMObject cred = (DMObject) changes.get(field);
 				update.add(", credid = ?", (cred != null) ? cred.getId() : Null.INT);
 				}
+				break;
+			case SERVER_AUTOMD5:
+				if (addss) updatess.add(",");
+				if (autoping) {
+					// Autoping was specified and is ON - set automd5 according to field
+					System.out.println("automds, field = "+changes.getBoolean(field));
+					smd5 = changes.getBoolean(field);
+					updatess.add("automd5=?",smd5);
+				} else {
+					// Overwrite MD5 setting since autoping is false
+					System.out.println("automds, field = N");
+					updatess.add("automd5=?","N");
+					smd5="N";
+				}
+				md5set=true;
+				addss=true;
+				break;
+			case SERVER_AUTOPING:
+				if (addss) updatess.add(",");
+				System.out.println("autoping, field = "+changes.getBoolean(field));
+				sping = changes.getBoolean(field);
+				updatess.add("autoping=?",sping);
+				addss=true;
+				break;
+			case SERVER_PINGINTERVAL:
+				if (addss) updatess.add(",");
+				String ci = (String)changes.get(field);
+				updatess.add("checkinterval=?",Integer.parseInt(ci));
+				addss=true;
+				break;
+			case SERVER_PINGSTART:
+				if (addss) updatess.add(",");
+				String ps = (String)changes.get(field);
+				updatess.add("starttime=?",Integer.parseInt(ps));
+				addss=true;
+				break;
+			case SERVER_PINGEND:
+				if (addss) updatess.add(",");
+				String pe = (String)changes.get(field);
+				updatess.add("endtime=?",Integer.parseInt(pe));
+				addss=true;
+				break;
+			case SERVER_MD5TEMPLATE:
+				if (addss) updatess.add(",");
+				DMObject template1 = (DMObject) changes.get(field);
+				updatess.add("md5templateid = ?", (template1 != null) ? template1.getId() : Null.INT);
+				addss=true;
+				break;
+			case SERVER_PINGTEMPLATE:
+				if (addss) updatess.add(",");
+				DMObject template2 = (DMObject) changes.get(field);
+				updatess.add("pingtemplateid = ?", (template2 != null) ? template2.getId() : Null.INT);
+				addss=true;
 				break;
 			case SERVER_COMPTYPE:
 				System.out.println("servercomptype, field = "+changes.get(field));
@@ -10108,10 +11068,35 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		}
 		
 		update.add(" WHERE id = ?", srv.getId());
+		if (!autoping && !md5set) {
+			if (addss) updatess.add(",");
+			updatess.add("automd5=?","N");
+			smd5 = "N";
+		}
+		updatess.add(" WHERE serverid = ?",srv.getId());
 		
 		try {
 			System.out.println("Updating main table");
 			update.execute();
+			System.out.println("addss = "+addss);
+			if (addss) {
+				System.out.println("Updating server_status");
+				updatess.execute();
+				if (updatess.getUpdateCount() == 0) {
+					System.out.println("Update of dm_serverstatus processed zero rows - inserting");
+					String isql = "INSERT INTO dm.dm_serverstatus(serverid,autoping,automd5) VALUES (?,?,?)";
+					PreparedStatement istmt = m_conn.prepareStatement(isql);
+					istmt.setInt(1,srv.getId());
+					istmt.setString(2,sping);
+					istmt.setString(3,smd5);
+					istmt.execute();
+					istmt.close();
+					//
+					// Now update again
+					//
+					updatess.execute();
+				}
+			}
 			
 			if (servercomptype.length() > 0)
 			{
@@ -10120,7 +11105,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				String parts[] = servercomptype.split(";");
 				if (parts != null) { 
 					String dsql = "DELETE from dm.dm_servercomptype where serverid = ?";
-					PreparedStatement dstmt = getDBConnection().prepareStatement(dsql);
+					PreparedStatement dstmt = m_conn.prepareStatement(dsql);
 					dstmt.setInt(1, srv.getId());
 					dstmt.execute();
 					dstmt.close();    
@@ -10134,7 +11119,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 							tmp = parts[k];
 			   
 						String ins = "insert into dm.dm_servercomptype(comptypeid,serverid) values (?,?)";
-						PreparedStatement insstmt = getDBConnection().prepareStatement(ins);
+						PreparedStatement insstmt = m_conn.prepareStatement(ins);
 						insstmt.setInt(1, new Integer(tmp).intValue());
 						insstmt.setInt(2, srv.getId());
 						insstmt.execute();
@@ -10143,7 +11128,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				}
 			}
 			RecordObjectUpdate(srv,changes);
-			getDBConnection().commit();
+			m_conn.commit();
 			update.close();
 			return true;
 		} catch(SQLException e) {
@@ -10155,10 +11140,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
  public boolean updateCompType(CompType comptype, SummaryChangeSet changes)
  {
-  DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_type ");
+  DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_type ");
 
-  update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_type ");
-  update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
+  update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_type ");
+  update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
 
   for (SummaryField field : changes)
   {
@@ -10186,7 +11171,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    System.out.println("Updating main table");
    update.execute();
 
-   getDBConnection().commit();
+   m_conn.commit();
    update.close();
    return true;
   }
@@ -10201,11 +11186,29 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public boolean updateTemplate(NotifyTemplate t, SummaryChangeSet changes)
 	{
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_template ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
+  for(SummaryField field : changes) {
+   switch(field) {
+    case NOTIFIER: {
+     DMObject notify = (DMObject) changes.get(field);
+     if (notify != null)
+       t.setNotifierId(notify.getId());
+     }
+     break;
+    default:
+     break;
+   }
+  }
+	 
+		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_template ");
+		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
 				
 		for(SummaryField field : changes) {
 			switch(field) {
+	   case NOTIFIER: {
+	    DMObject notify = (DMObject) changes.get(field);
+	    update.add(", notifierid = ?", (notify != null) ? notify.getId() : Null.INT);
+	    }
+	    break;
 			default:
 				if(field.value() <= SummaryField.OBJECT_MAX) {
 					updateObjectSummaryField(t,update, field, changes);
@@ -10220,39 +11223,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try {
 			update.execute();
-			getDBConnection().commit();
-			update.close();
-			return true;
-		} catch(SQLException e) {
-			e.printStackTrace();
-			rollback();
-		}
-		return false;
-	}
-	
-	public boolean updateBuildJob(BuildJob t, SummaryChangeSet changes)
-	{
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_buildjob ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
-				
-		for(SummaryField field : changes) {
-			switch(field) {
-			case PROJECTNAME: update.add(", projectname = ?", (String) changes.get(field)); break;
-			default:
-				if(field.value() <= SummaryField.OBJECT_MAX) {
-					updateObjectSummaryField(t,update, field, changes);
-				} else {
-					System.err.println("ERROR: Unhandled summary field " + field);
-				}
-				break;
-			}
-		}
-		
-		update.add(" WHERE id = ?", t.getId());
-		
-		try {
-			update.execute();
-			getDBConnection().commit();
+			m_conn.commit();
 			update.close();
 			return true;
 		} catch(SQLException e) {
@@ -10268,7 +11239,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, typeid);
 			ResultSet rs = stmt.executeQuery();
 			ServerType ret = null;
@@ -10286,7 +11257,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			ex.printStackTrace();
 			rollback();
 		}
-		throw new RuntimeException("Unable to retrieve End Point Type " + typeid + " from database");				
+		throw new RuntimeException("Unable to retrieve Endpoint Type " + typeid + " from database");				
 	}
 	
 	
@@ -10296,7 +11267,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			ResultSet rs = stmt.executeQuery();
 			List<ServerType> ret = new ArrayList<ServerType>();
 			while(rs.next()) {
@@ -10310,7 +11281,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		{
 			ex.printStackTrace();
 		}
-		throw new RuntimeException("Unable to retrieve End Point Types from database");				
+		throw new RuntimeException("Unable to retrieve Endpoint Types from database");				
 	}
 	
 	public ServerStatus getServerStatus(int serverid)
@@ -10321,7 +11292,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, serverid);
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()) {
@@ -10359,7 +11330,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   
   try
   {
-   PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, serverid);
    ResultSet rs = stmt.executeQuery();
    while(rs.next()) {
@@ -10375,18 +11346,18 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    ex.printStackTrace();
    rollback();
   }
-  throw new RuntimeException("Unable to retrieve End Point component type for " + serverid + " from database"); 
+  throw new RuntimeException("Unable to retrieve Endpoint component type for " + serverid + " from database"); 
  }
  
- public List<CompType> getCompTypes()
+ public List<DMObject> getCompTypes()
  {
   String sql = "SELECT id, name, database, deletedir, domainid FROM dm.dm_type t ORDER BY 2";
   
   try
   {
-   PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
    ResultSet rs = stmt.executeQuery();
-   List<CompType> ret = new ArrayList<CompType>();
+   List<DMObject> ret = new ArrayList<DMObject>();
    while(rs.next()) {
 	   CompType ct = new CompType(this, rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4),rs.getInt(5));
 	   System.out.println("got component type "+ct.getName());
@@ -10403,7 +11374,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   {
    ex.printStackTrace();
   }
-  throw new RuntimeException("Unable to retrieve End Point Types from database");    
+  throw new RuntimeException("Unable to retrieve Endpoint Types from database");    
  }
  
 	
@@ -10428,7 +11399,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, taskid);
 			ResultSet rs = stmt.executeQuery();
 			Task ret = null;
@@ -10477,7 +11448,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ "ORDER BY a.name";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, serverid);
 			ResultSet rs = stmt.executeQuery();
 			ReportDataSet ret = new ReportDataSet(rs);
@@ -10508,7 +11479,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ "    SELECT c2.when AS startwhen FROM dm.dm_historycomment c2 WHERE c2.id = d.deploymentid AND c2.kind = " + ObjectType.DEPLOYMENT.value() + ") AS z), "
 			+ "  (SELECT count(*) FROM dm.dm_historysubs s WHERE s.id = d.deploymentid AND s.kind = " + ObjectType.DEPLOYMENT.value() + "), "
 			+ "  (SELECT count(*) FROM dm.dm_historycomment c WHERE c.id = d.deploymentid AND c.kind = " + ObjectType.DEPLOYMENT.value() + "), "
-			+ "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.objid = d.deploymentid AND a.kind = " + ObjectType.DEPLOYMENT.value() + ") "
+			+ "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.lineno = 1 AND  a.objid = d.deploymentid AND a.kind = " + ObjectType.DEPLOYMENT.value() + ") "
 			+ "FROM dm.dm_deployment d, "
 			+ (hasApp ? "dm.dm_application a, " : "")
 			+ (hasEnv ? "dm.dm_environment e, " : "")
@@ -10533,7 +11504,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		+ "	),	"
 		+ "  (SELECT count(*) FROM dm.dm_historysubs s WHERE s.id = d.deploymentid AND s.kind = " + ObjectType.DEPLOYMENT.value() + "), "
 		+ "  (SELECT count(*) FROM dm.dm_historycomment c WHERE c.id = d.deploymentid AND c.kind = " + ObjectType.DEPLOYMENT.value() + "), "
-		+ "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.objid = d.deploymentid AND a.kind = " + ObjectType.DEPLOYMENT.value() + ") "
+		+ "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.lineno = 1 AND  a.lineno = 1 AND  a.objid = d.deploymentid AND a.kind = " + ObjectType.DEPLOYMENT.value() + ") "
 		+ "FROM dm.dm_deployment d, "
 		+ (hasApp ? "dm.dm_application a, " : "")
 		+ (hasEnv ? "dm.dm_environment e, " : "")
@@ -10556,7 +11527,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 + "    SELECT c2.when AS startwhen FROM dm.dm_historycomment c2 WHERE c2.id = n.id AND c2.kind = " + ObjectType.APPROVAL.value() + ") AS y), "
 			 + (calcSubs ? "  (SELECT count(*) FROM dm.dm_historysubs s WHERE s.id = n.appid AND s.kind = " + ObjectType.APPLICATION.value() + "), " : "1, ")
 			 + "  (SELECT count(*) FROM dm.dm_historycomment c WHERE c.id = n.id AND c.kind = " + ObjectType.APPROVAL.value() + "), "
-			 + "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.objid = n.id AND a.kind = " + ObjectType.APPROVAL.value() + ") "
+			 + "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.lineno = 1 AND  a.lineno = 1 AND  a.objid = n.id AND a.kind = " + ObjectType.APPROVAL.value() + ") "
 			 + "FROM dm.dm_approval n, dm.dm_application a2, dm.dm_domain ad, "
 			 + ((from != null) ? (from + ", ") : "")
 			 + "dm.dm_user u "
@@ -10577,7 +11548,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 + "),	"
 		 + (calcSubs ? "  (SELECT count(*) FROM dm.dm_historysubs s WHERE s.id = n.appid AND s.kind = " + ObjectType.APPLICATION.value() + "), " : "1, ")
 		 + "  (SELECT count(*) FROM dm.dm_historycomment c WHERE c.id = n.id AND c.kind = " + ObjectType.APPROVAL.value() + "), "
-		 + "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.objid = n.id AND a.kind = " + ObjectType.APPROVAL.value() + ") "
+		 + "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.lineno = 1 AND  a.lineno = 1 AND  a.objid = n.id AND a.kind = " + ObjectType.APPROVAL.value() + ") "
 		 + "FROM dm.dm_approval n, dm.dm_application a2, dm.dm_domain ad, "
 		 + ((from != null) ? (from + ", ") : "")
 		 + "dm.dm_user u "
@@ -10598,7 +11569,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 + "    SELECT c2.when AS startwhen FROM dm.dm_historycomment c2 WHERE c2.id = n.id AND c2.kind = " + ObjectType.REQUEST.value() + ") AS y), "
 			 + (calcSubs ? "  (SELECT count(*) FROM dm.dm_historysubs s WHERE s.id = n.appid AND s.kind = " + ObjectType.APPLICATION.value() + "), " : "1, ")
 			 + "  (SELECT count(*) FROM dm.dm_historycomment c WHERE c.id = n.id AND c.kind = " + ObjectType.REQUEST.value() + "), "
-			 + "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.objid = n.id AND a.kind = " + ObjectType.REQUEST.value() + ") "
+			 + "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.lineno = 1 AND  a.lineno = 1 AND  a.objid = n.id AND a.kind = " + ObjectType.REQUEST.value() + ") "
 			 + "FROM dm.dm_request n, dm.dm_application a2, dm.dm_task t, "
 			 + ((from != null) ? (from + ", ") : "")
 			 + "dm.dm_user u "
@@ -10619,7 +11590,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 + "),	"
 		 + (calcSubs ? "  (SELECT count(*) FROM dm.dm_historysubs s WHERE s.id = n.appid AND s.kind = " + ObjectType.APPLICATION.value() + "), " : "1, ")
 		 + "  (SELECT count(*) FROM dm.dm_historycomment c WHERE c.id = n.id AND c.kind = " + ObjectType.REQUEST.value() + "), "
-		 + "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.objid = n.id AND a.kind = " + ObjectType.REQUEST.value() + ") "
+		 + "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.lineno = 1 AND  a.objid = n.id AND a.kind = " + ObjectType.REQUEST.value() + ") "
 		 + "FROM dm.dm_request n, dm.dm_application a2, dm.dm_task t, "
 		 + ((from != null) ? (from + ", ") : "")
 		 + "dm.dm_user u "
@@ -10642,7 +11613,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 + "    SELECT c2.when AS startwhen FROM dm.dm_historycomment c2 WHERE c2.id = n.id AND c2.kind = " + ObjectType.HISTORY_NOTE.value() + ") AS y), "
 			 + (calcSubs ? "  (SELECT count(*) FROM dm.dm_historysubs s WHERE s.id = n.objid AND s.kind = n.kind), " : "1, ")
 			 + "  (SELECT count(*) FROM dm.dm_historycomment c WHERE c.id = n.id AND c.kind = " + ObjectType.HISTORY_NOTE.value() + "), "
-			 + "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.objid = n.id AND a.kind = " + ObjectType.HISTORY_NOTE.value() + ") "
+			 + "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.lineno = 1 AND  a.objid = n.id AND a.kind = " + ObjectType.HISTORY_NOTE.value() + ") "
 			 + "FROM dm.dm_historynote n, "
 			 + ((from != null) ? (from + ", ") : "")
 			 + "dm.dm_user u "
@@ -10665,7 +11636,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 + "),	"
 		 + (calcSubs ? "  (SELECT count(*) FROM dm.dm_historysubs s WHERE s.id = n.objid AND s.kind = n.kind), " : "1, ")
 		 + "  (SELECT count(*) FROM dm.dm_historycomment c WHERE c.id = n.id AND c.kind = " + ObjectType.HISTORY_NOTE.value() + "), "
-		 + "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.objid = n.id AND a.kind = " + ObjectType.HISTORY_NOTE.value() + ") "
+		 + "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.lineno = 1 AND  a.objid = n.id AND a.kind = " + ObjectType.HISTORY_NOTE.value() + ") "
 		 + "FROM dm.dm_historynote n, "
 		 + ((from != null) ? (from + ", ") : "")
 		 + "dm.dm_user u "
@@ -10686,31 +11657,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 + "WHERE " + where + " AND o.created > 0 AND o.creatorid = u.id ";
 	}
 	
-	private String getBuildQuery(int compid)
-	{
-		if (dbdriver.toLowerCase().contains("oracle")) {
-			return "SELECT 'bu', a.timestamp, a.buildnumber, " + ObjectType.BUILDJOB.value() + ", a.buildnumber, '', a.compid, '', "
-					+ "a.userid, u.name, u.realname, 'Build', decode(a.success,'Y','blue','red'), a.timestamp, "
-					+ " 0, "
-					+ "  (SELECT count(*) FROM dm.dm_historycomment c WHERE c.id = a.compid AND c.kind = " + ObjectType.BUILDID.value() + " AND c.subid=a.buildnumber), "
-					+ " 0"
-					+ "FROM dm.dm_buildhistory	a,	"
-					+ "     dm.dm_user u "
-					+ "WHERE a.compid="+compid+" "
-					+" AND u.id=a.userid";
-		} else {
-			return "SELECT 'bu', a.timestamp, a.buildnumber, " + ObjectType.BUILDJOB.value() + ", a.buildnumber, '', a.compid, '', "
-					+ "a.userid, u.name, u.realname, 'Build', (CASE WHEN a.success='Y' THEN 'blue' ELSE 'red' END), a.timestamp, "
-					+ " 0, "
-					+ "  (SELECT count(*) FROM dm.dm_historycomment c WHERE c.id = a.compid AND c.kind = " + ObjectType.BUILDID.value() + " AND c.subid=a.buildnumber), "
-					+ " 0"	// attachment count
-					+ "FROM dm.dm_buildhistory	a,	"
-					+ "     dm.dm_user u "
-					+ "WHERE a.compid="+compid+" "
-					+" AND u.id=a.userid";
-		}
-	}
-	
+
 	private String getCreatedObjectsQuery(int userid)
 	{
 		// Environments
@@ -10778,7 +11725,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	public NewsFeedDataSet getHistoryNewsForObject(ObjectTypeAndId otid, int from, int to)
 	{
 		boolean isObjectNewsFeed = (otid != null);
-		DynamicQueryBuilder query = new DynamicQueryBuilder(getDBConnection(), "");
+		DynamicQueryBuilder query = new DynamicQueryBuilder(m_conn, "");
 		
 		System.out.println("getHistoryNewsForObject");
 				
@@ -10866,7 +11813,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				"((d.appid = s.id AND s.kind = " + ObjectType.APPLICATION.value() + ")  "
 				+ " OR (d.envid = s.id AND s.kind = " + ObjectType.ENVIRONMENT.value() + ") "
 				+ " OR (d.deploymentid = s.id AND s.kind = " + ObjectType.DEPLOYMENT.value() + ") "
-				+ " OR (d.userid = s.id AND s.kind = " + ObjectType.USER.value() + ")) AND s.userid = ? ") + sinceClause1, getUserID());
+				+ " OR (d.userid = s.id AND s.kind = " + ObjectType.USER.value() + ")) AND s.userid = ? ") + sinceClause1, m_userID);
 		}
 		
 		
@@ -10887,7 +11834,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		} else {
 			// Show only subscribed items
 			query.add(" UNION " + getApprovalQuery(false, "dm.dm_historysubs s",
-					"n.appid=s.id AND s.kind = ? AND s.userid = ?") + sinceClause2, ObjectType.APPLICATION.value(), getUserID());
+					"n.appid=s.id AND s.kind = ? AND s.userid = ?") + sinceClause2, ObjectType.APPLICATION.value(), m_userID);
 		}
 		
 		// REQUESTS
@@ -10907,7 +11854,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		} else {
 			// Show only subscribed items
 			query.add(" UNION " + getRequestQuery(false, "dm.dm_historysubs s",
-					"n.appid=s.id AND s.kind = ? AND s.userid = ?") + sinceClause2, ObjectType.APPLICATION.value(), getUserID());
+					"n.appid=s.id AND s.kind = ? AND s.userid = ?") + sinceClause2, ObjectType.APPLICATION.value(), m_userID);
 		}
 		
 		
@@ -10983,16 +11930,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		} else {
 			// Applications
 			query.add(" UNION " + getNotesQuery("a2.name", null, false, "dm.dm_historysubs s, dm.dm_application a2",
-					"n.objid=s.id AND n.kind=s.kind AND n.kind = ? AND n.objid = a2.id AND s.userid = ?") + sinceClause2, ObjectType.APPLICATION.value(), getUserID());
+					"n.objid=s.id AND n.kind=s.kind AND n.kind = ? AND n.objid = a2.id AND s.userid = ?") + sinceClause2, ObjectType.APPLICATION.value(), m_userID);
 			
 			// Environments
 			query.add(" UNION " + getNotesQuery("e2.name", null, false, "dm.dm_historysubs s, dm.dm_environment e2",
-					"n.objid=s.id AND n.kind=s.kind AND n.kind = ? AND n.objid = e2.id AND s.userid = ?") + sinceClause2, ObjectType.ENVIRONMENT.value(), getUserID());
+					"n.objid=s.id AND n.kind=s.kind AND n.kind = ? AND n.objid = e2.id AND s.userid = ?") + sinceClause2, ObjectType.ENVIRONMENT.value(), m_userID);
 			
 			// Other - not application or environment - we won't retrieve the name for this object
 			query.add(" UNION " + getNotesQuery(null, null, false, "dm.dm_historysubs s",
 				"n.objid=s.id AND n.kind=s.kind AND n.kind NOT IN (" + ObjectType.ENVIRONMENT.value()
-				+ "," + ObjectType.APPLICATION.value() + ") AND s.userid = ?") + sinceClause2, getUserID());
+				+ "," + ObjectType.APPLICATION.value() + ") AND s.userid = ?") + sinceClause2, m_userID);
 		}
 		
 		// Creation events
@@ -11041,29 +11988,23 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			
 		}
 		
-		// BUILDS
-		if(isObjectNewsFeed) {
-			switch(otid.getObjectType()) {
-			case COMPONENT:
-			case COMPVERSION:
-				query.add(" UNION " + getBuildQuery(otid.getId()));
-				break;
-			default:
-				break;
-			}
-		}
-
-		System.out.println("here");
 		query.add(" ORDER BY 2, 14");
 		
 		try
 		{
+			long startTime = System.nanoTime();
 			ResultSet rs = query.executeQuery();
+			long endTime = System.nanoTime();
+			System.out.println("History query took "+(endTime-startTime)+" nanosecs");
 			NewsFeedDataSet ret = new NewsFeedDataSet();
+			int nr=0;
+
+			startTime = System.nanoTime();
 			while(rs.next()) {
+				nr++;
 				PropertyDataSet item = new PropertyDataSet();
 				String mykind = rs.getString(1);
-				System.out.println("otid="+otid+"mykind="+mykind);
+				// System.out.println("otid="+otid+"mykind="+mykind);
 				item.addProperty("kind", mykind);	// 'de', 'hn' or 'ae'
 				int when = rs.getInt(2);
 				item.addProperty("when", when);
@@ -11074,8 +12015,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					item.addProperty("icon", (rs.getInt(4) == 0) ? "deploy" : "deployfail");
 					if((otid == null) || (otid.getObjectType() != ObjectType.APPLICATION)) {
 						int itemid = rs.getInt(5);
+						long s=System.nanoTime();
 						Application app = (itemid>0)?getApplication(rs.getInt(5),true):new Application(this,itemid,rs.getString(6));
 						item.addProperty("app", app.getLinkJSON());
+						long e=System.nanoTime();
+						System.out.println("GetApplication took "+(e-s)+" nanosecs");
 					}
 					if((otid == null) || (otid.getObjectType() != ObjectType.ENVIRONMENT)) {
 						item.addProperty("env", new Environment(this, rs.getInt(7), rs.getString(8)).getLinkJSON());
@@ -11101,6 +12045,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 							break;
 						case COMPONENT:
 						case COMPVERSION:
+							System.out.println("GetComponent");
 							Component comp = getComponent(objid,false);
 							if (comp != null) item.addProperty("obj", comp.getLinkJSON());
 							break;
@@ -11169,6 +12114,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				}
 				ret.addItem(item);
 			}
+			endTime = System.nanoTime();
+			System.out.println("Row processing for "+nr+" rows took "+(endTime-startTime)+" nanosecs");
 			rs.close();
 			query.close();
 			return ret;
@@ -11183,8 +12130,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public NewsFeedDataSet getPendingNewsForObject(ObjectTypeAndId otid, int from, int to)
 	{
+		System.out.println("user="+m_userID+" m_domainlist=["+m_domainlist+"]");
 		if (m_userID==0) return new NewsFeedDataSet();	// Sometimes can get called from a background thread before login
-		DynamicQueryBuilder query = new DynamicQueryBuilder(getDBConnection(), "");
+		DynamicQueryBuilder query = new DynamicQueryBuilder(m_conn, "");
 		System.out.println("1) query string="+query.getQueryString());
 		
 		/*
@@ -11197,7 +12145,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				+ "    SELECT c2.\"when\" AS startwhen FROM dm.dm_historycomment c2 WHERE c2.id = r.id AND c2.kind = " + ObjectType.REQUEST.value() + ")) AS z, "
 				+ "  (SELECT count(*) FROM dm.dm_historysubs s WHERE s.id = r.id AND s.kind = " + ObjectType.REQUEST.value() + "), "
 				+ "  (SELECT count(*) FROM dm.dm_historycomment c WHERE c.id = r.id AND c.kind = " + ObjectType.REQUEST.value() + "), "
-				+ "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.objid = r.id AND a.kind = " + ObjectType.REQUEST.value() + ") "
+				+ "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.lineno = 1 AND  a.objid = r.id AND a.kind = " + ObjectType.REQUEST.value() + ") "
 				+ "FROM dm.dm_request r "
 				+ "LEFT OUTER JOIN dm.dm_task t ON t.id = r.taskid "
 				+ "LEFT OUTER JOIN dm.dm_application a ON a.id = r.appid "
@@ -11220,13 +12168,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				+ "  ),"
 				+ "  (SELECT count(*) FROM dm.dm_historysubs s WHERE s.id = r.id AND s.kind = " + ObjectType.REQUEST.value() + "), "
 				+ "  (SELECT count(*) FROM dm.dm_historycomment c WHERE c.id = r.id AND c.kind = " + ObjectType.REQUEST.value() + "), "
-				+ "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.objid = r.id AND a.kind = " + ObjectType.REQUEST.value() + ") "
+				+ "  (SELECT count(*) FROM dm.dm_historyattachment a WHERE a.lineno = 1 AND  a.objid = r.id AND a.kind = " + ObjectType.REQUEST.value() + ") "
 				+ "FROM dm.dm_request r "
-				+ "LEFT OUTER JOIN dm.dm_task t ON t.id = r.taskid AND t.id IN (SELECT taskid FROM dm.dm_taskaccess ta,dm.dm_usersingroup ug WHERE ug.userid="+getUserID()+" AND ta.usrgrpid = ug.groupid) "
+				+ "LEFT OUTER JOIN dm.dm_task t ON t.id = r.taskid AND t.id IN (SELECT taskid FROM dm.dm_taskaccess ta,dm.dm_usersingroup ug WHERE ug.userid="+m_userID+" AND ta.usrgrpid = ug.groupid) "
 				+ "LEFT OUTER JOIN dm.dm_application a ON a.id = r.appid "
 				+ "LEFT OUTER JOIN dm.dm_calendar c ON c.id = r.calendarid AND c.endtime > "+timeNow()+" "
 				+ "LEFT OUTER JOIN dm.dm_user u ON u.id = r.userid "
-				+ "LEFT OUTER JOIN dm.dm_environment e ON e.id = c.envid AND (e.ownerid = "+getUserID()+" OR e.ogrpid IN (SELECT groupid FROM dm.dm_usersingroup WHERE userid="+getUserID()+"))"
+				+ "LEFT OUTER JOIN dm.dm_environment e ON e.id = c.envid AND (e.ownerid = "+m_userID+" OR e.ogrpid IN (SELECT groupid FROM dm.dm_usersingroup WHERE userid="+m_userID+"))"
 				+ "WHERE r.status = 'N' AND (r.taskid IS NULL OR t.domainid IN (" + m_domainlist + "))");
 		query.add(" ORDER BY 2,16");
 		
@@ -11264,13 +12212,6 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						item.addProperty("icon", "request");							
 					} else {
 						int calid = getInteger(rs, 10, 0);
-						if(calid != 0) {
-							DMCalendarEvent evt = new DMCalendarEvent();
-							evt.setID(calid);
-							evt.setEventTitle(rs.getString(11));
-							item.addProperty("obj", evt.getLinkJSON());							
-							item.addProperty("icon", "calendar");							
-						}
 					}
 				} else {
 					// Other parts of a future union will go here
@@ -11325,7 +12266,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, otid.getId());
 			stmt.setInt(2, otid.getObjectType().value());
 			if (otid.getObjectType() == ObjectType.BUILDID) stmt.setInt(3, otid.getSubId());
@@ -11369,14 +12310,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		case DEPLOYMENT:
 			sql = "SELECT a.id, a.filename, a."+sizecol+" "
 					   + "FROM dm.dm_historyattachment a "
-					   + "WHERE a.objid = ? AND a.kind = ?";
+					   + "WHERE a.lineno = 1 and a.objid = ? AND a.kind = ?";
 			break;
 		default: throw new RuntimeException("Object type " + otid.getObjectType() + " cannot have attachments");
 		}
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, otid.getId());
 			stmt.setInt(2, otid.getObjectType().value());
 			ResultSet rs = stmt.executeQuery();
@@ -11402,11 +12343,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		String sql = "SELECT a.filename, a."+sizecol+" "
 				   + "FROM dm.dm_historyattachment a "
-				   + "WHERE a.id = ?";;
+				   + "WHERE a.lineno = 1 and a.id = ?";;
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, attachid);
 			ResultSet rs = stmt.executeQuery();
 			Attachment ret = null;
@@ -11428,46 +12369,33 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Unable to retrieve attachments from database");			
 	}
 	
-	public InputStream getAttachmentStream(int attachid)
+	public String getAttachmentString(int attachid)
 	{
-		try
-		{
-			InputStream res = null;
-			if (dbdriver.toLowerCase().contains("oracle")) {
-				// ORACLE version
-				PreparedStatement ps = getDBConnection().prepareStatement("SELECT fileoid FROM dm.dm_attachments WHERE attachmentid = ?");
-				ps.setInt(1, attachid);
-				ResultSet rs = ps.executeQuery();
-				if (rs.next()) {
-					res = rs.getBinaryStream(1); 
-				}
-				rs.close();
-				ps.close();
-				
-			} else {
-				// POSTGRES version
-				LargeObjectManager lobj = ((org.postgresql.PGConnection)getDBConnection()).getLargeObjectAPI();
-				PreparedStatement ps = getDBConnection().prepareStatement("SELECT fileoid FROM dm.dm_attachments WHERE attachmentid = ?");
-				ps.setInt(1, attachid);
-				ResultSet rs = ps.executeQuery();
-				if (rs.next()) {
-				    // Open the large object for reading
-				    long oid = rs.getLong(1);
-				    LargeObject obj = lobj.open(oid, LargeObjectManager.READ);
-				    res = obj.getInputStream();
-				}
-				rs.close();
-				ps.close();
-			}
-			return res;
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		throw new RuntimeException("Unable to retrieve attachment stream from database");	
+	 
+  String sql = "select line from dm.dm_historyattachment where id = ? order by lineno asc";
+  PreparedStatement st;
+  String encoded = "";
+  try
+  {
+   st = m_conn.prepareStatement(sql);
+   st.setInt(1, attachid);
 
+   ArrayList<String> lines = new ArrayList<String>();
+
+   ResultSet rs = st.executeQuery();
+
+   while (rs.next())
+   {
+    String line = rs.getString(1);
+    lines.add(line);
+   }
+   encoded = String.join("", lines);
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+  }
+  return encoded;
 	}
 	
 	public PropertyDataSet addNewsToObject(ObjectTypeAndId otid, String text, String icon)
@@ -11510,7 +12438,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		}
 
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, id);
 			stmt.setInt(2, otid.getId());
 			stmt.setInt(3, otid.getObjectType().value());
@@ -11522,11 +12450,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			}
 			stmt.execute();
 			stmt.close();
-			getDBConnection().commit();
+			m_conn.commit();
 
 			// Check if we are subscribed
 			boolean subs = false;
-			PreparedStatement stmt2 = getDBConnection().prepareStatement("SELECT COUNT(*) FROM dm.dm_historysubs s WHERE s.id = ? AND s.kind = ? and s.userid = ?");
+			PreparedStatement stmt2 = m_conn.prepareStatement("SELECT COUNT(*) FROM dm.dm_historysubs s WHERE s.id = ? AND s.kind = ? and s.userid = ?");
 			stmt2.setInt(1, otid.getId());
 			stmt2.setInt(2, otid.getObjectType().value());
 			stmt2.setInt(3, this.GetUserID());
@@ -11534,6 +12462,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			if(rs.next()) {
 				subs = (rs.getInt(1) > 0);
 			}
+			rs.close();
+			stmt2.close();
 			
 			PropertyDataSet ret = new PropertyDataSet();
 			ret.setNewObject(new ObjectTypeAndId(ObjectType.HISTORY_NOTE, id));
@@ -11579,7 +12509,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		int when = (int) (System.currentTimeMillis()/1000);
 		
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, otid.getId());
 			stmt.setInt(2, otid.getObjectType().value());
 			stmt.setString(3, text);
@@ -11590,7 +12520,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			}
 			stmt.execute();
 			stmt.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			
 			PropertyDataSet ret = new PropertyDataSet();
 			ret.addProperty("when", when);
@@ -11615,66 +12545,99 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	 */
 	public int addAttachmentToObject(ObjectTypeAndId otid, String filename, int size, InputStream is)
 	{
-		int id = getID("HistoryAttachment");
-		if(id == 0) {
-			return 0;
-		}
-		try {
-			System.out.println("dbdriver (a)="+dbdriver);
-			if (dbdriver.toLowerCase().contains("oracle")) {
-				// ORACLE version
-				PreparedStatement ps = getDBConnection().prepareStatement("INSERT INTO dm.dm_attachments (attachmentid, fileoid) VALUES (?, ?)");
-				ps.setInt(1, id);
-				ps.setBinaryStream(2, is, size); 
-				ps.executeUpdate();
-				ps.close();
-				is.close();
-			} else {
-				// POSTGRES version
-				LargeObjectManager lobj = ((org.postgresql.PGConnection)getDBConnection()).getLargeObjectAPI();
-				long oid = lobj.createLO(LargeObjectManager.READ | LargeObjectManager.WRITE);
-				LargeObject obj = lobj.open(oid, LargeObjectManager.WRITE);
-				// Copy the data from the InputStream to the large object
-				byte buf[] = new byte[2048];
-				int s;
-				// int tl = 0;
-				while ((s = is.read(buf, 0, 2048)) > 0) {
-				    obj.write(buf, 0, s);
-				    // tl += s;
-				}
-				PreparedStatement ps = getDBConnection().prepareStatement("INSERT INTO dm.dm_attachments (attachmentid, fileoid) VALUES (?, ?)");
-				ps.setInt(1, id);
-				ps.setLong(2, oid);
-				ps.executeUpdate();
-				ps.close();
-				is.close();
-				// Close the large object
-				obj.close();
-			}
-			String sqlstr;
-			if (dbdriver.toLowerCase().contains("oracle")) {
-				sqlstr = "INSERT INTO dm.dm_historyattachment (id, objid, kind, filename, \"SIZE\") VALUES (?,?,?,?,?)";
-			} else {
-				sqlstr = "INSERT INTO dm.dm_historyattachment (id, objid, kind, filename, size) VALUES (?,?,?,?,?)";
-			}
-			PreparedStatement stmt = getDBConnection().prepareStatement(sqlstr);
-			stmt.setInt(1, id);
-			stmt.setInt(2, otid.getId());
-			stmt.setInt(3, otid.getObjectType().value());
-			stmt.setString(4, filename);
-			stmt.setInt(5, size);
-			stmt.execute();
-			stmt.close();
-			getDBConnection().commit();
-			return id;
-			
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
+	 byte[] content = new byte[size];
+	 try
+  {
+   is.read(content, 0, content.length);
+   is.close();
+   String data = Base64.encodeBase64String(content);
+   int id = getID("HistoryAttachment");
+
+   String sql = "INSERT INTO dm.dm_historyattachment (objid, kind, id, filename, size, lineno, line) VALUES (?, ?, ?, ?, ?, ?, ?)";
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+
+   int lineno = 1;
+   for (int i = 0; i < data.length(); i += 4096) {
+    String line = data.substring(i, Math.min(i + 4096, data.length()));
+    stmt.setInt(1, otid.getId());
+    stmt.setInt(2, otid.getObjectType().value());
+    stmt.setInt(3, id);
+    stmt.setString(4, filename);
+    stmt.setInt(5, size);
+    stmt.setInt(6, lineno);
+    stmt.setString(7, line);   
+    stmt.execute();
+    lineno++;
+   }
+   stmt.close();   
+   m_conn.commit();
+  }
+  catch (IOException | SQLException e)
+  {
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  }
+ 
+//		int id = getID("HistoryAttachment");
+//		if(id == 0) {
+//			return 0;
+//		}
+//		try {
+//			System.out.println("dbdriver (a)="+dbdriver);
+//			if (dbdriver.toLowerCase().contains("oracle")) {
+//				// ORACLE version
+//				PreparedStatement ps = m_conn.prepareStatement("INSERT INTO dm.dm_attachments (attachmentid, fileoid) VALUES (?, ?)");
+//				ps.setInt(1, id);
+//				ps.setBinaryStream(2, is, size); 
+//				ps.executeUpdate();
+//				ps.close();
+//				is.close();
+//			} else {
+//				// POSTGRES version
+//				LargeObjectManager lobj = ((org.postgresql.PGConnection)m_conn).getLargeObjectAPI();
+//				long oid = lobj.createLO(LargeObjectManager.READ | LargeObjectManager.WRITE);
+//				LargeObject obj = lobj.open(oid, LargeObjectManager.WRITE);
+//				// Copy the data from the InputStream to the large object
+//				byte buf[] = new byte[2048];
+//				int s;
+//				// int tl = 0;
+//				while ((s = is.read(buf, 0, 2048)) > 0) {
+//				    obj.write(buf, 0, s);
+//				    // tl += s;
+//				}
+//				PreparedStatement ps = m_conn.prepareStatement("INSERT INTO dm.dm_attachments (attachmentid, fileoid) VALUES (?, ?)");
+//				ps.setInt(1, id);
+//				ps.setLong(2, oid);
+//				ps.executeUpdate();
+//				ps.close();
+//				is.close();
+//				// Close the large object
+//				obj.close();
+//			}
+//			String sqlstr;
+//			if (dbdriver.toLowerCase().contains("oracle")) {
+//				sqlstr = "INSERT INTO dm.dm_historyattachment (id, objid, kind, filename, \"SIZE\") VALUES (?,?,?,?,?)";
+//			} else {
+//				sqlstr = "INSERT INTO dm.dm_historyattachment (id, objid, kind, filename, size) VALUES (?,?,?,?,?)";
+//			}
+//			PreparedStatement stmt = m_conn.prepareStatement(sqlstr);
+//			stmt.setInt(1, id);
+//			stmt.setInt(2, otid.getId());
+//			stmt.setInt(3, otid.getObjectType().value());
+//			stmt.setString(4, filename);
+//			stmt.setInt(5, size);
+//			stmt.execute();
+//			stmt.close();
+//			m_conn.commit();
+//			return id;
+//			
+//		} catch (SQLException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}	
 		return 0;
 	}
 	
@@ -11683,13 +12646,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		// TODO: Be prepared that the entry may already be present
 		String sql = "INSERT INTO dm.dm_historysubs (id, kind, userid) VALUES (?,?,?)"; 
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, otid.getId());
 			stmt.setInt(2, otid.getObjectType().value());
 			stmt.setInt(3, this.GetUserID());
 			stmt.execute();
 			stmt.close();
-			getDBConnection().commit();
+			m_conn.commit();
 		} catch(SQLException e) {
 			e.printStackTrace();
 			rollback();
@@ -11700,13 +12663,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		String sql = "DELETE FROM dm.dm_historysubs WHERE id = ? AND kind = ? AND userid = ?"; 
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, otid.getId());
 			stmt.setInt(2, otid.getObjectType().value());
 			stmt.setInt(3, this.GetUserID());
 			stmt.execute();
 			stmt.close();
-			getDBConnection().commit();
+			m_conn.commit();
 		} catch(SQLException e) {
 			e.printStackTrace();
 			rollback();
@@ -11743,6 +12706,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			ret.setResultIsExpr(false);
 			ret.setCopyToRemote(false);
 			ret.setUseTTY(false);
+			
+			if (objtype == ObjectType.FUNCTION)
+			 ret.setFunction(true);
 			return ret;
 		}
 	 
@@ -11794,7 +12760,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, actionid);
 			ResultSet rs = stmt.executeQuery();
 			Action ret = null;
@@ -11847,7 +12813,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement("INSERT INTO dm.dm_actiontext(id) VALUES(?)");
+			PreparedStatement stmt = m_conn.prepareStatement("INSERT INTO dm.dm_actiontext(id) VALUES(?)");
 			stmt.setInt(1, textid);
 			stmt.execute();
 			stmt.close();
@@ -11863,7 +12829,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sql="DELETE FROM dm.dm_actiontext WHERE id = (SELECT textid FROM dm.dm_action WHERE id=?)";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, actionid);
 			stmt.execute();
 			stmt.close();
@@ -11924,25 +12890,26 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			long t = timeNow();
 			int hnid = getID("HistoryNote");
 			System.out.println("got hnid="+hnid);
-			PreparedStatement updstmt = getDBConnection().prepareStatement(updsql);
+			PreparedStatement updstmt = m_conn.prepareStatement(updsql);
 			updstmt.setInt(1,obj.getId());
 			updstmt.setInt(2,obj.getObjectType().value());
 			updstmt.setLong(3,t);
 			updstmt.setString(4,message);
-			updstmt.setInt(5,getUserID());
+			updstmt.setInt(5,m_userID);
 			if (icon != null) {
 				updstmt.setString(6,icon);
 			} else {
-				updstmt.setNull(6,Type.CHAR);
+				updstmt.setNull(6,Types.CHAR);
 			}
 			updstmt.setInt(7,hnid);
 			if (linkid > 0) {
 				updstmt.setInt(8,linkid);
 			} else {
-				updstmt.setNull(8, Type.INT);
+				updstmt.setNull(8, Types.INTEGER);
 			}
 			System.out.println("inserting id "+hnid);
 			updstmt.execute();
+			updstmt.close();
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 			rollback();
@@ -11983,10 +12950,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try {
 			boolean secondInSuccession=false;
 			long t = timeNow();
-			PreparedStatement chkstmt = getDBConnection().prepareStatement(chksql);
+			PreparedStatement chkstmt = m_conn.prepareStatement(chksql);
 			chkstmt.setInt(1,obj.getId());
 			chkstmt.setInt(2,obj.getObjectType().value());
-			chkstmt.setInt(3,getUserID());
+			chkstmt.setInt(3,m_userID);
 			chkstmt.setLong(4,t-2);	// Within 2 seconds of the same object and the same user
 			ResultSet chkrs = chkstmt.executeQuery();
 			if (chkrs.next()) {
@@ -12012,7 +12979,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		RecordObjectUpdate(obj,desc,0,false);
 	}
 	
-	public void RecordObjectUpdateMultiple(DMObject obj, String desc)
+	protected void RecordObjectUpdateMultiple(DMObject obj, String desc)
 	{
 		RecordObjectUpdate(obj,desc,0,true);
 	}
@@ -12033,11 +13000,21 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		ArchiveAction(act);
 		
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_action ");
-		update.add("SET modified = ?, modifierid = ?", t, getUserID());
+		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_action ");
+		update.add("SET modified = ?, modifierid = ?", t, m_userID);
 				
 		for(SummaryField field : changes) {
 			switch(field) {
+	   case DOMAIN_FULLNAME: {
+     if (changes.get(field) == null)
+       update.add(", domainid = ?", Null.INT);
+     else
+     {
+      int id =  new Integer((String)changes.get(field)).intValue();
+      update.add(", domainid = ?", id);
+     }
+    } 
+    break; 
 			case ACTION_KIND: {
 				ActionKind kind = (ActionKind) changes.get(field);
 				update.add(", kind = ?", (kind != null) ? kind.value() : ActionKind.UNCONFIGURED.value());
@@ -12110,8 +13087,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					|| ((cat != null) && (cat.getId() != 0))) {
 				// Category is set, so ensure that we have a fragment row for this action
 				System.out.println("Category set - attempting update (cat is "+cat);
-				DynamicQueryBuilder update2 = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_fragments ");
-				update2.add("SET modifierid = ?, modified = ?", getUserID(), timeNow());
+				DynamicQueryBuilder update2 = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_fragments ");
+				update2.add("SET modifierid = ?, modified = ?", m_userID, timeNow());
 				if(fragname != null) {
 					update2.add(", name = ?", fragname);
 				}
@@ -12126,11 +13103,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				if (cat != null) {
 				    String sql1="DELETE from dm.dm_fragment_categories a where a.id in (select b.id from dm.dm_fragments b where ? in (b.actionid,b.functionid))";  // only allow 1 category at this time
 				    String sql2="INSERT INTO dm.dm_fragment_categories select b.id, ? from dm.dm_fragments b where ? in (b.actionid,b.functionid)";
-				    PreparedStatement stmt = getDBConnection().prepareStatement(sql1);
+				    PreparedStatement stmt = m_conn.prepareStatement(sql1);
 				    stmt.setInt(1, act.getId());
 				    stmt.execute();
 				    stmt.close();
-				    stmt = getDBConnection().prepareStatement(sql2);
+				    stmt = m_conn.prepareStatement(sql2);
 				    stmt.setInt(1, cat.getId());
 				    stmt.setInt(2, act.getId());
 				    stmt.execute();
@@ -12138,11 +13115,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
      
 				    sql1="DELETE from dm.dm_action_categories where id = ?";  // only allow 1 category at this time
 				    sql2="INSERT INTO dm.dm_action_categories (id,categoryid) VALUES(?,?)";
-				    stmt = getDBConnection().prepareStatement(sql1);
+				    stmt = m_conn.prepareStatement(sql1);
 				    stmt.setInt(1, act.getId());
 				    stmt.execute();
 				    stmt.close();
-				    stmt = getDBConnection().prepareStatement(sql2);
+				    stmt = m_conn.prepareStatement(sql2);
 				    stmt.setInt(1, act.getId());
 				    stmt.setInt(2,cat.getId());
 				    stmt.execute();
@@ -12156,14 +13133,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					if(newid > 0) {
 						String sql1="INSERT INTO dm.dm_fragments(id,name,summary,categoryid,exitpoints,creatorid,created,modifierid,modified,actionid)   VALUES(?,?,?,?,1,?,?,?,?,?)";
 						String sql2="INSERT INTO dm.dm_fragments(id,name,summary,categoryid,exitpoints,creatorid,created,modifierid,modified,functionid) VALUES(?,?,?,?,1,?,?,?,?,?)";
-						PreparedStatement stmt = getDBConnection().prepareStatement(act.isFunction()?sql2:sql1);
+						PreparedStatement stmt = m_conn.prepareStatement(act.isFunction()?sql2:sql1);
 						stmt.setInt(1, newid);
 						stmt.setString(2, (fragname != null) ? fragname : act.getName());
 						stmt.setString(3, (fragsumm != null) ? fragsumm : act.getSummary());
 						stmt.setInt(4, (cat != null) ? cat.getId() : oldcat.getId());
-						stmt.setInt(5, getUserID());
+						stmt.setInt(5, m_userID);
 						stmt.setLong(6, t);
-						stmt.setInt(7, getUserID());
+						stmt.setInt(7, m_userID);
 						stmt.setLong(8, t);
 						stmt.setInt(9,act.getId());
 						stmt.execute();
@@ -12176,7 +13153,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	      				sql1="INSERT INTO dm.dm_action_categories values (?,?)";
 						else
 						sql1="INSERT INTO dm.dm_fragment_categories values (?,?)";
-      					stmt = getDBConnection().prepareStatement(sql1);
+      					stmt = m_conn.prepareStatement(sql1);
       					stmt.setInt(1, newid);
       					stmt.setInt(2, (cat != null) ? cat.getId() : oldcat.getId());
       					stmt.execute();
@@ -12184,12 +13161,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
       
 						// Now add the fragmentattrs
 						System.out.println("Inserting into fragmentattrs for actionid="+act.getId());
-						PreparedStatement stmt2 = getDBConnection().prepareStatement(
+						PreparedStatement stmt2 = m_conn.prepareStatement(
 								"INSERT INTO dm.dm_fragmentattrs(id,typeid,atname,attype,atorder,required) "
 								+ "VALUES(?,?,?,?,?,?)");
 						
 						// Loop through the arguments list, adding any that are not "A" (always)
-						PreparedStatement qst = getDBConnection().prepareStatement(
+						PreparedStatement qst = m_conn.prepareStatement(
 								"SELECT name,type,inpos,required FROM dm.dm_actionarg WHERE actionid=? AND (switchmode is null or switchmode<>'A') order by inpos, name");
 						qst.setInt(1,act.getId());
 						ResultSet rs = qst.executeQuery();
@@ -12215,7 +13192,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						if (act.isFunction()) {
 							System.out.println("act is a function, inserting result field");
 							// Add the "result" into fragmentattrs
-							PreparedStatement rst = getDBConnection().prepareStatement(
+							PreparedStatement rst = m_conn.prepareStatement(
 									"INSERT INTO dm.dm_fragmentattrs(id,typeid,atname,attype,atorder,inherit,required) "
 									+ "VALUES(?,?,'result','entry',?,'R','Y')");
 							int fragid = getID("fragmentattrs");
@@ -12225,7 +13202,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 							rst.execute();
 							// And add the function text into fragmentattrs
 							String ft = "set @result@ = "+act.getName()+"("+plist+");";
-							PreparedStatement fst = getDBConnection().prepareStatement(
+							PreparedStatement fst = m_conn.prepareStatement(
 									"INSERT INTO dm.dm_fragmenttext(fragmentid,data,type) values(?,?,0)");
 							fst.setInt(1,newid);
 							fst.setString(2,ft);
@@ -12244,7 +13221,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				dsql[3] = "DELETE FROM dm.dm_fragment_categories WHERE id IN (SELECT id FROM dm.dm_fragments WHERE ? in (functionid,actionid))";
 				
 				for (int i=0;i<dsql.length;i++) {
-					PreparedStatement stmt = getDBConnection().prepareStatement(dsql[i]);
+					PreparedStatement stmt = m_conn.prepareStatement(dsql[i]);
 					System.out.println("executing "+dsql[i]);
 					stmt.setInt(1,act.getId());
 					stmt.execute();
@@ -12253,7 +13230,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			}	
 			RecordObjectUpdate(act,changes);
 			System.out.println("Committing");
-			getDBConnection().commit();
+			m_conn.commit();
 			update.close();
 			return true;
 		} catch(SQLException e) {
@@ -12272,7 +13249,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   RecordObjectUpdate(action,"Argument Order Changed");
   try
   {
-   PreparedStatement stmt = getDBConnection().prepareStatement("UPDATE dm.dm_actionarg set outpos = null where actionid = " + action.getId());
+   PreparedStatement stmt = m_conn.prepareStatement("UPDATE dm.dm_actionarg set outpos = null where actionid = " + action.getId());
    stmt.execute();
    stmt.close();
    
@@ -12281,12 +13258,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
     String key = updates.get(i); 
     String usql = "UPDATE dm.dm_actionarg set outpos = " + (i+1) + " where actionid = " + action.getId() + " and name = '" + key + "'";
     System.out.println(usql);
-    PreparedStatement stmt2 = getDBConnection().prepareStatement(usql);
+    PreparedStatement stmt2 = m_conn.prepareStatement(usql);
     stmt2.execute();
     stmt2.close();
    }
    
-   getDBConnection().commit();
+   m_conn.commit();
   }
   catch (SQLException e)
   {
@@ -12309,18 +13286,18 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 String usql1 = "UPDATE dm.dm_actionarg set inpos = " + value + " where actionid = " + action.getId() + " and name = '" + key + "'";
 			 String usql2 = "UPDATE dm.dm_fragmentattrs set atorder = " + value + "where atname = '" + key + "' and typeid =  "
 					 	+ 	" (SELECT id FROM dm.dm_fragments x WHERE " + action.getId() + " in (x.actionid,x.functionid))";
-			 PreparedStatement stmt1 = getDBConnection().prepareStatement(usql1);
+			 PreparedStatement stmt1 = m_conn.prepareStatement(usql1);
 			 stmt1.execute();
 			 stmt1.close();
 			 if (hasCategory) {
-				 PreparedStatement stmt2 = getDBConnection().prepareStatement(usql2);
+				 PreparedStatement stmt2 = m_conn.prepareStatement(usql2);
 				 stmt2.execute();
 				 stmt2.close();
 			 }
 		 }
 		 if (action.isFunction()) {
 			 
-			 PreparedStatement ts = getDBConnection().prepareStatement("SELECT id FROM dm.dm_fragments WHERE ? IN (actionid,functionid)");
+			 PreparedStatement ts = m_conn.prepareStatement("SELECT id FROM dm.dm_fragments WHERE ? IN (actionid,functionid)");
 			 ts.setInt(1, action.getId());
 			 ResultSet rs = ts.executeQuery();
 			 if (rs.next()) {
@@ -12330,7 +13307,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 rs.close();
 			 ts.close();
 		 }
-		 getDBConnection().commit();
+		 m_conn.commit();
 	 } catch (SQLException e) {
 		 e.printStackTrace();
 		 rollback();
@@ -12345,10 +13322,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 
    try
    {
-    PreparedStatement stmt = getDBConnection().prepareStatement(usql);
+    PreparedStatement stmt = m_conn.prepareStatement(usql);
     stmt.execute();
 
-    getDBConnection().commit();
+    m_conn.commit();
     stmt.close();
    }
    catch (SQLException e)
@@ -12365,11 +13342,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 
    try
    {
-    PreparedStatement stmt = getDBConnection().prepareStatement(usql);
+    PreparedStatement stmt = m_conn.prepareStatement(usql);
     stmt.setString(1,flag);
     stmt.execute();
 
-    getDBConnection().commit();
+    m_conn.commit();
     stmt.close();
    }
    catch (SQLException e)
@@ -12386,7 +13363,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 
    try
    {
-    PreparedStatement stmt = getDBConnection().prepareStatement(usql);
+    PreparedStatement stmt = m_conn.prepareStatement(usql);
     stmt.setInt(1,id);
     stmt.setString(2, name);
     if (flag.trim().length() == 0)
@@ -12395,7 +13372,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
      stmt.setString(3, flag);
     stmt.execute();
 
-    getDBConnection().commit();
+    m_conn.commit();
     stmt.close();
    }
    catch (SQLException e)
@@ -12416,13 +13393,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			System.err.println("ERROR: Could not find engine to encrypt data");
 			return "ERROR: Could not find engine to Parse Body";
 		}
-		String parseResult = eng.ParseProcedure("action "+action.getName()+"{"+procbody+"}");
+		String parseResult = "parsed ok"; // eng.ParseProcedure("action "+action.getName()+"{"+procbody+"}");
 		System.out.println("parseResult = "+parseResult);
 		if (parseResult.contains("parsed ok")) {
 			parseResult="";
 			String usql = "UPDATE dm.dm_actiontext SET data=? WHERE id=(SELECT b.textid FROM dm.dm_action b where b.id=?)";
 			try {
-				PreparedStatement stmt = getDBConnection().prepareStatement(usql);
+				PreparedStatement stmt = m_conn.prepareStatement(usql);
 				stmt.setString(1,procbody);
 				stmt.setInt(2, actionid);
 				stmt.execute();
@@ -12430,7 +13407,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				System.out.println("UpdateCount = "+uc);
 				updateModTime(action);
 				RecordObjectUpdate(action,"DMScript Body Changed");
-				getDBConnection().commit();
+				m_conn.commit();
 				stmt.close();
 			} catch(SQLException e) {
 				e.printStackTrace();
@@ -12463,7 +13440,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			
 			PreparedStatement stmt = null;
 			if(hasCategory) {
-				stmt = getDBConnection().prepareStatement(fqsql);
+				stmt = m_conn.prepareStatement(fqsql);
 				stmt.setInt(1, act.getId());
 				ResultSet rs = stmt.executeQuery();
 				if(rs.next()) {
@@ -12475,7 +13452,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				}
 			}
 			
-			stmt = getDBConnection().prepareStatement(dsql);
+			stmt = m_conn.prepareStatement(dsql);
 			for(Action.ActionArg a : changes.deleted()) {
 				System.out.println("Deleting " + act.getId() + " '" + a.getId() + "' from actionarg");
 				stmt.setInt(1, act.getId());
@@ -12485,7 +13462,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			stmt.close();
 			
 			if(hasCategory) {
-				stmt = getDBConnection().prepareStatement(fdsql);
+				stmt = m_conn.prepareStatement(fdsql);
 				for(Action.ActionArg a : changes.deleted()) {
 					System.out.println("Deleting " + fragmentId + " '" + a.getId() + "' from fragmentattrs");
 					stmt.setInt(1, fragmentId);
@@ -12496,7 +13473,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				
 			}
 			
-			PreparedStatement maxinpos = getDBConnection().prepareStatement("select max(inpos) from dm.dm_actionarg where actionid = " + act.getId());
+			PreparedStatement maxinpos = m_conn.prepareStatement("select max(inpos) from dm.dm_actionarg where actionid = " + act.getId());
    ResultSet rs1 = maxinpos.executeQuery();
    int inpos = 1;
    if (rs1.next()) 
@@ -12506,7 +13483,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    rs1.close();
    maxinpos.close();
    
-			stmt = getDBConnection().prepareStatement(asql);
+			stmt = m_conn.prepareStatement(asql);
 			for(Action.ActionArg a : changes.added()) {
 				System.out.println("Inserting " + act.getId() + " '" + a.getName() + "' into actionarg");	
 				stmt.setInt(1, act.getId());
@@ -12533,7 +13510,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			
 			if(hasCategory) {
 				// String fasql = "INSERT INTO dm.dm_fragmentattrs(id,typeid,attype,atname,atorder,required) VALUES(?,?,?,?,?,?)";
-				stmt = getDBConnection().prepareStatement(fasql);
+				stmt = m_conn.prepareStatement(fasql);
 				for(Action.ActionArg a : changes.added()) {
 					SwitchMode sm = a.getSwitchMode();
 					if (!(sm != null && sm.value() != null && sm.value().equalsIgnoreCase("A"))) {
@@ -12553,7 +13530,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				stmt.close();
 			}
 
-			stmt = getDBConnection().prepareStatement(csql);
+			stmt = m_conn.prepareStatement(csql);
 			for(Action.ActionArg a : changes.changed()) {
 				System.out.println("Updating " + act.getId() + " '" + a.getId() + "' in actionarg");
 				stmt.setString(1, a.getName());
@@ -12566,13 +13543,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				if (sm.trim().length()>0) {
 					stmt.setString(7,sm);
 				} else {
-					stmt.setNull(7,Type.CHAR);
+					stmt.setNull(7,Types.CHAR);
 				}
 				String nsm = a.getNegSwitch();
 				if (nsm.trim().length()>0) {
 					stmt.setString(8,nsm);
 				} else {
-					stmt.setNull(8,Type.CHAR);
+					stmt.setNull(8,Types.CHAR);
 				}
 				stmt.setString(9, a.getType());
 				stmt.setInt(10, act.getId());
@@ -12583,13 +13560,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			
 			if(hasCategory) {
 				// String fcsql = "UPDATE dm.dm_fragmentattrs fa SET atname = ?, attype = ?, required = ? WHERE fa.typeid = ? AND fa.atname = ?";
-				stmt = getDBConnection().prepareStatement(fcsql);
+				stmt = m_conn.prepareStatement(fcsql);
 				for(Action.ActionArg a : changes.changed()) {
-					PreparedStatement s2 = getDBConnection().prepareStatement("SELECT attype FROM dm.dm_fragmentattrs WHERE typeid=? AND atname=?");
+					PreparedStatement s2 = m_conn.prepareStatement("SELECT attype FROM dm.dm_fragmentattrs WHERE typeid=? AND atname=?");
 					s2.setInt(1,fragmentId);
 					s2.setString(2, a.getId());
 					ResultSet rs2 = s2.executeQuery();
-					rs2.next();
+					boolean n = rs2.next();
+					System.out.println("fragmentId="+fragmentId+" atname="+a.getId()+" n="+n);
 					String origattype = rs2.getString(1);
 					rs2.close();
 					s2.close();
@@ -12602,7 +13580,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						// Delete any fragmentattrs relating to switches which are now "always" type flags
 						//
 						String dafsql="DELETE FROM dm.dm_fragmentattrs WHERE typeid=? AND atname=?";
-						PreparedStatement stmt1 = getDBConnection().prepareStatement(dafsql);
+						PreparedStatement stmt1 = m_conn.prepareStatement(dafsql);
 						stmt1.setInt(1, fragmentId);
 						stmt1.setString(2, a.getId());		// This is the old name
 						stmt1.execute();
@@ -12626,7 +13604,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 							// Didn't find a row to update - insert it
 							System.out.println("Inserting missing " + fragmentId + " '" + a.getId() + "' in fragmentattrs");
 							// String fasql = "INSERT INTO dm.dm_fragmentattrs(id,typeid,attype,atname,atorder,required) VALUES(?,?,?,?,1,?)";
-							PreparedStatement stmt2 = getDBConnection().prepareStatement(fasql);
+							PreparedStatement stmt2 = m_conn.prepareStatement(fasql);
 							int newid = getID("fragmentattrs");
 							stmt2.setInt(1, newid);
 							stmt2.setInt(2, fragmentId);
@@ -12643,7 +13621,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				}
 			}
 
-			getDBConnection().commit();
+			m_conn.commit();
 			return true;
 		} catch(SQLException e) {
 			e.printStackTrace();
@@ -12656,7 +13634,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try {
 			// result field has inherit set to "R"
-			PreparedStatement stmt = getDBConnection().prepareStatement("SELECT atname,atorder FROM dm.dm_fragmentattrs WHERE inherit IS NULL AND typeid=? ORDER BY atorder");
+			PreparedStatement stmt = m_conn.prepareStatement("SELECT atname,atorder FROM dm.dm_fragmentattrs WHERE inherit IS NULL AND typeid=? ORDER BY atorder");
 			stmt.setInt(1,fragmentid);
 			ResultSet rs = stmt.executeQuery();
 			String plist="";
@@ -12672,13 +13650,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			stmt.close();
 			int resorder = maxorder+1;
 			String ft = "set @result@ = "+act.getName()+"("+plist+");";
-			PreparedStatement fst = getDBConnection().prepareStatement("UPDATE dm.dm_fragmenttext SET data=? WHERE fragmentid=?");
+			PreparedStatement fst = m_conn.prepareStatement("UPDATE dm.dm_fragmenttext SET data=? WHERE fragmentid=?");
 			fst.setString(1,ft);
 			fst.setInt(2,fragmentid);
 			fst.execute();
 			fst.close();
 			// Now update result position
-			PreparedStatement rst = getDBConnection().prepareStatement("UPDATE dm.dm_fragmentattrs SET atorder=? WHERE typeid=? AND inherit='R'");
+			PreparedStatement rst = m_conn.prepareStatement("UPDATE dm.dm_fragmentattrs SET atorder=? WHERE typeid=? AND inherit='R'");
 			rst.setInt(1,resorder);
 			rst.setInt(2,fragmentid);
 			rst.execute();
@@ -12699,7 +13677,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ "WHERE aa.actionid = ? ORDER BY aa.inpos, aa.name";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, action.getId());
 			ResultSet rs = stmt.executeQuery();
 			List<ActionArg> ret = new ArrayList<ActionArg>();
@@ -12732,7 +13710,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ "WHERE aa.actionid = ? AND aa.outpos IS NULL AND (aa.switchmode IS NULL OR aa.switchmode <> 'A') ORDER BY aa.inpos, aa.name";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, action.getId());
 			ResultSet rs = stmt.executeQuery();
 			List<ActionArg> ret = new ArrayList<ActionArg>();
@@ -12761,7 +13739,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ "WHERE aa.actionid = ? AND aa.outpos IS NOT NULL ORDER BY aa.outpos";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, action.getId());
 			ResultSet rs = stmt.executeQuery();
 			List<ActionArg> ret = new ArrayList<ActionArg>();
@@ -12792,7 +13770,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sql = "SELECT t.data FROM dm.dm_action a, dm.dm_actiontext t WHERE t.id = a.textid AND a.id = ?";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, action.getId());
 			ResultSet rs = stmt.executeQuery();
 			String ret = "";
@@ -12825,7 +13803,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			// Get domain from object
 			DMObject obj = this.getObject(x.getObjectType(), x.getId());
 			System.out.println("obj = "+obj.getName());
-			d =  obj.getDomain();
+			if (obj.getId() == 1)
+			 d = (Domain)obj;
+			else
+		 	d =  obj.getDomain();
 		} else {
 			// New object - get domain from tree
 			d = getDomain(domainid);
@@ -12853,14 +13834,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			String sql2 = "SELECT a.id, a.name, a.kind, a.function, a.domainid "
 					+ "FROM dm.dm_action a WHERE a.domainid = ? AND a.status = 'N' AND a.pluginid IS NULL ORDER BY 2";
 			List<Action> ret = new ArrayList<Action>();
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
-			PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
+			PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 			while (d != null && d.getId()>=1) {
 				System.out.println("domain is "+d.getName()+") read="+d.isReadable(true)+" write="+d.isWriteable(true)+" update="+d.isUpdatable(true)+" view="+d.isViewable(true));
 				if (!m_OverrideAccessControl) {
 					// Get a list of actions in this domain with non-default access permissions
-					System.out.println("no override access, getting list of overrides userid="+getUserID()+" domainid="+d.getId());
-					stmt1.setInt(1,getUserID());
+					System.out.println("no override access, getting list of overrides userid="+m_userID+" domainid="+d.getId());
+					stmt1.setInt(1,m_userID);
 					stmt1.setInt(2,d.getId());
 					stmt1.setInt(3,d.getId());
 					ResultSet rs = stmt1.executeQuery();
@@ -12937,7 +13918,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						"WHERE		b.actionid=?				" +
 						"AND		b.id=a.typeid				" +
 						"ORDER BY	a.atorder					";
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,action.getId());
 			ResultSet rs = stmt.executeQuery();
 			while(rs.next()) {
@@ -12964,7 +13945,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			String sql = "select count(*) from dm.dm_deployment where deploymentid=?";
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, deployid);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
@@ -12996,7 +13977,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, deployid);
 			ResultSet rs = stmt.executeQuery();
 			Deployment ret = null;
@@ -13037,33 +14018,39 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		String sessionid = taskDeploy.getDeploymentSessionId();
 		String sql = "SELECT d.deploymentid, d.exitcode, d.finished FROM dm.dm_deployment d WHERE d.sessionid = ?";
-		boolean EngineStopped = false;
+
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setString(1, sessionid);
 			
 			Deployment ret = null;
-			while((ret == null) && (timeout > 0)) {
+			while(timeout > 0)
+			{
 				ResultSet rs = stmt.executeQuery();
-				if(rs.next()) {
+				if(rs.next()) 
+				{
 					ret = new Deployment(this, rs.getInt(1), rs.getInt(2));
 					ret.setFinished(rs.getInt(3));
 				}
 				rs.close();
-				if(ret == null) {
+				
+				if(ret == null) 
+				{
 					timeout--;
-					try {
-						if (!EngineStopped) {
-							Thread.sleep(1000);
-						}
-						if (!taskDeploy.engineRunning()) {
-							EngineStopped = true;
-						}
-					} catch (InterruptedException e) {}
-				}	
+     try
+     {
+      Thread.sleep(1000);
+     }
+     catch (InterruptedException e)
+     {
+     }
+				}
+				else
+				 break;
 			}
-			if (EngineStopped && ret == null) {
+			if (ret == null) 
+			{
 				System.out.println("Engine has ended!");
 				ret = new Deployment(this, -1, 1);
 				ret.setFinished((int)timeNow());
@@ -13086,7 +14073,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		// TODO: remove l.runtime once lineno is working properly
 		String sql = "SELECT l.lineno, l.stream, l.thread, l.line FROM dm.dm_deploymentlog l WHERE l.deploymentid = ? ORDER BY l.lineno, l.runtime";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, dep.getId());
 			ResultSet rs = stmt.executeQuery();
 			List<Deployment.DeploymentLogEntry> ret = new ArrayList<Deployment.DeploymentLogEntry>();
@@ -13106,7 +14093,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		String sql = "SELECT l.lineno, l.stream, l.thread, l.line FROM dm.dm_deploymentlog l WHERE l.deploymentid = ? AND l.lineno > ? ORDER BY l.lineno";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, dep.getId());
 			stmt.setInt(2, lineno);
 			ResultSet rs = stmt.executeQuery();
@@ -13129,7 +14116,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ "x.componentid, x.componentname, x.serverid, x.servername, x.targetfilename, x.checksum2, x.buildnumber "
 			+ "FROM dm.dm_deploymentxfer x WHERE x.deploymentid = ? ORDER BY x.stepid, x.repopath";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, dep.getId());
 			ResultSet rs = stmt.executeQuery();
 			List<Deployment.DeploymentXfer> ret = new ArrayList<Deployment.DeploymentXfer>();
@@ -13158,7 +14145,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		String sql = "SELECT stepid,actionid FROM dm.dm_deploymentactions WHERE deploymentid = ? ORDER BY stepid";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, dep.getId());
 			ResultSet rs = stmt.executeQuery();
 			List<Deployment.DeploymentScript> ret = new ArrayList<Deployment.DeploymentScript>();
@@ -13184,7 +14171,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sql = "SELECT p.name, p.value FROM dm.dm_deploymentprops p "
 			+ "WHERE p.deploymentid = ? AND p.stepid = ? AND p.instanceid = ? ORDER BY 1";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, dep.getId());
 			stmt.setInt(2, stepid);
 			stmt.setInt(3, instid);
@@ -13207,7 +14194,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sql = "SELECT 'Step '||s.stepid||': '||s.type||' ('||concat(s.finished - s.started,' secs')||')', (s.finished - s.started) + 1 FROM dm.dm_deploymentstep s WHERE s.deploymentid = ? ORDER BY s.stepid DESC";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, deployid);
 			ResultSet rs = stmt.executeQuery();
 			ReportDataSet ret = new ReportDataSet(rs);
@@ -13230,7 +14217,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sql = "SELECT s.stepId, s.type, s.started, s.finished FROM dm.dm_deploymentstep s WHERE s.deploymentid = ? ORDER BY s.stepid";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, deployid);
 			ResultSet rs = stmt.executeQuery();
 			while(rs.next()) {
@@ -13250,7 +14237,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				+ "WHERE s.deploymentid = ? AND c.deploymentid = s.deploymentid AND c.stepid = s.stepid ORDER BY s.stepid";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql2);
+			PreparedStatement stmt = m_conn.prepareStatement(sql2);
 			stmt.setInt(1, deployid);
 			ResultSet rs = stmt.executeQuery();
 			while(rs.next()) {
@@ -13270,7 +14257,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				+ "WHERE s.deploymentid = ? AND x.deploymentid = s.deploymentid AND x.stepid = s.stepid ORDER BY s.stepid";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql3);
+			PreparedStatement stmt = m_conn.prepareStatement(sql3);
 			stmt.setInt(1, deployid);
 			ResultSet rs = stmt.executeQuery();
 			while(rs.next()) {
@@ -13348,10 +14335,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			return getServerCompTypeDetail(id);	
 		case TEMPLATE:
 			return getTemplate(id);
-		case BUILDER:
-			return getBuilder(id);
-		case BUILDJOB:
-			return getBuildJob(id);
+  case RPROXY:
+   return getEngine(id);
+  case ACTION_CATEGORY:
+   return getCategory(id);
 		default:
 			throw new RuntimeException("Unknown provider object type " + objtype);
 		}		
@@ -13368,16 +14355,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			// Templates don't have domains - but their parent notify process does
 			sql = "SELECT a.domainid FROM dm.dm_notify a,dm.dm_template b WHERE a.id = b.notifierid AND b.id=?";
 		}
-		else if (obj.getObjectType() == ObjectType.BUILDJOB) {
-			// Build Jobs don't have domains - but their parent build engine does
-			sql = "SELECT a.domainid FROM dm.dm_buildengine a,dm.dm_buildjob b WHERE a.id = b.builderid AND b.id=?";
-		} else {
+  else {
 			sql = "SELECT o.domainid FROM dm." + obj.getDatabaseTable() + " o WHERE o.id = ?";
 		}
 		try
 		{
 			System.out.println("isValidDomainForObject, sql="+sql+" id="+obj.getId());
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, obj.getId());
 			ResultSet rs = stmt.executeQuery();
 			boolean ret = false;
@@ -13434,7 +14418,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 //			System.out.println("sql="+sql);
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,domainid);
 			ResultSet rs = stmt.executeQuery();
 			int parentdomain=0;
@@ -13485,7 +14469,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			if (rows==0) {
 				// Nothing was retrieved - parentid will not be set. Retrieve it here
 				String psql="SELECT domainid FROM dm.dm_domain WHERE id =?";
-				PreparedStatement pstmt = getDBConnection().prepareStatement(psql);
+				PreparedStatement pstmt = m_conn.prepareStatement(psql);
 				pstmt.setInt(1,domainid);
 				ResultSet prs = pstmt.executeQuery();
 				if (prs.next()) {
@@ -13537,10 +14521,6 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		if (obj.getObjectType() == ObjectType.TEMPLATE) {
 			sql = "SELECT a.usrgrpid, a.viewaccess, a.updateaccess,a.readaccess,a.writeaccess "
 					+ "FROM dm.dm_notifyaccess a,dm.dm_template b WHERE a.notifyid = b.notifierid AND b.id = ?";
-		} else 
-		if (obj.getObjectType() == ObjectType.BUILDJOB) {
-			sql = "SELECT a.usrgrpid, a.viewaccess, a.updateaccess,a.readaccess,a.writeaccess "
-					+ "FROM dm.dm_buildengineaccess a,dm.dm_buildjob b WHERE a.builderid = b.builderid AND b.id = ?";
 		} else {
 			if (obj.hasReadWrite()) {
 				sql = "SELECT a.usrgrpid, a.viewaccess, a.updateaccess,a.readaccess,a.writeaccess "
@@ -13556,7 +14536,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, obj.getId());
 			ResultSet rs = stmt.executeQuery();
 			Hashtable<Integer, ObjectAccess> ret = new Hashtable<Integer, ObjectAccess>();
@@ -13618,12 +14598,15 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public List<DMAttribute> getAttributesForObject(DMObject obj)
 	{
+	 if (obj instanceof Engine || obj instanceof Domain || obj instanceof Task || obj instanceof User || obj instanceof UserGroup || obj instanceof Category  || obj instanceof CompType || obj instanceof Credential)
+	  return new ArrayList<DMAttribute>();
+	 
 		String sql = "SELECT v.name, v.value, v.arrayid, v.nocase "
 			+ "FROM dm." + obj.getDatabaseTable() + "vars v WHERE v." + obj.getForeignKey() + " = ? ORDER BY 1";
 		System.out.println("In getAttributesForObject - sql = "+sql);
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, obj.getId());
 			ResultSet rs = stmt.executeQuery();
 			List<DMAttribute> ret = new ArrayList<DMAttribute>();
@@ -13634,16 +14617,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				
 				if(arrayid > 0) {
 				 String sql2 = "select name, value from dm.dm_arrayvalues where id = ?";
-		   PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+		   PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 		   stmt2.setInt(1, arrayid);
 		   ResultSet rs2 = stmt2.executeQuery();	
-		   while(rs2.next()) {		   
+		   while(rs2.next()) {		
 				 	ret.add(new DMAttribute(name, arrayid, rs2.getString(1), rs2.getString(2)));
 		   }	
 		   rs2.close();
 		   stmt2.close();
 				} else {
-					ret.add(new DMAttribute(rs.getString(1), rs.getString(2)));
+					ret.add(new DMAttribute(rs.getString(1).trim(), rs.getString(2)));
 				}
 			}
 			System.out.println("Finished retrieving rows");
@@ -13664,7 +14647,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sql = "SELECT a.name, a.value FROM dm.dm_arrayvalues a WHERE a.id = ? ORDER BY 1";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, arrid);
 			ResultSet rs = stmt.executeQuery();
 			List<DMAttribute> ret = new ArrayList<DMAttribute>();
@@ -13724,7 +14707,1152 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	*/
 	
 	private boolean internalUpdateAttributes(String table, String fk, int id, AttributeChangeSet changes)
-	{
+ {
+ 
+  if (table.equalsIgnoreCase("dm_component"))
+  {
+   List<ComponentItem> compitems = this.getComponentItems(id);
+   List<DMAttribute> found = new ArrayList<DMAttribute>();
+   
+   if (compitems != null)
+   {
+    try
+    {
+    
+     for (int i=0;i<compitems.size();i++)
+     {
+      ComponentItem ci = compitems.get(i);
+      if (ci.getItemkind() == ComponentItemKind.DOCKER)
+      {      
+       for(DMAttribute a : changes.deleted()) 
+       {
+        if (a.getName().equalsIgnoreCase("BuildId"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set buildid = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("BuildUrl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set buildurl = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("Chart"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chart = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("ChartVersion"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chartversion = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("ChartNamespace"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chartnamespace = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }        
+        else if (a.getName().equalsIgnoreCase("operator"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set operator = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("DockerBuildDate"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set builddate = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("DockerSha")) 
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set dockersha = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("DockerTag")) 
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set dockertag = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }       
+        else if (a.getName().equalsIgnoreCase("DockerRepo")) 
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set dockerrepo = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }        
+        else if (a.getName().equalsIgnoreCase("GitCommit"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set gitcommit = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("GitRepo"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set gitrepo = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("GitTag"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set gittag = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }       
+        else if (a.getName().equalsIgnoreCase("GitUrl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set giturl = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+       }
+       changes.removeAllDeleted(found);
+       found.clear();
+       
+       for(DMAttribute a : changes.changed()) 
+       {
+        if (a.getName().equalsIgnoreCase("BuildId"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set buildid = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("BuildUrl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set buildurl = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("Chart"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chart = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("ChartVersion"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chartversion = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("ChartNamespace"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chartnamespace = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }        
+        else if (a.getName().equalsIgnoreCase("operator"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set operator = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("DockerBuildDate"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set builddate = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("DockerSha")) 
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set dockersha = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("DockerTag")) 
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set dockertag = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("DockerRepo")) 
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set dockerrepo = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }        
+        else if (a.getName().equalsIgnoreCase("GitCommit"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set gitcommit = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("GitRepo"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set gitrepo = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("GitTag"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set gittag = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }       
+        else if (a.getName().equalsIgnoreCase("GitUrl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set giturl = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+       }
+       changes.removeAllUpdated(found);
+       found.clear();
+       
+       for(DMAttribute a : changes.added()) 
+       {
+        if (a.getName().equalsIgnoreCase("BuildId"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set buildid = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("BuildUrl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set buildurl = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("Chart"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chart = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("ChartVersion"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chartversion = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("ChartNamespace"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chartnamespace = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }        
+        else if (a.getName().equalsIgnoreCase("operator"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set operator = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("DockerBuildDate"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set builddate = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("DockerSha")) 
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set dockersha = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("DockerTag")) 
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set dockertag = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("DockerRepo")) 
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set dockerrepo = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }        
+        else if (a.getName().equalsIgnoreCase("GitCommit"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set gitcommit = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("GitRepo"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set gitrepo = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("GitTag"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set gittag = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }       
+        else if (a.getName().equalsIgnoreCase("GitUrl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set giturl = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+       }
+       changes.removeAllAdded(found);
+       found.clear();
+      }
+     }
+    }
+    catch (Exception e)
+    {
+     e.printStackTrace();
+    }
+   }
+   
+   try
+   {
+    found.clear();
+
+    for (DMAttribute a : changes.deleted())
+    {
+     if (a.getName().equalsIgnoreCase("buildnumber"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set lastbuildnumber = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("summary"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set summary = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("buildjob"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set buildjobid = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("CompType") || a.getName().equalsIgnoreCase("ComponentType"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set comptypeid = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("ChangeRequestDS"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set datasourceid = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("Category"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("delete from dm.dm_component_categories where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("AlwaysDeploy"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set deployalways = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("DeploySequentially"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set deploysequentially = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("BaseDirectory"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set basedir = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("PreAction"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set preactionid = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("PostAction"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set postactionid = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("CustomAction"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set actionid = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+    }
+    changes.removeAllDeleted(found);
+    found.clear();
+    
+    for (DMAttribute a : changes.added())
+    {
+     if (a.getName().equalsIgnoreCase("summary"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set summary = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("buildnumber"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set lastbuildnumber = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("CompType") || a.getName().equalsIgnoreCase("ComponentType"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.SERVERCOMPTYPE,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set comptypeid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("ChangeRequestDS"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.DATASOURCE,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set datasourceid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("Category"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.COMP_CATEGORY,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("delete from dm.dm_component_categories where id = ?");
+       stmt.setInt(1, id);
+       stmt.execute();
+       stmt.close();
+       stmt = m_conn.prepareStatement("insert into dm.dm_component_categories values(?,?)");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("AlwaysDeploy"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set deployalways = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+    }
+     if (a.getName().equalsIgnoreCase("DeploySequentially"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set deploysequentially = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("BaseDirectory"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set basedir = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("PreAction"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.ACTION,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set preactionid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("PostAction"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.ACTION,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set postactionid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("CustomAction"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.ACTION,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set actionid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+    }
+    changes.removeAllAdded(found);
+    found.clear();
+    
+    for (DMAttribute a : changes.changed())
+    {
+     if (a.getName().equalsIgnoreCase("summary"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set summary = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("buildnumber"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set lastbuildnumber = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("CompType") || a.getName().equalsIgnoreCase("ComponentType"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.SERVERCOMPTYPE,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set comptypeid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("ChangeRequestDS"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.DATASOURCE,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set datasourceid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("Category"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.COMP_CATEGORY,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("delete from dm.dm_component_categories where id = ?");
+       stmt.setInt(1, id);
+       stmt.execute();
+       stmt.close();
+       stmt = m_conn.prepareStatement("insert into dm.dm_component_categories (id, categoryid) values (?,?)");
+       stmt.setInt(1, id);
+       stmt.setInt(2, obj.getId());
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("AlwaysDeploy"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set deployalways = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+    }
+     if (a.getName().equalsIgnoreCase("DeploySequentially"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set deploysequentially = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("BaseDirectory"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set basedir = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("PreAction"))
+     {
+      try
+      {
+       if (a.getValue().isEmpty())
+       {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set preactionid = null where id = ?");
+         stmt.setInt(1, id);
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+       }
+       else
+       {
+       DMObject obj = getObjectByName(ObjectType.ACTION,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set preactionid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+       }
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("PostAction"))
+     {
+      try
+      {
+       if (a.getValue().isEmpty())
+       {
+        PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set postactionid = null where id = ?");
+        stmt.setInt(1, id);
+        stmt.execute();
+        stmt.close();
+        found.add(a);
+       }
+       else
+       {
+        DMObject obj = getObjectByName(ObjectType.ACTION,a.getValue());
+        PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set postactionid = ? where id = ?");
+        stmt.setInt(1, obj.getId());
+        stmt.setInt(2, id);
+        stmt.execute();
+        stmt.close();
+        found.add(a);
+       }
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("CustomAction"))
+     {
+      try
+      {
+       if (a.getValue().isEmpty())
+       {
+        PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set actionid = null where id = ?");
+        stmt.setInt(1, id);
+        stmt.execute();
+        stmt.close();
+        found.add(a);
+       }
+       else
+       {
+        DMObject obj = getObjectByName(ObjectType.ACTION,a.getValue());
+        PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set actionid = ? where id = ?");
+        stmt.setInt(1, obj.getId());
+        stmt.setInt(2, id);
+        stmt.execute();
+        stmt.close();
+        found.add(a);
+       } 
+      }
+      catch (Exception e)
+      {
+      }
+     }
+    }
+    changes.removeAllUpdated(found);
+    found.clear();
+   }
+   catch (Exception e)
+   {
+
+   }
+	 }
+	 
+  if (table.equalsIgnoreCase("dm_server"))
+  {
+   try
+   {
+    ArrayList<DMAttribute> found = new ArrayList<DMAttribute>();
+
+    for (DMAttribute a : changes.deleted())
+    {
+     if (a.getName().equalsIgnoreCase("hostname"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set hostname = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("type"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set typeid = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("protocol"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set protocol = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("basedir"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set basedir = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("credname"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set credid = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("autoping"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_serverstatus set autoping = 'N', automd5 = 'N' where serverid = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("comptype"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("delete from dm.dm_servercomptype where serverid = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("sshport"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set sshport = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+    }
+    changes.removeAllDeleted(found);
+    found.clear();
+    
+    for (DMAttribute a : changes.added())
+    {
+     if (a.getName().equalsIgnoreCase("hostname"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set hostname = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("type"))
+     {
+      List<ServerType> stypes = this.getServerTypes();
+      int typeid = 0;
+      
+      for (int k=0; k<stypes.size(); k++)
+      {
+       if (a.getValue().equalsIgnoreCase(stypes.get(k).getName()))
+        typeid = stypes.get(k).getId();
+      }
+      
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set typeid = ? where id = ?");
+      stmt.setInt(1, typeid);
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("protocol"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set protocol = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("basedir"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set basedir = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("credname"))
+     {
+      Credential cred = getCredentialByName(a.getValue());
+      if (cred != null)
+      {
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set credid = ? where id = ?");
+       stmt.setInt(1, cred.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+      }
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("autoping"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_serverstatus set autoping = ?, automd5 = 'N' where serverid = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("comptype"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("delete from dm.dm_servercomptype where serverid = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      
+      String[] parts = a.getValue().split(",");
+      for (int x=0;x<parts.length;x++)
+      {
+       CompType comptype = getCompTypeByName(parts[x]);
+       if (comptype != null)
+       {
+        stmt = m_conn.prepareStatement("insert into dm.dm_servercomptype (comptypeid, serverid) values (?,?)");
+        stmt.setInt(1, comptype.getId());
+        stmt.setInt(2, id);
+        stmt.execute();
+        stmt.close();
+       }
+      }
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("sshport"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set sshport = ? where id = ?");
+      int sshport = new Integer(a.getValue()).intValue();
+      stmt.setInt(1, sshport);
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+    }
+    changes.removeAllAdded(found);
+    found.clear();
+    
+    for (DMAttribute a : changes.changed())
+    {
+     if (a.getName().equalsIgnoreCase("hostname"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set hostname = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("type"))
+     {
+      List<ServerType> stypes = this.getServerTypes();
+      int typeid = 0;
+      
+      for (int k=0; k<stypes.size(); k++)
+      {
+       if (a.getValue().equalsIgnoreCase(stypes.get(k).getName()))
+        typeid = stypes.get(k).getId();
+      }
+      
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set typeid = ? where id = ?");
+      stmt.setInt(1, typeid);
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("protocol"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set protocol = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("basedir"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set basedir = ? where id = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("credname"))
+     {
+      Credential cred = getCredentialByName(a.getValue());
+      if (cred != null)
+      {
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set credid = ? where id = ?");
+       stmt.setInt(1, cred.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+      }
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("autoping"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_serverstatus set autoping = ?, automd5 = 'N' where serverid = ?");
+      stmt.setString(1, a.getValue());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("comptype"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("delete from dm.dm_servercomptype where serverid = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      
+      String[] parts = a.getValue().split(",");
+      for (int x=0;x<parts.length;x++)
+      {
+       CompType comptype = getCompTypeByName(parts[x]);
+       if (comptype != null)
+       {
+        stmt = m_conn.prepareStatement("insert into dm.dm_servercomptype (comptypeid, serverid) values (?,?)");
+        stmt.setInt(1, comptype.getId());
+        stmt.setInt(2, id);
+        stmt.execute();
+        stmt.close();
+       }
+      }
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("sshport"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_server set sshport = ? where id = ?");
+      int sshport = new Integer(a.getValue()).intValue();
+      stmt.setInt(1, sshport);
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+    }
+    changes.removeAllUpdated(found);
+    found.clear();
+   }
+   catch (Exception e)
+   {
+    e.printStackTrace();
+   }
+  }
+
 		//TODO: Need to update nocase column as well
 		System.out.println("internalUpdateAttributes - " + table);
 		String dsqla = "DELETE FROM dm." + table + "vars v WHERE v." + fk + " = ? AND v.name = ?";
@@ -13738,13 +15866,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				System.out.println("Deleting " + id + " '" + a.getName() + "' from " + table + "vars");
 				if (a.isArray()) {
 					// Delete any array values associated with this variable
-					PreparedStatement stmt2 = getDBConnection().prepareStatement(dsqlb);
+					PreparedStatement stmt2 = m_conn.prepareStatement(dsqlb);
 					stmt2.setInt(1, a.getArrayId());
 					stmt2.setString(2, a.getKey());
 					stmt2.execute();
 					stmt2.close();
 					
-				   Statement st = getDBConnection().createStatement();
+				   Statement st = m_conn.createStatement();
 				   ResultSet rs = st.executeQuery("SELECT count(*) from dm.dm_arrayvalues where id =" + a.getArrayId());
 				   rs.next();
 		
@@ -13753,7 +15881,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				   st.close();
 		     
 				   if (c == 0) { 
-						PreparedStatement stmt = getDBConnection().prepareStatement(dsqla);
+						PreparedStatement stmt = m_conn.prepareStatement(dsqla);
 						stmt.setInt(1, id);
 						stmt.setString(2, a.getName());
 						stmt.execute();  
@@ -13762,7 +15890,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				}
 				else
 				{
-				     PreparedStatement stmt = getDBConnection().prepareStatement(dsqla);
+				     PreparedStatement stmt = m_conn.prepareStatement(dsqla);
 				     stmt.setInt(1, id);
 				     stmt.setString(2, a.getName());
 				     stmt.execute();  
@@ -13776,7 +15904,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				if (a.isArray()) {
 					String updateStr = "UPDATE dm.dm_arrayvalues set name = ?, value = ? where id = ? and name = ?";
 					 
-					PreparedStatement stmt2 = getDBConnection().prepareStatement(updateStr);
+					PreparedStatement stmt2 = m_conn.prepareStatement(updateStr);
 					stmt2.setString(1, a.getKey());
 					stmt2.setString(2, a.getValue());     
 					stmt2.setInt(3, a.getArrayId());
@@ -13785,7 +15913,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					stmt2.close();
 				} 
 
-				PreparedStatement stmt2 = getDBConnection().prepareStatement(csql1);  
+				PreparedStatement stmt2 = m_conn.prepareStatement(csql1);  
 				stmt2.setString(1, a.getName());
 				stmt2.setString(2, a.getValue());
 				stmt2.setInt(3, id);
@@ -13797,14 +15925,15 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				}
 				stmt2.close(); 
 			}
+			
 			for(DMAttribute a : changes.added()) {
 				System.out.println("Inserting " + id + " '" + a.getName() + "' into " + table + "vars");
 				String cntStr = "SELECT arrayid from dm." + table + "vars where " + fk + " = ? and name = ?";
-
-				PreparedStatement stmt2 = getDBConnection().prepareStatement(cntStr);
+    
+				PreparedStatement stmt2 = m_conn.prepareStatement(cntStr);
 				stmt2.setInt(1, id);
-				stmt2.setString(2, a.getName());
-
+				stmt2.setString(2, a.getName());     
+    
 				int arrayid = -1;
 				ResultSet rs = stmt2.executeQuery( );
 
@@ -13814,25 +15943,27 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				}
 				rs.close();
 				stmt2.close();
-
-				if (arrayid == -1) {
+    
+				if (arrayid == -1) { 
 					if (a.isArray()) {
 						arrayid = getID("arrayvalues");
-						PreparedStatement stmt = getDBConnection().prepareStatement(asql2);
+						PreparedStatement stmt = m_conn.prepareStatement(asql2);
 						stmt.setInt(1, id);
 						stmt.setString(2, a.getName());
 						stmt.setInt(3, arrayid);
 						stmt.execute();
 						stmt.close();
-
-						stmt = getDBConnection().prepareStatement("INSERT into dm.dm_arrayvalues(id,name,value) values(?,?,?)");
+      
+						stmt = m_conn.prepareStatement("INSERT into dm.dm_arrayvalues(id,name,value) values(?,?,?)");
 						stmt.setInt(1, arrayid);
 						stmt.setString(2, a.getKey());
 						stmt.setString(3, a.getValue());
 						stmt.execute();
 						stmt.close();
 					} else {
-						PreparedStatement stmt = getDBConnection().prepareStatement(asql1);
+					 
+					 
+						PreparedStatement stmt = m_conn.prepareStatement(asql1);
 						stmt.setInt(1, id);
 						stmt.setString(2, a.getName());
 						stmt.setString(3, a.getValue());
@@ -13840,8 +15971,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						stmt.close();
 					}
 				} else {
-					if (a.isArray()) {
-						PreparedStatement stmt = getDBConnection().prepareStatement("INSERT into dm.dm_arrayvalues(id,name,value) values(?,?,?)");
+					if (a.isArray()) { 
+						PreparedStatement stmt = m_conn.prepareStatement("INSERT into dm.dm_arrayvalues(id,name,value) values(?,?,?)");
 						stmt.setInt(1, arrayid);
 						stmt.setString(2, a.getKey());
 						stmt.setString(3, a.getValue());
@@ -13850,12 +15981,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					}
 				}
 			}
-			getDBConnection().commit();
+			m_conn.commit();
 			return true;
 		} catch(SQLException e) {
 			e.printStackTrace();
-			rollback();
 		}
+  rollback();
 		return false;
 	}
 
@@ -13876,7 +16007,6 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		case REPOSITORY: return getRepository(id, detailed);
 		case DATASOURCE: return getDatasource(id, detailed);
 		case NOTIFY: return getNotify(id, detailed);
-		case BUILDER: return getBuilder(id);
 		default: throw new RuntimeException("Unknown provider object type");
 		}
 	}
@@ -13884,19 +16014,29 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public boolean updateProviderObject(ProviderObject po, SummaryChangeSet changes)
 	{
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm." + po.getDatabaseTable() + " ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
+		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm." + po.getDatabaseTable() + " ");
+		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
 				
 		for(SummaryField field : changes) {
 			switch(field) {
-			case PROVIDER_TYPE: {				
-				if(po.getDef().getId() != ProviderDefinition.UNCONFIGURED_ID) {
-					throw new RuntimeException("Provider type cannot be changed after creation");
-				}
-				DMObject def = (DMObject) changes.get(field);
-				if(def == null) {
-					throw new RuntimeException("Provider type must be specified");					
-				}
+	   case DOMAIN_FULLNAME: {
+     if (changes.get(field) == null)
+       update.add(", domainid = ?", Null.INT);
+     else
+     {
+      int id =  new Integer((String)changes.get(field)).intValue();
+      update.add(", domainid = ?", id);
+     }
+    } 
+    break; 
+			case PROVIDER_TYPE: {	
+    DMObject def = (DMObject) changes.get(field);
+    if(def == null) {
+     throw new RuntimeException("Provider type must be specified");     
+    }
+//				if(po.getDef().getId() != ProviderDefinition.UNCONFIGURED_ID && po.getDef().getId() != def.getId()) {
+//					throw new RuntimeException("Provider type cannot be changed after creation");
+//				}
 				update.add(", defid = ?", def.getId());
 				}
 				break;
@@ -13919,7 +16059,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try {
 			update.execute();
-			getDBConnection().commit();
+			m_conn.commit();
 			update.close();
 			return true;
 		} catch(SQLException e) {
@@ -13946,7 +16086,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	}
 	*/
 	
-	private boolean internalUpdateProperties(String table, String fk, int id, Domain dom, ACDChangeSet<DMProperty> changes)
+	private boolean internalUpdateProperties(String table, String fk, int id, Domain dom, ACDChangeSet<DMProperty> changes, boolean deleteAll)
 	{
 		System.out.println("internalUpdateProperties - " + table);
 		boolean repchange = (table.equalsIgnoreCase("dm_repository"));
@@ -13954,8 +16094,17 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String asql = "INSERT INTO dm." + table + "props(" + fk + ",name,value,encrypted,overridable,appendable) VALUES(?,?,?,?,?,?)";
 		String csql = "UPDATE dm." + table + "props p SET value = ?, encrypted = ?, overridable = ?, appendable = ? WHERE p." + fk + " = ? AND p.name = ?";
 		String isql = "DELETE FROM dm.dm_compitemprops WHERE name=? AND compitemid in (SELECT id FROM dm.dm_componentitem WHERE repositoryid=?)";
+		String delall = "DELETE FROM dm." + table + "props p WHERE p." + fk + " = ?";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(dsql);
+		 if (deleteAll)
+		 {
+		  PreparedStatement delstmt = m_conn.prepareStatement(delall);
+    delstmt.setInt(1, id);
+    delstmt.execute();
+    delstmt.close();
+		 }
+		 
+			PreparedStatement stmt = m_conn.prepareStatement(dsql);
 			for(DMProperty p : changes.deleted()) {
 				System.out.println("Deleting " + id + " '" + p.getName() + "' from " + table + "props");
 				stmt.setInt(1, id);
@@ -13964,8 +16113,15 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			}
 			stmt.close();
 			
-			stmt = getDBConnection().prepareStatement(asql);
+			stmt = m_conn.prepareStatement(asql);
 			for(DMProperty p : changes.added()) {
+			 
+	   PreparedStatement dstmt = m_conn.prepareStatement(dsql);
+    dstmt.setInt(1, id);
+	   dstmt.setString(2, p.getName());
+	   dstmt.execute();
+	   dstmt.close();
+	    
 				System.out.println("Inserting " + id + " '" + p.getName() + "' into " + table + "props");
 				stmt.setInt(1, id);
 				stmt.setString(2, p.getName());
@@ -13987,16 +16143,17 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					if (!p.isOverridable() && !p.isAppendable()) {
 						// Not Overridable and not Appendable
 						// Remove any component item property referencing this attribute
-						PreparedStatement stmt2 = getDBConnection().prepareStatement(isql);
+						PreparedStatement stmt2 = m_conn.prepareStatement(isql);
 						stmt2.setString(1,p.getName());
 						stmt2.setInt(2,id);
 						stmt2.execute();
+						stmt2.close();
 					}
 				}
 			}
 			stmt.close();
 
-			stmt = getDBConnection().prepareStatement(csql);
+			stmt = m_conn.prepareStatement(csql);
 			for(DMProperty p : changes.changed()) {
 				System.out.println("Updating " + id + " '" + p.getName() + "' in " + table + "props, getValue()="+p.getValue());
 				// boolean oldEncrypted = getEncrypted(table+"props",fk,id,p.getName());
@@ -14017,20 +16174,47 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				stmt.setInt(5, id);
 				stmt.setString(6, p.getName());
 				stmt.execute();
+				int cnt = stmt.getUpdateCount();
+				stmt.close();
+				
+				if (cnt == 0)
+				{
+		   stmt = m_conn.prepareStatement(asql);
+	    System.out.println("Inserting " + id + " '" + p.getName() + "' into " + table + "props");
+		   stmt.setInt(1, id);
+		   stmt.setString(2, p.getName());
+		   if (p.isEncrypted()) {
+		    // Encrypted value - use engine to encrypt
+		    Engine eng = (dom != null) ? dom.findNearestEngine() : null;
+		    if(eng == null) {
+		     System.err.println("ERROR: Could not find engine to encrypt data");
+		    }
+		    stmt.setString(3,eng.encryptValue(p.getValue(), GetUserName())); // throws runtime exception on failure
+		   } else {
+		    stmt.setString(3, p.getValue());
+		   }
+		   stmt.setString(4, p.isEncrypted() ? "Y" : "N");
+		   stmt.setString(5, p.isOverridable() ? "Y" : "N");
+		   stmt.setString(6, p.isAppendable() ? "Y" : "N");
+		   stmt.execute();
+		   stmt.close();
+				}
+				
 				if (repchange) {
 					if (!p.isOverridable() && !p.isAppendable()) {
 						// Not Overridable and not Appendable
 						// Remove any component item property referencing this attribute
-						PreparedStatement stmt2 = getDBConnection().prepareStatement(isql);
+						PreparedStatement stmt2 = m_conn.prepareStatement(isql);
 						stmt2.setString(1,p.getName());
 						stmt2.setInt(2,id);
 						stmt2.execute();
+						stmt2.close();
 					}
 				}
 			}
 			stmt.close();
 
-			getDBConnection().commit();
+			m_conn.commit();
 			return true;
 		} catch(SQLException e) {
 			e.printStackTrace();
@@ -14043,9 +16227,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	}
 
 
-	public boolean updateProviderProperties(ProviderObject po, ACDChangeSet<DMProperty> changes)
+	public boolean updateProviderProperties(ProviderObject po, ACDChangeSet<DMProperty> changes, boolean deleteAll)
 	{
-		return internalUpdateProperties(po.getDatabaseTable(), po.getForeignKey(), po.getId(), po.getDomain(),changes);
+		return internalUpdateProperties(po.getDatabaseTable(), po.getForeignKey(), po.getId(), po.getDomain(),changes, deleteAll);
 	}
 	
 	
@@ -14055,7 +16239,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ po.getDatabaseTable() + " p WHERE p.id = ? AND d.id = p.defid";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, po.getId());
 			ResultSet rs = stmt.executeQuery();
 			ProviderDefinition ret = null;
@@ -14082,7 +16266,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ "FROM dm." + po.getDatabaseTable() + "props p WHERE p." + po.getForeignKey() + " = ? ORDER BY 1";	
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, po.getId());
 			ResultSet rs = stmt.executeQuery();
 			List<DMProperty> ret = new ArrayList<DMProperty>();
@@ -14110,7 +16294,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, defid);
 			ResultSet rs = stmt.executeQuery();
 			ProviderDefinition ret = null;
@@ -14139,7 +16323,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		System.out.println("getProviderDefinitionsOfType type="+type.value());
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, type.value());
 			ResultSet rs = stmt.executeQuery();
 			List<ProviderDefinition> ret = new ArrayList<ProviderDefinition>();
@@ -14184,14 +16368,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					+	"and	d.id=e.datasourceid			"
 					+	"and	d.domainid=?			";
 			
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
-			PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
+			PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 			while (d != null && d.getId()>=1) {
 				System.out.println("domain is "+d.getName()+") read="+d.isReadable(true)+" write="+d.isWriteable(true)+" update="+d.isUpdatable(true)+" view="+d.isViewable(true));
 				if (!m_OverrideAccessControl) {
 					// Get a list of actions in this domain with non-default access permissions
-					System.out.println("no override access, getting list of overrides userid="+getUserID()+" domainid="+d.getId());
-					stmt1.setInt(1,getUserID());
+					System.out.println("no override access, getting list of overrides userid="+m_userID+" domainid="+d.getId());
+					stmt1.setInt(1,m_userID);
 					stmt1.setInt(2,d.getId());
 					stmt1.setInt(3,d.getId());
 					ResultSet rs = stmt1.executeQuery();
@@ -14267,7 +16451,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sql = "SELECT p.name, p.value FROM dm.dm_providerdefprops p "
 				   + "WHERE p.defid = ? AND p.engineid = ? ORDER BY 1";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, def.getId());
 			stmt.setInt(2, engine.getId());
 			ResultSet rs = stmt.executeQuery();
@@ -14291,7 +16475,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			+ "FROM dm.dm_propertydef p WHERE p.defid = ? ORDER BY 1";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, pd.getId());
 			ResultSet rs = stmt.executeQuery();
 			List<DMPropertyDef> ret = new ArrayList<DMPropertyDef>();
@@ -14310,13 +16494,38 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Unable to retrieve property defs for provider def " + pd.getName() + " " + pd.getId() + " from database");				
 	}
 	
+	
+ public int getDefTypeId(String deftype)
+ {
+  String sql = "SELECT id from dm.dm_providerdef WHERE name = '" + deftype + "'";
+  int id = 0;
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+   while(rs.next()) {
+    id = rs.getInt(1);
+    break;
+   }
+   rs.close();
+   stmt.close();
+   return id;
+  }
+  catch(SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+  return id;
+ }
+ 
  public List<DMPropertyDef> getPropertyDefs(int defid)
  {
   String sql = "SELECT p.name, p.required, p.appendable "
    + "FROM dm.dm_propertydef p WHERE p.defid = ? ORDER BY 1";
   try
   {
-   PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, defid);
    ResultSet rs = stmt.executeQuery();
    List<DMPropertyDef> ret = new ArrayList<DMPropertyDef>();
@@ -14339,7 +16548,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public Repository getRepository(int repid, boolean detailed)
 	{
-	 if (repid <= 0)
+	 if (repid < 0)
 	 {
    Repository ret = new Repository(this, repid, "");
    ret.setName("");
@@ -14352,7 +16561,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sql = null;
 		if(detailed) {
 			sql = "SELECT r.name, r.summary, r.domainid, r.status, "
-					+ "  r.credid, c.name, "
+					+ "  r.credid, c.name, r.defid,  "
 					+ "  uc.id, uc.name, uc.realname, r.created, "
 					+ "  um.id, um.name, um.realname, r.modified, "
 					+ "  uo.id, uo.name, uo.realname, g.id, g.name, c.domainid "
@@ -14369,7 +16578,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, repid);
 			ResultSet rs = stmt.executeQuery();
 			Repository ret = null;
@@ -14381,9 +16590,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				if(detailed) {
 					int credid = getInteger(rs, 5, 0);
 					if(credid != 0) {
-						ret.setCredential(new Credential(this, credid, rs.getString(6),rs.getInt(20)));
+						ret.setCredential(new Credential(this, credid, rs.getString(6),rs.getInt(21)));
 					}
-					getCreatorModifierOwner(rs, 7, ret);
+					int pdid = rs.getInt(7);
+					ProviderDefinition pd = this.getProviderDefinition(pdid);
+					if (pd != null)
+					   ret.setDef(pd);
+					getCreatorModifierOwner(rs, 8, ret);
 				}
 			}
 			rs.close();
@@ -14403,6 +16616,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
  public List<Repository> getAccessibleRepositories(String objid,int domainid)
  {
 	System.out.println("getAccessibleRepositories("+objid+","+domainid+")");
+	HashMap<String,Repository> dups = new HashMap<String,Repository>();
+	
 	if (objid.startsWith("task")) {
 		objid="ta"+objid.substring(4);
 	}
@@ -14420,38 +16635,38 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	Hashtable<Integer,char[]> accessRights = new Hashtable<Integer,char[]>();
 	
 	
-	String sql1 = "select a.id,b.viewaccess,b.readaccess	"
+	String sql1 = "select distinct a.id,b.viewaccess,b.readaccess	"
 			+	"from	dm.dm_repository		a,	"
 			+	"		dm.dm_repositoryaccess	b,	"
 			+	"		dm.dm_usersingroup		c	"
 			+	"where	c.userid=?					"
 			+	"and	c.groupid=b.usrgrpid		"
 			+	"and	a.id=b.repositoryid			"
-			+	"and	a.domainid=?				"
+			+	"and	a.domainid in (" + this.m_domainlist + ") "
 			+	"union	"
-			+	"select	d.id,e.viewaccess,e.readaccess	"
+			+	"select	distinct d.id,e.viewaccess,e.readaccess	"
 			+	"from	dm.dm_repository		d,	"
 			+	"		dm.dm_repositoryaccess	e	"
 			+	"where	e.usrgrpid=1				"	// user group 1 = Everyone
 			+	"and	d.id=e.repositoryid			"
-			+	"and	d.domainid=?				";
+			+	"and	d.domainid in (" + this.m_domainlist + ") ";
 	
-	String sql2 = "SELECT r.id, r.name, r.summary, r.domainid, r.status "
+	String sql2 = "SELECT distinct r.id, r.name, r.summary, r.domainid, r.status "
 			   + "FROM dm.dm_repository r "
-			   + "WHERE r.domainid = ? AND r.status = 'N' ORDER BY 2";
+			   + "WHERE r.domainid  in (" + this.m_domainlist + ")  AND r.status = 'N' ORDER BY 2";
 	
 	List<Repository> ret = new ArrayList<Repository>();
 	try {
-	PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
-	PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+	PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
+	PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 	while (d != null && d.getId()>=1) {
 		System.out.println("domain is "+d.getName()+") read="+d.isReadable(true)+" write="+d.isWriteable(true)+" update="+d.isUpdatable(true)+" view="+d.isViewable(true));
 		if (!m_OverrideAccessControl) {
 			// Get a list of actions in this domain with non-default access permissions
-			System.out.println("no override access, getting list of overrides userid="+getUserID()+" domainid="+d.getId());
-			stmt1.setInt(1,getUserID());
-			stmt1.setInt(2,d.getId());
-			stmt1.setInt(3,d.getId());
+			System.out.println("no override access, getting list of overrides userid="+m_userID+" domainid="+d.getId());
+			stmt1.setInt(1,m_userID);
+//			stmt1.setInt(2,d.getId());
+//			stmt1.setInt(3,d.getId());
 			ResultSet rs = stmt1.executeQuery();
 			while (rs.next()) {
 				char[] ar = new char[2];
@@ -14462,7 +16677,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			}
 			rs.close();
 		}
-		stmt2.setInt(1,d.getId());
+	//	stmt2.setInt(1,d.getId());
 		ResultSet rs = stmt2.executeQuery();
 		while(rs.next()) {
 			boolean include=false;
@@ -14488,7 +16703,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			if (include) {
 				rep.setDomainId(rs.getInt(4));
 				rep.setSummary(rs.getString(3));
-				ret.add(rep);
+				if (!dups.containsKey(rep.toString()))
+				{
+				 ret.add(rep);
+				 dups.put(rep.toString(), rep);
+				} 
 			} else {
 				// debug
 				System.out.println("Not adding repository "+rep.getName());
@@ -14518,7 +16737,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, repo.getId());
 			ResultSet rs = stmt.executeQuery();
 			List<Repository.TextPattern> ret = new ArrayList<Repository.TextPattern>();
@@ -14546,7 +16765,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String asql = "INSERT INTO dm.dm_repositorytextpattern(repositoryid,path,pattern,istext) VALUES(?,?,?,?)";
 		String csql = "UPDATE dm.dm_repositorytextpattern p SET istext = ?, path = ?, pattern = ? WHERE p.repositoryid = ? AND p.path = ?";
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(dsql);
+			PreparedStatement stmt = m_conn.prepareStatement(dsql);
 			for(Repository.TextPattern p : changes.deleted()) {
 				System.out.println("Deleting " + repo.getId() + " '" + p.getPath() + "' '" + p.getPattern() + "' from repositorytextpattern");
 				stmt.setInt(1, repo.getId());
@@ -14556,7 +16775,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			}
 			stmt.close();
 			
-			stmt = getDBConnection().prepareStatement(asql);
+			stmt = m_conn.prepareStatement(asql);
 			for(Repository.TextPattern p : changes.added()) {
 				System.out.println("Inserting " + repo.getId() + " '" + p.getPath() + "' '" + p.getPattern() + "' into repositorytextpattern");
 				stmt.setInt(1, repo.getId());
@@ -14567,7 +16786,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			}
 			stmt.close();
 
-			stmt = getDBConnection().prepareStatement(csql);
+			stmt = m_conn.prepareStatement(csql);
 			for(Repository.TextPattern p : changes.changed()) {
 				System.out.println("Updating " + repo.getId() + " '" + p.getPath() + "' '" + p.getPattern() + "' in repositorytextpattern");
 				stmt.setString(1, p.isText() ? "Y" : "N");
@@ -14579,7 +16798,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			}
 			stmt.close();
 
-			getDBConnection().commit();
+			m_conn.commit();
 			return true;
 		} catch(SQLException e) {
 			e.printStackTrace();
@@ -14624,7 +16843,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, dsid);
 			ResultSet rs = stmt.executeQuery();
 			Datasource ret = null;
@@ -14691,7 +16910,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, nfyid);
 			ResultSet rs = stmt.executeQuery();
 			Notify ret = null;
@@ -14723,6 +16942,40 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	}
 	
 	// Notify
+ public SaasClient getSaasClientByName(String name)
+ {
+  if (name == null) {
+   SaasClient ret = new SaasClient(this, "");
+   return ret;
+  }
+  
+  String sql = "SELECT licensetype, licensecnt, lastseen from dm.dm_saasclients WHERE clientid = ?"; 
+  
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setString(1, name);
+   ResultSet rs = stmt.executeQuery();
+   SaasClient ret = new SaasClient(this,"");
+   if(rs.next()) {
+    ret.setClientId(name); 
+    ret.setLicenseType(rs.getString(1));
+    ret.setLicenseCnt(rs.getInt(2));
+    ret.setLastseen(rs.getLong(3));
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  }
+  catch(SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+
+  return null;
+ }
+
 	
 	public NotifyTemplate getTemplate(int templateid)
 	{
@@ -14742,7 +16995,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, templateid);
 			ResultSet rs = stmt.executeQuery();
 			NotifyTemplate ret = null;
@@ -14751,7 +17004,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				if (!rs.wasNull() && notifierid>0) {
 					// Get the domain from the linked notifier
 					String sql2 = "SELECT domainid FROM dm.dm_notify WHERE id=?";
-					PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+					PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 					stmt2.setInt(1,notifierid);
 					ResultSet rs2 = stmt2.executeQuery();
 					if (rs2.next()) {
@@ -14760,6 +17013,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					} else {
 						ret = new NotifyTemplate(this, templateid, rs.getString(1));
 					}
+					stmt2.close();
 					rs2.close();
 				} else {
 					ret = new NotifyTemplate(this, templateid, rs.getString(1));
@@ -14796,7 +17050,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		List <NotifyTemplate> res = new ArrayList<NotifyTemplate>();;
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, notify.getId());
 			ResultSet rs = stmt.executeQuery();
 			NotifyTemplate ret = null;
@@ -14819,42 +17073,6 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Unable to retrieve templates for notification process " + notify.getId());				
 	}
 	
-	public List<BuildJob> getBuildJobs(Builder builder)
-	{
-		String sql = "SELECT b.id, b.name, b.summary, b.status, "
-				+ "  uc.id, uc.name, uc.realname, b.created, "
-				+ "  um.id, um.name, um.realname, b.modified "
-				+ "FROM dm.dm_buildjob b "
-				+ "LEFT OUTER JOIN dm.dm_user uc ON b.creatorid = uc.id "		// creator
-				+ "LEFT OUTER JOIN dm.dm_user um ON b.modifierid = um.id "		// modifier
-				+ "WHERE b.builderid = ?";	
-		List <BuildJob> res = new ArrayList<BuildJob>();;
-		try
-		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			stmt.setInt(1, builder.getId());
-			ResultSet rs = stmt.executeQuery();
-			BuildJob ret = null;
-			while (rs.next()) {
-				ret = new BuildJob(this, rs.getInt(1), rs.getString(2));
-				ret.setSummary(rs.getString(3));
-				getStatus(rs, 4, ret);
-				getCreatorModifier(rs, 5, ret);
-				res.add(ret);
-			}
-			rs.close();
-			stmt.close();
-			return res;
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-			rollback();
-		}
-		throw new RuntimeException("Unable to retrieve build jobs for buildengine " + builder.getId());				
-	}
-	
-	
 	
 	// Credential
 	
@@ -14870,6 +17088,24 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			ret.setVarPassword("");
 			return ret; 
 	 	}
+		
+		if (m_passphrase == null)
+		{
+	  try
+   {
+    String base64Original   = readFile(DMHome+"/dm.odbc");
+    String base64passphrase = readFile(DMHome+"/dm.asc");
+    m_passphrase = Decrypt3DES(base64passphrase,"dm15k1ng".getBytes("UTF-8"));
+   }
+   catch (FileNotFoundException e)
+   {
+    e.printStackTrace();
+   }
+   catch (IOException e)
+   {
+    e.printStackTrace();
+   }
+		}
 	 
 		String sql = null;
 		if(detailed) {
@@ -14887,7 +17123,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, credid);
 			ResultSet rs = stmt.executeQuery();
 			Credential ret = null;
@@ -14907,7 +17143,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						ret.setOwner(grp);
 						UserList users = getUsersInGroup(grp.getId());
 						for (User user: users) {
-							if (user.getId()==getUserID()) {
+							if (user.getId()==m_userID) {
 								credowner=true;
 								break;
 							}
@@ -14915,8 +17151,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					}
 				} else {
 					// Owner must be a user
-					System.out.println("Owner is a user m_userID="+getUserID()+" owner="+owner);
-					credowner = (getUserID() == owner);
+					System.out.println("Owner is a user m_userID="+m_userID+" owner="+owner);
+					credowner = (m_userID == owner);
 					System.out.println("about to getUser");
 					User user = getUser(owner);
 					System.out.println("Returned from getUser");
@@ -14931,11 +17167,17 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 							System.out.println("we own credential - decrypt the username");
 							String un = getString(rs,8,"");
 							System.out.println("un="+un);
+							System.out.println("m_passphrase="+ new String(m_passphrase));
 							if (un.length()>0) {
 								byte[] dun = Decrypt3DES(un,m_passphrase);
-								String dstr = new String(dun);
-								System.out.println("dstr=["+dstr+"]");
-								ret.setPlainUsername(dstr);
+								if (dun != null)
+								{
+								 String dstr = new String(dun);
+								 System.out.println("dstr=["+dstr+"]");
+								 ret.setPlainUsername(dstr);
+								}
+								else
+								 ret.setPlainUsername("");
 							}
 						}
 						break;
@@ -14972,9 +17214,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public boolean updateCredential(Credential cred, SummaryChangeSet changes)
 	{
+	 CredentialKind kindfromUI = null;
 		System.out.println("updateCredential");
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_credentials ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
+		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_credentials ");
+		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
 				
 		int dup = 0;
   for(SummaryField field : changes) {
@@ -14985,6 +17228,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
       dup++;
      }
      break;
+    case CRED_KIND:
+     kindfromUI = (CredentialKind) changes.get(field);
+     break;
     default:
      break;
    }
@@ -14992,36 +17238,74 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    
 		for(SummaryField field : changes) {
 			switch(field) {
+	   case DOMAIN_FULLNAME: {
+     if (changes.get(field) == null)
+       update.add(", domainid = ?", Null.INT);
+     else
+     {
+      int id =  new Integer((String)changes.get(field)).intValue();
+      update.add(", domainid = ?", id);
+     }
+    } 
+    break; 
 			case CRED_KIND: {
 				System.out.println("CRED_KIND");
-				if(cred.getKind() != CredentialKind.UNCONFIGURED) {
-					throw new RuntimeException("Credential kind cannot be changed after creation");
-				}
-				CredentialKind kind = (CredentialKind) changes.get(field);
-				if(kind == null) {
-					throw new RuntimeException("Credential kind must be specified");					
-				}
-				update.add(", kind = ?", kind.value());
+    CredentialKind kind = (CredentialKind) changes.get(field);
+    if (cred.getKind() != kind)
+    {
+				  if(cred.getKind() != CredentialKind.UNCONFIGURED) {
+				  	throw new RuntimeException("Credential kind cannot be changed after creation");
+				  }
+				  if(kind == null) {
+				  	throw new RuntimeException("Credential kind must be specified");					
+				  }
+				  update.add(", kind = ?", kind.value());
+     }
 				}
 				break;
 			case CRED_ENCUSERNAME:
+			 if (kindfromUI == null || kindfromUI == CredentialKind.ENCRYPTED || kindfromUI == CredentialKind.IN_DATABASE)
+    {
+     System.out.println("CRED_ENCUSERNAME/CRED_USERNAME/CRED_VARUSERNAME");
+     String username = (String) changes.get(field);
+     System.out.println("username="+username);
+     update.add(", encusername = ?", (username != null) ? username : Null.STRING);
+    }
+    break;
 			case CRED_VARUSERNAME:
-			case CRED_USERNAME: {
-			  if (dup <= 1 || (dup > 1 && field == SummaryField.CRED_ENCUSERNAME))  // fix dup encusername being passed to query
-			  { 
+    if (kindfromUI == null || kindfromUI == CredentialKind.FROM_VARS || kindfromUI == CredentialKind.PPK || kindfromUI == CredentialKind.HARVEST_DFO_IN_FILESYSTEM)
+    {
+     System.out.println("CRED_ENCUSERNAME/CRED_USERNAME/CRED_VARUSERNAME");
+     String username = (String) changes.get(field);
+     System.out.println("username="+username);
+     update.add(", encusername = ?", (username != null) ? username : Null.STRING);
+    }
+    break;
+			case CRED_USERNAME:
+     if (kindfromUI == null || (kindfromUI != CredentialKind.FROM_VARS && kindfromUI != CredentialKind.ENCRYPTED))
+			  {
 				  System.out.println("CRED_ENCUSERNAME/CRED_USERNAME/CRED_VARUSERNAME");
 				  String username = (String) changes.get(field);
 				  System.out.println("username="+username);
 				  update.add(", encusername = ?", (username != null) ? username : Null.STRING);
 				 }
-			 }
 				break;
 			case CRED_ENCPASSWORD:
-			case CRED_VARPASSWORD: {
-				System.out.println("CRED_ENCPASSWORD/CRED_VARPASSWORD");
-				String passwd = (String) changes.get(field);
-				System.out.println("password="+passwd);
-				update.add(", encpassword = ?", (passwd != null) ? passwd : Null.STRING);
+    if (kindfromUI == null || kindfromUI == CredentialKind.ENCRYPTED || kindfromUI == CredentialKind.IN_DATABASE)
+    {
+     System.out.println("CRED_ENCPASSWORD/CRED_VARPASSWORD");
+     String passwd = (String) changes.get(field);
+     System.out.println("password="+passwd);
+     update.add(", encpassword = ?", (passwd != null) ? passwd : Null.STRING);
+    }
+    break;
+			case CRED_VARPASSWORD: 
+    if (kindfromUI == null || kindfromUI == CredentialKind.FROM_VARS)
+    {
+				 System.out.println("CRED_ENCPASSWORD/CRED_VARPASSWORD");
+				 String passwd = (String) changes.get(field);
+				 System.out.println("password="+passwd);
+				 update.add(", encpassword = ?", (passwd != null) ? passwd : Null.STRING);
 				}
 				break;
 			case CRED_FILENAME: {
@@ -15044,8 +17328,25 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		update.add(" WHERE id = ?", cred.getId());
 		
 		try {
+		 String sqltext = update.getQueryString();
+		 ArrayList<Object> p = update.getQueryParams();
+		 
+   System.out.println(sqltext);
+   
+		 for (int k=0;k<p.size();k++)
+		 {
+		  Object param = p.get(k);
+		  
+		  if (param instanceof String)
+		   System.out.println((String)param);
+		  else if(param instanceof Integer) 
+	     System.out.println((Integer) param);
+	   else if(param instanceof Long) 
+	     System.out.println((Long) param);
+		 }
+		 
 			update.execute();
-			getDBConnection().commit();
+			m_conn.commit();
 			update.close();
 			return true;
 		} catch(SQLException e) {
@@ -15055,19 +17356,85 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return false;
 	}
 	
-	
-	public List<Credential> getCredentials()
+ public List<DMObject> getDomains()
+ {
+  List<DMObject> ret = new ArrayList<DMObject>();
+  
+  String domlist = getDomainList();
+  String[] parts = domlist.split(",");
+  
+  if (parts != null)
+  {
+   for (int i=0;i<parts.length;i++)
+   {
+    int domid = new Integer(parts[i]).intValue();
+    Domain dom = getDomainDetails(domid);
+    ret.add(dom);
+   }
+  }
+    
+  return ret;
+ }
+ 
+ public List<DMObject> getTasks()
+ {
+  List<DMObject> ret = new ArrayList<DMObject>();
+  
+  String domlist = getDomainList();
+  String[] parts = domlist.split(",");
+  
+  if (parts != null)
+  {
+   for (int i=0;i<parts.length;i++)
+   {
+    int domid = new Integer(parts[i]).intValue();
+    TaskList tl = getTasksInDomain(domid);
+    if (tl != null)
+    {
+     for (int k=0;k<tl.size();k++)
+        ret.add(tl.get(k));
+    } 
+   }
+  }
+    
+  return ret;
+ }
+ 
+ public List<DMObject> getEngines()
+ {
+  List<DMObject> ret = new ArrayList<DMObject>();
+  
+  String domlist = getDomainList();
+  String[] parts = domlist.split(",");
+  
+  if (parts != null)
+  {
+   for (int i=0;i<parts.length;i++)
+   {
+    int domid = new Integer(parts[i]).intValue();
+    Engine engine = getEngine4Domain(domid);
+    if (engine != null)
+     ret.add(engine); 
+   }
+  }
+    
+  return ret;
+ }
+ 
+	public List<DMObject> getCredentials()
 	{
 		String sql = "SELECT c.id, c.name, c.domainid FROM dm.dm_credentials c "
 			+ "WHERE c.status = 'N' AND c.kind <> 0 AND c.domainid IN (" + m_domainlist + ") ORDER BY 2";
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			ResultSet rs = stmt.executeQuery();
-			List<Credential> ret = new ArrayList<Credential>();
+			List<DMObject> ret = new ArrayList<DMObject>();
 			while(rs.next()) {
-				ret.add(new Credential(this, rs.getInt(1), rs.getString(2), rs.getInt(3)));
+			 Credential cred = this.getCredential(rs.getInt(1), true);
+			 ret.add(cred);
+		//		ret.add(new Credential(this, rs.getInt(1), rs.getString(2), rs.getInt(3)));
 			}
 			rs.close();
 			stmt.close();
@@ -15090,7 +17457,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			ResultSet rs = stmt.executeQuery();
 			List<Transfer> ret = new ArrayList<Transfer>();
 			while(rs.next()) {
@@ -15113,7 +17480,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public Engine getEngine(int engineid)
 	{
-		String sql = "SELECT e.name, e.hostname, e.status, "
+		String sql = "SELECT e.name, e.hostname, e.clientid, e.status, "
 			+ "  uc.id, uc.name, uc.realname, e.created, "
 			+ "  um.id, um.name, um.realname, e.modified "
 			+ "FROM dm.dm_engine e "
@@ -15123,15 +17490,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, engineid);
 			ResultSet rs = stmt.executeQuery();
 			Engine ret = null;
 			if(rs.next()) {
 				ret = new Engine(this, engineid, rs.getString(1));
 				ret.setHostname(rs.getString(2));
-				getStatus(rs, 3, ret);
-				getCreatorModifier(rs, 4, ret);
+				ret.setClientID(rs.getString(3));
+				getStatus(rs, 4, ret);
+				getCreatorModifier(rs, 5, ret);
 			}
 			rs.close();
 			stmt.close();
@@ -15149,7 +17517,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
  public Engine getEngine4Domain(int domainid)
  {
-  String sql = "SELECT e.id, e.name, e.hostname, e.status, "
+  String sql = "SELECT e.id, e.name, e.hostname, e.clientid, e.status, "
    + "  uc.id, uc.name, uc.realname, e.created, "
    + "  um.id, um.name, um.realname, e.modified "
    + "FROM dm.dm_engine e "
@@ -15159,15 +17527,17 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   
   try
   {
-   PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainid);
    ResultSet rs = stmt.executeQuery();
    Engine ret = null;
    if(rs.next()) {
     ret = new Engine(this, rs.getInt(1), rs.getString(2));
     ret.setHostname(rs.getString(3));
-    getStatus(rs, 4, ret);
-    getCreatorModifier(rs, 5, ret);
+    ret.setClientID(rs.getString(4));
+    ret.setDomainId(domainid);
+    getStatus(rs, 5, ret);
+    getCreatorModifier(rs, 6, ret);
    }
    rs.close();
    stmt.close();
@@ -15184,14 +17554,27 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public boolean updateEngine(Engine eng, SummaryChangeSet changes)
 	{
-		DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_engine ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), getUserID());
+		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_engine ");
+		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
 				
 		for(SummaryField field : changes) {
 			switch(field) {
+			 case OWNER:
+			 case SUMMARY:
+			   break;
+	   case DOMAIN_FULLNAME: {
+     if (changes.get(field) == null)
+       update.add(", domainid = ?", Null.INT);
+     else
+     {
+      int id =  new Integer((String)changes.get(field)).intValue();
+      update.add(", domainid = ?", id);
+     }
+    } 
+    break; 
 			case ENGINE_HOSTNAME:
 				update.add(", hostname = ?", changes.get(field));
-				update.add(", name = ?", changes.get(field));
+	//			update.add(", name = ?", changes.get(field));
 				break;
 			default:
 				if(field.value() <= SummaryField.OBJECT_MAX) {
@@ -15207,7 +17590,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try {
 			update.execute();
-			getDBConnection().commit();
+			m_conn.commit();
 			update.close();
 			return true;
 		} catch(SQLException e) {
@@ -15224,7 +17607,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			//stmt.setInt(1, engine.getId());
 			ResultSet rs = stmt.executeQuery();
 			List<Plugin> ret = new ArrayList<Plugin>();
@@ -15252,7 +17635,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, engine.getId());
 			ResultSet rs = stmt.executeQuery();
 			List<Engine.ConfigEntry> ret = new ArrayList<Engine.ConfigEntry>();
@@ -15278,7 +17661,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			//stmt.setInt(1, engine.getId());
 			ResultSet rs = stmt.executeQuery();
 			List<ProviderDefinition> ret = new ArrayList<ProviderDefinition>();
@@ -15316,7 +17699,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{
-			Statement st1 = getDBConnection().createStatement();
+			Statement st1 = m_conn.createStatement();
 			ResultSet rs1 = st1.executeQuery("SELECT editid,userid FROM dm.dm_actionedit WHERE actionid="+actionid);
 			if (rs1.next())
 			{
@@ -15346,7 +17729,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String q2 = "SELECT a.windowid,a.xpos,a.ypos,a.typeid,a.title,a.summary,b.name,b.exitpoints,b.drilldown,b.actionid,b.functionid FROM dm.dm_actionfrags a,dm.dm_fragments b WHERE a.actionid="+actionid+" AND b.id=a.typeid AND a.windowid>0 AND a.parentwindowid IS NULL ORDER BY a.windowid";
 		try
 		{
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery(windowid>0?q1:q2);
 			while (rs.next())
 			{
@@ -15368,7 +17751,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				an.setProcedureID(procid);
 				an.setFunctionID(funcid);
 				if (procid>0 || funcid>0) {
-					PreparedStatement kindstmt=getDBConnection().prepareStatement("SELECT kind FROM dm.dm_action WHERE id=?");
+					PreparedStatement kindstmt=m_conn.prepareStatement("SELECT kind FROM dm.dm_action WHERE id=?");
 					kindstmt.setInt(1,procid>0?procid:funcid);
 					ResultSet kindrs=kindstmt.executeQuery();
 					if (kindrs.next()) {
@@ -15398,7 +17781,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String q2="SELECT distinct a.flowid,a.nodefrom,a.nodeto,a.pos FROM dm.dm_actionflows a,dm.dm_actionfrags b where a.nodeto=b.windowid AND b.parentwindowid="+windowid+" and b.actionid=a.actionid and a.actionid="+actionid;
 		try
 		{
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery(windowid>0?q2:q1);
 			while (rs.next())
 			{
@@ -15428,7 +17811,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			int ret=0;	// client side to use default position
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery(pw>0?q2:q1);
 			if (rs.next())
 			{
@@ -15456,7 +17839,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			
 			FragmentDetails res = new FragmentDetails();
 			
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,actionid);
 			stmt.setInt(2,windowid);
 			ResultSet rs = stmt.executeQuery();
@@ -15486,7 +17869,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Unable to get Fragment Details from database");
 	}
 	
-	private String getDomainHeirarchy(int domainid)
+	public String getDomainHeirarchy(int domainid)
 	{
 		System.out.println("getDomainHeirarchy("+domainid+")");
 		// Returns a list of domains which are parents of the specified domain
@@ -15502,24 +17885,23 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return res;
 	}
 	
-	/*
-	private String getFQDN(int domainid)
+	
+	public String getFQDN(int domainid)
 	{
-		System.out.println("getFQDN("+domainid+")");
+//		System.out.println("getFQDN("+domainid+")");
 		// Returns a list of domains which are parents of the specified domain
 		String res="";
 		String sep="";
 		Domain domain = getDomain(domainid);
 		while (domain != null) {
 			res=domain.getName()+sep+res;
-			if (domain.getId()==m_userDomain) break;
 			sep=".";
 			domain = domain.getDomain();
 		}
-		System.out.println("getFQDN returns "+res);
+//		System.out.println("getFQDN returns "+res);
 		return res;
 	}
-	*/
+	
 	
 	public List<FragmentAttributes> getFragmentAttributes(int actionid,int windowid,int pwid)
 	{
@@ -15539,7 +17921,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
      + ((pwid>0)?"and b.parentwindowid=? ":"and b.parentwindowid is null ")
      + "order by a.atorder";
 
-		 PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+		 PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,actionid);
 			stmt.setInt(2,windowid);
 			if (pwid>0) stmt.setInt(3,pwid);
@@ -15575,7 +17957,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					}
 					
 					String domainlist = getDomainHeirarchy(action.getDomainId());
-					Statement st2 = getDBConnection().createStatement();
+					Statement st2 = m_conn.createStatement();
 					ResultSet rs2 = st2.executeQuery(
 						fa.getInherit()?
 							"SELECT id,name,domainid FROM dm."+tabname+" WHERE domainid IN ("+domainlist+")":
@@ -15753,18 +18135,18 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			Action action = getAction(actionid,false);
 			ArchiveAction(action);
 			updateModTime(action);
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_actionfrags SET title=?,summary=? WHERE actionid=? AND windowid=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_actionfrags SET title=?,summary=? WHERE actionid=? AND windowid=?");
 			st.setString(1,title);
 			st.setString(2,summary);
 			st.setInt(3, actionid);
 			st.setInt(4,windowid);
 			st.execute();
 			st.close();
-			PreparedStatement st2 = getDBConnection().prepareStatement("DELETE FROM dm.dm_actionfragattrs WHERE actionid=? AND windowid=?");
+			PreparedStatement st2 = m_conn.prepareStatement("DELETE FROM dm.dm_actionfragattrs WHERE actionid=? AND windowid=?");
 			st2.setInt(1, actionid);
 			st2.setInt(2, windowid);
 			st2.execute();
-			PreparedStatement st3 = getDBConnection().prepareStatement("INSERT INTO dm.dm_actionfragattrs(actionid,windowid,attrid,value) VALUES (?,?,?,?)");
+			PreparedStatement st3 = m_conn.prepareStatement("INSERT INTO dm.dm_actionfragattrs(actionid,windowid,attrid,value) VALUES (?,?,?,?)");
 			st3.setInt(1, actionid);
 			st3.setInt(2, windowid);
 			for (int t=0;t<ids.size();t++)
@@ -15774,7 +18156,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				st3.execute();
 			}
 			st3.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -15790,7 +18172,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String res="";
 		try
 		{
-			PreparedStatement st = getDBConnection().prepareStatement("SELECT a.name FROM dm.dm_fragments a,dm.dm_actionfrags b WHERE a.id=b.typeid AND b.actionid=? AND b.windowid=?");
+			PreparedStatement st = m_conn.prepareStatement("SELECT a.name FROM dm.dm_fragments a,dm.dm_actionfrags b WHERE a.id=b.typeid AND b.actionid=? AND b.windowid=?");
 			st.setInt(1, actionid);
 			st.setInt(2,windowid);
 			ResultSet rs = st.executeQuery();
@@ -15812,7 +18194,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_actionflows WHERE actionid="+actionid+" AND nodefrom="+fn+" AND nodeto="+tn);
 			rs.next();
 			int c = rs.getInt(1);
@@ -15827,7 +18209,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				RecordObjectUpdate(action,"Connection Added");
 				String flowid="1";
 				st.execute("INSERT INTO dm.dm_actionflows(actionid,flowid,nodefrom,nodeto,pos) VALUES("+actionid+","+flowid+","+fn+","+tn+","+pos+")");
-				getDBConnection().commit();
+				m_conn.commit();
 				
 			}
 			return;
@@ -15848,9 +18230,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		RecordObjectUpdate(action,"Connection Removed");
 		try
 		{
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			st.execute("DELETE FROM dm.dm_actionflows WHERE actionid="+actionid+" AND nodefrom="+fn+" AND nodeto="+tn);
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -15867,7 +18249,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		updateModTime(action);
 
 		System.out.println("DeleteNode("+action.getId()+","+windowid+")");
-		PreparedStatement st1 = getDBConnection().prepareStatement("SELECT windowid FROM dm.dm_actionfrags WHERE actionid=? AND parentwindowid=?");
+		PreparedStatement st1 = m_conn.prepareStatement("SELECT windowid FROM dm.dm_actionfrags WHERE actionid=? AND parentwindowid=?");
 		st1.setInt(1,action.getId());
 		st1.setInt(2,windowid);
 		ResultSet rs1 = st1.executeQuery();
@@ -15877,7 +18259,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		}
 		rs1.close();
 		st1.close();
-		Statement st2 = getDBConnection().createStatement();
+		Statement st2 = m_conn.createStatement();
 		st2.execute("DELETE FROM dm.dm_actionfragattrs WHERE actionid="+action.getId()+" AND windowid="+windowid);
 		st2.execute("DELETE FROM dm.dm_actionfrags WHERE actionid="+action.getId()+" AND windowid="+windowid);
 		//
@@ -15885,7 +18267,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		//
 		st2.execute("DELETE FROM dm.dm_actionflows WHERE actionid="+action.getId()+" AND nodefrom="+windowid);
 		st2.execute("DELETE FROM dm.dm_actionflows WHERE actionid="+action.getId()+" AND nodeto="+windowid);
-		getDBConnection().commit();
+		m_conn.commit();
 		return;
 	}
 	
@@ -15895,7 +18277,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		Action action = getAction(actionid,false);
 		String sql = "select b.name from dm.dm_actionfrags a,dm.dm_fragments b where a.actionid=? and a.windowid=? and a.typeid=b.id";
 		try {
-			PreparedStatement ps = getDBConnection().prepareStatement(sql);
+			PreparedStatement ps = m_conn.prepareStatement(sql);
 			ps.setInt(1,actionid);
 			ps.setInt(2,windowid);
 			ResultSet rsx = ps.executeQuery();
@@ -15924,7 +18306,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println("moving window");
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery(pw>0?qs2:qs1);
 			rs.next();
 			int c = rs.getInt(1);
@@ -15942,7 +18324,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				Action action = getAction(actionid,false);
 				ArchiveAction(action);
 				updateModTime(action);
-				PreparedStatement ps = getDBConnection().prepareStatement("SELECT name FROM dm.dm_fragments WHERE id=?");
+				PreparedStatement ps = m_conn.prepareStatement("SELECT name FROM dm.dm_fragments WHERE id=?");
 				ps.setInt(1,typeid);
 				ResultSet rs1 = ps.executeQuery();
 				if (rs1.next()) {
@@ -15953,7 +18335,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				System.out.println("Inserting new windowid="+windowid+" pw="+pw);
 				st.execute("INSERT INTO dm.dm_actionfrags(actionid,windowid,xpos,ypos,typeid,parentwindowid) VALUES("+actionid+","+windowid+","+xpos+","+ypos+","+ typeid + "," + (pw>0?pw:"NULL") + ")");	
 				String getactsql="SELECT actionid,functionid FROM dm.dm_fragments WHERE id=?";
-				PreparedStatement actstmt = getDBConnection().prepareStatement(getactsql);
+				PreparedStatement actstmt = m_conn.prepareStatement(getactsql);
 				actstmt.setInt(1,typeid);
 				ResultSet actrs = actstmt.executeQuery();
 				
@@ -15963,7 +18345,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					int funcid = getInteger(actrs,2,0);
 					if (procid>0 || funcid>0) {
 						// Need to get the kind for the otid
-						PreparedStatement kindstmt=getDBConnection().prepareStatement("SELECT kind FROM dm.dm_action WHERE id=?");
+						PreparedStatement kindstmt=m_conn.prepareStatement("SELECT kind FROM dm.dm_action WHERE id=?");
 						kindstmt.setInt(1, procid>0?procid:funcid);
 						ResultSet kindrs = kindstmt.executeQuery();
 						if (kindrs.next()) {
@@ -15980,7 +18362,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				actstmt.close();
 			}
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return otid;
 		}
 		catch (SQLException ex)
@@ -15998,10 +18380,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println("moving component start window");
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			st.execute("UPDATE dm.dm_application SET startx=" + xpos+" where id="+appid);
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -16018,7 +18400,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println("moving server");
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_serversinenv WHERE envid="+envid+" AND serverid="+serverid);
 			rs.next();
 			int c = rs.getInt(1);
@@ -16035,12 +18417,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				// New server in environment
 				System.out.println("Inserting new server");
 				st.execute("INSERT INTO dm.dm_serversinenv(envid,serverid,xpos,ypos) VALUES("+envid+","+serverid+","+xpos+","+ypos + ")");	
-				st.execute("UPDATE dm.dm_environment SET modifierid="+getUserID()+", modified="+timeNow()+" WHERE id="+envid);
+				st.execute("UPDATE dm.dm_environment SET modifierid="+m_userID+", modified="+timeNow()+" WHERE id="+envid);
 				// Environment env = getEnvironment(envid,false);
 				// Server server = getServer(serverid,false);
 			}
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -16048,7 +18430,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			ex.printStackTrace();
 			rollback();
 		}
-		throw new RuntimeException("Unable to Add End Point to database");
+		throw new RuntimeException("Unable to Add Endpoint to database");
 	}
 	
 	public void NotifyServersAddedToEnvironment(int envid, String sl)
@@ -16081,7 +18463,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			RecordObjectUpdate(env,"Server "+ServerList+" Added to Environment",singleid);
 		}
 		try {
-			getDBConnection().commit();
+			m_conn.commit();
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 		}
@@ -16092,7 +18474,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println("moving version");
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_application WHERE parentid="+appid+" AND id="+verid);
 			rs.next();
 			int c = rs.getInt(1);
@@ -16105,7 +18487,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				st.execute("UPDATE dm.dm_application SET xpos=" + xpos + ", ypos=" + ypos + " WHERE parentid="+appid+" AND id="+verid);
 			}
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -16113,7 +18495,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			rollback();
 			ex.printStackTrace();
 		}
-		throw new RuntimeException("Unable to Add End Point to database");
+		throw new RuntimeException("Unable to Add Endpoint to database");
 	}
 	
 	private void AddComponents(long t,int appid,int predecessorid, boolean isRelease)
@@ -16136,16 +18518,25 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					+	"FROM dm.dm_applicationcomponentflows	"
 					+ 	"WHERE appid=?";
 		
-		PreparedStatement psx = getDBConnection().prepareStatement(sql1);
+		PreparedStatement psx = m_conn.prepareStatement(sql1);
 		psx.setInt(1,appid);
 		psx.setInt(2,predecessorid);
 		psx.execute();
 		psx.close();
-		PreparedStatement psy = getDBConnection().prepareStatement(sql2);
+		PreparedStatement psy = m_conn.prepareStatement(sql2);
 		psy.setInt(1,appid);
 		psy.setInt(2,predecessorid);
 		psy.execute();
 		psy.close();
+	}
+	
+	public Application getBaseAppVersion(Application app)
+	{
+	 while (app.getPredecessorId() > 0)
+	 {
+	  app = this.getApplication(app.getPredecessorId(), false);
+	 }
+	 return app;
 	}
 	
 	public int applicationNewVersion(int appid,int xpos,int ypos, boolean isRelease)
@@ -16156,27 +18547,77 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			long t = timeNow();
 			System.out.println("new version");
 			Application app  = getApplication(appid,true);
-			Statement st = getDBConnection().createStatement();
-			ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_application WHERE parentid="+appid+" AND status='N'");
+			Statement st = m_conn.createStatement();
+			ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_application WHERE parentid="+app.getParentId()+" AND status='N'");
 			rs.next();
 			int c = rs.getInt(1)+1;
 			System.out.println("c="+c);
 			rs.close();
 			String NewName=app.getName()+";"+c;
 			System.out.println("NewName="+NewName);
+			
+			boolean found = false;
+			do
+			{
+			 PreparedStatement stmt = m_conn.prepareStatement("SELECT count(*) FROM dm.dm_application WHERE name = ? AND status='N'");
+			 stmt.setString(1, NewName);
+    ResultSet rs1 = stmt.executeQuery();
+    rs1.next();
+    if (rs1.getInt(1) == 0)
+    { 
+     found = false;
+     rs1.close();
+    } 
+    else
+    { 
+     found = true;
+     c++;
+     NewName=app.getName()+";"+c;
+     rs1.close();
+    } 
+			} 
+   while (found); 
+			
+			
 			int newid = getID("application");
 			int domainid = app.getDomainId();
+			
 			if (isRelease)
 				CreateNewObject("relversion",NewName,domainid,appid,newid,"");
 			else
 				CreateNewObject("appversion",NewName,domainid,appid,newid,"");
+			
+			Application basever = this.getBaseAppVersion(app);
+			
 			st.execute("UPDATE dm.dm_application SET xpos=" + xpos + ", ypos=" + ypos + " WHERE parentid="+appid+" AND id="+newid);
-			st.execute("UPDATE dm.dm_application SET modified="+t+",modifierid="+getUserID()+" WHERE id="+newid);
+			st.execute("UPDATE dm.dm_application SET modified="+t+",modifierid="+m_userID+" WHERE id="+newid);
+   st.execute("UPDATE dm.dm_application SET parentid="+ basever.getId() +" WHERE id="+newid);
+   
 			Datasource ds = app.getDatasource();
-			if (ds != null) {
+			if (ds != null) 
 				st.execute("UPDATE dm.dm_application SET datasourceid="+ds.getId()+" WHERE id="+newid);
-			}
-			st.close();
+			
+			Action act = app.getPreAction();
+			if (act != null)
+    st.execute("UPDATE dm.dm_application SET preactionid="+act.getId()+" WHERE id="+newid);
+
+   act = app.getPostAction();
+   if (act != null)
+    st.execute("UPDATE dm.dm_application SET postactionid="+act.getId()+" WHERE id="+newid);
+   
+   act = app.getCustomAction();
+   if (act != null)
+    st.execute("UPDATE dm.dm_application SET actionid="+act.getId()+" WHERE id="+newid);
+   
+   NotifyTemplate template = app.getSuccessTemplate();
+   if (template != null)
+     st.execute("UPDATE dm.dm_application SET successtemplateid="+template.getId()+" WHERE id="+newid);
+   
+   template = app.getFailureTemplate();
+   if (template != null)
+     st.execute("UPDATE dm.dm_application SET failuretemplateid="+template.getId()+" WHERE id="+newid);
+   
+   st.close();
 			//
 			// When first created, the components should be copied from the "base" application. When the predecessor is changed
 			// through the editor, the compoments should be erased and copied from the new predecessor.
@@ -16186,7 +18627,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			Application newapp = getApplication(newid,true);
 			AddApplicationAttribs(t,newapp,app);
    			
-			getDBConnection().commit();
+			m_conn.commit();
 			return newid;
 		}
 		catch (SQLException ex)
@@ -16215,7 +18656,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println("moving component version");
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_component WHERE id="+verid);
 			rs.next();
 			int c = rs.getInt(1);
@@ -16228,7 +18669,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				st.execute("UPDATE dm.dm_component SET xpos=" + xpos + ", ypos=" + ypos + " WHERE id="+verid);
 			}
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -16246,7 +18687,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println("moving component item compid="+compid+" itemid="+itemid);
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_componentitem WHERE compid="+compid+" AND id="+itemid);
 			rs.next();
 			int c = rs.getInt(1);
@@ -16259,7 +18700,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				st.execute("UPDATE dm.dm_componentitem SET xpos=" + xpos + ", ypos=" + ypos + " WHERE compid="+compid+" AND id="+itemid);
 			}
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -16306,7 +18747,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			// If this is a component VERSION add the component BASE
-			Statement st1 = getDBConnection().createStatement();
+			Statement st1 = m_conn.createStatement();
 			ResultSet rs1 = st1.executeQuery("SELECT parentid FROM dm.dm_component WHERE id="+compid);
 			rs1.next();
 			int parentid = getInteger(rs1,1,0);
@@ -16314,7 +18755,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			rs1.close();
 			
 			System.out.println("adding component compid="+compid+" to server servid="+servid);
-			Statement st2 = getDBConnection().createStatement();
+			Statement st2 = m_conn.createStatement();
 			ResultSet rs2 = st2.executeQuery("SELECT count(*) FROM dm.dm_compsallowedonserv WHERE compid="+compid+" AND serverid="+servid);
 			rs2.next();
 			int c = rs2.getInt(1);
@@ -16324,12 +18765,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			{
 				// New component on this server
 				System.out.println("adding component to server");
-				PreparedStatement ps = getDBConnection().prepareStatement("INSERT INTO dm.dm_compsallowedonserv(serverid,compid) VALUES(?,?)");
+				PreparedStatement ps = m_conn.prepareStatement("INSERT INTO dm.dm_compsallowedonserv(serverid,compid) VALUES(?,?)");
 				ps.setInt(1,servid);
 				ps.setInt(2,compid);
 				ps.execute();
 				ps.close();
-				getDBConnection().commit();
+				m_conn.commit();
 			}
 			st2.close();
 			return;
@@ -16342,6 +18783,56 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Unable to Add Component for Server in database");
 	}
 	
+ public void addComponentVersionToServer(int servid,int compid, int deployid, int buildid)
+ {
+  try
+  {
+   System.out.println("adding component compid="+compid+" to server servid="+servid);
+   Statement st2 = m_conn.createStatement();
+   ResultSet rs2 = st2.executeQuery("SELECT count(*) FROM dm.dm_compsonserv WHERE compid="+compid+" AND serverid="+servid);
+   rs2.next();
+   int c = rs2.getInt(1);
+   rs2.close();
+   System.out.println("c="+c);
+   if (c==0)
+   {
+    // New component on this server
+    System.out.println("adding component to server");
+    PreparedStatement ps = m_conn.prepareStatement("INSERT INTO dm.dm_compsonserv(serverid,compid, deploymentid, buildnumber) VALUES(?,?,?, ?)");
+    ps.setInt(1,servid);
+    ps.setInt(2,compid);
+    ps.setInt(3,deployid);
+    if (buildid > 0)
+     ps.setInt(4, buildid);
+    else
+     ps.setNull(4, Types.INTEGER);
+    ps.execute();
+    ps.close();
+    m_conn.commit();
+   }
+   else
+   {
+    PreparedStatement ps = m_conn.prepareStatement("update dm.dm_compsonserv set deploymentid = ?, buildnumber = ? where compid="+compid+" AND serverid="+servid);
+    ps.setInt(1,deployid);
+    if (buildid > 0)
+     ps.setInt(2, buildid);
+    else
+     ps.setNull(2, Types.INTEGER);
+    ps.execute();
+    ps.close();
+    m_conn.commit();   
+   }
+   st2.close();
+   return;
+  }
+  catch (SQLException ex)
+  {
+   rollback();
+   ex.printStackTrace();
+  }
+  throw new RuntimeException("Unable to Add Component for Server in database");
+ }
+	
 	public void addComponentVersionToServer(int servid,int compid)
 	{
 		try
@@ -16350,7 +18841,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			// int parentid = comp.getParentId();
 			System.out.println("adding component version compid="+compid+" to server servid="+servid);
 			// addComponentToServer(servid,compid);	// Add component BASE to components allowed on server
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_compsonserv WHERE compid="+compid+" AND serverid="+servid);
 			rs.next();
 			int c = rs.getInt(1);
@@ -16361,9 +18852,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				// This component VERSION is not present on this server
 				long t = timeNow();
 				String updsql = "UPDATE dm.dm_compsonserv SET compid=?,deploymentid=NULL,modifierid=?,modified=? WHERE serverid=? AND (compid IN (SELECT parentid FROM dm.dm_component WHERE id=?) OR compid=?)";
-				PreparedStatement updstmt = getDBConnection().prepareStatement(updsql);
+				PreparedStatement updstmt = m_conn.prepareStatement(updsql);
 				updstmt.setInt(1,compid);
-				updstmt.setInt(2, getUserID());
+				updstmt.setInt(2, m_userID);
 				updstmt.setLong(3,t);
 				updstmt.setInt(4,servid);
 				updstmt.setInt(5,compid);
@@ -16375,15 +18866,15 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				if (updcount == 0) {
 					// New component version on this server
 					System.out.println("adding component version to server");
-					PreparedStatement ps2 = getDBConnection().prepareStatement("INSERT INTO dm.dm_compsonserv(compid,serverid,modifierid,modified) VALUES(?,?,?,?)");
+					PreparedStatement ps2 = m_conn.prepareStatement("INSERT INTO dm.dm_compsonserv(compid,serverid,modifierid,modified) VALUES(?,?,?,?)");
 					ps2.setInt(1,compid);
 					ps2.setInt(2,servid);
-					ps2.setInt(3, getUserID());
+					ps2.setInt(3, m_userID);
 					ps2.setLong(4,t);
 					ps2.execute();
 					ps2.close();
 				}
-				getDBConnection().commit();
+				m_conn.commit();
 			}
 			st.close();
 			return;
@@ -16402,7 +18893,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println("adding component compid="+compid+" to application appid="+appid);
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = null;
 			if (isRelease) {
 				rs = st.executeQuery("SELECT count(*) FROM dm.dm_applicationcomponent WHERE childappid="+compid+" AND appid="+appid);
@@ -16436,7 +18927,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					String linkval2="<a href='javascript:SwitchDisplay(\""+at+childapp.getId()+"\");'><b>"+childapp.getName()+"</b></a>";
 					RecordObjectUpdate(childapp,"Added to Release "+linkval,appid);
 					RecordObjectUpdate(app, "Added Application "+linkval2,compid);
-					ps = getDBConnection().prepareStatement("INSERT INTO dm.dm_applicationcomponent(appid,childappid,xpos,ypos) VALUES(?,?,?,?)");
+					ps = m_conn.prepareStatement("INSERT INTO dm.dm_applicationcomponent(appid,childappid,xpos,ypos) VALUES(?,?,?,?)");
 				} else {
 					Component comp = getComponent(compid,true);
 					String at=(app.getParentId()>0)?"av":"ap";
@@ -16445,7 +18936,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					String linkval2="<a href='javascript:SwitchDisplay(\""+ct+comp.getId()+"\");'><b>"+comp.getName()+"</b></a>";
 					RecordObjectUpdate(comp,"Added to Application "+linkval,appid);
 					RecordObjectUpdate(app, "Added Component "+linkval2,compid);
-					ps = getDBConnection().prepareStatement("INSERT INTO dm.dm_applicationcomponent(appid,compid,xpos,ypos) VALUES(?,?,?,?)");
+					ps = m_conn.prepareStatement("INSERT INTO dm.dm_applicationcomponent(appid,compid,xpos,ypos) VALUES(?,?,?,?)");
 				}
 				ps.setInt(1,appid);
 				ps.setInt(2,compid);
@@ -16453,10 +18944,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				ps.setInt(4,ypos);
 				ps.execute();
 				ps.close();
-				getDBConnection().commit();
+				m_conn.commit();
 			}
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -16498,14 +18989,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	}
 	*/
 	
-	public void DeleteComponentItems(int compid) throws SQLException
+	void DeleteComponentItems(int compid) throws SQLException
 	{
 		System.out.println("DeleteComponentItems from compid="+compid);
-		PreparedStatement psx = getDBConnection().prepareStatement("DELETE FROM dm.dm_compitemprops WHERE compitemid in (SELECT id FROM dm.dm_componentitem WHERE compid=?)");
+		PreparedStatement psx = m_conn.prepareStatement("DELETE FROM dm.dm_compitemprops WHERE compitemid in (SELECT id FROM dm.dm_componentitem WHERE compid=?)");
 		psx.setInt(1,compid);
 		psx.execute();
 		psx.close();
-		PreparedStatement psy = getDBConnection().prepareStatement("DELETE FROM dm.dm_componentitem WHERE compid=?");
+		PreparedStatement psy = m_conn.prepareStatement("DELETE FROM dm.dm_componentitem WHERE compid=?");
 		psy.setInt(1,compid);
 		psy.execute();
 		psy.close();
@@ -16514,13 +19005,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	private void DeleteComponentAttribs(int compid) throws SQLException
 	{
 		System.out.println("DeleteComponentAttribs from compid="+compid);
-		PreparedStatement psx = getDBConnection().prepareStatement("DELETE FROM dm.dm_componentvars WHERE compid=?");
+		PreparedStatement psx = m_conn.prepareStatement("DELETE FROM dm.dm_componentvars WHERE compid=?");
 		psx.setInt(1,compid);
 		psx.execute();
 		psx.close();
 	}
 	
-	public void AddComponentItems(long t,int compid,int predecessorid) throws SQLException
+	private void AddComponentItems(long t,int compid,int predecessorid) throws SQLException
 	{
 		List<ComponentItem> cis = getComponentItems(predecessorid);	// original component items
 		System.out.println("cis.size()="+cis.size());
@@ -16535,22 +19026,22 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		}
 		for (ComponentItem ci: cis)
 		{
-			String sql =	"INSERT INTO dm.dm_componentitem(id,name,summary,compid,repositoryid,target,"
-						+ 	"predecessorid,xpos,ypos,creatorid,created,modifierid,modified,status,rollup,rollback)	"
-						+ 	"SELECT ?,name,summary,?,repositoryid,target,"
-						+	"?,xpos,ypos,?,?,?,?,'N', rollup, rollback	"
-						+	"FROM dm.dm_componentitem	"
-						+ 	"WHERE id=? AND status='N'";
+   String sql = "INSERT INTO dm.dm_componentitem(id,name,summary,compid,repositoryid,target,"
+     +  "predecessorid,xpos,ypos,creatorid,created,modifierid,modified,status,rollup,rollback, dockerrepo, kind, buildid, buildurl, chart, operator, builddate, dockersha, dockertag, gitcommit, gitrepo, gittag, giturl, chartversion, chartnamespace) "
+     +  "SELECT ?,name,summary,?,repositoryid,target,"
+     + "?,xpos,ypos,?,?,?,?,'N', rollup, rollback, dockerrepo, kind, buildid, buildurl, chart, operator, builddate, dockersha, dockertag, gitcommit, gitrepo, gittag, giturl, chartversion, chartnamespace "
+     + "FROM dm.dm_componentitem "
+     +  "WHERE id=? AND status='N'";
 		
-			PreparedStatement psx = getDBConnection().prepareStatement(sql);
+			PreparedStatement psx = m_conn.prepareStatement(sql);
 			psx.setInt(1,idmap.get(ci.getId()));
 			psx.setInt(2,compid);
 			int pi = ci.getPredecessorId();
 			if (pi>0) psx.setInt(3,idmap.get(pi));
 			else psx.setNull(3,Types.INTEGER);
-			psx.setInt(4,getUserID());
+			psx.setInt(4,m_userID);
 			psx.setLong(5,t);
-			psx.setInt(6,getUserID());
+			psx.setInt(6,m_userID);
 			psx.setLong(7,t);
 			psx.setInt(8,ci.getId());
 			psx.execute();
@@ -16563,14 +19054,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						+	"FROM dm.dm_compitemprops	"
 						+ 	"WHERE compitemid=?";
 		
-			PreparedStatement psy = getDBConnection().prepareStatement(sql);
+			PreparedStatement psy = m_conn.prepareStatement(sql);
 			psy.setInt(1,idmap.get(ci.getId()));
 			psy.setInt(2,ci.getId());
 			psy.execute();
 			psy.close();
 		}
 		setID("componentitem",n);
-		getDBConnection().commit();
+		m_conn.commit();
 	}
 	
 	public int componentNewVersion(int compid,int xpos,int ypos)
@@ -16589,7 +19080,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			} else {
 				parentid = compid;
 			}
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_component WHERE status='N' AND parentid="+parentid);
 			rs.next();
 			int c = rs.getInt(1)+1;
@@ -16601,7 +19092,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			CreateNewObject("component",NewName,domainid,compid,newid,"");
 			System.out.println("Updating dm_component where id="+newid);
 			st.execute("UPDATE dm.dm_component SET predecessorid=" + compid + ", parentid=" + parentid + ", xpos=" + xpos + ", ypos=" + ypos + " WHERE id="+newid);
-			st.execute("UPDATE dm.dm_component SET modified="+t+",modifierid="+getUserID()+" WHERE id="+compid);
+			st.execute("UPDATE dm.dm_component SET modified="+t+",modifierid="+m_userID+" WHERE id="+compid);
 			st.execute("UPDATE dm.dm_component SET comptypeid="+comp.getComptypeId() + " WHERE id="+newid);
 
 			if (comp.getPreAction() != null)
@@ -16609,37 +19100,54 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 
 			if (comp.getPostAction() != null)
 				st.execute("UPDATE dm.dm_component SET postactionid=" + comp.getPostAction().getId() + " WHERE id="+newid);
-			
-			if (comp.getCustomAction() != null)
-			    st.execute("UPDATE dm.dm_component SET actionid=" + comp.getCustomAction().getId() + " WHERE id="+newid);
-			
+  
+   if (comp.getCustomAction() != null)
+    st.execute("UPDATE dm.dm_component SET actionid=" + comp.getCustomAction().getId() + " WHERE id="+newid);
+   
 			if (comp.getBaseDirectory() != null)
 				st.execute("UPDATE dm.dm_component SET basedir='"+comp.getBaseDirectory()+"' WHERE id="+newid);
-			
-			if (comp.getBuildJob() != null) 
-				st.execute("UPDATE dm.dm_component SET buildjobid=" + comp.getBuildJob().getId()+",lastbuildnumber="+comp.getLastBuildNumber()+" WHERE id="+newid);
-			
+					
 			if (comp.getDatasource() != null)
 				st.execute("UPDATE dm.dm_component SET datasourceid="+ comp.getDatasource().getId()+" WHERE id="+newid);
 			
+   if (comp.getAlwaysDeploy())
+    st.execute("UPDATE dm.dm_component SET deployalways='Y' WHERE id="+newid);
+   else
+    st.execute("UPDATE dm.dm_component SET deployalways='N' WHERE id="+newid);
+   
+   if (comp.getDeploySequentially())
+    st.execute("UPDATE dm.dm_component SET deploysequentially='Y' WHERE id="+newid);
+   else
+    st.execute("UPDATE dm.dm_component SET deploysequentially='N' WHERE id="+newid);
+   
+   if (comp.getCategory() != null)
+   {
+    int catid = comp.getCategory().getId();
+    st.execute("delete from dm.dm_component_categories where id = " + newid);
+    st.execute("insert into dm.dm_component_categories values (" + newid + "," + catid + ")");
+   } 
+   
+   if (comp.getSummary() != null)
+   {
+    st.execute("UPDATE dm.dm_component SET summary='"+comp.getSummary()+"' WHERE id="+newid);
+   } 
 			//
 			// When first created, the component items should be copied from the "base" component. When the predecessor is changed
 			// through the editor, the compoment items should be erased and copied from the new predecessor.
 			//
 			AddComponentItems(t,newid,compid);
+			CopyDefects("compid",compid,newid);
 
 			Component newcomp = getComponent(newid,true);
 			AddComponentAttribs(newcomp,comp);
-			st.execute("INSERT INTO dm.dm_component_categories(id,categoryid) SELECT "+newid+",categoryid FROM dm_component_categories WHERE id="+compid);
+			st.execute("INSERT INTO dm.dm_component_categories(id,categoryid) SELECT "+newid+",categoryid FROM dm.dm_component_categories WHERE id="+compid);
 			st.close();
 			
-			getDBConnection().commit();
 			return newid;
 		}
 		catch (SQLException ex)
 		{
-			rollback();
-			ex.printStackTrace();
+   ex.printStackTrace();
 		}
 		throw new RuntimeException("Unable to Create New Component Version in database");
 	}
@@ -16656,31 +19164,36 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		newcomp.updateAttributes(changes);
 	}
 	
-	public int componentItemNewItem(int compid,int xpos,int ypos)
+	public int componentItemNewItem(int compid,int xpos,int ypos, String kind)
 	{
 		try
 		{
    int pred = -1;
 			System.out.println("new component item");
 			Component comp  = getComponent(compid,true);
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_componentitem WHERE compid="+compid);
 			rs.next();
 			int c = rs.getInt(1)+1;
 			rs.close();
+			st.close();
 			
 			String comptype = null;
-   Statement st2 = getDBConnection().createStatement();
+   Statement st2 = m_conn.createStatement();
    ResultSet rs2 = st2.executeQuery("SELECT database FROM dm.dm_component a, dm.dm_type b WHERE a.comptypeid = b.id and a.id="+compid);
    while (rs2.next())
    { 
     comptype = rs2.getString(1);
    }
    rs2.close();
+   st2.close();
    
    if (comptype == null)
    { 
-    comptype = "Item "+c;
+    if (kind != null && kind.equalsIgnoreCase("docker"))
+     comptype =  comp.getName() + " item "+c;
+    else
+     comptype = comp.getName() +" item "+c;
    } 
    else
    { 
@@ -16693,41 +19206,57 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
       int itemid = getID("componentitem");
       int domainid = comp.getDomainId();
       CreateNewObject("componentitem",NewName,domainid,compid,itemid,"");
-      st.execute("UPDATE dm.dm_componentitem SET rollup=1, xpos=" + xpos + ", ypos=" + ypos + " WHERE compid="+compid+" AND id="+itemid);
-      st.execute("UPDATE dm.dm_component SET modified="+timeNow()+",modifierid="+getUserID()+" WHERE id="+compid);
-      pred = itemid;
-      
-      comptype = "Rollback";
-      NewName=comptype;
-      itemid = getID("componentitem");
-      domainid = comp.getDomainId();
-      ypos += 200;
-      CreateNewObject("componentitem",NewName,domainid,compid,itemid,"");
-      st.execute("UPDATE dm.dm_componentitem SET rollback=1, predecessorid=" + pred + ", xpos=" + xpos + ", ypos=" + ypos + " WHERE compid="+compid+" AND id="+itemid);
-      st.execute("UPDATE dm.dm_component SET modified="+timeNow()+",modifierid="+getUserID()+" WHERE id="+compid);
+      st = m_conn.createStatement();
+      st.execute("UPDATE dm.dm_componentitem SET rollup=1, xpos=" + xpos + ", ypos=" + ypos + ", kind='database' WHERE compid="+compid+" AND id="+itemid);
+      st.execute("UPDATE dm.dm_component SET modified="+timeNow()+",modifierid="+m_userID+" WHERE id="+compid);
       st.close();
-      getDBConnection().commit();
-      return pred;
+      m_conn.commit();
+      return itemid;
      }
      else
-     { 
-      comptype = "Database "+c;
+     {
+      Statement st3 = m_conn.createStatement();
+      ResultSet rs3 = st3.executeQuery("SELECT id, ypos FROM dm.dm_componentitem WHERE compid="+compid);
+      rs3.next();
+      pred = rs3.getInt(1);
+      ypos = rs3.getInt(2);
+      rs3.close();
+      st3.close();
+      
+      comptype = "Rollback";
+      String NewName=comptype;
+      int itemid = getID("componentitem");
+      int domainid = comp.getDomainId();
+      ypos += 200;
+      CreateNewObject("componentitem",NewName,domainid,compid,itemid,"");
+      Statement st4 = m_conn.createStatement();
+      st4.execute("UPDATE dm.dm_componentitem SET rollback=1, predecessorid=" + pred + ", xpos=" + xpos + ", ypos=" + ypos + ", kind='database' WHERE compid="+compid+" AND id="+itemid);
+      st4.execute("UPDATE dm.dm_component SET modified="+timeNow()+",modifierid="+m_userID+" WHERE id="+compid);
+      st4.close();
+      m_conn.commit();
+      return itemid;
      }
 		  }    
     else
     { 
-     comptype = "Item "+c;
+     comptype = comp.getName() + " item "+c;
     } 
-   } 
-  
+   }
+ 
+   if (kind == null)
+    kind = "file";
+   
 			String NewName=comptype;
 			int itemid = getID("componentitem");
 			int domainid = comp.getDomainId();
 			CreateNewObject("componentitem",NewName,domainid,compid,itemid,"");
-			st.execute("UPDATE dm.dm_componentitem SET xpos=" + xpos + ", ypos=" + ypos + " WHERE compid="+compid+" AND id="+itemid);
-			st.execute("UPDATE dm.dm_component SET modified="+timeNow()+",modifierid="+getUserID()+" WHERE id="+compid);
-   st.close();
-			getDBConnection().commit();
+			Statement st5 = m_conn.createStatement();
+			st5.execute("UPDATE dm.dm_componentitem SET xpos=" + xpos + ", ypos=" + ypos + " WHERE compid="+compid+" AND id="+itemid);
+			st5.execute("UPDATE dm.dm_componentitem SET kind='" + kind + "' WHERE compid="+compid+" AND id="+itemid);
+			st5.execute("UPDATE dm.dm_component SET modified="+timeNow()+",modifierid="+m_userID+" WHERE id="+compid);
+			
+   st5.close();
+			m_conn.commit();
 			return itemid;
 		}
 		catch (SQLException ex)
@@ -16745,7 +19274,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		{
 			System.out.println("new component in application");
 			Application app  = getApplication(appid,true);
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_applicationcomponent WHERE appid="+appid);
 			rs.next();
 			int c = rs.getInt(1)+1;
@@ -16757,9 +19286,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			// 06/01/2014 - always run from diagram background menu, so predecessor is never known - removed predecessorid and ? and setInt(3,appid);
 			PreparedStatement ps = null;
 			if (isRelease)
-			 ps = getDBConnection().prepareStatement("INSERT INTO dm.dm_applicationcomponent(appid,childappid,xpos,ypos) VALUES(?,?,?,?)");
+			 ps = m_conn.prepareStatement("INSERT INTO dm.dm_applicationcomponent(appid,childappid,xpos,ypos) VALUES(?,?,?,?)");
 			else
-    ps = getDBConnection().prepareStatement("INSERT INTO dm.dm_applicationcomponent(appid,compid,xpos,ypos) VALUES(?,?,?,?)");
+    ps = m_conn.prepareStatement("INSERT INTO dm.dm_applicationcomponent(appid,compid,xpos,ypos) VALUES(?,?,?,?)");
 
 			ps.setInt(1,appid);
 			ps.setInt(2,compid);
@@ -16767,7 +19296,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			ps.setInt(4,ypos);
 			ps.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return compid;
 		}
 		catch (SQLException ex)
@@ -16778,6 +19307,102 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Unable to Create New Component Item in database");
 	}
 	
+	public void assignComp2App(Application app, Component ver, Component from, Component to)
+ {
+  try
+  {
+
+   Statement st = m_conn.createStatement();
+   ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_applicationcomponent WHERE appid="+ app.getId() + " and compid =" + ver.getId());
+   rs.next();
+   int c = rs.getInt(1);
+   rs.close();
+   st.close();
+   
+   if (c == 0)
+   {
+    PreparedStatement ps = m_conn.prepareStatement("INSERT INTO dm.dm_applicationcomponent(appid,compid,xpos,ypos) VALUES(?,?,?,?)");
+
+    ps.setInt(1,app.getId());
+    ps.setInt(2,ver.getId());
+    ps.setInt(3,ver.getXpos());
+    ps.setInt(4,ver.getYpos());
+    ps.execute();
+    st.close();
+   } 
+   else
+   {
+    PreparedStatement ps = m_conn.prepareStatement("UPDATE dm.dm_applicationcomponent set xpos=?, ypos=? where appid=? and compid=?");
+    
+    ps.setInt(1,ver.getXpos());
+    ps.setInt(2,ver.getYpos());
+    ps.setInt(3,app.getId());
+    ps.setInt(4,ver.getId());
+
+    ps.execute();
+    st.close();
+   }
+   m_conn.commit();
+   
+   applicationComponentAddLink(app.getId(),from.getId(),to.getId());
+   return;
+  }
+  catch (SQLException ex)
+  {
+   rollback();
+   ex.printStackTrace();
+  }
+  throw new RuntimeException("Unable to Create New Component Item in database");
+ }
+ 
+ public void assignApp2Rel(Application app, Application ver, Application from, Application to)
+ {
+  try
+  {
+
+   Statement st = m_conn.createStatement();
+   ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_applicationcomponent WHERE appid="+ app.getId() + " and childappid =" + ver.getId());
+   rs.next();
+   int c = rs.getInt(1);
+   rs.close();
+   st.close();
+   
+   if (c == 0)
+   {
+    PreparedStatement ps = m_conn.prepareStatement("INSERT INTO dm.dm_applicationcomponent(appid,childappid,xpos,ypos) VALUES(?,?,?,?)");
+
+    ps.setInt(1,app.getId());
+    ps.setInt(2,ver.getId());
+    ps.setInt(3,ver.getXpos());
+    ps.setInt(4,ver.getYpos());
+    ps.execute();
+    st.close();
+   } 
+   else
+   {
+    PreparedStatement ps = m_conn.prepareStatement("UPDATE dm.dm_applicationcomponent set xpos=?, ypos=? where appid=? and childappid=?");
+    
+    ps.setInt(1,ver.getXpos());
+    ps.setInt(2,ver.getYpos());
+    ps.setInt(3,app.getId());
+    ps.setInt(4,ver.getId());
+
+    ps.execute();
+    st.close();
+   }
+   m_conn.commit();
+   
+   applicationComponentAddLink(app.getId(),from.getId(),to.getId());
+   return;
+  }
+  catch (SQLException ex)
+  {
+   rollback();
+   ex.printStackTrace();
+  }
+  throw new RuntimeException("Unable to Create New Component Item in database");
+ }
+ 
 	
 	public int serverNewComponent(int servid,int xpos,int ypos)
 	{
@@ -16785,7 +19410,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		{
 			System.out.println("new component in server");
 			Server serv  = getServer(servid,true);
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_compsallowedonserv WHERE serverid="+servid);
 			rs.next();
 			int c = rs.getInt(1)+1;
@@ -16795,14 +19420,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			int domainid = serv.getDomainId();
 			CreateNewObject("component",NewName,domainid,0,compid,"");
 			// 06/01/2014 - always run from diagram background menu, so predecessor is never known - removed predecessorid and ? and setInt(3,appid);
-			PreparedStatement ps = getDBConnection().prepareStatement("INSERT INTO dm.dm_compsallowedonserv(compid,serverid,xpos,ypos) VALUES(?,?,?,?)");
+			PreparedStatement ps = m_conn.prepareStatement("INSERT INTO dm.dm_compsallowedonserv(compid,serverid,xpos,ypos) VALUES(?,?,?,?)");
 			ps.setInt(1,compid);
 			ps.setInt(2,servid);
 			ps.setInt(3,xpos);
 			ps.setInt(4,ypos);
 			ps.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return compid;
 		}
 		catch (SQLException ex)
@@ -16818,7 +19443,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println("removing server from environment");
-			PreparedStatement st = getDBConnection().prepareStatement("DELETE FROM dm.dm_serversinenv WHERE envid=? AND serverid=?");
+			PreparedStatement st = m_conn.prepareStatement("DELETE FROM dm.dm_serversinenv WHERE envid=? AND serverid=?");
 			st.setInt(1, envid);
 			st.setInt(2, serverid);
 			st.execute();
@@ -16830,7 +19455,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			String linkval2="<a href='javascript:SwitchDisplay(\"en"+env.getId()+"\");'><b>"+env.getName()+"</b></a>";
 			RecordObjectUpdate(server,"Removed from Environment "+linkval2,envid);
 			updateModTime(env);
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -16846,40 +19471,40 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println("removing version from application");
-			PreparedStatement st = getDBConnection().prepareStatement("DELETE FROM dm.dm_applicationcomponentflows WHERE appid=?");
+			PreparedStatement st = m_conn.prepareStatement("DELETE FROM dm.dm_applicationcomponentflows WHERE appid=?");
 			st.setInt(1, verid);
 			st.execute();
 			st.close();
-			PreparedStatement st1 = getDBConnection().prepareStatement("DELETE FROM dm.dm_applicationcomponent WHERE appid=?");
+			PreparedStatement st1 = m_conn.prepareStatement("DELETE FROM dm.dm_applicationcomponent WHERE appid=?");
 			st1.setInt(1, verid);
 			st1.execute();
 			st1.close();
-			PreparedStatement st2 = getDBConnection().prepareStatement("DELETE FROM dm.dm_applicationvars WHERE appid=?");
+			PreparedStatement st2 = m_conn.prepareStatement("DELETE FROM dm.dm_applicationvars WHERE appid=?");
 			st2.setInt(1, verid);
 			st2.execute();
 			st2.close();
-			PreparedStatement st3 = getDBConnection().prepareStatement("DELETE FROM dm.dm_approval WHERE appid=?");
+			PreparedStatement st3 = m_conn.prepareStatement("DELETE FROM dm.dm_approval WHERE appid=?");
 			st3.setInt(1, verid);
 			st3.execute();
 			st3.close();
-			PreparedStatement st4 = getDBConnection().prepareStatement("DELETE FROM dm.dm_appsinenv WHERE appid=?");
+			PreparedStatement st4 = m_conn.prepareStatement("DELETE FROM dm.dm_appsinenv WHERE appid=?");
 			st4.setInt(1, verid);
 			st4.execute();
 			st4.close();
-			PreparedStatement st5 = getDBConnection().prepareStatement("DELETE FROM dm.dm_request WHERE appid=?");
+			PreparedStatement st5 = m_conn.prepareStatement("DELETE FROM dm.dm_request WHERE appid=?");
 			st5.setInt(1, verid);
 			st5.execute();
 			st5.close();
-			PreparedStatement st6 = getDBConnection().prepareStatement("DELETE FROM dm.dm_calendar WHERE appid=?");
+			PreparedStatement st6 = m_conn.prepareStatement("DELETE FROM dm.dm_calendar WHERE appid=?");
 			st6.setInt(1, verid);
 			st6.execute();
 			st6.close();
-			PreparedStatement st7 = getDBConnection().prepareStatement("UPDATE dm.dm_application SET status='D' WHERE id=? AND parentid=?");
+			PreparedStatement st7 = m_conn.prepareStatement("UPDATE dm.dm_application SET status='D' WHERE id=? AND parentid=?");
 			st7.setInt(1, verid);
 			st7.setInt(2, appid);
 			st7.execute();
 			st7.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -16895,36 +19520,36 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 		 System.out.println("removing version from component item's props");
-   PreparedStatement st = getDBConnection().prepareStatement("DELETE FROM dm.dm_compitemprops a WHERE a.compitemid in (select id from dm.dm_componentitem b where b.compid=?)");
+   PreparedStatement st = m_conn.prepareStatement("DELETE FROM dm.dm_compitemprops a WHERE a.compitemid in (select id from dm.dm_componentitem b where b.compid=?)");
 		   st.setInt(1, verid);
 		   st.execute();
 		   st.close();
  
    System.out.println("removing compnent vars from component");
-		   st = getDBConnection().prepareStatement("DELETE FROM dm.dm_componentvars WHERE compid=?");
+		   st = m_conn.prepareStatement("DELETE FROM dm.dm_componentvars WHERE compid=?");
 		   st.setInt(1, verid);
 		   st.execute();
 		   st.close();
    
    System.out.println("removing version from component items");
-		   st = getDBConnection().prepareStatement("DELETE FROM dm.dm_componentitem WHERE compid=?");
+		   st = m_conn.prepareStatement("DELETE FROM dm.dm_componentitem WHERE compid=?");
 		   st.setInt(1, verid);
 		   st.execute();
 		   st.close();
 
    System.out.println("removing version from component");
-			st = getDBConnection().prepareStatement("DELETE FROM dm.dm_component WHERE id=? AND parentid=?");
+			st = m_conn.prepareStatement("DELETE FROM dm.dm_component WHERE id=? AND parentid=?");
 			st.setInt(1, verid);
 			st.setInt(2, parentcompid);
 			st.execute();
 			st.close();
 	System.out.println("removing from category");
 
-			st = getDBConnection().prepareStatement("DELETE FROM dm.dm_component_categories WHERE id=?");
+			st = m_conn.prepareStatement("DELETE FROM dm.dm_component_categories WHERE id=?");
 			st.setInt(1, verid);
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -16940,16 +19565,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println("removing version from component");
-			PreparedStatement st1 = getDBConnection().prepareStatement("DELETE FROM dm.dm_compitemprops WHERE compitemid=?");
+			PreparedStatement st1 = m_conn.prepareStatement("DELETE FROM dm.dm_compitemprops WHERE compitemid=?");
 			st1.setInt(1,itemid);
 			st1.execute();
-			PreparedStatement st2 = getDBConnection().prepareStatement("DELETE FROM dm.dm_componentitem WHERE id=? AND compid=?");
+			PreparedStatement st2 = m_conn.prepareStatement("DELETE FROM dm.dm_componentitem WHERE id=? AND compid=?");
 			st2.setInt(1, itemid);
 			st2.setInt(2, compid);
 			st2.execute();
 			st2.close();
 			st1.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -16966,7 +19591,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println("removing component "+compid+" from application "+appid);
-			PreparedStatement st1 = getDBConnection().prepareStatement("DELETE FROM dm.dm_applicationcomponentflows WHERE appid=? AND (objfrom=? OR objto=?)");
+			PreparedStatement st1 = m_conn.prepareStatement("DELETE FROM dm.dm_applicationcomponentflows WHERE appid=? AND (objfrom=? OR objto=?)");
 			st1.setInt(1,appid);
 			st1.setInt(2,compid);
 			st1.setInt(3,compid);
@@ -16980,7 +19605,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				String linkval2="<a href='javascript:SwitchDisplay(\""+at+childapp.getId()+"\");'><b>"+childapp.getName()+"</b></a>";
 				RecordObjectUpdate(childapp,"Removed from Release "+linkval,appid);
 				RecordObjectUpdate(app, "Removed Application "+linkval2,compid);
-				st2 = getDBConnection().prepareStatement("DELETE FROM dm.dm_applicationcomponent WHERE appid=? AND childappid=?");
+				st2 = m_conn.prepareStatement("DELETE FROM dm.dm_applicationcomponent WHERE appid=? AND childappid=?");
 			} else {
 				Component comp = getComponent(compid,true);
 				String at=(app.getParentId()>0)?"av":"ap";
@@ -16989,13 +19614,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				String linkval2="<a href='javascript:SwitchDisplay(\""+ct+comp.getId()+"\");'><b>"+comp.getName()+"</b></a>";
 				RecordObjectUpdate(comp,"Removed from Application "+linkval,appid);
 				RecordObjectUpdate(app, "Removed Component "+linkval2,compid);
-				st2 = getDBConnection().prepareStatement("DELETE FROM dm.dm_applicationcomponent WHERE appid=? AND compid=?");
+				st2 = m_conn.prepareStatement("DELETE FROM dm.dm_applicationcomponent WHERE appid=? AND compid=?");
 			}
 			st2.setInt(1,appid);
 			st2.setInt(2,compid);
 			st2.execute();
 			st2.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17011,18 +19636,18 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println("removing component "+compid+" from server "+servid);
-			PreparedStatement st1 = getDBConnection().prepareStatement("DELETE FROM dm.dm_compsallowedonserv WHERE serverid=? AND compid=?");
+			PreparedStatement st1 = m_conn.prepareStatement("DELETE FROM dm.dm_compsallowedonserv WHERE serverid=? AND compid=?");
 			st1.setInt(1,servid);
 			st1.setInt(2,compid);
 			st1.execute();
 			st1.close();
-			PreparedStatement st2 = getDBConnection().prepareStatement("DELETE FROM dm.dm_compsonserv WHERE serverid=? AND (compid=? OR compid IN (select id FROM dm.dm_component WHERE parentid=?))");
+			PreparedStatement st2 = m_conn.prepareStatement("DELETE FROM dm.dm_compsonserv WHERE serverid=? AND (compid=? OR compid IN (select id FROM dm.dm_component WHERE parentid=?))");
 			st2.setInt(1,servid);
 			st2.setInt(2,compid);
 			st2.setInt(3,compid);
 			st2.execute();
 			st2.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17033,6 +19658,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Unable to Remove Component from Server");
 	}
 	
+ 
  public void removeAppVersionFromEnv(int deploymentid)
  {
   try
@@ -17057,7 +19683,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println("Adding connector envid="+envid+" fromnode="+fromnode+" tonode="+tonode+" fromside="+fromside+" toside="+toside);
-			PreparedStatement st = getDBConnection().prepareStatement("SELECT count(*) FROM dm.dm_server_connections WHERE envid=? AND serverfrom=? AND serverto=? AND serverfromedge=? AND servertoedge=?");
+			PreparedStatement st = m_conn.prepareStatement("SELECT count(*) FROM dm.dm_server_connections WHERE envid=? AND serverfrom=? AND serverto=? AND serverfromedge=? AND servertoedge=?");
 			st.setInt(1,envid);
 			st.setInt(2,fromnode);
 			st.setInt(3,tonode);
@@ -17071,7 +19697,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			if (c == 0)
 			{
 				// New connection
-				PreparedStatement st2 = getDBConnection().prepareStatement("INSERT INTO dm.dm_server_connections(envid,serverfrom,serverfromedge,serverto,servertoedge) VALUES (?,?,?,?,?)");
+				PreparedStatement st2 = m_conn.prepareStatement("INSERT INTO dm.dm_server_connections(envid,serverfrom,serverfromedge,serverto,servertoedge) VALUES (?,?,?,?,?)");
 				st2.setInt(1,envid);
 				st2.setInt(2,fromnode);
 				st2.setInt(3,fromside);
@@ -17081,7 +19707,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				st2.close();
 			}
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17098,13 +19724,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		{
 			System.out.println("Adding version dependency");
 			
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_application SET predecessorid=? WHERE id=? AND parentid=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_application SET predecessorid=? WHERE id=? AND parentid=?");
 			st.setInt(1,fromnode);
 			st.setInt(2,tonode);
 			st.setInt(3,appid);
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17120,7 +19746,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			// Update the predecessor to create the dependency
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_component SET predecessorid=? WHERE id=? AND parentid=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_component SET predecessorid=? WHERE id=? AND parentid=?");
 			st.setInt(1,fromnode);
 			st.setInt(2,tonode);
 			st.setInt(3,compid);
@@ -17132,7 +19758,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			Component comp = getComponent(fromnode,false);
 			DeleteComponentAttribs(tonode);
 			AddComponentAttribs(newcomp,comp);
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17150,7 +19776,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		{
 			System.out.println("Adding component item link");
 			
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_componentitem SET predecessorid=? WHERE id=? AND compid=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_componentitem SET predecessorid=? WHERE id=? AND compid=?");
 			st.setInt(1,fromnode);
 			if (tonode>0)
 				st.setInt(2,tonode);
@@ -17159,7 +19785,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			st.setInt(3,compid);
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17176,7 +19802,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		{
 			System.out.println("Adding link between components for application");
 			
-			PreparedStatement stc = getDBConnection().prepareStatement("SELECT count(*) from dm.dm_applicationcomponentflows WHERE appid=? AND objfrom=? AND objto=?");
+			PreparedStatement stc = m_conn.prepareStatement("SELECT count(*) from dm.dm_applicationcomponentflows WHERE appid=? AND objfrom=? AND objto=?");
 			stc.setInt(1,appid);
 			stc.setInt(2,fromnode);
 			stc.setInt(3,tonode);
@@ -17190,7 +19816,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			stc.close();
 			if (c == 0) {
 				// This flow does not exist
-				PreparedStatement st = getDBConnection().prepareStatement("INSERT INTO dm.dm_applicationcomponentflows(appid,objfrom,objto) VALUES(?,?,?)");
+				PreparedStatement st = m_conn.prepareStatement("INSERT INTO dm.dm_applicationcomponentflows(appid,objfrom,objto) VALUES(?,?,?)");
 				st.setInt(1,appid);
 				if (fromnode>0) {
 					st.setInt(2,fromnode);
@@ -17204,7 +19830,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				}
 				st.execute();
 				st.close();
-				getDBConnection().commit();
+				m_conn.commit();
 			}
 			return;
 		}
@@ -17222,12 +19848,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		{
 			System.out.println("Deleting link between components for application");
 			System.out.println("appid="+appid+" fromnode="+fromnode+" tonode (compid)="+tonode);
-			PreparedStatement st = getDBConnection().prepareStatement("DELETE FROM dm.dm_applicationcomponentflows WHERE appid=? AND objto=?");
+			PreparedStatement st = m_conn.prepareStatement("DELETE FROM dm.dm_applicationcomponentflows WHERE appid=? AND objto=?");
 			st.setInt(1,appid);
 			st.setInt(2,tonode);
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17245,27 +19871,27 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			System.out.println("Replacing component "+oldcompid+" with "+newcompid+" for application "+appid);
 			PreparedStatement st = null;
 			if (isRelease)
-			 st = getDBConnection().prepareStatement("UPDATE dm.dm_applicationcomponent SET childappid=? WHERE appid=? AND childappid=?");
+			 st = m_conn.prepareStatement("UPDATE dm.dm_applicationcomponent SET childappid=? WHERE appid=? AND childappid=?");
 			else
-			 st = getDBConnection().prepareStatement("UPDATE dm.dm_applicationcomponent SET compid=? WHERE appid=? AND compid=?");
+			 st = m_conn.prepareStatement("UPDATE dm.dm_applicationcomponent SET compid=? WHERE appid=? AND compid=?");
 			st.setInt(1,newcompid);
 			st.setInt(2,appid);
 			st.setInt(3,oldcompid);
 			st.execute();
 			st.close();
-			PreparedStatement st2 = getDBConnection().prepareStatement("UPDATE dm.dm_applicationcomponentflows SET objto=? WHERE appid=? AND objto=?");
+			PreparedStatement st2 = m_conn.prepareStatement("UPDATE dm.dm_applicationcomponentflows SET objto=? WHERE appid=? AND objto=?");
 			st2.setInt(1,newcompid);
 			st2.setInt(2,appid);
 			st2.setInt(3,oldcompid);
 			st2.execute();
 			st2.close();
-			PreparedStatement st3 = getDBConnection().prepareStatement("UPDATE dm.dm_applicationcomponentflows SET objfrom=? WHERE appid=? AND objfrom=?");
+			PreparedStatement st3 = m_conn.prepareStatement("UPDATE dm.dm_applicationcomponentflows SET objfrom=? WHERE appid=? AND objfrom=?");
 			st3.setInt(1,newcompid);
 			st3.setInt(2,appid);
 			st3.setInt(3,oldcompid);
 			st3.execute();
 			st3.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			Component comp = getComponent(newcompid,true);
 			return comp;
 		}
@@ -17281,7 +19907,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{
-			PreparedStatement st = getDBConnection().prepareStatement("DELETE FROM dm.dm_server_connections WHERE envid=? AND serverfrom=? AND serverfromedge=? AND serverto=? AND servertoedge=?");
+			PreparedStatement st = m_conn.prepareStatement("DELETE FROM dm.dm_server_connections WHERE envid=? AND serverfrom=? AND serverfromedge=? AND serverto=? AND servertoedge=?");
 			st.setInt(1,envid);
 			st.setInt(2,fromnode);
 			st.setInt(3,fromside);
@@ -17289,7 +19915,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			st.setInt(5,toside);
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17304,14 +19930,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_application SET predecessorid=? WHERE id=? AND parentid=? AND predecessorid=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_application SET predecessorid=? WHERE id=? AND parentid=? AND predecessorid=?");
 			st.setInt(1,appid);
 			st.setInt(2,tonode);
 			st.setInt(3,appid);
 			st.setInt(4,fromnode);
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17327,16 +19953,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			// Delete the old component item list
-			PreparedStatement s1 = getDBConnection().prepareStatement("DELETE FROM dm.dm_compitemprops WHERE compitemid in (SELECT id FROM dm.dm_componentitem WHERE compid=?)");
+			PreparedStatement s1 = m_conn.prepareStatement("DELETE FROM dm.dm_compitemprops WHERE compitemid in (SELECT id FROM dm.dm_componentitem WHERE compid=?)");
 			s1.setInt(1,tonode);
 			s1.execute();
 			s1.close();
-			PreparedStatement s2 = getDBConnection().prepareStatement("DELETE FROM dm.dm_componentitem WHERE compid=?");
+			PreparedStatement s2 = m_conn.prepareStatement("DELETE FROM dm.dm_componentitem WHERE compid=?");
 			s2.setInt(1,tonode);
 			s2.execute();
 			s2.close();
 			// Update the predecessor to create the dependency
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_component SET predecessorid=? WHERE id=? AND parentid=? AND predecessorid=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_component SET predecessorid=? WHERE id=? AND parentid=? AND predecessorid=?");
 			st.setInt(1,compid);
 			st.setInt(2,tonode);
 			st.setInt(3,compid);
@@ -17344,7 +19970,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			st.execute();
 			st.close();
 //			AddComponentItems(timeNow(),tonode,compid);
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17359,13 +19985,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_componentitem SET predecessorid=null WHERE id=? AND compid=? AND predecessorid=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_componentitem SET predecessorid=null WHERE id=? AND compid=? AND predecessorid=?");
 			st.setInt(1,tonode);
 			st.setInt(2,compid);
 			st.setInt(3,fromnode);
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17381,13 +20007,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_application SET name=?, summary=? WHERE id=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_application SET name=?, summary=? WHERE id=?");
 			st.setString(1,Name);
 			st.setString(2,Summary);
 			st.setInt(3,appid);
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17402,13 +20028,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_component SET name=?, summary=? WHERE id=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_component SET name=?, summary=? WHERE id=?");
 			st.setString(1,Name);
 			st.setString(2,Summary);
 			st.setInt(3,compid);
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17423,13 +20049,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_componentitem SET name=?, summary=? WHERE id=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_componentitem SET name=?, summary=? WHERE id=?");
 			st.setString(1,Name);
 			st.setString(2,Summary);
 			st.setInt(3,ccid);
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17444,13 +20070,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_server SET name=?, summary=? WHERE id=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_server SET name=?, summary=? WHERE id=?");
 			st.setString(1,Name);
 			st.setString(2,Summary);
 			st.setInt(3,servid);
 			st.execute();
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17487,7 +20113,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			List <Server> ret = new ArrayList<Server>();
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next())
 			{
@@ -17513,7 +20139,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			List <ServerLink> ret = new ArrayList<ServerLink>();
-			PreparedStatement stmt = getDBConnection().prepareStatement("SELECT serverfrom,serverfromedge,serverto,servertoedge,label,style FROM dm.dm_server_connections WHERE envid=?");
+			PreparedStatement stmt = m_conn.prepareStatement("SELECT serverfrom,serverfromedge,serverto,servertoedge,label,style FROM dm.dm_server_connections WHERE envid=?");
 			stmt.setInt(1,envid);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next())
@@ -17539,7 +20165,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			List <Component> ret = new ArrayList<Component>();
-			PreparedStatement stmt = getDBConnection().prepareStatement("SELECT a.id,a.name,a.summary FROM dm.dm_component a," +
+			PreparedStatement stmt = m_conn.prepareStatement("SELECT a.id,a.name,a.summary FROM dm.dm_component a," +
 															"dm.dm_compsallowedonserv b,	"	+
 															"dm.dm_serversinenv c	"	+
 															"WHERE a.id = b.compid	"	+
@@ -17572,7 +20198,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			List <Server> ret = new ArrayList<Server>();
-			PreparedStatement stmt = getDBConnection().prepareStatement("SELECT a.id,a.name,a.summary FROM dm.dm_server a," +
+			PreparedStatement stmt = m_conn.prepareStatement("SELECT a.id,a.name,a.summary FROM dm.dm_server a," +
 															"dm.dm_compsallowedonserv b,	"	+
 															"dm.dm_serversinenv c	"	+
 															"WHERE a.id = b.serverid	"	+
@@ -17607,7 +20233,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   try
   {
    List <Server> ret = new ArrayList<Server>();
-   PreparedStatement stmt = getDBConnection().prepareStatement("SELECT a.id,a.name,a.summary FROM dm.dm_server a," +
+   PreparedStatement stmt = m_conn.prepareStatement("SELECT a.id,a.name,a.summary FROM dm.dm_server a," +
                "dm.dm_compsonserv b, " +
                "dm.dm_serversinenv c " +
                "WHERE a.id = b.serverid " +
@@ -17627,6 +20253,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
     ret.add(s);
    }
    rs.close();
+   stmt.close();
    return ret;
   }
   catch(SQLException e)
@@ -17645,7 +20272,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			//
 			// Need to check if anyone else is editing this
 			//
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_actionedit WHERE actionid="+actionid);
 			rs.next();
 			int c = rs.getInt(1);
@@ -17660,7 +20287,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				//                                                                                     ---------
 				st.execute("INSERT INTO dm.dm_actionedit(actionid,editid,userid) VALUES ("+actionid+","+actionid+","+GetUserID()+")");
 			}
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17679,9 +20306,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			//
 			// Need to do all the copy back at this point
 			//
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			st.execute("DELETE FROM dm.dm_actionedit WHERE actionid="+actionid+" AND userid="+GetUserID());		
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -17731,7 +20358,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return (!rs.wasNull() && (val != null)) ? val : defaultValue;
 	}
 	
-	public void getCreatorModifier(ResultSet rs, int startcol, DMObject obj)
+	private void getCreatorModifier(ResultSet rs, int startcol, DMObject obj)
 			throws SQLException
 	{
 		int creatorid = getInteger(rs, startcol, 0);
@@ -17761,7 +20388,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		}
 	}
 	
-	public void getStatus(ResultSet rs, int col, DMObject obj)
+	private void getStatus(ResultSet rs, int col, DMObject obj)
 		throws SQLException
 	{
 		String status = rs.getString(col);
@@ -17787,7 +20414,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	public String formatDateToUserLocale(int when)
 	{
 		// TODO: Lookup User's locale and format string
-		System.out.println("df = "+m_datefmt+" "+m_timefmt);
+		// System.out.println("df = "+m_datefmt+" "+m_timefmt);
 		SimpleDateFormat sdf = new SimpleDateFormat(m_datefmt + " " + m_timefmt);
 		return sdf.format(new java.util.Date(1000 * (long) when));
 	}
@@ -17797,7 +20424,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		int count = -1;
 		try {
 			String csql = "SELECT count(*) FROM dm.dm_category WHERE name=?";
-			PreparedStatement st1 = getDBConnection().prepareStatement(csql);
+			PreparedStatement st1 = m_conn.prepareStatement(csql);
 			st1.setString(1, name);
 			ResultSet rs1 = st1.executeQuery();
 			if(rs1.next()) {
@@ -17806,12 +20433,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					int newid = getID("category");
 					if(newid > 0) {
 						String isql="INSERT INTO dm.dm_category(id,name) VALUES(?,?)";
-						PreparedStatement st2 = getDBConnection().prepareStatement(isql);
+						PreparedStatement st2 = m_conn.prepareStatement(isql);
 						st2.setInt(1,newid);
 						st2.setString(2,name);
 						st2.execute();
 						st2.close();
-						getDBConnection().commit();
+						m_conn.commit();
 						return new Category(newid, name);
 					}
 				}
@@ -17829,12 +20456,195 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Failed to create category");
 	}
 
+ public void createSaaSClient(String clientid, Domain domain, String lictype, int liccnt, String provider, String providerid, HttpServletRequest request)
+ {
+  int count = -1;
+  int domainid = domain.getId();
+  
+  try
+  {
+   String csql = "SELECT id, clientid FROM dm.dm_engine WHERE domainid=?";
+   PreparedStatement st1 = m_conn.prepareStatement(csql);
+   st1.setInt(1, domainid);
+   ResultSet rs1 = st1.executeQuery();
+   if (rs1.next()) // engine found for domain
+   {
+    int engineid = rs1.getInt(1);
+    String currclientid = rs1.getString(2);
+    
+    if (currclientid != null)
+     clientid = currclientid;
+    
+    if (clientid != null)
+    {
+     csql = "SELECT count(*) FROM dm.dm_saasclients WHERE clientid=?";
+     st1 = m_conn.prepareStatement(csql);
+     st1.setString(1, currclientid);
+     rs1 = st1.executeQuery();
+     if (rs1.next())
+     {
+      count = rs1.getInt(1);
+      if (count == 0)
+      {
+       String isql = "INSERT INTO dm.dm_saasclients(clientid,provider,providerid) VALUES(?,?,?)";
+       PreparedStatement st2 = m_conn.prepareStatement(isql);
+       st2.setString(1, clientid);
+       st2.setString(2, provider);
+       st2.setString(3, providerid);   
+       st2.execute();
+       st2.close();
+      }
+     }
+    }
+    String usql = "UPDATE dm.dm_engine set clientid = ? where id = ?";
+    PreparedStatement st4 = m_conn.prepareStatement(usql);
+
+    st4.setString(1, clientid);
+    st4.setInt(2, engineid);
+    st4.execute();
+    st4.close();
+
+    usql = "UPDATE dm.dm_domain set license_type = ?, license_cnt = ? where id = ?";
+    PreparedStatement st5 = m_conn.prepareStatement(usql);
+
+    st5.setString(1, lictype);
+    st5.setInt(2, liccnt);
+    st5.setInt(3, domainid);
+    st5.execute();
+    st5.close();   
+    rs1.close();
+    st1.close();
+    m_conn.commit();
+    Domain dom = getDomain(domainid);
+    Domain parent = dom.getDomain();
+    RunDomainImport("GLOBAL.Online Store Company", parent.getFullName() + ".Online Store Company", request);
+    return;
+   }
+   else // engine not found for domain
+   {
+    csql = "SELECT count(*) FROM dm.dm_saasclients WHERE clientid=?";
+    PreparedStatement st5 = m_conn.prepareStatement(csql);
+    st5.setString(1, clientid);
+    ResultSet rs5 = st5.executeQuery();
+    if (rs5.next())
+    {
+     count = rs5.getInt(1);
+     if (count == 0)
+     {
+      String isql = "INSERT INTO dm.dm_saasclients(clientid,provider,providerid) VALUES(?,?,?)";
+      PreparedStatement st2 = m_conn.prepareStatement(isql);
+      st2.setString(1, clientid);
+      st2.setString(2, provider);
+      st2.setString(3, providerid);   
+      st2.execute();
+      st2.close();
+
+      int newid = getID("engine");
+
+      isql = "INSERT INTO dm.dm_engine(id, name, hostname, domainid, status, clientid) " + "VALUES (?, ?, ?, ?, ?, ?)";
+      PreparedStatement st7 = m_conn.prepareStatement(isql);
+      st7.setInt(1, newid);
+      st7.setString(2, "Reverse Proxy");
+      st7.setString(3, "localhost");
+      st7.setInt(4, domainid);
+      st7.setString(5, "N");
+      st7.setString(6, clientid);
+      st7.execute();
+      st7.close();
+      
+      isql = "INSERT INTO dm.dm_engineconfig (engineid, name, value) " + "VALUES (?, 'threadlimit', 8)";
+      st7 = m_conn.prepareStatement(isql);
+      st7.setInt(1, newid);
+      st7.execute();
+      st7.close();
+      
+      isql = "UPDATE dm.dm_domain set license_type = ?, license_cnt = ? where id = ?";
+      PreparedStatement st8= m_conn.prepareStatement(isql);
+
+      st8.setString(1, lictype);
+      st8.setInt(2, liccnt);
+      st8.setInt(3, domainid);
+      st8.execute();
+      st8.close();   
+      m_conn.commit();
+     }
+    }
+    rs1.close();
+    st1.close();
+    rs5.close();
+    st5.close();
+    
+    Domain dom = getDomain(domainid);
+    Domain parent = dom.getDomain();
+    RunDomainImport("GLOBAL.Online Store Company", parent.getFullName() + ".Online Store Company", request);
+    
+    return;
+   }
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+   rollback();
+  }
+
+  throw new RuntimeException("Failed to create saas client");
+ }
+ 
+ private void RunDomainImport(String fromdomain, String todomain, HttpServletRequest request)
+ {
+  String jsonpath="/WEB-INF/schema";
+  System.out.println("Taking json scripts from "+jsonpath);
+    
+  String user = System.getenv("dhuser");
+  String password = System.getenv("dhpass");
+  
+  String absoluteDiskPath = request.getServletContext().getRealPath(jsonpath) + "/vintage_llc.json";
+  
+  List<String> commands = new ArrayList<String>(); 
+  commands.add("/usr/local/bin/dh"); 
+  commands.add("import");  
+  commands.add("--dhurl"); 
+  commands.add("http://localhost:8080"); 
+  commands.add("--dhuser"); 
+  commands.add(user); 
+  commands.add("--dhpass"); 
+  commands.add(password); 
+  commands.add("--importfile"); 
+  commands.add(absoluteDiskPath); 
+  commands.add("--fromdom");  
+  commands.add(fromdomain ); 
+  commands.add("--todom");  
+  commands.add(todomain ); 
+  
+  ProcessBuilder pb = new ProcessBuilder(commands); 
+   
+  Process process;
+  try
+  {
+   pb.redirectErrorStream(true); 
+   process = pb.start();
+
+   BufferedReader stdInput = new BufferedReader(new
+    InputStreamReader(process.getInputStream())); 
+   String s = null; 
+   while ((s = stdInput.readLine()) != null) 
+   { 
+    System.out.println(s); 
+   }
+   process.waitFor();
+  }
+  catch (IOException | InterruptedException e)
+  {
+   e.printStackTrace();
+  } 
+ }
+
  public Engine createEngine(int domainid, String name)
  {
   int count = -1;
   try {
    String csql = "SELECT count(*) FROM dm.dm_engine WHERE name=?";
-   PreparedStatement st1 = getDBConnection().prepareStatement(csql);
+   PreparedStatement st1 = m_conn.prepareStatement(csql);
    st1.setString(1, name);
    ResultSet rs1 = st1.executeQuery();
    if(rs1.next()) {
@@ -17843,13 +20653,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
      int newid = getID("engine");
      if(newid > 0) {
       String isql="INSERT INTO dm.dm_engine(id,domainid,name,status) VALUES(?,?,?,'N')";
-      PreparedStatement st2 = getDBConnection().prepareStatement(isql);
+      PreparedStatement st2 = m_conn.prepareStatement(isql);
       st2.setInt(1,newid);
       st2.setInt(2,domainid);
       st2.setString(3,name);
       st2.execute();
       st2.close();
-      getDBConnection().commit();
+      m_conn.commit();
       return new Engine(this, newid, name);
      }
     }
@@ -17876,7 +20686,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement st = getDBConnection().prepareStatement("SELECT c.id, c.name FROM dm.dm_category c WHERE c.id = ?");
+			PreparedStatement st = m_conn.prepareStatement("SELECT c.id, c.name FROM dm.dm_category c WHERE c.id = ?");
 			st.setInt(1, id);
 			ResultSet rs = st.executeQuery();
 			Category ret = null;
@@ -17895,16 +20705,17 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		throw new RuntimeException("Unable to Get Category "+id+" from Database");
 	}
 	
-	public List<Category> GetCategories()
+	public List<DMObject> GetCategories()
 	{
 		try
 		{
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT id,name FROM dm.dm_category ORDER BY name");
-			List<Category> res = new ArrayList<Category>();
+			List<DMObject> res = new ArrayList<DMObject>();
 			while (rs.next())
 			{
 				Category c = new Category(rs.getInt(1),rs.getString(2));
+				c.setSession(this);
 				res.add(c);
 			}
 			rs.close();
@@ -17923,12 +20734,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
  {
   try
   {
-   Statement st = getDBConnection().createStatement();
+   Statement st = m_conn.createStatement();
    ResultSet rs = st.executeQuery("SELECT id,name FROM dm.dm_category ORDER BY name");
    List<TreeObject> res = new ArrayList<TreeObject>();
    while (rs.next())
    {
-    TreeObject c = new TreeObject(rs.getInt(1),rs.getString(2));
+    TreeObject c = new TreeObject(rs.getInt(1),rs.getString(2), 1);
     c.SetObjectType(ObjectType.ACTION_CATEGORY);
     res.add(c);
    }
@@ -17948,23 +20759,23 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT id,name FROM dm.dm_category ORDER BY name");
 			List<Category> res = new ArrayList<Category>();
 			while (rs.next())
 			{
 				Category c = new Category(rs.getInt(1),rs.getString(2));
-				Statement st2 = getDBConnection().createStatement();
-				ResultSet rs2 = st2.executeQuery("SELECT a.id,a.name,a.summary,a.exitpoints,a.drilldown, a.actionid FROM dm.dm_fragments a, dm.dm_fragment_categories b WHERE a.id = b.id and b.categoryid="+ c.getId() +" ORDER BY a.id");
-				List<Fragment> Fragments = new ArrayList<Fragment>();
-				while (rs2.next())
-				{
-					// id name summary exitpoints
-					Fragments.add(new Fragment(rs2.getInt(1),rs2.getString(2),rs2.getString(3),rs2.getInt(4),rs2.getString(5),rs2.getInt(6)));
-				}
-				rs2.close();
-				st2.close();
-				c.setFragments(Fragments);
+//				Statement st2 = m_conn.createStatement();
+//				ResultSet rs2 = st2.executeQuery("SELECT a.id,a.name,a.summary,a.exitpoints,a.drilldown, a.actionid FROM dm.dm_fragments a, dm.dm_fragment_categories b WHERE a.id = b.id and b.categoryid="+ c.getId() +" ORDER BY a.id");
+//				List<Fragment> Fragments = new ArrayList<Fragment>();
+//				while (rs2.next())
+//				{
+//					// id name summary exitpoints
+//					Fragments.add(new Fragment(rs2.getInt(1),rs2.getString(2),rs2.getString(3),rs2.getInt(4),rs2.getString(5),rs2.getInt(6)));
+//				}
+//				rs2.close();
+//				st2.close();
+//				c.setFragments(Fragments);
 				res.add(c);
 			}
 			rs.close();
@@ -17984,7 +20795,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			int res=0;
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT max(windowid) FROM dm.dm_actionfrags WHERE actionid="+actionid);
 			if (rs.next())
 			{
@@ -18026,7 +20837,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs;
 			if (IncludeVersions) {
 				rs = st.executeQuery("SELECT id,name,summary,parentid FROM dm.dm_component WHERE domainid in ("+m_domainlist+") and status = 'N' ORDER BY name,parentid");
@@ -18071,7 +20882,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			List<Application> res = new ArrayList<Application>();
-			Statement st = getDBConnection().createStatement();
+
+			Statement st = m_conn.createStatement();
 			ResultSet rs;
 			rs = st.executeQuery("SELECT id FROM dm.dm_application WHERE domainid="+domainid+" AND status='N' ORDER BY name");
 			while (rs.next())
@@ -18094,7 +20906,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		System.out.println("getApplicationsInDomain("+IncludeVersions+","+IncludeReleases+")");
 		try
 		{
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs;
 			if (IncludeVersions) {
 				rs = st.executeQuery("SELECT id,name,summary,parentid, isrelease FROM dm.dm_application WHERE domainid in ("+m_domainlist+") AND status='N' ORDER BY name");
@@ -18148,7 +20960,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   System.out.println("getApplicationsInDomain("+IncludeVersions+","+IncludeReleases+")");
   try
   {
-   Statement st = getDBConnection().createStatement();
+   Statement st = m_conn.createStatement();
    ResultSet rs;
    String domlist = "";
    String domquery = "domainid in ("+m_domainlist+") AND ";
@@ -18164,7 +20976,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    if (domlist.length()>1) {
 	   domquery = "domainid in ("+domlist.substring(1)+") AND ";
    }
-   st = getDBConnection().createStatement();
+   st = m_conn.createStatement();
    
    if (IncludeVersions) {
     rs = st.executeQuery("SELECT id,name,summary,parentid, isrelease FROM dm.dm_application WHERE "+domquery+" status='N' ORDER BY name");
@@ -18181,7 +20993,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
      if (!rs.wasNull())
      {
       int k = 0;
-      Statement st3 = getDBConnection().createStatement();
+      Statement st3 = m_conn.createStatement();
       ResultSet rs3 = st3.executeQuery("select count(*) from dm.dm_application where id = " + parentid + " and status = 'N'");
       while (rs3.next())
       {
@@ -18224,7 +21036,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		List<Application> ret = new ArrayList<Application>();
 		try
 		{
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT id FROM dm.dm_application WHERE domainid in ("+m_domainlist+") AND status='N' AND parentid="+app.getId()+" ORDER BY name");
 			while (rs.next()) {
 				Application ca = getApplication(rs.getInt(1),true);
@@ -18247,7 +21059,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{
-			Statement st = getDBConnection().createStatement();
+			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery(
 				  "SELECT e.id, e.name, e.summary,e.domainid FROM dm.dm_environment e "
 				+ "WHERE e.domainid in ("+m_domainlist+") AND status='N' ORDER BY e.domainid,e.id");
@@ -18275,7 +21087,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
  {
   try
   {
-   Statement st = getDBConnection().createStatement();
+   Statement st = m_conn.createStatement();
    ResultSet rs = st.executeQuery(
       "SELECT e.id, e.name, e.summary,e.domainid FROM dm.dm_environment e "
     + "WHERE e.domainid in ("+mydomain.getId()+") AND status='N' ORDER BY e.domainid,e.id");
@@ -18342,7 +21154,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{			
-			PreparedStatement st = getDBConnection().prepareStatement(
+			PreparedStatement st = m_conn.prepareStatement(
 				"SELECT a.id, a.name, a.domainid, a.logoutput, a.subdomains, b.approvaldomain, a.successtemplateid, a.failuretemplateid, "
 					+ " uc.id, uc.name, uc.realname, a.created, "
 					+ " um.id, um.name, um.realname, a.modified, "
@@ -18376,10 +21188,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				ret.setFailureTemplate(rt);
 				getCreatorModifier(rs, 9, ret);
 				getPreAndPostActions(rs, 17, ret);
+				rs.close();
+				st.close();
 				return ret;
 			}
 			else
 			{
+	   rs.close();
+	   st.close();
 				// No row found - error
 				throw new RuntimeException("Unable to Get Task Approve from Database");
 			}
@@ -18389,6 +21205,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			ex.printStackTrace();
 			rollback();
 		}
+
 		return null;
 	}
 	
@@ -18414,7 +21231,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   
   try
   {
-   PreparedStatement st = getDBConnection().prepareStatement("SELECT a.serverid WHERE a.envid=?");
+   PreparedStatement st = m_conn.prepareStatement("SELECT a.serverid WHERE a.envid=?");
   
    st.setInt(1,envid);
    ResultSet rs = st.executeQuery();
@@ -18442,7 +21259,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{			
-			PreparedStatement st = getDBConnection().prepareStatement(
+			PreparedStatement st = m_conn.prepareStatement(
 				"SELECT a.id, a.name, a.domainid, a.logoutput, a.subdomains, b.targetdomain, a.successtemplateid, a.failuretemplateid, "
 					+ " uc.id, uc.name, uc.realname, a.created, "
 					+ " um.id, um.name, um.realname, a.modified, "
@@ -18494,7 +21311,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{			
-			PreparedStatement st = getDBConnection().prepareStatement(
+			PreparedStatement st = m_conn.prepareStatement(
 				"SELECT a.id, a.name, a.domainid, a.logoutput, a.subdomains, "
 					+ " uc.id, uc.name, uc.realname, a.created, "
 					+ " um.id, um.name, um.realname, a.modified, "
@@ -18536,7 +21353,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{			
-			PreparedStatement st = getDBConnection().prepareStatement(
+			PreparedStatement st = m_conn.prepareStatement(
 				"SELECT a.id, a.name, a.domainid, a.logoutput,	"
 					+ " uc.id, uc.name, uc.realname, a.created, "
 					+ " um.id, um.name, um.realname, a.modified, "
@@ -18557,10 +21374,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				ret.setShowOutput(getBoolean(rs, 4, false));
 				getCreatorModifier(rs, 5, ret);
 				getPreAndPostActions(rs, 13, ret);
+				rs.close();
+				st.close();
 				return ret;
 			}
 			else
 			{
+    rs.close();
+    st.close();
 				// No row found - error
 				throw new RuntimeException("Unable to Get Task Deploy from Database");
 			}
@@ -18577,7 +21398,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{			
-			PreparedStatement st = getDBConnection().prepareStatement(
+			PreparedStatement st = m_conn.prepareStatement(
 				"SELECT a.id, a.name, a.domainid, a.logoutput, a.subdomains, b.actionid, a.successtemplateid,	a.failuretemplateid, "
 					+ " uc.id, uc.name, uc.realname, a.created, "
 					+ " um.id, um.name, um.realname, a.modified, "
@@ -18631,7 +21452,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{			
-			PreparedStatement st = getDBConnection().prepareStatement(
+			PreparedStatement st = m_conn.prepareStatement(
 				"SELECT a.id, a.name, a.domainid, a.logoutput, a.subdomains, b.linkedtaskid, a.successtemplateid,	"
 					+ " uc.id, uc.name, uc.realname, a.created, "
 					+ " um.id, um.name, um.realname, a.modified, "
@@ -18683,7 +21504,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{			
-			PreparedStatement st = getDBConnection().prepareStatement(
+			PreparedStatement st = m_conn.prepareStatement(
 				"SELECT a.id, a.name, a.domainid, a.logoutput, a.subdomains, b.targetdomain,	"
 					+ " uc.id, uc.name, uc.realname, a.created, "
 					+ " um.id, um.name, um.realname, a.modified, "
@@ -18708,10 +21529,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				ret.setTargetDomain(domain);
 				getCreatorModifier(rs, 7, ret);
 				getPreAndPostActions(rs, 15, ret);
+				rs.close();
+				st.close();
 				return ret;
 			}
 			else
 			{
+    rs.close();
+    st.close();
 				// No row found - error
 				throw new RuntimeException("Unable to Get Task Create Version from Database");
 			}
@@ -18729,7 +21554,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 		try
 		{			
-			PreparedStatement st = getDBConnection().prepareStatement(
+			PreparedStatement st = m_conn.prepareStatement(
 				"SELECT a.id, a.name, a.domainid, a.logoutput, "
 					+ " uc.id, uc.name, uc.realname, a.created, "
 					+ " um.id, um.name, um.realname, a.modified, "
@@ -18772,20 +21597,20 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		System.out.println("so.updateTaskCopy, taskid="+taskid+" tgtdomainid="+tgtdomainid);
 		try
 		{			
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_taskcopy SET targetdomain=? WHERE id=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_taskcopy SET targetdomain=? WHERE id=?");
 			st.setInt(1,tgtdomainid);
 			st.setInt(2,taskid);
 			st.execute();
 			if (st.getUpdateCount()==0)
 			{
-				PreparedStatement st2 = getDBConnection().prepareStatement("INSERT INTO dm.dm_taskcopy(id,targetdomain) VALUES(?,?)");
+				PreparedStatement st2 = m_conn.prepareStatement("INSERT INTO dm.dm_taskcopy(id,targetdomain) VALUES(?,?)");
 				st2.setInt(1,taskid);
 				st2.setInt(2,tgtdomainid);
 				st2.execute();
 				st2.close();
 			}
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return true;
 		}
 		catch (SQLException ex)
@@ -18801,20 +21626,20 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		System.out.println("so.updateTaskMove, taskid="+taskid+" tgtdomainid="+tgtdomainid);
 		try
 		{			
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_taskmove SET targetdomain=? WHERE id=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_taskmove SET targetdomain=? WHERE id=?");
 			st.setInt(1,tgtdomainid);
 			st.setInt(2,taskid);
 			st.execute();
 			if (st.getUpdateCount()==0)
 			{
-				PreparedStatement st2 = getDBConnection().prepareStatement("INSERT INTO dm.dm_taskmove(id,targetdomain) VALUES(?,?)");
+				PreparedStatement st2 = m_conn.prepareStatement("INSERT INTO dm.dm_taskmove(id,targetdomain) VALUES(?,?)");
 				st2.setInt(1,taskid);
 				st2.setInt(2,tgtdomainid);
 				st2.execute();
 				st2.close();
 			}
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return true;
 		}
 		catch (SQLException ex)
@@ -18830,20 +21655,20 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		System.out.println("so.updateTaskApprove, taskid="+taskid+" tgtdomainid="+appdomainid);
 		try
 		{			
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_taskapprove SET approvaldomain=? WHERE id=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_taskapprove SET approvaldomain=? WHERE id=?");
 			st.setInt(1,appdomainid);
 			st.setInt(2,taskid);
 			st.execute();
 			if (st.getUpdateCount()==0)
 			{
-				PreparedStatement st2 = getDBConnection().prepareStatement("INSERT INTO dm.dm_taskapprove(id,approvaldomain) VALUES(?,?)");
+				PreparedStatement st2 = m_conn.prepareStatement("INSERT INTO dm.dm_taskapprove(id,approvaldomain) VALUES(?,?)");
 				st2.setInt(1,taskid);
 				st2.setInt(2,appdomainid);
 				st2.execute();
 				st2.close();
 			}
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return true;
 		}
 		catch (SQLException ex)
@@ -18859,20 +21684,20 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		System.out.println("so.updateTaskRequest, taskid="+taskid+" linkedtaskid="+linkedtaskid);
 		try
 		{			
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_taskrequest SET linkedtaskid=? WHERE id=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_taskrequest SET linkedtaskid=? WHERE id=?");
 			st.setInt(1,linkedtaskid);
 			st.setInt(2,taskid);
 			st.execute();
 			if (st.getUpdateCount()==0)
 			{
-				PreparedStatement st2 = getDBConnection().prepareStatement("INSERT INTO dm.dm_taskrequest(id,linkedtaskid) VALUES(?,?)");
+				PreparedStatement st2 = m_conn.prepareStatement("INSERT INTO dm.dm_taskrequest(id,linkedtaskid) VALUES(?,?)");
 				st2.setInt(1,taskid);
 				st2.setInt(2,linkedtaskid);
 				st2.execute();
 				st2.close();
 			}
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return true;
 		}
 		catch (SQLException ex)
@@ -18888,20 +21713,20 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		System.out.println("so.updateTaskAction, taskid="+taskid+" actionid="+actionid);
 		try
 		{			
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_taskaction SET actionid=? WHERE id=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_taskaction SET actionid=? WHERE id=?");
 			st.setInt(1,actionid);
 			st.setInt(2,taskid);
 			st.execute();
 			if (st.getUpdateCount()==0)
 			{
-				PreparedStatement st2 = getDBConnection().prepareStatement("INSERT INTO dm.dm_taskaction(id,actionid) VALUES(?,?)");
+				PreparedStatement st2 = m_conn.prepareStatement("INSERT INTO dm.dm_taskaction(id,actionid) VALUES(?,?)");
 				st2.setInt(1,taskid);
 				st2.setInt(2,actionid);
 				st2.execute();
 				st2.close();
 			}
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return true;
 		}
 		catch (SQLException ex)
@@ -18917,20 +21742,20 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		System.out.println("so.updateTaskCreateVersion, taskid="+taskid+" tgtdomainid="+tgtdomainid);
 		try
 		{			
-			PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_taskcreateversion SET targetdomain=? WHERE id=?");
+			PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_taskcreateversion SET targetdomain=? WHERE id=?");
 			st.setInt(1,tgtdomainid);
 			st.setInt(2,taskid);
 			st.execute();
 			if (st.getUpdateCount()==0)
 			{
-				PreparedStatement st2 = getDBConnection().prepareStatement("INSERT INTO dm.dm_taskcreateversion(id,targetdomain) VALUES(?,?)");
+				PreparedStatement st2 = m_conn.prepareStatement("INSERT INTO dm.dm_taskcreateversion(id,targetdomain) VALUES(?,?)");
 				st2.setInt(1,taskid);
 				st2.setInt(2,tgtdomainid);
 				st2.execute();
 				st2.close();
 			}
 			st.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return true;
 		}
 		catch (SQLException ex)
@@ -18948,18 +21773,18 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			if (BranchName == null || BranchName.length()==0) {
-				PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm."+tabname+" SET branch=null WHERE id=?");
+				PreparedStatement st = m_conn.prepareStatement("UPDATE dm."+tabname+" SET branch=null WHERE id=?");
 				st.setInt(1,id);
 				st.execute();
 				st.close();
 			} else {
-				PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm."+tabname+" SET branch=? WHERE id=?");
+				PreparedStatement st = m_conn.prepareStatement("UPDATE dm."+tabname+" SET branch=? WHERE id=?");
 				st.setString(1,BranchName);
 				st.setInt(2,id);
 				st.execute();
 				st.close();
 			}
-			getDBConnection().commit();
+			m_conn.commit();
 			return true;
 		}
 		catch (SQLException ex)
@@ -18976,7 +21801,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			if (LabelName == null || LabelName.length()==0) {
-				PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_server_connections SET label=null WHERE envid=? AND serverfrom=? AND serverto=? AND serverfromedge=? AND servertoedge=?");
+				PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_server_connections SET label=null WHERE envid=? AND serverfrom=? AND serverto=? AND serverfromedge=? AND servertoedge=?");
 				st.setInt(1,envid);
 				st.setInt(2,fromid);
 				st.setInt(3,toid);
@@ -18985,7 +21810,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				st.execute();
 				st.close();
 			} else {
-				PreparedStatement st = getDBConnection().prepareStatement("UPDATE dm.dm_server_connections SET label=? WHERE envid=? AND serverfrom=? AND serverto=? AND serverfromedge=? AND servertoedge=?");
+				PreparedStatement st = m_conn.prepareStatement("UPDATE dm.dm_server_connections SET label=? WHERE envid=? AND serverfrom=? AND serverto=? AND serverfromedge=? AND servertoedge=?");
 				st.setString(1,LabelName);
 				st.setInt(2,envid);
 				st.setInt(3,fromid);
@@ -18995,7 +21820,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				st.execute();
 				st.close();
 			}
-			getDBConnection().commit();
+			m_conn.commit();
 			return true;
 		}
 		catch (SQLException ex)
@@ -19070,7 +21895,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		System.out.println("sql="+sql);
 		try
 		{			
-			PreparedStatement st1 = getDBConnection().prepareStatement(sql);
+			PreparedStatement st1 = m_conn.prepareStatement(sql);
 			st1.setInt(1,gid);
 			ResultSet rs1 = st1.executeQuery();
 			if (rs1.next()) {
@@ -19080,7 +21905,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					// Row already exists for this group/object
 					String updSQL="UPDATE dm."+TableName+" SET "+AccessCol+"=? WHERE "+KeyCol+"=? AND usrgrpid=?";
 					System.out.println("updSQL="+updSQL);
-					PreparedStatement st2 = getDBConnection().prepareStatement(updSQL);
+					PreparedStatement st2 = m_conn.prepareStatement(updSQL);
 					st2.setString(1,st);
 					st2.setInt(2,id);
 					st2.setInt(3,gid);
@@ -19101,7 +21926,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						lc=4;
 					}
 					System.out.println("insSQL="+insSQL);
-					PreparedStatement st3 = getDBConnection().prepareStatement(insSQL);
+					PreparedStatement st3 = m_conn.prepareStatement(insSQL);
 					st3.setInt(1,id);
 					st3.setInt(2,gid);
 					for (int i=3;i<=lc;i++) {
@@ -19125,7 +21950,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				}
 			}
 			st1.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return added;
 		}
 		catch (SQLException ex)
@@ -19191,7 +22016,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		System.out.println("sql="+sql);
 		try
 		{			
-			PreparedStatement st1 = getDBConnection().prepareStatement(sql);
+			PreparedStatement st1 = m_conn.prepareStatement(sql);
 			st1.setInt(1,id);
 			st1.setInt(2,gid);
 			ResultSet rs1 = st1.executeQuery();
@@ -19202,7 +22027,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					// Row exists for this group/object/accesstype
 					String chkSQL="SELECT "+AccessCol+" FROM dm."+TableName+" WHERE "+KeyCol+"=? AND usrgrpid=?";
 					System.out.println("chkSQL="+chkSQL);
-					PreparedStatement st2 = getDBConnection().prepareStatement(chkSQL);
+					PreparedStatement st2 = m_conn.prepareStatement(chkSQL);
 					st2.setInt(1,id);
 					st2.setInt(2,gid);
 					ResultSet rs2=st2.executeQuery();
@@ -19214,7 +22039,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					st2.close();
 					String updSQL="UPDATE dm."+TableName+" SET "+AccessCol+"=null WHERE "+KeyCol+"=? AND usrgrpid=?";
 					System.out.println("updSQL="+updSQL);
-					PreparedStatement st3 = getDBConnection().prepareStatement(updSQL);
+					PreparedStatement st3 = m_conn.prepareStatement(updSQL);
 					st3.setInt(1,id);
 					st3.setInt(2,gid);
 					st3.execute();
@@ -19229,7 +22054,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						delSQL="DELETE FROM dm."+TableName+" WHERE "+KeyCol+"=? AND usrgrpid=? AND viewaccess is null AND updateaccess is null";
 					}
 					 
-					PreparedStatement st4 = getDBConnection().prepareStatement(delSQL);
+					PreparedStatement st4 = m_conn.prepareStatement(delSQL);
 					st4.setInt(1,id);
 					st4.setInt(2,gid);
 					st4.execute();
@@ -19259,7 +22084,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					String cSQL="SELECT count(*) FROM dm."+TableName+" WHERE "+KeyCol+"=? AND usrgrpid=?";
 					System.out.println(cSQL);
 					System.out.println("id="+id+" gid="+gid);
-					PreparedStatement st4 = getDBConnection().prepareStatement(cSQL);
+					PreparedStatement st4 = m_conn.prepareStatement(cSQL);
 					st4.setInt(1,id);
 					st4.setInt(2,gid);
 					ResultSet rs4 = st4.executeQuery();
@@ -19269,7 +22094,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						if (c2>0) {
 							// Row already exists for this object and group - set the access type to N
 							String uSQL="UPDATE dm."+TableName+" set "+AccessCol+"='N' WHERE "+KeyCol+"=? AND usrgrpid=?";
-							PreparedStatement st5 = getDBConnection().prepareStatement(uSQL);
+							PreparedStatement st5 = m_conn.prepareStatement(uSQL);
 							st5.setInt(1,id);
 							st5.setInt(2,gid);
 							st5.execute();
@@ -19287,7 +22112,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						else
 						{
 							String iSQL="INSERT INTO dm."+TableName+"("+KeyCol+",usrgrpid,"+AccessCol+") VALUES(?,?,'N')";
-							PreparedStatement st6 = getDBConnection().prepareStatement(iSQL);
+							PreparedStatement st6 = m_conn.prepareStatement(iSQL);
 							st6.setInt(1,id);
 							st6.setInt(2,gid);
 							st6.execute();
@@ -19308,7 +22133,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				}
 			}
 			st1.close();
-			getDBConnection().commit();
+			m_conn.commit();
 			return;
 		}
 		catch (SQLException ex)
@@ -19335,7 +22160,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			try
 			{
 				// Setting permissions for a specific group
-				PreparedStatement stmt = getDBConnection().prepareStatement("SELECT cobjtype FROM dm.dm_privileges WHERE groupid=?");
+				PreparedStatement stmt = m_conn.prepareStatement("SELECT cobjtype FROM dm.dm_privileges WHERE groupid=?");
 				stmt.setInt(1, groupid);
 				ResultSet rs = stmt.executeQuery();
 				while (rs.next()) {
@@ -19356,7 +22181,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						case PROCEDURE:		up.setCreateProcs(true); break;
 						case DATASOURCE:	up.setCreateDatasrc(true); break;
 						case NOTIFY:		up.setCreateNotifiers(true); break;
-						case BUILDER:		up.setCreateEngines(true); break;
+      case SERVERCOMPTYPE:  up.setCreateServerCompType(true); break;
 						default: break;
 						}
 					}
@@ -19377,10 +22202,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			boolean res=false;
-			PreparedStatement stmt = getDBConnection().prepareStatement("SELECT count(*) FROM dm.dm_privileges a,dm.dm_usersingroup b WHERE a.groupid=b.groupid AND a.cobjtype=? AND b.userid=?");
-			System.out.println("Looking for object type "+objtype.value()+" with userid="+getUserID());
+			PreparedStatement stmt = m_conn.prepareStatement("SELECT count(*) FROM dm.dm_privileges a,dm.dm_usersingroup b WHERE a.groupid=b.groupid AND a.cobjtype=? AND b.userid=?");
+			System.out.println("Looking for object type "+objtype.value()+" with userid="+m_userID);
 			stmt.setInt(1, objtype.value());
-			stmt.setInt(2, getUserID());
+			stmt.setInt(2, m_userID);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
 				int count = rs.getInt(1);
@@ -19406,12 +22231,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		{
 			System.out.println("setPermissionsForGroup - enter");
 			List <ObjectType> ots = new ArrayList<ObjectType>();
-			PreparedStatement stmt = getDBConnection().prepareStatement("DELETE FROM dm.dm_privileges WHERE groupid=?");
+			PreparedStatement stmt = m_conn.prepareStatement("DELETE FROM dm.dm_privileges WHERE groupid=?");
 			stmt.setInt(1,groupid);
 			stmt.execute();
 			stmt.close();
 			
-			stmt = getDBConnection().prepareStatement("INSERT INTO dm.dm_privileges(groupid,cobjtype) VALUES(?,?)");
+			stmt = m_conn.prepareStatement("INSERT INTO dm.dm_privileges(groupid,cobjtype) VALUES(?,?)");
 			stmt.setInt(1,groupid);
 			
 			if (up.getCreateUsers())     ots.add(ObjectType.USER);
@@ -19428,7 +22253,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			if (up.getCreateProcs())     ots.add(ObjectType.PROCEDURE);
 			if (up.getCreateDatasrc())   ots.add(ObjectType.DATASOURCE);
 			if (up.getCreateNotifiers()) ots.add(ObjectType.NOTIFY);
-			if (up.getCreateEngines())   ots.add(ObjectType.BUILDER);
+   if (up.getCreateServerCompType())   ots.add(ObjectType.SERVERCOMPTYPE);
 
 			for (ObjectType ot: ots) {
 				System.out.println("adding "+ot.name()+" value "+ot.value());
@@ -19436,7 +22261,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				stmt.execute();
 			}
 			stmt.close();
-			getDBConnection().commit();
+			m_conn.commit();
 		}
 		catch(SQLException e)
 		{
@@ -19448,8 +22273,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	public void setGroupTabAccess(int groupid,String AclOverride,String endpoints,String applications,String actions,String providers,String users)
 	{
-		DynamicQueryBuilder query = new DynamicQueryBuilder(getDBConnection(),"UPDATE dm.dm_usergroup SET ");
-		query.add("modified = ?, modifierid = ?", timeNow(), getUserID());
+		DynamicQueryBuilder query = new DynamicQueryBuilder(m_conn,"UPDATE dm.dm_usergroup SET ");
+		query.add("modified = ?, modifierid = ?", timeNow(), m_userID);
 		
 		if (AclOverride != null) {
 			query.add(", acloverride=?", AclOverride);
@@ -19474,7 +22299,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try {
 			query.execute();
-			getDBConnection().commit();
+			m_conn.commit();
 			query.close();
 		} catch(SQLException e) {
 			e.printStackTrace();
@@ -19489,12 +22314,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sql = null;;
 		
 		if (!inTemplate) {
-			sql = "SELECT a.id,a.name FROM dm.dm_usergroup a WHERE a.status<>'D' AND a.domainid in ("+m_domainlist+") and not exists (select b.usrgrpid from dm.dm_templaterecipients b where b.templateid=? AND a.id=b.usrgrpid AND b.usrgrpid is not null) order by a.name";
+			sql = "SELECT a.id,a.name FROM dm.dm_usergroup a WHERE a.status = 'N' AND a.domainid in ("+m_domainlist+") and not exists (select b.usrgrpid from dm.dm_templaterecipients b where b.templateid=? AND a.id=b.usrgrpid AND b.usrgrpid is not null) order by a.name";
 		} else {
-			sql = "SELECT a.id,a.name FROM dm.dm_usergroup a,dm.dm_templaterecipients b where a.status<>'D' AND a.id=b.usrgrpid and b.templateid=? order by a.name";
+			sql = "SELECT a.id,a.name FROM dm.dm_usergroup a,dm.dm_templaterecipients b where a.status = 'N' AND a.id=b.usrgrpid and b.templateid=? order by a.name";
 		}
 		try {
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,templateid);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next())
@@ -19525,13 +22350,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		String sqlx = "SELECT ownertype FROM dm.dm_templaterecipients WHERE templateid=? AND ownertype IS NOT NULL";
 		
 		if (!inTemplate) {
-			sql = "SELECT a.id,a.name FROM dm.dm_user a WHERE a.domainid in ("+m_domainlist+") and not exists (select b.userid from dm.dm_templaterecipients b where b.templateid=? and a.id=b.userid and b.userid is not null) ORDER BY name"
+			sql = "SELECT a.id,a.name FROM dm.dm_user a WHERE a.status = 'N' and a.domainid in ("+m_domainlist+") and not exists (select b.userid from dm.dm_templaterecipients b where b.templateid=? and a.id=b.userid and b.userid is not null) ORDER BY name"
 ;		} else {
-			sql = "SELECT a.id,a.name FROM dm.dm_user a,dm.dm_templaterecipients b where a.id=b.userid and b.templateid=? order by a.name";
+			sql = "SELECT a.id,a.name FROM dm.dm_user a,dm.dm_templaterecipients b where a.id=b.userid and b.templateid=? and a.status = 'N' order by a.name";
 		}
 		
 		try {
-			PreparedStatement stmtx = getDBConnection().prepareStatement(sqlx);
+			PreparedStatement stmtx = m_conn.prepareStatement(sqlx);
 			stmtx.setInt(1,templateid);
 			ResultSet rsx = stmtx.executeQuery();
 			while (rsx.next())
@@ -19558,7 +22383,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					}
 				}
 			}
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,templateid);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next())
@@ -19583,7 +22408,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			String csql="SELECT count(*) FROM dm.dm_templaterecipients WHERE "+colname+"=? AND templateid=?";
 			String isql="INSERT INTO dm.dm_templaterecipients(templateid,"+colname+") VALUES (?,?)";
 			String usql="UPDATE dm.dm_template set modified=?, modifierid=? WHERE id=?";
-			PreparedStatement cstmt = getDBConnection().prepareStatement(csql);
+			PreparedStatement cstmt = m_conn.prepareStatement(csql);
 			cstmt.setInt(1, id);
 			cstmt.setInt(2,templateid);
 			ResultSet crs = cstmt.executeQuery();
@@ -19591,20 +22416,20 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				// got the count (should never fail) - if > 0 already there, otherwise we insert
 				if (crs.getInt(1)==0) {
 					// not already there
-					PreparedStatement istmt = getDBConnection().prepareStatement(isql);
+					PreparedStatement istmt = m_conn.prepareStatement(isql);
 					istmt.setInt(1,templateid);
 					istmt.setInt(2,id);
 					istmt.execute();
 					if (istmt.getUpdateCount()>0) {
 						// Updated - change the last modified time of the template
-						PreparedStatement ustmt = getDBConnection().prepareStatement(usql);
+						PreparedStatement ustmt = m_conn.prepareStatement(usql);
 						ustmt.setLong(1,timeNow());
-						ustmt.setInt(2,getUserID());
+						ustmt.setInt(2,m_userID);
 						ustmt.setInt(3,templateid);
 						ustmt.execute();
 						ustmt.close();
 					}
-					getDBConnection().commit();
+					m_conn.commit();
 					istmt.close();
 				}
 			}
@@ -19623,7 +22448,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		{
 			String dsql="DELETE FROM dm.dm_templaterecipients WHERE templateid=? AND "+colname+"=?";
 			
-			PreparedStatement dstmt = getDBConnection().prepareStatement(dsql);
+			PreparedStatement dstmt = m_conn.prepareStatement(dsql);
 			dstmt.setInt(1,templateid);
 			dstmt.setInt(2, id);
 			dstmt.execute();
@@ -19631,14 +22456,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 
 			String usql="UPDATE dm.dm_template set modified=?, modifierid=? WHERE id=?";
 			
-			PreparedStatement ustmt = getDBConnection().prepareStatement(usql);
+			PreparedStatement ustmt = m_conn.prepareStatement(usql);
 			ustmt.setLong(1,timeNow());
-			ustmt.setInt(2,getUserID());
+			ustmt.setInt(2,m_userID);
 			ustmt.setInt(3,templateid);
 			ustmt.execute();
 			ustmt.close();
 			
-			getDBConnection().commit();
+			m_conn.commit();
 
 		}
 		catch(SQLException e)
@@ -19684,15 +22509,15 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			long t = timeNow();
 			String usql="UPDATE dm.dm_template set modified=?, modifierid=?, subject=?,body=? WHERE id=?";
 			System.out.println("usql="+usql+" templateid="+templateid);
-			PreparedStatement ustmt = getDBConnection().prepareStatement(usql);
+			PreparedStatement ustmt = m_conn.prepareStatement(usql);
 			ustmt.setLong(1,t);
-			ustmt.setInt(2,getUserID());
+			ustmt.setInt(2,m_userID);
 			ustmt.setString(3,subject);
 			ustmt.setString(4,body);
 			ustmt.setInt(5,templateid);
 			ustmt.execute();
 			System.out.println("update count="+ustmt.getUpdateCount());
-			getDBConnection().commit();
+			m_conn.commit();
 			ustmt.close();
 		}
 		catch(SQLException e)
@@ -19713,7 +22538,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			// Get domain from object
 			DMObject obj = this.getObject(x.getObjectType(), x.getId());
 			System.out.println("obj = "+obj.getName());
-			d =  obj.getDomain();
+			if (obj.getId() == 1)
+			 d = (Domain)obj;
+			else
+			 d =  obj.getDomain();
 		} else {
 			// New object - get domain from tree
 			d = getDomain(domainid);
@@ -19743,14 +22571,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					+ "AND t.status = 'N' AND t.notifierid = n.id ORDER BY 2";
 			
 			List<NotifyTemplate> ret = new ArrayList<NotifyTemplate>();
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
-			PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
+			PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 			while (d != null && d.getId()>=1) {
 				System.out.println("domain is "+d.getName()+") read="+d.isReadable(true)+" write="+d.isWriteable(true)+" update="+d.isUpdatable(true)+" view="+d.isViewable(true));
 				if (!m_OverrideAccessControl) {
 					// Get a list of actions in this domain with non-default access permissions
-					System.out.println("no override access, getting list of overrides userid="+getUserID()+" domainid="+d.getId());
-					stmt1.setInt(1,getUserID());
+					System.out.println("no override access, getting list of overrides userid="+m_userID+" domainid="+d.getId());
+					stmt1.setInt(1,m_userID);
 					stmt1.setInt(2,d.getId());
 					stmt1.setInt(3,d.getId());
 					ResultSet rs = stmt1.executeQuery();
@@ -19879,7 +22707,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
+			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
 			stmt1.setInt(1,envid);
 			ResultSet rs1 = stmt1.executeQuery();
 			if (rs1.next()) {
@@ -19927,7 +22755,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					sow.set(Calendar.ZONE_OFFSET,0);
 					// 345600 is num of secs from 1/1/1970 to 5/1/1970 (start of calendar)
 					long fromsow = (sow.getTimeInMillis() / 1000) - 345600; // this calcs offset in seconds from midnight on Monday
-					PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+					PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 					stmt2.setInt(1,envid);
 					stmt2.setLong(2,fromsow);
 					stmt2.setLong(3,fromsow);
@@ -19941,7 +22769,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					// Check to see if there's currently a calendar event for this application
 					//
 					long now = timeNow();
-					PreparedStatement stmt3 = getDBConnection().prepareStatement(sql3);
+					PreparedStatement stmt3 = m_conn.prepareStatement(sql3);
 					stmt3.setInt(1,envid);
 					stmt3.setInt(2,appid);
 					stmt3.setLong(3,now);
@@ -19957,7 +22785,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					// application version of that app to be deployed
 					//
 					System.out.println("Didn't find exact match - checking envid="+envid+" appid="+appid+" now="+now);
-					PreparedStatement stmt3a = getDBConnection().prepareStatement(sql3a);
+					PreparedStatement stmt3a = m_conn.prepareStatement(sql3a);
 					stmt3a.setInt(1,envid);
 					stmt3a.setLong(2,now);
 					stmt3a.setLong(3,now);
@@ -19971,7 +22799,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					if (c>0) return ValidateDeployPermission(appid,envid);	// No error (there's an entry in the calendar for this app)
 					if (calusage.equalsIgnoreCase("o")) {
 						// Environment is always available except when calendar entries say otherwise
-						PreparedStatement stmt4 = getDBConnection().prepareStatement(sql4);
+						PreparedStatement stmt4 = m_conn.prepareStatement(sql4);
 						stmt4.setInt(1,envid);
 						stmt4.setLong(2,now);
 						stmt4.setLong(3,now);
@@ -20021,7 +22849,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 		try
 		{
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
+			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
 			stmt1.setInt(1,srcid);
 			ResultSet rs1 = stmt1.executeQuery();
 			int c = 0;
@@ -20032,7 +22860,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			//
 			// Check for approval
 			//
-			PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+			PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 			stmt2.setInt(1,appid);
 			stmt2.setInt(2,tgtid);
 			stmt2.setInt(3,appid);
@@ -20064,7 +22892,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	
 	boolean isTaskInDomain(int domainid,TaskType tt)
 	{
-		System.out.println("domainid="+domainid+" tt="+tt.toString().replace("_","")+" userid="+getUserID());
+		System.out.println("domainid="+domainid+" tt="+tt.toString().replace("_","")+" userid="+m_userID);
 		String sql = 	"SELECT count(*) FROM dm.dm_task a, "
 					+	"dm.dm_tasktypes b,	"
 					+	"dm.dm_taskaccess c,	"
@@ -20075,10 +22903,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					+	"AND d.userid=?";
 		try
 		{
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1,domainid);
 			stmt.setString(2,tt.toString().replace("_",""));
-			stmt.setInt(3,getUserID());
+			stmt.setInt(3,m_userID);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
 				System.out.println("createversion count="+rs.getInt(1));
@@ -20109,16 +22937,21 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			String sql = "SELECT count(*) FROM dm.dm_historysubs WHERE id=? AND kind=? AND userid=?";
-			PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-			System.out.println("Checking id="+id+" kind="+kind.value()+" userid="+getUserID());
+			PreparedStatement stmt = m_conn.prepareStatement(sql);
+			System.out.println("Checking id="+id+" kind="+kind.value()+" userid="+m_userID);
 			stmt.setInt(1,id);
 			stmt.setInt(2,kind.value());
-			stmt.setInt(3,getUserID());
+			stmt.setInt(3,m_userID);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
 				System.out.println("count="+rs.getInt(1));
-				return rs.getInt(1)>0;
+				boolean res = rs.getInt(1)>0;
+				rs.close();
+				stmt.close();
+				return res;
 			}
+   rs.close();
+   stmt.close();
 			return false;
 		}
 		catch(SQLException ex)
@@ -20140,8 +22973,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try
 		{
 			System.out.println("Verifying old password ("+oldpass+")");
-			PreparedStatement st = getDBConnection().prepareStatement("SELECT passhash FROM dm.dm_user where id = ?");
-			st.setInt(1,getUserID());
+			PreparedStatement st = m_conn.prepareStatement("SELECT passhash FROM dm.dm_user where id = ?");
+			st.setInt(1,m_userID);
 			ResultSet rs = st.executeQuery();
 			if (!rs.next()) {
 				res="Failed to get password from DB";
@@ -20169,14 +23002,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						res="New password cannot be the same as existing password";
 					} else {
 						// New password is encrypted and is different to original - update password.
-						PreparedStatement st2 = getDBConnection().prepareStatement("UPDATE dm.dm_user SET passhash=?,forcechange='N' WHERE id = ?");
+						PreparedStatement st2 =  (dbdriver.toLowerCase().contains("oracle") || dbdriver.toLowerCase().contains("mysql"))? m_conn.prepareStatement("UPDATE dm.dm_user SET lastlogin = sysdate, passhash=?,forcechange='N' WHERE id = ?") :m_conn.prepareStatement("UPDATE dm.dm_user SET lastlogin = localtimestamp, passhash=?,forcechange='N' WHERE id = ?");
 						st2.setString(1,newbase64pw);
-						st2.setInt(2,getUserID());
+						st2.setInt(2,m_userID);
 						st2.execute();
 						if (st2.getUpdateCount()<1) {
 							res="Failed to update password in database";
 						} else {
-							getDBConnection().commit();
+							m_conn.commit();
 						}
 						st2.close();
 					}
@@ -20193,42 +23026,27 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	// Copy/Paste
 	public void CopyObject(String objtype,int id)
 	{
-		setCopyObjType(objtype);
-		setCopyId(id);
+		m_copyobjtype = objtype;
+		m_copyid = id;
 	}
 	
 	public String getPasteObjectType()
 	{
-		return getCopyObjType();
+		return m_copyobjtype;
 	}
 	
 	public int getPasteObjectId()
 	{
-		return getCopyId();
+		return m_copyid;
 	}
-
 	
-	public boolean CopyAttributes(String TableName,String foreignkey,int oldid,int newid)
+	private boolean CopyDefects(String foreignkey,int oldid,int newid)
 	{
-		System.out.println("CopyAttributes(\""+TableName+"\",\""+foreignkey+"\","+oldid+","+newid);
+		System.out.println("CopyDefects(\""+foreignkey+"\","+oldid+","+newid);
 		try
 		{
-			String arrsql = "SELECT arrayid FROM "+TableName+" WHERE arrayid IS NOT NULL AND "+foreignkey+"=?";
-			PreparedStatement st1 = getDBConnection().prepareStatement(arrsql);
-			st1.setInt(1,oldid);
-			ResultSet rs1 = st1.executeQuery();
-			while (rs1.next()) {
-				// Take a copy of the array
-				int newarrid = getID("arrayvalues");
-				String coparr = "INSERT INTO dm.dm_arrayvalues(id,name,value) SELECT ?,name,value FROM dm.dm_arrayvalues WHERE id=?";
-				PreparedStatement sta = getDBConnection().prepareStatement(coparr);
-				sta.setInt(1,newarrid);
-				sta.setInt(2,rs1.getInt(1));
-				sta.execute();
-			}
-			rs1.close();
-			String varsql = "INSERT INTO "+TableName+"("+foreignkey+",name,value,arrayid,nocase) SELECT ?,name,value,arrayid,nocase FROM "+TableName+" WHERE "+foreignkey+"=?";
-			PreparedStatement st2 = getDBConnection().prepareStatement(varsql);
+			String defsql = "INSERT INTO dm.dm_defects("+foreignkey+",bugid,title,apiurl,htmlurl,status,datasourceid) SELECT ?,bugid,title,apiurl,htmlurl,status,datasourceid FROM dm.dm_defects WHERE "+foreignkey+"=?";
+			PreparedStatement st2 = m_conn.prepareStatement(defsql);
 			st2.setInt(1,newid);
 			st2.setInt(2,oldid);
 			st2.execute();
@@ -20242,7 +23060,41 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return false;
 	}
 	
-	public boolean CopyServerAttributes(int oldid,int newid)
+	private boolean CopyAttributes(String TableName,String foreignkey,int oldid,int newid)
+	{
+		System.out.println("CopyAttributes(\""+TableName+"\",\""+foreignkey+"\","+oldid+","+newid);
+		try
+		{
+			String arrsql = "SELECT arrayid FROM "+TableName+" WHERE arrayid IS NOT NULL AND "+foreignkey+"=?";
+			PreparedStatement st1 = m_conn.prepareStatement(arrsql);
+			st1.setInt(1,oldid);
+			ResultSet rs1 = st1.executeQuery();
+			while (rs1.next()) {
+				// Take a copy of the array
+				int newarrid = getID("arrayvalues");
+				String coparr = "INSERT INTO dm.dm_arrayvalues(id,name,value) SELECT ?,name,value FROM dm.dm_arrayvalues WHERE id=?";
+				PreparedStatement sta = m_conn.prepareStatement(coparr);
+				sta.setInt(1,newarrid);
+				sta.setInt(2,rs1.getInt(1));
+				sta.execute();
+			}
+			rs1.close();
+			String varsql = "INSERT INTO "+TableName+"("+foreignkey+",name,value,arrayid,nocase) SELECT ?,name,value,arrayid,nocase FROM "+TableName+" WHERE "+foreignkey+"=?";
+			PreparedStatement st2 = m_conn.prepareStatement(varsql);
+			st2.setInt(1,newid);
+			st2.setInt(2,oldid);
+			st2.execute();
+			st2.close();
+			return true;
+		}
+		catch(SQLException e) {
+			e.printStackTrace();
+			rollback();
+		}
+		return false;
+	}
+	
+	private boolean CopyServerAttributes(int oldid,int newid)
 	{
 		System.out.println("CopyServerAttributes");
 		try
@@ -20250,9 +23102,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			String selsql = "SELECT hostname,protocol,notes,basedir,typeid,uname FROM dm.dm_server WHERE id=?";
 			String updsql = "UPDATE dm.dm_server SET hostname=?, protocol=?, notes=?, basedir=?,typeid=?,uname=? WHERE id=?";
 			String cpysql1 = "INSERT INTO dm.dm_servercomptype(serverid,comptypeid) SELECT ?,comptypeid FROM dm.dm_servercomptype WHERE serverid=?";
-			PreparedStatement st1 = getDBConnection().prepareStatement(selsql);
-			PreparedStatement st2 = getDBConnection().prepareStatement(updsql);
-			PreparedStatement st3 = getDBConnection().prepareStatement(cpysql1);
+			String cpysql2 = "INSERT INTO dm.dm_serverstatus(serverid,autoping,automd5,starttime,endtime,checkinterval) "
+						+ "SELECT ?,autoping,automd5,starttime,endtime,checkinterval FROM dm.dm_serverstatus WHERE serverid=?";
+			PreparedStatement st1 = m_conn.prepareStatement(selsql);
+			PreparedStatement st2 = m_conn.prepareStatement(updsql);
+			PreparedStatement st3 = m_conn.prepareStatement(cpysql1);
+			PreparedStatement st4 = m_conn.prepareStatement(cpysql2);
 			st1.setInt(1,oldid);
 			ResultSet rs1 = st1.executeQuery();
 			while (rs1.next()) {
@@ -20271,6 +23126,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			st3.setInt(1,newid);
 			st3.setInt(2,oldid);
 			st3.execute();
+			st4.setInt(1,newid);
+			st4.setInt(2,oldid);
+			st4.execute();
 			return CopyAttributes("dm.dm_servervars","serverid",oldid,newid);
 		}
 		catch(SQLException e) {
@@ -20280,7 +23138,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return false;
 	}
 	
-	public boolean CopyBuilderAttributes(int oldid,int newid)
+	private boolean CopyBuilderAttributes(int oldid,int newid)
 	{
 		System.out.println("CopyBuilderAttributes");
 		/*
@@ -20343,12 +23201,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			String propsql = "INSERT INTO dm.dm_compitemprops(compitemid,name,value,encrypted,overridable,appendable) SELECT ?,name,value,encrypted,overridable,appendable FROM dm.dm_compitemprops WHERE compitemid=?";
 			String catsql = "INSERT INTO dm.dm_component_categories(id,categoryid) SELECT ?,categoryid FROM dm.dm_component_categories WHERE id=?";
 			String updsql = "UPDATE dm.dm_componentitem SET predecessorid=? WHERE id=?";
-			PreparedStatement st1 = getDBConnection().prepareStatement(compsql);
-			PreparedStatement st2 = getDBConnection().prepareStatement(inssql);
-			PreparedStatement st3 = getDBConnection().prepareStatement(propsql);
+			PreparedStatement st1 = m_conn.prepareStatement(compsql);
+			PreparedStatement st2 = m_conn.prepareStatement(inssql);
+			PreparedStatement st3 = m_conn.prepareStatement(propsql);
 			// PreparedStatement st4 = m_conn.prepareStatement(dasql);
-			PreparedStatement st5 = getDBConnection().prepareStatement(catsql);
-			PreparedStatement st6 = getDBConnection().prepareStatement(updsql);
+			PreparedStatement st5 = m_conn.prepareStatement(catsql);
+			PreparedStatement st6 = m_conn.prepareStatement(updsql);
 			st1.setInt(1,oldid);
 			ResultSet rs1 = st1.executeQuery();
 			while (rs1.next()) {
@@ -20363,7 +23221,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				if (repid > 0) {
 					st2.setInt(3,repid);			// Repository
 				} else {
-					st2.setNull(3,Type.INT);
+					st2.setNull(3,Types.INTEGER);
 				}
 				st2.setString(4,rs1.getString(3));		// Target
 				st2.setString(5,rs1.getString(4));		// Name
@@ -20411,7 +23269,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			// Now set the deployalway, component type and action flags to be the same as the original
 			//
 			for (int i=0;i<dasql.length;i++) {
-				PreparedStatement st4 = getDBConnection().prepareStatement(dasql[i]);
+				PreparedStatement st4 = m_conn.prepareStatement(dasql[i]);
 				st4.setInt(1,oldid);
 				st4.setInt(2,newid);
 				st4.execute();
@@ -20425,6 +23283,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			st5.execute();
 			st5.close();
 			dumpCategories("a2",newid);
+			CopyDefects("compid",oldid,newid);
 			return CopyAttributes("dm.dm_componentvars","compid",oldid,newid);
 		} catch(SQLException e) {
 			e.printStackTrace();
@@ -20434,17 +23293,17 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		
 	}
 	
-	public boolean CopyApplicationAttributes(int oldid,int newid)
+	private boolean CopyApplicationAttributes(int oldid,int newid)
 	{
 		try
 		{
 			String getsql = "SELECT summary,actionid,preactionid,postactionid,successtemplateid,failuretemplateid FROM dm.dm_application WHERE id=?";
-			PreparedStatement st1 = getDBConnection().prepareStatement(getsql);
+			PreparedStatement st1 = m_conn.prepareStatement(getsql);
 			st1.setInt(1, oldid);
 			ResultSet rs1 = st1.executeQuery();
 			if (rs1.next()) {
 				boolean c=false;
-				DynamicQueryBuilder update = new DynamicQueryBuilder(getDBConnection(), "UPDATE dm.dm_application SET ");
+				DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_application SET ");
 				String summary = rs1.getString(1);
 				if (!rs1.wasNull()) {
 					update.add("summary = ?", summary);
@@ -20493,14 +23352,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			System.out.println(updsql1);
 			System.out.println("newid="+newid);
 			System.out.println("oldid="+oldid);
-			PreparedStatement updstmt1 = getDBConnection().prepareStatement(updsql1);
+			PreparedStatement updstmt1 = m_conn.prepareStatement(updsql1);
 			updstmt1.setInt(1,newid);
 			updstmt1.setInt(2,oldid);
 			updstmt1.execute();
 			updstmt1.close();
 			String updsql2 = "INSERT INTO dm_applicationcomponentflows(appid,objfrom,objto)"
 			+" SELECT ?,objfrom,objto from dm_applicationcomponentflows WHERE appid=?";
-			PreparedStatement updstmt2 = getDBConnection().prepareStatement(updsql2);
+			PreparedStatement updstmt2 = m_conn.prepareStatement(updsql2);
 			updstmt2.setInt(1,newid);
 			updstmt2.setInt(2,oldid);
 			updstmt2.execute();
@@ -20508,11 +23367,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			// Duplicate the application access
 			String updsql3 = "INSERT INTO dm_applicationaccess(appid,usrgrpid,readaccess,writeaccess,viewaccess,updateaccess)"
 			+" SELECT ?,usrgrpid,readaccess,writeaccess,viewaccess,updateaccess from dm_applicationaccess WHERE appid=?";
-			PreparedStatement updstmt3 = getDBConnection().prepareStatement(updsql3);
+			PreparedStatement updstmt3 = m_conn.prepareStatement(updsql3);
 			updstmt3.setInt(1,newid);
 			updstmt3.setInt(2,oldid);
 			updstmt3.execute();
 			updstmt3.close();
+			CopyDefects("appid",oldid,newid);
 			// Finally copy all the attributes (variables)
 			return CopyAttributes("dm.dm_applicationvars","appid",oldid,newid);
 		}
@@ -20523,9 +23383,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return false;
 	}
 	
- public boolean CopyServers(int envid,int domainid)
+ private boolean CopyServers(int envid,int domainid)
  {
-  System.out.println("Copying servers from env "+getCopyId()+" to new env "+envid);
+  System.out.println("Copying servers from env "+m_copyid+" to new env "+envid);
   Map<Integer,Integer> serverids = new HashMap<Integer, Integer>();
   try
   {
@@ -20536,13 +23396,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    String copsql = "INSERT INTO dm.dm_server(id,name,hostname,ownerid,protocol,ogrpid,credid,summary,notes,domainid,basedir,typeid,creatorid,created,modifierid,modified,status) " +
        "SELECT ?,?,hostname,ownerid,protocol,ogrpid,credid,summary,notes,?,basedir,typeid,?,?,?,?,'N' FROM dm.dm_server WHERE id=?";
  
-   PreparedStatement st = getDBConnection().prepareStatement(sql);
+   PreparedStatement st = m_conn.prepareStatement(sql);
    
-   st.setInt(1,getCopyId());
+   st.setInt(1,m_copyid);
    ResultSet rs = st.executeQuery();
    while (rs.next()) {
     String newname=rs.getString(1)+" - Copy";
-    PreparedStatement cst = getDBConnection().prepareStatement(csql);
+    PreparedStatement cst = m_conn.prepareStatement(csql);
     // Check to see if there's already a server with this name in the target domain
     int c=0;
     int n=1;
@@ -20571,13 +23431,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
     // Copy all the information from the source server to this new server
     //
     System.out.println("Copying the server details (oldid="+rs.getInt(2)+", newid="+newid);
-    PreparedStatement stc = getDBConnection().prepareStatement(copsql);
+    PreparedStatement stc = m_conn.prepareStatement(copsql);
     stc.setInt(1,newid);
     stc.setString(2,newname);
     stc.setInt(3,domainid);
-    stc.setInt(4,getUserID());
+    stc.setInt(4,m_userID);
     stc.setLong(5,t);
-    stc.setInt(6,getUserID());
+    stc.setInt(6,m_userID);
     stc.setLong(7,t);
     stc.setInt(8,oldid);
     stc.execute();
@@ -20585,7 +23445,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
     //
     // Now map this new server to the new environment
     //
-    PreparedStatement st2 = getDBConnection().prepareStatement(inssql);
+    PreparedStatement st2 = m_conn.prepareStatement(inssql);
     st2.setInt(1,envid);
     st2.setInt(2,newid);
     st2.setInt(3,rs.getInt(3));
@@ -20608,9 +23468,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
    //
    // Get the connections between the servers
    //
-   PreparedStatement st4 = getDBConnection().prepareStatement("SELECT serverfrom,serverfromedge,serverto,servertoedge,label,style FROM dm.dm_server_connections WHERE envid=?");
-   PreparedStatement st5 = getDBConnection().prepareStatement("INSERT INTO dm.dm_server_connections(envid,serverfrom,serverfromedge,serverto,servertoedge,label,style) VALUES(?,?,?,?,?,?,?)");
-   st4.setInt(1,getCopyId());
+   PreparedStatement st4 = m_conn.prepareStatement("SELECT serverfrom,serverfromedge,serverto,servertoedge,label,style FROM dm.dm_server_connections WHERE envid=?");
+   PreparedStatement st5 = m_conn.prepareStatement("INSERT INTO dm.dm_server_connections(envid,serverfrom,serverfromedge,serverto,servertoedge,label,style) VALUES(?,?,?,?,?,?,?)");
+   st4.setInt(1,m_copyid);
    ResultSet rs4 = st4.executeQuery();
    while(rs4.next()) {
     st5.setInt(1,envid);
@@ -20635,7 +23495,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
  }
 
  
- 	public String VerifyCompTargetDomain(int compid,int tgtdomain)
+ 	String VerifyCompTargetDomain(int compid,int tgtdomain)
  	{
  		Hashtable<Integer,String> domlist = new Hashtable<Integer,String>();
  		Component comp = getComponent(compid,true);
@@ -20666,7 +23526,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
  		// Check if this component type is declared in one of the target domain's ancestors
  		String getsql="SELECT domainid,name FROM dm.dm_type WHERE id=?";
  		try {
- 			PreparedStatement st = getDBConnection().prepareStatement(getsql);
+ 			PreparedStatement st = m_conn.prepareStatement(getsql);
  			st.setInt(1,typeid);
  			ResultSet rs = st.executeQuery();
  			if (rs.next()) {
@@ -20674,7 +23534,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
  					String name = rs.getString(2);
  					rs.close();
  					st.close();
- 					return "Component Type "+name;
+ 					return "Endpoint Type "+name;
  				}
  			}
  			rs.close();
@@ -20687,7 +23547,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
  		return null;
  	}
  	
- 	public String VerifyAppTargetDomain(int appid,int tgtdomain)
+ 	String VerifyAppTargetDomain(int appid,int tgtdomain)
  	{
  		//
  		// Finds the domain heirachy of the specified app and checks that it will "fit"
@@ -20730,25 +23590,25 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
  		return null;
  	}
  	
-	public boolean CopyTemplate(int oldid,int notifierid,int newid,String newname)
+	private boolean CopyTemplate(int oldid,int notifierid,int newid,String newname)
 	{
 		try
 		{
 			long t=timeNow();
 			String copysql1 = "INSERT INTO dm.dm_template(id,name,summary,notifierid,creatorid,modifierid,created,modified,status,subject,body) SELECT ?,?,summary,?,?,?,?,?,status,subject,body FROM dm.dm_template WHERE id=?";
 			String copysql2 = "INSERT INTO dm.dm_templaterecipients(templateid,usrgrpid,userid,ownertype) SELECT ?,usrgrpid,userid,ownertype FROM dm.dm_templaterecipients WHERE templateid=?";
-			PreparedStatement st1 = getDBConnection().prepareStatement(copysql1);
+			PreparedStatement st1 = m_conn.prepareStatement(copysql1);
 			st1.setInt(1,newid);
 			st1.setString(2,newname);
 			st1.setInt(3,notifierid);
-			st1.setInt(4,getUserID());
-			st1.setInt(5,getUserID());
+			st1.setInt(4,m_userID);
+			st1.setInt(5,m_userID);
 			st1.setLong(6,t);
 			st1.setLong(7,t);
 			st1.setInt(8,oldid);
 			st1.execute();
 			st1.close();
-			PreparedStatement st2 = getDBConnection().prepareStatement(copysql2);
+			PreparedStatement st2 = m_conn.prepareStatement(copysql2);
 			st2.setInt(1,newid);
 			st2.setInt(2,oldid);
 			st2.execute();
@@ -20762,7 +23622,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return false;
 	}
 	
-	public String GetPasteName(String Type,int domainid,String oldname)
+	private String GetPasteName(String Type,int domainid,String oldname)
 	{
 		boolean Exists=true;
 		try
@@ -20783,7 +23643,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			int n=2;
 			String sql1 = "SELECT id,name FROM dm.dm_"+Type+" where name=? AND domainid=?";
 			String sql2 = "SELECT a.id,a.name FROM dm.dm_template a,dm.dm_notify b where a.name=? AND a.notifierid=b.id AND b.domainid=?";
-			PreparedStatement st = getDBConnection().prepareStatement(Type.equalsIgnoreCase("template")?sql2:sql1);
+			PreparedStatement st = m_conn.prepareStatement(Type.equalsIgnoreCase("template")?sql2:sql1);
 			System.out.println("SELECT id,name FROM dm.dm_"+Type+" where name='"+TestName+"' AND domainid="+domainid);
 			while (Exists) {
 				st.setString(1,TestName);
@@ -20817,13 +23677,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return oldname+" Copy";
 	}
 	
-	public void CommitPaste(boolean commit)
+	private void CommitPaste(boolean commit)
 	{
 		System.out.println("CommitPaste("+commit+")");
 		if (commit) {
 			try
 			{
-				getDBConnection().commit();
+				m_conn.commit();
 			}
 			catch (SQLException e)
 			{
@@ -20843,7 +23703,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return m_PasteError;
 	}
 	
-	public boolean CopyAction(int newid,String newname,int domainid,int origid)
+	private boolean CopyAction(int newid,String newname,int domainid,int origid)
 	{
 		System.out.println("CopyAction(\""+newname+"\", domainid="+domainid+" origid="+origid);
 		try {
@@ -20869,19 +23729,19 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			"INSERT INTO dm.dm_action_categories(id,categoryid) "
 					+ "SELECT ?,categoryid FROM dm.dm_action_categories WHERE id=?"
 			};
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
+			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
 			stmt1.setInt(1,newid);
 			stmt1.setString(2,newname);
 			stmt1.setInt(3,domainid);
-			stmt1.setInt(4,getUserID());
+			stmt1.setInt(4,m_userID);
 			stmt1.setLong(5,t);
-			stmt1.setInt(6,getUserID());
+			stmt1.setInt(6,m_userID);
 			stmt1.setLong(7,t);
 			stmt1.setInt(8,origid);
 			stmt1.execute();
 			if (stmt1.getUpdateCount() >0) {
 				for (int i=0;i<childsql.length;i++) {
-					PreparedStatement cstmt = getDBConnection().prepareStatement(childsql[i]);
+					PreparedStatement cstmt = m_conn.prepareStatement(childsql[i]);
 					cstmt.setInt(1,newid);
 					cstmt.setInt(2,origid);
 					cstmt.execute();
@@ -20897,7 +23757,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return true;
 	}
 	
-	public boolean CopyFunction(int newid,String newname,int domainid,int origid)
+	private boolean CopyFunction(int newid,String newname,int domainid,int origid)
 	{
 		System.out.println("CopyFunction(\""+newname+"\", domainid="+domainid+" origid="+origid);
 		try {
@@ -20920,7 +23780,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			String sql6="INSERT INTO dm.dm_action_categories(id,categoryid) SELECT ?,categoryid FROM dm.dm_action_categories WHERE id=?";
 			String sql7="INSERT INTO dm.dm_fragments(id,name,summary,categoryid,exitpoints,creatorid,created,modifierid,modified,drilldown,actionid,functionid) SELECT ?,?,summary,categoryid,exitpoints,?,?,?,?,drilldown,?,? FROM dm.dm_fragments WHERE ? in (actionid,functionid)";
 			String sql8="INSERT INTO dm.dm_fragment_categories(id,categoryid) SELECT ?,categoryid FROM dm.dm_action_categories WHERE id=?";	// deliberate - take category from action for fragment
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
+			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
 			stmt1.setInt(1,origid);
 			ResultSet rs1 = stmt1.executeQuery();
 			if (rs1.next()) {
@@ -20930,7 +23790,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					// This is a procedure or function with DMScript stored in the database
 					// Duplicate the DMScript text body.
 					newtextid = getID("actiontext");
-					PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+					PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 					stmt2.setInt(1,newtextid);
 					stmt2.setInt(2,textid);
 					stmt2.execute();
@@ -20939,7 +23799,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			}
 			rs1.close();
 			stmt1.close();
-			PreparedStatement stmt3 = getDBConnection().prepareStatement(sql3);
+			PreparedStatement stmt3 = m_conn.prepareStatement(sql3);
 			stmt3.setInt(1,newid);
 			stmt3.setString(2,newname);
 			stmt3.setInt(3,domainid);
@@ -20948,39 +23808,39 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			} else {
 				stmt3.setNull(4,Types.INTEGER);
 			}
-			stmt3.setInt(5,getUserID());
+			stmt3.setInt(5,m_userID);
 			stmt3.setLong(6,t);
-			stmt3.setInt(7,getUserID());
+			stmt3.setInt(7,m_userID);
 			stmt3.setLong(8,t);
 			stmt3.setInt(9,origid);
 			stmt3.execute();
 			stmt3.close();
 			// Duplicate the access control
-			PreparedStatement stmt4 = getDBConnection().prepareStatement(sql4);
+			PreparedStatement stmt4 = m_conn.prepareStatement(sql4);
 			stmt4.setInt(1,newid);
 			stmt4.setInt(2,origid);
 			stmt4.execute();
 			stmt4.close();
 			// Now duplicate all the arguments
-			PreparedStatement stmt5 = getDBConnection().prepareStatement(sql5);
+			PreparedStatement stmt5 = m_conn.prepareStatement(sql5);
 			stmt5.setInt(1,newid);
 			stmt5.setInt(2,origid);
 			stmt5.execute();
 			stmt5.close();
 			// Now set the new function/procedure into the appropriate categories
-			PreparedStatement stmt6 = getDBConnection().prepareStatement(sql6);
+			PreparedStatement stmt6 = m_conn.prepareStatement(sql6);
 			stmt6.setInt(1,newid);
 			stmt6.setInt(2,origid);
 			stmt6.execute();
 			stmt6.close();
 			// Now create the matching fragment
-			PreparedStatement stmt7 = getDBConnection().prepareStatement(sql7);
+			PreparedStatement stmt7 = m_conn.prepareStatement(sql7);
 			int newfragid = this.getID("fragments");
 			stmt7.setInt(1,newfragid);
 			stmt7.setString(2,newname);
-			stmt7.setInt(3,getUserID());
+			stmt7.setInt(3,m_userID);
 			stmt7.setLong(4,t);
-			stmt7.setInt(5,getUserID());
+			stmt7.setInt(5,m_userID);
 			stmt7.setLong(6,t);
 			if (isFunction) {
 				stmt7.setNull(7,Types.INTEGER);		// Action ID
@@ -20992,7 +23852,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			stmt7.setInt(9,origid);
 			stmt7.execute();
 			// Now add the fragment to the fragment category
-			PreparedStatement stmt8 = getDBConnection().prepareStatement(sql8);
+			PreparedStatement stmt8 = m_conn.prepareStatement(sql8);
 			stmt8.setInt(1,newfragid);
 			stmt8.setInt(2,origid);
 			stmt8.execute();
@@ -21006,7 +23866,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		return true;
 	}
 	
-	public void CopyComponentVersions(Component oldComp,Component newComp)
+	private void CopyComponentVersions(Component oldComp,Component newComp)
 	{
 		// On a paste operation, copies all the child versions, giving each of them the same "new name" as the parent.
 		String copysql="INSERT INTO dm.dm_component(id,name,domainid,summary,ownerid,creatorid,created,modifierid,modified,parentid,"
@@ -21025,7 +23885,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		System.out.println("postFix="+postFix);
 		long t = timeNow();
 		try {
-			PreparedStatement st = getDBConnection().prepareStatement(copysql);
+			PreparedStatement st = m_conn.prepareStatement(copysql);
 			List<Component> children = oldComp.getVersions();			
 		
 			System.out.println("children.size()="+children.size());
@@ -21045,9 +23905,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				st.setInt(1,idmap.get(cc.getId()));
 				st.setString(2,cc.getName()+postFix);
 				st.setInt(3,newComp.getDomainId());
-				st.setInt(4,getUserID());
+				st.setInt(4,m_userID);
 				st.setLong(5,t);
-				st.setInt(6,getUserID());
+				st.setInt(6,m_userID);
 				st.setLong(7,t);
 				st.setInt(8,newComp.getId());
 				int pi = cc.getPredecessorId();
@@ -21065,12 +23925,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		}
 	}
 	
-	public void dumpCategories(String p,int id) {
+	private void dumpCategories(String p,int id) {
 		// debug - print out categories
 		System.out.println("dumpCategories ("+p+") id="+id);
 		try {
 			String sql = "select id,categoryid from dm.dm_component_categories where id="+id;
-			Statement stmt = getDBConnection().createStatement();
+			Statement stmt = m_conn.createStatement();
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next()) {
 				System.out.println("id="+rs.getInt(1)+", categoryid="+rs.getInt(2));
@@ -21086,46 +23946,41 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		DMObject ret = null;
 		ObjectType oot = null;
 		Category cat = null;	// for objects in categories
-		System.out.println("PasteObject m_copyobjtype="+getCopyObjType()+" domainid="+domainid+" parentid="+parentid+" commit="+commit);
-		if (getCopyObjType().equalsIgnoreCase("environment")) {
+		System.out.println("PasteObject m_copyobjtype="+m_copyobjtype+" domainid="+domainid+" parentid="+parentid+" commit="+commit);
+		if (m_copyobjtype.equalsIgnoreCase("environment")) {
 			parentid=domainid;
-			Environment env = getEnvironment(getCopyId(),false);
+			Environment env = getEnvironment(m_copyid,false);
 			ret = env;
 		}
 		else
-		if (getCopyObjType().equalsIgnoreCase("server")) {
-			Server server = getServer(getCopyId(),false);
+		if (m_copyobjtype.equalsIgnoreCase("server")) {
+			Server server = getServer(m_copyid,false);
 			ret = server;
 		}
 		else
-		if (getCopyObjType().equalsIgnoreCase("builder")) {
-			Builder builder = getBuilder(getCopyId());
-			ret = builder;
-		}
-		else
-		if (getCopyObjType().equalsIgnoreCase("template")) {
-			NotifyTemplate template = getTemplate(getCopyId());
+		if (m_copyobjtype.equalsIgnoreCase("template")) {
+			NotifyTemplate template = getTemplate(m_copyid);
 			ret = template;
 		}
 		else
-		if (getCopyObjType().equalsIgnoreCase("appversion") || getCopyObjType().equalsIgnoreCase("application")) {
-			Application app = getApplication(getCopyId(),false);
+		if (m_copyobjtype.equalsIgnoreCase("appversion") || m_copyobjtype.equalsIgnoreCase("application")) {
+			Application app = getApplication(m_copyid,false);
 			ret = app;
 		}
 		else
-		if (getCopyObjType().equalsIgnoreCase("component") || getCopyObjType().equalsIgnoreCase("compversion")) {
-			Component component = getComponent(getCopyId(),true);
-			setCopyObjType("component");
+		if (m_copyobjtype.equalsIgnoreCase("component") || m_copyobjtype.equalsIgnoreCase("compversion")) {
+			Component component = getComponent(m_copyid,true);
+			m_copyobjtype="component";
 			cat = component.getCategory();
 			System.out.println("in PasteObject, type is component cat is "+cat);
 			if (cat != null) System.out.println("cat name is "+cat.getName());
 			ret = component;
 		}
 		else
-		if (	getCopyObjType().equalsIgnoreCase("procedure") || 
-				getCopyObjType().equalsIgnoreCase("function")  ||
-				getCopyObjType().equalsIgnoreCase("action")) {
-			Action action = getAction(getCopyId(),false);
+		if (	m_copyobjtype.equalsIgnoreCase("procedure") || 
+				m_copyobjtype.equalsIgnoreCase("function")  ||
+				m_copyobjtype.equalsIgnoreCase("action")) {
+			Action action = getAction(m_copyid,false);
 			cat = action.getCategory();
 			if (action.getKind() != ActionKind.GRAPHICAL) {
 				// Not an action, must be procedure or function
@@ -21134,20 +23989,20 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			}
 			ret = action;
 		}
-		int newid = getID(getCopyObjType());
+		int newid = getID(m_copyobjtype);
 		if (ret != null) {
 			String errtext = null;
-			String newname=GetPasteName(getCopyObjType(),domainid,ret.getName());		
+			String newname=GetPasteName(m_copyobjtype,domainid,ret.getName());		
 			ret.setName(newname);
 			ret.setId(newid);
 			System.out.println("ret.getObjectType()="+ret.getObjectType());
 			switch((oot != null)?oot:ret.getObjectType()) {
 			case ENVIRONMENT:
-				CreateNewObject(getCopyObjType(),newname,domainid,parentid,newid,xpos,ypos,"",commit);
+				CreateNewObject(m_copyobjtype,newname,domainid,parentid,newid,xpos,ypos,"",commit);
 				// Create copies of the servers
 				System.out.println("Copying servers");
 				if (CopyServers(newid,domainid)) {
-					if (CopyAttributes("dm.dm_environmentvars","envid",getCopyId(),newid)) {
+					if (CopyAttributes("dm.dm_environmentvars","envid",m_copyid,newid)) {
 						CommitPaste(commit);
 					}
 				}
@@ -21157,10 +24012,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				//
 				// Pasting a component version into a domain automatically makes it a BASE version
 				//
-				errtext = VerifyCompTargetDomain(getCopyId(),domainid);
+				errtext = VerifyCompTargetDomain(m_copyid,domainid);
 				if (errtext == null) {
-					CreateNewObject(getCopyObjType(),newname,domainid,parentid,newid,xpos,ypos,"",commit);
-					Component oldComp = getComponent(getCopyId(),true);
+					CreateNewObject(m_copyobjtype,newname,domainid,parentid,newid,xpos,ypos,"",commit);
+					Component oldComp = getComponent(m_copyid,true);
 					Component newComp = getComponent(newid,true);
 					// CopyComponentAttributes duplicates the category entries.
 					//if (cat != null) {
@@ -21169,7 +24024,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					//}
 					System.out.println("About to CopyComponentAttributes");
 					dumpCategories("a",newid);
-					if (CopyComponentAttributes(getCopyId(),newid)) {
+					if (CopyComponentAttributes(m_copyid,newid)) {
 						dumpCategories("b",newid);
 						// If the source component was a BASE version, copy all the versions
 						System.out.println("CopyComponentAttributes returns, parentid="+oldComp.getParentId());
@@ -21189,36 +24044,30 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					ret = null;
 				}
 				break;
-			case BUILDER:
-				System.out.println("Pasting BUILDER");
-				CreateNewObject("buildengine",newname,domainid,parentid,newid,xpos,ypos,"builders",commit);
-				System.out.println("Calling CopyBuilderAttributes, m_copyid="+getCopyId()+" newid="+newid);
-				if (CopyBuilderAttributes(getCopyId(),newid)) CommitPaste(commit);
-				break;
 			case SERVER:
 				System.out.println("Pasting SERVER pie="+pie);
 				String treeid=pie?"environments":"servers";
-				CreateNewObject(getCopyObjType(),newname,domainid,parentid,newid,xpos,ypos,treeid,commit);
-				System.out.println("Calling CopyServerAttributes, m_copyid="+getCopyId()+" newid="+newid);
-				if (CopyServerAttributes(getCopyId(),newid)) CommitPaste(commit);
+				CreateNewObject(m_copyobjtype,newname,domainid,parentid,newid,xpos,ypos,treeid,commit);
+				System.out.println("Calling CopyServerAttributes, m_copyid="+m_copyid+" newid="+newid);
+				if (CopyServerAttributes(m_copyid,newid)) CommitPaste(commit);
 				break;
 			case TEMPLATE:
-				if (CopyTemplate(getCopyId(),parentid,newid,newname)) CommitPaste(commit);
+				if (CopyTemplate(m_copyid,parentid,newid,newname)) CommitPaste(commit);
 				break;
 			case APPLICATION:
 			case APPVERSION:
-				System.out.println("Creating new object of type "+getCopyObjType()+" newname="+newname+" domainid="+domainid+" parentid="+parentid);
+				System.out.println("Creating new object of type "+m_copyobjtype+" newname="+newname+" domainid="+domainid+" parentid="+parentid);
 				//
 				// Pasting an application version into a domain automatically makes it a BASE version
 				//
-				errtext = VerifyAppTargetDomain(getCopyId(),domainid);
+				errtext = VerifyAppTargetDomain(m_copyid,domainid);
 				if (errtext == null) {
 					ObjectTypeAndId otid = CreateNewObject("application",newname,domainid,0,newid,xpos,ypos,"",commit);
 					System.out.println("otid id="+otid.getId());
 					System.out.println("otid object type = "+otid.getObjectType());
 					System.out.println("newid="+newid);
-					System.out.println("m_copyid="+getCopyId());
-					if (CopyApplicationAttributes(getCopyId(),newid)) CommitPaste(commit);
+					System.out.println("m_copyid="+m_copyid);
+					if (CopyApplicationAttributes(m_copyid,newid)) CommitPaste(commit);
 				} else {
 					//
 					// Cannot paste the app into this domain - at least one of its dependents (components,
@@ -21230,12 +24079,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				break;
 			case PROCEDURE:
 			case FUNCTION:
-				System.out.println("Creating new function/procedure of type "+getCopyObjType()+" newname="+newname+" domainid="+domainid);
+				System.out.println("Creating new function/procedure of type "+m_copyobjtype+" newname="+newname+" domainid="+domainid);
 				if (cat != null) {
 					Action newAction = getAction(newid,true);
 					addToCategory(cat.getId(),newAction.getOtid());
 				}
-				if (CopyFunction(newid,newname,domainid,getCopyId())) CommitPaste(commit);
+				if (CopyFunction(newid,newname,domainid,m_copyid)) CommitPaste(commit);
 				break;
 			case ACTION:
 				System.out.println("Creating new action newname="+newname+" domainid="+domainid);
@@ -21246,13 +24095,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					addToCategory(cat.getId(),newAction.getOtid());
 				}
 				*/
-				if (CopyAction(newid,newname,domainid,getCopyId())) CommitPaste(commit);
+				if (CopyAction(newid,newname,domainid,m_copyid)) CommitPaste(commit);
 				break;
 			default:
 				break;
 			}
 		} else {
-			System.out.println("m_copyobjtype="+getCopyObjType()+" not yet supported");
+			System.out.println("m_copyobjtype="+m_copyobjtype+" not yet supported");
 		}
 		
 		return ret;
@@ -21295,7 +24144,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		try {
 			int origid = action.getId();
 			int domainid = action.getDomainId();
-			PreparedStatement stmt1 = getDBConnection().prepareStatement(sql1);
+			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
 			stmt1.setInt(1,origid);
 			ResultSet rs1 = stmt1.executeQuery();
 			if (rs1.next()) {
@@ -21313,7 +24162,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				// Check to see if this name already exists. If so, append a number and try again
 				//
 				String sql2 = "SELECT count(*) FROM dm.dm_action WHERE name=? AND domainid=?";
-				PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+				PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 				stmt2.setInt(2,domainid);
 				int cv=0;
 				int n=1;
@@ -21337,7 +24186,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				// Set the parent and archived flags for the newly created action/procedure/function
 				//
 				String sql3 = "UPDATE dm.dm_action SET parentid=?, status='A' WHERE id=?";
-				PreparedStatement stmt3 = getDBConnection().prepareStatement(sql3);
+				PreparedStatement stmt3 = m_conn.prepareStatement(sql3);
 				stmt3.setInt(1,origid);
 				stmt3.setInt(2,newid);
 				stmt3.execute();
@@ -21347,7 +24196,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				// archived action
 				//
 				String sql4 = "UPDATE dm.dm_deploymentactions SET actionid=? WHERE actionid=?";
-				PreparedStatement stmt4 = getDBConnection().prepareStatement(sql4);
+				PreparedStatement stmt4 = m_conn.prepareStatement(sql4);
 				stmt4.setInt(1,newid);
 				stmt4.setInt(2,origid);
 				stmt4.execute();
@@ -21357,7 +24206,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				//
 				String updsql="INSERT INTO dm.dm_historynote(objid,kind,\"WHEN\",note,userid,id) VAlUES(?,?,?,?,?,?)";
 				long t = timeNow();
-				PreparedStatement updstmt = getDBConnection().prepareStatement(updsql);
+				PreparedStatement updstmt = m_conn.prepareStatement(updsql);
 				//
 				// Original (archived) Action
 				// --------------------------
@@ -21367,7 +24216,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				updstmt.setInt(2,action.getObjectType().value());
 				updstmt.setLong(3,t);
 				updstmt.setString(4,"Archived due to Modification");
-				updstmt.setInt(5,getUserID());
+				updstmt.setInt(5,m_userID);
 				updstmt.setInt(6,hnid);
 				updstmt.execute();
 				//
@@ -21379,7 +24228,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 				updstmt.setInt(2,action.getObjectType().value());
 				updstmt.setLong(3,t);
 				updstmt.setString(4,"Created Archived Version "+newname);
-				updstmt.setInt(5,getUserID());
+				updstmt.setInt(5,m_userID);
 				updstmt.setInt(6,hnid);
 				updstmt.execute();
 			}
@@ -21433,8 +24282,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	public void rollback()
 	{
 		try {
-		 if (getDBConnection() != null)
-			  getDBConnection().rollback();
+		 if (m_conn != null)
+			  m_conn.rollback();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -21444,7 +24293,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	{
 	 try {
 	  String dsql = "DELETE FROM dm.dm_compitemprops WHERE compitemid = ?";
-	  PreparedStatement stmt = getDBConnection().prepareStatement(dsql);
+	  PreparedStatement stmt = m_conn.prepareStatement(dsql);
 	  stmt.setInt(1, componentItem.getId());
 	  stmt.execute();
 	  stmt.close();
@@ -21454,13 +24303,168 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	 }
 	}
 
+ public String CheckLicense(String objtype, int parid)
+ {
+  // lic format=app;comp;
+  String parts[] = null;
+  int cnt = 0;
+  Date now = new Date();
+  Date expire = new Date();
+  long lic_dbuid = 0;
+
+  int liccnt = 9999999;
+  String msg = "";
+
+  if (!objtype.equalsIgnoreCase("application"))
+   return null;
+
+  if (isSaaS(m_conn))
+  {
+   liccnt = m_license_cnt;
+  }
+  else
+  {
+   // Get the license string from the db
+   String sql = "SELECT status FROM dm.dm_tableinfo";
+
+   try
+   {
+    PreparedStatement stmt = m_conn.prepareStatement(sql);
+    ResultSet rs = stmt.executeQuery();
+    while (rs.next())
+    {
+     String lic = rs.getString(1);
+
+     if (!lic.contains(";")) // Decrypt it
+     {
+      long dd = DecryptLicenseDate(lic);
+      try
+      {
+       expire = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).parse((new Long(dd)).toString());
+      }
+      catch (ParseException e)
+      {
+       expire = null;
+      }
+      int x = 1;
+      long c = -1;
+      String tmp = "";
+      while ((c = (long) GetLicenseField(lic, x)) >= 0)
+      {
+       tmp += (new Long(c)).toString() + ";";
+       x++;
+      }
+      lic = tmp;
+     }
+     System.out.println("lic=" + lic);
+     parts = lic.split(";");
+    }
+    rs.close();
+    stmt.close();
+   }
+   catch (SQLException e)
+   {
+    e.printStackTrace();
+    rollback();
+   }
+
+   if (parts != null && parts.length > 1)
+    liccnt = new Integer(parts[0]).intValue();
+   else
+    liccnt = 0;
+   
+   if (parts != null && parts.length > 2)
+    lic_dbuid = new Long(parts[parts.length-1]).longValue();
+   else
+    lic_dbuid = 0;
+  }
+
+  String sql = "";
+
+  if (objtype.equalsIgnoreCase("application")) // check applicatio cnt
+  {
+   msg = " applications defined.";
+   sql = "select count(*) from dm.dm_application where status <> 'D' and parentid is null";
+  }
+  else if (objtype.equalsIgnoreCase("appversion")) // check applicatio cnt
+  {
+   msg = " application versions defined.";
+   sql = "select count(*) from dm.dm_application where status <> 'D' and parentid =" + parid;
+  }
+
+  // get the object cnt
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+   while (rs.next())
+    cnt = rs.getInt(1);
+
+   rs.close();
+   stmt.close();
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+   rollback();
+  }
+
+  if (lic_dbuid != 0)
+  {
+   long dbuid = 0;
+
+   try
+   {
+    String dbuidStr = this.getDatabaseId();
+    byte[] dectryptArray = dbuidStr.getBytes();
+    byte[] decarray = Base64.decodeBase64(dectryptArray);
+    String decstr;
+    decstr = new String(decarray,"UTF-8");
+    dbuid = new Long(decstr).longValue();
+   }
+   catch (Exception e)
+   {
+    e.printStackTrace();
+   } 
+   
+   if (lic_dbuid != dbuid)
+     return new String("Your license does not match the instance id for this DeployHub install.");
+  }
+  if (expire == null)
+   return new String("Invalid license expire date.");
+
+  if (now.compareTo(expire) > 0)
+   return new String("Your license has expired.");
+
+  if (cnt > liccnt)
+   return new String("Your license only enables you to have " + liccnt + msg);
+
+  return null;
+ }
+
+ public void updateLicense(String lickey)
+ {
+  try {
+   String dsql = "UPDATE dm.dm_tableinfo set status = ?";
+   PreparedStatement stmt = m_conn.prepareStatement(dsql);
+   stmt.setString(1, lickey);
+   stmt.execute();
+   // int res = stmt.getUpdateCount();
+   m_conn.commit();
+   stmt.close();
+
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+ }
+
  public JSONArray getFileAuditReport(String loc)
  {
   String sql = "Select a.deploymentid As Deployment, b.startts As DeployedAt, e.name As userName, c.name As Application, d.name As Environment, a.componentname As Component, a.servername As Server, a.targetfilename As File From dm.dm_deploymentxfer a, dm.dm_deployment b, dm.dm_application c, dm.dm_environment d, dm.dm_user e Where a.deploymentid = b.deploymentid And c.id = b.appid And d.id = b.envid And e.id = b.userid And a.deploymentid In (Select Max(a.deploymentid) From dm.dm_deploymentxfer a, dm.dm_deployment b, dm.dm_application c, dm.dm_environment d Where a.deploymentid = b.deploymentid And c.id = b.appid And d.id = b.envid   And a.checksum2 = ? Group By c.name,   d.name,   a.componentname,   a.servername) And a.checksum2 = ? Order By 1 Desc, 5, 7"; 
   JSONArray ret = new JSONArray();
   
   try {
-   PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
    stmt.setString(1, loc);
    stmt.setString(2, loc);
    ResultSet rs = stmt.executeQuery();
@@ -21495,7 +24499,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   JSONArray ret = new JSONArray();
   
   try {
-   PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
    ResultSet rs = stmt.executeQuery();
 
    while (rs.next())
@@ -21531,7 +24535,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   JSONArray ret = new JSONArray();
   
   try {
-   PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
    ResultSet rs = stmt.executeQuery();
 
    while (rs.next())
@@ -21557,7 +24561,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   JSONArray ret = new JSONArray();
   
   try {
-   PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
    ResultSet rs = stmt.executeQuery();
 
    while (rs.next())
@@ -21584,9 +24588,980 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
   return ret;
  }
  
+ public JSONArray getReleaseList()
+ {
+  String sql = "select b.id, b.name, c.name, a.deploymentid, a.finishts, a.exitcode, b.domainid, b.predecessorid from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c where b.status = 'N' and b.isrelease = 'Y' and a.appid = b.id and a.envid = c.id " +
+    " and  a.finishts is not null  and (a.appid, a.envid, a.deploymentid) in (select appid, envid, max(deploymentid) from dm.dm_deployment group by appid, envid)  and  b.domainid in (" + m_domainlist + ")" +
+    " union " + 
+    "select b.id, b.name, '', -99,  NOW()::timestamp, -1, b.domainid, b.predecessorid from dm.dm_application b where b.status = 'N' and  b.isrelease = 'Y' and  b.id not in (SELECT appid FROM dm.dm_deployment where finishts is not NULL) and  b.domainid in (" + m_domainlist + ")" +
+    " order by 2,4";
+
+JSONArray ret = new JSONArray();
+
+try {
+PreparedStatement stmt = m_conn.prepareStatement(sql);
+ResultSet rs = stmt.executeQuery();
+
+while (rs.next())
+{
+JSONObject obj = new JSONObject();
+
+int notDeployed = rs.getInt(4);
+
+if (notDeployed == -99)
+{
+Integer parentid = rs.getInt(8);
+String id = rs.getString(1);
+
+if (parentid == 0)
+id = "rl" + id;
+else
+id = "rv" + id;
+
+obj.add("id", id);
+obj.add("name", rs.getString(2));   
+
+Domain domain  = this.getDomain(rs.getInt(7));
+String dom = domain.getFullDomain();
+
+obj.add("domain", dom);
+obj.add("domainid", domain.getId());
+if (parentid > 0)
+{
+Application app  = this.getApplication(parentid, false);
+obj.add("parent", app.getName());
+}
+else
+obj.add("parent", "-");
+obj.add("environment", "-");    
+obj.add("deployid", "Never Deployed");    
+obj.add("finished", "-");
+obj.add("exitcode","-");
+
+ret.add(obj);
+}
+else
+{
+Integer parentid = rs.getInt(8);
+String id = rs.getString(1);
+
+if (parentid == 0)
+id = "rl" + id;
+else
+id = "rv" + id;
+
+obj.add("id", id);
+obj.add("name", rs.getString(2));   
+
+Domain domain  = this.getDomain(rs.getInt(7));
+String dom = domain.getFullDomain();
+int deployid = rs.getInt(4);
+
+obj.add("domain", dom);
+obj.add("domainid", domain.getId());
+if (parentid > 0)
+{
+Application app  = this.getApplication(parentid, false);
+obj.add("parent", app.getName());
+}
+else
+obj.add("parent", "-");
+obj.add("environment", rs.getString(3));    
+obj.add("deployid", deployid);   
+
+Timestamp ts = rs.getTimestamp(5);
+obj.add("finished", ts.toString());
+
+int ec = rs.getInt(6);
+String exitcode = "Failed";
+if (ec == 0)
+exitcode = "Success";
+
+obj.add("exitcode",exitcode);
+ret.add(obj);     
+}
+}
+rs.close();
+stmt.close();
+return ret;
+} catch (SQLException e) {
+e.printStackTrace();
+} 
+return ret;
+ }
+ 
+ public ArrayList<Application> getLastDeployedAppInEnv(Environment env)
+ {
+  String sql = "select b.id from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c where a.envid = ? and b.status = 'N' and b.isrelease = 'N' and a.appid = b.id and a.envid = c.id "
+    + " and  a.finishts is not null  and (a.envid, a.deploymentid) in (select envid, max(deploymentid) from dm.dm_deployment group by envid) and  b.domainid in (" + m_domainlist + ")";
+
+  ArrayList<Application> ret = new ArrayList<Application>();
+
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, env.getId());
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    Application app = this.getApplication(rs.getInt(1), false);
+    ret.add(app);
+   }
+
+   rs.close();
+   stmt.close();
+   return ret;
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+  }
+  return ret;
+ }
+ 
+ 
+ public JSONArray getAppList()
+ {
+  String sql = "select b.id, b.name, c.name, a.deploymentid, a.finishts, a.exitcode, b.domainid, b.predecessorid from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c where b.status = 'N' and b.isrelease = 'N' and a.appid = b.id and a.envid = c.id " +
+               " and  a.finishts is not null  and (a.appid, a.envid, a.deploymentid) in (select appid, envid, max(deploymentid) from dm.dm_deployment group by appid, envid)  and  b.domainid in (" + m_domainlist + ")" +
+               " union " + 
+               "select b.id, b.name, '', -99,  NOW()::timestamp, -1, b.domainid, b.predecessorid from dm.dm_application b where b.status = 'N' and  b.isrelease = 'N' and  b.id not in (SELECT appid FROM dm.dm_deployment where finishts is not NULL) and  b.domainid in (" + m_domainlist + ")" +
+               " order by 2,4";
+
+  JSONArray ret = new JSONArray();
+  
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject();
+    
+    int notDeployed = rs.getInt(4);
+    
+    if (notDeployed == -99)
+    {
+     Integer parentid = rs.getInt(8);
+     String id = rs.getString(1);
+     
+     if (parentid == 0)
+      id = "ap" + id;
+     else
+      id = "av" + id;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));   
+     
+     Domain domain  = this.getDomain(rs.getInt(7));
+     String dom = domain.getFullDomain();
+         
+     obj.add("domain", dom);
+     obj.add("domainid", domain.getId());
+     if (parentid > 0)
+     {
+      Application app  = this.getApplication(parentid, false);
+      obj.add("parent", app.getName());
+     }
+     else
+       obj.add("parent", "-");
+     obj.add("environment", "-");    
+     obj.add("deployid", "Never Deployed");    
+     obj.add("finished", "-");
+     obj.add("exitcode","-");
+     
+     ret.add(obj);
+    }
+    else
+    {
+     Integer parentid = rs.getInt(8);
+     String id = rs.getString(1);
+     
+     if (parentid == 0)
+      id = "ap" + id;
+     else
+      id = "av" + id;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));   
+     
+     Domain domain  = this.getDomain(rs.getInt(7));
+     String dom = domain.getFullDomain();
+     int deployid = rs.getInt(4);
+     
+     obj.add("domain", dom);
+     obj.add("domainid", domain.getId());
+     if (parentid > 0)
+     {
+      Application app  = this.getApplication(parentid, false);
+      obj.add("parent", app.getName());
+     }
+     else
+       obj.add("parent", "-");
+     obj.add("environment", rs.getString(3));    
+     obj.add("deployid", deployid);   
+     
+     Timestamp ts = rs.getTimestamp(5);
+     obj.add("finished", ts.toString());
+
+     int ec = rs.getInt(6);
+     String exitcode = "Failed";
+     if (ec == 0)
+      exitcode = "Success";
+     
+     obj.add("exitcode",exitcode);
+     ret.add(obj);     
+    }
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ }
+ 
+ public JSONArray getCompList()
+ {
+  // String sql = "Select distinct c.name As Component From dm.dm_component c Where c.domainid in (" + m_domainlist + ") Order By 1 desc"; 
+
+//  String sql = "select distinct d.id, d.name, e.name, a.deploymentid, a.finishts, a.exitcode, d.domainid, d.parentid from dm.dm_deployment a, dm.dm_application b, dm.dm_compsonserv c, dm.dm_component d, dm.dm_environment e where a.appid = b.id  " +
+//    "and c.deploymentid = a.deploymentid  " +
+//    "and c.compid = d.id  " +
+//    "and e.id = a.envid  " +
+//    "and d.status = 'N' " +
+//    "and (appid, finishts) in (SELECT appid, MAX(finishts) as finishts FROM dm.dm_deployment GROUP BY appid)  " +
+//    "union  " +
+//    "select distinct d.id, d.name, '', -99, now()::timestamp, 0, d.domainid, d.parentid from dm.dm_component d where  d.status = 'N' and d.id not in " +
+//    "(  " +
+//    "select distinct d.id from dm.dm_deployment a, dm.dm_application b, dm.dm_compsonserv c, dm.dm_component d, dm.dm_environment e where a.appid = b.id   " +
+//    "and c.deploymentid = a.deploymentid  " +
+//    "and c.compid = d.id  " +
+//    "and e.id = a.envid  " +
+//    "and d.status = 'N' " +
+//    "and (appid, finishts) in (SELECT appid, MAX(finishts) as finishts FROM dm.dm_deployment GROUP BY appid))";
+  
+  String sql = "select distinct d.id, d.name, e.name, a.deploymentid, a.finishts, a.exitcode, d.domainid, d.predecessorid from dm.dm_deployment a, dm.dm_application b, dm.dm_compsonserv c, dm.dm_component d, dm.dm_environment e where a.appid = b.id  " +
+    "and c.deploymentid = a.deploymentid " +
+    "and c.compid = d.id  " +
+    "and e.id = a.envid  " +
+    "and d.status = 'N' " +
+    "and a.deploymentid > 0 " +
+    "and (appid, a.deploymentid) in (SELECT appid, MAX(x.deploymentid) as deploymentid FROM dm.dm_deployment x GROUP BY appid)  " +
+    "union  " +
+    "select distinct d.id, d.name, '', -99, now()::timestamp, 0, d.domainid, d.predecessorid  from dm.dm_component d where  d.status = 'N' and d.id not in " +
+    "(  " +
+    "select distinct d.id from dm.dm_deployment a, dm.dm_application b, dm.dm_compsonserv c, dm.dm_component d, dm.dm_environment e where a.appid = b.id   " +
+    "and c.deploymentid = a.deploymentid  " +
+    "and c.compid = d.id  " +
+    "and e.id = a.envid  " +
+    "and d.status = 'N' " +
+    "and (appid, a.deploymentid) in (SELECT appid, MAX(y.deploymentid) as deployid FROM dm.dm_deployment y GROUP BY appid))";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    int notDeployed = rs.getInt(4);
+    int compDom = rs.getInt(7);
+    
+    String domlist = "," + this.getDomainList() + ",";
+    
+    if (!domlist.contains("," + compDom + ","))
+     continue;
+    
+    if (notDeployed == -99)
+    {
+     Integer parentid = rs.getInt(8);
+     String id = rs.getString(1);
+     
+     if (parentid == 0)
+      id = "co" + id;
+     else
+      id = "cv" + id;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));    
+
+     Domain domain  = this.getDomain(rs.getInt(7));
+     String dom = "";
+     int domainid = -1;
+     
+     if (domain != null)
+     {
+       dom = domain.getFullDomain();
+       domainid = domain.getId();
+     }
+     else
+     {
+      System.out.println("Invalid domain for:" + id + " - " + rs.getString(2));
+      continue;
+     }
+
+     obj.add("domain", dom);
+     obj.add("domainid", domainid);
+     if (parentid > 0)
+     {
+      Component comp = this.getComponent(parentid, false);
+      if (comp != null)
+       obj.add("parent", comp.getName());
+      else
+       obj.add("parent", "-");
+     }
+     else
+      obj.add("parent", "-");
+     
+     obj.add("environment", "-");    
+     obj.add("deployid", "Never Deployed");    
+     obj.add("finished", "-");
+     obj.add("exitcode","-");
+
+     ret.add(obj);
+    }
+    else
+    {
+     Integer parentid = rs.getInt(8);
+     String id = rs.getString(1);
+     
+     if (parentid == 0)
+      id = "co" + id;
+     else
+      id = "cv" + id;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));    
+
+     Domain domain  = this.getDomain(rs.getInt(7));
+     String dom = domain.getFullDomain();
+
+     obj.add("domain", dom);
+     obj.add("domainid", domain.getId());
+     if (parentid > 0)
+     {
+      Component comp = this.getComponent(parentid, false);
+      obj.add("parent", comp.getName());
+     }
+     else
+      obj.add("parent", "-");
+  
+     obj.add("environment", rs.getString(3));    
+     obj.add("deployid", rs.getInt(4));   
+
+     Timestamp ts = rs.getTimestamp(5);
+     
+     if (ts == null)
+       obj.add("finished", "");
+     else
+      obj.add("finished", ts.toString());
+
+     int ec = rs.getInt(6);
+     String exitcode = "Failed";
+     if (ec == 0)
+      exitcode = "Success";
+
+     obj.add("exitcode",exitcode);
+     ret.add(obj);     
+    }
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ }
+ 
+ public JSONArray getEnvList()
+ {
+  String sql = "select id, name, domainid from dm.dm_environment where status = 'N'";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    String id = "en" + rs.getInt(1);
+    int envDom = rs.getInt(3);
+    
+    String domlist = "," + this.getDomainList() + ",";
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));    
+
+     Domain domain  = this.getDomain(envDom);
+     String dom = domain.getFullDomain();
+
+     obj.add("domain", dom);
+     obj.add("domainid", domain.getId());
+     ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ }
+ 
+ public JSONArray getEndPointList()
+ {
+  String sql = "select id, name, domainid from dm.dm_server where status = 'N'";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    String id = "se" + rs.getInt(1);
+    int envDom = rs.getInt(3);
+    
+    String domlist = "," + this.getDomainList() + ",";
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));    
+
+     Domain domain  = this.getDomain(envDom);
+     String dom = domain.getFullDomain();
+
+     obj.add("domain", dom);
+     obj.add("domainid", domain.getId());
+     ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ }
+ 
+ public JSONArray getRepositoryList()
+ {
+  String sql = "select id, name, domainid from dm.dm_repository where status = 'N'";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    String id = "re" + rs.getInt(1);
+    int envDom = rs.getInt(3);
+    
+    String domlist = "," + this.getDomainList() + ",";
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));    
+
+     Domain domain  = this.getDomain(envDom);
+     String dom = domain.getFullDomain();
+
+     obj.add("domain", dom);
+     obj.add("domainid", domain.getId());
+     ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ }
+ 
+ public JSONArray getDatasourceList()
+ {
+  String sql = "select id, name, domainid from dm.dm_datasource where status = 'N'";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    String id = "ds" + rs.getInt(1);
+    int envDom = rs.getInt(3);
+    
+    String domlist = "," + this.getDomainList() + ",";
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));    
+
+     Domain domain  = this.getDomain(envDom);
+     String dom = domain.getFullDomain();
+
+     obj.add("domain", dom);
+     obj.add("domainid", domain.getId());
+     ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ }
+ 
+ public JSONArray getCredentialList()
+ {
+  String sql = "select id, name, domainid from dm.dm_credentials where status = 'N'";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    String id = "cr" + rs.getInt(1);
+    int envDom = rs.getInt(3);
+    
+    String domlist = "," + this.getDomainList() + ",";
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));    
+
+     Domain domain  = this.getDomain(envDom);
+     String dom = domain.getFullDomain();
+
+     obj.add("domain", dom);
+     obj.add("domainid", domain.getId());
+     ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ }
+ 
+ 
+ public JSONArray getUserList()
+ {
+  String sql = "select id, name, domainid from dm.dm_user where status = 'N'";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    String id = "us" + rs.getInt(1);
+    int envDom = rs.getInt(3);
+    
+    String domlist = "," + this.getDomainList() + ",";
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));    
+
+     Domain domain  = this.getDomain(envDom);
+     String dom = domain.getFullDomain();
+
+     obj.add("domain", dom);
+     obj.add("domainid", domain.getId());
+     ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ }
+ 
+ public JSONArray getGroupList()
+ {
+  String sql = "select id, name, domainid from dm.dm_usergroup where status = 'N'";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    String id = "gr" + rs.getInt(1);
+    int envDom = rs.getInt(3);
+    
+    String domlist = "," + this.getDomainList() + ",";
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));    
+
+     Domain domain  = this.getDomain(envDom);
+     String dom = domain.getFullDomain();
+
+     obj.add("domain", dom);
+     obj.add("domainid", domain.getId());
+     ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ }
+  
+ public JSONArray getServerCompTypeList()
+ {
+  String sql = "select id, name, domainid from dm.dm_type where status = 'N'";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    String id = "ct" + rs.getInt(1);
+    int envDom = rs.getInt(3);
+    
+    String domlist = "," + this.getDomainList() + ",";
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));    
+
+     Domain domain  = this.getDomain(envDom);
+     String dom = domain.getFullDomain();
+
+     obj.add("domain", dom);
+     obj.add("domainid", domain.getId());
+     ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ } 
+ 
+ public JSONArray getTemplateList()
+ {
+  String sql = "select a.id, a.name, b.domainid, a.notifierid from dm.dm_template a, dm.dm_notify b where a.status = 'N' and b.status = 'N' and a.notifierid = b.id";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    String id = "te" + rs.getInt(1);
+    int envDom = rs.getInt(3);
+    
+    String domlist = "," + this.getDomainList() + ",";
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));
+     
+     int notifierid = rs.getInt(4);
+     Notify n = this.getNotify(notifierid, true);
+     obj.add("notifier", n.getDomain().getFullDomain() + "." + n.getName());   
+
+     ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ } 
+ 
+ public JSONArray getBuildJobList()
+ {
+  String sql = "select a.id, a.name, b.domainid, a.builderid from dm.dm_buildjob a, dm.dm_buildengine b where a.status = 'N' and b.status = 'N' and a.builderid = b.id";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    String id = "bj" + rs.getInt(1);
+    int envDom = rs.getInt(3);
+    
+    String domlist = "," + this.getDomainList() + ",";
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));
+     
+     ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ } 
+ 
+ public JSONArray getDomainTableList()
+ {
+  String sql = "select a.id from dm.dm_domain a where a.status = 'N' and a.id in (" + m_domainlist + ")";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    int domid = rs.getInt(1);
+    
+    Domain domain = this.getDomain(domid);
+   
+    String domname = domain.getFullDomain();
+    
+    if (domain.getDomainId() <= 0)
+     domname = domain.getName();
+     
+    if (domname.trim().length() == 0)
+     continue;
+    
+    Domain parent = this.getDomain(domain.getDomainId());
+    String pname = "";
+    
+    if (parent != null)
+     pname = parent.getFullDomain();
+    
+    obj.add("domid", domain.getId());
+    obj.add("parentid", pname);
+    obj.add("name", domname);
+    
+    ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ } 
+ 
+ public JSONArray getActionList()
+ {
+  String sql = "select id, name, domainid from dm.dm_action where status = 'N' and kind = 6";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    String id = "ac" + rs.getInt(1);
+    int envDom = rs.getInt(3);
+    
+    String domlist = "," + this.getDomainList() + ",";
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));    
+
+     Domain domain  = this.getDomain(envDom);
+     String dom = domain.getFullDomain();
+
+     obj.add("domain", dom);
+     obj.add("domainid", domain.getId());
+     ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ }
+ 
+ public JSONArray getProcedureList()
+ {
+  String sql = "select id, name, domainid, kind, function from dm.dm_action where status = 'N' and kind <> 6";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    String id = "pr" + rs.getInt(1) + "-" + rs.getInt(4);
+    int envDom = rs.getInt(3);
+    
+    String domlist = "," + this.getDomainList() + ",";
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));    
+
+     Domain domain  = this.getDomain(envDom);
+     String dom = domain.getFullDomain();
+
+     obj.add("domain", dom);
+     obj.add("domainid", domain.getId());
+     
+     if (rs.getString(5).equalsIgnoreCase("Y"))
+      obj.add("type", "Func");
+     else
+      obj.add("type", "Proc");
+     ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ }
+ 
+ public JSONArray getNotifierList()
+ {
+  String sql = "select id, name, domainid from dm.dm_notify where status = 'N'";
+
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    String id = "no" + rs.getInt(1);
+    int envDom = rs.getInt(3);
+    
+    String domlist = "," + this.getDomainList() + ",";
+    
+    if (!domlist.contains("," + envDom + ","))
+     continue;
+     
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));    
+
+     Domain domain  = this.getDomain(envDom);
+     String dom = domain.getFullDomain();
+
+     obj.add("domain", dom);
+     obj.add("domainid", domain.getId());
+     ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ }
  public String getDMHome()
  {
-	 return m_context.getInitParameter("DMHOME");
+	 return m_httpSession.getServletContext().getInitParameter("DMHOME");
  }
  
  private boolean ValidateArguments(int actionid,Element root) throws Exception
@@ -21601,7 +25576,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	 NodeList args = arguments.getElementsByTagName("argument");
 	 // Check the argument count is the same
 	 String csql="select count(*) from dm.dm_actionarg where actionid=? and type in ('entry','checkbox')";
-	 PreparedStatement cstmt = getDBConnection().prepareStatement(csql);
+	 PreparedStatement cstmt = m_conn.prepareStatement(csql);
 	 cstmt.setInt(1,actionid);
 	 ResultSet crs = cstmt.executeQuery();
 	 if (crs.next()) {
@@ -21630,7 +25605,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 // we need to rename the original action.
 		 //
 		 String sql = "SELECT count(*) FROM dm.dm_actionarg WHERE actionid=? AND name=? AND type=? AND required=?";
-		 PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+		 PreparedStatement stmt = m_conn.prepareStatement(sql);
 		 stmt.setInt(1,actionid);
 		 stmt.setString(2,argname);
 		 stmt.setString(3,argtype);
@@ -21654,16 +25629,17 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
  
  private void RenameFragment(int actionid)
  {
+	 System.out.println("Renaming action "+actionid);
 	 String selsql="SELECT id,name FROM dm.dm_fragments WHERE ? IN (actionid,functionid)";
 	 String updsql="UPDATE dm.dm_fragments set name=? WHERE id=?";
 	 try {
-		 PreparedStatement selstmt = getDBConnection().prepareStatement(selsql);
+		 PreparedStatement selstmt = m_conn.prepareStatement(selsql);
 		 selstmt.setInt(1,actionid);
 		 ResultSet rs = selstmt.executeQuery();
 		 if (rs.next()) {
 			 // Fragment exists linked to this action. Rename it.
 			 String chksql="SELECT count(*) from dm.dm_fragments WHERE name=?";
-			 PreparedStatement chkstmt = getDBConnection().prepareStatement(chksql);
+			 PreparedStatement chkstmt = m_conn.prepareStatement(chksql);
 			 int id = rs.getInt(1);
 			 String origname = rs.getString(2);
 			 boolean retry=true;
@@ -21683,7 +25659,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 //
 			 // newName is the new name for the fragment
 			 //
-			 PreparedStatement updstmt = getDBConnection().prepareStatement(updsql);
+			 PreparedStatement updstmt = m_conn.prepareStatement(updsql);
 			 updstmt.setString(1,newName);
 			 updstmt.setInt(2,id);
 			 updstmt.execute();
@@ -21701,7 +25677,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	 String selsql="SELECT count(*) FROM dm.dm_action WHERE name=? AND domainid=?";
 	 String updsql="UPDATE dm.dm_action set name=? WHERE id=?";
 	 try {
-		 PreparedStatement selstmt = getDBConnection().prepareStatement(selsql);
+		 PreparedStatement selstmt = m_conn.prepareStatement(selsql);
 		 selstmt.setInt(2,domainid);
 		 boolean retry=true;
 		 int lv=1;
@@ -21720,7 +25696,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 //
 		 // Update the name
 		 //
-		 PreparedStatement updstmt = getDBConnection().prepareStatement(updsql);
+		 PreparedStatement updstmt = m_conn.prepareStatement(updsql);
 		 updstmt.setString(1,newName);
 		 updstmt.setInt(2,actionid);
 		 updstmt.execute();
@@ -21761,7 +25737,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 int categoryid=0;
 		 if (category != null && category.length() > 0) {
 			 // Look up the category id based on the category name
-			 PreparedStatement stc = getDBConnection().prepareStatement("SELECT id FROM dm.dm_category WHERE name=?");
+			 PreparedStatement stc = m_conn.prepareStatement("SELECT id FROM dm.dm_category WHERE name=?");
 			 stc.setString(1,category);
 			 ResultSet rsc = stc.executeQuery();
 			 if (rsc.next()) {
@@ -21772,7 +25748,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 if (categoryid==0) {
 				 // No such category yet exists - create it
 				 categoryid = getID("category");
-				 PreparedStatement ci = getDBConnection().prepareStatement("INSERT INTO dm.dm_category(id,name) VALUES(?,?)");
+				 PreparedStatement ci = m_conn.prepareStatement("INSERT INTO dm.dm_category(id,name) VALUES(?,?)");
 				 ci.setInt(1,categoryid);
 				 ci.setString(2,category);
 				 ci.execute();
@@ -21791,7 +25767,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 // Check to see if an action with this name already exists
 		 //
 		 String actsql = "SELECT id,kind,function,graphical,textid FROM dm.dm_action WHERE name=? AND domainid=?";
-		 PreparedStatement astmt = getDBConnection().prepareStatement(actsql);
+		 PreparedStatement astmt = m_conn.prepareStatement(actsql);
 		 astmt.setString(1,actionname);
 		 astmt.setInt(2,domainid);
 		 ResultSet ars = astmt.executeQuery();
@@ -21884,16 +25860,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 } else {
 				 textid = origTextId;
 			 }
-			 PreparedStatement st1 = getDBConnection().prepareStatement(sql);
+			 PreparedStatement st1 = m_conn.prepareStatement(sql);
 			 st1.setInt(1,actionid);		// id
 			 st1.setString(2,actionname);	// name
 			 st1.setInt(3,nKind);			// kind
 			 st1.setString(4,summary);		// summary
 			 st1.setInt(5,domainid);		// domainid
-			 st1.setInt(6,getUserID());		// ownerid
-			 st1.setInt(7,getUserID());		// creatorid
+			 st1.setInt(6,m_userID);		// ownerid
+			 st1.setInt(7,m_userID);		// creatorid
 			 st1.setLong(8,t);				// created
-			 st1.setInt(9,getUserID());		// modifierid
+			 st1.setInt(9,m_userID);		// modifierid
 			 st1.setLong(10,t);				// modified
 			 st1.setString(11, "N");		// status
 			 st1.setInt(12,textid);
@@ -21926,7 +25902,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 String dmscript = eDMscript.getTextContent();	// BASE64 encoded DMScript
 			 byte[] decodedBytes = Base64.decodeBase64(dmscript);
 			 String decodedScript = new String(decodedBytes);
-			 PreparedStatement sin = getDBConnection().prepareStatement(sinsql);
+			 PreparedStatement sin = m_conn.prepareStatement(sinsql);
 			 System.out.println("decodedScript");
 			 System.out.println("-------------");
 			 System.out.println(decodedScript);
@@ -21972,13 +25948,21 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					 String reqd = (reqdtext!=null)?reqdtext.equalsIgnoreCase("true")?"Y":"N":"N";
 					 String inssql="INSERT INTO dm.dm_actionarg(actionid,name,type,required,switch,negswitch,pad,switchmode,inpos) "+
 					 "VALUES(?,?,?,?,?,?,?,?,?)";
-					 PreparedStatement aa = getDBConnection().prepareStatement(inssql);
+					 PreparedStatement aa = m_conn.prepareStatement(inssql);
 					 aa.setInt(1,actionid);
 					 aa.setString(2,argname);
 					 aa.setString(3,argtype);
 					 aa.setString(4,reqd);
-					 aa.setString(5,switchname);
-					 aa.setString(6,negswitch);
+					 if (switchname.length()>0) {
+						 aa.setString(5,switchname);
+					 } else {
+						 aa.setNull(5,Types.CHAR);
+					 }
+					 if (negswitch.length()>0) {
+						 aa.setString(6,negswitch);
+					 } else {
+						 aa.setNull(6,Types.CHAR);
+					 }
 					 aa.setString(7,pad);
 					 aa.setString(8,switchmode);
 					 aa.setInt(9,Integer.parseInt(inpos));
@@ -22015,16 +25999,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						 //
 						 // Okay, we should be good to start inserting data
 						 //
-						 PreparedStatement st11 = getDBConnection().prepareStatement(sql);
+						 PreparedStatement st11 = m_conn.prepareStatement(sql);
 						 st11.setInt(1,actionid);		// id
 						 st11.setString(2,actionname);	// name
 						 st11.setInt(3,nKind);			// kind
 						 st11.setString(4,summary);		// summary
 						 st11.setInt(5,domainid);		// domainid
-						 st11.setInt(6,getUserID());		// ownerid
-						 st11.setInt(7,getUserID());		// creatorid
+						 st11.setInt(6,m_userID);		// ownerid
+						 st11.setInt(7,m_userID);		// creatorid
 						 st11.setLong(8,t);				// created
-						 st11.setInt(9,getUserID());		// modifierid
+						 st11.setInt(9,m_userID);		// modifierid
 						 st11.setLong(10,t);				// modified
 						 st11.setString(11, "N");		// status
 						 st11.setString(12,scriptname);
@@ -22069,7 +26053,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 							 // command line flags and let the import recreate them.
 							 //
 							 String delsql="DELETE FROM dm.dm_actionarg WHERE actionid=? AND type='false'";
-							 PreparedStatement delstmt = getDBConnection().prepareStatement(delsql);
+							 PreparedStatement delstmt = m_conn.prepareStatement(delsql);
 							 delstmt.setInt(1,actionid);
 							 delstmt.execute();
 						 }
@@ -22086,7 +26070,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						 // Insert into dm_actionarg
 						 String inssql="INSERT INTO dm.dm_actionarg(actionid,name,type,required,switch,pad,switchmode,outpos) "+
 						 "VALUES(?,?,?,?,?,?,?,?)";
-						 PreparedStatement aa = getDBConnection().prepareStatement(inssql);
+						 PreparedStatement aa = m_conn.prepareStatement(inssql);
 						 aa.setInt(1,actionid);
 						 aa.setString(2,flagname);
 						 aa.setString(3,"false");
@@ -22114,13 +26098,21 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 							 String reqd = (reqdtext!=null)?reqdtext.equalsIgnoreCase("true")?"Y":"N":"N";
 							 String inssql="INSERT INTO dm.dm_actionarg(actionid,name,type,required,switch,negswitch,pad,switchmode,inpos,outpos) "+
 							 "VALUES(?,?,?,?,?,?,?,?,?,?)";
-							 PreparedStatement aa = getDBConnection().prepareStatement(inssql);
+							 PreparedStatement aa = m_conn.prepareStatement(inssql);
 							 aa.setInt(1,actionid);
 							 aa.setString(2,argname);
 							 aa.setString(3,argtype);
 							 aa.setString(4,reqd);
-							 aa.setString(5,switchname);
-							 aa.setString(6,negswitch);
+							 if (switchname.length()>0) {
+								 aa.setString(5,switchname);
+							 } else {
+								 aa.setNull(5,Types.CHAR);
+							 }
+							 if (negswitch.length()>0) {
+								 aa.setString(6,negswitch);
+							 } else {
+								 aa.setNull(6,Types.CHAR);
+							 }
 							 aa.setString(7,pad);
 							 aa.setString(8,switchmode);
 							 aa.setInt(9,Integer.parseInt(inpos));
@@ -22138,31 +26130,31 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 // NOTE: We need to check if we really need to create a script. For Ansible, we may
 			 // just be creating a command line...
 			 //
-			 Domain domain = getDomain(domainid);
-			 Engine engine = (domain != null) ? domain.findNearestEngine() : null;
-			 if (engine == null) {
-				 throw(new Exception("Could not locate engine for domain"));
-			 }
-			 CommandLine m_cmd = engine.doCreateScript();
-			 System.out.println("Reading file "+filepath);
-			 FileInputStream fis=new FileInputStream(filepath);
-			 String scriptBody = "";
-			 byte[] b = new byte[4096];
-			 while (fis.read(b)>0) {
-				 scriptBody += new String(b);
-			 }
-			 fis.close();
-			 System.out.println("************************************");
-			 System.out.println(scriptBody);
-			 System.out.println("************************************");
-			 try
-			 {
-			  m_cmd.run(true, scriptBody + "\n", true);
-			 }
-			 catch (Exception e)
-			 {
-			  System.err.println(e.getMessage());
-			 }
+//			 Domain domain = getDomain(domainid);
+//			 Engine engine = (domain != null) ? domain.findNearestEngine() : null;
+//			 if (engine == null) {
+//				 throw(new Exception("Could not locate engine for domain"));
+//			 }
+//			 CommandLine m_cmd = engine.doCreateScript();
+//			 System.out.println("Reading file "+filepath);
+//			 FileInputStream fis=new FileInputStream(filepath);
+//			 String scriptBody = "";
+//			 byte[] b = new byte[4096];
+//			 while (fis.read(b)>0) {
+//				 scriptBody += new String(b);
+//			 }
+//			 fis.close();
+//			 System.out.println("************************************");
+//			 System.out.println(scriptBody);
+//			 System.out.println("************************************");
+//			 try
+//			 {
+//			  m_cmd.runWithTrilogy(true, scriptBody + "\n");
+//			 }
+//			 catch (Exception e)
+//			 {
+//			  System.err.println(e.getMessage());
+//			 }
 			 break;
 		 case 5:
 			 // PLUGIN (will this ever be exported?)
@@ -22183,16 +26175,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 String fraginssql = "INSERT INTO dm.dm_fragments(id,name,summary,categoryid,exitpoints,"+
 			 "creatorid,created,modifierid,modified,drilldown,actionid,functionid) "+
 			 "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
-			 PreparedStatement fragins = getDBConnection().prepareStatement(fraginssql);
+			 PreparedStatement fragins = m_conn.prepareStatement(fraginssql);
 			 int fragid = getID("fragments");
 			 fragins.setInt(1,fragid);
 			 fragins.setString(2,fragname);
 			 fragins.setString(3,fragsumm);
 			 fragins.setInt(4,categoryid);
 			 fragins.setInt(5,1);
-			 fragins.setInt(6,getUserID());
+			 fragins.setInt(6,m_userID);
 			 fragins.setLong(7,t);
-			 fragins.setInt(8,getUserID());
+			 fragins.setInt(8,m_userID);
 			 fragins.setLong(9,t);
 			 fragins.setString(10,"N");	// No drilldown
 			 if (isFunction) {
@@ -22217,7 +26209,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 String fragattins="INSERT INTO dm.dm_fragmentattrs("
 			 			+ "id,typeid,attype,atname,tablename,inherit,atorder,required, default_value)	"
 			 			+ "VALUES(?,?,?,?,?,?,?,?,?)";
-			 PreparedStatement fai = getDBConnection().prepareStatement(fragattins);
+			 PreparedStatement fai = m_conn.prepareStatement(fragattins);
 			 NodeList plist = fragment.getElementsByTagName("parameter");
 			 for (int p=0;p<plist.getLength();p++) {
 				 String tablename = null;
@@ -22260,7 +26252,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			 }
 		 }
 		 System.out.println("COMMIT");
-		 getDBConnection().commit();
+		 m_conn.commit();
 		 res.add("result",true);
 		 res.add("otid",otid);
 	 } catch (Exception e) {
@@ -22297,7 +26289,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	 		+ 		"LEFT OUTER JOIN	dm.dm_fragments f ON a.id in (f.actionid,f.functionid) "
 	 		+ 		"WHERE				a.id=?";
 	 try {
-		   PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+		   PreparedStatement stmt = m_conn.prepareStatement(sql);
 		   stmt.setInt(1,actionid);
 		   ResultSet rs = stmt.executeQuery();
 		   while (rs.next()) {
@@ -22315,7 +26307,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 			   int categoryid = getInteger(rs,12,0);
 			   String category="";
 			   if (categoryid>0) {
-				   PreparedStatement c = getDBConnection().prepareStatement("SELECT name FROM dm.dm_category WHERE id=?");
+				   PreparedStatement c = m_conn.prepareStatement("SELECT name FROM dm.dm_category WHERE id=?");
 				   c.setInt(1, categoryid);
 				   ResultSet cr = c.executeQuery();
 				   if (cr.next()) {
@@ -22379,7 +26371,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						   +		"	FROM	dm.dm_actionarg	"
 						   +		"	WHERE	actionid=?	"
 						   +		"	ORDER BY	outpos";
-				   PreparedStatement stmt4 = getDBConnection().prepareStatement(sql4);
+				   PreparedStatement stmt4 = m_conn.prepareStatement(sql4);
 				   stmt4.setInt(1,actionid);
 				   ResultSet rs4 = stmt4.executeQuery();
 				   while (rs4.next()) {
@@ -22411,7 +26403,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 					   	+		"			summary		"
 					   	+		"	FROM	dm.dm_fragments	"
 					   	+		"	WHERE	? in (actionid,functionid)";
-			   PreparedStatement stmt2 = getDBConnection().prepareStatement(sql2);
+			   PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
 			   stmt2.setInt(1,actionid);
 			   ResultSet rs2 = stmt2.executeQuery();
 			   while (rs2.next()) {
@@ -22430,7 +26422,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 						   +		"	FROM	dm.dm_fragmentattrs		"
 						   +		"	WHERE	typeid=?	"
 						   +		"	ORDER BY	atorder";
-				   PreparedStatement stmt3 = getDBConnection().prepareStatement(sql3);
+				   PreparedStatement stmt3 = m_conn.prepareStatement(sql3);
 				   stmt3.setInt(1,typeid);
 				   ResultSet rs3 = stmt3.executeQuery();
 				   while (rs3.next()) {
@@ -22487,7 +26479,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		   if (d!=null) {
 			   Engine engine = d.findNearestEngine();
 			   CommandLine cmd = engine.showDMScript(action);
-			   int res = cmd.run(true, null, true);
+			   int res = cmd.runWithTrilogy(true, null);
 			   if (res == 0) {
 				   // Engine converted action ok - create output
 				   String DMScript = cmd.getOutput();
@@ -22548,7 +26540,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	 boolean res=false;
 	 
 	 try {
-		 PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+		 PreparedStatement stmt = m_conn.prepareStatement(sql);
 		 stmt.setInt(1,id);
 		 stmt.setInt(2,catid);
 		 stmt.setInt(3,domainid);
@@ -22610,7 +26602,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 ret.add("name",action.getName());
 		 JSONArray res = new JSONArray();
 		 for (int i=0;i<sql.length;i++) {
-			 PreparedStatement stmt = getDBConnection().prepareStatement(sql[i]);
+			 PreparedStatement stmt = m_conn.prepareStatement(sql[i]);
 			 ResultSet rs = stmt.executeQuery();
 			 while (rs.next()) {
 				 JSONObject obj = new JSONObject();
@@ -22670,19 +26662,23 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	 }
  }
  
- public String getJSONFromServer(String url,Credential cred)
+ protected String getJSONFromServer(String url,Credential cred)
  {
 	 // CloseableHttpClient httpclient = HttpClients.createDefault();
 	 // Basic Auth setup
 	 // System.out.println("getJSONFromServer: url="+url);
-	String credUsername = "";
-	String credPassword = "";
 
      byte[] credentials = null;
+     String credUsername = "";
+     String credPassword = "";
+     
      if (cred != null) {
     	 try {
+    	  if (m_passphrase == null)
+    	   m_passphrase = new String(" ").getBytes();
+    	  
     		//System.out.println("Credential "+cred.getName()+" found");
-	    	PreparedStatement stmt = getDBConnection().prepareStatement("select encusername,encpassword from dm.dm_credentials where id=?");
+	    	PreparedStatement stmt = m_conn.prepareStatement("select encusername,encpassword from dm.dm_credentials where id=?");
 	     	stmt.setInt(1,cred.getId());
 	     	ResultSet rs = stmt.executeQuery();
 	     	if (rs.next()) {
@@ -22690,6 +26686,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 	     		String up = rs.getString(2);
 	     		byte[] dun = Decrypt3DES(un,m_passphrase);
 	     		byte[] dup = Decrypt3DES(up,m_passphrase);
+	     		if (dun == null || dup == null)
+	     		{
+	        String resString = "{}";
+	        return resString;
+	     		}
 	     		credUsername = new String(dun);
 	     		credPassword = new String(dup);
 	     		/*
@@ -22728,7 +26729,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 if (credentials != null) {
 			 httpGet.setHeader("Authorization", "Basic " + new String(credentials, StandardCharsets.UTF_8));
 		 }
-		 response1 = httpclient.execute(httpGet);
+
+   response1 = httpclient.execute(httpGet); 
 		 StatusLine sl = response1.getStatusLine();
 		 int statusCode=0;
 		 if (sl != null) {
@@ -22736,9 +26738,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 } else {
 			 System.out.println("*** could not get status line");
 		 }
-		 if (statusCode == 401)
+		 if (statusCode >= 400 && statusCode <= 499)
 		 {
-		  resString = "Could not connect to '" + url + "' using credentials '" + credentials + "' '" + credUsername + ":" + credPassword + "'\n" + sl.toString();
+    resString = "{ errormsg: \"Could not connect to '" + url + "' using credentials '" + credUsername + "' and pasword '" + credPassword + "'\"}";
 		 }
 		 if (statusCode >= 200 && statusCode <=299) {
 			 // In valid range
@@ -22756,11 +26758,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		     while(content.read(d) != -1);
 		     EntityUtils.consume(entity1);
 		 } else {
-			 System.out.println("Connecting to URL ["+url+"] returns Status Code "+statusCode);
+			 // System.out.println("Connecting to URL ["+url+"] returns Status Code "+statusCode);
 		 }
 	 } catch(HttpHostConnectException ex) {
 		 // Failed to connect to the target server - it may be down.
-		 System.out.println("Failed to connect to "+url+": "+ex.getMessage());
+		 // System.out.println("Failed to connect to "+url+": "+ex.getMessage());
 	 } catch(Exception ex) {
 		 System.out.println("Exception of type "+ex.toString()+" thrown");
 		 ex.printStackTrace();
@@ -22768,23 +26770,27 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 try {
 			 if (response1 != null) response1.close();
 			 httpclient.close();
+			 
 			 if (response1 == null)
 			 {
-			  resString = "Could not connect to '" + url + "' using credentials '" + credentials + "' '" + credUsername + ":" + credPassword + "'";
-			 } 
+			  resString = "{ errormsg: \"Could not connect to '" + url + "' using credentials '" + credUsername + "' and password '" + credPassword + "'\"}";
+			 }
 		 } catch(IOException ex) {
 			 // shrugs
 		 }
 	 }
+  if (resString.length() == 0)
+   resString = "{}";
+  
 	 return resString;
  }
  
- public String getDataSourceAttribute(int dsid,String attname)
+ protected String getDataSourceAttribute(int dsid,String attname)
  {
 	 String sql = "select value,encrypted from dm.dm_datasourceprops where datasourceid=? and name=?";
 	 String res = null;
 	 try {
-		 PreparedStatement st = getDBConnection().prepareStatement(sql);
+		 PreparedStatement st = m_conn.prepareStatement(sql);
 		 st.setInt(1,dsid);
 		 st.setString(2,attname);
 		 ResultSet rs = st.executeQuery();
@@ -22803,509 +26809,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid)
 		 return null;
 	 }
  }
- 
-
+  
   public void internalLogin(ServletContext context)
   {
 	  // Sets up internal login to run as "admin"
-	  setUserID(1);
+	  m_userID=1;
 	  connectToDatabase(context);
 	  GetDomains(1);
   }
 
-  
-
-  JSONObject getBuildHistoryJenkins(int builderid,int buildjobid)
-  {
-	  System.out.println("getBuildHistoryJenkins builderid="+builderid+" buildjobid="+buildjobid);
-	  String sql2="select projectname from dm.dm_buildjob where id=?";
-	  String sql3="select a.buildnumber,b.id,b.name,b.parentid from dm.dm_buildhistory a,dm.dm_component b where a.compid=b.id and	a.buildjobid=? order by buildnumber desc";
-	  JSONObject ret = new JSONObject();
-	  try {
-	  	 Builder builder = getBuilder(builderid);
-	  	 Credential cred = builder.getCredential();
-		 PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
-		 PreparedStatement stmt3 = m_conn.prepareStatement(sql3);
-		 stmt2.setInt(1,buildjobid);
-		 stmt3.setInt(1,buildjobid);
-		 String serverURL = getBuildServerURL(builderid);
-		 if (serverURL != null) { 
-			 System.out.println("Server URL="+serverURL);
-			 ResultSet rs2 = stmt2.executeQuery();
-			 if (rs2.next()) {
-				 String jobname = rs2.getString(1).replaceAll(" ", "%20");
-				 if (jobname.length()>0) {
-					 //
-					 // Get all the builds we know about for this build job and assemble the
-					 // JSON Array of components associated with each build number
-					 //
-					 Hashtable<Integer,JSONArray> complist = new Hashtable<Integer,JSONArray>();
-					 ResultSet rs3 = stmt3.executeQuery();
-					 while (rs3.next()) {
-						 int buildno = rs3.getInt(1);
-						 // Have we seen this build before?
-						 JSONArray ja = complist.get(buildno);
-						 if (ja == null) ja = new JSONArray();	// new build
-						 int compid = rs3.getInt(2);
-						 String compname = rs3.getString(3);
-						 int parentid = getInteger(rs3,4,0);
-						 JSONObject compdetails = new JSONObject();
-						 compdetails.add("id",compid);
-						 compdetails.add("name",compname);
-						 compdetails.add("type",(parentid>0)?"cv":"co");
-						 ja.add(compdetails);
-						 complist.put(buildno,ja);						 
-					 }
-					 rs3.close();
-					 //
-					 // Now get "all" the builds from the build server. Not all of these will
-					 // relate to builds in DeployHub
-					 //
-					 boolean commit=false;
-					 if (jobname.contains("/"))
-					  jobname = jobname.replace("/", "/job/");
-					 
-					 String res = getJSONFromServer(serverURL+"/job/"+jobname+"/api/json?tree=builds[number,timestamp,result,duration]",cred);
-					 System.out.println(res);
-				     JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
-				     JsonArray builds = returnedjson.getAsJsonArray("builds");
-				     JSONArray retBuilds = new JSONArray();
-				     for (int i=0;i<builds.size();i++) {
-				    	 JsonObject jsonJob = builds.get(i).getAsJsonObject();
-				    	 int buildid = jsonJob.get("number").getAsInt();
-				    	 int duration = jsonJob.get("duration").getAsInt();
-				    	 String result = jsonJob.get("result").getAsString();
-				    	 long timestamp = jsonJob.get("timestamp").getAsLong();
-				    	 System.out.println("buildid="+buildid+" timestamp="+timestamp);
-				    	 JSONObject buildobj = new JSONObject();
-				    	 buildobj.add("id", buildid);
-				    	 buildobj.add("result",result);
-				    	 buildobj.add("timestamp",formatDateToUserLocale((int)(timestamp/1000)));
-				    	 buildobj.add("duration",duration);
-				    	 JSONArray recomps = complist.get(buildid);
-				    	 if (recomps == null) recomps = new JSONArray();
-				    	 buildobj.add("components",recomps);
-				    	 retBuilds.add(buildobj);
-				     }
-				     ret.add("builds", retBuilds);
-				     if (commit) m_conn.commit();
-				 } else {
-					 ret.add("error","Cannot retrieve Builds - Project Name is not set");
-				 }
-			 } else {
-				 ret.add("error","Could not retrieve Project Name from build job");
-			 }
-			 rs2.close();
-		 } else {
-			 // Couldn't find server URL - stick an error into the return object
-			 ret.add("error","Build Engine has no Server URL defined");
-		 }
-		 stmt2.close();
-	  } catch (SQLException e) {
-			 System.out.println(e.getMessage());
-			 e.printStackTrace();
-			 ret.add("error","SQL Failed running getProjectsFromJenkins");
-	  }
-	  return ret;
-}
-  
-  JSONObject getBuildHistoryBamboo(int builderid,int buildjobid)
-  {
-	  System.out.println("getBuildHistoryBamboo builderid="+builderid+" buildjobid="+buildjobid);
-	  String sql1="select value,encrypted from dm.dm_buildengineprops where name='Server URL' and builderid = ?";
-	  String sql2="select projectname from dm.dm_buildjob where id=?";
-	  String sql3="select a.buildnumber,b.id,b.name,b.parentid from dm.dm_buildhistory a,dm.dm_component b where a.compid=b.id and	a.buildjobid=? order by buildnumber desc";
-	  JSONObject ret = new JSONObject();
-	  try {
-	  	 Builder builder = getBuilder(builderid);
-	  	 Credential cred = builder.getCredential();
-		 PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
-		 PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
-		 PreparedStatement stmt3 = m_conn.prepareStatement(sql3);
-		 stmt1.setInt(1,builderid);
-		 stmt2.setInt(1,buildjobid);
-		 stmt3.setInt(1,buildjobid);
-		 ResultSet rs1 = stmt1.executeQuery();
-		 if (rs1.next()) {
-			 // Got the Server URL
-			 String serverURL = rs1.getString(1);
-			 String encrypted = rs1.getString(2);
-			 System.out.println("Server URL="+serverURL);
-			 if (encrypted != null && encrypted.equalsIgnoreCase("y")) {
-				 serverURL = new String(Decrypt3DES(serverURL,m_passphrase));
-				 System.out.println("Decrypted server URL="+serverURL);
-			 }
-			 ResultSet rs2 = stmt2.executeQuery();
-			 if (rs2.next()) {
-				 String jobname = rs2.getString(1).replaceAll(" ", "%20");
-				 if (jobname.length()>0) {
-					 //
-					 // Get all the builds we know about for this build job and assemble the
-					 // JSON Array of components associated with each build number
-					 //
-					 Hashtable<Integer,JSONArray> complist = new Hashtable<Integer,JSONArray>();
-					 ResultSet rs3 = stmt3.executeQuery();
-					 while (rs3.next()) {
-						 int buildno = rs3.getInt(1);
-						 // Have we seen this build before?
-						 JSONArray ja = complist.get(buildno);
-						 if (ja == null) ja = new JSONArray();	// new build
-						 int compid = rs3.getInt(2);
-						 String compname = rs3.getString(3);
-						 int parentid = getInteger(rs3,4,0);
-						 JSONObject compdetails = new JSONObject();
-						 compdetails.add("id",compid);
-						 compdetails.add("name",compname);
-						 compdetails.add("type",(parentid>0)?"cv":"co");
-						 ja.add(compdetails);
-						 complist.put(buildno,ja);						 
-					 }
-					 rs3.close();
-					 //
-					 // Now get "all" the builds from the build server. Not all of these will
-					 // relate to builds in DeployHub
-					 //
-					 boolean commit=false;
-					 String res = getJSONFromServer(serverURL+"/rest/api/latest/job/"+jobname+"/api/json?tree=builds[number,timestamp,result,duration]",cred);
-				     JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
-				     JsonArray builds = returnedjson.getAsJsonArray("builds");
-				     JSONArray retBuilds = new JSONArray();
-				     for (int i=0;i<builds.size();i++) {
-				    	 JsonObject jsonJob = builds.get(i).getAsJsonObject();
-				    	 int buildid = jsonJob.get("number").getAsInt();
-				    	 int duration = jsonJob.get("duration").getAsInt();
-				    	 String result = jsonJob.get("result").getAsString();
-				    	 long timestamp = jsonJob.get("timestamp").getAsLong();
-				    	 System.out.println("buildid="+buildid+" timestamp="+timestamp);
-				    	 JSONObject buildobj = new JSONObject();
-				    	 buildobj.add("id", buildid);
-				    	 buildobj.add("result",result);
-				    	 buildobj.add("timestamp",formatDateToUserLocale((int)(timestamp/1000)));
-				    	 buildobj.add("duration",duration);
-				    	 JSONArray recomps = complist.get(buildid);
-				    	 if (recomps == null) recomps = new JSONArray();
-				    	 buildobj.add("components",recomps);
-				    	 retBuilds.add(buildobj);
-				     }
-				     ret.add("builds", retBuilds);
-				     if (commit) m_conn.commit();
-				 } else {
-					 ret.add("error","Cannot retrieve Builds - Project Name is not set");
-				 }
-			 } else {
-				 ret.add("error","Could not retrieve Project Name from build job");
-			 }
-			 rs2.close();
-		 } else {
-			 // Couldn't find server URL - stick an error into the return object
-			 ret.add("error","Build Engine has no Server URL defined");
-		 }
-		 rs1.close();
-		 stmt1.close();
-		 
-		 stmt2.close();
-	  } catch (SQLException e) {
-			 System.out.println(e.getMessage());
-			 e.printStackTrace();
-			 ret.add("error","SQL Failed running getProjectsFromBamboo");
-	  }
-	  return ret;
-  }
-  
-  JSONObject getProjectsFromJenkins(int builderid)
-  {
-	  System.out.println("getProjectsFromJenkins");
-	  JSONArray retJobs = new JSONArray();
-	  String serverURL = getBuildServerURL(builderid);
-	  JSONObject ret = new JSONObject();
-	  Builder builder = getBuilder(builderid);
-	  Credential cred = builder.getCredential();
-		 if (serverURL != null) {
-			 // Got the Server URL
-			 System.out.println("Server URL="+serverURL);
-			 ArrayList<String> jobs = new ArrayList<String>();
-			 
-			 String res = recurseProjectsFromJenkins(serverURL,"",cred,jobs);
-			 
-			 if (res.startsWith("Could not connect")) 
-			 {
-				 ret.add("error",res);
-			 } 
-			 else 
-			 {
-	    if (jobs.size()==0) 
-	    {
-			   ret.add("error","No Projects found on Jenkins Server "+serverURL);
-			  }
-			     
-	    for (int i=0;i<jobs.size();i++)
-	    {
-	     JSONObject jobobj = new JSONObject();
-    	 jobobj.add("name", jobs.get(i));
-			   retJobs.add(jobobj);
-     }
-     ret.add("jobs", retJobs);
-			 }   
-		 } 
-		 else 
-		 {
-			 // Couldn't find server URL - stick an error into the return object
-			 ret.add("error","Build Engine has no Server URL defined");
-		 }
-	  return ret;
-  }
-  
-  String recurseProjectsFromJenkins(String ServerURL, String currentFolder,Credential cred,ArrayList<String>jobList)
-  {
-   System.out.println("recurseProjectsFromJenkins");
-
-   String encFolder = currentFolder.replaceAll(" ","%20") + "/api/json";
-
-   String res = getJSONFromServer(ServerURL + encFolder,cred);
-   
-   System.out.println("Server URL="+ServerURL + encFolder);
-   if (res.startsWith("Could not connect")) 
-   {
-    return res;
-   } 
-   else 
-   {
-    JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
-    JsonArray jobs = returnedjson.getAsJsonArray("jobs");
-    JSONArray retJobs = new JSONArray();
-       
-    for (int i=0;i<jobs.size();i++) 
-    {
-     JsonObject jsonJob = jobs.get(i).getAsJsonObject();
-     
-     if (!jsonJob.get("_class").getAsString().contains("Folder"))
-     {
-      String name = currentFolder + "/" + jsonJob.get("name").getAsString();
-      name = name.replaceAll("\\/job\\/", "/").substring(1);
-      jobList.add(name);
-     }
-     else
-     {
-      String newFolder = currentFolder + "/job/" + jsonJob.get("name").getAsString();
-      recurseProjectsFromJenkins(ServerURL,newFolder,cred,jobList);
-     }
-    }   
-   }
-   return "";
-  }
-  
-  JSONObject getProjectsFromBamboo(int builderid)
-  {
-	  System.out.println("getProjectsFromBamboo");
-	  String sql="select value,encrypted from dm.dm_buildengineprops where name='Server URL' and builderid = ?";
-	  JSONObject ret = new JSONObject();
-	  try {
-	  	 Builder builder = getBuilder(builderid);
-	  	 Credential cred = builder.getCredential();
-		 PreparedStatement stmt = m_conn.prepareStatement(sql);
-		 stmt.setInt(1,builderid);
-		 ResultSet rs = stmt.executeQuery();
-		 if (rs.next()) {
-			 // Got the Server URL
-			 String serverURL = rs.getString(1);
-			 if (rs.getString(2).equalsIgnoreCase("y")) {
-				 // Server URL is encrypted
-				 serverURL = new String(Decrypt3DES(serverURL, m_passphrase));
-			 }
-			 System.out.println("Server URL="+serverURL);
-			 String res = getJSONFromServer(serverURL+"/rest/api/latest/plan.json",cred);
-			 if (res.startsWith("Could not connect")) {
-				 ret.add("error",res);
-			 } else {
-			     JsonObject returnedjson = new JsonParser().parse(res).getAsJsonObject();
-			     JsonObject plans = returnedjson.getAsJsonObject("plans");
-			     JsonArray plan = plans.getAsJsonArray("plan");
-			     JSONArray retJobs = new JSONArray();
-			     if (plan.size()==0) {
-			    	 ret.add("error","No Projects found on Bamboo Server "+serverURL);
-			     }
-			     for (int i=0;i<plan.size();i++) {
-			    	 JsonObject jsonPlan = plan.get(i).getAsJsonObject();
-			    	 String planname = jsonPlan.get("shortName").getAsString();
-			    	 JSONObject jobobj = new JSONObject();
-			    	 jobobj.add("name", planname);
-			    	 retJobs.add(jobobj);
-			     }
-			     ret.add("jobs", retJobs);
-			} 
-		 } else {
-			 // Couldn't find server URL - stick an error into the return object
-			 ret.add("error","Build Engine has no Server URL defined");
-		 }
-		 rs.close();
-		 stmt.close();
-	  } catch (SQLException e) {
-			 System.out.println(e.getMessage());
-			 e.printStackTrace();
-			 ret.add("error","SQL Failed running getProjectsFromBamboo");
-	  }
-	  return ret;
-  }
-  
-  JSONObject getBuildHistory(int buildjobid)
-  {
-	 System.out.println("getBuildHistory buildjobid="+buildjobid);
-	  
-	 String sql=	"select	a.name,b.id	"
-		  +		"from	dm.dm_providerdef	a,	"
-		  +		"		dm.dm_buildengine	b,	"
-		  +		"		dm.dm_buildjob		c	"
-		  +		"where 	c.id=?	"
-		  +		"and	c.builderid=b.id	"
-		  +		"and	a.id=b.defid";
-	 
-	  try {
-		  PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-		  stmt.setInt(1,buildjobid);
-		  ResultSet rs = stmt.executeQuery();
-		  if (rs.next()) {
-			  // Got the provider name (this should always work)
-			  String providerName = rs.getString(1);
-			  int builderid = rs.getInt(2);
-			  System.out.println("ProviderName="+providerName+" builderid="+builderid);
-			  if (providerName.equalsIgnoreCase("jenkins")) {
-				  rs.close();
-				  stmt.close();
-				  return getBuildHistoryJenkins(builderid,buildjobid);
-			  } if (providerName.equalsIgnoreCase("bamboo")) {
-				  rs.close();
-				  stmt.close();
-				  return getBuildHistoryBamboo(builderid,buildjobid);
-			  } else {
-				  // did not recognize provider
-				  rs.close();
-				  stmt.close();
-				  JSONObject ret = new JSONObject();
-				  ret.add("error","Provider Name \""+providerName+"\" not recognized");
-				  return ret;
-			  }
-		  } else {
-				 // Couldn't find provider - disaster
-			  	rs.close();
-			  	stmt.close();
-			  	JSONObject ret = new JSONObject();
-				ret.add("error","Could not find build engine provider name");
-				return ret;
-			 }
-	  } catch (SQLException e) {
-			 System.out.println(e.getMessage());
-			 e.printStackTrace();
-			 return null;
-	  }
-  }
-  
-  JSONObject getProjectsFromBuilder(int buildjobid,int buildengineid)
-  {
-	  System.out.println("getProjectsFromBuilder buildjobid="+buildjobid);
-	  String sql;
-	  if (buildjobid != -1) {
-		  sql=	"select	a.name,b.id	"
-			  +		"from	dm.dm_providerdef	a,	"
-			  +		"		dm.dm_buildengine	b,	"
-			  +		"		dm.dm_buildjob		c	"
-			  +		"where 	c.id=?	"
-			  +		"and	c.builderid=b.id	"
-			  +		"and	a.id=b.defid";
-	  } else {
-		  sql = "select a.name,b.id	"
-			  +		"from	dm.dm_providerdef	a,	"
-			  +		"		dm.dm_buildengine	b	"
-			  +		"where 	b.id=?	"
-			  +		"and	a.id=b.defid";  
-	  }
-	  try {
-		  PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-		  stmt.setInt(1,(buildjobid!=-1)?buildjobid:buildengineid);
-		  ResultSet rs = stmt.executeQuery();
-		  if (rs.next()) {
-			  // Got the provider name (this should always work)
-			  String providerName = rs.getString(1);
-			  int builderid = rs.getInt(2);
-			  System.out.println("ProviderName="+providerName+" builderid="+builderid);
-			  if (providerName.equalsIgnoreCase("jenkins")) {
-				  rs.close();
-				  stmt.close();
-				  return getProjectsFromJenkins(builderid);
-			  } else if (providerName.equalsIgnoreCase("bamboo")) {
-				  rs.close();
-				  stmt.close();
-				  return getProjectsFromBamboo(builderid);
-			  } else {
-				  // did not recognize provider
-				  rs.close();
-				  stmt.close();
-				  JSONObject ret = new JSONObject();
-				  ret.add("error","Provider Name \""+providerName+"\" not recognized");
-				  return ret;
-			  }
-		  } else {
-				 // Couldn't find provider - disaster
-			  	rs.close();
-			  	stmt.close();
-			  	JSONObject ret = new JSONObject();
-				ret.add("error","Could not find build engine provider name");
-				return ret;
-			 }
-	  } catch (SQLException e) {
-			 System.out.println(e.getMessage());
-			 e.printStackTrace();
-			 return null;
-	  }
-  }
-  
-  List<BuildJob> getBuildJobsForComponent(Component comp, int domid)
-  {
-	  System.out.println("getBuildJobsForComponent id="+comp.getId());
-	  Domain d = null;
-	  if (comp.getId() < 0) {
-		  // New Component
-		  d = getDomain(domid);
-	  } else {
-		  // Get the domain for this component
-		  d = comp.getDomain();
-	  }
-	  String domainList="";
-	  String sep="";
-	  while (d != null) {
-		  domainList+=sep+d.getId();
-		  d = d.getDomain();
-		  sep=",";
-	  }
-	  System.out.println("Domain List = "+domainList);
-	  
-	  String sql = "SELECT a.id,a.name,b.id	"
-			  +	"FROM	dm.dm_buildjob		a,	"
-			  + "		dm.dm_buildengine	b	"
-			  + "WHERE	a.builderid=b.id		"
-			  + "AND	b.domainid IN ("+domainList+")	"
-			  + "AND	b.status='N'";
-	  List <BuildJob> res = new ArrayList<BuildJob>();
-	  try {
-		  PreparedStatement stmt = getDBConnection().prepareStatement(sql);
-		  ResultSet rs = stmt.executeQuery();
-		  BuildJob ret = null;
-		  while (rs.next()) {
-			  ret = new BuildJob(this, rs.getInt(1), rs.getString(2));
-			  ret.setBuilderId(rs.getInt(3));
-			  res.add(ret);
-		  }
-		  rs.close();
-		  stmt.close();
-		  return res;
-	  } catch(SQLException ex) {
-		  System.out.println(ex.getMessage());
-	  }
-	  throw new RuntimeException("Unable to retrieve build jobs for component " + comp.getId());				
-}
-  
-  // Moved SyncAnsible (and associated methods) into DMSession since it's better here.
-  
-  @SuppressWarnings("unused")
+ 
 private String readUrl(String urlString) throws Exception
   {
     BufferedReader reader = null;
@@ -23381,9 +26894,52 @@ private String readUrl(String urlString) throws Exception
     return new JsonObject();
   }
   
+ public int CreateDomain(int parent, String Name)
+ {
+  int domainid = -1;
+  PreparedStatement st;
+  try
+  {
+    st = m_conn.prepareStatement("select id from dm.dm_domain where name = ?");
+    st.setString(1, Name);
+
+    ResultSet rs2 = st.executeQuery();
+    while (rs2.next())
+    {
+     domainid = rs2.getInt(1);
+    }
+    rs2.close();
+    st.close();
+
+   if (domainid == -1)
+   {
+    st = m_conn.prepareStatement("insert into dm.dm_domain (id,name,domainid,ownerid,status) (select max(id)+1,?, 1, 1,'N' from dm.dm_domain)");
+    st.setString(1, Name);
+    st.execute();
+    st.close();
+   
+    st = m_conn.prepareStatement("select id from dm.dm_domain where name = ?");
+    st.setString(1, Name);
+
+    rs2 = st.executeQuery();
+    while (rs2.next())
+    {
+     domainid = rs2.getInt(1);
+    }
+    rs2.close();
+    st.close();
+   }
+  }
+  catch (SQLException e)
+  {
+  }
+  return domainid;
+ }
+
   @SuppressWarnings("deprecation")
 public void SyncAnsible(ServletContext context)
   {
+   checkConnection(context);
 	  internalLogin(context);
 	  
 	  int domainid = -1;
@@ -23391,7 +26947,7 @@ public void SyncAnsible(ServletContext context)
 	  try
 	  {
 	   PreparedStatement st;
-	   st = getDBConnection().prepareStatement("select id from dm.dm_domain where name = 'Infrastructure'");
+	   st = m_conn.prepareStatement("select id from dm.dm_domain where name = 'Infrastructure'");
 
 	   ResultSet rs2 = st.executeQuery();
 	   while (rs2.next())
@@ -23410,10 +26966,10 @@ public void SyncAnsible(ServletContext context)
     try
     {
      PreparedStatement st;
-     st = getDBConnection().prepareStatement("insert into dm.dm_domain (id,name,domainid,ownerid,status) (select max(id)+1,'Infrastructure', 1, 1,'N' from dm.dm_domain)");
+     st = m_conn.prepareStatement("insert into dm.dm_domain (id,name,domainid,ownerid,status) (select max(id)+1,'Infrastructure', 1, 1,'N' from dm.dm_domain)");
      st.execute();
      st.close();
-     st = getDBConnection().prepareStatement("select id from dm.dm_domain where name = 'Infrastructure'");
+     st = m_conn.prepareStatement("select id from dm.dm_domain where name = 'Infrastructure'");
 
      ResultSet rs2 = st.executeQuery();
      while (rs2.next())
@@ -23569,7 +27125,7 @@ public void SyncAnsible(ServletContext context)
 			    try
 			    {
 			     PreparedStatement st;
-			     st = getDBConnection().prepareStatement("select domainid from dm.dm_action where name = ?");
+			     st = m_conn.prepareStatement("select domainid from dm.dm_action where name = ?");
         st.setString(1,"ansible_" + actionName + "_" + user.replaceAll("-", "_"));
         
 			     ResultSet rs2 = st.executeQuery();
@@ -23590,7 +27146,7 @@ public void SyncAnsible(ServletContext context)
 					  ImportFunction(existingdomain, new File("temp/roles/" + user + "_" + repo + ".xml").getAbsolutePath());
 					  long t = timeNow();
 
-					  PreparedStatement st = getDBConnection().prepareStatement("select id from dm.dm_action where name = ?");
+					  PreparedStatement st = m_conn.prepareStatement("select id from dm.dm_action where name = ?");
 					  st.setString(1, "ansible_" + actionName + "_" + user.replaceAll("-", "_") + "_action");
 
 					  int actionid = 0;
@@ -23606,7 +27162,7 @@ public void SyncAnsible(ServletContext context)
        existingdomain = -1;
        try
        {
-        st = getDBConnection().prepareStatement("select domainid from dm.dm_action where name = ?");
+        st = m_conn.prepareStatement("select domainid from dm.dm_action where name = ?");
         st.setString(1, "ansible_" + actionName + "_" + user.replaceAll("-", "_") + "_action");
         
         rs2 = st.executeQuery();
@@ -23626,7 +27182,7 @@ public void SyncAnsible(ServletContext context)
 					  int x;
 					  if (actionid == 0)
 					  {
-						  st = getDBConnection().prepareStatement("INSERT INTO dm.dm_action (id,name,domainid,function,graphical,ownerid,creatorid,modifierid,created,modified,status,kind) VALUES(?,?,?,'N','Y',?,?,?,?,?,'N',6)");
+						  st = m_conn.prepareStatement("INSERT INTO dm.dm_action (id,name,domainid,function,graphical,ownerid,creatorid,modifierid,created,modified,status,kind) VALUES(?,?,?,'N','Y',?,?,?,?,?,'N',6)");
 						  actionid = getID("action");
 						  st.setInt(1, actionid);
 						  st.setString(2, "ansible_" + actionName + "_" + user.replaceAll("-", "_")  + "_action");
@@ -23639,7 +27195,7 @@ public void SyncAnsible(ServletContext context)
 						  st.execute();
 						  st.close();
 
-						  st = getDBConnection().prepareStatement("select id from dm.dm_category where name = ?");
+						  st = m_conn.prepareStatement("select id from dm.dm_category where name = ?");
 						  st.setString(1, category);
 
 						  int categoryid = 0;
@@ -23651,7 +27207,7 @@ public void SyncAnsible(ServletContext context)
 						  rs2.close();
 						  st.close();
 
-						  st = getDBConnection().prepareStatement("INSERT INTO dm.dm_action_categories (id,categoryid) VALUES(?,?)");
+						  st = m_conn.prepareStatement("INSERT INTO dm.dm_action_categories (id,categoryid) VALUES(?,?)");
 						  st.setInt(1, actionid);
 						  st.setInt(2, categoryid);
 						  st.execute();
@@ -23660,7 +27216,7 @@ public void SyncAnsible(ServletContext context)
 						  int procfuncid = 0;
 						  int setcredid = 0;
 
-						  st = getDBConnection().prepareStatement("select id from dm.dm_fragments where name = ?");
+						  st = m_conn.prepareStatement("select id from dm.dm_fragments where name = ?");
 						  st.setString(1, "ansible_" + actionName + "_" + user.replaceAll("-", "_")  + "_role");
 
 						  rs2 = st.executeQuery();
@@ -23725,7 +27281,7 @@ public void SyncAnsible(ServletContext context)
 						  UpdateFragAttrs(keyvals);
 					  }
 
-					  st = getDBConnection().prepareStatement("select count(*) from dm.dm_component where name = ?");
+					  st = m_conn.prepareStatement("select count(*) from dm.dm_component where name = ?");
 					  st.setString(1, "ansible_" + actionName + "_" + user.replaceAll("-", "_") );
 
 					  int compcnt = 0;
@@ -23741,7 +27297,7 @@ public void SyncAnsible(ServletContext context)
        existingdomain = -1;
        try
        {
-        st = getDBConnection().prepareStatement("select domainid from dm.dm_action where name = ?");
+        st = m_conn.prepareStatement("select domainid from dm.dm_action where name = ?");
         st.setString(1, "ansible_" + actionName + "_" + user.replaceAll("-", "_") + "_action");
         
         rs2 = st.executeQuery();
@@ -23760,7 +27316,7 @@ public void SyncAnsible(ServletContext context)
        
 					  if (compcnt != 0)
 						  continue;
-					  st = getDBConnection().prepareStatement("select id from dm.dm_category where name = ?");
+					  st = m_conn.prepareStatement("select id from dm.dm_category where name = ?");
 					  st.setString(1, category);
 
 					  int categoryid = 0;
@@ -23772,7 +27328,7 @@ public void SyncAnsible(ServletContext context)
        rs2.close();
        st.close();
        
-					  st = getDBConnection().prepareStatement("INSERT INTO dm.dm_component (id,name,domainid,ownerid,creatorid,modifierid,created,modified,status,filteritems,deployalways,actionid,comptypeid) VALUES(?,?,?,?,?,?,?,?,'N','Y','N',?,6)");
+					  st = m_conn.prepareStatement("INSERT INTO dm.dm_component (id,name,domainid,ownerid,creatorid,modifierid,created,modified,status,filteritems,deployalways,actionid,comptypeid) VALUES(?,?,?,?,?,?,?,?,'N','Y','N',?,6)");
 					  int compid = getID("component");
 					  st.setInt(1, compid);
 					  st.setString(2, "ansible_" + actionName + "_" + user.replaceAll("-", "_") );
@@ -23785,12 +27341,12 @@ public void SyncAnsible(ServletContext context)
 					  st.setLong(9, actionid);
 					  st.execute();
 					  st.close();
-					  st = getDBConnection().prepareStatement("INSERT INTO dm.dm_component_categories (id,categoryid) VALUES(?,?)");
+					  st = m_conn.prepareStatement("INSERT INTO dm.dm_component_categories (id,categoryid) VALUES(?,?)");
 					  st.setInt(1, compid);
 					  st.setInt(2, categoryid);
 					  st.execute();
 					  st.close();
-					  getDBConnection().commit();
+					  m_conn.commit();
 
 					  AttributeChangeSet changes = new AttributeChangeSet();
 					  for (Iterator<Entry<String, String>> iterator = defaultvars.entrySet().iterator(); iterator.hasNext();)
@@ -23813,6 +27369,363 @@ public void SyncAnsible(ServletContext context)
 	  }
   }
 
+  public JSONObject getApps2CompsNodesEdges(String appids)
+  {
+   JSONObject data = new JSONObject();   
+   JSONArray nodes = new JSONArray();
+   JSONArray edges = new JSONArray();
+
+   ArrayList<String> added = new ArrayList<String>();
+   ArrayList<String> edges_added = new ArrayList<String>();
+   
+   String[] apps = appids.split(",");
+   
+   for (int k=0;k<apps.length;k++)
+   {
+    int appid = new Integer(apps[k]).intValue();
+    Application app = this.getApplication(appid, false); 
+    
+    // add app
+    if (!added.contains(app.getOtid().toString()))
+    {
+     added.add(app.getOtid().toString());
+     nodes.add(new DeployDepsNode(app.getOtid().toString(), app.getName()).getJSON());
+    } 
+    
+    boolean isRelease = false;
+
+    if (app.getIsRelease().compareToIgnoreCase("Y") == 0)
+     isRelease = true;
+
+    List<Component> comps = getComponents(ObjectType.APPLICATION, app.getId(),isRelease);
+    int d = this.getLatestDeployment("" + appid);
+  //  List<Component> comps = getComponents4Deployment(d);
+    
+    for (int i=0;i<comps.size();i++)
+    {
+     // add components to app
+     Component comp = getComponent(comps.get(i).getId(),true);
+
+     if (!added.contains(comp.getOtid().toString()))
+     {
+      added.add(comp.getOtid().toString());
+      nodes.add(new DeployDepsNode(comp.getOtid().toString(), comp.getName()).getJSON());
+     } 
+     if (!edges_added.contains(app.getOtid().toString() + "-" + comp.getOtid().toString()))
+     {
+      edges_added.add(app.getOtid().toString() + "-" + comp.getOtid().toString());
+      edges.add(new DeployDepsEdge(app.getOtid().toString(), comp.getOtid().toString()).getJSON());
+     }
+    }
+   }
+   
+   data.add("nodes",nodes);
+   data.add("edges",edges);
+   return data;
+  }
+  
+  public JSONObject getComps2AppsNodesEdges(String compids)
+  {
+   JSONObject data = new JSONObject();   
+   JSONArray nodes = new JSONArray();
+   JSONArray edges = new JSONArray();
+
+   ArrayList<String> added = new ArrayList<String>();
+   ArrayList<String> edges_added = new ArrayList<String>();
+   
+   String[] comps = compids.split(",");
+   
+   for (int k=0;k<comps.length;k++)
+   {
+    int compid = new Integer(comps[k]).intValue();
+    Component comp = this.getComponent(compid, false); 
+    
+    // add comp
+    if (!added.contains(comp.getOtid().toString()))
+    {
+     added.add(comp.getOtid().toString());
+     nodes.add(new DeployDepsNode(comp.getOtid().toString(), comp.getName()).getJSON());
+    } 
+    
+    List<Application> apps = getAppsForComponent(comp);
+
+    for (int i=0;i<apps.size();i++)
+    {
+     // add app to comp
+     Application app = getApplication(apps.get(i).getId(),true);
+
+     if (!added.contains(app.getOtid().toString()))
+     {
+      added.add(app.getOtid().toString());
+      nodes.add(new DeployDepsNode(app.getOtid().toString(), app.getName()).getJSON());
+     } 
+     if (!edges_added.contains(comp.getOtid().toString() + "-" + app.getOtid().toString()))
+     {
+      edges_added.add(comp.getOtid().toString() + "-" + app.getOtid().toString());
+      edges.add(new DeployDepsEdge(comp.getOtid().toString(), app.getOtid().toString()).getJSON());
+     }
+    }
+   }
+   
+   data.add("nodes",nodes);
+   data.add("edges",edges);
+   return data;
+  }
+
+ public JSONObject getComponentDepsNodesEdges(String compidStr)
+ {
+  JSONObject data = new JSONObject();
+  JSONArray nodes = new JSONArray();
+  JSONArray edges = new JSONArray();
+
+  ArrayList<String> added = new ArrayList<String>();
+  ArrayList<String> edges_added = new ArrayList<String>();
+
+  int compid = new Integer(compidStr).intValue();
+  Component comp = this.getComponent(compid, false);
+
+  String res = getComp2Endpoints(comp.getId()).getJSON();
+  JsonArray endpoints = new JsonParser().parse(res).getAsJsonArray();
+
+  HashMap<Integer,Integer> srvlist = new HashMap<Integer, Integer>();
+  
+  for (int x=0;x<endpoints.size();x++)
+  {
+   JsonObject obj = endpoints.get(x).getAsJsonObject();
+   Integer id = new Integer(obj.get("id").getAsString());
+   srvlist.put(id, null);
+  }
+  
+  // add comp
+  if (!added.contains(comp.getOtid().toString()))
+  {
+   added.add(comp.getOtid().toString());
+   nodes.add(new DeployDepsNode(comp.getOtid().toString(), comp.getName()).getJSON());
+  }
+
+  // add env to comp
+  ArrayList<Environment> envs = this.getComp2Envs(compid);
+
+  for (int i = 0; i < envs.size(); i++)
+  {
+   Environment env = envs.get(i);
+   if (!added.contains(env.getOtid().toString()))
+   {
+    added.add(env.getOtid().toString());
+    nodes.add(new DeployDepsNode(env.getOtid().toString(), env.getName()).getJSON());
+   }
+   if (!edges_added.contains(comp.getOtid().toString() + "-" + env.getOtid().toString()))
+   {
+    edges_added.add(comp.getOtid().toString() + "-" + env.getOtid().toString());
+    edges.add(new DeployDepsEdge(comp.getOtid().toString(), env.getOtid().toString()).getJSON());
+   }
+   
+   List<Server> servers = getServersInEnvironment(env.getId());
+
+   for (int k=0;k<servers.size();k++)
+   {
+    // add server to env
+    Server srv = servers.get(k);
+    if (!srvlist.containsKey(new Integer(srv.getId())))
+      continue;
+    
+    if (!added.contains(srv.getOtid().toString()))
+    {
+     added.add(srv.getOtid().toString());
+     nodes.add(new DeployDepsNode(srv.getOtid().toString(), srv.getName()).getJSON());
+    } 
+    
+    if (!edges_added.contains(env.getOtid().toString() + "-" + srv.getOtid().toString()))
+    {
+     edges_added.add(env.getOtid().toString() + "-" + srv.getOtid().toString());
+     edges.add(new DeployDepsEdge(env.getOtid().toString(), srv.getOtid().toString()).getJSON());
+    }
+   }
+  }
+
+  data.add("nodes", nodes);
+  data.add("edges", edges);
+  return data;
+ }
+ 
+ public JSONObject getEnvironmentDepsNodesEdges(String envidStr)
+ {
+  JSONObject data = new JSONObject();
+  JSONArray nodes = new JSONArray();
+  JSONArray edges = new JSONArray();
+
+  ArrayList<String> added = new ArrayList<String>();
+  ArrayList<String> edges_added = new ArrayList<String>();
+
+  int envid = new Integer(envidStr).intValue();
+  Environment env = this.getEnvironment(envid, false);
+
+  // add env
+  if (!added.contains(env.getOtid().toString()))
+  {
+   added.add(env.getOtid().toString());
+   nodes.add(new DeployDepsNode(env.getOtid().toString(), env.getName()).getJSON());
+  }
+
+  List<DeployedApplication> applist = getDeployedApplicationsInEnvironment(envid);
+  
+  for (int i = 0; i < applist.size(); i++)
+  {
+   DeployedApplication deployedapp = applist.get(i);
+   int appid = deployedapp.getApplicationID();
+   Application app = getApplication(appid, false);
+   
+   if (!added.contains(app.getOtid().toString()))
+   {
+    added.add(app.getOtid().toString());
+    nodes.add(new DeployDepsNode(app.getOtid().toString(), app.getName()).getJSON());
+   }
+   if (!edges_added.contains(app.getOtid().toString() + "-" + env.getOtid().toString()))
+   {
+    edges_added.add(app.getOtid().toString() + "-" + env.getOtid().toString());
+    edges.add(new DeployDepsEdge(app.getOtid().toString(), env.getOtid().toString()).getJSON());
+   }
+   
+   boolean isRelease = false;
+   if (app.getIsRelease().equalsIgnoreCase("Y"))
+    isRelease = true;
+  
+   List<Component> complist = getComponents(app.getObjectType(), appid, isRelease);
+   
+   for (int k=0;k<complist.size();k++)
+   {
+    Component comp = complist.get(k);
+    
+//    if (!added.contains(app.getOtid().toString()))
+//    {
+//     added.add(app.getOtid().toString());
+//     nodes.add(new DeployDepsNode(app.getOtid().toString(), app.getName()).getJSON());
+//    }
+//    if (!edges_added.contains(app.getOtid().toString() + "-" + comp.getOtid().toString()))
+//    {
+//     edges_added.add(app.getOtid().toString() + "-" + comp.getOtid().toString());
+//     edges.add(new DeployDepsEdge(app.getOtid().toString(), comp.getOtid().toString()).getJSON());
+//    }
+    
+    if (!added.contains(comp.getOtid().toString()))
+    {
+     added.add(comp.getOtid().toString());
+     nodes.add(new DeployDepsNode(comp.getOtid().toString(), comp.getName()).getJSON());
+    }
+    if (!edges_added.contains(comp.getOtid().toString() + "-" + env.getOtid().toString()))
+    {
+     edges_added.add(comp.getOtid().toString() + "-" + env.getOtid().toString());
+     edges.add(new DeployDepsEdge(comp.getOtid().toString(), env.getOtid().toString()).getJSON());
+    }
+   } 
+  }
+
+  data.add("nodes", nodes);
+  data.add("edges", edges);
+  return data;
+ } 
+ 
+  
+public ArrayList<Environment> getComp2Envs(int compid)
+{
+ String sql = "select distinct envid from dm.dm_compsonserv a, dm.dm_serversinenv b, dm.dm_environment c where a.serverid = b.serverid and b.envid = c.id and c.status = 'N' and a.compid = ?";
+
+ ArrayList<Environment> ret = new ArrayList<Environment>();
+
+ try {
+  PreparedStatement stmt = m_conn.prepareStatement(sql);
+  stmt.setInt(1, compid);
+  ResultSet rs = stmt.executeQuery();
+
+  while (rs.next())
+  {
+   Environment env = this.getEnvironment(rs.getInt(1), false);
+   int envDom = env.getDomainId();
+   
+   String domlist = "," + this.getDomainList() + ",";
+   
+   if (!domlist.contains("," + envDom + ","))
+    continue;
+    
+   ret.add(env);     
+  }
+  rs.close();
+  stmt.close();
+  return ret;
+ } catch (SQLException e) {
+  e.printStackTrace();
+ } 
+ return ret;  
+}
+
+public ArrayList<Component> getEnv2Comps(int envid)
+{
+ String sql = "select distinct compid from dm.dm_compsonserv a, dm.dm_serversinenv b, dm.dm_environment c, dm.dm_component d where a.serverid = b.serverid and b.envid = c.id and compid = d.id and d.status = 'N' and b.envid = ?";
+
+ ArrayList<Component> ret = new ArrayList<Component>();
+
+ try {
+  PreparedStatement stmt = m_conn.prepareStatement(sql);
+  stmt.setInt(1, envid);
+  ResultSet rs = stmt.executeQuery();
+
+  while (rs.next())
+  {
+   Component comp = this.getComponent(rs.getInt(1), false);
+   int compDom = comp.getDomainId();
+   
+   String domlist = "," + this.getDomainList() + ",";
+   
+   if (!domlist.contains("," + compDom + ","))
+    continue;
+    
+   ret.add(comp);     
+  }
+  rs.close();
+  stmt.close();
+  return ret;
+ } catch (SQLException e) {
+  e.printStackTrace();
+ } 
+ return ret;  
+}
+
+public JSONArray getComp2Endpoints(int compid)
+{
+ String sql = "select distinct serverid, deploymentid from dm.dm_compsonserv a, dm.dm_server b where a.serverid = b.id and b.status = 'N' and a.compid = ?";
+
+ JSONArray ret = new JSONArray();
+
+ try {
+  PreparedStatement stmt = m_conn.prepareStatement(sql);
+  stmt.setInt(1, compid);
+  ResultSet rs = stmt.executeQuery();
+
+  while (rs.next())
+  {
+   Server srv = this.getServer(rs.getInt(1), false);
+   int srvDom = srv.getDomainId();
+   
+   String domlist = "," + this.getDomainList() + ",";
+   
+   if (!domlist.contains("," + srvDom + ","))
+    continue;
+    
+   JSONObject obj = new JSONObject();
+   obj.add("id", srv.getId());
+   obj.add("name", srv.getDomain().getFullName() + "." + srv.getName());
+   obj.add("deployid", rs.getInt(2));
+   ret.add(obj);     
+  }
+  rs.close();
+  stmt.close();
+  return ret;
+ } catch (SQLException e) {
+  e.printStackTrace();
+ } 
+ return ret;  
+}
+  
   public JSONObject getDeploymentDepsNodesEdges(int deployid)
   {
    JSONObject data = new JSONObject();   
@@ -23837,9 +27750,11 @@ public void SyncAnsible(ServletContext context)
     added.add(d.getEnvironment().getOtid().toString());
     nodes.add(new DeployDepsNode(d.getEnvironment().getOtid().toString(), d.getEnvironment().getName()).getJSON());
    }
-   edges_added.add(d.getApplication().getOtid().toString() + "-" + d.getEnvironment().getOtid().toString());
-   edges.add(new DeployDepsEdge(d.getApplication().getOtid().toString(), d.getEnvironment().getOtid().toString()).getJSON());
-
+   if (!edges_added.contains(d.getApplication().getOtid().toString() + "-" + d.getEnvironment().getOtid().toString()))
+   { 
+    edges_added.add(d.getApplication().getOtid().toString() + "-" + d.getEnvironment().getOtid().toString());
+    edges.add(new DeployDepsEdge(d.getApplication().getOtid().toString(), d.getEnvironment().getOtid().toString()).getJSON());
+   }
    List<Server> servers = getServersInEnvironment(d.getEnvironment().getId());
 
    for (int i=0;i<servers.size();i++)
@@ -23851,8 +27766,11 @@ public void SyncAnsible(ServletContext context)
      added.add(srv.getOtid().toString());
      nodes.add(new DeployDepsNode(srv.getOtid().toString(), srv.getName()).getJSON());
     } 
+    if (!edges_added.contains(d.getEnvironment().getOtid().toString() + "-" + srv.getOtid().toString()))
+      {
     edges_added.add(d.getEnvironment().getOtid().toString() + "-" + srv.getOtid().toString());
     edges.add(new DeployDepsEdge(d.getEnvironment().getOtid().toString(), srv.getOtid().toString()).getJSON());
+      }
    }
 
    boolean isRelease = false;
@@ -23860,169 +27778,243 @@ public void SyncAnsible(ServletContext context)
    if (d.getApplication().getIsRelease().compareToIgnoreCase("Y") == 0)
     isRelease = true;
 
-   List<Component> comps = getComponents(ObjectType.APPLICATION, d.getApplication().getId(),isRelease);
+  // List<Component> comps = getComponents(ObjectType.APPLICATION, d.getApplication().getId(),isRelease);
 
+   List<Component> comps = getComponents4Deployment(d.getId());
+   
    for (int i=0;i<comps.size();i++)
    {
     // add components to app
-    Component comp = getComponent(comps.get(i).getId(),true);
+    Component comp = comps.get(i); 
+    
+    String res = getComp2Endpoints(comp.getId()).getJSON();
+    JsonArray endpoints = new JsonParser().parse(res).getAsJsonArray();
+
+    HashMap<Integer,Integer> srv4comps = new HashMap<Integer, Integer>();
+    
+    for (int x=0;x<endpoints.size();x++)
+    {
+     JsonObject obj = endpoints.get(x).getAsJsonObject();
+     Integer id = new Integer(obj.get("id").getAsString());
+     srv4comps.put(id, null);
+    }
 
     if (!added.contains(comp.getOtid().toString()))
     {
      added.add(comp.getOtid().toString());
      nodes.add(new DeployDepsNode(comp.getOtid().toString(), comp.getName()).getJSON());
     } 
+    if (!edges_added.add(comp.getOtid().toString() + "-" + d.getApplication().getOtid().toString()))
+    {
     edges_added.add(comp.getOtid().toString() + "-" + d.getApplication().getOtid().toString());
     edges.add(new DeployDepsEdge(comp.getOtid().toString(), d.getApplication().getOtid().toString()).getJSON());
+    }
 
     List <Server> srvlist = GetServersWithComponentsDeployed(d.getEnvironment().getId(),comp.getId());
 
     for (int k=0;k<srvlist.size();k++)
     {
-     // add components to server
+     // add components to server    
      Server s = srvlist.get(k);
-     edges_added.add(s.getOtid() + "-" + comp.getOtid());
-     edges.add(new DeployDepsEdge(comp.getOtid().toString(), s.getOtid().toString()).getJSON());   
-    }
-
-    if (comp.getLastBuildNumber() > 0 && comp.getBuildJob() != null)
-    {
      
-     // add build number
-     BuildJob bj = comp.getBuildJob();
-
-     if (!added.contains(bj.getOtid().toString() + "_" + comp.getLastBuildNumber()))
-     {
-      added.add(bj.getOtid().toString() + "_" + comp.getLastBuildNumber());
-      nodes.add(new DeployDepsNode(bj.getOtid().toString() + "_" + comp.getLastBuildNumber(), "Build #" + comp.getLastBuildNumber()).getJSON());
+     if (!srv4comps.containsKey(new Integer(s.getId())))
+      continue;
+     
+     if (!edges_added.contains(s.getOtid() + "-" + comp.getOtid()))
+     { 
+      edges_added.add(s.getOtid() + "-" + comp.getOtid());
+      edges.add(new DeployDepsEdge(comp.getOtid().toString(), s.getOtid().toString()).getJSON());  
      }
-     edges_added.add(bj.getOtid().toString() + "_" + comp.getLastBuildNumber() + "-" + comp.getOtid().toString());
-     edges.add(new DeployDepsEdge(bj.getOtid().toString() + "_" + comp.getLastBuildNumber(), comp.getOtid().toString()).getJSON());
-
-     if ( bj.getBuildCommitID(comp.getLastBuildNumber()) != null)
-     {   
-      ArrayList<Integer> builds = getPreviousBuildNumbers(comp.getId(), d.getEnvironment().getId(), d.getId()); 
-
-      for (int j=0;j<builds.size();j++)
-      {
-       int bldnum = builds.get(j);
-
-       if (bj.getBuildCommitID(bldnum) != null)
-       {
-        // add commits for build number (from last deployment's build to this one)
-        if (!added.contains("cm" + bj.getBuildCommitID(bldnum)))
-        {
-         added.add("cm" + bj.getBuildCommitID(bldnum));
-         nodes.add(new DeployDepsNode("cm" + bj.getBuildCommitID(bldnum), "Commit #\n" + bj.getBuildCommitID(bldnum)).getJSON());
-        }
-        edges_added.add("cm" + bj.getBuildCommitID(bldnum) + "-" + bj.getOtid().toString() + "_" + comp.getLastBuildNumber());
-        edges.add(new DeployDepsEdge("cm" + bj.getBuildCommitID(bldnum), bj.getOtid().toString() + "_" + comp.getLastBuildNumber()).getJSON());
-
-        ArrayList<String> files = getBuildFilesList(comp.getBuildJob().getId(), bldnum);
-
-        for (int x=0;x<files.size();x++)
-        {
-         // add files to commit
-         if (!added.contains("sr" + files.get(x)))
-         {
-          added.add("sr" + files.get(x));
-          nodes.add(new DeployDepsNode("sr" + files.get(x), files.get(x)).getJSON());
-         }
-         edges_added.add("sr" + files.get(x) + "-" + "cm" + bj.getBuildCommitID(bldnum));
-         edges.add(new DeployDepsEdge("sr" + files.get(x), "cm" + bj.getBuildCommitID(bldnum)).getJSON());
-        }       
-       }
-      }
-     } 
     }
    } 
 
    // Now handle other components on the servers
-   for (int i=0;i<servers.size();i++)
-   {
-    comps = this.getComponentsOnServerList(servers.get(i));
-    for (int k=0;k<comps.size();k++)
-    {
-     // add other components to servers
-     Component comp = comps.get(k);
-     if (!added.contains(comp.getOtid().toString()))
-     {
-      added.add(comp.getOtid().toString());
-      nodes.add(new DeployDepsNode(comp.getOtid().toString(), comp.getName()).getJSON());
-     } 
-     
-     if (!edges_added.contains(servers.get(i).getOtid() + "-" + comp.getOtid()))
-      edges.add(new DeployDepsEdge(comp.getOtid().toString(), servers.get(i).getOtid().toString(),true).getJSON());
-     
-     comp = getComponent(comp.getId(),true);
-     
-     if (comp.getLastBuildNumber() > 0 && comp.getBuildJob() != null)
-     {
-      
-      // add build number
-      BuildJob bj = comp.getBuildJob();
-
-      if (!added.contains(bj.getOtid().toString() + "_" + comp.getLastBuildNumber()))
-      {
-       added.add(bj.getOtid().toString() + "_" + comp.getLastBuildNumber());
-       nodes.add(new DeployDepsNode(bj.getOtid().toString() + "_" + comp.getLastBuildNumber(), "Build #" + comp.getLastBuildNumber()).getJSON());
-      }
-      if (!edges_added.contains(bj.getOtid().toString() + "_" + comp.getLastBuildNumber() + "-" + comp.getOtid().toString()))
-        edges.add(new DeployDepsEdge(bj.getOtid().toString() + "_" + comp.getLastBuildNumber(), comp.getOtid().toString(),true).getJSON());
-
-      if ( bj.getBuildCommitID(comp.getLastBuildNumber()) != null)
-      {   
-       ArrayList<Integer> builds = getPreviousBuildNumbers(comp.getId(), d.getEnvironment().getId(), d.getId()); 
-
-       for (int j=0;j<builds.size();j++)
-       {
-        int bldnum = builds.get(j);
-
-        if (bj.getBuildCommitID(bldnum) != null)
-        {
-         // add commits for build number (from last deployment's build to this one)
-         if (!added.contains("cm" + bj.getBuildCommitID(bldnum)))
-         {
-          added.add("cm" + bj.getBuildCommitID(bldnum));
-          nodes.add(new DeployDepsNode("cm" + bj.getBuildCommitID(bldnum), "Commit #\n" + bj.getBuildCommitID(bldnum)).getJSON());
-         }
-         if (!edges_added.contains("cm" + bj.getBuildCommitID(bldnum) + "-" + bj.getOtid().toString() + "_" + comp.getLastBuildNumber()))
-          edges.add(new DeployDepsEdge("cm" + bj.getBuildCommitID(bldnum), bj.getOtid().toString() + "_" + comp.getLastBuildNumber(),true).getJSON());
-
-         ArrayList<String> files = getBuildFilesList(comp.getBuildJob().getId(), bldnum);
-
-         for (int x=0;x<files.size();x++)
-         {
-          // add files to commit
-          if (!added.contains("sr" + files.get(x)))
-          {
-           added.add("sr" + files.get(x));
-           nodes.add(new DeployDepsNode("sr" + files.get(x), files.get(x)).getJSON());
-          }
-          if (!edges_added.contains("sr" + files.get(x) + "-" + "cm" + bj.getBuildCommitID(bldnum)))
-             edges.add(new DeployDepsEdge("sr" + files.get(x), "cm" + bj.getBuildCommitID(bldnum),true).getJSON());
-         }
-        }
-       }
-      } 
-     }
-    } 
-   }
+//   for (int i=0;i<servers.size();i++)
+//   {
+//    comps = this.getComponentsOnServerList(servers.get(i));
+//    for (int k=0;k<comps.size();k++)
+//    {
+//     // add other components to servers
+//     Component comp = comps.get(k);
+//     if (!added.contains(comp.getOtid().toString()))
+//     {
+//      added.add(comp.getOtid().toString());
+//      nodes.add(new DeployDepsNode(comp.getOtid().toString(), comp.getName()).getJSON());
+//     } 
+//     
+//     if (!edges_added.contains(servers.get(i).getOtid() + "-" + comp.getOtid()))
+//     {
+//      edges_added.add(servers.get(i).getOtid() + "-" + comp.getOtid());
+//      edges.add(new DeployDepsEdge(comp.getOtid().toString(), servers.get(i).getOtid().toString(),true).getJSON());
+//     }
+//     
+//     comp = getComponent(comp.getId(),true);
+//     
+//     defects = getDefectsForComponent(comp.getId());
+//
+//     for (int j=0;j<defects.getDefects().size();j++)
+//     {
+//      Defect defect = defects.getDefects().get(j);
+//
+//      // add defects to component
+//      if (!added.contains("df" + defect.getId()))
+//      {
+//       added.add("df" + defect.getId());
+//       nodes.add(new DeployDepsNode("df" + defect.getId(), "CR " + defect.getName()).getJSON()); 
+//      } 
+//      if (!edges_added.contains("df" + defect.getId() + "-" + comp.getOtid().toString()))
+//      {
+//       edges_added.add("df" + defect.getId() + "-" + comp.getOtid().toString());
+//       edges.add(new DeployDepsEdge("df" + defect.getId(), comp.getOtid().toString(),true).getJSON());
+//      }
+//     }
+//     
+//     if (comp.getLastBuildNumber() > 0 && comp.getBuildJob() != null)
+//     {
+//      
+//      // add build number
+//      BuildJob bj = comp.getBuildJob();
+//
+//      if (!added.contains(bj.getOtid().toString() + "_" + comp.getLastBuildNumber()))
+//      {
+//       added.add(bj.getOtid().toString() + "_" + comp.getLastBuildNumber());
+//       nodes.add(new DeployDepsNode(bj.getOtid().toString() + "_" + comp.getLastBuildNumber(), "Build #" + comp.getLastBuildNumber()).getJSON());
+//      }
+//      if (!edges_added.contains(bj.getOtid().toString() + "_" + comp.getLastBuildNumber() + "-" + comp.getOtid().toString()))
+//      {
+//        edges_added.add(bj.getOtid().toString() + "_" + comp.getLastBuildNumber() + "-" + comp.getOtid().toString());
+//        edges.add(new DeployDepsEdge(bj.getOtid().toString() + "_" + comp.getLastBuildNumber(), comp.getOtid().toString(),true).getJSON());
+//      }
+//
+//      if ( bj.getBuildCommitID(comp.getLastBuildNumber()) != null && bj.getBuildCommitID(comp.getLastBuildNumber()).trim().length() > 0)
+//      {   
+//       ArrayList<Integer> builds = getPreviousBuildNumbers(comp.getId(), d.getEnvironment().getId(), d.getId()); 
+//
+//       if (builds.size() == 0)
+//        builds.add(comp.getLastBuildNumber());
+//       
+//       for (int j=0;j<builds.size();j++)
+//       {
+//        int bldnum = builds.get(j);
+//
+//        if (bj.getBuildCommitID(bldnum) != null  && bj.getBuildCommitID(bldnum).trim().length() > 0)
+//        {
+//         // add commits for build number (from last deployment's build to this one)
+//         if (!added.contains("cm" + bj.getBuildCommitID(bldnum)))
+//         {
+//          added.add("cm" + bj.getBuildCommitID(bldnum));
+//          nodes.add(new DeployDepsNode("cm" + bj.getBuildCommitID(bldnum), "Commit #\n" + bj.getBuildCommitID(bldnum)).getJSON());
+//         }
+//         if (!edges_added.contains("cm" + bj.getBuildCommitID(bldnum) + "-" + bj.getOtid().toString() + "_" + comp.getLastBuildNumber()))
+//         {
+//          edges_added.add("cm" + bj.getBuildCommitID(bldnum) + "-" + bj.getOtid().toString() + "_" + comp.getLastBuildNumber());
+//          edges.add(new DeployDepsEdge("cm" + bj.getBuildCommitID(bldnum), bj.getOtid().toString() + "_" + comp.getLastBuildNumber(),true).getJSON());
+//         }
+//
+//         ArrayList<String> files = getBuildFilesList(comp.getBuildJob().getId(), bldnum);
+//
+//         for (int x=0;x<files.size();x++)
+//         {
+//          // add files to commit
+//          if (!added.contains("sr-" + files.get(x)))
+//          {
+//           added.add("sr-" + files.get(x));
+//           nodes.add(new DeployDepsNode("sr-" + files.get(x), files.get(x)).getJSON());
+//          }
+//          if (!edges_added.contains("sr-" + files.get(x) + "-" + "cm" + bj.getBuildCommitID(bldnum)))
+//          {
+//           edges_added.add("sr-" + files.get(x) + "-" + "cm" + bj.getBuildCommitID(bldnum));
+//             edges.add(new DeployDepsEdge("sr-" + files.get(x), "cm" + bj.getBuildCommitID(bldnum),true).getJSON());
+//          }
+//          
+//          ArrayList<String> bj_defects = getBuildDefectsList(bj.getId(),bldnum);
+//          
+//          for (int m=0;m<bj_defects.size();m++)
+//          {
+//           // add defects to commit
+//           if (!added.contains("bd" + bj_defects.get(m)))
+//           {
+//            added.add("bd" + bj_defects.get(m));
+//            nodes.add(new DeployDepsNode("bd" + bj_defects.get(m), "CR " + bj_defects.get(m)).getJSON());
+//           }
+//           if (!edges_added.contains("bd" + bj_defects.get(m) + "-" + "sr-" + files.get(x)))
+//           {
+//            edges_added.add("bd" + bj_defects.get(m) + "-" + "sr-" + files.get(x));
+//             edges.add(new DeployDepsEdge("bd" + bj_defects.get(m), "sr-" + files.get(x),true).getJSON()); 
+//           }
+//          }
+//         }
+////         ArrayList<String> bj_defects = getBuildDefectsList(bj.getId(),bldnum);
+////         
+////         for (int m=0;m<bj_defects.size();m++)
+////         {
+////          // add defects to commit
+////          if (!added.contains("bd" + bj_defects.get(m)))
+////          {
+////           added.add("bd" + bj_defects.get(m));
+////           nodes.add(new DeployDepsNode("bd" + bj_defects.get(m), "CR " + bj_defects.get(m)).getJSON());
+////          }
+////          if (!edges_added.contains("bd" + bj_defects.get(m) + "-" + "cm" + bj.getBuildCommitID(bldnum)))
+////          {
+////          edges_added.add("bd" + bj_defects.get(m) + "-" + "cm" + bj.getBuildCommitID(bldnum));
+////          edges.add(new DeployDepsEdge("bd" + bj_defects.get(m), "cm" + bj.getBuildCommitID(bldnum)).getJSON()); 
+////          }
+////         }         
+//        }
+//       }
+//      } 
+//     }
+//    } 
+//   }
    data.add("nodes",nodes);
    data.add("edges",edges);
    return data;
   }
+  
+ private List<Component> getComponents4Deployment(int deployid)
+ {
+  String sql = "select distinct compid from dm.dm_deploymentstep where compid is not null and deploymentid =" + deployid;
 
-  public ArrayList<Integer> getPreviousBuildNumbers(int compid,int envid, int logid)
+  ArrayList<Component> ret = new ArrayList<Component>();
+  try
   {
-   String sql = "select distinct a.buildnumber from dm.dm_deploymentxfer a, dm.dm_serversinenv b where a.componentid = ? and a.serverid = b.serverid and b.envid = ? and deploymentid <= ? order by 1 desc";
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    int compid = rs.getInt(1);
+    ret.add(this.getComponent(compid, true));
+   }
+   rs.close();
+   stmt.close();
+  }
+  catch (SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+  return ret;
+ }
+
+  ArrayList<Integer> getPreviousBuildNumbers(int compid,int envid, int logid)
+  {
+   String sql = "select distinct buildnumber from dm.dm_buildhistory where buildnumber >= (select distinct buildnumber from dm.dm_deploymentxfer a, dm.dm_serversinenv b where a.componentid = ? and a.serverid = b.serverid and b.envid = ? and " +
+                 "deploymentid in (select max(deploymentid) from dm.dm_deploymentxfer a, dm.dm_serversinenv b where a.componentid = ? and a.serverid = b.serverid and b.envid = ? and deploymentid < ?)) " +
+                 "and buildnumber <= (select distinct buildnumber from dm.dm_deploymentxfer a, dm.dm_serversinenv b where a.componentid = ? and a.serverid = b.serverid and b.envid = ? and deploymentid = ?)";
+   
    ArrayList<Integer> ret = new ArrayList<Integer>();
    try
    {
-    PreparedStatement stmt = getDBConnection().prepareStatement(sql);
+    PreparedStatement stmt = m_conn.prepareStatement(sql);
     stmt.setInt(1, compid);
     stmt.setInt(2, envid);
-    stmt.setInt(3, logid);
+    stmt.setInt(3, compid);
+    stmt.setInt(4, envid);
+    stmt.setInt(5, logid);
+    stmt.setInt(6, compid);
+    stmt.setInt(7, envid);
+    stmt.setInt(8, logid);
     ResultSet rs = stmt.executeQuery();
     
     while(rs.next()) {
@@ -24038,60 +28030,439 @@ public void SyncAnsible(ServletContext context)
    } 
    return ret;
   }
-
-  public Connection getDBConnection()
+  
+  // For SQL Queries (SAAS version)
+  
+  public boolean isSaaS(Connection conn)
   {
-   return m_conn;
+	  boolean tExists = false;
+	  try {
+		ResultSet rs = conn.getMetaData().getTables(null, null,"dm_saasclients", null);
+		while (rs.next()) {
+			String tName = rs.getString("TABLE_NAME");
+			if (tName != null && tName.equalsIgnoreCase("dm_saasclients")) {
+				tExists = true;
+				break;
+			}
+		}
+		rs.close();
+		System.out.println("Check dm_saasclients exists returns "+tExists);
+	  } catch(SQLException ex) {
+		  tExists=false;
+	  }
+	  return tExists;
+  }
+  
+  public void checkConnection(ServletContext context)
+  {
+//   try
+//   {
+//    if (m_conn != null && m_conn.isClosed())
+//    {
+//     m_conn = null;
+//    }
+//   }
+//   catch (SQLException e)
+//   {
+//    // TODO Auto-generated catch block
+//    e.printStackTrace();
+//   }
+//   connectToDatabase(context);
+  }
+  
+  public boolean confirmClientID(String clientid)
+  {
+	  boolean tExists = isSaaS(m_conn);
+	  try {
+		if (tExists) {
+			PreparedStatement stmt = m_conn.prepareStatement("select count(*) from dm.dm_saasclients where clientid=?");
+			stmt.setString(1,clientid);
+			ResultSet rs2 = stmt.executeQuery();
+			rs2.next();
+			tExists = (rs2.getInt(1)>0);
+			System.out.println("clientid "+clientid+" in dm_saasclients returns "+tExists);
+			rs2.close();
+			stmt.close();
+		}
+	  } catch(SQLException ex) {
+		  tExists=false;
+	  }
+	  return tExists;
+  }
+  
+  public boolean saveClientID(String clientid)
+  {
+	  try {
+		  PreparedStatement stmt = m_conn.prepareStatement("UPDATE dm.dm_saasclients SET lastseen=? WHERE clientid=?");
+		  stmt.setLong(1,timeNow());
+		  stmt.setString(2,clientid);
+		  stmt.execute();
+		  stmt.close();
+		  m_conn.commit();
+	  } catch(SQLException ex) {
+		  ex.printStackTrace();
+	  }
+	  if (m_clientid == null) {
+		  m_clientid = clientid;
+		  return true;
+	  } else {
+		  return false;
+	  }
+  }
+  
+  public void internalLoginForSQL(ServletContext context)
+  {
+	  // Sets up internal login to run as "admin"
+	  m_userID=0;
+	  connectToDatabase(context);
+  }
+  
+  private String processResultSet(ResultSet rs)
+  {
+	  String res="";
+	  try {
+		  ResultSetMetaData rsmd = rs.getMetaData();
+		  int columnCount = rsmd.getColumnCount();
+		  String colname[] = new String[columnCount];
+		  int coltype[] = new int[columnCount];
+		  res+="<columns count=\""+columnCount+"\">";
+		  for (int i=1; i<=columnCount;i++) {
+			  colname[i-1] = rsmd.getColumnName(i);
+			  coltype[i-1] = rsmd.getColumnType(i);
+			  res+="<type>"+coltype[i-1]+"</type>";
+			  res+="<name>"+colname[i-1]+"</name>";
+		  }
+		  res+="</columns>";
+		  res+="<data>";
+		  while(rs.next()) {
+			  res+="<row>";
+			  for (int i=1;i<=columnCount;i++) {
+				  String cd;
+				  if (coltype[i-1]==93) {
+					  // TIMESTAMP with TIMEZONE in Postgres
+					  Timestamp ts = rs.getTimestamp(1);
+					  Calendar cal = Calendar.getInstance();
+				      cal.setTimeInMillis(ts.getTime());
+					  String dd = ((Integer)cal.get(Calendar.DAY_OF_MONTH)).toString();
+					  if (dd.length()==1) dd = "0"+dd;
+					  String mm = ((Integer)(cal.get(Calendar.MONTH)+1)).toString();
+					  if (mm.length()==1) mm = "0"+mm;
+					  String yyyy = ((Integer)cal.get(Calendar.YEAR)).toString();
+					  String hh = ((Integer)cal.get(Calendar.HOUR_OF_DAY)).toString();
+					  if (hh.length()==1) hh = "0"+hh;
+					  String MM = ((Integer)cal.get(Calendar.MINUTE)).toString();
+					  if (MM.length()==1) MM = "0"+MM;
+					  String ss = ((Integer)cal.get(Calendar.SECOND)).toString();
+					  if (ss.length()==1) ss = "0"+ss;
+					  cd = yyyy+mm+dd+hh+MM+ss;
+				  } else {
+					  cd = rs.getString(i);
+				  }
+				  if (rs.wasNull()) {
+					  res+="<"+colname[i-1]+" null=\"Y\" />";
+				  } else {
+					  res+="<"+colname[i-1]+" null=\"N\">"+cd+"</"+colname[i-1]+">";
+				  }
+			  }
+			  res+="</row>";
+		  }
+		  res+="</data>";
+	  } catch(SQLException ex) {
+		  ex.printStackTrace();
+		  rollback();    
+	  }
+	  return res;
+  }
+  
+  public String processSQL(String sql)
+  {
+	  String res="";
+	  try {
+		  PreparedStatement stmt = m_conn.prepareStatement(sql);
+		  if (stmt.execute()) {
+			  ResultSet rs = stmt.getResultSet();
+			  res+="<result success=\"Y\" rowcount=\"0\">";
+			  res+=processResultSet(rs);
+			  res+="</result>";
+		  } else {
+			  res+="<result rowcount="+stmt.getUpdateCount()+" />";
+			  stmt.close();
+			  m_conn.commit();
+		  }
+	  } catch(SQLException ex) {
+		  ex.printStackTrace();
+		  rollback(); 
+		  res="<result success=\"N\"><error errnum=\""+ex.getErrorCode()+"\">"+ex.getMessage()+"</error></result>";
+	  }
+	  return res;
+  }
+  
+  Hashtable<String,PreparedStatement> m_PreparedStatements = null;
+  
+  public String closeSQL(String stmtid)
+  {
+	  System.out.println("Closing statement id "+stmtid);
+	  if (m_PreparedStatements!=null) {
+		  PreparedStatement stmt = m_PreparedStatements.get(stmtid);
+		  if (stmt != null) {
+			  try {
+				  
+				  stmt.close();
+			  } catch(SQLException ex) {
+			  }
+		  }
+		  m_PreparedStatements.remove(stmtid);
+	  }
+	  return "<result success=\"Y\" />";
+  }
+  
+  public String prepareSQL(String stmtid,String sql)
+  {
+	  if (m_PreparedStatements == null) {
+		  m_PreparedStatements = new Hashtable<String,PreparedStatement>(); 
+	  }
+	  String res="";
+	  try {
+		  PreparedStatement stmt = m_conn.prepareStatement(sql);
+		  ParameterMetaData pmd = stmt.getParameterMetaData();
+		  res="<result params=\"" + pmd.getParameterCount()+"\" success=\"Y\" />";
+		  m_PreparedStatements.put(stmtid,stmt);
+	  } catch(SQLException ex) {
+		  res="<result success=\"N\"><error errnum=\""+ex.getErrorCode()+"\">"+ex.getMessage()+"</error></result>";
+		  rollback();
+	  }
+	  return res;
+  }
+  
+  
+  String BindParameter(String stmtid,int columnNumber,String val)
+  {
+	  String res="<result success=\"Y\" />";
+	  PreparedStatement stmt = m_PreparedStatements.get(stmtid);
+	  if (stmt != null) {
+		  try {
+			  stmt.setString(columnNumber,val);
+		  } catch(SQLException ex) {
+			  res="<result success=\"N\"><error errnum=\""+ex.getErrorCode()+"\">"+ex.getMessage()+"</error></result>";
+			  rollback();
+		  }
+	  } else {
+		  res="<result success=\"N\"><error>Statement Not Found</error></result>";
+	  }
+	  return res;
+  }
+  
+  String BindParameter(String stmtid,int columnNumber,long val)
+  {
+	  String res="<result success=\"Y\" />";
+	  PreparedStatement stmt = m_PreparedStatements.get(stmtid);
+	  if (stmt != null) {
+		  try {
+			  stmt.setLong(columnNumber,val);
+		  } catch(SQLException ex) {
+			  res="<result success=\"N\"><error errnum=\""+ex.getErrorCode()+"\">"+ex.getMessage()+"</error></result>";
+			  rollback();
+		  }
+	  } else {
+		  res="<result success=\"N\"><error>Statement Not Found</error></result>";
+	  }
+	  return res;
+  }
+  
+  String ExecuteSQL(String stmtid)
+  {
+	  String res="";
+	  PreparedStatement stmt = m_PreparedStatements.get(stmtid);
+	  if (stmt != null) {
+		  try {
+			  if (stmt.execute()) {
+				  ResultSet rs = stmt.getResultSet();
+				  res+="<result success=\"Y\" rowcount=\"0\">";
+				  res+=processResultSet(rs);
+				  res+="</result>";
+			  } else {
+				  res+="<result success=\"Y\" rowcount=\""+stmt.getUpdateCount()+"\" />";
+			  }
+		  } catch(SQLException ex) {
+			  res="<result success=\"N\"><error errnum=\""+ex.getErrorCode()+"\">"+ex.getMessage()+"</error></result>";
+			  rollback();
+		  }
+	  } else {
+		  res="<result success=\"N\"><error>Statement Not Found</error></result>";
+	  }
+	  return res;
+  }
+  
+  String EndTransaction(String stmtid,boolean commit)
+  {
+	  String res="";
+	  PreparedStatement stmt = m_PreparedStatements.get(stmtid);
+	  if (stmt != null) {
+		  try {
+			  if (commit) {
+				  stmt.getConnection().commit();
+			  } else {
+				  stmt.getConnection().rollback();
+			  }
+			  res+="<result success=\"Y\" />";
+		  } catch(SQLException ex) {
+			  res="<result success=\"N\"><error errnum=\""+ex.getErrorCode()+"\">"+ex.getMessage()+"</error></result>";
+			  rollback();
+		  }
+	  } else {
+		  res="<result success=\"N\"><error>Statement Not Found</error></result>";
+	  }
+	  return res;
+  }
+  
+  String SetAutoCommit(boolean autoCommit)
+  {
+	  System.out.println("SetAutoCommit to "+autoCommit);
+	  String res="";
+	  try {
+		  m_conn.setAutoCommit(autoCommit);;
+		  res+="<result success=\"Y\" />";
+	  } catch(SQLException ex) {
+		  res="<result success=\"N\"><error errnum=\""+ex.getErrorCode()+"\">"+ex.getMessage()+"</error></result>";
+		  rollback();
+	  }
+	  System.out.println("res="+res);
+	  return res;
+  }
+  
+  public int insertIntoRunQueue(String clientid,String stdin,List<String> cmd, boolean waitFor)
+  {
+	  String c="";
+	  String sep="";
+	  int n=0;
+	  for (String s : cmd) {
+		  if (++n > 2) {
+			  c=c+sep+"\""+s+"\"";
+			  sep=",";
+		  }
+	  }
+   try
+   {
+    c = URLEncoder.encode(c, "UTF-8");
+    stdin = URLEncoder.encode(stdin, "UTF-8");
+   } catch (Exception e)
+   {
+    
+   }
+   
+	  System.out.println("insertIntoRunQueue clientid="+clientid+" c="+c);
+	  try {
+		  PreparedStatement stmt1 = m_conn.prepareStatement("SELECT nextval('dm.dm_queue_id_seq')");
+		  ResultSet rs1 = stmt1.executeQuery();
+		  rs1.next();
+		  
+		  String credentials = getPassword();
+		  
+		  if (credentials == null)
+		   credentials = "";
+		  
+		  if (stdin == null)
+		   stdin = "";
+		  
+		  if (c == null)
+		   c = "";
+		  
+		  int id = rs1.getInt(1);
+		  rs1.close();
+		  stmt1.close();
+		  PreparedStatement stmt = m_conn.prepareStatement("INSERT INTO dm.dm_queue(id,clientid,credentials,stdin,command,lastupdate,waitfor) VALUES(?,?,?,?,?,?,?)");
+		  stmt.setInt(1,id);
+		  stmt.setString(2,clientid);
+		  stmt.setString(3,getPassword());
+		  stmt.setString(4,stdin);
+		  stmt.setString(5,c);
+		  stmt.setLong(6, System.currentTimeMillis());
+		  if (waitFor)
+		   stmt.setInt(7, 1);
+		  else
+		   stmt.setInt(7, 0);
+		
+		  System.out.println("RUN-Q=" + stmt.toString());
+		  stmt.execute();	
+		  stmt.close();
+		  m_conn.commit();	// This will fire trigger to allow any engine listening on the EngineEvent for the clientid to receive the row.
+		  return id;
+	  } catch(SQLException ex) {
+		  System.out.println("**** SQL ERROR "+ex.getMessage());
+		  rollback();
+		  return 0;
+	  }
+  }
+  
+  public int waitForRunQueue(int queueid,String clientid,StringBuffer output)
+  {
+	  // Polls the dm_queue table, checking to see if an exit code has been written
+	  // for the specified queueid. Once it has, grabs the output and exit code
+	  // and returns them. 60 second timeout since the only thing that should
+	  // take longer than that are deployments and they are handled differently.
+	  int ec=-1;
+	  int iterations=60;
+	  int rownum = 0;
+	  String line = "";
+	  
+	  try {
+		  boolean found=false;
+    PreparedStatement stmt = m_conn.prepareStatement("SELECT exitcode,stdout, rownum FROM dm.dm_queue_waitfor WHERE id=? AND clientid=? and rownum > ? order by rownum asc");
+
+		  while (!found) {
+	    stmt.setInt(1,queueid);
+	    stmt.setString(2,clientid);
+	    stmt.setInt(3, rownum);
+			  ResultSet rs = stmt.executeQuery();
+			  while(rs.next()) 
+			  {
+      rownum = rs.getInt(3);
+      line = rs.getString(2);
+			   ec = rs.getInt(1);
+
+			   if (rs.wasNull()) 
+				   output.append(line);
+			   else
+			    found = true;
+			  }
+			  rs.close();
+			  
+			  if (!found && iterations > 0)
+			  {
+				  // exit code not yet set, wait 1 second and try again.
+				  Thread.sleep(1000);
+				  iterations--;
+			  }
+		  }
+    stmt.close();
+		  
+		  if (iterations==0) output.append("Timed out waiting for Client Engine to respond");
+		  return ec;
+	  } catch(SQLException ex) {
+		  System.err.println("SQLEXCEPTION in waitForRunQueue: "+ex.getMessage());
+		  rollback();
+		  return 0;
+	  } catch (InterruptedException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	  return 0;
   }
 
-  public void setDBConnection(Connection m_conn)
+ 
+  public int getTrilogyPort()
   {
-   this.m_conn = m_conn;
-  }
-
-  public Hashtable<Integer,int[]> getPollhash()
-  {
-   return m_pollhash;
-  }
-
-  public void setPollhash(Hashtable<Integer,int[]> m_pollhash)
-  {
-   this.m_pollhash = m_pollhash;
-  }
-
-  public int getUserID()
-  {
-   return m_userID;
-  }
-
-  public void setUserID(int m_userID)
-  {
-   this.m_userID = m_userID;
-  }
-
-  public String getCopyObjType()
-  {
-   return m_copyobjtype;
-  }
-
-  public void setCopyObjType(String m_copyobjtype)
-  {
-   this.m_copyobjtype = m_copyobjtype;
-  }
-
-  public int getCopyId()
-  {
-   return m_copyid;
-  }
-
-  public void setCopyId(int m_copyid)
-  {
-   this.m_copyid = m_copyid;
+	  int port = 2305;
+	  ServletContext context = m_httpSession.getServletContext();
+	  if (context != null) {
+		  String p = context.getInitParameter("TrilogyPort");
+		  if (p!=null) port = Integer.parseInt(p);
+	  }
+	  return port;
   }
   
   public String firstInstall()
   {
-	  System.out.println("firstInstall");
 	  String initialInstall="N";
 	  LoginException res = connectToDatabase(m_httpSession.getServletContext());
 	  if (res == null) {
@@ -24114,120 +28485,1507 @@ public void SyncAnsible(ServletContext context)
 	  } else {
 		  System.out.println("Failed to connect to DB");
 	  }
-	  System.out.println("Returning initialInstall="+initialInstall);
 	  return initialInstall;
   }
-  
+
+  public boolean getListenNotify(String clientid, Long since)
+  {
+    try {
+     PreparedStatement stmt1;
+     if (since != null)
+     {
+        stmt1 = m_conn.prepareStatement("SELECT count(*) from dm.dm_queue where clientid = ? and lastupdate > ?");
+        stmt1.setString(1, clientid);
+        stmt1.setLong(2, since);
+     }
+     else
+     {
+      stmt1 = m_conn.prepareStatement("SELECT count(*) from dm.dm_queue where clientid = ?");
+      stmt1.setString(1, clientid);
+     }
+     
+     ResultSet rs1 = stmt1.executeQuery();
+     rs1.next();
+        
+     int cnt = rs1.getInt(1);
+     rs1.close();
+     stmt1.close();
+     
+     if (cnt == 0)
+      return false;
+     else
+      return true;
+    }
+    catch (Exception e)
+    {
+     
+    } 
+    return false;
+  }
+
+  public String getListenNotifyEvents(String clientid)
+  {
+   JSONArray arr = new JSONArray();
+   try 
+   {
+    PreparedStatement stmt1 = m_conn.prepareStatement("SELECT id, clientid, credentials, stdin, command, lastupdate, waitfor FROM dm.dm_queue where clientid = ?");
+    stmt1.setString(1, clientid);
+    String delids = "(";
+    
+    ResultSet rs = stmt1.executeQuery();
+    while(rs.next()) 
+    {
+     JSONObject j = new JSONObject();
+     j.add("id", rs.getInt(1));
+     j.add("clientid", rs.getString(2));
+     j.add("credentails", rs.getString(3));
+     j.add("stdin", rs.getString(4));
+     j.add("command", rs.getString(5));
+     j.add("lastupdate",rs.getLong(6));
+     j.add("waitfor", rs.getInt(7));
+     arr.add(j);
+     
+     if (delids.equals("("))
+       delids += rs.getInt(1);
+     else
+       delids += "," + rs.getInt(1);
+    }
+    
+    rs.close();
+    stmt1.close();
+    
+    if (!delids.equals("("))
+    {
+     delids += ")";
+     PreparedStatement stmt2 = m_conn.prepareStatement("delete FROM dm.dm_queue where id in " + delids); 
+     stmt2.execute();
+     stmt2.close();
+     m_conn.commit();
+    }
+   }
+   catch (Exception e)
+   {
+    rollback();
+    System.out.println(e.getMessage());
+   } 
+   return(arr.getJSON());
+  }
+
+ public void addWaitForOutput(String id, String clientid, String output, String exitcode)
+ {
+  String lines[] = output.split("\\r?\\n");
+
+  if (lines != null)
+  {
+   for (int i = 0; i < lines.length; i++)
+   {
+    output = lines[i];
+    try
+    {
+     PreparedStatement stmt1 = m_conn.prepareStatement("SELECT nextval('dm.dm_queue_waitfor_id_seq')");
+     ResultSet rs1 = stmt1.executeQuery();
+     rs1.next();
+
+     int rownum = rs1.getInt(1);
+     rs1.close();
+     stmt1.close();
+
+     PreparedStatement stmt = m_conn.prepareStatement("INSERT INTO dm.dm_queue_waitfor(id,clientid,stdout,exitcode,rownum) VALUES(?,?,?,?,?)");
+     stmt.setInt(1, new Integer(id).intValue());
+     stmt.setString(2, clientid);
+     if (output == null)
+      stmt.setString(3, "");
+     else
+      stmt.setString(3, output);
+
+     if (exitcode == null)
+      stmt.setNull(4, Types.INTEGER);
+     else
+      stmt.setInt(4, new Integer(exitcode).intValue());
+     stmt.setInt(5, rownum);
+     stmt.execute();
+     stmt.close();
+     m_conn.commit();
+    }
+    catch (Exception e)
+    {
+     rollback();
+     System.out.println(e.getMessage());
+    }
+   }
+  }
+ }
+
+  public String getCryptKeys(String clientid)
+  {
+   String base64Original = "";
+   String base64passphrase = "";
+   
+   String dmasc = System.getenv("dmasc");
+   String dmodbc = System.getenv("dmodbc");
+   
+   try 
+   {
+     if (dmodbc == null)
+      base64Original = readFile(DMHome+"/dm.odbc");
+     else
+      base64Original = dmodbc;
+     
+     if (dmasc == null)
+       base64passphrase = readFile(DMHome+"/dm.asc");
+     else
+      base64passphrase = dmasc;
+   }
+   catch (FileNotFoundException e)
+   {
+    e.printStackTrace();
+   }
+   catch (IOException e)
+   {
+    e.printStackTrace();
+   }
+   
+   JSONObject ret = new JSONObject();
+   ret.add("dmodbc", base64Original);
+   ret.add("dmasc", base64passphrase);
+   
+   return ret.getJSON();
+  }
+
   public String getDomainList()
   {
+   if (m_domainlist == null || m_domainlist.isEmpty())
+     GetDomains(GetUserID());
    return m_domainlist;
   }
   
-	public void processField(DMSession so, SummaryField field, String value, SummaryChangeSet changes)
-	{
-		ObjectType type = field.type();
+  void processField(DMSession so, SummaryField field, String value, SummaryChangeSet changes)
+  {
+   ObjectType type = field.type();
 
-		if(type == null) {		
-			// Simple string
-			changes.add(field, value);
-			return;
-		}
-		
-		if((value == null) || (value.length() == 0)) {
-			// Null value
-			changes.add(field, null);
-			return;			
-		}
+   if(type == null) {  
+    // Simple string
+    changes.add(field, value);
+    return;
+   }
+   
+   if((value == null) || (value.length() == 0)) {
+    // Null value
+    changes.add(field, null);
+    return;   
+   }
 
-		switch(type) {
-		case COMPONENT_FILTER:	// Simple string "OFF", "ON", "ALL"
-			changes.add(field, value);
-			return;
-		default:
-			break;
-		}
-		
-		// Parse out the oid (from "u123") and lookup the object - we guarantee that we will pass an object that exists
-		String prefix = type.getTypeString();
-		if(value.startsWith(prefix)) {
-			String soid = value.substring(prefix.length());
-			try {
-				int oid = Integer.parseInt(soid);
-				Object obj = so.getObject(type, oid);
-				if(obj != null) {
-					changes.add(field, obj);
-				} else {
-					System.err.println("ERROR: Object " + type + " " + oid + " not found");											
-				}
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
-		} else {
-			System.err.println("ERROR: Incorrect object type for field " + field + " (expecting " + type + ")");
-		}
-	}
+   switch(type) {
+   case COMPONENT_FILTER: // Simple string "OFF", "ON", "ALL"
+    changes.add(field, value);
+    return;
+   default:
+    break;
+   }
+   
+   // Parse out the oid (from "u123") and lookup the object - we guarantee that we will pass an object that exists
+   String prefix = type.getTypeString();
+   if(value.startsWith(prefix)) {
+    String soid = value.substring(prefix.length());
+    try {
+     int oid = Integer.parseInt(soid);
+     Object obj = so.getObject(type, oid);
+     if(obj != null) {
+      changes.add(field, obj);
+     } else {
+      System.err.println("ERROR: Object " + type + " " + oid + " not found");           
+     }
+    } catch(Exception e) {
+     e.printStackTrace();
+    }
+   } else {
+    System.err.println("ERROR: Incorrect object type for field " + field + " (expecting " + type + ")");
+   }
+  }
 
-	public DMProperty processProperty(String prop, String pval)
-	{
-		//if(pval.length() < 3) {
-		//	throw new RuntimeException("Invalid property value: too short");
-		//}
-		//char encr = pval.charAt(0);
-		//char over = pval.charAt(1);
-		//char apnd = pval.charAt(2);
-		//String value = pval.substring(3);
-		//return new DMProperty(prop, value, (encr == 'Y'), (over == 'Y'), (apnd == 'Y'));
-		return new DMProperty(prop, pval, false, false, false);
-	}
+  DMProperty processProperty(String prop, String pval)
+  {
+   //if(pval.length() < 3) {
+   // throw new RuntimeException("Invalid property value: too short");
+   //}
+   //char encr = pval.charAt(0);
+   //char over = pval.charAt(1);
+   //char apnd = pval.charAt(2);
+   //String value = pval.substring(3);
+   //return new DMProperty(prop, value, (encr == 'Y'), (over == 'Y'), (apnd == 'Y'));
+   return new DMProperty(prop, pval, false, false, false);
+  }
+ 
+  @Override
+  public void close()
+  {
+   if (m_conn != null)
+   {
+    try
+    {
+     m_conn.close();
+    }
+    catch (Exception e)
+    {
+     e.printStackTrace();
+    }
+    m_conn = null;
+   }
+  }
 
-	  public void checkConnection(ServletContext context)
-	  {
-	  }
-	  
-	  @Override
-	  public void close()
-	  {
-	   if (m_conn != null)
-	   {
-	    try
-	    {
-	     m_conn.close();
-	    }
-	    catch (Exception e)
-	    {
-	     e.printStackTrace();
-	    }
-	    m_conn = null;
-	   }
-	  }
+  public LoginException LoginOAuth(String UserName, String Provider, String AccessToken)
+  	{
+  		LoginException res = new LoginException(LoginExceptionType.LOGIN_OKAY,"");
+  		
+  		System.out.println("Login UserName=["+UserName+"] m_username=["+m_username+"]");
+  		try
+  		{
+  			/*
+  			res = connectToDatabase(m_httpSession.getServletContext());
+  			if (res != null) throw new LoginException(res.getExceptionType(),res.getMessage());
+  			if (m_username != null && UserName.equals(m_username)) {
+  				System.out.println("Already logged in, returning success");
+  				return new LoginException(LoginExceptionType.LOGIN_OKAY,"");
+  			}
+  			PreparedStatement st = m_conn.prepareStatement("SELECT id,passhash,locked,forcechange,datefmt,timefmt,datasourceid,lastlogin FROM dm.dm_user where name = ? and status='N'");
+  			st.setString(1,UserName);
+  			*/
+     
+  //			res = connectToDatabase(m_httpSession.getServletContext());
+  //			if (res != null) throw new LoginException(res.getExceptionType(),res.getMessage());
+  //			
+  			UserName = UserName.replace('\\','.');	// in case user is specifying domain with domain\\user
+  			m_domainlist = "";
+  			User user = getUserByName(UserName);	// will throw runtime error if user does not exist or is not unique
+  		 GetDomains(user.getId());
+     
+  		 if (user.getDateFmt() == null)
+  		  m_datefmt = m_defaultdatefmt;
+  		 else
+  		  m_datefmt = user.getDateFmt();
+  		  
+     if (user.getTimeFmt() == null)
+      m_timefmt = m_defaulttimefmt;
+     else
+      m_timefmt = user.getTimeFmt();
+     
+     m_username = UserName;
+     m_userID   = user.getId();
+     m_password = "";
+     
+  // 		 if (m_username != null && UserName.equals(m_username)) {
+  //    System.out.println("Already logged in, returning success");
+  //    return new LoginException(LoginExceptionType.LOGIN_OKAY,"");
+  //   }
+     
+  			PreparedStatement st = m_conn.prepareStatement("SELECT id,passhash,locked,forcechange,datefmt,timefmt,datasourceid,lastlogin FROM dm.dm_user where id = ?");
+  			st.setInt(1,user.getId());
+  
+  			ResultSet rs = st.executeQuery();
+  			if (!rs.next()) throw new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD,"");	// No row retrieved
+  			int datasourceid = getInteger(rs,7,0);
+  			System.out.println("datasourceid="+datasourceid);
+  			//
+  			// User exists
+  			// -----------
+  			//
+  			boolean locked = getBoolean(rs,3,false);
+  			if (locked) throw new LoginException(LoginExceptionType.LOGIN_USER_LOCKED,"");
+  			boolean forcechange = getBoolean(rs,4,false);
+  			m_datefmt = rs.getString(5);
+  			if (rs.wasNull()) m_datefmt = m_defaultdatefmt;
+  			m_timefmt = rs.getString(6);
+  			if (rs.wasNull()) m_timefmt = m_defaulttimefmt;
+  			m_userID = rs.getInt(1);
+  			rs.getTimestamp(8);
+  			m_newUser = (rs.wasNull());
+  			m_OverrideAccessControl = false;
+  			m_UserPermissions = new UserPermissions(this,0);
 
-	  private String streamToString(InputStream inputStream) {
-		   Scanner s = new Scanner(inputStream, "UTF-8");
-		   String text = s.useDelimiter("\\Z").next();
-		   s.close();
-		   return text;
-		 }
+  			GetDomains(m_userID);
+  			
+  			String domlist = new Integer(m_userDomain).toString();
+  			
+  			if (!m_parentdomains.isEmpty())
+  			 domlist += "," + m_parentdomains;
+  
+  			m_license_type = "PRO";
+  			m_license_cnt  = 9999999;
+  			
+     PreparedStatement sta = m_conn.prepareStatement("SELECT distinct license_type, license_cnt FROM dm.dm_domain where id in (" + domlist + ") and license_type is not null");
+  
+     ResultSet rsa = sta.executeQuery();
+     while (rsa.next()) { 
+      m_license_type = rsa.getString(1);
+      m_license_cnt = rsa.getInt(2);
+      if (rsa.wasNull()) 
+       m_license_cnt = 9999999;
+      break;  // take first row
+     }
+     rsa.close();
+     sta.close();
+  			
+  			PreparedStatement st2 = m_conn.prepareStatement("SELECT g.acloverride,g.tabendpoints,g.tabapplications,g.tabactions,g.tabproviders,g.tabusers,g.id FROM dm.dm_usergroup g,dm.dm_usersingroup x WHERE x.userid=? AND g.id=x.groupid");
+  			st2.setInt(1, m_userID);
+  			ResultSet rs2 = st2.executeQuery();
+  			while (rs2.next()) {
+  				// Loop through each group to which this user belongs
+  				if (getBoolean(rs2,1,false)) { m_OverrideAccessControl = true; System.out.println("0) User is SUPERUSER"); }
+  				if (getBoolean(rs2,2,false)) m_EndPointsTab = true;	
+  				if (getBoolean(rs2,3,false)) m_ApplicationsTab = true;
+  				if (getBoolean(rs2,4,false)) m_ActionsTab = true;
+  				if (getBoolean(rs2,5,false)) m_ProvidersTab = true;	
+  				if (getBoolean(rs2,6,false)) m_UsersTab = true;
+  				if (m_OverrideAccessControl) {
+  					m_UserPermissions.setCreateUsers(true);
+  					m_UserPermissions.setCreateGroups(true);
+  					m_UserPermissions.setCreateDomains(true);
+  					m_UserPermissions.setCreateEnvs(true);
+  					m_UserPermissions.setCreateServers(true);
+  					m_UserPermissions.setCreateRepos(true);
+  					m_UserPermissions.setCreateComps(true);
+  					m_UserPermissions.setCreateCreds(true);
+  					m_UserPermissions.setCreateApps(true);
+  					m_UserPermissions.setCreateAppvers(true);
+  					m_UserPermissions.setCreateActions(true);
+  					m_UserPermissions.setCreateProcs(true);
+  					m_UserPermissions.setCreateDatasrc(true);
+  					m_UserPermissions.setCreateNotifiers(true);
+  					m_UserPermissions.setCreateEngines(true);
+  					m_UserPermissions.setCreateServerCompType(true);
+  				} else {
+  					setUserPermissions(rs2.getInt(7),m_UserPermissions);
+  				}
+  			}
+  			rs2.close();
+  			st2.close();
+  			if (forcechange) {
+  				res = new LoginException(LoginExceptionType.LOGIN_CHANGE_PASSWORD,"");
+  			} else {
+  				// Login okay - update last login
+  				String ullsql = 
+  				(dbdriver.toLowerCase().contains("oracle") || dbdriver.toLowerCase().contains("mysql"))?
+  				"UPDATE dm.dm_user SET lastlogin = sysdate WHERE id=?":
+  				"UPDATE dm.dm_user SET lastlogin = localtimestamp WHERE id=?";	
+  				System.out.println("ullsql="+ullsql);
+  				PreparedStatement ull = m_conn.prepareStatement(ullsql);
+  				ull.setInt(1, m_userID);
+  				ull.execute();
+  				ull.close();
+  				res = new LoginException(LoginExceptionType.LOGIN_OKAY,"");
+  			}
+  			rs.close();
+  			st.close();
+  			m_conn.commit();
+  			System.out.println("#############  User "+m_userID+" logged in, domains="+m_domainlist + " ##################");
+  		}
+  		catch (SQLException e)
+  		{
+  			res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,"SQL Exception " + e.getMessage());
+  			rollback();
+  		}
+  		catch (LoginException e)
+  		{
+  			res = e;
+  		}
+  		catch(RuntimeException ex) {
+  			// If getUserByName throws an exception (including not-unique)
+  			res = new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD,ex.getMessage());
+  		}
+  		return res;
+  	}
+  
+ private String streamToString(InputStream inputStream) {
+   Scanner s = new Scanner(inputStream, "UTF-8");
+   String text = s.useDelimiter("\\Z").next();
+   s.close();
+   return text;
+ }
 
-	  public String jsonGetRequest(String access_token, String provider) {
-		   try {
-		    String urlQueryString = "https://oauth.io/auth/" + provider + "/me";
-		    
-		     URL url = new URL(urlQueryString);
-		     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		     connection.setDoOutput(true);
-		     connection.setInstanceFollowRedirects(false);
-		     connection.setRequestMethod("GET");
-		     connection.setRequestProperty("oauthio", "k=gBLM5pHlNyuYUYqV6IWBmWe3wcU&access_token=" + access_token);
-		     connection.setRequestProperty("Accept", "application/json");
-		     connection.setRequestProperty("Content-Type", "application/json");
-		     connection.setRequestProperty("charset", "utf-8");
-		     connection.connect();
-		     InputStream inStream = connection.getInputStream();
-		     return streamToString(inStream); 
-		     
-		   } catch (IOException ex) {
-		     ex.printStackTrace();
-		   }
-		   return "";
-		 }
+ public String jsonGetRequest(String access_token, String provider) {
+   try {
+    String urlQueryString = "https://oauth.io/auth/" + provider + "/me";
+    
+     URL url = new URL(urlQueryString);
+     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+     connection.setDoOutput(true);
+     connection.setInstanceFollowRedirects(false);
+     connection.setRequestMethod("GET");
+     connection.setRequestProperty("oauthio", "k=gBLM5pHlNyuYUYqV6IWBmWe3wcU&access_token=" + access_token);
+     connection.setRequestProperty("Accept", "application/json");
+     connection.setRequestProperty("Content-Type", "application/json");
+     connection.setRequestProperty("charset", "utf-8");
+     connection.connect();
+     InputStream inStream = connection.getInputStream();
+     return streamToString(inStream); 
+     
+   } catch (IOException ex) {
+     ex.printStackTrace();
+   }
+   return "";
+ }
+
+ public String getTableFilter(String filtername)
+ {
+  String filtervalue = "";
+  try
+  {
+   Statement st = m_conn.createStatement();
+   ResultSet rs = st.executeQuery("SELECT " + filtername + " FROM dm.dm_user where id="+GetUserID());
+   while (rs.next())
+   {
+     filtervalue = rs.getString(1);
+   }
+   
+   if (filtervalue == null)
+    filtervalue = "";
+   
+   rs.close();
+   st.close();
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+   rollback();
+  }
+  return filtervalue;
+ }
+
+ public boolean saveTableFilter(String filtername, String filtervalue)
+ {
+  String sql = "UPDATE dm.dm_user SET " + filtername + "=?  WHERE id=?";
+  
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setString(1,filtervalue);
+   stmt.setInt(2,GetUserID());
+   stmt.execute();
+   stmt.close();
+   m_conn.commit();
+   return true;
+  }
+  catch(SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+  return false;
+ }
+ 
+ public String processField(DMObject dmobj, SummaryField field, String value, SummaryChangeSet changes)
+ {
+  ObjectType ot = dmobj.getObjectType();
+  ObjectType type = field.type();
+  System.out.println("ot="+ot+" field.name()=["+field.name()+"] value=["+value+"]");
+  if (ot == ObjectType.ACTION || ot == ObjectType.FUNCTION || ot == ObjectType.PROCEDURE) {
+   Action act = (Action)dmobj;
+   if (act.getKind() != ActionKind.GRAPHICAL) ot = ObjectType.PROCEDURE;
+   if (act.isFunction()) ot = ObjectType.FUNCTION;
+   if (type == null && field.name().equalsIgnoreCase("name")) {
+    // Actions, Functions and Procedures should not allow spaces in names
+    if (value.indexOf(" ") >= 0) {
+     return ot.toString().substring(0,1)+ot.toString().substring(1).toLowerCase() +
+       " name cannot include spaces";
+    }
+    String testname = value.replaceAll("[0-9A-Za-z_]","");
+    if (testname.length()>0) {
+     return ot.toString().substring(0,1)+ot.toString().substring(1).toLowerCase() +
+       " name can only include alpha-numeric characters or underscores";
+    }
+    if (value.charAt(0)>='0' && value.charAt(0)<='9') {
+     return ot.toString().substring(0,1)+ot.toString().substring(1).toLowerCase() +
+       " name cannot start with a digit";
+    }
+   }
+  }
+  
+  System.out.println("type="+type+" field="+field.name());
+  
+  if(type == ObjectType.ENCRYPTED) {
+   // Encrypted value - use engine to encrypt
+   Domain dom = dmobj.getDomain();
+   Engine eng = (dom != null) ? dom.findNearestEngine() : null;
+   if(eng == null) {
+    System.err.println("ERROR: Could not find engine to encrypt data for object "
+     + dmobj.getObjectType() + " " + dmobj.getId());
+   }
+   try {
+    String encValue = eng.encryptValue(value, GetUserName());
+    changes.add(field, encValue);
+   } catch(RuntimeException e) {
+    e.printStackTrace();
+   }
+   return null;
+  }
+
+  if((type == null) || (type == ObjectType.PASS_HASH)) {
+   // Simple string
+   changes.add(field, value);
+   return null;
+  }
+  
+  if((value == null) || (value.length() == 0)) {
+   // Null value
+   changes.add(field, null);
+   return null;   
+  }
+
+  // Owner can be either a user or a group so resolve into actual type
+  switch(type) {
+  case OWNER:
+   if(value.startsWith(ObjectType.USER.getTypeString())) {
+    type = ObjectType.USER;
+   } else if(value.startsWith(ObjectType.USERGROUP.getTypeString())) {
+    type = ObjectType.USERGROUP;
+   } else {
+    return "ERROR: Invalid object type for field " + field;
+   }
+   break;
+  case TRANSFER:   // Simple protocol string for the moment
+  case FILTER_ITEMS:  // Simple string "Components" or "Items"
+  case COMPONENT_FILTER: // Simple string "OFF", "ON", "ALL"
+  case SERVERCOMPTYPE: 
+   changes.add(field, value);
+   return null;
+
+  case BOOLEAN:
+   changes.add(field, value.equalsIgnoreCase("true"));
+   return null;
+  default:
+   break;
+  }
+  
+  // Parse out the oid (from "u123") and lookup the object - we guarantee that we will pass an object that exists
+  String prefix = type.getTypeString();
+  if (prefix == "ar") prefix = "re"; // (a)ction (r)epository maps to (re)pository
+  System.out.println("prefix="+prefix);
+  System.out.println("value="+value);
+  if(value.startsWith(prefix) || (prefix.equalsIgnoreCase("ac") && value.startsWith("fn"))) {
+   String soid = value.substring(prefix.length());
+   try {
+    int oid = Integer.parseInt(soid);
+    Object obj = null;
+    // These are just the objects that don't derive from DMObject
+    switch(type) {
+    case SERVER_TYPE: obj = getServerType(oid); break;
+    case PROVIDERDEF: obj = getProviderDefinition(oid); break;
+    case CREDENTIAL_KIND: obj = CredentialKind.fromInt(oid); break;
+    case ACTION_KIND: obj = ActionKind.fromInt(oid); break;
+    case COMP_KIND: obj = ComponentItemKind.fromInt(oid); break;
+    case ACTION_REPO: obj = getObject(ObjectType.REPOSITORY, oid); break;
+    case ACTION_CATEGORY: obj = getCategory(oid); break;
+    default:          obj = getObject(type, oid); break;
+    }
+    if(obj != null) {
+     changes.add(field, obj);
+    } else {
+     return "ERROR: Object " + type + " " + oid + " not found";
+    }
+   } catch(Exception e) {
+    e.printStackTrace();
+   }
+  } else {
+   return "ERROR: Incorrect object type for field " + field + " (expecting " + type + ")";
+  }
+  return null;
+ }
+
+ public void addCategory(String objname)
+ {
+  boolean exists = false;
+  
+  try
+  {
+   PreparedStatement ck = m_conn.prepareStatement("SELECT count(*) FROM dm.dm_category WHERE name=?");
+   ck.setString(1, objname);
+   ResultSet rs = ck.executeQuery();
+   if (rs.next())
+   {
+    if (rs.getInt(1) > 0)
+     exists = true;
+   }
+   rs.close();
+   ck.close();
+   
+   if (!exists)
+   {
+    Statement st4 = m_conn.createStatement();
+    ResultSet rs4 = st4.executeQuery("SELECT coalesce(max(id),0) FROM dm.dm_category");
+    int id = 0;
+    if(rs4.next()) {
+     id = rs4.getInt(1) + 1;
+    } 
+    rs4.close();
+    st4.close();
+    
+    String sql = "INSERT INTO dm.dm_category(id, name) VALUES (?, ?)";
+    PreparedStatement stmt = m_conn.prepareStatement(sql);
+    stmt.setInt(1, id);
+    stmt.setString(2, objname);
+    stmt.execute();
+    stmt.close();
+    m_conn.commit();
+   }
+  }
+  catch (SQLException e)
+  {
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  }
+ }
+
+ public int getLatestDeployment(String appid)
+ {
+  String sql = "select max(deploymentid) from dm.dm_deployment where appid =" + appid;
+  int deployid = 0;
+  PreparedStatement ck;
+  try
+  {
+   ck = m_conn.prepareStatement(sql);
+
+   ResultSet rs = ck.executeQuery();
+   if (rs.next())
+    deployid = rs.getInt(1);
+   rs.close();
+   ck.close();
+  }
+  catch (SQLException e)
+  {
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  }
+  return deployid;
+ }
+
+ public JSONArray getApplicationDeployments(ObjectTypeAndId otid)
+ {
+  String sql = "select deploymentid, exitcode, finished, envid from dm.dm_deployment where finished is not null and appid =" + otid.getId() + " order by 1 desc";
+  JSONArray ret = new JSONArray();
+  
+  PreparedStatement ck;
+  try
+  {
+   ck = m_conn.prepareStatement(sql);
+
+   ResultSet rs = ck.executeQuery();
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject();
+    obj.add("id", rs.getInt(1));
+    
+    if (rs.getInt(2) == 0)
+     obj.add("rc", "Success");
+    else
+     obj.add("rc", "Failed");
+    
+    int ts = rs.getInt(3);
+    obj.add("finished", formatDateToUserLocale(ts));
+    
+    int envid = rs.getInt(4);
+    Environment env = this.getEnvironment(envid, false);
+    obj.add("env", env.getDomain().getFullDomain() + "." + env.getName());
+    ret.add(obj);
+   }
+   rs.close();
+   ck.close();
+  }
+  catch (SQLException e)
+  {
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  }
+  return ret;
+ }
+
+ public Component getBaseCompVersion(Component comp)
+ {
+  while (comp.getPredecessorId() > 0)
+   comp = this.getComponent(comp.getPredecessorId(), false);
+  
+  return comp;
+ }   
+ 
+ public JSONObject logDeployment(Application app, Component comp, Environment env, int exitcode, String log)
+ {
+  JSONObject ret = new JSONObject();
+
+  String sql = "select max(deploymentid) from dm.dm_deployment";
+  int deployid = 0;
+  PreparedStatement ck;
+  try
+  {
+   ck = m_conn.prepareStatement(sql);
+
+   ResultSet rs = ck.executeQuery();
+   if (rs.next())
+    deployid = rs.getInt(1);
+   rs.close();
+   ck.close();
+  }
+  catch (SQLException e)
+  {
+  }
+
+  deployid++;
+  
+  ret.add("deployid", deployid);
+  
+  long t = timeNow();
+  
+  if (comp != null)
+  { 
+   Component newcompbase = this.getBaseCompVersion(comp);
+   
+   // find application on env that has same base component 
+   ArrayList<Application> deployedapps = getLastDeployedAppInEnv(env);
+   
+   int found = -1;
+   int replace_compid = -1;
+   
+   for (int i=0;i< deployedapps.size();i++)
+   {
+    int appid = deployedapps.get(i).getId();
+    List<Component> comps = this.getComponents(ObjectType.APPLICATION, appid, false);
+    
+    for (int k=0; k < comps.size(); k++)
+    {
+     Component appcompbase = this.getBaseCompVersion(comps.get(k));
+     if (newcompbase.getId() == appcompbase.getId())
+     {
+      replace_compid = comps.get(k).getId();
+      found = i;
+      break;
+     }
+    }
+    
+    if (found >= 0)
+     break;
+   }
+   
+   if (found >= 0)
+   {
+    Application parent_app = deployedapps.get(found);
+
+    int verid = this.applicationNewVersion(parent_app.getId(), 100, 100, false);
+    app = this.getApplication(verid, false);
+    
+    String name = parent_app.getName();
+    
+    ArrayList<String> parts = new ArrayList<String>(Arrays.asList(name.split(";")));
+    
+    if (parts.size() == 1)
+     parts.add("hotfix-1");
+    else
+    {
+     String ver = parts.get(parts.size() - 1); 
+     if (ver.startsWith("hotfix-"))
+     {
+      ver = ver.substring("hotfix-".length());
+      int vernum = new Integer(ver).intValue();
+      vernum++;
+      ver = "hotfix-" + vernum;
+      parts.set(parts.size()-1, ver);
+     } 
+     else
+     {
+      parts.add("hotfix-1");
+     }
+    } 
+    
+    name = String.join(";", parts);
+    RenameObject("appversion",app.getId(),name);
+    
+    this.applicationReplaceComponent(app.getId(), replace_compid, comp.getId(), false);
+   }
+  }
+  
+  try
+  {
+   sql = "INSERT INTO dm.dm_deployment(deploymentid, userid, startts, finishts, exitcode, exitstatus, appid, envid, started, finished, sessionid, eventid) VALUES (?, ?, now(), now(), ?, '', ?, ?, ?, ?, null, null)";
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, deployid);
+   stmt.setInt(2, this.GetUserID());
+   stmt.setInt(3, exitcode);
+   stmt.setInt(4, app.getId());
+   stmt.setInt(5, env.getId());
+   stmt.setLong(6, t);
+   stmt.setLong(7, t);
+   stmt.execute();
+   stmt.close();
+   
+   sql = "INSERT INTO dm.dm_deploymentlog(deploymentid, runtime, stream, line, thread, lineno) VALUES (?, now(), 1, ?, 1, ?)";
+   
+   ArrayList<String> lines = new ArrayList<String>(Arrays.asList(log.split("%0A")));
+  
+   for (int i=0;i<lines.size();i++)
+   {
+    stmt = m_conn.prepareStatement(sql);
+    stmt.setInt(1, deployid);
+    stmt.setString(2, lines.get(i));
+    stmt.setInt(3, i+1);
+    stmt.execute();
+    stmt.close();   
+   }
+   m_conn.commit();
+   
+   addToAppsAllowedInEnv(env, app);
+   setAppInEnv(env, app, "Deployment #" + deployid, deployid);
+   setAppDeploymentInEnv(env, app, deployid);
+   
+   boolean isRelease = false;
+
+   if (app.getIsRelease().compareToIgnoreCase("Y") == 0)
+    isRelease = true;
+   
+   List<Component> comps = getComponents(ObjectType.APPLICATION, app.getId(),isRelease);
+   List<Server> srvs = getServersInEnvironment(env.getId());
+   
+   for (int k=0;k<comps.size();k++)
+   {
+    Component c = comps.get(k);
+    for (int x=0;x<srvs.size();x++)
+    {
+     addComponentToServer(srvs.get(x).getId(), c.getId());
+     addComponentVersionToServer(srvs.get(x).getId(), c.getId(), deployid, c.getLastBuildNumber());  
+    }
+    
+    sql = "INSERT INTO dm.dm_deploymentstep (deploymentid, stepid, type, startts, finishts, started, finished, compid) VALUES (?, ?, 'deploy', now(), now(), ?, ?, ?)";
+    stmt = m_conn.prepareStatement(sql);
+    stmt.setInt(1, deployid);
+    stmt.setInt(2, k+1);
+    stmt.setLong(3, t);
+    stmt.setLong(4, t);
+    stmt.setLong(5, c.getId());
+    stmt.execute();
+    stmt.close();   
+   }
+   
+   m_conn.commit();
+  }
+  catch (SQLException e)
+  {
+   System.out.println(e.getMessage());
+  }
+  return ret;
+ }
+
+ public void setAppDeploymentInEnv(Environment env, Application app, int deployid)
+ {
+  String usql = "UPDATE dm.dm_appsinenv set deploymentid = ? WHERE envid = ? AND appid = ?";
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(usql);
+   stmt.setInt(1, deployid);
+   stmt.setInt(2, env.getId());
+   stmt.setInt(3, app.getId());
+   stmt.execute();
+   m_conn.commit();
+   stmt.close();
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+   rollback();
+  }
+ }
+
+ public void HelmUploadClean(int appid, int deployid)
+ {
+  String del_sql = "delete from dm.dm_helm where appid = ? and deployid = ?";
+  PreparedStatement del_stmt;
+  try
+  {
+   del_stmt = m_conn.prepareStatement(del_sql);
+   del_stmt.setInt(1, appid);
+   del_stmt.setInt(2, deployid);
+   del_stmt.execute();
+   del_stmt.close();
+   m_conn.commit();
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+  }
+ }
+ 
+
+ public void HelmUpload(int appid, int appparentid, int compid, int envid, int deployid, String chartname, String chartversion, String helmrepo, String helmrepourl, String chartdigest, String filename, String data)
+ {
+  try
+  {
+   String sql = "INSERT INTO dm.dm_helm( appid, deployid, filename, lineno, line, compid, envid, chartname, chartversion, helmrepo, helmrepourl, chartdigest, appparentid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+
+   int lineno = 1;
+   for (int i = 0; i < data.length(); i += 4096) {
+    String line = data.substring(i, Math.min(i + 4096, data.length()));
+    stmt.setInt(1, appid);
+    stmt.setInt(2, deployid);
+    stmt.setString(3, filename);
+    stmt.setInt(4, lineno);
+    stmt.setString(5, line);
+    stmt.setInt(6, compid);
+    stmt.setInt(7, envid);
+    stmt.setString(8, chartname);
+    stmt.setString(9, chartversion);
+    stmt.setString(10, helmrepo);
+    stmt.setString(11, helmrepourl);
+    stmt.setString(12, chartdigest);
+    if (appparentid > 0)
+     stmt.setInt(13, appparentid);
+    else
+     stmt.setInt(13, appid);
+    
+    stmt.execute();
+    lineno++;
+   }
+   stmt.close();   
+   m_conn.commit();
+  }
+  catch (SQLException e)
+  {
+   System.out.println(e.getMessage());
+  }
+ }
+ 
+
+ public void HelmImage(int appid, int compid, int envid, int deployid, String chartdigest, String registry, String organization, String imagename, String imagetag, String imagedigest)
+ {
+  try
+  {
+   String sql = "INSERT INTO dm.dm_helmimages( appid, deployid, compid, envid, chartdigest, registry, organization, imagename, imagetag, imagedigest) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+
+   stmt.setInt(1, appid);
+   stmt.setInt(2, deployid);
+   stmt.setInt(3, compid);
+   stmt.setInt(4, envid);
+   stmt.setString(5, chartdigest);
+   stmt.setString(6, registry);
+   stmt.setString(7, organization);
+   stmt.setString(8, imagename);
+   stmt.setString(9, imagetag);
+   stmt.setString(10, imagedigest);
+   stmt.execute();
+   stmt.close();   
+   m_conn.commit();
+  }
+  catch (SQLException e)
+  {
+   System.out.println(e.getMessage());
+  }
+ }
+ 
+ public JSONObject getHelmChart(int deployid)
+ {
+  HashMap<Integer, Integer> chartlist = new HashMap<Integer, Integer>();
+  
+  Environment env = null;
+  Application app = null;
+  
+  int appid = this.getApplicationForDeployment(deployid);
+  int envid = this.getEnvironmentForDeployment(deployid);
+  
+  app = this.getApplication(appid, true);
+  env = this.getEnvironment(envid, true);
+  
+  if (app == null || env == null)
+   return new JSONObject();
+   
+  JSONObject obj = new JSONObject();
+
+  obj.add("application", app.getDomain().getFullDomain() + "." + app.getName());
+  obj.add("environment", env.getDomain().getFullDomain() + "." + env.getName());
+  obj.add("deployid", deployid);
+  
+  JSONArray charts = new JSONArray();
+  obj.add("charts", charts);
+  
+  JSONArray files = new JSONArray();
+  obj.add("files", files);
+
+  try
+  {
+   int parentid = app.getId();
+   
+   if (app.getParentId() > 0)
+    parentid = app.getParentId();
+   
+   List<Component> complist = getComponents(ObjectType.APPLICATION, app.getId(), false);
+   
+   String comps = "";
+   
+   for (int k=0;k<complist.size();k++)
+   {
+    if (k > 0)
+     comps += ",";
+    
+    comps += complist.get(k).getId();
+   }
+  
+   String sql = "select compid, chartname, chartversion, helmrepo, helmrepourl, chartdigest, filename, line, deployid from dm.dm_helm  " 
+              + " where (compid, deployid) in "
+              + " (select compid, max(deployid) from dm.dm_helm where envid = ? and deployid <= ? and compid in (" + comps + ") group by compid) "
+              + " order by deployid desc, filename asc, lineno asc";
+   
+   PreparedStatement st = m_conn.prepareStatement(sql);
+   st.setInt(1, envid);
+   st.setInt(2, deployid);
+
+   ArrayList<String> lines = new ArrayList<String>();
+   int compid = 0;
+   String chartname = "";
+   String chartversion = "";
+   String helmrepo = "";
+   String helmrepourl = "";
+   String chartdigest = "";
+   String filename = "";
+   String save_filename = "";
+   int comp_deployid = 0;
+   
+   int cnt = 0;
+
+   ResultSet rs = st.executeQuery();
+   do
+   {
+    if (cnt == 0)
+    {
+     if (rs.next())
+     {
+      compid = rs.getInt(1);
+      chartname = rs.getString(2);
+      chartversion = rs.getString(3);
+      helmrepo = rs.getString(4);
+      helmrepourl = rs.getString(5);
+      chartdigest = rs.getString(6);
+      filename = rs.getString(7);
+      lines.add(rs.getString(8));
+      comp_deployid = rs.getInt(9);
+     }
+     save_filename = filename;
+     cnt++;
+    }
+    else
+    {
+     compid = rs.getInt(1);
+     chartname = rs.getString(2);
+     chartversion = rs.getString(3);
+     helmrepo = rs.getString(4);
+     helmrepourl = rs.getString(5);
+     chartdigest = rs.getString(6);
+     filename = rs.getString(7);
+     lines.add(rs.getString(8));
+     comp_deployid = rs.getInt(9);
+    }
+
+    if (!filename.equals(save_filename))
+    {
+     String line = lines.get(lines.size()-1);
+     lines.remove(lines.size()-1);
+     String data = String.join("", lines);
+
+     Component comp = this.getComponent(compid, false);
+     Integer key = new Integer(compid);
+     
+     if (comp.getParentId() > 0)
+      key = new Integer(comp.getParentId());
+     
+     if (!chartlist.containsKey(key))
+     {
+      JSONObject chart = new JSONObject();   
+      chart.add("component", comp.getDomain().getFullDomain() + "." + comp.getName());;
+      chart.add("deployid", comp_deployid);
+      chart.add("chartname", chartname);
+      chart.add("chartversion", chartversion);
+      chart.add("helmrepo", helmrepo); 
+      chart.add("chartdigest", chartdigest);
+      JSONArray images = getHelmImages(appid, compid, comp_deployid, chartdigest);
+      chart.add("images", images);
+      charts.add(chart);
+      chartlist.put(key, null);
+     }
+     
+     JSONObject f = new JSONObject();
+     f.add("filename", save_filename);
+     f.add("data", data);
+     files.add(f);
+     save_filename = filename;
+     lines = new ArrayList<String>();
+     lines.add(line);
+    }
+   }
+   while (rs.next());
+
+   if (!filename.isEmpty())
+   {
+    String data = String.join("", lines);
+    
+    Component comp = this.getComponent(compid, false);
+    Integer key = new Integer(compid);
+    
+    if (comp.getParentId() > 0)
+     key = new Integer(comp.getParentId());
+    
+    if (!chartlist.containsKey(key))
+    {
+     JSONObject chart = new JSONObject();   
+     chart.add("component", comp.getDomain().getFullDomain() + "." + comp.getName());
+     chart.add("deployid", comp_deployid);
+     chart.add("chart_name", chartname);
+     chart.add("chart_version", chartversion);
+     chart.add("chart_repo", helmrepo); 
+     chart.add("chart_digest", chartdigest);
+     JSONArray images = getHelmImages(appid, compid, comp_deployid, chartdigest);
+     chart.add("images", images);
+     charts.add(chart);
+     chartlist.put(key, null);
+    }
+    
+    JSONObject f = new JSONObject();
+    f.add("filename", filename);
+    f.add("data", data);
+    files.add(f);
+   }
+
+   rs.close();
+   st.close();   
+  }
+  catch (SQLException e)
+  {
+   System.out.println(e.getMessage());
+  }
+
+  return obj;
+ }
+
+ 
+ public JSONArray getHelmImages(int appid, int compid, int deployid, String chartdigest)
+ {
+ JSONArray images = new JSONArray();
+ try
+ {
+  
+  String sql = "select registry, organization, imagename, imagetag, imagedigest from dm.dm_helmimages where appid = ? and compid = ? and deployid = ? and chartdigest = ?";
+  PreparedStatement st = m_conn.prepareStatement(sql);
+  st.setInt(1, appid);
+  st.setInt(2, compid);
+  st.setInt(3, deployid);
+  st.setString(4, chartdigest);
+  ResultSet rs = st.executeQuery();
+  while(rs.next()) 
+  {
+   JSONObject obj = new JSONObject();
+   obj.add("registry", rs.getString(1));
+   obj.add("organization", rs.getString(2));
+   obj.add("imagename", rs.getString(3));
+   obj.add("imagetag", rs.getString(4));
+   obj.add("imagedigest", rs.getString(5));
+   images.add(obj);
+  } 
+  rs.close();
+  st.close();
+ }
+ catch (Exception e)
+ {
+  e.printStackTrace();
+ }
+ return images;
+} 
+ 
+ public int getEnvironmentForDeployment(int deployid)
+ {
+  int envid = -1;
+  String sql = "select distinct envid from dm.dm_deployment where deploymentid = ?";
+  PreparedStatement ck;
+  try
+  {
+   ck = m_conn.prepareStatement(sql);
+   ck.setInt(1, deployid);
+   
+   ResultSet rs = ck.executeQuery();
+   if (rs.next())
+    envid = rs.getInt(1);
+   rs.close();
+   ck.close();
+  }
+  catch (SQLException e)
+  {
+  }
+  return envid;
+ }
+ 
+ public int getApplicationForDeployment(int deployid)
+ {
+  int appid = -1;
+  String sql = "select distinct appid from dm.dm_deployment where deploymentid = ?";
+  PreparedStatement ck;
+  try
+  {
+   ck = m_conn.prepareStatement(sql);
+   ck.setInt(1, deployid);
+   
+   ResultSet rs = ck.executeQuery();
+   if (rs.next())
+    appid = rs.getInt(1);
+   rs.close();
+   ck.close();
+  }
+  catch (SQLException e)
+  {
+  }
+  return appid;
+ }
+
+ public JSONArray getCompsOnEndPoint(String servids)
+ {
+  JSONArray ret = new JSONArray();
+  
+  String sql = "SELECT compid, deploymentid, buildnumber FROM dm.dm_compsonserv where serverid = ?";
+  
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, new Integer(servids).intValue());
+   ResultSet rs = stmt.executeQuery();
+   while(rs.next()) 
+   {
+    JSONObject obj = new JSONObject();
+    
+    Component comp = this.getComponent(rs.getInt(1), false);
+    
+    if (comp != null)
+    {
+     int compDom = comp.getDomainId();
+     
+     String domlist = "," + this.getDomainList() + ",";
+     
+     if (!domlist.contains("," + compDom + ","))
+      continue;
+     
+     obj.add("name", comp.getDomain().getFullDomain() + "." + comp.getName());
+     obj.add("deployid", rs.getInt(2));
+     obj.add("buildnumber", rs.getInt(3));
+     obj.add("type", comp.getObjectType().getTypeString());
+     obj.add("id", comp.getId());
+     ret.add(obj);
+    }
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  }
+  catch(SQLException ex)
+  {
+   ex.printStackTrace();
+  }
+  throw new RuntimeException("Unable to retrieve Endpoint Types from database");  
+ }
+
+ public void setComponentItemKind(int id, String compkind)
+ {
+  ComponentItemKind cik = ComponentItemKind.fromInt(new Integer(compkind.substring(2)).intValue());
+  
+  String kind = "file";
+  
+  if (cik == ComponentItemKind.DATABASE)
+   kind = "database";
+  else if (cik == ComponentItemKind.DOCKER)
+   kind = "docker";
+  
+  String sql = "update dm.dm_componentitem set kind = ? where id = ?";
+  
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setString(1, kind);
+   stmt.setInt(2, id);
+   stmt.execute();
+   stmt.close();
+   m_conn.commit();
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+  }
+ }
+ 
+ class SortbyDeployLog implements Comparator<DeployedApplication> 
+ { 
+     public int compare(DeployedApplication a, DeployedApplication b) 
+     { 
+         return a.getDeploymentID() - b.getDeploymentID(); 
+     } 
+ }
+
+ public boolean isAppInEnv(Application app, Environment env)
+ {
+  String exists = "select count(*) from dm.dm_deployment where appid = ? and envid = ? and deploymentid > 0";
+  
+  try
+  {
+   PreparedStatement estmt = m_conn.prepareStatement(exists);
+   estmt.setInt(1, app.getId());
+   estmt.setInt(2, env.getId());
+   ResultSet rs = estmt.executeQuery();
+   if (rs.next()) 
+   {
+    if (rs.getInt(1)>0)
+    {
+     rs.close();
+     estmt.close();
+     return true;
+    }
+   }
+   rs.close();
+   estmt.close();
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+  }
+  return false;
+ }
+
+ public JSONObject getDiffDepsNodesEdges(Application app, Application prev, Environment env)
+ {
+  ArrayList<Component> appcomps = (ArrayList<Component>) this.getComponents(ObjectType.APPLICATION, app.getId(), (app.getIsRelease().equalsIgnoreCase("Y")?true:false));
+  ArrayList<Component> prevcomps = new ArrayList<Component>();
+  
+  if (prev != null)
+     prevcomps = (ArrayList<Component>) this.getComponents(ObjectType.APPLICATION, prev.getId(), (prev.getIsRelease().equalsIgnoreCase("Y")?true:false));
+  
+  if (!isAppInEnv(app, env))
+   appcomps =  new ArrayList<Component>();
+  
+  ArrayList<Component> comps = new ArrayList<Component>();
+  HashMap<Integer,Component> lookup = new HashMap<Integer,Component>();
+  
+  
+  for (int i=0;i<prevcomps.size();i++)
+   lookup.put(new Integer(prevcomps.get(i).getId()), prevcomps.get(i));
+  
+  for (int i=0;i<appcomps.size();i++)
+  {
+   Integer key = new Integer(appcomps.get(i).getId());
+   if (!lookup.containsKey(key))
+    comps.add(appcomps.get(i));
+  }
+  
+  JSONObject data = new JSONObject();   
+  JSONArray nodes = new JSONArray();
+  JSONArray edges = new JSONArray();
+  JSONObject labels = new JSONObject();
+  
+  labels.add("currapp", app.getName());
+  
+  if (prev == null)
+   labels.add("prevapp", "");
+  else
+   labels.add("prevapp", prev.getName());
+  
+  if (!isAppInEnv(app, env))
+  {
+   labels.add("prevapp", "never");
+   data.add("labels", labels);
+   data.add("nodes",nodes);
+   data.add("edges",edges);
+   return data;
+  }
+  
+  data.add("labels", labels);
+  
+  ArrayList<String> added = new ArrayList<String>();
+  ArrayList<String> edges_added = new ArrayList<String>();
+  
+  // add app
+  if (!added.contains(app.getOtid().toString()))
+  {
+   added.add(app.getOtid().toString());
+   nodes.add(new DeployDepsNode(app.getOtid().toString(), app.getName()).getJSON());
+  } 
+
+  // add env to app
+  if (!added.contains(env.getOtid().toString()))
+  {
+   added.add(env.getOtid().toString());
+   nodes.add(new DeployDepsNode(env.getOtid().toString(), env.getName()).getJSON());
+  }
+  if (!edges_added.contains(app.getOtid().toString() + "-" + env.getOtid().toString()))
+  { 
+   edges_added.add(app.getOtid().toString() + "-" + env.getOtid().toString());
+   edges.add(new DeployDepsEdge(app.getOtid().toString(), env.getOtid().toString()).getJSON());
+  }
+  List<Server> servers = getServersInEnvironment(env.getId());
+
+  for (int i=0;i<servers.size();i++)
+  {
+   // add server to env
+   Server srv = servers.get(i);
+   if (!added.contains(srv.getOtid().toString()))
+   {
+    added.add(srv.getOtid().toString());
+    nodes.add(new DeployDepsNode(srv.getOtid().toString(), srv.getName()).getJSON());
+   } 
+   if (!edges_added.contains(env.getOtid().toString() + "-" + srv.getOtid().toString()))
+     {
+   edges_added.add(env.getOtid().toString() + "-" + srv.getOtid().toString());
+   edges.add(new DeployDepsEdge(env.getOtid().toString(), srv.getOtid().toString()).getJSON());
+     }
+  }
+
+  boolean isRelease = false;
+
+  if (app.getIsRelease().compareToIgnoreCase("Y") == 0)
+   isRelease = true;
+ 
+  for (int i=0;i<comps.size();i++)
+  {
+   // add components to app
+   Component comp = comps.get(i); 
+   
+   String res = getComp2Endpoints(comp.getId()).getJSON();
+   JsonArray endpoints = new JsonParser().parse(res).getAsJsonArray();
+
+   HashMap<Integer,Integer> srv4comps = new HashMap<Integer, Integer>();
+   
+   for (int x=0;x<endpoints.size();x++)
+   {
+    JsonObject obj = endpoints.get(x).getAsJsonObject();
+    Integer id = new Integer(obj.get("id").getAsString());
+    srv4comps.put(id, null);
+   }
+
+   if (!added.contains(comp.getOtid().toString()))
+   {
+    added.add(comp.getOtid().toString());
+    nodes.add(new DeployDepsNode(comp.getOtid().toString(), comp.getName()).getJSON());
+   } 
+   if (!edges_added.add(comp.getOtid().toString() + "-" + app.getOtid().toString()))
+   {
+   edges_added.add(comp.getOtid().toString() + "-" + app.getOtid().toString());
+   edges.add(new DeployDepsEdge(comp.getOtid().toString(), app.getOtid().toString()).getJSON());
+   }
+
+   List <Server> srvlist = GetServersWithComponentsDeployed(env.getId(),comp.getId());
+
+   for (int k=0;k<srvlist.size();k++)
+   {
+    // add components to server    
+    Server s = srvlist.get(k);
+    
+    if (!srv4comps.containsKey(new Integer(s.getId())))
+     continue;
+    
+    if (!edges_added.contains(s.getOtid() + "-" + comp.getOtid()))
+    { 
+     edges_added.add(s.getOtid() + "-" + comp.getOtid());
+     edges.add(new DeployDepsEdge(comp.getOtid().toString(), s.getOtid().toString()).getJSON());  
+    }
+   }
+  }
+  data.add("nodes",nodes);
+  data.add("edges",edges);
+  return data;
+ }
 }

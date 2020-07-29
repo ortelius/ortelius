@@ -19,6 +19,8 @@
 package dmadmin;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -46,23 +48,35 @@ public class GetRepositories
     }
 
 	@Override
-	public IJSONSerializable handleRequest(DMSession session, boolean isPost,
-			HttpServletRequest request, HttpServletResponse response)
-		throws PermissionDeniedException, ServletException, IOException
-	{
-		JSONArray ret = new JSONArray();
-		String objid = request.getParameter("objid");
-		String domstr = request.getParameter("domid");
-		int domid = 0;
-		if (domstr != null && domstr.length()>0) {
-			domid = Integer.parseInt(domstr);
-		}
-		List<Repository> repos = session.getAccessibleRepositories(objid,domid);
-		for(Repository r : repos) {
-			ret.add(r.getLinkJSON());
-			// ret.add(new LinkField(ObjectType.REPOSITORY, r.getId(), session.getDomainName(r.getDomainId()) + "." + r.getName(), true));
-		}
-		
-		return ret;
-	}
+ public IJSONSerializable handleRequest(DMSession session, boolean isPost, HttpServletRequest request, HttpServletResponse response) throws PermissionDeniedException, ServletException, IOException
+ {
+  JSONArray ret = new JSONArray();
+  String objid = request.getParameter("objid");
+  String domstr = request.getParameter("domid");
+  int domid = 0;
+  if (domstr != null && domstr.length() > 0)
+  {
+   domid = Integer.parseInt(domstr);
+  }
+  List<Repository> repos = session.getAccessibleRepositories(objid, domid);
+
+  Comparator<Repository> compareByName = new Comparator<Repository>()
+  {
+   @Override
+   public int compare(Repository o1, Repository o2)
+   {
+    return o1.toString().compareTo(o2.toString());
+   }
+  };
+
+  Collections.sort(repos, compareByName);
+
+  for (Repository r : repos)
+  {
+   ret.add(r.getLinkJSON());
+   // ret.add(new LinkField(ObjectType.REPOSITORY, r.getId(), session.getDomainName(r.getDomainId()) + "." + r.getName(), true));
+  }
+
+  return ret;
+ }
 }

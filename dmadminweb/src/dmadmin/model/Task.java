@@ -161,6 +161,11 @@ public class Task
 	public IJSONSerializable getSummaryJSON() {
 		System.out.println("m_TaskType="+m_TaskType);
 		PropertyDataSet ds = new PropertyDataSet();
+  Domain dom = getDomain();
+  if (dom == null)
+    ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", "");
+  else
+   ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", dom.getFullDomain());
 		ds.addProperty(SummaryField.NAME, "Name", getName());
 		addCreatorModifier(ds);
 		ds.addProperty(SummaryField.PRE_ACTION, "Pre-action", ((m_preAction != null) ? m_preAction.getLinkJSON() : null));

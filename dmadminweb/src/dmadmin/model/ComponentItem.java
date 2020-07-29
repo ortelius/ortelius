@@ -16,17 +16,19 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package dmadmin.model;
 
 import java.util.List;
 
+import dmadmin.ACDChangeSet;
 import dmadmin.DMSession;
 import dmadmin.ObjectType;
-import dmadmin.ACDChangeSet;
 import dmadmin.PropertyDataSet;
 import dmadmin.SummaryChangeSet;
 import dmadmin.SummaryField;
 import dmadmin.json.IJSONSerializable;
+import dmadmin.json.JSONObject;
 
 public class ComponentItem
 	extends DMObject
@@ -41,6 +43,22 @@ public class ComponentItem
 	private int m_predecessorId;
 	private ComponentFilter m_rollup   = ComponentFilter.OFF;
 	private ComponentFilter m_rollback = ComponentFilter.OFF;
+	private ComponentItemKind m_itemkind = ComponentItemKind.FILE;
+	private String BuildId = "";
+	private String BuildUrl = "";
+	private String Chart = "";
+ private String ChartVersion = "";
+	private String DockerSha = "";
+ private String DockerRepo = "";
+	private String GitCommit = "";
+	private String GitRepo = "";
+	private String GitTag = "";
+	private String GitUrl = "";
+ private String Operator = "";
+ private String BuildDate = "";
+ private String DockerTag = "";
+
+ private String ChartNamespace;
 	
 	public ComponentItem() {
         super.setId(0);
@@ -53,6 +71,13 @@ public class ComponentItem
 	
 	public Component getParent()  { return m_parent; }
 	public void setParent(Component comp)  { m_parent = comp; }
+	
+	public int getParentId() 
+	{
+	 if (m_parent == null)
+	  return -1;
+	 return m_parent.getId();
+	}
 	
 	public Repository getRepository()  { return m_repo; }
 	public void setRepository(Repository repo)  { m_repo = repo; }
@@ -76,7 +101,142 @@ public class ComponentItem
 	public void setYpos(int ypos)  { m_ypos = ypos; }
 	
 	
-	@Override
+	
+	public String getBuildId()
+ {
+  return BuildId;
+ }
+
+ public void setBuildId(String buildId)
+ {
+  BuildId = buildId;
+ }
+
+ public String getBuildUrl()
+ {
+  return BuildUrl;
+ }
+
+ public void setBuildUrl(String buildUrl)
+ {
+  BuildUrl = buildUrl;
+ }
+
+ public String getChart()
+ {
+  return Chart;
+ }
+
+ public void setChart(String chart)
+ {
+  Chart = chart;
+ }
+
+ public String getChartVersion()
+ {
+  return ChartVersion;
+ }
+ 
+
+ public void setChartNamespace(String chartnamespace)
+ {
+  ChartNamespace = chartnamespace;
+ }
+ 
+ public String getChartNamespace()
+ {
+  return ChartNamespace;
+ }
+ 
+
+ public void setChartVersion(String chartversion)
+ {
+  ChartVersion = chartversion;
+ }
+ 
+ public String getDockerSha()
+ {
+  return DockerSha;
+ }
+
+ public void setDockerSha(String dockerSha)
+ {
+  DockerSha = dockerSha;
+ }
+
+ public String getDockerRepo()
+ {
+  return DockerRepo;
+ }
+
+ public void setDockerRepo(String dockerRepo)
+ {
+  DockerRepo = dockerRepo;
+ }
+
+ public String getGitCommit()
+ {
+  return GitCommit;
+ }
+
+ public void setGitCommit(String gitCommit)
+ {
+  GitCommit = gitCommit;
+ }
+
+ public String getGitRepo()
+ {
+  return GitRepo;
+ }
+
+ public void setGitRepo(String gitRepo)
+ {
+  GitRepo = gitRepo;
+ }
+
+ public String getGitTag()
+ {
+  return GitTag;
+ }
+
+ public void setGitTag(String gitTag)
+ {
+  GitTag = gitTag;
+ }
+
+ public String getGitUrl()
+ {
+  return GitUrl;
+ }
+
+ public void setGitUrl(String gitUrl)
+ {
+  GitUrl = gitUrl;
+ }
+ 
+ 
+
+ public String getOperator()
+ {
+  return Operator;
+ }
+
+ public void setOperator(String operator)
+ {
+  Operator = operator;
+ }
+
+ public String getBuildDate()
+ {
+  return BuildDate;
+ }
+
+ public void setBuildDate(String buildDate)
+ {
+  BuildDate = buildDate;
+ }
+
+ @Override
 	public ObjectType getObjectType() {
 		System.out.println("component getObjectType Returning "+ObjectType.COMPONENT);
 		return ObjectType.COMPONENTITEM;
@@ -111,19 +271,89 @@ public class ComponentItem
 		 return m_session.getPropertiesForComponentItem(this);
 	}
 
+
 	@Override
 	public IJSONSerializable getSummaryJSON() {
 		PropertyDataSet ds = new PropertyDataSet();
 		ds.addProperty(SummaryField.NAME, "Name", getName());
 		ds.addProperty(SummaryField.SUMMARY, "Summary", getSummary());
+		
+  String pname = "";
+  
+  ComponentItem p = null;
+  try
+  {
+   p = m_session.getComponentItem(getPredecessorId(), false);
+  }
+  catch (RuntimeException e)
+  {
+   
+  }
+  
+  if (p != null)
+    pname = p.getName();
+  ds.addProperty(SummaryField.PREDECESSOR, "Predecessor", pname);
+  
+  p = null;
+  try
+  {
+   p = m_session.getComponentItem(getParentId(),true);
+  }
+  catch (RuntimeException e)
+  {
+   
+  }
+		
 		//addCreatorModifier(ds); // TODO: Addind this makes the table too big for dialog
-		ds.addProperty(SummaryField.ROLLUP, "Roll Forward", getRollup().toString());
-		ds.addProperty(SummaryField.ROLLBACK, "Rollback", getRollback().toString());
-  ds.addProperty(SummaryField.ITEM_TARGETDIR, "Target Directory", getTargetDir());
-  if (getRepository() == null)
-   ds.addProperty(SummaryField.ITEM_REPOSITORY, "Repository", 0);
-  else
-   ds.addProperty(SummaryField.ITEM_REPOSITORY, "Repository", getRepository().getId());
+  ds.addProperty(SummaryField.COMP_KIND, "Kind", getItemkind().toString());
+		if (getItemkind() == ComponentItemKind.DATABASE)
+		{
+		 ds.addProperty(SummaryField.ROLLUP, "Roll Forward", getRollup().toString());
+		 ds.addProperty(SummaryField.ROLLBACK, "Rollback", getRollback().toString());
+		}
+  
+  ds.addProperty(SummaryField.XPOS, "XPos", getXpos());
+  ds.addProperty(SummaryField.YPOS, "YPos", getYpos());
+  
+  if (getItemkind() == ComponentItemKind.DOCKER || getItemkind() == ComponentItemKind.FILE)
+  {
+   ds.addProperty(SummaryField.DOCKER_BUILDID, "Build Id", getBuildId());
+   ds.addProperty(SummaryField.DOCKER_BUILDURL, "Build URL", getBuildUrl());
+   ds.addProperty(SummaryField.DOCKER_BUILDDATE, "Build Date", getBuildDate());
+  }
+  if (getItemkind() == ComponentItemKind.DOCKER)
+  {
+   ds.addProperty(SummaryField.DOCKER_CHART, "Helm Chart", getChart());
+   ds.addProperty(SummaryField.DOCKER_CHARTVERSION, "Helm Chart Version", getChartVersion());
+   ds.addProperty(SummaryField.DOCKER_CHARTNAMESPACE, "Helm Chart Namespace", getChartNamespace());
+   ds.addProperty(SummaryField.DOCKER_OPERATOR, "Operator", getOperator());
+   ds.addProperty(SummaryField.DOCKER_REPO, "Container Registry", getDockerRepo());
+   ds.addProperty(SummaryField.DOCKER_SHA, "Container Digest", getDockerSha());
+   ds.addProperty(SummaryField.DOCKER_TAG, "Container Tag", getDockerTag());
+   ds.addProperty(SummaryField.DOCKER_GITCOMMIT, "Git Commit", getGitCommit());
+   ds.addProperty(SummaryField.DOCKER_GITREPO, "Git Repo", getGitRepo());
+   ds.addProperty(SummaryField.DOCKER_GITTAG, "Git Tag", getGitTag());
+   ds.addProperty(SummaryField.DOCKER_GITURL, "Git URL", getGitUrl());
+  }
+  
+  if (getItemkind() == ComponentItemKind.DATABASE || getItemkind() == ComponentItemKind.FILE)
+  {  
+   String repotype = "";
+   
+   if (getRollup() == ComponentFilter.ON)
+    repotype = "Roll Forward ";
+ 
+   if (getRollback() == ComponentFilter.ON)
+    repotype = "Roll Back ";
+
+   ds.addProperty(SummaryField.ITEM_TARGETDIR, repotype + "Target Directory", getTargetDir());
+   
+   if (getRepository() == null)
+    ds.addProperty(SummaryField.ITEM_REPOSITORY, repotype + "Repository", "");
+   else
+    ds.addProperty(SummaryField.ITEM_REPOSITORY, repotype + "Repository", getRepository().getDomain().getFullDomain() + "." + getRepository().getName());
+  }
+  
 		return ds.getJSON();
 	}
 
@@ -137,7 +367,103 @@ public class ComponentItem
 	 m_session.DeleteProperties(this);
 	}
 	
-	public boolean updateProperties(ACDChangeSet<DMProperty> changes) {
-		return m_session.updateComponentItemProperties(this, changes);
+ public boolean updateProperties(ACDChangeSet<DMProperty> changes) {
+  return m_session.updateComponentItemProperties(this, changes, false);
+ }
+ 
+	public boolean updateProperties(ACDChangeSet<DMProperty> changes, boolean deleteAll) {
+		return m_session.updateComponentItemProperties(this, changes, deleteAll);
 	}
+
+ public ComponentItemKind getItemkind()
+ {
+  return m_itemkind;
+ }
+
+ public void setItemkind(ComponentItemKind m_itemkind)
+ {
+  this.m_itemkind = m_itemkind;
+ }
+
+ public JSONObject toJSON()
+ {
+  JSONObject obj = new JSONObject();
+  obj.add("Name", getFullName());
+  obj.add("Summary", getSummary());
+  
+  String pname = "";
+  
+  ComponentItem p = null;
+  try
+  {
+   p = m_session.getComponentItem(getPredecessorId(), false);
+  }
+  catch (RuntimeException e)
+  {
+   
+  }
+  
+  if (p != null)
+    pname = p.getName();
+  obj.add("Predecessor", pname);
+  
+  p = null;
+  try
+  {
+   p = m_session.getComponentItem(getParentId(),true);
+  }
+  catch (RuntimeException e)
+  {
+   
+  }
+  
+  //addCreatorModifier(ds); // TODO: Addind this makes the table too big for dialog
+  if (getItemkind() == ComponentItemKind.DATABASE)
+  {
+   obj.add("Roll Forward", getRollup().toString());
+   obj.add("Rollback", getRollback().toString());
+  }
+  
+  obj.add("XPos", getXpos());
+  obj.add("YPos", getYpos());
+  
+  if (getItemkind() == ComponentItemKind.DATABASE || getItemkind() == ComponentItemKind.FILE)
+  {
+   obj.add("Target Directory", getTargetDir());
+   if (getRepository() == null)
+    obj.add("Repository", "");
+   else
+    obj.add( "Repository", getRepository().getName());
+  }
+  
+  if (getItemkind() == ComponentItemKind.DOCKER)
+  {
+   obj.add("Build Id", getBuildId());
+   obj.add("Build URL", getBuildUrl());
+   obj.add("Helm Chart", getChart());
+   obj.add("Helm Chart Version", getChartVersion());
+   obj.add("Helm Chart Namespace", getChartNamespace());
+   obj.add("Operator", getOperator());
+   obj.add("Build Date", getBuildDate());
+   obj.add("Container Registry", getDockerRepo());
+   obj.add("Container Digest", getDockerSha());
+   obj.add("Container Tag", getDockerTag());
+   obj.add("Git Commit", getGitCommit());
+   obj.add("Git Repo", getGitRepo());
+   obj.add("Git Tag", getGitTag());
+   obj.add("Git URL", getGitUrl());
+  }
+  
+  return obj;
+ }
+
+ public void setDockerTag(String tag)
+ {
+  DockerTag = tag;
+ }
+ 
+ public String getDockerTag()
+ {
+  return DockerTag;
+ }
 }

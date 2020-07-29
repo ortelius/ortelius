@@ -132,12 +132,8 @@ public IJSONSerializable handleRequest(DMSession session, boolean isPost,
 		Component comp = session.getComponent(compid,true);
 		JSONObject obj = new JSONObject();
 		TableDataSet data = null;
-		if (t!=null && t.equalsIgnoreCase("b")) {
-			// Retrieving Builds
-			data = session.getBuildsForComponent(comp);
-		} else {
-			data = session.getComponentLocations(comp,t,isRelease);
-		}
+		data = session.getComponentLocations(comp,t,isRelease);
+
 		obj.add("readOnly", true);
 		obj.add("result", true);
 		obj.add("data",data);

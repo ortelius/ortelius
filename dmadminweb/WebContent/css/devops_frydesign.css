@@ -10,6 +10,9 @@ html, body {
 	min-height: 100%;
 	}
 	
+body {	
+  table-layout: fixed;	
+}  
 
 /* a:focus {  outline: none; } */
 
@@ -33,16 +36,16 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
   position:absolute;
   top:0px;
   left:0px;
+  border: 1px solid #DDDDDD;
  }
 
  .selectBox{
-  border:1px solid #7f9db9;
+  border: 1px solid #DDDDDD;
   height:20px; 
- 
  }
  .selectBoxOptionContainer{
   position:absolute;
-  border:1px solid #7f9db9;
+  border: 1px solid #DDDDDD;
   height:100px;
   background-color:#FFF;
   left:-1px;
@@ -71,7 +74,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 #panel_container.left,
 #panel_container_right {
 	position: absolute;
-	top: 50px;
+	top: 35px;
 	bottom: 55px;
 	}
 
@@ -86,13 +89,21 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 
 #panel_container.left {  /* houses all left panel components */
 	width:362px;
-	left: 18px;
+	left: 257px;
 	}
 
 #panel_container_right {  /* container for all right panel stuff */
-	left: 396px;
+	left: 627px;
 	right: 18px; 
 	overflow: hidden;
+}
+
+#panel_container_right_list {  /* container for all right panel stuff */
+	position: absolute;
+	top: 50px;
+	height: 80%;
+	left: 280px;
+	right: 18px; 
 }
 
 /*********** END MAIN CONTAINERS  ***************/
@@ -142,13 +153,12 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 #left_panel_tree {  /* houses the tree inside the left panel container */
 	border:2px solid #d4dde7;
 	border-radius:5px;
-	background:#eaedf0;
 	position: absolute;
 	top: 23px;
 	right: 0px;
 	bottom: 0px;
 	left: 0;
-	overflow-x: hidden;  /* ADD THE SCRIPT FOR CONROLLING THE OVERFLOW-Y */
+	overflow-x: auto;  /* ADD THE SCRIPT FOR CONROLLING THE OVERFLOW-Y */
 }
 
 #tree_test ul {
@@ -179,33 +189,541 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	height: 23px; 
 	width:  calc(100% - 23px);
 	position: relative;
-	top: 0;
+	top: -27px;
 	display: inline-block;	
 	white-space: nowrap;	
 	}
 	
 #right_panel_main, #home_right_panel_main {   
-	background-color:#fafafa;
+/*	background-color:#fafafa;
 	border:2px solid #d4dde7;
-	border-radius:5px;
+	border-radius:5px; */
 	position: absolute;
-	top: 23px;
+	top: 65px;
 	right: 0px;
 	bottom: 0px;
 	}
 	
+#tabs-General-data {
+	background-color: white;
+}
+	
+#tabs-General-row-10 {
+		display: flex;
+}	
+	
+#tabs-General-row-15 {
+		display: flex;
+}	
+
+#tabs-CompItems-left {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+}	
+		
+#tabs-General-row-20 {
+		display: flex;
+}	
+
+#tabs-General-row-25 {
+		display: flex;
+}	
+
+#tabs-General-row-28 {
+	border: 1px solid lightgrey;
+    margin:8px;	
+    margin-top: 16px;
+    height: 400px;
+}	
+	
+#logs-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+
+}	
+
+#logs-data {
+ 	max-height: 120px;
+ 	overflow-y: auto;
+}
+
+#switchargs-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+
+}
+
+#cmdline-panel {
+	width: 100%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+    font-size: 14px;
+}
+	
+#outerworkflow {
+	width: 80%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+}	
+
+#pickproc {
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+}
+	
+#steps-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+}	
+
+#deploymenttimebystep4_scroll {
+ overflow-x: auto;	
+ min-width: 215px;
+ position: absolute;
+ left: 200px;
+ top: -16px;
+}
+
+#deploymenttimebystep4_scroll > table {
+  position: relative !important;
+  left: 0px !important;
+  top: 0px !important;
+}	
+	
+#feedback-panel {
+	height: 100%;
+}	
+	
+	
+#feedback-data {
+	height: calc(100% - 40px);
+}				
+		
+#tabs-General-row-30 {
+    margin:8px;	
+    margin-top: 16px;
+}
+
+#tabs-General-row-35 {
+	display: flex;
+}
+
+#tabs-General-row-40 {
+    margin:8px;	
+    margin-top: 16px;
+}
+
+#tabs-General-row-50 {
+    margin:8px;	
+    margin-top: 16px;
+    border: 1px solid lightgrey;
+}
+	
+	
+#tabs-General-left {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+}	
+
+#tabs-General-right {
+	border: 1px solid lightgrey;
+    margin:8px;
+    height: calc(100% - 16px);
+}
+
+#tabs-General-left-20 {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+}	
+
+#tabs-General-right-20 {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+    margin-bottom: 0px;
+    text-align:center;
+}
+
+#tabs-General-map {
+	width: 100%;
+    height: calc(100% - 40px);
+}
+
+#emailhelp-panel {
+	width: 100%;
+	height: 100%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+    font-size: 14px;
+}
+
+#emailhelp_data {
+	padding: 8px;
+}
+
+#attrs-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+    max-height: 300px;
+    overflow: auto
+}	
+
+#attrs10-panel {
+	width: 100%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+#tasks-panel {
+	width: 50%;
+	display:inline-block;
+/*	border: 1px solid lightgrey; */
+    margin-top: 0px;
+    margin-bottom: 8px;
+    min-height: 200px;
+}
+
+#taskstab > td:first-child {
+	width: 40px;
+}
+
+#panel_deploy {
+	width: 50%;
+	display:inline-block;
+/*	border: 1px solid lightgrey; */
+    margin-top: 0px;
+    margin-bottom: 8px;
+    min-height: 200px;
+}
+
+#cr-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin-top: 0px;
+    margin-bottom: 8px;
+    min-height: 200px;
+}
+
+#cr_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#cr-panel-20 {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin: 8px;
+    margin-left: 0px;
+    margin-bottom: 0px;
+    min-height: 200px;
+}
+
+#cr_header_buttons_20 {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+
+#env4app-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin-top: 8px;
+}
+
+#deployedenv4app-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin: 8px;
+    margin-bottom: 0px;
+}
+
+#deployedenv4app > tbody > tr > td:nth-child(1) {
+	display:none;
+}
+
+#deployedenv4app > tbody > tr > td:nth-child(2) {
+	white-space: nowrap;
+}
+
+#deployedenv4app-data {
+	overflow-y: auto;
+}
+
+#app4env-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+	margin-right: 8px;
+    margin-top: 8px;
+}
+
+#app4comp-panel {
+	width: 100%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin-top: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#planning-panel {
+	width: 100%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin-top: 8px;
+    overflow-y: auto;
+}
+
+#row-10-audit {
+	width: 100%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+#row-35-audit {
+	width: 50%;
+    display: inline-block;
+    border: 1px solid lightgrey;
+    margin: 8px;
+    text-align: center;
+}
+
+/*** start groupmembership ***/
+
+#groupmembership-edit {
+	display: none;
+}
+
+#groupmembership-panel {
+	width: 100%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+}	
+
+#groupmembership_title {
+	display: inline-block;
+}
+
+#groupmembership_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#groupmembership td {
+	border: none;
+	white-space: nowrap;
+}
+
+#groupmembership {
+	border-collapse: separate;
+}
+
+#groupmembership td:nth-child(2) {
+	border: none;
+	white-space: nowrap;
+}
+/*** end groupmembership ***/
+/*** start usermembership ***/
+
+#usermembership-edit {
+	display: none;
+}
+
+#usermembership-panel {
+	width: 100%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+}	
+
+#usermembership_title {
+	display: inline-block;
+}
+
+#usermembership_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#usermembership td {
+	border: none;
+	white-space: nowrap;
+}
+
+#usermembership {
+	border-collapse: separate;
+}
+
+#usermembership td:nth-child(2) {
+	border: none;
+	white-space: nowrap;
+}
+/*** end usermembership ***/
+
+#row-10-right-panel {
+  width: 50%;
+  margin-right: 8px;	
+}
+
+#row-10-access {
+	width: 100%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin-top: 8px;
+}
+
+#row-35-access {
+	width: 50%;
+    display: inline-block;
+    border: 1px solid lightgrey;
+    margin: 8px;
+    text-align: center;
+}
+
+#row-10-access-data {
+	padding: 8px;
+}
+
+#row-10-access_title {
+}
+
+#summ_title {
+	display: inline-block;
+}
+
+#summ_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+
+#task_summ_title {
+	display: inline-block;
+}
+
+
+#task_summ_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+
+#attrs_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#attrs10_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#tasks_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#srv4env_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+
+#compitem_title {
+	display: inline-block;
+}
+
+#compitem_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#loghist tbody {
+	overflow-y: scroll;
+}
+
+#audit10-data {
+ 	max-height: 320px;
+ 	overflow-y: auto;
+}
+
+#audit10 tbody {
+	overflow-y: scroll;
+}
+
+#audit35-data {
+ 	max-height: 320px;
+ 	overflow-y: auto;
+}
+
+#audit35 tbody {
+	overflow-y: scroll;
+}
+
+#summtab > tbody > tr > td:nth-child(2) > select {
+	width: 101%;
+	border: 1px solid #DDDDDD;
+}
+
+#ua, #ra, #va, #wa, #ag_group, #vx, #ux, #rx, #wx, #xg_group {
+	border: 1px solid lightgrey;
+}
+
+#wa, #wx {
+	margin-bottom: 8px;
+}
+
 .panel_container {
 	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */
-	left: 0;
 	position: absolute;
-	top: 40px;
-	bottom: 0;
-	right: 0;
-	text-align: center;	
+	top: 120px;
+	bottom: 50px;
+	left: 260px;
+	right: 0; 
+    text-align: center;
 	}	
 		
 .versionsandinformation {
-	overflow-y:scroll;
+ 	overflow-y:scroll; 
 }	
 	
 .panel_container .versions {  
@@ -225,15 +743,23 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 .panel_container .appversions {  
 	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */ 
 	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
-	top: 0;
+/* 	top: 0; */
 	}
 
-.panel_container .compversions {  
+.compversions {  
 	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */ 
 	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
-	top: 0;
-	}		
+	position: relative;
+	top: 20px;
+	width: calc(100%);
+    height: calc(100%);	
+}		
 		
+#innercomp {
+ width: calc(100%);
+ height: 600px;	
+}
+
 .panel_container .compitems {  
 	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */ 
 	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
@@ -256,18 +782,17 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	width: 256px;
 	}	
 	
-.panel_container .accordionpanel {   
+.accordionpanel {   
 /* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
 	position: absolute;
-	background-color: #fff;
+	background-color: #f8f8f8;
 	border: 2px solid #d4dde7;
 	border-radius:5px;
 	overflow: hidden;
-	top: 0;
-	bottom: 0;   
-	width: 256px;
+	top: 0px;
+    height: calc(100%); 
 	overflow-y: scroll;
-	right: 0; 
+	left: calc(79%); 
 	}
 		
 .panel_container iframe.accordion {
@@ -298,54 +823,56 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	}
 /********** MULTI PANEL CONFIGURATION **************/
 
-#panel_container_taskspaneltop, 
+#task-access-panel {
+	display: flex;
+	margin-right: 16px;
+}
+
+
 #panel_container_taskspanelbottom, 
 #panel_container_taskspaneltop_left,
 #panel_container_taskspanelbottom_left,
 #panel_container_taskspanel_right {
-	left: 14px;
-	position: absolute;
+	position: relative;
 	min-width: 600px;
 	text-align: center;
-	right: 18px;
 	}
 
 #panel_container_taskspaneltop,
 #panel_container_taskspaneltop_left,
 #panel_container_taskspanel_right {
-	top: 50px;
 	}
 
 #panel_container_taskspanelbottom,
 #panel_container_taskspanelbottom_left,
 #panel_container_taskspanel_right {
-	bottom: 14px;
 	}
 
 #panel_container_taskspaneltop {
-	/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=203 */	
+	display: flex;
+	width: 100%;
 	height: calc(50% - 28px);
 	}	
 		
 #panel_container_taskspanelbottom {
-	/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=203 */	
+	display: flex;
+	width: 100%;
+	margin-top: 8px;
 	height: calc(50% - 50px);
 	}		
 			
 #panel_container_taskspaneltop_left {
-	/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=216 */
 	width: calc(50% - 14px);
 	height: calc(50% - 28px);
 	}	
 		
 #panel_container_taskspanelbottom_left {
-	/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=216 */
 	width: calc(50% - 14px);
 	height: calc(50% - 50px);
 	}	
 		
 #panel_container_taskspanel_right {
-	/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=216 */
+	position: relative;	
 	left: 554px;
 	right: 18px;
 	width: calc(50% - 14px);
@@ -359,59 +886,51 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 #sub_panel_bottommiddle,
 #sub_panel_bottomright,
 #panel_deploy  {
-/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=216 */
-/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=209 */
+	display: inline-block;
 	background-color: #fff;
-	position: absolute;	
-	width: 256px;
-	height: 100%; 
-	bottom: 0;
-	top: 0;  
-	border: 2px solid #d4dde7;
-	border-radius:5px;
-	overflow: hidden;	
+	border: 1px solid lightgrey;
 	}
 
-	
-#sub_panel_topright,
-#sub_panel_bottommiddle,
-#panel_deploy { 
-/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=216 */
-	left: 270px;
+#sub_panel_bottomleft {
+  margin: 8px;
+  margin-left: 20px;
+/*   width: calc(25% - 8px); */
 }
-	
+
+#sub_panel_bottommiddle {
+  margin: 8px;
+/*   width: calc(25% - 8px);	 */
+}
+
 #sub_panel_bottomright {
-	position: absolute;
-	left: 540px;
-	height: 100%;
-	/* height: calc(100% - 4px) !important; */
-	width: calc(100% - 540px) !important;
-	overflow: hidden;
+  margin: 8px;
+  margin-right: 0px;
+   width: 25%;	 
 }
 
-/*#sub_panel_bottomleft { 
-	right: 520px;
-	}	
-*/			
+#sub_panel_topleft {
+	margin-right: 8px;	
+	width: 50%;
+}
+	
+#sub_panel_topright { 
+  margin-left: 8px;
+}
+		
 #panel_deploy {  
-/* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=209 */
-	width: calc(100% - 270px);	/* keeps the spacing between panels exact (css 3) */
-	}
+	width: 50%;	
+	margin-left: 8px;
+	border: none;
+}
 	
 
 /********** END PANEL CONFIGURATION **************/
 
 				
 .panel_container_title_area  {   
-	position: relative;
-	top: 0;
-	left: 0;	
-	height: 25px;
 	width: 100%;
-	background:#d4dde7;
-	border-bottom: 2px solid #c6ccd2;	
-	display: inline-block;   /*keep title bar contents horz inline */
-	}
+	display: inline;   
+}
 	
 	
 .static_tab_deploy {
@@ -430,27 +949,25 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	position: relative;
 	top: 0;
 	left: 0;	
-	height: 34px;
+	height: 4px;
 	width: 100%;
-	background:#d4dde7;
-	border-bottom: 2px solid #c6ccd2;	
-	display: inline-block;   /*keep title bar contents horz inline */
+	border-top: 2px solid #c6ccd2;	
+	display: inline-block; /*keep title bar contents horz inline */
 	}
 		
 .title_icon {
-	position:  absolute;
-	right: 14px;
+    float: left;
+    position: absolute;
+    right: 20px;
+    top: 0px;
+}	
+	
+	
+.deploy_sub_panel_container {  
+    min-height: 100px;
+	height: 100%;
+	width: 100%;
 	display: inline-block;
-	top: 2px;
-	}	
-	
-	
-.deploy_sub_panel_container {  /* new addition... keeps iframe scrolling properly  */
-	position: absolute;
-/*	top: 64px !important; */
-	height: calc(100% - 14px) !important;
-	width: calc(100% - 2px) !important;
-	overflow: scroll;    /*  not sure about this... but it works.  I think it compensates for the border width??? */
 	}	
 	
 iframe,    
@@ -549,7 +1066,7 @@ iframe.dialog_white {
 	display: inline-block; 
 	border: 2px solid #d4dde7;
 	border-radius: 5px;
-	background-color: #eaedf0;
+	background-color: lightgrey;
 	position: absolute;
 	bottom: 18px;
 	right: 18px;
@@ -686,34 +1203,29 @@ iframe.dialog_white {
 	position: absolute;
 	color: #abbed8;
 	left: 250px;
-	top: -9px;
 }
 
 #positiondevopsmenu ul li {
 	display: inline;
-	color: #abbed8;
+	color: #ffffff;
 	letter-spacing: .05ex;
 	padding-right: 32px; 
-	font-weight:700;
 	white-space: nowrap;
 }
 
 #positiondevopsmenu li:hover {		
-	color: #f5f7fa;
-	text-shadow: #1c4b7b 1px 1px 1px;
-	font-weight:700;
+	color: #f8951a;
+	font-size: 16px;
 	}
 
 #positiondevopsmenu li  {		
-	color: #abbed8;
-	text-shadow: #1c4b7b 1px 1px 1px;
-	font-weight:700;
+	color: #ffffff;
+	font-size: 16px;
 	}
 	
 #positiondevopsmenu li.current {		
-	color: #f5f7fa;
-	text-shadow: #1c4b7b 1px 1px 1px;
-	font-weight:700;
+	color: #f8951a;
+	font-size: 16px;
 	}
 	
 
@@ -722,7 +1234,6 @@ iframe.dialog_white {
 
 #positiondevopsmenu_right  ul {
 	color: #abbed8;
-	top: -8px; 
 	display: inline;
 	float: right;
 	position: relative;	 
@@ -730,45 +1241,31 @@ iframe.dialog_white {
 
 #positiondevopsmenu_right ul li {
 	display: inline;
-	color: #abbed8;
+	color: #ffffff;
 	letter-spacing: .05ex;
-	text-shadow: #205489 1px 1px 1px; 
 	padding-right: 24px; 
-	font-weight:700;
 	}
 
 #positiondevopsmenu_right a {
 	display: inline;
-	color: #abbed8;
 	text-decoration: none;
-	opacity: 0.70;
 	}
 
 
 #positiondevopsmenu_right .menu_icon {
 	vertical-align: 0;
-	 text-shadow: #1c4b7b 1px 1px 1px;
 	}
 
 
-#positiondevopsmenu_right a:hover {		
-	color: #f5f7fa;
-	text-shadow: #1c4b7b 1px 1px 1px;
-	font-weight:700;
-	opacity: 1;
-}
-
 #positiondevopsmenu_right a  {		
 	display: inline;
-	color: #abbed8;
-	text-shadow: #1c4b7b 1px 1px 1px;
+	color: white;
 	font-weight:700;
 	}
 	
 #positiondevopsmenu_right li.current a {	
 	display: inline;
 	color: #f5f7fa;
-	text-shadow: #1c4b7b 1px 1px 1px;
 	font-weight:700;
 	opacity: 1;
 }
@@ -779,19 +1276,19 @@ iframe.dialog_white {
 /* Component jsPlumb */
 
 .compsource {
-	white-space:nowrap;cursor: pointer;padding: 0px 5px 5px 24px;background:url(images/component_16x.png) 5px 0px no-repeat !important;
+	white-space:nowrap;cursor: pointer;padding: 0px 5px 5px 24px;background:url(images/components_sm.png) 5px 0px no-repeat !important;
 }
 
 .compversource {
-	white-space:nowrap;cursor: pointer;padding: 0px 5px 5px 24px;background:url(images/component_ver_16x.png) 5px 0px no-repeat !important;
+	white-space:nowrap;cursor: pointer;padding: 0px 5px 5px 24px;background:url(images/components_sm.png) 5px 0px no-repeat !important;
 }
 
 .appsource {
-	white-space:nowrap;cursor: pointer;margin-bottom:5px;padding: 2px 2px 2px 24px;background:url(images/application_16x.png) 5px 1px no-repeat !important;
+	white-space:nowrap;cursor: pointer;margin-bottom:5px;padding: 2px 2px 2px 24px;background:url(images/applications_sm.png) 5px 1px no-repeat !important;
 }
 
 .appversource {
-	white-space:nowrap;cursor: pointer;margin-bottom:5px;padding: 2px 2px 2px 24px;background:url(images/appversion_16x.png) 5px 1px no-repeat !important;
+	white-space:nowrap;cursor: pointer;margin-bottom:5px;padding: 2px 2px 2px 24px;background:url(images/applications_sm.png) 5px 1px no-repeat !important;
 }
 
 .fragmentsource {
@@ -844,8 +1341,7 @@ overflow: hidden;
 	filter: alpha(opacity = 80);
 	padding-right: 5px;
 	padding-left: 5px;
-	height: 64px;
-	width: 160px;
+	height: 40px;
 	line-height: 12px;
 	text-align: center;
 	z-index: 20;
@@ -860,6 +1356,24 @@ overflow: hidden;
 	user-select: none;
 	overflow: hidden;
 	cursor: -webkit-grab;
+	width: fit-content;
+}
+
+.fragment > span {
+	white-space: nowrap;
+	top: 5px !important;
+	position: relative;
+} 
+
+.fragment > span > img {
+    height: 20px;
+    padding-right: 5px;
+    top: 5px;
+    position: relative;
+} 
+
+.accordionpanel {
+ width:20%;	
 }
 
 .componentbox,
@@ -934,7 +1448,7 @@ overflow: hidden;
 	opacity: 0.8;
 	filter: alpha(opacity = 80);
 	height: 32px;
-	width: 70px;
+	width: fit-content;
 	line-height: 12px;
 	padding-left: 10px;
 	padding-right:10px;
@@ -949,21 +1463,6 @@ overflow: hidden;
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
-}
-
-
-
-#compitem {
-float: left;
-display: table-cell;
-height:93%;
-width: 100%;
-overflow-y:scroll;
-}
-
-#compitem h4 {
-	line-height: 16px;
-	margin: 0 0 0.4em;
 }
 
 /* End Component jsPlumb */
@@ -1002,7 +1501,8 @@ h1 {
 h2 {
 	font-weight: 700;
 	margin-left: 12px; 
-	font-size: 1.5em ; 
+	font-size: 1.25em ; 
+	color: #273746;
 	}
 
 h1.actions,
@@ -1033,23 +1533,23 @@ h1.template,
 h1.domain {
 	margin-top: 4px;
 	padding-left: 30px;
-/*	width:  250px; */
 	line-height:  24px;
 	font-size: 1.2em;
-	color:  #506582;
-	/*text-shadow: #b0b0b0 1px 1px 2px;*/
 }
 	
 h1.action {
-	background: url(images/action_24x.png) no-repeat left top;
+	background: url(images/actions.png) no-repeat left top;
+	background-size: 24px 24px;
 	}
 	
 h1.notify {
-	background: url(images/notify_24x.png) no-repeat left top;
+	background: url(images/notifiers.png) no-repeat left top;
+	background-size: 24px 24px;
 	}
 	
 h1.repository {
-	background: url(images/repository_24x.png) no-repeat left top;
+	background: url(images/repositories.png) no-repeat left top;
+    background-size: 24px 24px;	
 	}
 
 h1.procedure {
@@ -1061,15 +1561,18 @@ h1.function {
 	}
 	
 h1.datasource {
-	background: url(images/datasource_24x.png) no-repeat left top;
+	background: url(images/datasources.png) no-repeat left top;
+    background-size: 24px 24px;	
 	}
 	
 h1.user {
-	background: url(images/user_24x.png) no-repeat left top;
+	background: url(images/users.png) no-repeat left top;
+	background-size: 24px 24px;
 	}
 	
 h1.usergroup {
-	background: url(images/usergroup_24x.png) no-repeat left top;
+	background: url(images/groups.png) no-repeat left top;
+	background-size: 24px 24px;
 	}
 		
 h1.deploy {
@@ -1077,11 +1580,13 @@ h1.deploy {
 	}
 
 h1.credentials {
-	background: url(images/credential_24x.png) no-repeat left top;
+	background: url(images/credentials.png) no-repeat left top;
+	background-size: 24px 24px;
 	}
 
 h1.comptype {
-	background: url(images/comptype_24x.png) no-repeat left top;
+	background: url(images/customization.png) no-repeat left top;
+	background-size: 24px 24px;
 	}
 			
 h1.deploy_general {
@@ -1093,19 +1598,23 @@ h1.deploy_general {
 }
 
 h1.server {
-	background: url(images/server_24x.png) no-repeat left top;
+	background: url(images/endpoints.png) no-repeat left top;
+    background-size: 24px 24px;
 	}
 	
 h1.appversion  {
-	background: url(images/appversion_24x.png) no-repeat left top;
+	background: url(images/applications.png) no-repeat left top;
+    background-size: 24px 24px;
 	}
 
 h1.builder  {
-	background: url(images/buildserv_24x.png) no-repeat left top;
+	background: url(images/buildengines.png) no-repeat left top;
+	background-size: 24px 24px;
 		}
 		
 h1.buildjob  {
-	background: url(images/buildjob_24x.png) no-repeat left top;
+	background: url(images/buildjobs.png) no-repeat left top;
+	background-size: 24px 24px;
 		}
 		
 h1.build_ok {
@@ -1117,35 +1626,43 @@ h1.build_fail  {
 		}
 		
 h1.environment  {
-	background: url(images/environment_24x.png) no-repeat left top;
+	background: url(images/environments.png) no-repeat left top;
+	 background-size: 24px 24px;
 		}
 
 h1.application  {
-	background: url(images/application_24x.png) no-repeat left top;
+	background: url(images/applications.png) no-repeat left top;
+	background-size: 24px 24px;
 	}
 	
 h1.domain  {
-	background: url(images/domain_24x.png) no-repeat left top;
+	background: url(images/domains.png) no-repeat left top;
+	background-size: 24px 24px;
 	}
 
 h1.release  {
-	background: url(images/application_24x.png) no-repeat left top;
+	background: url(images/releases.png) no-repeat left top;
+	background-size: 24px 24px;
 	}
 	
 h1.relversion  {
-	background: url(images/appversion_24x.png) no-repeat left top;
+	background: url(images/releases.png) no-repeat left top;
+	background-size: 24px 24px;
 	}
 	
 h1.compversion  {
-	background: url(images/component_ver_24x.png) no-repeat left top;
+	background: url(images/components.png) no-repeat left top;
+	background-size: 24px 24px;
 	}	
 
 h1.component  {
-	background: url(images/component_24x.png) no-repeat left top;
+	background: url(images/components.png) no-repeat left top;
+    background-size: 24px 24px;
 	}
 	
 h1.template  {
-	background: url(images/template_24x.png) no-repeat left top;
+	background: url(images/templates.png) no-repeat left top;
+	background-size: 24px 24px;
 	}
 		
 h1.accordion  {
@@ -1163,7 +1680,7 @@ h1.dialog_subtitle  {
 
 span.subtitle {
 	font-weight: normal;
-	font-style: normal;
+	font-style: normal;s
 }
 
 h1.appversion_noicon, .taskpanels {  
@@ -1251,78 +1768,35 @@ ul.subpanel {   /* styles list with icons in "Tasks for this Domain" panel */
 /*REF: http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=203*/
 	white-space: nowrap;
 	list-style-type: none;
-	margin-left: 0;
-	padding-left: 10px;
-	margin-top: 6px;
+	text-align: left;
+	padding-left: 4px;
 }
 	
 ul.subpanel li {
-	padding-bottom: 4px;
+	text-align: left;
 }	
 
-.icon_inline_Deploy {
-	width: 20px;
-	background: url(images/deploy_16x.png) no-repeat;
-	}
-	
-.icon_inline_Approve {
-	width: 20px;
-	background: url(images/approve_16x.png) no-repeat;
-	}
-	
-.icon_inline_Remove {
-	width: 20px;
-	background: url(images/remove_16x.png) no-repeat;
-	}
-
-.icon_inline_Request {
-	width: 20px;
-	background: url(images/request_16x.png) no-repeat;
-	}	
-		
-.icon_inline_CreateVersion {
-	width: 20px;
-	background: url(images/create_appver_16x.png) no-repeat;
-	}
-	
-.icon_inline_RunAction {
-	width: 20px;
-	background: url(images/action.png) no-repeat;
-	}
-			
-.icon_inline_Move {
-	width: 20px;
-	background: url(images/move_up_16x.png) no-repeat;
-	}
-	
-.icon_inline_Group {
-	width: 20px;
-	background: url(images/group_16x.png) no-repeat;
-	}
 
 /* @group Table */
 
 
 .icon_inline_user {
 	width: 20px;
-	background: url(images/user_16x.png) no-repeat;
+	background: url(images/users_sm.png) no-repeat;
 	}
 	
-.adjacent_icon {
-	padding-left: 20px;
-	}
-
 .dev_table { 
-	width: 100%; 
-	border-collapse: collapse;
-	border: none;
+	width: 100%;
+    border-collapse: collapse;
+    border: none;
+    border-spacing: 0px;
 }
 	
 .dev_table td:first-child {
 	font-style: italic;
-	/* width: auto; */
 	width: 300px;
-	}
+	border-right: 1px solid #dcdcdc;
+}
 
 .dev_table th:last-child {
 	border-right:  none;
@@ -1354,34 +1828,469 @@ ul.subpanel li {
 .dev_table td { 
 	padding:4px; 
 	padding-left: 8px;
-	border-right: 1px solid #dcdcdc;
 	text-align: left;
 	}
 
-.dev_table tr:nth-child(odd) { 
-	background: #fafafa;
-	}
-
-.dev_table tr:nth-child(even) { 
-	background: #FFF;
-	}
-
-#component_item_details tr:nth-child(odd) { 
-	background: #fdfaf7;
-	}
-
+.dev_table tr {
+	height: 32px;
+	font-size: 13px;
+	color: #676767;
+}	
 
 .dev_table th {
 	padding:4px;
 	text-align: left;
 	font-weight: 700;
 	padding-left: 8px;
-	border-bottom: 1px solid #dcdcdc; 
-	border-right: 1px solid #dcdcdc;
-	background-color: #eaedf0;
+
+}
+
+
+.cb_dev_table { 
+	width: 100%;
+    border-collapse: collapse;
+    border: none;
+    border-spacing: 0px;
 }
 	
+.cb_dev_table td:first-child {
+	width:40px;
+}
+
+.cb_dev_table td:nth-child(2) {
+	font-style: italic;
+	width:280px;
+}
+
+.cb_dev_table th:last-child {
+	}
+
+.cb_dev_table td:last-child {
+	}
+	
+.cb_dev_table td { 
+	padding:4px; 
+	padding-left: 8px;
+	text-align: left;
+	}
+
+.cb_dev_table tr {
+	height: 32px;
+	font-size: 13px;
+	color: #676767;
+}	
+
+.cb_dev_table th {
+	padding:4px;
+	text-align: left;
+	font-weight: 700;
+	padding-left: 8px;
+}	
+
+#histfeed table{
+  display:block;
+  overflow:scroll;
+  height: 100%;
+  width: 100%;
+}
+
+#attrs_add_button {
+	float: right;
+	padding-right:40px;
+	display: inline-block;
+}
+
+#attrs_title {
+	display: inline-block;
+}
+
+#attrib10 {
+	border-collapse: separate;
+}
+
+#attrib10 td {
+	border: none;
+}
+
+#attrs10_add_button {
+	float: right;
+	padding-right:40px;
+	display: inline-block;
+}
+
+#attrs10_title {
+	display: inline-block;
+}
+
+#taskstab {
+	border-collapse: separate;
+}
+
+#taskstab td {
+	border: none;
+}
+
+#tasks_add_button {
+	float: right;
+	padding-right:40px;
+	display: inline-block;
+}
+
+#tasks_title {
+	display: inline-block;
+}
+
+
+#app4comp {
+	border-collapse: separate;
+}
+
+
+#attrib-edit {
+	display: none;
+}
+
+#srv4env-edit {
+	display: none;
+}
+
+#env4app-edit {
+	display: none;
+}
+
+#env4app_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#app4env_add_button {
+	float: right;
+	padding-right:40px;
+	display: inline-block;
+}
+
+#envs_title {
+	display: inline-block;
+}
+
+#defects4app_add_button {
+	float: right;
+	padding-right:40px;
+	display: inline-block;
+}
+
+#crs_title {
+	display: inline-block;
+}
+
+/*** start emailto ***/
+
+#emailto-edit {
+	display: none;
+}
+
+#emailto-panel {
+	width: 100%;
+	height: calc(100% - 18px);
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+}	
+
+#emailto_title {
+	display: inline-block;
+}
+
+#emailto_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#emailto td {
+	border: none;
+	white-space: nowrap;
+}
+
+#emailto {
+	border-collapse: separate;
+}
+
+#emailto td:nth-child(2) {
+	border: none;
+	white-space: nowrap;
+}
+/*** end emailto ***/
+
+#feedback-panel-header {
+  display: inline;
+}
+
+#feedback_title {
+ float: left;	
+}
+
+#feedback-label {
+	font-size: 1.2em;
+	float:left;
+	padding-top: 12px;
+	padding-left:80px;
+}
+
+#feedback-env > select {
+  margin-top: 13px;
+  margin-left: 10px;
+  float: left;
+}
+
+/*** start srv4comp ***/
+
+#srv4comp-edit {
+	display: none;
+}
+
+#srv4comp-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+}	
+
+#srv4comp_title {
+	display: inline-block;
+}
+
+#srv4comp_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#srv4comp td {
+	border: none;
+	white-space: nowrap;
+}
+
+#srv4comp {
+	border-collapse: separate;
+}
+
+#srv4comp td:nth-child(2) {
+	border: none;
+	white-space: nowrap;
+}
+
+/*** end srv4comp ***/
+/*** start comp4srv ***/
+
+#comp4srv-edit {
+	display: none;
+}
+
+#comp4srv-panel {
+	overflow-y: auto;
+	max-height: 300px;
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+    margin-bottom: 0px;
+}	
+
+#comp4srv_title {
+	display: inline-block;
+}
+
+#comp4srv_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#comp4srv td {
+	border: none;
+	white-space: nowrap;
+}
+
+#comp4srv {
+	border-collapse: separate;
+}
+
+#comp4srv td:nth-child(2) {
+	border: none;
+	white-space: nowrap;
+}
+/*** end comp4srv ***/
+/*** start inputparams ***/
+
+#inputparams-edit {
+	display: none;
+}
+
+#inputparams-panel {
+	overflow-y: auto;
+	max-height: 300px;
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+    margin-bottom: 0px;
+}	
+
+#inputparams_title {
+	display: inline-block;
+}
+
+#inputparams_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#inputparams td {
+	border: none;
+	white-space: nowrap;
+}
+
+#inputparams {
+	border-collapse: separate;
+}
+
+#inputparams td:nth-child(2) {
+	border: none;
+	white-space: nowrap;
+}
+/*** end inputparams ***/
+/*** start switchargs ***/
+
+#switchargs-edit {
+	display: none;
+}
+
+#switchargs-panel {
+	overflow-y: auto;
+	max-height: 300px;
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+    margin-bottom: 0px;
+}	
+
+#switchargs_title {
+	display: inline-block;
+}
+
+#switchargs_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#switchargs td {
+	border: none;
+	white-space: nowrap;
+}
+
+#switchargs {
+	border-collapse: separate;
+}
+
+#switchargs td:nth-child(2) {
+	border: none;
+	white-space: nowrap;
+}
+/*** end switchargs ***/
+
+
+#app4comp td {
+	border: none;
+}
+
+
+#env4app {
+		border-collapse: separate;
+}
+
+#env4app td {
+	border: none;
+}
  	
+#env4app td:nth-child(2) {
+	border: none;
+	white-space: nowrap;
+}
+
+
+/******/
+
+#app4env {
+		border-collapse: separate;
+}
+
+#app4env td:nth-child(1) {
+	border: none;
+	white-space: nowrap;
+}
+
+#app4env td {
+	border: none;
+}
+ 	
+/******/
+
+#domnav-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+    text-align: center;
+}	
+
+/*** Start srv4env ***/
+
+#srv4env-edit {
+	display: none;
+}
+
+#srv4env-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}	
+
+#srv4env_title {
+	display: inline-block;
+}
+
+#srv4env_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#srv4env td {
+	border: none;
+	white-space: nowrap;
+}
+
+#srv4env {
+	border-collapse: separate;
+}
+
+#srv4env td:nth-child(2) {
+	border: none;
+	white-space: nowrap;
+}
+
+/*** End srv4env  **?
+
+#component_item_details tr:nth-child(odd) { 
+	background: #fdfaf7;
+	}
 
 /* @end */
 
@@ -1404,26 +2313,27 @@ ul.subpanel li {
 	display: inline-block;
 	margin: 0 8px 0 6px;
 	padding: 0 6px 0 10px;
-	background-color: #b9c8da;
+	font-size: 14px;
+/*	background-color: #b9c8da;
 	border-top-left-radius: 3px;
 	border-top: 1px solid #a9b9cd;
-	border-left: 1px solid #a9b9cd;
+	border-left: 1px solid #a9b9cd; */
 	overflow: visible; /* removes extra width in IE */
 	}
 
 .tabrow_tabmenu li:hover {
-	background: #4473a6 url(images/tab_active_gradient_tile.png) 0 top;	
+/*	background: #4473a6 url(images/tab_active_gradient_tile.png) 0 top;	 
 	z-index: 2;
 	border-width: 1px 0px 0px 1px;
-	border-color: #275d95;
-	color: #fff;
+	border-color: #275d95; */
+	color: #4473a6;
 	}
 
 .tabrow_tabmenu li:hover a {
-	 color: #fff;
+	 color: #4473a6;
 	}
 
-.tabrow_tabmenu li:hover:after  {
+/* .tabrow_tabmenu li:hover:after  {
 	position: absolute;
 	content: " ";
 	top: -1px;
@@ -1442,13 +2352,15 @@ ul.subpanel li {
 	height: 24px;	
 	background: url(images/tab_inactive_right_45.png) no-repeat;
 	}
+*/
 	
 .tabrow_tabmenu a {
 	font-weight: 700;
 	color: #5b7394; 
 	text-decoration: none;
 	}
-	
+
+/*	
 .tabrow_tabmenu li a:after {
 	color: #5b7394; 
 	text-decoration: none;
@@ -1459,26 +2371,37 @@ ul.subpanel li {
 	text-decoration: none;
 	background: url(images/tab_active_right_45.png) no-repeat;
 	}
+*/
 	
 .tabrow_tabmenu li.current   {
-	background: #4473a6 url(images/tab_active_gradient_tile.png) 0 top;	
+/*	background: #4473a6 url(images/tab_active_gradient_tile.png) 0 top;	
 	z-index: 2;
 	border-width: 1px 0px 0px 1px;
-	border-color: #275d95;
-	color: #fff;
+	border-color: #275d95; 
+	text-decoration: underline; */
+	color: #4473a6;
 	}
 	
 .tabrow_tabmenu li.current a   {	 
-	z-index: 2;
-	color: #fff;
+/*	z-index: 2; */
+	color: #4473a6;
 	}
 
 .tabrow_tabmenu li.current:after {
-	font-weight: 700;
+/*	font-weight: 700;
 	color: #5b7394; 
 	text-decoration: none;
-	background: url(images/tab_active_right_45.png) no-repeat;
-	}
+	background: url(images/tab_active_right_45.png) no-repeat; */
+	
+	background: #3367d6;
+    bottom: 0;
+    content: "";
+    display: block;
+    height: 2px;
+    left: 2px;
+    position: absolute;
+    right: 0;
+	} 
 
 /* @end */
 
@@ -1577,14 +2500,8 @@ img.dialog_title_icon {
 .ui-icon-close { background-position: -80px -128px; }
 
 .ui-dialog .ui-dialog-content {
-	position: relative;
-	border: 0;
-	padding: 6px 0 8px 12px;
-	background-image: none !important;
-	background-color: #f7f3ec !important; 
 	overflow: auto;
-	 
-	}
+}
 
 .ui-dialog .ui-dialog-content textarea {
 	resize: none;
@@ -1601,12 +2518,7 @@ img.dialog_title_icon {
 }
 
 .ui-dialog-buttonpane {
-	border-width: 0 0 0 0 !important;
-	border-radius:5px;
-	background-image: none !important;
-	background-color: #f7f3ec !important; 
-	padding: 0 0 0 1px;
-	margin: 0 !important;	 
+
 	}
 
 .ui-button {
@@ -1698,117 +2610,134 @@ button.notes_button:hover {
 	}
 
 button.edit_button {
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	padding: 1px 2px 0 4px;
-	cursor: pointer !important;
-	background-color: #eaedf0;
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 0px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1.25em;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
+  color: #3367d6;
 	}
 
 button.edit_button_disabled {
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	padding: 1px 2px 0 4px;
-	cursor: pointer !important;
-	background-color: #eaedf0;
+	background-color: grey;
 	}
 	
-button.edit_button:hover {
-	background-color: #fff;
-	}
 
 button.delete_button {
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	padding: 1px 2px 0 4px;
-	cursor: pointer !important;
-	background-color: #eaedf0;
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 0px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1.25em;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
+  color: grey;
 	}
 
 button.delete_button_disabled {
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	padding: 1px 2px 0 4px;
-	cursor: pointer !important;
-	background-color: #eaedf0;
+	background-color: grey;
 	}
 	
-button.delete_button:hover {
-	background-color: #fff;
-	}
 	
 button.add_button {
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	padding: 1px 2px 0 4px;
-	cursor: pointer !important;
-	background-color: #eaedf0;
-	}
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 0px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1.25em;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
+  color: #3367d6;
+}
 
 button.add_button_disable {
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	padding: 1px 2px 0 4px;
-	cursor: pointer !important;
-	background-color: #eaedf0;
+	background-color: grey;
 	}
 	
-button.add_button:hover {
-	background-color: #fff;
+	
+button.save_button {
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 0px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1.25em;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
+  color: grey;
 	}
+	
+button.cancel_button {
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 0px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1.25em;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
+  color: grey;
+	}	
 	
 button.test_button {
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	padding: 4px 4px 4px 4px;
-	cursor: pointer !important;
-	background-color: #eaedf0;
-	font-size: 1.2em;
-	color:  #506582;
-	font-weight: 700;
-	}
-
-button.test_button_disable {
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	padding: 4px 4px 4px 4px;
-	cursor: pointer !important;
-	background-color: #eaedf0;
-	font-size: 1.2em;
-	color:  #506582;
-	font-weight: 700;
-	}
-	
-button.test_button:hover {
-	background-color: #fff;
-	font-size: 1.2em;
-	padding: 4px 4px 4px 4px;
-	color:  #506582;
-	font-weight: 700;
-	}
-
-button.save_button, button.save_button:hover {
-	position: absolute;
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	padding: 2px 3px 0;
-	cursor: pointer !important;
-	background-color: #eaedf0;
-	right:  0px;
-	top: -1px;
-	}
-
-button.save_button:hover {
-	background-color: #fff;
-	}
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 0px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1.25em;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
+  color: #3367d6;
+  display: none;
+	}		
 
 button.save_button_sub, button.save_button_sub:hover {
 	position: absolute;
@@ -1822,12 +2751,22 @@ button.save_button_sub, button.save_button_sub:hover {
 	}
 
 button.up_button {
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	padding: 1px 2px 0 4px;
-	cursor: pointer !important;
-	background-color: #eaedf0;
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 0px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1.25em;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
+  color: grey;
 	}
 
 button.up_button_disabled {
@@ -1839,17 +2778,24 @@ button.up_button_disabled {
 	background-color: #eaedf0;
 	}
 	
-button.up_button:hover {
-	background-color: #fff;
-	}
-	
+
 button.down_button {
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=183 */
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	padding: 1px 2px 0 4px;
-	cursor: pointer !important;
-	background-color: #eaedf0;
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 0px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1.25em;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
+  color: grey;
 	}
 
 button.down_button_disabled {
@@ -1861,81 +2807,136 @@ button.down_button_disabled {
 	background-color: #eaedf0;
 	}
 	
-button.down_button:hover {
-	background-color: #fff;
-	}	
-	
 /****  CSS FOR 16X ICON BUTTONS   *****/
-button.edit_button_param, button.edit_button_param:hover {
-	position: absolute;
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	cursor: pointer !important;
-	background-color: #eaedf0;
-	right: 108px;
-	top: 1px;
-	height: 22px !important;
-	padding: .1em .1em .1em .1em !important;
-	}
+button.edit_button_param {
+  position: absolute;
+  right: 108px;
+  top: -5px;
+  height: 22px !important;
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
+}
 	
-button.add_button_param, button.add_button_param:hover {
-	position: absolute;
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	cursor: pointer !important;
-	background-color: #eaedf0;
-	right: 82px;
-	top: 1px;
-	height: 22px !important;
-	padding: .1em .1em .1em .1em !important;
+button.add_button_param {
+  position: absolute;
+  right: 82px;
+  top: -5px;
+  height: 22px !important;
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
 	}
 
-button.delete_button_param, button.delete_button_param:hover {
-	position: absolute;
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	cursor: pointer !important;
-	background-color: #eaedf0;
-	right: 56px;
-	top: 1px;
-	height: 22px !important;
-	padding: .1em .1em .1em .1em !important;
+button.delete_button_param {
+  position: absolute;
+  right: 56px;
+  top: -5px;
+  height: 22px !important;
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
 	}
 
-button.up_button_param, button.down_button_param:hover {
-	position: absolute;
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	cursor: pointer !important;
-	background-color: #eaedf0;
-	right: 30px;
-	top: 1px;
-	height: 22px !important;
-	padding: .1em .1em .1em .1em !important;
+button.up_button_param {
+  position: absolute;
+  right: 30px;
+  top: -5px;
+  height: 22px !important;
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
 	}
 	
-button.down_button_param, button.down_button_param:hover {
-	position: absolute;
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	cursor: pointer !important;
-	background-color: #eaedf0;
-	right: 4px;
-	top: 1px;
-	height: 22px !important;
-	padding: .1em .1em .1em .1em !important;
+button.down_button_param {
+  position: absolute;
+  right: 4px;
+  top: -5px;
+  height: 22px !important;
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
 	}
 	
-button.edit_button_sub_small, button.edit_button_sub_small:hover {
+button.edit_button_sub_small {
 	position: absolute;
-	border-radius: 4px;
-	border: 1px solid #a9b9cd;
-	cursor: pointer !important;
-	background-color: #eaedf0;
 	right: 4px;
-	top: 1px;
-	height: 22px !important;
-	padding: .1em .1em .1em .1em !important;
+	top: -4px;
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
 	}
 
 button.save_button_sub_small img {
@@ -1950,17 +2951,6 @@ button.save_button_sub_small img {
 
 
 /* @group Login Screen */
-
-button.edit_button_sub_small:hover, 
-button.delete_button_sub_small:hover, 
-button.edit_button_param:hover,
-button.add_button_param:hover,
-button.delete_button_param:hover,
-button.up_button_param:hover,
-button.down_button_param:hover {
-	background-color: #fff;
-	}
-
 
 #login_container_dialog {
 	overflow: hidden;
@@ -2092,10 +3082,9 @@ button.down_button_param:hover {
 
 .logindialog .ui-dialog-buttonpane {
 	position: absolute;
-	width:  calc(100% - 61px);
-	height: 30px;
-	background: #f7f3ec !important;
-	bottom:  125px; 
+	width:  calc(100% - 75px);
+    border: none;
+	bottom:  130px; 
 }
 
 .logindialog .ui-widget-overlay {
@@ -2130,7 +3119,47 @@ button.down_button_param:hover {
 
 .logindialog .ui-button-text {
 	font-weight: 700;
-	color: #676767;
+}
+
+.stackedbutton { 
+	display: block !important;
+	padding-right: 180px !important; 
+	padding-top: 10px !important;
+	padding-bottom: 10px !important;
+	padding-left:40px !important;
+	margin-bottom: 0px !important;
+	top: -80px !important;
+}
+
+.login_hide {
+ display: none !important;	
+}
+
+
+#deployhub {
+    padding-right: 155px !important; 
+}
+
+.github-logo {
+    background-image: url(images/github-logo.png) !important;
+    width: 40px !important;
+    height: 40px !important;
+    top: 10px !important;
+}
+
+.deployhub-logo {
+    background-image: url(images/justdog.png) !important;
+    width: 40px !important;
+    height: 40px !important;
+    top: 10px !important;
+}
+
+.google-logo {
+    background-image: url(images/google-g.png) !important;
+    width: 40px !important;
+    height: 40px !important;
+    top: 13px !important;
+    left: 14px !important;
 }
 
 /* @end */  /* END LOGIN CSS */
@@ -2190,8 +3219,8 @@ button.down_button_param:hover {
 
 
 #subdomainlist         { list-style-type: none; margin: 0; padding: 0; }
-#subdomainlist li      { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 18px; height: 10px; background:url(images/domain_16x.png) 0px 5px no-repeat;cursor: pointer;}
-#subdomainlist li.islifecycle     { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 18px; height: 10px; background:url(images/lifecycle_16x.png) 0px 5px no-repeat;cursor: pointer;}
+#subdomainlist li      { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 18px; height: 10px; background:url(images/domains_sm.png) 0px 5px no-repeat;cursor: pointer;}
+#subdomainlist li.islifecycle     { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 18px; height: 10px; background:url(images/buildengines_sm.png) 0px 5px no-repeat;cursor: pointer;}
 #subdomainlist li span { position: absolute; margin-left: 0px; cursor: pointer; }
 
 /* @end */
@@ -2203,6 +3232,8 @@ button.down_button_param:hover {
 }
 .actionarglist li {
 	background-color: #ddd; display:inline; padding: 4px; margin: 4px; height: 2em; line-height: 3em;
+	white-space: break-spaces;
+	display: inline-flex;
 }
 .actionarg_required {
 	border: 1px solid black;
@@ -2215,6 +3246,16 @@ button.down_button_param:hover {
 }
 .argName {
 	font-family: "Courier New", Courier, monospace; font-style: italic;
+}
+
+.summlabel.repoindent, .repoprops > td:nth-child(1) {
+	padding-left: 30px;
+	width: 270px !important;
+}
+
+#servstat > tbody > tr > td:nth-child(1) {
+	padding-left: 38px;
+	width: 270px !important;
 }
 
 #tabs-UserMembership-data, #tabs-GroupMembership-data, #tabs-DomainSummary-data {
@@ -2232,7 +3273,7 @@ button.down_button_param:hover {
 }
 
 .ui-breadcrumb-highlight {
-	background: #beebff url("/themeroller/images/ui-bg_glass_55_f5f846_1x400.png") 50% 50% repeat-x;
+	background: Silver url("/themeroller/images/ui-bg_glass_55_f5f846_1x400.png") 50% 50% repeat-x;
 }
 
 .omdashboard {
@@ -2243,6 +3284,13 @@ h2.reports {
 	color: white
 }
 
+.scrolltd {
+	width:100%;
+	max-height: 200px;
+	margin: 0;
+	padding: 0;
+	overflow-y: auto;
+}
 
 .tabbedDialog .ui-dialog-titlebar {
 	display:none
@@ -2300,8 +3348,6 @@ h2.reports {
 	outline: none;
 	border: 1px solid #cccccc;
 	font-size: 1.0em;
-	background-image: none !important;
-	background-color: #f7f3ec !important; 
 	width: calc(100% - 15px);
 	padding: 8px 0 12px 12px;
 	overflow: scroll;
@@ -2310,3 +3356,628 @@ h2.reports {
 div.dt-buttons {
 	margin-left: 20px 
 }
+
+#panel_container_menu.left {
+	position: absolute;
+    top: 50px;
+    bottom: 55px;
+    width: 254px;
+}
+
+
+/* Style the tab */
+.verttab {
+  float: left;
+  border: 1px solid #ccc;
+  background-color: #fafafa;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Style the buttons that are used to open the tab content */
+.verttab button {
+  display: block;
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  color: black;
+  padding: 14px 16px;
+  width: 100%;
+  border: none;
+  outline: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
+}
+
+/* Change background color of buttons on hover */
+.verttab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current "tab button" class */
+.verttab button.active {
+ background: lightgrey;
+}
+
+/* Style the tab content */
+.verttabcontent {
+  float: left;
+  padding: 0px 12px;
+  border: 1px solid #ccc;
+  width: 70%;
+  border-left: none;
+  height: 300px;
+}
+
+.verttab_domain:before {
+    background: url("images/domains.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;s
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+
+.verttab_app:before {
+    background: url("images/applications.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;s
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+.verttab_comp:before {
+    background: url("images/components.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+.verttab_rel:before {
+    background: url("images/releases.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+.verttab_env:before {
+    background: url("images/environments.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+.verttab_endpoint:before {
+    background: url("images/endpoints.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+.verttab_buildeng:before {
+    background: url("images/buildengines.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+.verttab_buildjob:before {
+    background: url("images/buildjobs.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+#verttab_template {
+    padding-left: 60px;	
+}
+
+.verttab_template:before {
+    background: url("images/templates.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+#verttab_user {
+    padding-left: 60px;	
+}
+
+.verttab_user:before {
+    background: url("images/users.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+#verttab_group {
+    padding-left: 60px;	
+}
+
+.verttab_group:before {
+    background: url("images/groups.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+.verttab_servercomptype:before {
+    background: url("images/customization.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+.verttab_action:before {
+    background: url("images/actions.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+.verttab_procedure:before {
+    background: url("images/functions_procedures_sm.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+#verttab_notifier {
+    padding-left: 60px;		
+}
+
+.verttab_notifier:before {
+    background: url("images/notifiers.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+#verttab_repository {
+    padding-left: 60px;	
+}
+
+.verttab_repository:before {
+    background: url("images/repositories.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+#verttab_datasource {
+    padding-left: 60px;		
+}
+
+.verttab_datasource:before {
+    background: url("images/datasources.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+#verttab_credential {
+    padding-left: 60px;
+}
+
+.verttab_credential:before {
+    background: url("images/credentials.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+.verttab_setup:before {
+    background: url("images/cog-light.svg") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
+    background-size: 24px 24px;    
+    content: "";
+    display: inline-block;
+    color: #fff;
+    height: 30px;
+    margin-right: 13px;
+    position: relative;
+    top: -2px;
+    vertical-align: middle;
+    width: 30px;
+}
+
+#applist_length {
+	display: none;
+}
+
+#applist_pane, #complist_pane, #envlist_pane. #endpointlist_pane, #buildenglist_pane, #buildjoblist_pane, #actionlist_pane, #procdurelist_pane, #notifierlist_pane, #repositorylist_pane, #datasourcelist_pane, #credentiallist_pane, #userlist_pane, #grouplist_pane, #templatelist_pane {
+    bottom: 20%;
+    box-sizing: border-box;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+} 
+
+#applist > tbody > tr > td:focus { 
+	outline: none; 
+   }
+   
+#complist > tbody > tr > td:focus { 
+	outline: none; 
+   }  
+   
+#rellist > tbody > tr > td:focus { 
+	outline: none; 
+   }    
+   
+#envlist > tbody > tr > td:focus { 
+	outline: none; 
+   }
+   
+#endpointlist > tbody > tr > td:focus { 
+	outline: none; 
+   }   
+   
+#buildenglist > tbody > tr > td:focus { 
+	outline: none; 
+   }
+
+#buildjoblist > tbody > tr > td:focus { 
+	outline: none; 
+   }
+
+
+#actionlist > tbody > tr > td:focus { 
+	outline: none; 
+   }
+
+#procedurelist > tbody > tr > td:focus { 
+	outline: none; 
+   }
+
+#notifierlist > tbody > tr > td:focus { 
+	outline: none; 
+   }
+   
+#repositorylist > tbody > tr > td:focus { 
+	outline: none; 
+   }
+   
+#datasourcelist > tbody > tr > td:focus { 
+	outline: none; 
+   }
+
+#credentiallist > tbody > tr > td:focus { 
+	outline: none; 
+   }
+   
+#userlist > tbody > tr > td:focus { 
+	outline: none; 
+   }   
+    
+#grouplist > tbody > tr > td:focus { 
+	outline: none; 
+   }   
+            
+#servercomptypelist > tbody > tr > td:focus { 
+	outline: none; 
+   }    
+   
+#templatelist > tbody > tr > td:focus { 
+	outline: none; 
+   }    
+   
+#right_panel_header {
+	height: 34px;
+	float:right;
+	padding-right: 40px;
+	margin-top: 25px;
+}
+
+#applist_buttons {
+	margin-left: 50px;
+	position: relative;
+	top: 0;
+}
+
+#pickproc {
+	display: block;
+    position: relative;
+    top: 0px;
+    left: 0px;
+}
+
+/* Style the buttons that are used to open the tab content */
+.title_buttons {
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  color: #3367d6;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
+}
+
+/* Change background color of buttons on hover */
+.title_buttons:hover {
+  background-color: #ddd;
+}
+
+/* Style the buttons that are used to open the tab content */
+.title_buttons_nohover {
+  background-color: inherit;
+  font-family: 'Open Sans', sans-serif;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top:8px;
+  padding-bottom: 8px;
+  border-radius: 2px;
+  border: none;
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 400;
+  transition: 0.3s;
+  box-sizing: border-box;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown_menu {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown_menu-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 250px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown_menu-content a {
+  white-space: nowrap;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown_menu-content a:hover {background-color: #ddd;}
+
+/* Show the dropdown menu on hover */
+/* .dropdown_menu:hover .dropdown_menu-content {display: block;} */
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown_menu:hover .dropbtn {background-color: #3e8e41;}
+
+.no-titlebar .ui-dialog-titlebar {
+    display: none;
+}
+
+.no-titlebar {
+    top: 176px !important;
+    left: 276px !important;
+    width: 50% !important;
+    height: calc(100% - 232px) !important;	
+    border: none;
+    border-radius: 0px;
+    background-color: none;
+}
+
+.jconfirm-content {
+	font-size: 1.5em;
+}
+
+/* table.dataTable.dtr-inline.collapsed>tbody>tr[role="row"]>td:first-child:before, */
+/* table.dataTable.dtr-inline.collapsed>tbody>tr[role="row"]>th:first-child:before */
+/* { */
+/*     content: ' '; */
+/*     margin-top: -6px; */
+/*     margin-left: -6px; */
+/*     border: 1px solid black; */
+/*     border-radius: 3px;	 */
+/*     display: block; */
+/*     position: absolute; */
+/*     top: 1.2em; */
+/*     left: 50%; */
+/*     width: 12px; */
+/*     height: 12px; */
+/*     box-sizing: border-box; */
+/* } */
+
+input[type=text], textarea {
+  -webkit-transition: all 0.30s ease-in-out;
+  -moz-transition: all 0.30s ease-in-out;
+  -ms-transition: all 0.30s ease-in-out;
+  -o-transition: all 0.30s ease-in-out;
+  outline: none;
+  padding: 3px 0px 3px 3px;
+  margin: 5px 1px 3px 0px;
+  border: 1px solid #DDDDDD;
+}
+ 
+input[type=text]:focus, textarea:focus {
+  box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+  padding: 3px 0px 3px 3px;
+  margin: 5px 1px 3px 0px;
+  border: 1px solid rgba(81, 203, 238, 1);
+}
+
+
+.VS-search .VS-icon-search {
+	background-image: url(images/filter-light.svg);
+}
+
+.VS-search-box {
+  border:none !important;
+ }
+ 
+.VS-interface.ui-autocomplete .ui-menu-item a {
+	white-space: nowrap;
+} 
+
+.VS-search .search_facet .category {
+	text-transform: none;
+}
+
+.VS-search .search_input input {
+	border: none;	
+}
+
+.VS-search .search_input.is_editing input {
+	box-shadow: none;	
+}
+.VS-search .search_facet input {
+    border:none;	
+}
+
+.VS-search .VS-search-box {
+	box-shadow: inset 0px 0px 3px #acf;
+}
+
+.VS-interface.ui-autocomplete {
+	max-width: none;
+}
+
+.jqplot-table-legend {
+	white-space: nowrap;
+}
+

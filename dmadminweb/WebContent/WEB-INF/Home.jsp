@@ -21,2354 +21,144 @@
 
 <html>
 <head>
-<title>DeployHub</title>
+<title>Ortelius</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 
 <link rel="icon" href="favicon.ico">
+<link rel='stylesheet' type="text/css" href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,600,400,700,800'>
+<link rel="stylesheet" type="text/css" href="css/cupertino/jquery-ui-min.css" />
+<link rel="stylesheet" type="text/css" href="css/jquery.dmcontextmenu.css" />
+<link rel="stylesheet" type="text/css" href="css/jquery.jqplot.css" />
+<link rel="stylesheet" type="text/css" href="css/calendar.css" />
+<link rel="stylesheet" type="text/css" href="css/calendar-print.css" media="print" />
+<link rel="stylesheet" type="text/css" href="css/vis.min.css" />
+<link rel="stylesheet" type="text/css" href="css/visualsearch-datauri.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" type="text/css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.6/css/buttons.dataTables.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.0/css/select.dataTables.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+<link rel="stylesheet" type="text/css" href="css/devops_frydesign.css" />
 
-<link rel='stylesheet' type="text/css" href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,600,400,700,800?v=${initParam.BUILD_VERSION}'>
-<link rel="stylesheet" type="text/css" href="css/cupertino/jquery-ui-min.css?v=${initParam.BUILD_VERSION}" />
-<link rel="stylesheet" type="text/css" href="css/jquery.dmcontextmenu.css?v=${initParam.BUILD_VERSION}" />
-<link rel="stylesheet" type="text/css" href="css/jquery.jqplot.css?v=${initParam.BUILD_VERSION}" />
-<link rel="stylesheet" type="text/css" href="css/calendar.css?v=${initParam.BUILD_VERSION}" />
-<link rel="stylesheet" type="text/css" href="css/calendar-print.css?v=${initParam.BUILD_VERSION}" media="print" />
-<link rel="stylesheet" type="text/css" href="css/vis.min.css?v=${initParam.BUILD_VERSION}" />
-<link rel="stylesheet" type="text/css" href="css/devops_frydesign.css?v=${initParam.BUILD_VERSION}" />
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui.js"></script>
+<script type="text/javascript" src="jquery.jstree.js"></script>
+<script type="text/javascript" src="js/jquery.cookie.js"></script>
+<script type="text/javascript" src="js/jquery.ui.widget.js"></script>
+<script type="text/javascript" src="js/underscore-1.5.2.js"></script>
+<script type="text/javascript" src="js/backbone-1.1.0.js"></script>
+<script type="text/javascript" src="js/visualsearch.js"></script>
+<script type="text/javascript" src="js/cookies.js"></script>
+<script type="text/javascript" src="js/jquery.blockUI.js"></script>
+<script type="text/javascript" src="js/jquery.sessionTimeout.js"></script>
+<script type="text/javascript" src="js/jsPlumb-util.js"></script>
+<script type="text/javascript" src="js/jsPlumb-dom-adapter.js"></script>
+<script type="text/javascript" src="js/jsPlumb-drag.js"></script>
+<script type="text/javascript" src="js/jsPlumb.js"></script>
+<script type="text/javascript" src="js/jsPlumb-endpoint.js"></script>
+<script type="text/javascript" src="js/jsPlumb-connection.js"></script>
+<script type="text/javascript" src="js/jsPlumb-anchors.js"></script>
+<script type="text/javascript" src="js/jsPlumb-defaults.js"></script>
+<script type="text/javascript" src="js/jsPlumb-connectors-statemachine.js"></script>
+<script type="text/javascript" src="js/jsPlumb-connectors-flowchart.js"></script>
+<script type="text/javascript" src="js/jsPlumb-renderers-svg.js"></script>
+<script type="text/javascript" src="js/jsPlumb-renderers-canvas.js"></script>
+<script type="text/javascript" src="js/jsPlumb-renderers-vml.js"></script>
+<script type="text/javascript" src="js/jquery.jsPlumb.js"></script>
+<script type="text/javascript" src="js/selectenter.js"></script>
+<script type="text/javascript" src="js/jquery.jqplot.min.js"></script>
+<script type="text/javascript" src="js/plugins/jqplot.barRenderer.min.js"></script>
+<script type="text/javascript" src="js/plugins/jqplot.pieRenderer.min.js"></script>
+<script type="text/javascript" src="js/plugins/jqplot.canvasTextRenderer.min.js"></script>
+<script type="text/javascript" src="js/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
+<script type="text/javascript" src="js/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
+<script type="text/javascript" src="js/plugins/jqplot.canvasOverlay.min.js"></script>
+<script type="text/javascript" src="js/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+<script type="text/javascript" src="js/plugins/jqplot.highlighter.min.js"></script> 
+<script type="text/javascript" src="js/plugins/jqplot.cursor.min.js"></script> 
+<script type="text/javascript" src="js/plugins/jqplot.json2.min.js"></script>
+<script src="https://kit.fontawesome.com/ba98665da8.js" crossorigin="anonymous"></script>
 
-
-<script type="text/javascript" src="js/jquery.min.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jquery-ui.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="jquery.jstree.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jquery.cookie.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/cookies.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jquery.blockUI.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jquery.sessionTimeout.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jsPlumb-util.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jsPlumb-dom-adapter.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jsPlumb-drag.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jsPlumb.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jsPlumb-endpoint.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jsPlumb-connection.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jsPlumb-anchors.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jsPlumb-defaults.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jsPlumb-connectors-statemachine.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jsPlumb-connectors-flowchart.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jsPlumb-renderers-svg.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jsPlumb-renderers-canvas.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jsPlumb-renderers-vml.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jquery.jsPlumb.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/selectenter.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jquery.jqplot.min.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/plugins/jqplot.barRenderer.min.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/plugins/jqplot.pieRenderer.min.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/plugins/jqplot.canvasTextRenderer.min.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/plugins/jqplot.canvasAxisLabelRenderer.min.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/plugins/jqplot.canvasAxisTickRenderer.min.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/plugins/jqplot.canvasOverlay.min.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/plugins/jqplot.categoryAxisRenderer.min.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/plugins/jqplot.highlighter.min.js?v=${initParam.BUILD_VERSION}"></script> 
-<script type="text/javascript" src="js/plugins/jqplot.cursor.min.js?v=${initParam.BUILD_VERSION}"></script> 
-<script type="text/javascript" src="js/plugins/jqplot.json2.min.js?v=${initParam.BUILD_VERSION}"></script>
-
-<script type="text/javascript" src="js/fullcalendar.min.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/date.format.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jquery.json-2.4.min.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/globalize.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jquery-ui-timepicker-addon.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src='js/cultures/globalize.culture.de-DE.js?v=${initParam.BUILD_VERSION}'></script>
-<script type="text/javascript" src='js/cultures/globalize.culture.en-GB.js?v=${initParam.BUILD_VERSION}'></script>
-<script type="text/javascript" src='js/cultures/globalize.culture.en-US.js?v=${initParam.BUILD_VERSION}'></script>
-<script type="text/javascript" src="js/vis.min.js?v=${initParam.BUILD_VERSION}"></script>
-
-<script type="text/javascript" src="js/om/createtree.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/createtree_selection.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GlobalVars.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/Setup.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetSummary.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetAttributes.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetPrerequisities.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetComponents.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetComponentItems.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetVersionsOfApp.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetVersionsOfComp.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetApplicationVersions.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jquery.form.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/newsfeed.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetReports.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetDeployReports.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetServers4Env.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetServers4Comp.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetComponents4Servers.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetApplications4Comp.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetApps4Env.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetEnv4Apps.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/About.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/Home.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetCalendar.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetGroupMembership.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetUserMembership.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetAdminRights.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetArgs.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetWorkflow.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetProperties.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetPatterns.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetNewsDetails.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetEmailTo.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/jquery.dmcontextmenu.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/edit_area/edit_area_full.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/TestServer.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/om/GetTemplateBody.js?v=${initParam.BUILD_VERSION}"></script>
-<script type="text/javascript" src="js/jquery.fileDownload.js?v=${initParam.BUILD_VERSION}"></script>
-<script>
-
-// Set during login
-var admin=GetCookie("admin");
-if (admin == null) admin="N";
-isAdmin=admin;
-
-function Stack()
-{
-	this.stac=new Array();
-	this.pop=function() {
- 		return this.stac.pop();
- 	}
+<script type="text/javascript" src="js/fullcalendar.min.js"></script>
+<script type="text/javascript" src="js/date.format.js"></script>
+<script type="text/javascript" src="js/jquery.json-2.4.min.js"></script>
+<script type="text/javascript" src="js/globalize.js"></script>
+<script type="text/javascript" src="js/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src='js/cultures/globalize.culture.de-DE.js'></script>
+<script type="text/javascript" src='js/cultures/globalize.culture.en-GB.js'></script>
+<script type="text/javascript" src='js/cultures/globalize.culture.en-US.js'></script>
+<script type="text/javascript" src="js/vis.min.js"></script>
+<script type="text/javascript" src="js/oauth.min.js"></script>
+<script type="text/javascript" src="js/jquery.form.js"></script>
+<script type="text/javascript" src="js/jquery.fileDownload.js"></script>
+<script type="text/javascript" src="js/edit_area/edit_area_full.js"></script>
  
- 	this.push=function(item) {
-  		this.stac.push(item);
- 	}
- 
-	this.shift=function() {
-		return this.stac.shift();
- 	}
- 
-	this.prev=function() {
-		if (this.stac.length-1 >= 0) return this.stac[this.stac.length-1];
-  		return null;
- 	} 
-}
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.flash.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.html5.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.print.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/features/pageResize/dataTables.pageResize.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/select/1.3.0/js/dataTables.select.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<script type="text/javascript" src="js/ao/prototypes.js"></script>
+<script type="text/javascript" src="js/ao/ao_list.js"></script>
+<script type="text/javascript" src="js/ao/createtree.js"></script>
+<script type="text/javascript" src="js/ao/createtree_selection.js"></script>
+<script type="text/javascript" src="js/ao/GlobalVars.js"></script>
+<script type="text/javascript" src="js/ao/Setup.js"></script>
+<script type="text/javascript" src="js/ao/GetSummary.js"></script>
+<script type="text/javascript" src="js/ao/GetAttributes.js"></script>
+<script type="text/javascript" src="js/ao/GetPrerequisities.js"></script>
+<script type="text/javascript" src="js/ao/GetComponents.js"></script>
+<script type="text/javascript" src="js/ao/GetComponentItems.js"></script>
+<script type="text/javascript" src="js/ao/GetVersionsOfApp.js"></script>
+<script type="text/javascript" src="js/ao/GetVersionsOfComp.js"></script>
+<script type="text/javascript" src="js/ao/GetApplicationVersions.js"></script>
+<script type="text/javascript" src="js/ao/newsfeed.js"></script>
+<script type="text/javascript" src="js/ao/GetReports.js"></script>
+<script type="text/javascript" src="js/ao/GetDeployReports.js"></script>
+<script type="text/javascript" src="js/ao/GetServers4Env.js"></script>
+<script type="text/javascript" src="js/ao/GetServers4Comp.js"></script>
+<script type="text/javascript" src="js/ao/GetComponents4Servers.js"></script>
+<script type="text/javascript" src="js/ao/GetApplications4Comp.js"></script>
+<script type="text/javascript" src="js/ao/GetApps4Env.js"></script>
+<script type="text/javascript" src="js/ao/GetEnv4Apps.js"></script>
+<script type="text/javascript" src="js/ao/About.js"></script>
+<script type="text/javascript" src="js/ao/Home.js"></script>
+<script type="text/javascript" src="js/ao/GetGroupMembership.js"></script>
+<script type="text/javascript" src="js/ao/GetUserMembership.js"></script>
+<script type="text/javascript" src="js/ao/GetAdminRights.js"></script>
+<script type="text/javascript" src="js/ao/GetArgs.js"></script>
+<script type="text/javascript" src="js/ao/GetWorkflow.js"></script>
+<script type="text/javascript" src="js/ao/GetProperties.js"></script>
+<script type="text/javascript" src="js/ao/GetNewsDetails.js"></script>
+<script type="text/javascript" src="js/ao/GetEmailTo.js"></script>
+<script type="text/javascript" src="js/ao/jquery.dmcontextmenu.js"></script>
+<script type="text/javascript" src="js/ao/TestServer.js"></script>
+<script type="text/javascript" src="js/ao/GetTemplateBody.js"></script>
+<script type="text/javascript" src="js/ao/DomNav.js"></script>
+<script type="text/javascript" src="js/ao/ao_hook.js"></script>
+<script type="text/javascript" src="js/ao/ao_main.js"></script>
 
-var breadcrumbs = new Stack();
-
-function getCookie(Name,nodecode) {
- nodecode = nodecode || false;
- var search = Name + "="
- var returnvalue = "";
- if (document.cookie.length > 0) {
-   offset = document.cookie.indexOf(search)
-   // if cookie exists
-   if (offset != -1) { 
-     offset += search.length
-     // set index of beginning of value
-     end = document.cookie.indexOf(";", offset);
-     // set index of end of cookie value
-     if (end == -1) end = document.cookie.length;
-     returnvalue=nodecode?document.cookie.substring(offset,end):unescape(document.cookie.substring(offset, end));
-     }
-  }
- return returnvalue;
-}
-
-String.prototype.replaceAll = function(search, replace)
-{
-    //if replace is null, return original string otherwise it will
-    //replace search string with 'undefined'.
-    if(!replace) 
-        return this;
-
-    return this.replace(new RegExp('[' + search + ']', 'g'), replace);
-};
-
-String.prototype.trimLeft = function(charlist) {
- if (charlist === undefined)
-   charlist = "\s";
-
- return this.replace(new RegExp("^[" + charlist + "]+"), "");
-};
-
-String.prototype.trimRight = function(charlist) {
- if (charlist === undefined)
-   charlist = "\s";
-
- return this.replace(new RegExp("[" + charlist + "]+$"), "");
-};
-
-String.prototype.trimChars = function(charlist) {
- return this.trimLeft(charlist).trimRight(charlist);
-};
-
-
- function getDialogButton(dialog_selector, button_name)
- {
-  var buttons = $(dialog_selector + ' .ui-dialog-buttonpane button');
-
-  for (var i = 0; i < buttons.length; ++i)
-  {
-   var jButton = $(buttons[i]);
-
-   if (jButton.text() == button_name)
-   {
-    return jButton;
-   }
-  }
-  return null;
- }
-
- $(document).ready(function()
- {
-  cPlumb = jsPlumb.getInstance();
-  aPlumb = jsPlumb.getInstance();
-  avPlumb = jsPlumb.getInstance();
-  cvPlumb = jsPlumb.getInstance();
-  cisplumb = jsPlumb.getInstance();
-  wfPlumb = jsPlumb.getInstance();
-  CreateReports();
-  $(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
-  $.blockUI.defaults.message = "<p style=\"margin-left:40px\">Loading........</p>";
-  $.blockUI.defaults.fadeOut = 200;
-  $.blockUI.defaults.theme = true;
-  $.blockUI.defaults.themedCSS.width = "15%";
-
-  loginformData = getCookie("logindata",true);
-  
-  loggedin='N';
-  
-  if (loginformData != null && loginformData != "")
-  {
-	  $.ajax({
-		  type : "POST",
-		  url : "Login?" + loginformData,
-		  async : false,
-		  dataType: "json"
- 		}).done(function(data) {
- 			console.log("login data:"+data);
- 			console.log(data);
-  			if (data == null) {
-  				loggedin = 'N';
-  			} else if (data.Msg.toLowerCase() == "Login OK".toLowerCase()) {
-  				console.log("normal login");
-   				loggedin = 'Y';
-   				admin = 'N';
-  			} else if (data.Msg.toLowerCase() == "Login Admin".toLowerCase()) {
-  				console.log("1) admin login");
-   				loggedin = 'Y';
-   				admin = 'Y';
- 			}
-  			SetCookie("admin",admin);
-  			userdatefmt = data.datefmt;
-			usertimefmt = data.timefmt;
- 	});
-  } else {
- 	loggedin = 'N';
- 	admin = 'N';
- 	SetCookie("admin","N");
-  }
-  
-  if ("${firstinstall}" == "Y") {
-	  // First install - prompt the user to set admin password and show them
-	  // some basic information to get started
-	  var l = "<div id=\"firstinstall\">";
-	  l+="<table border=\"0\"><tr><td valign=\"top\"><img src=\"css/images/setupdog.png\"></td><td valign=\"top\">";
-	  l+="<h2>Set Admin Password</h2>Welcome to DeployHub Open Source Edition. The first thing you need to do is to set the password for the \"admin\" user account. ";
-	  l+="Once this is done, you will be logged in as the \"admin\" user and you will be able to create more user accounts ";
-	  l+="and set up the objects which will allow you to automate your deployments with ease.<br><br>";
-	  l+="<form id=\"firstinstallform\">";
-	  l+="<table style=\"width:100%;\" border=\"0\">";
-	  l+="<tr>";
-	  l+="<td align=\"right\">\Admin Password:</td>";
-	  l+="<td align=\"left\"><input class=\"inputbox\" type=\"password\" id=\"newpassword\" name=\"newpassword\" /></td>";
-	  l+="</tr>";
-	  l+="<tr>";
-	  l+="<td align=\"right\">Confirm Admin Password:</td>";
-	  l+="<td align=\"left\"><input class=\"inputbox\" type=\"password\" id=\"newpasswordagain\" name=\"newpasswordagain\" /></td>";
-	  l+="</tr>";
-	  l+="</table>";
-	  l+="</form><BR><BR><HR>";
-	  l+="</div>";
-	  l+="<div class=\"error\"><p class=\"error_txt\" id=\"login_err\"></p></div>";
-	  l+="</td></tr></table></div>";
-	  $("#modal").html(l);
-
-	  $("#modal").dialog({
-	    resizable : false,
-	    draggable: false,
-	    width : 600,
-	    height : 410,
-	    modal : true,
-	    title : "Welcome to DeployHub Open Source Edition!",
-	    open: function(event,ui){
-	    	$(".ui-dialog-buttonpane button:contains('Login')").button('disable');
-	    }
-	   });
-	   $("#modal").keyup(function(event) {
-		   if(event.keyCode === 13) {
-		        DoAdminPasswordSet(this);
-		   }
-	   });
-	   $("#modal").dialog("option", "buttons", [
-	   {
-	    text : "Login",
-	    disabled: true,
-	    click : function()
-	    {
-	     DoAdminPasswordSet(this);
-	    }
-	   } ]);
-	   $("#modal").dialog("open");
-	   
-	   $("#newpassword").on("keyup", VerifyPW);
-	   $("#newpasswordagain").on("keyup", VerifyPW);
-  }
-  else
-  if (loggedin != "Y")
-  {
-   var l = "<img src=\"images/devops_splash.png\" alt=\"\"  class=\"logindialog\" />"
-   l += "<div id=\"loginset\">";
-   l += "  <form id=\"loginform\">";
-   l += "<table id=\"logintab\" style=\"width: 100%;\" border=\"0\">";
-   l += "		<tr style=\"display:none\">";
-   l += "			<td class=\"login_label\" align=\"right\">Domain:</td>";
-   l += "			<td align=\"left\"><input class=\"inputbox\" type=\"text\" name=\"domain\" /></td>";
-   l += "		</tr>";
-   l += "		<tr>";
-   l += "			<td class=\"login_label\" align=\"right\">Username:</td>";
-   l += "			<td align=\"left\"><input class=\"inputbox\" type=\"text\" name=\"username\" /></td>";
-   l += "		</tr>";
-   l += "		<tr>";
-   l += "			<td class=\"login_label\" align=\"right\">Password:</td>";
-   l += "			<td align=\"left\"><input class=\"inputbox\" type=\"password\" id=\"password\" name=\"password\" /></td>";
-   l += "		</tr>";
-   l += "		<tr class=\"newpw\" style=\"display:none\">";
-   l += "			<td class=\"login_label\" align=\"right\">New Password:</td>";
-   l += "			<td align=\"left\"><input class=\"inputbox\" type=\"password\" id=\"newpassword\" name=\"newpassword\" /></td>";
-   l += "		</tr>";
-   l += "		<tr class=\"newpw\" style=\"display:none\">";
-   l += "			<td class=\"login_label\" align=\"right\">Verify New Password:</td>";
-   l += "			<td align=\"left\"><input class=\"inputbox\" type=\"password\" id=\"newpasswordagain\" name=\"newpasswordagain\" /></td>";
-   l += "		</tr>";
-   l += "		<tr>";
-   l += "			<td colspan=\"2\" align=\"right\"></td>";
-   l += "		</tr>";
-   l += "</table>";
-   l += "	</form>";
-   l += "</div>";
-   l += "<div class=\"error\"><p class=\"error_txt\" id=\"login_err\"></p></div>";
-   l += "<div class=\"positioncopyright\">";
-   l += "	<p class=\"copyright\">Copyright 2014, OpenMake Software. All rights reserved. OpenMake and OpenMake Meister are trademarks or registered trademarks of OpenMake Software.</p>";
-   l += "</div>";
-
-   $("#login_container_dialog").html(l);
-
-   $("#login_container_dialog").dialog(
-   {
-    resizable : false,
-    width : 501,
-    height : 580,
-    modal : true,
-    dialogClass : "logindialog"
-   });
-   $("#login_container_dialog").dialog(
-   {
-    draggable : false
-   });
-   $("#login_container_dialog").keyup(function(event) {
-	   if(event.keyCode === 13) {
-	        DoLogin(this);
-	   }
-   });
-   $("#login_container_dialog").dialog("option", "buttons", [
-   {
-    text : "Login",
-    click : function()
-    {
-     DoLogin(this);
-    }
-   } ]);
-   $("#login_container_dialog").dialog("open");
-   
-   $("#newpassword").on("keyup", VerifyPW);
-   $("#newpasswordagain").on("keyup", VerifyPW);
-  }
-  else
-  {
-   var parts = loginformData.split("&");
-
-   for (var x = 0; x < parts.length; x++)
-   {
-    if (parts[x].indexOf("username=") >= 0)
-     myuserid = parts[x].substring(9);
-   }
-
-   breadcrumbs.push("#applications_tree");
-
-   EnableTabs("release_menu");
-   if (newUser=="Y") {
-	   ShowHelpForNewUsers();
-   }
-  }
- });
-
- function VerifyPW()
- {
-  var pw1 = $("#newpassword").val();
-  var pw2 = $("#newpasswordagain").val();
-
-  if (pw1 != pw2 || pw1=="")
-  {
-   $(".ui-dialog-buttonpane button:contains('Login')").button('disable');
-   if (pw1=="") {
-		$("#login_err").html("");
-   } else {
-		$("#login_err").html("Passwords do not match");
-   }
-  }
-  else
-  {
-   $(".ui-dialog-buttonpane button:contains('Login')").button('enable');
-   $("#login_err").html("");
-  }
-
- }
- 
- function DoAdminPasswordSet(dlg)
- {
-	 console.log("DoAdminPasswordSet");
-	 var newpw = $("#newpassword").val();
-	 var loginformData = "domain=&username=admin&initial=Y&password="+encodeURIComponent(newpw);
-	 $.post("Login", loginformData, null, "json").done(function(data) {
-		console.log("data=");
-		console.log(data);
-		if (data.Msg.toLowerCase() == "Login OK".toLowerCase()) {
-			console.log("Normal login");
-			loggedin="Y";
-			admin="N";
-			isAdmin="N";
-			newUser=data.newuser;
-			console.log("datefmt="+data.datefmt);
-			userdatefmt = data.datefmt;
-			usertimefmt = data.timefmt;
-		} else if (data.Msg.toLowerCase() == "Login Admin".toLowerCase()) {
-			console.log("2) admin login");
-			loggedin="Y";
-			admin="Y";
-			isAdmin="Y";
-			newUser=data.newuser;
-			console.log("datefmt="+data.datefmt);
-			userdatefmt = data.datefmt;
-			usertimefmt = data.timefmt;
-		}
- 		if (loggedin=="Y") {
- 			SetCookie("admin",admin);
- 			console.log("newUser="+newUser);
-  			$("#modal").dialog("close");
-  			$.sessionTimeout({
-   				logoutUrl : "Logout",
-   				redirUrl : "Logout",
-   				keepAliveUrl : "KeepAlive"
-  			});
-  			breadcrumbs.push("#releases_tree");
-  			document.cookie = "logindata=" + loginformData;
-  			EnableTabs("release_menu");
-  			if (newUser=="Y") {
-  			   ShowHelpForNewUsers();
-  		    }
- 		} else {
-  			$("#login_err").html(data.Msg);
- 		}
-
-	 });
- }
-
- function DoLogin(dlg)
- {
-  	var logindlg = parent.$("#login_container_dialog");
-  	var form = logindlg.find("#loginform");
-  	loginformData = form.serialize();
-
-  	var parts = loginformData.split("&");
-
-  	for (var x = 0; x < parts.length; x++) {
-   		if (parts[x].indexOf("username=") >= 0)
-    	myuserid = parts[x].substring(9);
-  	}
-
-  	if (forcepwchange) {
-   		var oldpw = $("#password").val();
-   		var newpw = $("#newpassword").val();
-
-   		$.ajax({
-   			type : "POST",
-    		dataType : 'json',
-    		url : "ChangePassword?oldpw=" + encodeURIComponent(oldpw) + "&newpw=" + encodeURIComponent(newpw) + "&username=" + myuserid,
-    		async : false
-   		}).done(function(data) { 
-    		console.log(data.errtext);
-    
-    		if (data.errtext != "") {
-      			$("#login_err").html(data.errtext);
-      			loggedin = 'N';
-      			admin = 'N';
-    		} else {
-     			for (var x = 0; x < parts.length; x++) {
-      				if (parts[x].indexOf("password=") >= 0)
-       				parts[x] = "password=" + newpw;
-     			}
-     			loginformData = parts.join("&");
-     			$.post("Login", loginformData).done(function(data) {
-    				if (data.toLowerCase() == "Login OK".toLowerCase()) {
-       					loggedin = 'Y';
-       					admin = 'N';
-    				} else if (data.toLowerCase() == "Login Admin".toLowerCase()) {
-    		 			loggedin = 'Y';
-    		 			admin = 'N';
-    				}
-    				if (loggedin = "Y") {
-       					parent.$("#login_container_dialog").dialog("close");
-    					$.sessionTimeout({
-        					logoutUrl : "Logout",
-        					redirUrl : "Logout",
-        					keepAliveUrl : "KeepAlive"
-       					});
-       					breadcrumbs.push("#applications_tree");
-       					EnableTabs("release_menu");
-       					document.cookie = "logindata=" + loginformData;
-     				} else { 
-       					loggedin = "N";
-       					admin = "N";
-     				}
-     			});
-     		} 
-     	}); 
-    } else {
-   		$.post("Login", loginformData, null, "json").done(function(data) {
-   			console.log("data="+data);
-   			if (data.Msg.toLowerCase() == "Login OK".toLowerCase()) {
-   				console.log("Normal login");
-   				loggedin="Y";
-   				admin="N";
-   				isAdmin="N";
-   				newUser=data.newuser;
-   				console.log("datefmt="+data.datefmt);
-   				userdatefmt = data.datefmt;
-   				usertimefmt = data.timefmt;
-   			} else if (data.Msg.toLowerCase() == "Login Admin".toLowerCase()) {
-   				console.log("2) admin login");
-   				loggedin="Y";
-   				admin="Y";
-   				isAdmin="Y";
-   				newUser=data.newuser;
-   				console.log("datefmt="+data.datefmt);
-   				userdatefmt = data.datefmt;
-   				usertimefmt = data.timefmt;
-   			}
-    		if (loggedin=="Y") {
-    			SetCookie("admin",admin);
-     			parent.$("#login_container_dialog").dialog("close");
-     			$.sessionTimeout({
-      				logoutUrl : "Logout",
-      				redirUrl : "Logout",
-      				keepAliveUrl : "KeepAlive"
-     			});
-     			breadcrumbs.push("#applications_tree");
-     			EnableTabs("release_menu");
-     			document.cookie = "logindata=" + loginformData;
-    		} else {
-     			if (data.Msg == "Password must be changed") {
-     				newUser=data.newuser;
-      				forcepwchange = true;
-     				$(".ui-dialog-buttonpane button:contains('Login')").button('disable');
-      				parent.$("#login_container_dialog").dialog("option", "height", 675);
-      				$("#logintab").find("tr.newpw").show();
-     			}
-     			$("#login_err").html(data.Msg);
-    		}
-    		if (newUser=="Y") {
-    			ShowHelpForNewUsers();
-    		}
-   		});
-  	}
-
- }
-
- function ActivateSubTabs()
- {
-  console.log("ActivateSubTabs()");
-  ShowHome(false,ShowingInitialHelp);
-
-  if (typeof objid == "undefined")
-   objid = 1;
-
-  if (currenttree == "#domains_tree" && lastSelectedNode == "")
-  {
-	  /*
-   $("#domains_tree").jstree('select_node', '#do1');
-   lastSelectedNode = 'do1';
-  	*/
-    objid = 1;	//OTID, first two chars are Object Type
-  	objtype = "do";
-  	objkind="";
-  	objtypeAsInt = obj2Int[objtype][0];
-   objtypeName = obj2Int[objtype][1];	
-   objName = "GLOBAL";
-   console.log("id="+objid+" objtype="+objtype + " objtypeAsInt=" + objtypeAsInt + " objtypeName=" + objtypeName + " objName=" + objName + " objkind=" + objkind+ " oldmenu=" + oldmenu + " currenttree=" + currenttree);
-   tabId  = "tabs-General";
-   $("#tabs-General").addClass("current active");
-  }  
-  
-  var classname = objtypeName.toLowerCase();
-  
-  console.log("classname="+classname+" currenttree="+currenttree);
-
-  for ( var menuKey in appTabs)
-  {
-   var tabs = appTabs[menuKey];
-
-   for (var i = 0; i < tabs.length; i++)
-   {
-    var key = tabs[i];
-    var tmp = key + "-data";
-    $(key).removeClass('current');
-    $(key).removeClass('active');
-    $(tmp).hide();
-   }
-  }
-
-  if (objtypeName == "Notify")
-   objtypeName = "Notifier";
-  
-  if (objtypeName == "Server")
-   objtypeName = "End Point";
-
-  if (classname == "application version")
-   classname = "appversion";
-
-  if (classname == "release version")
-   classname = "relversion";
-
-  if (classname == "component version")
-   classname = "compversion";
-
-  if (classname == "component type")
-   classname = "comptype";
-  
-  if (classname == "build engine")
-   classname = "builder";
-  
-  if (classname == "build job")
-   classname = "buildjob";
-  
-  if (classname == "data source")
-   classname = "datasource";
-  
-  if (classname == "end point")
-   classname = "server";
-  
-  if (classname == "user group")
-   classname = "usergroup";
-  
-  console.log(breadcrumbs);
-  console.log(currentSubTabsSelection);
-
-  var tabIdNode = currentSubTabsSelection[currenttree];
-  var tabId = "";
-
-  if (tabIdNode != null)
-   tabId = tabIdNode[0];
-
-  console.log("tabId=#"+tabId);
-
-  if ($("#" + tabId).length > 0)
-  {
-   $("#" + tabId).addClass('current');
-   $("#" + tabId).addClass('active');
-  }
-  
-  console.log("currenttree="+currenttree+" lastSelectedNode.substring(0, 2)="+lastSelectedNode.substring(0, 2));
-  console.log("currentSubTab="+currentSubTabsSelection[currenttree]);
-
-  if (currenttree == "#servers_tree" && lastSelectedNode.substring(0,2) == "se")
-  {
-	$("#tabs-ServerStatus").show();  
-  }
-  if (currenttree == "#environments_tree")
-  {
-   if (lastSelectedNode.substring(0, 2) == "se")
-   { 
-    $("#tabs-Servers").hide();
-    $("#tabs-Calendar").hide();
-    $("#tabs-Applications").hide();
-    $("#tabs-Reports").show();
-    $("#tabs-ServerStatus").show();  
-    $("#tabs-SrvComponents").show();  
-    $("#tabs-EnvDefects").hide();
-    if (currentSubTabsSelection["#environments_tree"][0] == "tabs-EnvDefects") {
-    	currentSubTabsSelection["#environments_tree"] = ["tabs-General", ""];
-        tabId  = "tabs-General";
-        $("#tabs-General").addClass("current active");
-    }
-   }
-   else
-   {
-    $("#tabs-ServerStatus").hide();  
-    $("#tabs-SrvComponents").hide();  
-    $("#tabs-EnvDefects").show();
-   } 
-  }
-  if (currenttree == "#notifiers_tree" && lastSelectedNode.substring(0, 2) == "te")
-  {
-   $("#tabs-Access").hide();
-   $("#tabs-Properties").hide();
-   $("#tabs-Body").show();
-   $("#tabs-Recipients").show();
-   if (currentSubTabsSelection["#notifiers_tree"][0] == "tabs-Access" || currentSubTabsSelection["#notifiers_tree"][0] == "tabs-Properties" )
-   {
-    currentSubTabsSelection["#notifiers_tree"] = ["tabs-General", ""];
-    tabId  = "tabs-General";
-    $("#tabs-General").addClass("current active");
-   }
-  }
-  if (currenttree == "#notifiers_tree" && lastSelectedNode.substring(0, 2) == "no")
-  {
-   $("#tabs-Access").show();
-   $("#tabs-Properties").show();
-   $("#tabs-Body").hide();
-   $("#tabs-Recipients").hide();
-   if (currentSubTabsSelection["#notifiers_tree"][0] == "tabs-Body" || currentSubTabsSelection["#notifiers_tree"][0] == "tabs-Recipients" )
-   {
-    currentSubTabsSelection["#notifiers_tree"] = ["tabs-General", ""];
-    tabId  = "tabs-General";
-    $("#tabs-General").addClass("current active");
-   }
-  }  
-  else if (currenttree == "#environments_tree" && lastSelectedNode.substring(0, 2) == "en")
-  {
-   $("#tabs-Servers").show();
-   $("#tabs-Calendar").show();
-   $("#tabs-Applications").show();
-   $("#tabs-Reports").show();
-  }
-  else if (currenttree == "#applications_tree" && lastSelectedNode.substring(0, 2) == "av")
-  {
-   $("#tabs-Versions").hide();
-   $("#tabs-Environments").show();	// was hide but need environments tab for app versions
-  }
-  else if (currenttree == "#applications_tree" && lastSelectedNode.substring(0, 2) == "ap")
-  {
-   $("#tabs-Versions").show();
-   $("#tabs-Environments").show();
-  }
-  else if (currenttree == "#components_tree" && lastSelectedNode.substring(0, 2) == "cv")
-  {
-   $("#tabs-ComponentVersions").hide();
-  }
-  else if (currenttree == "#components_tree" && lastSelectedNode.substring(0, 2) == "co")
-  {
-   $("#tabs-ComponentVersions").show();
-  }
-  else if (currenttree == "#procedures_tree" && (lastSelectedNode.substring(0, 2) == "pr" || lastSelectedNode.substring(0, 2) == "fn"))
-  {
-	  console.log("SWITCHING on "+objkind+" lastSelectedNode="+lastSelectedNode);
-	  var lsn = lastSelectedNode.substring(2);
-	  // remove the object type (if present)
-	  var i=lsn.indexOf("-");
-	  console.log("i="+i);
-	  if (i>=0)
-	  {
-	   var parts = lsn.split("-");
-	   lsn=parts[0];
-	  }
-	  console.log("lsn="+lsn);
-	  objid=Number(lsn);
-	  console.log("objid="+objid+" objkind="+objkind);
-	  switch (Number(objkind))
-      {
-	   case 0:  // undefined (newly created)
-	   console.log("Hiding args and procbody");
-	    $("#tab-Args").hide();
-	    $("#tabs-ProcBody").hide();
-	    break;
-	    
-       case 1: // DMScript Function in repository
-       console.log("Showing arguments tab");
-        $("#tabs-Args").show();
-        $("#tabs-ProcBody").hide();
-        break;
-
-       case 2: // DMScript Function in database
-        $("#tabs-Args").show();
-        $("#tabs-ProcBody").show();
-        break;
-
-      case 3: // Function provided by local external script or program
-       $("#tabs-Args").show();
-       $("#tabs-ProcBody").hide();
-       break;
-
-      case 4: // Function provided by remote external script or program
-       $("#tabs-Args").show();
-       $("#tabs-ProcBody").hide();
-       break;
-
-      case 5: // Function provided by plugin
-       $("#tabs-Args").hide();
-       $("#tabs-ProcBody").hide();
-       break;
-
-      case 6: // Graphical deployment flow
-       $("#tabs-Args").hide();
-       $("#tabs-ProcBody").hide();
-      default:
-       break;
-      }  
-  }
-  else if (currenttree == "#builders_tree" && lastSelectedNode.substring(0, 2) == "be")
-  {
-	  $("#tabs-General").show();
-	  $("#tabs-Builds").hide();
-	  $("#tabs-Properties").show();
-	  $("#tabs-Access").show();
-	  if (tabId == "tabs-Builds") {
-		  // Switching from a Build Job "Builds" tab back to the build engine
-		  tabId="tabs-General";
-		  currentSubTabsSelection["#builders_tree"] = ["tabs-General", ""];
-	      $("#tabs-General").addClass("current active");
-	  }
-  }
-  else if (currenttree == "#builders_tree" && lastSelectedNode.substring(0, 2) == "bj")
-  {
-	  console.log("switching to build job tabId="+tabId);
-	  $("#tabs-General").show();
-	  $("#tabs-Builds").show();
-	  $("#tabs-Access").hide();
-	  $("#tabs-Properties").hide();
-	  if (tabId != "tabs-Builds") {
-		  tabId="tabs-General";
-		  currentSubTabsSelection["#builders_tree"] = ["tabs-General", ""];
-	      $("#tabs-General").addClass("current active");
-	  }
-  }
-  
-  console.log("tabId="+tabId+" currenttree="+currenttree+" lastSelectedNode="+lastSelectedNode+" objtype="+objtype);
-  
-	  
-  var isAdmin = "N";
-  if (canView[currenttree])
-   isAdmin = "Y";
-
-  switch (tabId)
-  {
-  case "tabs-General":
-   if (((objtype == "av" || objtype == "ap") && currenttree == "#applications_tree")
-     || ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree") || (objtype == "do" && currenttree == "#domains_tree") || (objtype == "pr" && currenttree == "#procedures_tree")
-     || (objtype == "fn" && currenttree == "#procedures_tree") || (objtype == "us" && currenttree == "#users_tree") || (objtype == "gr" && currenttree == "#groups_tree")
-     || ((objtype == "no"  || objtype == "te") && currenttree == "#notifiers_tree") || (objtype == "ac" && currenttree == "#actions_tree") || (objtype == "cr" && currenttree == "#credentials_tree")
-     || (objtype == "ds" && currenttree == "#datasources_tree") || (objtype == "re" && currenttree == "#repositories_tree") || (objtype == "se" && currenttree == "#servers_tree")
-     || ((objtype == "en" || objtype == "se") && currenttree == "#environments_tree") || (objtype == "ct" && currenttree == "#types_tree") || (objtype == "be" && currenttree == "#builders_tree")
-     || (objtype == "bj" && currenttree == "#builders_tree"))
-   {
-	   console.log("doing general - objtype="+objtype+" currenttree="+currenttree);
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    parent.$("#title_icon").html("");
-
-    $("#title_icon").html("<button class=\"edit_button\" onClick=\"javascript:EditSummaryButton(false)\"><img alt=\"Edit\" src=\"images/pencil_24x22.png\"></button>");
-    $("#tabs-General-data").html("<table id=\"summ\" class=\"dev_table\"><tbody></tbody></table>");
-    console.log("LoadSummaryData, objtypeAsInt="+objtypeAsInt+" objtype="+objtype);
-    LoadSummaryData("summ", objtypeAsInt, objtype, objid, objtype=="bj"?"&be="+lastSelectedNode:"");
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    parent.$("#tabs-General-data").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-  case "tabs-Builds":
-   if (objtype=='bj' && currenttree == "#builders_tree") {
-	   console.log("Loading builds");
-	   LoadBuildData("BuildHistory", objtypeAsInt, objtype, objid, "");
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    parent.$("#tabs-General-data").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-Calendar":
-   if (objtype == "en" && currenttree == "#environments_tree")
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    $("#title_icon").html("");
-    CreateCalendar(objid);
-   }
-   else
-   {
-    if (objtype == "se")
-    {
-     currentSubTabsSelection[currenttree][0] = "tabs-General";
-     ActivateSubTabs()
-     return;
-    }
-
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-Servers":
-   if ((objtype == "en" && currenttree == "#environments_tree") || ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree"))
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    $("#title_icon").html(
-      "<button class=\"add_button\" onClick=\"javascript:AddSrv4EnvButton()\"><img alt=\"Edit\" src=\"css/images/add_22x22.png\"></button>"
-        + "<button class=\"delete_button\" onClick=\"javascript:DeleteSrv4EnvButton()\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button>");
-
-    LoadSrv4EnvData("srv4env", objtypeAsInt, objtype, objid, "");
-   }
-   else
-   {
-    if (objtype == "se")
-    {
-     currentSubTabsSelection[currenttree][0] = "tabs-General";
-     ActivateSubTabs();
-     return;
-    }
-
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-   
-  case "tabs-ServerStatus":
-	  LoadServerStatusData("servstat", objtypeAsInt,objid);
-	  parent.$("#title_icon").html("<button class=\"test_button\" onClick=\"javascript:TestServer('servstat',"+objtypeAsInt+","+objid+")\">Test Now</button>");
-	  break;
-
-  case "tabs-CompServers":
-   if ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree")
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
- //   $("#title_icon").html(
- //     "<button class=\"add_button\" onClick=\"javascript:AddSrv4CompButton(objtype=='cv')\"><img alt=\"Edit\" src=\"css/images/add_22x22.png\"></button>"
- //       + "<button class=\"delete_button\" onClick=\"javascript:DeleteSrv4CompButton()\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button>");
-
-    LoadSrv4CompData("srv4comp", objtypeAsInt, objtype, objid, "");
-    LoadBuildDataForComponent("compbuilds", objtypeAsInt, objtype, objid, "");
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-SrvComponents":
-   if ((objtype == "se" && currenttree == "#servers_tree") || (objtype == "se" && currenttree == "#environments_tree"))
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    $("#title_icon").html(
-        "<button class=\"add_button\" onClick=\"javascript:AddCompVersion4SrvButton()\"><img alt=\"Edit\" src=\"css/images/add_22x22.png\"></button>" +
-        "<button class=\"delete_button\" onClick=\"javascript:DeleteComp4SrvButton()\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button>" );
-
-    LoadComp4SrvData("comp4srv", objtypeAsInt, objtype, objid, "");
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-CompDefects":
-	if ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree") {
-		$("#panel_container_right").show();
-		if (objtype == "co")
-			parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-		else
-			parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-		parent.$("#title_icon").html("");
-
-	    $("#title_icon").html(
-	        "<button class=\"add_button\" onClick=\"javascript:AddDefectButton(false)\"><img alt=\"Edit\" src=\"css/images/add_22x22.png\"></button>"
-	        + "<button class=\"delete_button\" onClick=\"javascript:DeleteDefectButton(false)\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button>");
-	    
-	    LoadDefect4CompData("defects4comp", objtypeAsInt, objtype, objid, "");
-	    LoadDefectHistory("defecthistory4comp", objtypeAsInt, objtype, objid);
-	} else {
-		parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-		parent.$("#title_icon").html("");
-		$("#panel_container_right").hide();
-	}
-	break;
-  case "tabs-AppDefects":
-	if ((objtype == "ap" || objtype == "av") && currenttree == "#applications_tree") {
-		$("#panel_container_right").show();
-		if (objtype == "ap")
-			parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-		else
-			parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-		parent.$("#title_icon").html("");
-
-	    $("#title_icon").html(
-	        "<button class=\"add_button\" onClick=\"javascript:AddDefectButton(true)\"><img alt=\"Edit\" src=\"css/images/add_22x22.png\"></button>"
-	        + "<button class=\"delete_button\" onClick=\"javascript:DeleteDefectButton(true)\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button>");
-	    
-	    LoadDefect4AppData("defects4app", objtypeAsInt, objtype, objid, "");
-	    LoadDefectHistory("defecthistory4app", objtypeAsInt, objtype, objid);
-	} else {
-		parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-		parent.$("#title_icon").html("");
-		$("#panel_container_right").hide();
-	}
-	break;
-  case "tabs-EnvDefects":
-	  // console.log("tabs-EnvDefects, objtype=["+objtype+"] currenttree=["+currenttree+"]");
-		if ((objtype == "en") && currenttree == "#environments_tree") {
-			$("#panel_container_right").show();	
-			parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-			parent.$("#title_icon").html("");
-		    LoadDefect4EnvData("defects4env", objtypeAsInt, objtype, objid, "");
-		} else {
-			parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-			parent.$("#title_icon").html("");
-			$("#panel_container_right").hide();
-		}
-		break;
-  case "tabs-CompApplications":
-   if ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree")
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    
-    $("#title_icon").html("");
-
-
-    LoadApp4CompData("app4comp", objtypeAsInt, objtype, objid, "");
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-GroupMembership":
-   if (objtype == "us" && currenttree == "#users_tree")
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    $("#title_icon").html(
-      "<button class=\"add_button\" onClick=\"javascript:AddGroup2UserButton()\"><img alt=\"Edit\" src=\"css/images/add_22x22.png\"></button>"
-        + "<button class=\"delete_button\" onClick=\"javascript:DeleteGroupFromUserButton()\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button>");
-
-    LoadGroupMembershipData("groupmembership", objtypeAsInt, objtype, objid, "");
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-UserMembership":
-   if (objtype == "gr" && currenttree == "#groups_tree")
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    $("#title_icon").html(
-      "<button class=\"add_button\" onClick=\"javascript:AddUser2GroupButton()\"><img alt=\"Edit\" src=\"css/images/add_22x22.png\"></button>"
-        + "<button class=\"delete_button\" onClick=\"javascript:DeleteUserFromGroupButton()\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button>");
-
-    LoadUserMembershipData("usermembership", objtypeAsInt, objtype, objid, "");
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-Args":
-   
- 	   console.log("tabs-Args objtype="+objtype+" objkind="+objkind);
-	   if ((objtype == "fn" || objtype == "pr") && currenttree == "#procedures_tree")
-	   {
-	    $("#panel_container_right").show();
-	    if (objtype == "ap" || objtype == "co")
-	     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-	    else
-	     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-	    $("#inputparamsh1").html("<h1 style=\"display:inline;margin-right:35em;\">Inputs to this "+((objtype == "pr")?"procedure":"function")+"</h1><div id=\"rightbuttonsarg\" style=\"float:right\">"
-	        + "<button class=\"edit_button\" onClick=\"javascript:EditArgsButton('switch')\"><img alt=\"Edit\" src=\"images/pencil_24x22.png\"></button>"
-	        + "<button class=\"add_button\" onClick=\"javascript:AddArgsButton('switch')\"><img alt=\"Edit\" src=\"css/images/add_22x22.png\"></button>"
-	        + "<button class=\"delete_button\" onClick=\"javascript:DeleteArgsButton('switch')\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button>"
-	        + "<button class=\"up_button\" onClick=\"javascript:UpArgsButton()\"><img alt=\"Edit\" src=\"css/images/up.png\" height=\"22\" width=\"18\"></button>"
-	        + "<button class=\"down_button\" onClick=\"javascript:DownArgsButton()\"><img alt=\"Edit\" src=\"css/images/down.png\" height=\"22\" width=\"18\"></button></div>");
-
-	    if (objkind != 1 && objkind != 2) {
-	   		 $("#argsh1").html("<h1 style=\"display:inline;margin-right:25em;\">Additional command line switches for program below</h1><div id=\"rightbuttonsswitch\"style=\"float:right\">" 
-       		+ "<button class=\"edit_button\" onClick=\"javascript:EditSwitchButton()\"><img alt=\"Edit\" src=\"images/pencil_24x22.png\"></button>"
-       		+ "<button class=\"add_button\" onClick=\"javascript:AddSwitchButton()\"><img alt=\"Edit\" src=\"css/images/add_22x22.png\"></button>"
-       		+ "<button class=\"delete_button\" onClick=\"javascript:DeleteSwitchButton()\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button></div>");
-	    	parent.$("#title_icon").html("");
-	    	console.log("HOME objid="+objid);
-	    	$("#dragtextdiv").html("Drag the arguments from here onto the command line below to assemble the command. Use the table above to add and configure the switches/arguments.");
-			$("#argstablediv").html("<table id=\"argstable\" cellspacing=\"0\" width=\"100%\" ><thead class=\"ui-widget-header\"><tr><th>Additional Command Line Switch</th></tr></thead><tbody></tbody></table>");
-			$("#inputparamsdiv").html(
-							"<table id=\"inputparamstable\" cellspacing=\"0\" width=\"100%\">"
-						+ 	"<thead class=\"ui-widget-header\"><tr><th>Name</th><th>Type</th><th style=\"display:none\">Mode</th><th>Present</th><th>Missing</th><th>Pad</th><th>Required</th></tr>"
-	           			+	"</thead><tbody></tbody></table>");
-	    } else {
-	    	$("#argsh1").html("");
-	    	$("#dragtextdiv").html("");
-	    	$("#argstablediv").html("");
-	    	$("#inputparamsdiv").html(
-					"<table id=\"inputparamstable\" cellspacing=\"0\" width=\"100%\">"
-				+ 	"<thead class=\"ui-widget-header\"><tr><th>Name</th><th>Type</th><th>Required</th></tr>"
-       			+	"</thead><tbody></tbody></table>");
-	    }
-	    LoadArgsData("argstable", objtypeAsInt, objtype, objid, objkind, "");
-
-	   }
-	   else
-	   {
-	    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-	    parent.$("#title_icon").html("");
-	    $("#panel_container_right").hide();
-	   }
-   break;
-   
-  case "tabs-ProcBody":
-	  if (objkind == 1 || objkind == 2) {
-		  console.log("tabs-ProcBody objtype="+objtype+" objkind="+objkind);
-		   if ((objtype == "fn" || objtype == "pr") && currenttree == "#procedures_tree")
-		   {
-		    $("#panel_container_right").show();
-		    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-		    $("#title_icon").html("<button class=\"edit_button\" onClick=\"javascript:EditProcButton("+objid+",false)\"><img alt=\"Edit\" src=\"images/pencil_24x22.png\"></button>");
-		   }
-		   else
-		   {
-		    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-		    parent.$("#title_icon").html("");
-		    $("#panel_container_right").hide();
-		   }
-		   LoadProcBody("ProcBodyTextArea",objid,false,false);
-	  } else {
-		  currentSubTabsSelection[currenttree][0] = "tabs-General";
-		  ActivateSubTabs();
-		  return;
-	  }
-	   break;
-
-  case "tabs-Properties":
-   if ((objtype == "ds" && currenttree == "#datasources_tree") || (objtype == "re" && currenttree == "#repositories_tree") 
-		|| (objtype == "no" && currenttree == "#notifiers_tree") || (objtype == "be" && currenttree == "#builders_tree"))
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    $("#title_icon").html(
-      "<button class=\"edit_button\" onClick=\"javascript:EditPropertiesButton()\"><img alt=\"Edit\" src=\"images/pencil_24x22.png\"></button>"
-        + "<button class=\"add_button\" onClick=\"javascript:AddPropertiesButton()\"><img alt=\"Edit\" src=\"css/images/add_22x22.png\"></button>"
-        + "<button class=\"delete_button\" onClick=\"javascript:DeletePropertiesButton()\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button>");
-
-    LoadPropertiesData("propstable", objtypeAsInt, objtype, objid, "");
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-Recipients":
-   if ((objtype == "te") && currenttree == "#notifiers_tree")
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    $("#title_icon").html("<button class=\"add_button\" onClick=\"javascript:AddEmailToButton()\"><img alt=\"Edit\" src=\"css/images/add_22x22.png\"></button>"
-        + "<button class=\"delete_button\" onClick=\"javascript:DeleteEmailToButton()\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button>");
-
-    LoadEmailToData("emailtotable", objtypeAsInt, objtype, objid, "");
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-   
-  case "tabs-Body":
-   if ((objtype == "te") && currenttree == "#notifiers_tree")
-   {
-	$("#helppanel").show();
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    $("#title_icon").html(
-      "<button class=\"edit_button\" onClick=\"javascript:EditBodyButton()\"><img alt=\"Edit\" src=\"images/pencil_24x22.png\"></button>");
-    LoadBodyData("bodytable", objtypeAsInt, objtype, objid, "");
-   }
-   else
-   {
-	$("#helppanel").hide();
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-   
-  case "tabs-Patterns":
-   if ((objtype == "re" && currenttree == "#repositories_tree"))
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    $("#title_icon").html(
-      "<button class=\"edit_button\" onClick=\"javascript:EditPatternsButton()\"><img alt=\"Edit\" src=\"images/pencil_24x22.png\"></button>"
-        + "<button class=\"add_button\" onClick=\"javascript:AddPatternsButton()\"><img alt=\"Edit\" src=\"css/images/add_22x22.png\"></button>"
-        + "<button class=\"delete_button\" onClick=\"javascript:DeletePatternsButton()\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button>");
-
-    LoadPatternsData("patternstable", objtypeAsInt, objtype, objid, "");
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-Applications":
-   if ((objtype == "en" && currenttree == "#environments_tree") || ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree"))
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    $("#title_icon").html(
-      "<button class=\"add_button\" onClick=\"javascript:AddApp4EnvButton()\"><img alt=\"Add\" src=\"css/images/add_22x22.png\"></button>"
-        + "<button class=\"delete_button\" onClick=\"javascript:DeleteApp4EnvButton()\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button>");
-      //  + "<button class=\"add_button\" onClick=\"javascript:AddAppVer4EnvButton()\"><img alt=\"Add\" src=\"css/images/add_22x22.png\"></button>");
-
-    LoadApp4EnvData("App4Env", objtypeAsInt, objtype, objid, "");
-   }
-   else
-   {
-    if (objtype == "se")
-    {
-     currentSubTabsSelection[currenttree][0] = "tabs-General";
-     ActivateSubTabs()
-     return;
-    }
-
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    parent.$("#Env4App > tbody").html("");
-    // parent.$("#PendingApp4Env > tbody").html("");
-    parent.$("#PendingApp4Env").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-Components":
-   if (((objtype == "av" || objtype == "ap") && currenttree == "#applications_tree") || ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree"))
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    parent.$("#title_icon").html("");
-    console.log("GetComponents?appid=" + objid);
-    LoadComponentsData();
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#tabs-Components-data").html(
-      "<div class=\"panel_container versionsandinformation\">" + "<div class=\"panel_container compversions\">" + "<div id=\"innercomp\" style=\"height:600px;width:100%;\">" + "</div>" + "</div>"
-        + "<div class=\"accordionpanel\" id=\"ag\">" + "<h4 class=\"ui-widget-header\" style=\"margin:0\" >Component Versions</h4><div id=componentlist align=\"left\"</div>" + "</div>" + "</div>");
-
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-ApplicationVersions":
-   if (((objtype == "av" || objtype == "ap") && currenttree == "#applications_tree"))
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    parent.$("#title_icon").html("");
-
-    LoadApplicationVersionsData();
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#tabs-ApplicationVersions-data").html(
-      "<div class=\"panel_container versionsandinformation\">" + "<div class=\"panel_container appversions\">" + "<div id=\"innerappver\" style=\"height:600px;width:100%;\">" + "</div>" + "</div>"
-      + "<div class=\"accordionpanel\" id=\"ag\">" + "<h4 class=\"ui-widget-header\" style=\"margin:0\" >Application Versions</h4><div id=applicationversionlist align=\"left\"</div>" + "</div>" + "</div>");
-  
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-Workflow":
-   if (objtype == "ac" && currenttree == "#actions_tree")
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    parent.$("#title_icon").html("");
-
-    LoadWorkflowsData("");
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#tabs-Workflow-data").html(
-    "<div class=\"panel_container versionsandinformation\">" + "<div class=\"panel_container fragments\">" + "<div id=\"innerworkflow\" style=\"height:600px;width:100%;\">" + "</div>" + "</div>"
-    + "<div class=\"accordionpanel\" id=\"wg\">" + "<h4 class=\"ui-widget-header\" style=\"margin:0\" >Activities</h4><div id=fragmentlist align=\"left\"</div>" + "</div>" + "</div>");
-
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-Versions":
-   if (((objtype == "av" || objtype == "ap") && currenttree == "#applications_tree")
-     || ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree"))
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "rl")
-    {
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-     parent.$("#title_icon").html("");
-
-     isRelease = 'N';
-
-     if (objtype == "rl")
-      isRelease = 'Y';
-
-     LoadVersionsData();
-    }
-    else
-    {
-     if (objtype == "av" || objtype == "rv")
-     {
-      currentSubTabsSelection[currenttree][0] = "tabs-General";
-      ActivateSubTabs()
-      return;
-     }
-
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-     parent.$("#title_icon").html("");
-     $("#innerversions").html("No Versions available");
-    }
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#tabs-Versions-data").html(
-      "<div class=\"panel_container versionsandinformation\">" + "<div class=\"panel_container appversions\">" + "<div id=\"innerversions\" style=\"height:600px;width:100%;\">" + "</div>" + "</div>"
-        + "</div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-ComponentVersions":
-   if ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree")
-   {
-    $("#panel_container_right").show();
-    if (objtype == "co")
-    {
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-     parent.$("#title_icon").html("");
-
-     LoadComponentVersionsData();
-    }
-    else
-    {
-     if (objtype == "cv")
-     {
-      currentSubTabsSelection[currenttree][0] = "tabs-General";
-      ActivateSubTabs()
-      return;
-     }
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-     parent.$("#title_icon").html("");
-     $("#innercompversions").html("No Versions available");
-    }
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#tabs-ComponentsVersions-data").html(
-      "<div class=\"panel_container versionsandinformation\">" + "<div class=\"panel_container compversions\">" + "<div id=\"innercompversions\" style=\"height:600px;width:100%;\">" + "</div>"
-        + "</div>" + "</div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-ComponentItems":
-   if ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree")
-   {
-    $("#panel_container_right").show();
-
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    parent.$("#title_icon").html("");
-
-    LoadComponentItemsData();
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#tabs-ComponentsItems-data").html(
-      "<div class=\"panel_container versionsandinformation\">" + "<div class=\"panel_container compitems\">" + "<div id=\"inneritem\" style=\"height:600px;width:100%;\">" + "</div>" + "</div>"
-        + "</div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-Environments":
-   if (((objtype == "av" || objtype == "ap") && currenttree == "#applications_tree"))
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    $("#title_icon").html(
-      "<button class=\"add_button\" onClick=\"javascript:AddEnv4AppButton((objtype=='av' || objtype=='rv')?true:false)\"><img alt=\"Add\" src=\"css/images/add_22x22.png\"></button>"
-        + "<button class=\"delete_button\" onClick=\"javascript:DeleteEnv4AppButton()\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button>");
-
-    LoadEnv4AppData("Env4App", objtypeAsInt, objtype, objid, "");
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    parent.$("#Env4App > tbody").html("");
-    // parent.$("#PendingEnv4App > tbody").html("");
-    parent.$("#PendingEnv4App").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-Attributes":
-   if (((objtype == "av" || objtype == "ap") && currenttree == "#applications_tree")
-     || (objtype == "no" && currenttree == "#notifiers_tree") || (objtype == "re" && currenttree == "#repositories_tree")
-     || ((objtype == "en" || objtype == "se") && currenttree == "#environments_tree") || (objtype == "se" && currenttree == "#servers_tree") || (objtype == "ds" && currenttree == "#datasources_tree")
-     || ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree"))
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    parent.$("#title_icon").html("");
-    $("#title_icon").html(
-      "<button class=\"edit_button\" onClick=\"javascript:EditAttributeButton()\"><img alt=\"Edit\" src=\"images/pencil_24x22.png\"></button>"
-        + "<button class=\"add_button\" onClick=\"javascript:AddAttributeButton()\"><img alt=\"Edit\" src=\"css/images/add_22x22.png\"></button>"
-        + "<button class=\"delete_button\" onClick=\"javascript:DeleteAttributeButton()\"><img alt=\"Edit\" src=\"css/images/delete_22x22.png\"></button>");
-    LoadAttributesData();
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-Tasks":
-   $("#tabs-Tasks-data").html("");
-   if (objtype == "ap" || objtype == "co")
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-   else
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-   parent.$("#title_icon").html("");
-   console.log("DomainDetails?a=" + isAdmin + "&domainid=" + objid);
-   $("#tabs-Tasks-data").load("DomainDetails?a=" + isAdmin + "&domainid=" + objid);
-   $("#panel_container_right").show();
-   break;
-
-  case "tabs-AdminRights":
-   if (objtype == "gr" && currenttree == "#groups_tree")
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    parent.$("#title_icon").html("");
-    LoadAdminRightsData(objtypeAsInt, objtype, objid);
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-Access":
-   if (((objtype == "av" || objtype == "ap") && currenttree == "#applications_tree")
-     || ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree") || (objtype == "do" && currenttree == "#domains_tree") || (objtype == "pr" && currenttree == "#procedures_tree")
-     || (objtype == "no" && currenttree == "#notifiers_tree") || (objtype == "fn" && currenttree == "#procedures_tree") || (objtype == "ac" && currenttree == "#actions_tree")
-     || (objtype == "re" && currenttree == "#repositories_tree") || (objtype == "cr" && currenttree == "#credentials_tree") || (objtype == "se" && currenttree == "#servers_tree")
-     || (objtype == "ds" && currenttree == "#datasources_tree") || ((objtype == "en" || objtype == "se") && currenttree == "#environments_tree") || (objtype == "ct" && currenttree == "#types_tree") || (objtype =="be" && currenttree == "#builders_tree"))
-   {
-    $("#panel_container_right").show();
-    $("#tabs-Access-data").html("");
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    parent.$("#title_icon").html("");
-
-    console.log("GetAccess?objtype=" + objtypeAsInt + "&id=" + objid);
-    if (objtype == "do")
-     $("#tabs-Access-data").load("GetAccess?objtype=" + objtypeAsInt + "&id=" + objid + "&din=Y");
-    else
-     $("#tabs-Access-data").load("GetAccess?objtype=" + objtypeAsInt + "&id=" + objid + "&din=");
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#tabs-Access-data").html("");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-   
-  case "tabs-Reports":
-   if (((objtype == "av" || objtype == "ap") && currenttree == "#applications_tree")
-     || (objtype == "se" && currenttree == "#servers_tree") || ((objtype == "se" || objtype == "en") && currenttree == "#environments_tree")
-     || ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree"))
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    parent.$("#title_icon").html("");
-    ReplotReports(objtype);
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  case "tabs-History":
-   if (((objtype == "av" || objtype == "ap") && currenttree == "#applications_tree")
-     || (objtype == "us" && currenttree == "#users_tree") || (objtype == "se" && currenttree == "#servers_tree") || (objtype == "re" && currenttree == "#repositories_tree")
-     || (objtype == "en" && currenttree == "#environments_tree") || (objtype == "se" && currenttree == "#environments_tree")
-     || (objtype == "ac" && currenttree == "#actions_tree") || ((objtype == "fn" || objtype == "pr") && currenttree == "#procedures_tree")
-     || ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree")
-     || (objtype == "gr" && currenttree == "#groups_tree"))
-   {
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
-    else
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div><h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    parent.$("#title_icon").html("");
-    switch (objtype) {
-    case 'av':
-    case 'ap':
-    	objname='Application';
-    	break;
-    case 'rl':
-    case 'rv':
-    	objname='Release';
-    	break;
-    case 'us':
-    	objname='User';
-    	break;
-    case 'se':
-    	objname='End Point';
-    	break;
-    case 're':
-    	objname='Repository';
-    	break;
-    case 'en':
-    	objname='Environment';
-    	break;
-    case 'co':
-    case 'cv':
-    	objname='Component';
-    	break;
-    case 'ac':
-    	objname="Action";
-    	break;
-    case 'pr':
-    	objname="Procedure";
-    	break;
-    case 'fn':
-    	objname="Function";
-    	break;
-    case 'gr':
-    	objname="Group";
-    	break;
-    default:
-    	objname="";
-    	break;
-    }
-    $("#tabs-History-data").html("<div id='historyadd' style='width:96%;height:100px;display:inline'></div><table id=\"histfeed\" class=\"dev_table\"><tbody></tbody></table>");
-    $('#historyadd').createNewsMessageBox('#histfeed', 'Say something about this '+objname+'?', objtype+objid);
-    createNewsFeed("histfeed", objtype, objid, false);
-   }
-   else
-   {
-    parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-    parent.$("#title_icon").html("");
-    $("#panel_container_right").hide();
-   }
-   break;
-
-  default:
-   break;
-  }
-
-  $("#" + tabId + "-data").show();
-
-  if (tabId == "tabs-Reports")
-  {
-   plot1.replot();
-   plot2.replot();
-  }
-  if (tabId == "tabs-Calendar") {
-	  console.log(">>>>>> TABS RENDER");
-	  console.trace();
-   		$('#calendar').fullCalendar('render');
-   }
-  
-  /*
-  if (currenttree != "#domains_tree" && lastSelectedNode.substring(0, 2) == "do")
-  {
-   // $("#panel_container_right").hide();
-      $("#panel_container_right").show();
-	  displayhome=true;
-	  ShowHome(false);
-	  displayhome=false;
-  }
-  */
-  if (typeof lastSelectedNode == "undefined" || lastSelectedNode=="") {
-	  $("#panel_container_right").show();
-	  displayhome=true;
-	  ShowHome(false,ShowingInitialHelp);
-	  displayhome=false;
-  }
-  console.log($("#panel_container_right"));
- }
-
- function SetActiveMenu(menuname)
- {
-	 console.log("SetActiveMenu("+menuname+")");
-  if ($("#" + oldmenu).length > 0)
-  {
-   $("#" + oldmenu).removeClass('current');
-   $("#" + oldmenu).removeClass('active');
-  }
-
-  $("#" + menuname).addClass('current');
-  $("#" + menuname).addClass('active');
-  var tabname = menu2tree[menuname];
-
-  SetActive(tabname);
-  oldmenu = menuname;
- }
-
- function SetTabActive(menuid,tabname)
- {
-	console.log("SetTabActive("+tabname+")");
-	if (oldsubtabmenu[menuid].length > 0) {
-		$("#" + oldsubtabmenu[menuid]).removeClass('current');
-		$("#" + oldsubtabmenu[menuid]).removeClass('active');
-		console.log("Hiding #" + oldsubtabmenu+"-data");
-		$("#" + oldsubtabmenu[menuid]+"-data").hide();
-	}
-	$("#"+tabname).addClass('current');
-	$("#"+tabname).addClass('active');
-	oldsubtabmenu[menuid] = tabname;
-	if (tabname=='displaylogtabs-log' || tabname=='displaylogtabs-files'  || tabname=='displaylogtabs-general' || tabname=='displaylogtabs-scripts') {
-		if (!depComplete) $("#deprefresh").show();
-		RefreshLogDetail(saveLognum);
-	} else {
-		$("#deprefresh").hide();
-	}
-	$("#"+tabname+"-data").show();
-	console.log("Showing #" + tabname+"-data");
-	
-	if (tabname=="displaylogtabs-reports") {
-		// May need to call replot here
-		CreateDeployReports();
-		ReplotDeployReports(saveLognum); 
-	}
-	if (tabname=="displaylogtabs-deploydeps") {
-		// May need to call replot here
-		CreateDeployDeps(saveLognum); 
-	}
- }
- 
- function SetActive(tabname)
- {
-	 explorerFlasher = false;	// switch off highlighting if in help mode
-	 lastSelectedNode="";
-	 console.log("SetActive("+tabname+") oldtabmenu="+oldtabmenu);
-  if (oldtabmenu.length > 0)
-  {
-   $("#" + oldtabmenu).removeClass('current');
-   $("#" + oldtabmenu).removeClass('active');
-  }
-
-  $("#" + tabname).addClass('current');
-  $("#" + tabname).addClass('active');
-  var itemname = tabname.substring(0, tabname.length - 4);
-  var treename = itemname + "_tree";
-
-  ad_currenttree = "ad_" + treename;
-  currenttree = "#" + treename;
-
-  oldtabmenu = tabname;
-
-  if (oldtreename.length > 0)
-  {
-   $(oldtreename).hide();
-   $(oldtreename).jstree("destroy");
-   $(currenttree).show();
-  }
-
-  menu2tree[currentmenu] = tabname;
-
-  HideSubTabs(oldtreename, currenttree);
-
-  // CreateTree(currenttree, itemname, canView[currenttree], "mainframe3");
-  console.log("Calling CreateTree(\""+currenttree+"\",\""+itemname+"\",\""+admin+"\", \"mainframe3\"");
-  CreateTree(currenttree, itemname, admin, "mainframe3");
-  
-  // $("#footer_container").html("");
-
-  ActivateSubTabs();
-
-  breadcrumbs.push(currenttree);
-  oldtreename = currenttree;
- }
-
- function HideSubTabs(oldtreename, currenttree)
- {
-  var tabs = appTabs[oldtreename];
-  for ( var i in tabs)
-  {
-	  console.log("Hiding tab "+tabs[i]);
-   $(tabs[i]).hide();
-   $("#right-panel-main").hide();
-  }
-  if (oldtreename == "#environments_tree") {
-	  // Might have server selected...
-	  tabs = appTabs["#servers_tree"];
-	  for (var s in tabs) {
-		  console.log("Hiding server tab "+tabs[s]);
-		  $(tabs[s]).hide();
-	  }
-  }
-
-  tabs = appTabs[currenttree];
-  for ( var k in tabs)
-  {
-   $(tabs[k]).show();
-  }
- }
-
- function FlashViews()
- {
-	 // If user clicks BACK to go from flashing JUST Deploy View to flashing ALL views you
-	 // can get into an odd effect whereby the Deploy View flashes out of sequence with the
-	 // other shortcuts. So wait for dvFlashInProgress to drop to false; 
-	 if (viewFlasher) {
-		if (dvFlashInProgress) {
-			// Still in the process of flashing DeployView
-			setTimeout(FlashViews,500);
-		} else {
-			$("#release_menu").fadeIn(500).fadeOut(500).fadeIn(500);
-			$("#endpoints_menu").fadeIn(500).fadeOut(500).fadeIn(500);
-			$("#deploy_menu").fadeIn(500).fadeOut(500).fadeIn(500);
-			$("#containers_menu").fadeIn(500).fadeOut(500).fadeIn(500);
-			$("#domains_menu").fadeIn(500).fadeOut(500).fadeIn(500);
-			$("#usersgroups_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
-				FlashViews();
-			});
-		}
-	 }
- }
- 
- function FlashDeployView()
- {
-	 if (deployFlasher) {
-		 console.log("setting dvFlashInProgress=true");
-		 dvFlashInProgress=true;
-		 $("#release_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
-			 console.log("setting dvFlashInProgress=false");
-			 dvFlashInProgress=false;
-			 FlashDeployView();
-		 });
-	 }
- }
- 
- function FlashDataCenterView()
- {
-	 if (dcFlasher) {
-		 $("#endpoints_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
-			 FlashDataCenterView();
-		 });
-	 }
- }
- 
- function FlashConnectionsView()
- {
-	 if (connFlasher) {
-		 $("#containers_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
-			 FlashConnectionsView();
-		 });
-	 }
- }
- 
- function FlashFlowView()
- {
-	 if (flowFlasher) {
-		 $("#deploy_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
-			 FlashFlowView();
-		 });
-	 }
- }
- 
- function FlashDomainsView()
- {
-	 if (domFlasher) {
-		 $("#domains_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
-			 FlashDomainsView();
-		 });
-	 }
- }
- 
- function FlashUsersView()
- {
-	 if (uagFlasher) {
-		 $("#usersgroups_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
-			 FlashUsersView();
-		 });
-	 }
- }
- 
- function FlashExplorerPanel()
- {
-	 if (explorerFlasher) {
-		 $("#left_panel_tabs").delay(500).fadeOut(500).fadeIn(200);
-		 $("#left_panel_tree").delay(500).fadeOut(500).fadeIn(200,function() {
-			 FlashExplorerPanel();
-		 });
-	 }
- }
- 
- function FlashHomeIcon()
- {
-	 if (homeFlasher) {
-		 $("#home_menu").fadeIn(500).fadeOut(500).fadeIn(500,function() {
-			 FlashHomeIcon();
-		 });
-	 }
- }
- 
- function FlashBreadcrumbPanel()
- {
-	 if (breadcrumbFlasher) {
-		 $("#footer_container").fadeIn(500).fadeOut(500).fadeIn(500,function() {
-			 FlashBreadcrumbPanel();
-		 });
-	 }
- }
- 
- function clearAllFlashFlags()
- {
-	explorerFlasher = false;
-	viewFlasher = false;
-	deployFlasher = false;
-	dcFlasher = false;
-	flowFlasher = false;
-	connFlasher = false;
-	domFlasher = false;
-	uagFlasher = false;
-	homeFlasher = false;
-	breadcrumbFlasher = false;
- }
- 
- 
- function ShowHelpPage(pageno)
- {
-	 console.log("ShowHelpPage("+pageno+")");
-	 HelpPageNumber=pageno;
- 	$('div[id^="helppage"]').hide();
- 	$("#helppage"+pageno.toString()).show();
- 	if (pageno==1) {
- 		$("#modal").dialog("option", "buttons", [
-      	   {
-      	    text : "Yes, Please!",
-      	    click : function()
-      	    {
-      	    	HelpPageNumber++;
-      	    	ShowHelpPage(HelpPageNumber);
-      	    }
-      	   },{
-      		    text : "No, thanks!",
-      		    click : function()
-      		    {
-      		    	$("#modal").dialog("close");
-      		    	ShowingInitialHelp=false;
-      		    	clearAllFlashFlags();
-      		    }
-      		 }
-      	   ]);
- 	}
- 	else if (pageno>1 && pageno<12) {
-		$("#modal").dialog("option", "buttons",
-		[{
-       	    text : "Back",
-       	    click : function() {
-       	    	HelpPageNumber--;
-       	    	ShowHelpPage(HelpPageNumber);
-            }
-         },{
-            text : "Next",
-			click : function() {
-				HelpPageNumber++;
-				ShowHelpPage(HelpPageNumber);
-			}
-         },{
-        	text : "Finish",
- 			click : function() {
- 				$("#modal").dialog("close");
- 		    	ShowingInitialHelp=false;
- 		    	clearAllFlashFlags();
- 			}
-         }
-		]);
- 	} else {
- 		$("#modal").dialog("option", "buttons", [
-       	   {
-       	    text : "Back",
-       	    click : function()
-       	    {
-       	    	HelpPageNumber--;
-       	    	ShowHelpPage(HelpPageNumber);
-       	    }
-       	   },{
-       		    text : "Finish",
-       		    click : function()
-       		    {
-       		    	$("#modal").dialog("close");
-       		    	ShowingInitialHelp=false;
-       		    	clearAllFlashFlags();
-       		    }
-       		 }
-       	   ]);	
- 	}
- 	clearAllFlashFlags();
- 	switch(pageno) {
- 	case 2:
- 		explorerFlasher = true;
- 		FlashExplorerPanel();
- 		break;
- 	case 3:
- 		viewFlasher = true;
- 		FlashViews();
- 		break;
- 	case 4:
- 		deployFlasher = true;
- 		FlashDeployView();
- 		EnableTabs("release_menu",true);
- 		break;
- 	case 5:
- 		dcFlasher = true;
- 		FlashDataCenterView();
- 		EnableTabs("endpoints_menu",true);
- 		break;
- 	case 6:
- 		flowFlasher = true;
- 		FlashFlowView();
- 		EnableTabs("deploy_menu",true);
- 		break;
- 	case 7:
- 		connFlasher = true;
- 		FlashConnectionsView();
- 		EnableTabs("containers_menu",true);
- 		break;
- 	case 8:
- 		domFlasher = true;
- 		FlashDomainsView();
- 		EnableTabs("domains_menu",true);
- 		break;
- 	case 9:
- 		uagFlasher = true;
- 		FlashUsersView();
- 		EnableTabs("usersgroups_menu",true);
- 		break;
- 	case 10:
- 		homeFlasher = true;
- 		FlashHomeIcon();
- 		displayhome=true;
- 		ShowHome(true,true);
- 		break;
- 	case 11:
- 		breadcrumbFlasher = true;
- 		FlashBreadcrumbPanel();
- 		break;
- 	}
- }
-
- function ShowHelpForNewUsers()
- {
-	 // Open up the help dialog for new users
-	 ShowingInitialHelp=true;
-	 newUser=false;
-	 var w1="<table border=\"0\"><tr><td valign=\"top\"><img src=\"css/images/setupdog.png\"></td><td valign=\"top\">";
-	 var w2="</td></tr></table></div>";
-	 var t="<div id=\"helppage1\">"+w1;
-	  t+="<h2>Hello!</h2>It looks like you've not logged into DeployHub before. Do you want to have an overview of how DeployHub works ";
-	  t+="and how to navigate the User Interface? If you click \"Yes Please!\" you will be shown each major UI component. You can drag ";
-	  t+="this dialog around the screen and interact with the DeployHub UI and this dialog will show you information about what you ";
-	  t+="have clicked on.";
-	  t+=w2;
-	  t+="<div id=\"helppage2\" style=\"display:none\">"+w1;
-	  t+="<h2>Explorer Panel</h2>The flashing panel on the left of the screen is the <I>Explorer</I>. Nearly all navigation is done from here. The explorer panel shows the ";
-	  t+="domain hierarchy starting from your <I>Home Domain</I>. The objects shown in the explorer panel are controlled by the ";
-	  t+="tabs at the top of the explorer panel as well as the currently selected <I>View</I>. We will discuss views on the next ";
-	  t+="page.<BR><BR>You can generally bring up a <I>Context Menu</I> by selecting an object in the Explorer Panel and right-clicking. ";
-	  t+="To create new objects of a specified type you need to switch the Explorer Panel to show objects of that type, right-click on ";
-	  t+="the Domain in which you want to create the object and select \"Create New...\"";
-	  t+=w2;
-	  t+="<div id=\"helppage3\" style=\"display:none\">"+w1;
-	  t+="<h2>Views</h2>The flashing links across the top of the screen switch between different <I>views</I>. Each view shows information about ";
-	  t+="different DeployHub objects. You can click on one of these views for a description of what the view contains, or just click ";
-	  t+="\"Next\" or \"Back\" to walk through the views one by one."
-	  t+=w2;
-	  t+="<div id=\"helppage4\" style=\"display:none\">"+w1;
-	  t+="<h2>Deploy View</h2>The <I>Deploy</I> view contains all of the Applications and Components. Applications are ";
-	  t+="made up of one or more Components. You assemble an Application by dragging Components onto a panel that represents the ";
-	  t+="deployment sequence.<br><br>";
-	  t+="Applications are deployed to Environments. Environments are configured via the <I>Data Center</I> view.";
-	  t+="Applications and Components can be versioned. This allows DeployHub to know which version of the application has been ";
-	  t+="deployed to which Environment and to handle the roll-forward and roll-back logic.";
-	  t+=w2;
-	  t+="<div id=\"helppage5\" style=\"display:none\">"+w1;
-	  t+="<h2>Data Center View</h2>The <I>Data Center</I> view contains all of the End Points, Environments and Build Engines that ";
-	  t+="DeployHub connects to. Applications are deployed to Environments. An Environment is made up of one or more End Points. An ";
-	  t+="End Point can be a physical or virtual server, a container or any other device that receives changes (such as a router or ";
-	  t+="load balancer). Each End Point has <I>Component Types</I> associated with it. When an Application is deployed, its components ";
-	  t+="are delivered to the appropriate end-points within the targeted Environment";
-	  t+=w2;
-	  t+="<div id=\"helppage6\" style=\"display:none\">"+w1;
-	  t+="<h2>Flows View</h2>The <I>Flows</I> view contains all the Actions, Procedures and Functions that control the deployment logic. ";
-	  t+="Actions are created with a drag-and-drop graphical editor to build workflow logic. Procedures and Functions can be written ";
-	  t+="to run on the target end-point or locally on the DeployHub server. Local scripts can also be written in <I>DMScript</I> ";
-	  t+="(DeployHub's own scripting language) which can then be used as stored procedures. Actions can be built from Procedures and ";
-	  t+="Functions. Actions are attached to Components and Applications to control the activities that DeployHub will perform ";
-	  t+="before and after each Component (or Application) is deployed.";
-	  t+=w2;
-	  t+="<div id=\"helppage7\" style=\"display:none\">"+w1;
-	  t+="<h2>Connections View</h2>The <I>Connections</I> view contains all the Repositories, Data Sources and Credentials that DeployHub ";
-	  t+="can access. A Repository is a source of deployment artifacts and can be an SCM tool, an FTP(S) server, a web URL (for binary ";
-	  t+="repositories) or even just a file system. Credentials are objects (typically username/password combinations) that allow DeployHub ";
-	  t+="to connect to external systems, such as repositories, end-points or Data Sources. A <I>Data Source</I> is a source of external ";
-	  t+="data such as an ODBC connection to a database.";
-	  t+=w2;
-	  t+="<div id=\"helppage8\" style=\"display:none\">"+w1;
-	  t+="<h2>Domains View</h2>The <I>Domains</I> view allows you to modify the Domain Hierarchy. Every object in DeployHub is associated ";
-	  t+="with a Domain. A user's <I>Home Domain</I> is always shown at the top of the explorer panel. ";
-	  t+="The \"My Pipeline\" domain contains sub-domains which represent a pipeline that an application would ";
-	  t+="typically go through on its way to production. You can change this pipeline if required.<BR><BR>Domains contain <I>Tasks</I> which users ";
-	  t+="can invoke. Tasks perform activities such as deployments, approvals or move application versions between domains in a pipeline.";
-	  t+=w2;
-	  t+="<div id=\"helppage9\" style=\"display:none\">"+w1;
-	  t+="<h2>Users & Groups View</h2>The <I>Users & Groups</I> view allows you to view/create users in DeployHub and assign those ";
-	  t+="users to different user groups. The permission model in DeployHub is based around membership of different user groups. <I>Tasks</I> ";
-	  t+="are made available to members of specific User Groups and every object in DeployHub has access control via User Groups.<BR><BR>";
-	  t+="User Groups are granted permissions to create new objects of specific types.";
-	  t+=w2;
-	  t+="<div id=\"helppage10\" style=\"display:none\">"+w1;
-	  t+="<h2>Home Page</h2>This is your Home Page. You click here to view your \"To Do\" list. You are assigned things to do based on your membership of ";
-	  t+="different <I>User Groups</I> or if you are the \"owner\" of certain objects. For example, if a user requests a time slot on ";
-	  t+="an environment calendar and you are the owner of that environment (either as an individual or as a member of the owning user ";
-	  t+="group) then the request to authorise the time will appear on your \"To Do\" list.<BR><BR>";
-	  t+="The Home Page also shows the combined timeline of all the objects to which you have subscribed. You can subscribe to any ";
-	  t+="object in DeployHub to which you have access. The timeline for all subscribed objects is brought together into the Timeline ";
-	  t+="Tab";
-	  t+=w2;
-	  t+="<div id=\"helppage11\" style=\"display:none\">"+w1;
-	  t+="<h2>Breadcrumb Tray</h2>The flashing panel at the bottom of the screen is the <I>Breadcrumb Tray</I>. It contains shortcuts to ";
-	  t+="previously selected objects. Every time you select an object in the <I>Explorer</I> it is placed into the Breadcrumb Tray. To ";
-	  t+="return to a previously selected object, just click on the link in the Breadcrumb Tray. DeployHub will automatically switch ";
-	  t+="the <I>View</I> and the <I>Explorer Tab</I> to select the desired object.<BR><BR>";
-	  t+="Why not try it now? Click on different views and select objects from the different Explorer Panels. See how they appear in the ";
-	  t+="Breadcrumb Tray. Click on the object in the Breadcrumb Tray to reset the views and tabs to redisplay the selected obejct.";
-	  t+=w2;
-	  t+="<div id=\"helppage12\" style=\"display:none\">"+w1;
-	  t+="<h2>Go Deploy!</h2>That's it! You now know all you need to navigate the DeployHub User Interface. Click \"Finish\" to close ";
-	  t+="this dialog and to start using DeployHub. Click \"Back\" to revisit the earlier pages."
-	  t+=w2;
-	  $("#modal").html(t);
-
-	  $("#modal").dialog({
-		title: "Welcome to DeployHub Open Source Edition!",
-	    resizable : false,
-	    width : 600,
-	    height : 400,
-	    modal : false,
-	    draggable: true
-	   });
-	   $("#modal").dialog("option", "buttons", [
-	   {
-	    text : "Yes, Please!",
-	    click : function()
-	    {
-	    	HelpPageNumber++;
-	    	ShowHelpPage(HelpPageNumber);
-	    }
-	   },{
-		    text : "No, thanks!",
-		    click : function()
-		    {
-		    	$("#modal").dialog("close");
-		    	ShowingInitialHelp=false;
-		    	clearAllFlashFlags();
-		    }
-		 }
-	   ]);
-
-	   $("#modal").dialog("open");
- }
- 
- function EnableTabs(menuname,nocallback)
- {
-  viewFlasher=false;
-  currentmenu = menuname;
-  SetActiveMenu(menuname);
-  
-  nocallback = nocallback || false;
-  console.log("EnableTabs("+menuname+") ShowingInitialHelp="+ShowingInitialHelp);
-
-  if (menuname == "domains_menu")
-  {
-   $("#applications_tab").hide();
-   $("#components_tab").hide();
-   $("#environments_tab").hide();
-   $("#builders_tab").hide();
-   $("#credentials_tab").hide();
-   $("#servers_tab").hide();
-   $("#datasources_tab").hide();
-   $("#actions_tab").hide();
-   $("#functions_tab").hide();
-   $("#procedures_tab").hide();
-   $("#notifiers_tab").hide();
-   $("#users_tab").hide();
-   $("#groups_tab").hide();
-   $("#repositories_tab").hide();
-   $("#domains_tab").show();
-   $("#types_tab").show();
-   if (ShowingInitialHelp && !nocallback) ShowHelpPage(8);
-  }
-  else if (menuname == "release_menu")
-  {
-   $("#applications_tab").show();
-   $("#components_tab").show();
-   $("#environments_tab").hide();
-   $("#builders_tab").hide();
-   $("#credentials_tab").hide();
-   $("#servers_tab").hide();
-   $("#datasources_tab").hide();
-   $("#actions_tab").hide();
-   $("#functions_tab").hide();
-   $("#procedures_tab").hide();
-   $("#notifiers_tab").hide();
-   $("#users_tab").hide();
-   $("#groups_tab").hide();
-   $("#repositories_tab").hide();
-   $("#domains_tab").hide();
-   $("#types_tab").hide();
-   if (ShowingInitialHelp && !nocallback) ShowHelpPage(4);
-  }
-  else if (menuname == "containers_menu")
-  {
-   $("#applications_tab").hide();
-   $("#components_tab").hide();
-   $("#environments_tab").hide();
-   $("#builders_tab").hide();
-   $("#credentials_tab").show();
-   $("#servers_tab").hide();
-   $("#datasources_tab").show();
-   $("#actions_tab").hide();
-   $("#functions_tab").hide();
-   $("#procedures_tab").hide();
-   $("#notifiers_tab").hide();
-   $("#users_tab").hide();
-   $("#groups_tab").hide();
-   $("#repositories_tab").show();
-   $("#domains_tab").hide();
-   $("#types_tab").hide();
-   if (ShowingInitialHelp && !nocallback) ShowHelpPage(7);
-  }
-  else if (menuname == "endpoints_menu")
-  {
-   $("#applications_tab").hide();
-   $("#components_tab").hide();
-   $("#environments_tab").show();
-   $("#builders_tab").show();
-   $("#credentials_tab").hide();
-   $("#servers_tab").show();
-   $("#datasources_tab").hide();
-   $("#actions_tab").hide();
-   $("#functions_tab").hide();
-   $("#procedures_tab").hide();
-   $("#notifiers_tab").hide();
-   $("#users_tab").hide();
-   $("#groups_tab").hide();
-   $("#repositories_tab").hide();
-   $("#domains_tab").hide();
-   $("#types_tab").hide();
-   if (ShowingInitialHelp && !nocallback) ShowHelpPage(5);
-  }
-  else if (menuname == "deploy_menu")
-  {
-   $("#applications_tab").hide();
-   $("#components_tab").hide();
-   $("#environments_tab").hide();
-   $("#credentials_tab").hide();
-   $("#servers_tab").hide();
-   $("#datasources_tab").hide();
-   $("#builders_tab").hide();
-   $("#actions_tab").show();
-   $("#functions_tab").show();
-   $("#procedures_tab").show();
-   $("#notifiers_tab").show();
-   $("#users_tab").hide();
-   $("#groups_tab").hide();
-   $("#repositories_tab").hide();
-   $("#domains_tab").hide();
-   $("#types_tab").hide();
-   if (ShowingInitialHelp && !nocallback) ShowHelpPage(6);
-  }
-  else if (menuname == "usersgroups_menu")
-  {
-   $("#applications_tab").hide();
-   $("#components_tab").hide();
-   $("#environments_tab").hide();
-   $("#builders_tab").hide();
-   $("#builders_tab").hide();
-   $("#credentials_tab").hide();
-   $("#servers_tab").hide();
-   $("#datasources_tab").hide();
-   $("#actions_tab").hide();
-   $("#functions_tab").hide();
-   $("#procedures_tab").hide();
-   $("#notifiers_tab").hide();
-   $("#users_tab").show();
-   $("#groups_tab").show();
-   $("#repositories_tab").hide();
-   $("#domains_tab").hide();
-   $("#types_tab").hide();
-   if (ShowingInitialHelp && !nocallback) ShowHelpPage(9);
-  }
- }
-</script>  
 </head>
 <body>
 <div id="container">
 
  <div id="header">
-  <div class="omlogo"><img alt="DeployHub" src="images/deployhubdogwhite.png"></div>
+  <div class="omlogo"><img alt="Ortelius" src="images/logo.png" style="margin-top:4px"></div>
    <div id="positiondevopsmenu">		
 	<div class="moduletable_menu">			
-      <ul class="menu_menu">
-        <li id="setup_menu" onclick="SetupWizard()">Setup</li>
-        <li id="release_menu"  onclick="EnableTabs(this.id)">Deploy</li>     
-        <li id="endpoints_menu" onclick="EnableTabs(this.id)">Data Center</li>
-        <li id="deploy_menu" onclick="EnableTabs(this.id)">Flows</li>
-        <li id="containers_menu" onclick="EnableTabs(this.id)">Connections</li>   
-        <li id="domains_menu" onclick="EnableTabs(this.id)">Domains</li>
-        <li id="usersgroups_menu" onclick="EnableTabs(this.id)">Users &amp; Groups</li>
+      <ul class="menu_menu">    
       </ul>
 	</div>
    </div>	
@@ -2376,280 +166,922 @@ String.prototype.trimChars = function(charlist) {
    <div id="positiondevopsmenu_right">		
     <div class="moduletable_menu">					
       <ul class="menu_menu">
-        <li id="home_menu" onclick="displayhome=true;ShowHome(true);"><img src="images/home.png" alt="Home" /></li>
-        <li id="about_menu" onclick="ShowAbout()"><img src="images/about.png" alt="About" /></li>
-        <li id="user_menu" onclick="LoadUserProfile()" ><img src="css/images/user_16x.png" alt="User:" /></li>
-        <li id="help_menu"><a class="menu_icon" href="http://www.deployhub.org/help/NetHelp/index.html" target="_blank" ><img src="images/help.png" alt="Help" /></a></li>
-        <li id="logout_menu"><a class="menu_icon" href="Logout" ><img src="images/logout.png" alt="Logout" /></a></li>
+        <li id="rproxy_menu" onclick="ShowHome(true,false);">Warning: 0 of 1 Reverse Proxy Online !</li>
+        <li id="about_menu" onclick="ShowAbout()"><i class="fal fa-info-circle fa-2x" aria-hidden="true"  style="padding-right:5px"></i></li>
+        <li id="user_menu" onclick="LoadUserProfile()" ><i class="fal fa-user fa-2x" aria-hidden="true"  style="padding-right:5px"></i></li>
+        <li id="help_menu"><a class="menu_icon" href="https://docs.deployhub.com" target="_blank" ><i class="fal fa-question-circle fa-2x" aria-hidden="true"  style="padding-right:5px"></i></a></li>
+        <li id="logout_menu"><a class="menu_icon" href="Logout" ><i class="fal fa-sign-out fa-2x" aria-hidden="true"  style="padding-right:5px"></i></a></li>
       </ul>
 	 </div>
     </div>
 	
 	<div class="clear"></div>	
 	</div> <!-- end header -->
-	<div id="panel_container" class="left">
-	 <div id="left_panel_tabs">
-	  <div class="tabrow_tabmenu">
-	   <div class="moduletable_tabmenu">
-		<ul class="menu_tabmenu">
-	      <li id="domains_tab" onclick="SetActive(this.id)" style="display:none">Domains</li>
-	      <li id="components_tab" onclick="SetActive(this.id)" style="display:none">Components</li>
-          <li id="applications_tab" onclick="SetActive(this.id)" style="display:none">Applications</li>
-          <li id="environments_tab" onclick="SetActive(this.id)" style="display:none">Environments</li>
-          <li id="repositories_tab" onclick="SetActive(this.id)" style="display:none">Repositories</li> 
-          <li id="servers_tab" onclick="SetActive(this.id)" style="display:none">End Points</li>  
-          <li id="builders_tab" onclick="SetActive(this.id)" style="display:none">Build Engines</li>  
-          <li id="datasources_tab" onclick="SetActive(this.id)" style="display:none">Data Sources</li> 
-          <li id="credentials_tab" onclick="SetActive(this.id)" style="display:none">Credentials</li>
-          <li id="actions_tab" onclick="SetActive(this.id)" style="display:none">Actions</li>  
-          <li id="procedures_tab" onclick="SetActive(this.id)" style="display:none">Functions & Procedures</li>   
-          <li id="notifiers_tab" onclick="SetActive(this.id)" style="display:none">Notifiers</li> 
-          <li id="users_tab" onclick="SetActive(this.id)" style="display:none">Users</li>
-          <li id="groups_tab" onclick="SetActive(this.id)" style="display:none">Groups</li>
-          <li id="types_tab" onclick="SetActive(this.id)" style="display:none">Component & End Point Types</li>                                                       
-        </ul>
-	   </div>
-	  </div>
-	 </div>
-	 <div id="left_panel_tree" class="div_scroll">
-	 
-	  <div id="applications_tree" align="left"></div>
-	  <input type=hidden name="ad_applications_tree" value="Y">
- 	  
-	  <div id="components_tree" align="left""></div>
-	  <input type=hidden name="ad_components_tree" value="Y">	
-	      
-	  <div id="environments_tree" align="left"></div>
-	  <input type=hidden name="ad_environments_tree" value="Y">	
-	  
-	  <div id="builders_tree" align="left"></div>
-	  <input type=hidden name="ad_builders_tree" value="Y">	
-	   
-	  <div id="credentials_tree" align="left"></div>
-	  <input type=hidden name="ad_credentials_tree" value="Y">	
-	   
-	  <div id="datasources_tree" align="left"></div>
-	  <input type=hidden name="ad_datasources_tree" value="Y">	
-	   
-	  <div id="actions_tree" align="left"></div>
-	  <input type=hidden name="ad_actions_tree" value="Y">	
-	   
-	  <div id="functions_tree" align="left"></div>
-	  <input type=hidden name="ad_functions_tree" value="Y">	
-	
-	  <div id="procedures_tree" align="left"></div>
-	  <input type=hidden name="ad_procedures_tree" value="Y">	
-	
-	  <div id="users_tree" align="left"></div>
-	  <input type=hidden name="ad_users_tree" value="Y">	
-	  	   
-	  <div id="groups_tree" align="left"></div>
-	  <input type=hidden name="ad_groups_tree" value="Y">	
-	  
-	  <div id="servers_tree" align="left"></div>
-	  <input type=hidden name="ad_servers_tree" value="Y">	
-	  
-	  <div id="notifiers_tree" align="left"></div>
-	  <input type=hidden name="ad_notifiers_tree" value="Y">	
-	  
-	  <div id="repositories_tree" align="left"></div>
-	  <input type=hidden name="ad_repositories_tree" value="Y">	
-	  	  
-	  <div id="domains_tree" align="left"></div>
-	  <input type=hidden name="ad_domains_tree" value="Y">	
-	  	
-	  <div id="types_tree" align="left"></div>
-	  <input type=hidden name="ad_types_tree" value="Y">	
-	 </div>
-    </div> <!-- end panel container -->
-	
+	<div id="panel_container_menu" class="left" style="display:none;">
+	 <div id="verttabs" class="verttab">
+	   <button id="verttab_application" class="tablinks verttab_app" onclick="openList(event, 'application')">Applications</button>
+       <button id="verttab_component" class="tablinks verttab_comp" onclick="openList(event, 'component')">Components</button>
+       <button id="verttab_domain" class="tablinks verttab_domain" onclick="LoadDomNav()">Domains</button>
+       <button id="verttab_environment" class="tablinks verttab_env" onclick="openList(event, 'environment')">Environments</button>
+       <button id="verttab_endpoint" class="tablinks verttab_endpoint" onclick="openList(event, 'endpoint')">Endpoints</button>
+       <button id="verttab_action" class="tablinks verttab_action" onclick="openList(event, 'action')">Actions</button>
+       <button id="verttab_procedure" class="tablinks verttab_procedure" onclick="openList(event, 'procedure')">Func/Procs</button>
+       <button id="verttab_servercomptype" class="tablinks verttab_servercomptype" onclick="openList(event, 'servercomptype')">Customize Types</button>   
+       <button id="verttab_setup" class="tablinks verttab_setup" onclick="toggleSetup(event, 'setup')">Setup<i class="fad fa-chevron-double-down fa-lg" aria-hidden="true" style="padding-left:50%;"></i></button>   
+       <button id="verttab_credential" class="tablinks verttab_credential" onclick="openList(event, 'credential')">Credentials</button>
+       <button id="verttab_repository" class="tablinks verttab_repository" onclick="openList(event, 'repository')">Repositories</button>
+       <button id="verttab_datasource" class="tablinks verttab_datasource" onclick="openList(event, 'datasource')">Data Sources</button>
+       <button id="verttab_notifier" class="tablinks verttab_notifier" onclick="openList(event, 'notifier')">Notifiers</button>
+       <button id="verttab_template" class="tablinks verttab_template" onclick="openList(event, 'template')">Notifier Templates</button>
+       <button id="verttab_user" class="tablinks verttab_user" onclick="openList(event, 'user')">Users</button>
+       <button id="verttab_group" class="tablinks verttab_group" onclick="openList(event, 'group')">Groups</button>   
+     </div>  
+	</div>
+	<div id="panel_container_right_list" class="right" style="display:none;">
+     <div id="applist_pane">
+        <div id="applist_pane_title" style="display:inline-block;"><H2>Applications</H2></div>
+          <div id="applist_buttons" style="display:inline-block;">
+         	 <button class="title_buttons" onclick="openList(event, 'application')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
+             <button class="title_buttons" onclick="addRow(event, 'application')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Base</button>
+             <button class="title_buttons" onclick="addRow(event, 'appversion')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Version</button>
+             <button class="title_buttons" onclick="delRow(event, 'application')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
+             <div class="dropdown_menu">
+               <button class="title_buttons taskMenuButton" onclick="taskMenu()"><i class="fal fa-tasks" aria-hidden="true" style="padding-right:5px;"></i>Tasks<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <div class="dropdown_menu-content">
+               </div>
+             </div>
+             <button class="title_buttons" onclick="openList(event, 'application')"><i class="fal fa-list" aria-hidden="true" style="padding-right:5px;"></i>List</button>
+          	 <button class="title_buttons" onclick="openMap(event, 'application')"><i class="fal fa-map-signs" aria-hidden="true" style="padding-right:5px;"></i>Map</button>
+          </div>
+          <div id="applist_filter_area" style="height:25px;">
+                  <div id="app_search_box_container"></div>
+          </div>
+        <div id="applist_list">  
+		  <table id="applist" class="hover row-border nowrap" height="100%" width="100%">
+           <thead>
+            <tr>
+                <th></th>
+				<th style="text-align: left;">Version</th> 
+				<th style="text-align: left;">Domain</th>
+				<th style="text-align: left;">Parent</th> 	
+				<th style="text-align: left;">Environment</th> 	
+				<th style="text-align: left;">Last Deployment to Environment</th> 
+				<th style="text-align: left;">Completed</th> 
+				<th style="text-align: left;">Result</th> 
+				<th style="text-align: left;">domainid</th> 	
+				<th style="text-align: left;">appid</th> 			    
+            </tr>
+           </thead>
+          </table>
+        </div>
+        <div id="applist_map" height="100%" width="100%"></div>  
+      </div> 
+     <div id="complist_pane">
+        <div id="complist_pane_title" style="display:inline-block;"><H2>Components</H2></div>
+          <div id="complist_buttons" style="display:inline-block;">
+          	 <button class="title_buttons" onclick="openList(event, 'component')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
+             <div class="dropdown_menu">
+               <button class="title_buttons addMenuButton" onclick="compMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Base<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <div class="dropdown_menu-content" style="display: none;">
+                   <a onclick="addRow(event,'docker');">Container</a>
+                   <a onclick="addRow(event,'file');">Application File</a>
+                   <a onclick="addRow(event,'database');">Database</a>
+               </div>
+             </div>
+             <button class="title_buttons" onclick="addRow(event, 'compversion')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Version</button>
+             <button class="title_buttons" onclick="delRow(event, 'component')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
+             <button class="title_buttons" onclick="openList(event, 'component')"><i class="fal fa-list" aria-hidden="true" style="padding-right:5px;"></i>List</button>
+          	 <button class="title_buttons" onclick="openMap(event, 'component')"><i class="fal fa-map-signs" aria-hidden="true" style="padding-right:5px;"></i>Map</button>
+          </div>
+          <div id="complist_filter_area" style="height:25px;">
+             <div id="comp_search_box_container"></div>
+          </div>
+         <div id="complist_list">   
+		  <table id="complist" class="hover row-border nowrap" height="100%" width="100%">
+           <thead>
+            <tr>
+                <th></th>
+				<th style="text-align: left;">Version</th> 
+				<th style="text-align: left;">Domain</th>
+				<th style="text-align: left;">Parent</th>
+				<th style="text-align: left;">Environment</th> 	
+				<th style="text-align: left;">Last Deployment</th> 
+				<th style="text-align: left;">Completed</th> 
+				<th style="text-align: left;">Result</th>
+				<th style="text-align: left;">domainid</th>  
+				<th style="text-align: left;">compid</th>  	    
+            </tr>
+           </thead>
+          </table>
+         </div>
+        <div id="complist_map" height="100%" width="100%"></div>   
+      </div> 
+      <div id="envlist_pane">        
+        <div id="envlist_pane_title" style="display:inline-block;"><H2>Environments</H2></div>
+          <div id="envlist_buttons" style="display:inline-block;">
+          	 <button class="title_buttons" onclick="openList(event, 'environmet')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
+             <button class="title_buttons" onclick="addRow(event, 'environment')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add</button>
+             <button class="title_buttons" onclick="delRow(event, 'environment')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
+             <div class="dropdown_menu">
+               <button class="title_buttons envRptMenuButton" onclick="envRptMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-file-contract" aria-hidden="true" style="padding-right:5px;"></i>Reports<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <div class="dropdown_menu-content" style="display: none;">
+                   <a href="/dmadminweb/reports/EnvSuccessFail.html" target="_blank">Success/Failed Deployments per Environment Report</a>
+               </div>
+             </div>
+           </div>
+           <div id="envlist_filter_area" style="height:25px;">
+                  <div id="env_search_box_container"></div>
+          </div>
+         <div id="envlist_list">  
+		  <table id="envlist" class="hover row-border nowrap" height="100%" width="100%">
+           <thead>
+            <tr>
+                <th></th>
+				<th style="text-align: left;">Environment</th> 
+				<th style="text-align: left;">Domain</th>
+				<th style="text-align: left;">domainid</th>  
+				<th style="text-align: left;">envid</th>  	    
+            </tr>
+          </thead>
+         </table>
+        </div>
+      </div>
+      <div id="endpointlist_pane">        
+        <div id="endpointlist_pane_title" style="display:inline-block;"><H2>Endpoints</H2></div>
+          <div id="endpointlist_buttons" style="display:inline-block;">
+          	 <button class="title_buttons" onclick="openList(event, 'endpoint')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
+             <button class="title_buttons" onclick="addRow(event, 'endpoint')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add</button>
+             <button class="title_buttons" onclick="delRow(event, 'endpoint')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
+           </div>
+           <div id="endpointlist_filter_area" style="height:25px;">
+                  <div id="endpoint_search_box_container"></div>
+          </div>
+         <div id="endpointlist_list">  
+		  <table id="endpointlist" class="hover row-border nowrap" height="100%" width="100%">
+           <thead>
+            <tr>
+                <th></th>
+				<th style="text-align: left;">Endpoint</th> 
+				<th style="text-align: left;">Domain</th>
+				<th style="text-align: left;">domainid</th>  
+				<th style="text-align: left;">endpointid</th>  	    
+            </tr>
+          </thead>
+         </table>
+        </div>  
+      </div> 
+      <div id="actionlist_pane">        
+        <div id="actionlist_pane_title" style="display:inline-block;"><H2>Actions</H2></div>
+          <div id="actionlist_buttons" style="display:inline-block;">
+          	 <button class="title_buttons" onclick="openList(event, 'action')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
+             <button class="title_buttons" onclick="addRow(event, 'action')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add</button>
+             <button class="title_buttons" onclick="delRow(event, 'action')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
+           </div>
+           <div id="actionlist_filter_area" style="height:25px;">
+                  <div id="action_search_box_container"></div>
+          </div>
+         <div id="actionlist_list">  
+		  <table id="actionlist" class="hover row-border nowrap" height="100%" width="100%">
+           <thead>
+            <tr>
+                <th></th>
+				<th style="text-align: left;">Action</th> 
+				<th style="text-align: left;">Domain</th>
+				<th style="text-align: left;">domainid</th>  
+				<th style="text-align: left;">actionid</th>  	    
+            </tr>
+          </thead>
+         </table>
+        </div>
+      </div> 
+      <div id="procedurelist_pane">        
+        <div id="procedurelist_pane_title" style="display:inline-block;"><H2>Func/Procs</H2></div>
+          <div id="procedurelist_buttons" style="display:inline-block;">
+          	 <button class="title_buttons" onclick="openList(event, 'procedure')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
+             <div class="dropdown_menu">
+               <button class="title_buttons addProcButton" onclick="procMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Procedure<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <div class="dropdown_menu-content" style="display: none;">
+                   <a onclick="addRow(event,'procedure-ak2');">DMScript in database</a>
+                   <a onclick="addRow(event,'procedure-ak3');">Local Script</a>
+                   <a onclick="addRow(event,'procedure-ak4');">Endpoint Script</a>
+               </div>
+              </div> 
+             <div class="dropdown_menu">
+               <button class="title_buttons addFuncButton" onclick="funcMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Function<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <div class="dropdown_menu-content" style="display: none;">
+                   <a onclick="addRow(event,'function-ak2');">DMScript in database</a>
+                   <a onclick="addRow(event,'function-ak3');">Local Script</a>
+                   <a onclick="addRow(event,'function-ak4');">Endpoint Script</a>
+               </div>
+              </div>  
+             <button class="title_buttons" onclick="delRow(event, 'procedure')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
+             <button class="title_buttons" onclick="exportFuncProc()"><i class="fal fa-download" aria-hidden="true" style="padding-right:5px;"></i>Export</button>
+             <button class="title_buttons" onclick="importProc()"><i class="fal fa-upload" aria-hidden="true" style="padding-right:5px;"></i>Import</button>
+           </div>
+           <div id="procedurelist_filter_area" style="height:25px;">
+                  <div id="procedure_search_box_container"></div>
+          </div>
+         <div id="procedurelist_list">  
+		  <table id="procedurelist" class="hover row-border nowrap" height="100%" width="100%">
+           <thead>
+            <tr>
+                <th></th>
+				<th style="text-align: left;">Name</th> 
+				<th style="text-align: left;">Domain</th>
+				<th style="text-align: left;">Type</th>
+				<th style="text-align: left;">domainid</th>  
+				<th style="text-align: left;">procedureid</th>  	    
+            </tr>
+          </thead>
+         </table>
+        </div>
+      </div> 
+      <div id="notifierlist_pane">        
+        <div id="notifierlist_pane_title" style="display:inline-block;"><H2>Notifiers</H2></div>
+          <div id="notifierlist_buttons" style="display:inline-block;">
+          	 <button class="title_buttons" onclick="openList(event, 'notifier')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
+          	 <div class="dropdown_menu">
+               <button class="title_buttons addMenuButton" onclick="notifierMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <div class="dropdown_menu-content" style="display: none;">
+                   <a onclick="addRow(event,'hipchat');">Hipchat</a>
+                   <a onclick="addRow(event,'slack');">Slack</a>
+                   <a onclick="addRow(event,'smtpemail');">Email</a>
+                   <a onclick="addRow(event,'txtlocal');">SMS</a>
+               </div>
+             </div>
+             <button class="title_buttons" onclick="delRow(event, 'notifier')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
+           </div>
+           <div id="notifierlist_filter_area" style="height:25px;">
+                  <div id="notifier_search_box_container"></div>
+          </div>
+         <div id="notifierlist_list">  
+		  <table id="notifierlist" class="hover row-border nowrap" height="100%" width="100%">
+           <thead>
+            <tr>
+                <th></th>
+				<th style="text-align: left;">Notifier</th> 
+				<th style="text-align: left;">Domain</th>
+				<th style="text-align: left;">domainid</th>  
+				<th style="text-align: left;">notifierid</th>  	    
+            </tr>
+          </thead>
+         </table>
+        </div>
+      </div>
+      <div id="repositorylist_pane">        
+        <div id="repositorylist_pane_title" style="display:inline-block;"><H2>Repositories</H2></div>
+          <div id="repositorylist_buttons" style="display:inline-block;">
+          	 <button class="title_buttons" onclick="openList(event, 'repository')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
+          	 <div class="dropdown_menu">
+               <button class="title_buttons addMenuButton" onclick="repoMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <div class="dropdown_menu-content" style="display: none;">
+                   <a onclick="addRow(event,'filesystem');">File System</a>
+                   <a onclick="addRow(event,'http');">Http</a>
+                   <a onclick="addRow(event,'meister');">Meister</a>
+                   <a onclick="addRow(event,'svn');">SVN</a>
+               </div>
+              </div> 
+             <button class="title_buttons" onclick="delRow(event, 'repository')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
+           </div>
+           <div id="repositorylist_filter_area" style="height:25px;">
+                  <div id="repository_search_box_container"></div>
+          </div>
+         <div id="repositorylist_list">  
+		  <table id="repositorylist" class="hover row-border nowrap" height="100%" width="100%">
+           <thead>
+            <tr>
+                <th></th>
+				<th style="text-align: left;">Repository</th> 
+				<th style="text-align: left;">Domain</th>
+				<th style="text-align: left;">domainid</th>  
+				<th style="text-align: left;">repositoryid</th>  	    
+            </tr>
+          </thead>
+         </table>
+        </div>
+      </div>  
+      <div id="datasourcelist_pane">        
+        <div id="datasourcelist_pane_title" style="display:inline-block;"><H2>Data Sources</H2></div>
+          <div id="datasourcelist_buttons" style="display:inline-block;">
+          	 <button class="title_buttons" onclick="openList(event, 'datasource')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
+          	 <div class="dropdown_menu">
+               <button class="title_buttons addMenuButton" onclick="datasourceMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <div class="dropdown_menu-content" style="display: none;">
+                   <a onclick="addRow(event,'github');">GitHub</a>
+                   <a onclick="addRow(event,'jira');">Jira</a>
+                   <a onclick="addRow(event,'bugzilla');">Bugzilla</a>
+                   <a onclick="addRow(event,'ldap');">LDAP</a>
+                   <a onclick="addRow(event,'odbc');">ODBC</a>
+               </div>
+              </div> 
+             <button class="title_buttons" onclick="delRow(event, 'datasource')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
+           </div>
+           <div id="datasourcelist_filter_area" style="height:25px;">
+                  <div id="datasource_search_box_container"></div>
+          </div>
+         <div id="datasourcelist_list">  
+		  <table id="datasourcelist" class="hover row-border nowrap" height="100%" width="100%">
+           <thead>
+            <tr>
+                <th></th>
+				<th style="text-align: left;">Data Source</th> 
+				<th style="text-align: left;">Domain</th>
+				<th style="text-align: left;">domainid</th>  
+				<th style="text-align: left;">datasourceid</th>  	    
+            </tr>
+          </thead>
+         </table>
+        </div>
+      </div>   
+      <div id="credentiallist_pane">        
+        <div id="credentiallist_pane_title" style="display:inline-block;"><H2>Credentials</H2></div>
+          <div id="credentiallist_buttons" style="display:inline-block;">
+          	 <button class="title_buttons" onclick="openList(event, 'credential')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
+          	 <div class="dropdown_menu">
+               <button class="title_buttons addMenuButton" onclick="credMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <div class="dropdown_menu-content" style="display: none;">
+                   <a onclick="addRow(event,'ck2');">Encrypted in Database</a>
+                   <a onclick="addRow(event,'ck5');">Private Key</a>
+               </div>
+             </div>
+             <button class="title_buttons" onclick="delRow(event, 'credential')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
+           </div>
+           <div id="credentiallist_filter_area" style="height:25px;">
+                  <div id="credential_search_box_container"></div>
+          </div>
+         <div id="credentiallist_list">  
+		  <table id="credentiallist" class="hover row-border nowrap" height="100%" width="100%">
+           <thead>
+            <tr>
+                <th></th>
+				<th style="text-align: left;">Credential</th> 
+				<th style="text-align: left;">Domain</th>
+				<th style="text-align: left;">domainid</th>  
+				<th style="text-align: left;">credentialid</th>  	    
+            </tr>
+          </thead>
+         </table>
+        </div>
+      </div>
+      <div id="userlist_pane">        
+        <div id="userlist_pane_title" style="display:inline-block;"><H2>Users</H2></div>
+          <div id="userlist_buttons" style="display:inline-block;">
+          	 <button class="title_buttons" onclick="openList(event, 'user')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
+             <button class="title_buttons" onclick="addRow(event, 'user')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add</button>
+             <button class="title_buttons" onclick="delRow(event, 'user')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
+           </div>
+           <div id="userlist_filter_area" style="height:25px;">
+                  <div id="user_search_box_container"></div>
+          </div>
+         <div id="userlist_list">  
+		  <table id="userlist" class="hover row-border nowrap" height="100%" width="100%">
+           <thead>
+            <tr>
+                <th></th>
+				<th style="text-align: left;">User</th> 
+				<th style="text-align: left;">Domain</th>
+				<th style="text-align: left;">domainid</th>  
+				<th style="text-align: left;">userid</th>  	    
+            </tr>
+          </thead>
+         </table>
+        </div>
+      </div>
+      <div id="grouplist_pane">        
+        <div id="grouplist_pane_title" style="display:inline-block;"><H2>Groups</H2></div>
+          <div id="grouplist_buttons" style="display:inline-block;">
+          	 <button class="title_buttons" onclick="openList(event, 'group')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
+           </div>
+           <div id="grouplist_filter_area" style="height:25px;">
+                  <div id="group_search_box_container"></div>
+          </div>
+         <div id="grouplist_list">  
+		  <table id="grouplist" class="hover row-border nowrap" height="100%" width="100%">
+           <thead>
+            <tr>
+                <th></th>
+				<th style="text-align: left;">Group</th> 
+				<th style="text-align: left;">Domain</th>
+				<th style="text-align: left;">domainid</th>  
+				<th style="text-align: left;">groupid</th>  	    
+            </tr>
+          </thead>
+         </table>
+        </div>
+      </div>
+      <div id="servercomptypelist_pane">        
+        <div id="servercomptypelist_pane_title" style="display:inline-block;"><H2>Types</H2></div>
+          <div id="servercomptypelist_buttons" style="display:inline-block;">
+          	 <button class="title_buttons" onclick="openList(event, 'servercomptype')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
+             <button class="title_buttons" onclick="addRow(event, 'servercomptype')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add</button>
+             <button class="title_buttons" onclick="delRow(event, 'servercomptype')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
+           </div>
+           <div id="servercomptypelist_filter_area" style="height:25px;">
+                  <div id="servercomptype_search_box_container"></div>
+          </div>
+         <div id="servercomptypelist_list">  
+		  <table id="servercomptypelist" class="hover row-border nowrap" height="100%" width="100%">
+           <thead>
+            <tr>
+                <th></th>
+				<th style="text-align: left;">Type</th> 
+				<th style="text-align: left;">Domain</th>
+				<th style="text-align: left;">domainid</th>  
+				<th style="text-align: left;">servercomptypeid</th>  	    
+            </tr>
+          </thead>
+         </table>
+        </div>
+      </div>
+      <div id="templatelist_pane">        
+        <div id="templatelist_pane_title" style="display:inline-block;"><H2>Notifiers Templates</H2></div>
+          <div id="templatelist_buttons" style="display:inline-block;">
+          	 <button class="title_buttons" onclick="openList(event, 'template')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
+             <button class="title_buttons" onclick="addRow(event, 'template')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add</button>
+             <button class="title_buttons" onclick="delRow(event, 'template')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
+           </div>
+           <div id="templatelist_filter_area" style="height:25px;">
+                  <div id="template_search_box_container"></div>
+          </div>
+         <div id="templatelist_list">  
+		  <table id="templatelist" class="hover row-border nowrap" height="100%" width="100%">
+           <thead>
+            <tr>
+                <th></th>
+				<th style="text-align: left;">Template</th> 
+				<th style="text-align: left;">Notifier</th>
+				<th style="text-align: left;">templateid</th>  	    
+            </tr>
+          </thead>
+         </table>
+        </div>
+      </div>                           
+     </div>           
+	<div id="dashboard_panel">
 	<div id="panel_container_right" class="right">
+	 <div id="right_panel_header"></div>
 	 <div id="right_panel_tabs">
 	  <div class="tabrow_tabmenu">		
 	   <div class="moduletable_tabmenu">	
-	    <ul>			
-          <li id="tabs-ApplicationVersions" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Assigned Applications</li>
-          <li id="tabs-Components" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Assigned Components</li>
-          <li id="tabs-ComponentItems" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Component Items</li>
-          <li id="tabs-Versions" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Versions</li>
-          <li id="tabs-ComponentVersions" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Versions</li>       
-          <li id="tabs-ProcBody" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Body</li>        
-          <li id="tabs-Workflow" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Workflow</li>
-          <li id="tabs-Args" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Args</li> 
-          <li id="tabs-History" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Timeline</li>
-          <li id="tabs-Tasks" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Tasks</li>                   
-          <li id="tabs-Calendar" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Calendar</li>          
-          <li id="tabs-GroupMembership" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Group Membership</li>
-          <li id="tabs-UserMembership" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">User Membership</li>                    
-          <li id="tabs-Applications" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Assigned Applications</li>
-          <li id="tabs-Servƒers" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Assigned End Points</li>
-          <li id="tabs-SrvComponents" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Deployed Components</li>
-          <li id="tabs-CompServers" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">End Points & Builds</li>
-          <li id="tabs-CompApplications" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Assigned Applications</li>
-          <li id="tabs-Properties" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Properties</li>
-          <li id="tabs-Patterns" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Patterns</li>                      
-          <li id="tabs-AdminRights" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Admin Rights</li>
-          <li id="tabs-Environments" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Assigned Environments</li>
-          <li id="tabs-Reports" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Trends</li>
-          <li id="tabs-RelPlanning" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Planner</li>
-          <li id="tabs-ServerStatus" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Status</li>
-          <li id="tabs-Servers" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">End Points</li>
-          <li id="tabs-Recipients" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Recipients</li> 
-          <li id="tabs-Body" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Body</li>
-          <li id="tabs-Attributes" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Attributes</li>
-          <li id="tabs-Builds" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Builds</li> 
-          <li id="tabs-Access" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Access</li>
-          <li id="tabs-General" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">General</li>
+	    <ul>	
+	      <li id="tabs-General" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">General</li>		
+          <li id="tabs-PackageComponents" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Package Components</li>
+          <li id="tabs-DeliveryPipeline" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Delivery Pipeline</li>                        
         </ul>
 	   </div>
 	  </div>
 	 </div>
 	 <div id="right_panel_main">
-	  <div id="right_panel_title_area" class="right_panel_title_area" style="display:inline-block;"></div>
-	  <div id="title_icon" class="title_icon"></div>
-	   <div id="tabs-General-data" class="div_scroll" style="display:none">
-          <table id="summ" class="dev_table">
-           <tbody>
-           </tbody>
-          </table>
-       </div>
-
-	   <div id="tabs-Servers-data" class="div_scroll" style="display:none">
-          <table id="srv4env" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th>Name</th><th>Host Name</th><th>Summary</th></tr>
-           </thead>	   
-           <tbody>
-           </tbody> 
-          </table>         
-       </div>
-
-	   <div id="tabs-SrvComponents-data" class="div_scroll" style="display:none">
-          <table id="comp4srv" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th>Component</th><th>Current Version</th><th>Build Number</th><th>Details</th></tr>
-           </thead>	   
-           <tbody>
-           </tbody> 
-          </table>         
-       </div>
-       
-	   <div id="tabs-CompServers-data" class="div_scroll" style="display:none">
-          <table id="srv4comp" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th>Environment</th><th>End Point</th><th>Component Version</th><th>Details</th></tr>
-           </thead>	   
-           <tbody>
-           </tbody> 
-          </table>
-          <div id="compbuilds"></div>     
-       </div>
-
-	   <div id="tabs-CompApplications-data" class="div_scroll" style="display:none">
-          <table id="app4comp" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th>Application Version</th><th>Component Version</th></tr>
-           </thead>	   
-           <tbody>
-           </tbody> 
-          </table>         
-       </div>
-       
-	   <div id="tabs-GroupMembership-data" class="div_scroll" style="display:none">
-          <table id="groupmembership" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th>Groups</th></tr>
-           </thead>	   
-           <tbody>
-           </tbody> 
-          </table>         
-       </div>
-
-	   <div id="tabs-UserMembership-data" class="div_scroll" style="display:none">
-          <table id="usermembership" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th>Users</th></tr>
-           </thead>	   
-           <tbody>
-           </tbody> 
-          </table>         
-       </div>
-
-
-	   <div id="tabs-Args-data" class="div_scroll" style="display:none">
-          <div id="ArgsMainFrame"></div>
-          <div id="inputparamsh1"></div>
-          <div id="inputparamsdiv"></div>
-          <div id="argsh1"></div>
-          <div id="argstablediv"></div>
-          <div id="dragtextdiv" style="margin:10px"></div> 
-          <div id="argsoutputpane"></div>         
-       </div>
-       
-       <div id="tabs-ProcBody-data" class="div_scroll" style="display:none;height:87%;">
-          <div id="ProcBodyMainFrame" style="height:100%;width:100%;">
-          <textarea id="ProcBodyTextArea" readonly style='width:100%;height:100%;font-family:courier;font-size:14px;'></textarea>   
-          </div>
-       </div>
-
-	   <div id="tabs-Properties-data" class="div_scroll" style="display:none">
-          <div id="PropertiesMainFrame"></div>
-          <table id="propstable" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th>Name</th><th>Value</th><th>Encrypted</th><th>Overridable</th><th>Appendable</th></tr>
-           </thead>	   
-           <tbody>
-           </tbody> 
-          </table>        
-       </div>
-   
-   	   <div id="tabs-Patterns-data" class="div_scroll" style="display:none">
-          <div id="PatternsMainFrame"></div>
-          <table id="patternstable" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th>Path</th><th>Pattern</th><th>Text?</th></tr>
-           </thead>	   
-           <tbody>
-           </tbody> 
-          </table>        
-       </div>
-       
-       <div id="tabs-Recipients-data" class="div_scroll" style="display:none">
-          <div id="RecipientsMainFrame"></div>
-          <table id="emailtotable" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th>Recipients</th></tr>
-           </thead>	   
-           <tbody>
-           </tbody> 
-          </table>        
-       </div>
-       
-       <div id="tabs-Builds-data" class="div_scroll" style="display:none">
-          <table id="BuildHistory" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th align="left" style="width:100px">Build Number</th><th align="left" style="width:150px">Date/Time</th><th align="left">Component(s)</th></tr>
-           </thead>	   
-           <tbody>
-           </tbody> 
-          </table>   
-       </div>
-
-       
-	   <div id="tabs-Body-data"  class="tbd" style="display:none">
-          <div id="BodyMainFrame"></div>
-          <div style="float: left;width:45%;overflow:auto;" style="display:none">
-          <table id="bodytable" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th>Subject</th></tr>
-           </thead>	   
-           <tbody>
-           </tbody> 
-          </table> 
-          </div>
-          <!-- <div style="float:right; overflow:hidden; width:54%; padding: 5px; border-left: 1px solid gray;"> -->
-          <div id="helppanel" class="helppanel" style="display:none">
-          <h2>Using Variables</h2>
+	  <div id="right_panel_title_area" class="right_panel_title_area"></div>
+	  <div id="title_icon" class="title_icon"></div> 
+        <div id="tabs-General-data" class="div_scroll" style="display:none">
+            <div id="tabs-General-row-10">
+            	 <div id="domnav-panel">
+     			</div> 
+                <div id="tabs-General-left">
+                    <div id="tabs-General-left-header">
+                        <div id="summ_title">
+                            <h2>Details</h2>
+                        </div>
+                        <div id="summ_header_buttons">
+                            <button class="edit_button" onClick="javascript:EditSummaryButton(false,'')">
+                                <i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit
+                            </button>
+                            <button class="save_button" onClick="javascript:summOK(false,'')">
+                                <i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save
+                            </button>
+                            <button class="cancel_button" onClick="javascript:summCancel('')">
+                                <i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel
+                            </button>
+                            <button class="test_button" onClick="javascript:TestServer('servstat',objtypeAsInt,objid)">
+                                <i class="fad fa-alien" aria-hidden="true"  style="padding-right:5px"></i>Test Connection
+                            </button>
+                            <button class="add_button" onClick="javascript:AddDomain(objtypeAsInt,objid)">
+                                <i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add Subdomain
+                            </button>
+                            <button class="delete_button" onClick="javascript:DeleteDomain(objtypeAsInt,objid)">
+                                <i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete Domain
+                            </button>
+                        </div>
+                    </div>
+                    <div id="summ_data">
+                        <table id="summ" class="dev_table">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="summ_data_edit" style="display:none";>
+                        <table id="summtab" class="dev_table">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="compitem_data">
+                        <table id="compitem" class="dev_table">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="compitem_data_edit" style="display:none";>
+                        <table id="compitemtab" class="dev_table">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="emailbody_data">
+                        <table id="emailbody" class="dev_table">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="emailbody_data_edit" style="display:none";>
+                        <table id="emailbodytab" class="dev_table">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="props_data">
+                        <table id="props" class="dev_table">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="props_data_edit" style="display:none";>
+                        <table id="propstab" class="dev_table">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="adminrights_data">
+                        <table id="adminrights" class="dev_table">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="adminrights_data_edit" style="display:none";>
+                        <table id="adminrightstab" class="dev_table">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="servstat_data">
+                        <table id="servstat" class="dev_table">
+                            <thead><tr><th>Test Connection Results</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="row-10b-access">
+                      <div id="row-10-baccess_title" style="text-align:left"">
+                            <h2>Access Control</h2>
+                      </div>
+                      <div id="row-10b-access-data">
+                      </div>
+                   </div>                     
+                </div>
+              <div id="row-10-right-panel">  
+                <div id="tabs-General-right">
+                    <div id="tabs-General-right-header">
+                        <h2>Dependency Map</h2>
+                    </div>
+                    <div id="tabs-General-map"></div>
+                </div>
+                <div id="emailto-panel">
+                  <div id="emailto-panel-header">
+                    <div id="emailto_title" style="text-align:left"">
+                            <h2>Notifier Recipients</h2>
+                    </div>
+                    <div id="emailto_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddEmailToRow('emailto')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditEmailToRow('emailto')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteEmailToRow('emailto')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveEmailToRow('emailto')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelEmailToRow('emailto')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                    </div>
+                  </div>  
+                    <div>
+                        <table id="emailto" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Recipients</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="emailto-edit" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>                               
+                                    <th>Recipients</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>	   
+                </div>
+                <div id="groupmembership-panel">
+                  <div id="groupmembership-panel-header">
+                    <div id="groupmembership_title" style="text-align:left"">
+                            <h2>Group Membership</h2>
+                    </div>
+                    <div id="groupmembership_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddGroupMembershipRow('groupmembership')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditGroupMembershipRow('groupmembership')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteGroupMembershipRow('groupmembership')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveGroupMembershipRow('groupmembership')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelGroupMembershipRow('groupmembership')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                    </div>
+                  </div>  
+                    <div>
+                        <table id="groupmembership" class="dev_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Groups for User</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="groupmembership-edit" class="dev_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Groups for User</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>	   
+                </div>
+                <div id="usermembership-panel">
+                  <div id="usermembership-panel-header">
+                    <div id="usermembership_title" style="text-align:left"">
+                            <h2>User Membership</h2>
+                    </div>
+                    <div id="usermembership_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddUserMembershipRow('usermembership')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditUserMembershipRow('usermembership')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteUserMembershipRow('usermembership')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveUserMembershipRow('usermembership')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelUserMembershipRow('usermembership')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                    </div>
+                  </div>  
+                    <div>
+                        <table id="usermembership" class="dev_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Users for Group</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="usermembership-edit" class="dev_table">
+                            <thead>
+                                <tr>
+                                <th>&nbsp;</th>
+                                    <th>Users for Group</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>	   
+                </div>
+                 <div id="attrs10-panel">
+                 	<div id="attrs10-header">
+                     	<div id="attrs10_title">
+                      	  <h2>Key Value Configuration</h2>
+                    	</div>
+                    	<div id="attrs10_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddAttrRow('attrib10')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditAttrRow('attrib10')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteAttrRow('attrib10')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveAttrRow('attrib10')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelAttrRow('attrib10')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                    	</div>                 	
+                    </div>  
+                    <div id="attrib10-data">
+                        <table id="attrib10" class="dev_table" width="100%" >
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="row-10-access">
+                    <div id="row-10-access_title" style="text-align:left"">
+                            <h2>Access Control</h2>
+                    </div>
+                    <div id="row-10-access-data">
+                    </div>
+                </div>
+                <div id="row-10-audit">
+                        <div id="audit10_title" style="text-align:left"">
+                            <h2>Audit Trail</h2>
+                        </div>
+                        <div id="audit10-data">
+                          <div id="audit10-historyadd" style="width:96%;height:100px;display:inline""></div>
+                          <table id="audit10-histfeed" class="dev_table" style="display:none;">
+                               <tbody></tbody>
+                          </table>
+                        <table id="audit10" class="dev_table" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        </div>
+                </div>  
+            </div>
+           </div> 
+            <div id="tabs-General-row-15">
+                <div id="logs-panel">
+                        <div id="logs_title" style="text-align:left"">
+                            <h2>Log History</h2>
+                        </div>
+                        <div id="logs-data">
+                        <table id="loghist" class="dev_table" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Deployment</th>
+                                    <th>Result</th>
+                                    <th>Date</th>
+                                    <th>Environment</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        </div>
+                </div>
+                <div id="srv4comp-panel">
+                  <div id="srv4comp-panel-header">
+                    <div id="srv4comp_title">
+                        <h2>Endpoints</h2>
+                    </div>
+                    <div id="srv4comp_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddSrv4CompRow('srv4comp')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditSrv4CompRow('srv4comp')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteSrv4CompRow('srv4comp')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveSrv4CompRow('srv4comp')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelSrv4CompRow('srv4comp')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                     </div>
+                  </div>
+                  <div> 
+                   	<table id="srv4comp" class="cb_dev_table" width="100%" >
+           				<thead>
+            				<tr><th>&nbsp;</th><th>Endpoint</th><th>Deployment</th></tr>
+           				</thead>	   
+           				<tbody>
+           				</tbody> 
+          			</table>
+          			<table id="srv4comp-edit" class="cb_dev_table" width="100%" >
+           				<thead>
+            				<tr><th>&nbsp;</th><th>Endpoint</th><th>Deployment</th></tr>
+           				</thead>	   
+           				<tbody>
+           				</tbody> 
+          			</table>
+          		 </div>	
+                </div> 
+                <div id="outerworkflow" class="versionsandinformation">
+     	 			<div class="versions">
+	     				<div id="innerworkflow" style="height:600px;width:100%;">
+		 				</div>
+	    			</div> 	
+       			</div>
+    			<div id="pickproc" class="accordionpanel">
+	     			<h4>Function/Procedure</h4>
+   	     			 <div id="fragmentlist" align="left"></div>
+        		</div> 
+                <div id="inputparams-panel">
+                  <div id="inputparams-panel-header">
+                    <div id="inputparams_title">
+                    	<h2>Input Parameters</h2>
+                    </div>
+                    <div id="inputparams_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddInputParamsRow('inputparams')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditInputParamsRow('inputparams')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteInputParamsRow('inputparams')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveInputParamsRow('inputparams')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelInputParamsRow('inputparams')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                     </div>
+                   </div>  
+                  	<table id="inputparams" class="cb_dev_table" width="100%" >
+           				<thead>
+            				<tr><th>&nbsp;<th>Name</th><th>Type</th><th>Format</th><th>Missing</th><th>Padding</th><th>Required</th><th>Pos</th></tr>
+           				</thead>	   
+           				<tbody>
+           				</tbody> 
+          			</table>
+          			<table id="inputparams-edit" class="cb_dev_table" width="100%" >
+           				<thead>
+            				<tr><th>&nbsp;<th>Name</th><th>Type</th><th>Format</th><th>Missing</th><th>Padding</th><th>Required</th><th>Pos</th></tr>
+           				</thead>	   
+           				<tbody>
+           				</tbody> 
+          			</table>
+                </div> 
+                <div id="switchargs-panel">
+                  <div id="switchargs-panel-header">
+                    <div id="switchargs_title">
+                    	<h2>Command Line Switches</h2>
+                    </div>
+                    <div id="switchargs_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddSwitchArgsRow('switchargs')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditSwitchArgsRow('switchargs')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteSwitchArgsRow('switchargs')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveSwitchArgsRow('switchargs')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelSwitchArgsRow('switchargs')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                     </div>
+                   </div>
+                   <table id="switchargs" class="cb_dev_table" width="100%" >
+           				<thead>
+            				<tr><th>&nbsp;</th><th>Name</th></tr>
+           				</thead>	   
+           				<tbody>
+           				</tbody> 
+          			</table>
+          			<table id="switchargs-edit" class="cb_dev_table" width="100%" >
+           				<thead>
+            				<tr><th>&nbsp;</th><th>Name</th></tr>
+           				</thead>	   
+           				<tbody>
+           				</tbody> 
+          			</table>  
+                </div>
+                 <div id="attrs-panel">
+                 	<div id="attrs-header">
+                     	<div id="attrs_title">
+                      	  <h2>Key Value Configuration</h2>
+                    	</div>
+                    	<div id="attrs_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddAttrRow('attrib')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditAttrRow('attrib')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteAttrRow('attrib')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveAttrRow('attrib')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelAttrRow('attrib')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                    	</div>
+                    </div>  
+                    <div id="attrib-data">
+                        <table id="attrib" class="cb_dev_table" width="100%" >
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="attrib-edit" class="cb_dev_table" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+               <div id="srv4env-panel">
+                 	<div id="srv4env-header">
+                     	<div id="srv4env_title">
+                      	  <h2>Assigned Endpoints</h2>
+                    	</div>
+                    	<div id="srv4env_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddSrv4EnvRow('srv4env')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditSrv4EnvRow('srv4env')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteSrv4EnvRow('srv4env')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveSrv4EnvRow('srv4env')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelSrv4EnvRow('srv4env')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                    	</div>  
+                    </div>  
+                    <div id="srv4env-data">
+                        <table id="srv4env" class="cb_dev_table" width="100%" >
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Name</th>
+                                    <th>Hostname</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="srv4env-edit" class="cb_dev_table" width="100%" >
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Name</th>
+                                    <th>Hostname</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table> 
+                    </div>
+                </div>  
+              <div id="emailhelp-panel" style="display:none">
+                <div id="emailhelp_title">
+                      	  <h2>Using Variables</h2>
+                </div>
+                <div id="emailhelp_data">
           When constructing the subject line and message body for a template, you can use
           <I>Variables</I>. These variables are automatically expanded when the notification
           is issued.<br><br>
@@ -2660,247 +1092,376 @@ String.prototype.trimChars = function(charlist) {
           use \${application.id} to get the internal application id or \${application.domain.name} to get
           the current domain for the application.<br><br>
           The table below shows which variables are set during specific operations.<br><br>
-          <table border="0">
-          <tr><td><B>Variable Name</B></td><td width="120"><B>Description</B></td><td><B>Operation</B></td></tr>
-          <tr bgcolor="#E0E0E0"><td valign="top">\${application.name}</td><td valign="top">The name of the current application</td><td valign="top">Any DeployHub task operating on an Application (such as <i>Deploy, Move, Approve</i> etc)</td></tr>
- 	 	  <tr><td valign="top">\${environment.name}</td><td valign="top">The name of the target environment</td><td valign="top">Any DeployHub task operating on an Environment (such as <i>Deploy</i> etc)</td></tr>
-		  <tr bgcolor="#E0E0E0"><td valign="top">\${user.name}</td><td valign="top">The name of the invoking user</td><td valign="top">Any DeployHub task.</td></tr>
-		  <tr><td valign="top">\$DEPLOY_ID</td><td valign="top">The Deployment ID Number</td><td valign="top">Set during a Deploy task.</td></tr>
-          <tr bgcolor="#E0E0E0"><td valign="top">\$SERVER_NAME</td><td valign="top">End Point Name</td><td valign="top">The name of the end point during an automatic periodic scan (AutoPing or AutoMD5). Use this variable in a Ping or MD5 template.</td></tr>
-          <tr><td valign="top">\$SERVER_HOSTNAME</td><td valign="top">End Point hostname</td><td valign="top">The hostname of the end point during an automatic periodic scan (AutoPing or AutoMD5). Use this variable in a Ping or MD5 template.</td></tr>
-          <tr bgcolor="#E0E0E0"><td valign="top">\$SERVER_STATUS</td><td valign="top">OK or FAILED</td><td valign="top">The status of the server during an automatic periodic scan (AutoPing). Use this variable in a Ping template.
+          <table id="emailhelptab" class="dev_table" style="white-space:nowrap">
+          <thead>
+          <tr><th>Variable Name</th><th>Description</th><th>Operation</th></tr>
+          </thead>
+          <tbody>
+          <tr ><td>\${application.name}</td><td>The name of the current application</td><td>Any DeployHub task operating on an Application (such as <i>Deploy, Move, Approve</i> etc)</td></tr>
+ 	 	  <tr><td>\${environment.name}</td><td>The name of the target environment</td><td>Any DeployHub task operating on an Environment (such as <i>Deploy</i> etc)</td></tr>
+		  <tr ><td>\${user.name}</td><td>The name of the invoking user</td><td>Any DeployHub task.</td></tr>
+		  <tr><td>\$DEPLOY_ID</td><td>The Deployment ID Number</td><td>Set during a Deploy task.</td></tr>
+          <tr ><td>\$SERVER_NAME</td><td>Endpoint Name</td><td>The name of the end point during an automatic periodic scan (AutoPing or AutoMD5). Use this variable in a Ping or MD5 template.</td></tr>
+          <tr><td>\$SERVER_HOSTNAME</td><td>Endpoint hostname</td><td>The hostname of the end point during an automatic periodic scan (AutoPing or AutoMD5). Use this variable in a Ping or MD5 template.</td></tr>
+          <tr ><td>\$SERVER_STATUS</td><td>OK or FAILED</td><td>The status of the server during an automatic periodic scan (AutoPing). Use this variable in a Ping template.
           Note this variable is always OK in an MD5 template since MD5 scans are only performed if the ping check succeeds.</td></tr>
-          <tr><td valign="top">\$NAME_RESOLUTION</td><td valign="top">OK or FAILED</td><td valign="top">Set during an automatic periodic scan (AutoPing). Reflects the success or failure of resolution of hostname. Use this variable in a Ping template.</td></tr>
-          <tr bgcolor="#E0E0E0"><td valign="top">\$PING</td><td valign="top">OK or FAILED</td><td valign="top">Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the ping to the server. Use this variable in a Ping template.</td></tr>
-          <tr><td valign="top">\$CONNECTION</td><td valign="top">OK or FAILED</td><td valign="top">Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the connection attempt to the server using the associated credentials. Use this variable in a Ping template.</td></tr>
-          <tr bgcolor="#E0E0E0"><td valign="top">\$BASEDIR</td><td valign="top">OK or FAILED</td><td valign="top">Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the attempt to switch to the server's base directory. Use this variable in a Ping template.</td></tr>
-          <tr><td valign="top">\$MD5_FILELIST</td><td valign="top">A list of files (one per line)</td><td valign="top">Set during an automatic periodic scan (AutoMD5). Lists all the files whose MD5 checksum differs from that calculated during the last deployment to the server. Use this variable in a MD5 template.</td></tr>      
-          <tr bgcolor="#E0E0E0"><td valign="top">\$SRCDOMAIN</td><td valign="top">The name of the Source Domain</td><td valign="top">Set during a <I>Move</I> or <I>Approve</I> task. The name of the Domain the application is being moved <I>from</I> (for a move) or its current domain (for an approve).</td></tr>
-          <tr><td valign="top">\$TGTDOMAIN</td><td valign="top">The name of the Target Domain</td><td valign="top">Set during a <I>Move</I> or <I>Approve</I> task. The name of the Domain the application is being moved <I>to</I> or approved <I>for</I>.</td></tr>
-          <tr bgcolor="#E0E0E0"><td valign="top">\$NOTES</td><td valign="top">Free Text</td><td valign="top">Set during a <I>Move, Approve</I> or <I>Request</I> task. The notes that were entered (if any) by the user when the task was run.</td></tr>
-          <tr><td valign="top">\$TASKNAME</td><td valign="top">The name of the Requested Task</td><td valign="top">Set during a <I>Request</I> task. The name of the task being requested to be run.</td></tr>
-          <tr bgcolor="#E0E0E0"><td valign="top">\$ERROR_TEXT</td><td valign="top">Last End Point Error</td><td valign="top">Set during an automatic periodic scan (AutoPing). The last error detected during the connection attempt.</td></tr>
-          
+          <tr><td>\$NAME_RESOLUTION</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of resolution of hostname. Use this variable in a Ping template.</td></tr>
+          <tr ><td>\$PING</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the ping to the server. Use this variable in a Ping template.</td></tr>
+          <tr><td>\$CONNECTION</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the connection attempt to the server using the associated credentials. Use this variable in a Ping template.</td></tr>
+          <tr ><td>\$BASEDIR</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the attempt to switch to the server's base directory. Use this variable in a Ping template.</td></tr>
+          <tr><td>\$MD5_FILELIST</td><td>A list of files (one per line)</td><td>Set during an automatic periodic scan (AutoMD5). Lists all the files whose MD5 checksum differs from that calculated during the last deployment to the server. Use this variable in a MD5 template.</td></tr>      
+          <tr ><td>\$SRCDOMAIN</td><td>The name of the Source Domain</td><td>Set during a <I>Move</I> or <I>Approve</I> task. The name of the Domain the application is being moved <I>from</I> (for a move) or its current domain (for an approve).</td></tr>
+          <tr><td>\$TGTDOMAIN</td><td>The name of the Target Domain</td><td>Set during a <I>Move</I> or <I>Approve</I> task. The name of the Domain the application is being moved <I>to</I> or approved <I>for</I>.</td></tr>
+          <tr ><td>\$NOTES</td><td>Free Text</td><td>Set during a <I>Move, Approve</I> or <I>Request</I> task. The notes that were entered (if any) by the user when the task was run.</td></tr>
+          <tr><td>\$TASKNAME</td><td>The name of the Requested Task</td><td>Set during a <I>Request</I> task. The name of the task being requested to be run.</td></tr>
+          <tr ><td>\$ERROR_TEXT</td><td>Last Endpoint Error</td><td>Set during an automatic periodic scan (AutoPing). The last error detected during the connection attempt.</td></tr>
+          </tbody>
           </table>
-          </div>    
-       </div>
-       
-	   <div id="tabs-Calendar-data" class="div_scroll" style="display:none">
-         <div id="calendar"></div>
-       </div>
-       
-	   <div id="tabs-Applications-data" class="div_scroll" style="display:none">
-	     <div>
-          <table id="App4Env" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th>Application</th><th>Current Version</th><th>Details</th></tr>
-           </thead>	   
-           <tbody>
-           </tbody> 
-          </table>
-         </div>
-         <br>
-       </div>
-    
-       <div id="tabs-PreReqs-data" style="display:none">
-          <table id="prereqs_table" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th>Name</th><th>Action</th></tr>
-           </thead>
-           <tbody>
-           </tbody>
-          </table>
-          <div id="prereqs_btnAddApp" class="tablebutton">Add Application</div><div id="prereqs_btnAddComp" class="tablebutton">Add Component</div><div id="prereqs_btnDelete" class="tablebutton">Delete</div>
-        </div>
-
-       <div id="tabs-Tasks-data" style="display:none">
-       </div>
-       
-       <div id="tabs-Components-data" style="display:none">
-        <div class="panel_container versionsandinformation">
-     	 <div class="panel_container compversions">
-	     <div id="innercomp" style="height:600px;width:100%;">
-		 </div>
-	    </div> 	
-	    <div class="accordionpanel">
-	     <h4 class="ui-widget-header">Component Versions</h4>
-   	     <div id=componentlist align="left" style="margin:0"></div>
-        </div>
-       </div>
-      </div>
-
-       <div id="tabs-ComponentVersions-data" style="display:none">
-        <div class="panel_container versionsandinformation">
-     	 <div class="panel_container compversions">
-	      <div id="innercompversions" style="height:600px;width:100%;">
-		  </div>
-	     </div> 	
-        </div>
-       </div>
-       
-        <div id="tabs-ComponentItems-data" style="display:none">
-        <div class="panel_container versionsandinformation">
-     	 <div class="panel_container compitems">
-	      <div id="inneritem" style="height:600px;width:100%;">
-		  </div>
-	     </div> 	
-        </div>
-       </div>      
-
-       <div id="tabs-ApplicationVersions-data" style="display:none">
-        <div class="panel_container versionsandinformation">
-     	 <div class="panel_container appversions">
-	     <div id="innerappver" style="height:600px;width:100%;">
-		 </div>
-	    </div> 	
-	    <div class="accordionpanel">
-	     <h4 class="ui-widget-header">Component Versions</h4>
-   	     <div id="applicationversionlist" align="left" style="margin:0"></div>
-        </div>
-       </div>
-      </div>                	
-
-       <div id="tabs-Workflow-data" style="display:none">
-        <div id="outerworkflow" class="panel_container versionsandinformation">
-     	 <div class="panel_container versions">
-	     <div id="innerworkflow" style="height:600px;width:100%;">
-		 </div>
-	    </div> 	
-	    <div class="accordionpanel">
-	     <h4 class="ui-widget-header">Function/Procedure</h4>
-   	     <div id="fragmentlist" align="left" style="margin:0"></div>
-        </div>
-       </div>
-      </div>
-      
-       <div id="tabs-Attributes-data" style="display:none">
-         <div id="attrib-data">
-          <table id="attrib" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th>Name</th><th>Value</th></tr>
-           </thead>
-           <tbody>
-           </tbody>
-          </table>
-         </div>
-        </div>
-	
-       <div id="tabs-Access-data" style="display:none">
-       </div>
-		
-       <div id="tabs-History-data" style="display:none">
-       	  
-          <table id="histfeed" class="dev_table">
-           <tbody>
-           </tbody>
-          </table> 
-       </div>
-       
-       <div id="tabs-Versions-data" style="display:none">
-        <div class="panel_container versionsandinformation">
-     	 <div class="panel_container appversions">
-	      <div id="innerversions" style="height:600px;width:100%;">
-		  </div>
-	     </div> 	
-        </div>
-       </div>
-
-	   <div id="tabs-ServerStatus-data" style="display:none">
-	   <table id="servstat" class="dev_table">
-           <tbody>
-           </tbody>
-       </table>
-	   </div>
-	   
-	   <div id="tabs-Environments-data" class="div_scroll" style="display:none">
-	     <div>
-          <table id="Env4App" cellspacing="0" width="100%" >
-           <thead class="ui-widget-header">
-            <tr><th>Environment</th><th>Current Version</th><th>Details</th></tr>
-           </thead>	   
-           <tbody>
-           </tbody> 
-          </table>
-         </div>
-         <br>
-         <div class="ui-widget-header">Pending Events for this Application</div>
-         <div id="PendingEnv4App"> 
-        </div>  
-       </div>
-	
-	   <div id="tabs-RelPlanning-data" class="div_scroll" style="display:none">
-           <div id="planningtimeline"></div>          
-       </div>
-       
-       <div id="tabs-Reports-data" style="display:none">
-        <div id="changehistoryheader" class="ui-widget-header" style="display":none">Change History</div>
-        <div id="endpointtimeline" style="display:none"></div>  
-        <div class="ui-widget-header">Trends</div>
-        <div id="reports-data">
-         <div id="plot1resizable" style="float:left;height:200px;width:400px">
-          <div id="timetodeploylinechart" style="height:96%;width:96%;"></div>
-         </div>
-         <div id="plot2resizable" style="float:left;height:200px;width:200px">
-          <div id="applicationsuccesspiechart" style="height:96%;width:96%;"></div>
-         </div>
-        </div> 
-      </div>
-      		
-       <div id="tabs-AdminRights-data" style="display:none">
-       	<div id="panel_container_taskspaneltop_left">
-       	  <div id="sub_panel_topleft">
-				<div class="panel_container_title_area tasks ">
-				  <h1 class="taskpanels">Access Control</h1>
-				</div>
-				<div class="deploy_sub_panel_container" style="overflow:hidden">
-				 <table>
-				  <tr><td align="left">
-				 	<input type="checkbox" id="ar_override"><label for="ar_override">Override Access Control</label>
-  				  </td></tr>
-  				 </table>
-  				</div>
-  		 </div>		
-  		</div>						
-			<div id="panel_container_taskspanelbottom_left" style="display:none">
-			  <div id="sub_panel_topleft">
-  				<div class="panel_container_title_area tasks" >
-				  <h1 class="taskpanels">Tab Access</h1>
-				</div>
-				<div class="deploy_sub_panel_container" style="overflow:hidden">
-				 <table>
-				  <tr><td align="left"><input type="checkbox" id="ar_endpoints"><label for="ar_endpoints">Endpoints and Credentials</label></td></tr>
-				  <tr><td align="left"><input type="checkbox" id="ar_applications"><label for="ar_applications">Applications and Components</td></tr>
-				  <tr><td align="left"><input type="checkbox" id="ar_actions"><label for="ar_actions">Actions and Procedures</label></td></tr>
-				  <tr><td align="left"><input type="checkbox" id="ar_providers"><label for="ar_providers">Providers</label></td></tr>
-				  <tr><td align="left"><input type="checkbox" id="ar_users"><label for="ar_users">Users and Groups</label></td></tr>
-  				 </table>
-  				</div>					
-  			 </div>	
-			</div>			
-		  <div id="panel_container_taskspaneltop" style="height:380px;left:30px;">
-			<div id="panel_deploy" >
-			   	<div class="panel_container_title_area tasks ">
-					<h1 class="taskpanels">Creation Rights</h1>
+               </div>
+              </div>     
+            </div>
+            <div id="tabs-General-row-20">
+                <div id="tabs-General-right-20">
+                    <div id="trends-panel">
+                        <div id="trends_title" style="text-align:left"">
+                            <h2>Trends</h2>
+                        </div>
+                        <div id="reports-data" style="display:inline-block">
+                            <div id="plot1resizable" style="float:left;height:200px;width:400px">
+                                <div id="timetodeploylinechart" style="height:96%;width:96%;"></div>
+                            </div>
+                            <div id="plot2resizable" style="float:left;height:200px;width:200px">
+                                <div id="applicationsuccesspiechart" style="height:96%;width:96%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="steps-panel">
+                        <div id="steps_title" style="text-align:left"">
+                            <h2>Current Step Duration</h2>
+                        </div>
+                        <div id="steps-data" style="display:inline-block">
+     						<div id="plot4resizable" style="float:left;height:200px;width:200px">
+     						<div id="deploymenttimebystep4" style="height:96%;width:96%;"></div>
+     					</div>
+                        </div>
+                </div>
+                <div id="comp4srv-panel">
+                  <div id="comp4srv-panel-header">
+                    <div id="comp4srv_title">
+                        <h2>Deployed Components</h2>
+                    </div>
+                  </div> 
+                    <div id="comp4srv-data">
+                        <table id="comp4srv" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Current Version</th>
+                                    <th>Deployment</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="comp4srv-edit" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Current Version</th>
+                                    <th>Deployment</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="env4app-panel">
+                  <div id="env4app-panel-header">
+                    <div id="envs_title">
+                        <h2>Assigned Environments</h2>
+                    </div>
+                    <div id="env4app_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddEnv4AppRow('env4app')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditEnv4AppRow('env4app')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteEnv4AppRow('env4app')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveEnv4AppRow('env4app')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelEnv4AppRow('env4app')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                    </div>
+                  </div>  
+                    <div>
+                        <table id="env4app" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Environment</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="env4app-edit" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Environment</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                 </div>  
+                 
+                 <div id="deployedenv4app-panel">
+                  <div id="deployedenv4app-panel-header">
+                    <div id="deployed_envs_title">
+                        <h2>Deployed Environments</h2>
+                    </div>
+                  </div>  
+                    <div id="deployedenv4app-data">
+                        <table id="deployedenv4app" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>Environment</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                 </div> 
+                 
+                 <div id="app4env-panel">
+                  <div id="app4env-panel-header">
+                    <div id="app4env_title">
+                        <h2>Assigned Applications</h2>
+                    </div>
+                  </div>  
+                    <div>
+                        <table id="app4env" class="dev_table">
+                            <thead>
+                                <tr>
+                                    <th>Application</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                 </div>   
+                <div id="cmdline-panel">
+                   <div id="dragtextdiv" style="margin:10px">Drag the arguments from here onto the command line below to assemble the command. Use the table above to add and configure the switches/arguments.</div> 
+                   <div id="argsoutputpane"></div>    
+                </div>
+                <div id="cr-panel-20">
+                        <div id="crs_title">
+                            <h2>Change Requests</h2>
+                        </div>
+                         <div id="cr_header_buttons_20">
+                        	<button class="add_button" onClick="javascript:AddCRRow('defects')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="delete_button" onClick="javascript:DeleteCRRow('defects')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        </div>
+                        <div id="cr-data-20">
+                        <table id="crtab-20" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>Change Request</th>
+                                    <th>Summary</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div> 
+                 </div> 	
+            </div>
+            <div id="tabs-General-row-25">
+            </div>
+            <div id="tabs-General-row-28">
+                 <div id="feedback-panel">
+                    <div id="feedback-panel-header">
+                        <div id="feedback_title" style="text-align:left"">
+                            <h2>Last Deployment Difference based on Environment:</h2>
+                        </div>
+                        <div id="feedback-env"><select id="feedback-env-sel" onchange="updateDeployDiff(this);"></select></div>
+                        <div id="feedback-label"></div>
+                    </div>    
+                    <div id="feedback-data">
+                    </div>
+                </div>
+                <div id="procbody-panel">
+                 <div id="ProcBodyMainFrame" style="height:100%;width:100%;">
+                    <textarea id='editproc' cols='400' wrap='off' spellcheck='false' style='width:100%;height:600px;font-size:14px;font-family:courier;white-space: pre; overflow: auto;'></textarea>   
+                 </div>
+                </div>
+            </div>
+            <div id="tabs-General-row-30">
+                <div id="app4comp-panel">
+                        <div id="app4comp_title" style="text-align:left"">
+                            <h2>Consuming Applications</h2>
+                        </div>
+                      	<table id="app4comp" class="dev_table" width="100%">
+           					<thead>
+           					</thead>	   
+           					<tbody>
+           					</tbody> 
+          			  	</table>
+          		</div>
+          		<div id="planning-panel">
+                        <div id="planning_title" style="text-align:left"">
+                            <h2>Applications scheduled for this Release</h2>
+                        </div>
+          		        <div id="planningtimeline">
+          		        </div>       
+               </div> 
+             </div>  
+               <div id="tabs-General-row-35">
+                <div id="row-35-audit">
+                        <div id="audit35_title" style="text-align:left"">
+                            <h2>Audit Trail</h2>
+                        </div>
+                        <div id="audit35-data">
+                          <div id="audit35-historyadd" style="width:96%;height:100px;display:inline""></div>
+                          <table id="audit35-histfeed" class="dev_table" style="display:none"">
+                               <tbody></tbody>
+                          </table>
+                        <table id="audit35" class="dev_table" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        </div>
+                </div>
+                <div id="row-35-access">
+                    <div id="row-35-access_title" style="text-align:left"">
+                            <h2>Access Control</h2>
+                    </div>
+                    <div id="row-35-access-data">
+                    </div>
+                </div>
+               </div>
+                <div id="tabs-General-row-40">
+                    <div id="cr-panel">
+                        <div id="crs_title">
+                            <h2>Change Requests</h2>
+                        </div>
+                         <div id="cr_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddCRRow('defects')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="delete_button" onClick="javascript:DeleteCRRow('defects')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        </div>
+                        <div id="cr-data">
+                        <table id="crtab" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>Change Request</th>
+                                    <th>Summary</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div> 
+                    </div>  
+                </div>    
+             <div id="tabs-General-row-50">
+		       <div id="panel_container_taskspaneltop">
+				<div id="tasks-panel">
+				  <div id="tasks-header">
+                     	<div id="tasks_title">
+                      	  <h2>Tasks</h2>
+                    	</div>
+                    	<div id="tasks_header_buttons">
+                        	<div class="dropdown_menu">                       	
+                              <button class="title_buttons addMenuButton" onclick="addTaskMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+                                <div class="dropdown_menu-content" style="display: none;">
+                                  <a onclick="AddTaskRow('taskstab','Approve');">Approve Verision for move to next pipeline stage</a>
+                                  <a onclick="AddTaskRow('taskstab','Move');">Move Version to the next or previous stage in the pipeline</a>
+                                  <a onclick="AddTaskRow('taskstab','Deploy');">Deploy Version to an Environment</a>
+                                  <a onclick="AddTaskRow('taskstab','Request');">Request Calendar entry for deployment to an Environment</a>
+                                  <a onclick="AddTaskRow('taskstab','RunAction');">Mannually trigger Action to be executed</a>
+                               </div>
+                            </div>
+                        	<button class="delete_button" onClick="javascript:DeleteTaskRow('taskstab')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                    	</div>                 	
+                    </div>  
+                    <div id="taskstab-data">
+                        <table id="taskstab" class="cb_dev_table" width="100%" >
+                            <thead>
+                                <tr>
+                                <th>&nbsp;</th>
+                                    <th>Name</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>   
 				</div>	
-				 <table>
-					<tr><td align="left"><input type="checkbox" id="ar_cusers"><label for="ar_cusers">Users</label></td></tr>
-					<tr><td align="left"><input type="checkbox" id="ar_cgroups"><label for="ar_cgroups">User Groups</label></td></tr>
-					<tr><td align="left"><input type="checkbox" id="ar_cdomain"><label for="ar_cdomain">Domains</label></td></tr>
-					<tr><td align="left"><input type="checkbox" id="ar_cenv"><label for="ar_cenv">Environments</label></td></tr>
-					<tr><td align="left"><input type="checkbox" id="ar_cserver"><label for="ar_cserver">End Points</label></td></tr>
-					<tr><td align="left"><input type="checkbox" id="ar_crepo"><label for="ar_crepo">Repositories</label></td></tr>
-					<tr><td align="left"><input type="checkbox" id="ar_ccomp"><label for="ar_ccomp">Components</label></td></tr>
-					<tr><td align="left"><input type="checkbox" id="ar_ccred"><label for="ar_ccred">Credentials</label></td></tr>
-					<tr><td align="left"><input type="checkbox" id="ar_capp"><label for="ar_capp">Applications</label></td></tr>
-					<tr><td align="left"><input type="checkbox" id="ar_cappver"><label for="ar_capp">Application Versions</label></td></tr>
-					<tr><td align="left"><input type="checkbox" id="ar_caction"><label for="ar_caction">Actions</label></td></tr>
-					<tr><td align="left"><input type="checkbox" id="ar_cproc"><label for="ar_cproc">Procedures</label></td></tr>
-					<tr><td align="left"><input type="checkbox" id="ar_cdsrc"><label for="ar_cdsrc">DataSources</label></td></tr>
-					<tr><td align="left"><input type="checkbox" id="ar_cnotify"><label for="ar_cnotify">Notifiers</label></td></tr>
-					<tr><td align="left"><input type="checkbox" id="ar_cengine"><label for="ar_cengine">Build Engines</label></td></tr>			
-			 </table>
+				<div id="panel_deploy">
+				     <div id="task-right-header">
+                        <div id="task_summ_title">
+                            <h2>Task Details</h2>
+                        </div>
+                        <div id="task_summ_header_buttons">
+                            <button class="edit_button" onClick="javascript:EditSummaryButton(false,'task_')">
+                                <i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit
+                            </button>
+                            <button class="save_button" onClick="javascript:summOK(false,'task_')">
+                                <i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save
+                            </button>
+                            <button class="cancel_button" onClick="javascript:summCancel('task_')">
+                                <i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel
+                            </button>
+                        </div>
+                    </div>
+                    <div id="task_summ_data">
+                        <table id="task_summ" class="dev_table">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="task_summ_data_edit" style="display:none";>
+                        <table id="task_summtab" class="dev_table">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+				</div>
 			</div>
-		  </div>
+		<div id="panel_container_taskspanelbottom">
+			<div id="sub_panel_bottomleft">
+			  <div class="panel_container_title_area tasks"><h1 class="taskpanels">Group Access for Task</h1></div>
+			   <div class="deploy_sub_panel_container">
+			    <ul class="subpanel" id="tasks_assigned_groups">
+ 			    </ul>
+ 			   </div> 
+			</div>
+			<div id="sub_panel_bottommiddle">
+			 	<div class="panel_container_title_area"><h1 class="taskpanels">Available Groups for Task</h1></div>
+			 	<div class="deploy_sub_panel_container">
+			 		<ul class="subpanel" id="tasks_available_groups">
+ 					</ul>
+ 				</div>	
+ 			</div>
+ 			<div id="sub_panel_bottomright">
+ 			    <div class="panel_container_title_area"><h1 class="taskpanels">Task Parameters</h1></div>
+			 	<div id="task_params"></div>
+			 	<div id="task_param_content"></div>
+ 			</div>
+		</div>
+		</div>
+                    </div>    
+                </div>
+      
+       <div id="tabs-PackageComponents-data" style="display:none">
+        <div class="panel_container versionsandinformation">
+     	 <div class="compversions">
+	     <div id="innercomp">
+		 </div>
+	    </div> 	
+	    <div class="accordionpanel">
+	     <h4 class="ui-widget-header">Component Selector</h4>
+   	     <div id=componentlist align="left" style="margin:0; overflow-x: auto; height: calc(100% - 52px); background-color: #f8f8f8;"></div>
+        </div>
+       </div>
+      </div>
 		 </div> 	
 		</div>
        </div>		 
@@ -2910,42 +1471,14 @@ String.prototype.trimChars = function(charlist) {
 	 <div id="home_right_panel_tabs">
 	  <div class="tabrow_tabmenu">		
 	   <div class="moduletable_tabmenu">	
-	    <ul>			
-          <li id="tabs-HomePending" onclick="ActivateHomeSubTabs('tabs-HomePending')" class="active current">To Do List</li>
-          <li id="tabs-HomeHistory" onclick="ActivateHomeSubTabs('tabs-HomeHistory')">Timeline</li>  
-          <li id="tabs-HomeDashboard" onclick="ActivateHomeSubTabs('tabs-HomeDashboard')">Global Reports</li>                      
-          <li id="tabs-DomainSummary" onclick="ActivateHomeSubTabs('tabs-DomainSummary')">Delivery Pipeline</li>
+	    <ul>	
+	      <li id="tabs-HomeDashboard" onclick="ActivateHomeSubTabs('tabs-HomeDashboard')" class="active current">Global Reports</li>      		
+          <li id="tabs-HomePending" onclick="ActivateHomeSubTabs('tabs-HomePending')">To Do List</li>
+          <li id="tabs-HomeHistory" onclick="ActivateHomeSubTabs('tabs-HomeHistory')">Audit Trail</li>       
         </ul>
 	   </div>
 	  </div>
 	 </div>
-	 <div id="home_right_panel_main">
-	  <div id="tabs-HomePending-data">
-	    <table id="homependingtab"><tbody></tbody></table>
-	  </div> 
-	  <div id="tabs-HomeHistory-data" style="display:none">
-	    <table id="homehisttab"><tbody></tbody></table>
-	  </div>
-	  <div id="tabs-DomainSummary-data" style="display:none">
-	    <div id="domsumm" style="height:100%"></div>
-	  </div>
-	  <div id="tabs-HomeDashboard-data" style="display:none">
-	  <ul>
-	   <li class="omdashboard">
-	    <a href="/dmadminweb/reports/ServerInventory.html" target="_blank">End Point Inventory Report</a><br>List of all assets deployed on to each server.
-	    </li>
-	    <li class="omdashboard">
-	      <a href="/dmadminweb/reports/FileAudit.html" target="_blank">File Audit Trace</a><br>Deployment history for a deployed file.
-	    </li>
-	    <li class="omdashboard">
-	     <a href="/dmadminweb/reports/ServerAudit.html" target="_blank">Audit of the files deployed to End Points</a><br>Differences between the files on the End Point compared to what was deployed.
-	    </li>
-	    <li class="omdashboard">
-	      <a href="/dmadminweb/reports/EnvSuccessFail.html" target="_blank">Success/Failed Deployments per Environment Report</a><br>List the number of successful and failed deployments per Environment.
-	    </li>
-	   </ul> 
-	  </div>
-	 </div> 
    </div>
    </div>  <!-- end container -->
 	<div id="footer_container">	 
@@ -2954,9 +1487,23 @@ String.prototype.trimChars = function(charlist) {
 	</div>
 	<div id="login_container_dialog"></div>
 	<div id="firstinstall_container_dialog"></div>
-	<div id="modal"></div>
+	<div id="modal" style="display:none"></div>
+	<div id="rel-upgrade" title="Upgrade to Pro" class="dmdialog" style="display:none">
+ 		 <h2 style="padding-right:30px">Please upgrade to the Pro version in order to create Releases.</h2>
+	     <form>
+	     </form>
+	</div>
+	<div id="dom-upgrade" title="Upgrade to Pro" class="dmdialog" style="display:none">
+ 		 <h2 style="padding-right:30px">Please upgrade to the Pro version in order to create project subfolders.</h2>
+	     <form>
+	     </form>
+	</div>
 	<div id="displaylog"></div>
 	<div id="buildlog"></div>
+	<div id="throbber" style="display:none;">
+    	<img src="css/images/dog.gif" style="height:80px;border-radius: 25px;" />
+    	<p style="position:relative;left:-7px;">Sit tight....</p>
+	</div>
 </body>
 </html>
 

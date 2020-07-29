@@ -35,6 +35,8 @@ import dmadmin.model.Action;
  */
 public class GetActionContent extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+ DMSession so = null;
+ HttpSession session = null;
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -52,8 +54,12 @@ public class GetActionContent extends HttpServlet {
 		response.setContentType("application/json");
 		Integer actionid = ServletUtils.getIntParameter(request,"actionid"); 
 		PrintWriter out = response.getWriter();
-		HttpSession session = request.getSession();
-		DMSession so = (DMSession)session.getAttribute("session");
+
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
+  
 		Action action = so.getAction(actionid,false);
 
 		out.print("[");
@@ -82,6 +88,7 @@ public class GetActionContent extends HttpServlet {
 			}
 		}
 		out.println("]");
+  }
 	}
 
 	/**

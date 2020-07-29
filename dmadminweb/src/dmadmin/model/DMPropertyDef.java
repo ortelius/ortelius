@@ -80,4 +80,12 @@ public class DMPropertyDef
 	public String getJSON() {
 		return toJSONObject().getJSON();
 	}
+
+public JSONObject toJSON() {
+   JSONObject obj = new JSONObject();
+   obj.add( "name", getName());
+   obj.add( "required", isRequired());
+   obj.add( "appendable", isAppendable());
+   return obj;
+  }
 }

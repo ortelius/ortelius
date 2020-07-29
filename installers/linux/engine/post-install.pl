@@ -22,6 +22,7 @@ my ($linux, $linux_version, $systemd, $RC, $pg_data_dir);
 my $redhat_os_file = '/etc/redhat-release';
 my $lsb_os_file = '/etc/lsb-release';
 my $re_home='/opt/deployhub/engine';
+my $logs='/opt/deployhub/engine/log';
 
 #Get Linux distro and version
 #Currently we only support Redhat and Debian variants
@@ -181,6 +182,22 @@ else
  $RC = run_cmd($reload_cmd);
 }
 
+# If this system uses systemd, move deployhub-engine.service file into place and enable.
+# Otherwise, notify user that init.d script will have to be configured manually
+
+if ($systemd)
+{
+  print "Installing engine listener as systemd service ...\n";
+  mv ($re_home . '/deployhub-engine.service', '/usr/lib/systemd/system') or die "Can't move deployhub-engine.service file into \'/usr/lib/systemd/system\': $!\n";
+
+  my @systemctl_cmds = ("systemctl daemon-reload", "systemctl enable deployhub-engine", "systemctl start deployhub-engine");
+  run_cmd ($_) foreach (@systemctl_cmds);
+}
+else
+{
+ print "This system does not use systemd.  In order for the Release Engineer engine listener to run as a service, you will need to manually configure the \'deployhub-engine.sh\' init script.\nPlease consult the product documentation or support for help\n";
+}
+system("mkdir $logs");
 system("chown -R omreleng:omreleng $re_home");
 print "Installation complete!\n";
 exit (0);

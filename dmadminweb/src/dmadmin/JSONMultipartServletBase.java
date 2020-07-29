@@ -41,6 +41,9 @@ import dmadmin.json.IJSONSerializable;
 public abstract class JSONMultipartServletBase
 	extends HttpServlet
 {
+ DMSession so = null;
+ HttpSession session = null;
+ 
 	public class HttpParameters
 		extends Hashtable<String,String>
 	{
@@ -92,12 +95,10 @@ public abstract class JSONMultipartServletBase
 	{		
 		response.setContentType("application/json");
 
-		HttpSession session = request.getSession();
-		DMSession so = (DMSession)session.getAttribute("session");
-		if (so == null)  {
-			System.out.println("SESSION TIMED OUT");
-			return;
-		}
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
 
 		response.setHeader("Content-Disposition", "inline");
 		response.setHeader("Cache-Control", "no-cache");
@@ -162,6 +163,7 @@ public abstract class JSONMultipartServletBase
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+  }
 	}
 
 	public abstract IJSONSerializable handleRequest(DMSession session, boolean isPost,

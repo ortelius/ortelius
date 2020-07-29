@@ -365,6 +365,12 @@
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
     </Dependency>
     <Dependency>
+       <Name>dmadminweb/src/dmadmin/pro/*.java</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant Javac</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+    <Dependency>
         <Name>dmadminweb/src/dmadmin/json/*.java</Name>
         <Type>37</Type>
         <ParentBuildTask>Ant Javac</ParentBuildTask>
@@ -457,6 +463,12 @@
     <Dependency>
         <Name>dmadminweb/WebContent/css/images/*.gif</Name>
         <Type>5</Type>
+        <ParentBuildTask>Ant War</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>dmadminweb/WebContent/css/images/*.svg</Name>
+        <Type>37</Type>
         <ParentBuildTask>Ant War</ParentBuildTask>
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
     </Dependency>
@@ -629,7 +641,7 @@
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
     </Dependency>
     <Dependency>
-        <Name>dmadminweb/WebContent/js/om/*.js</Name>
+        <Name>dmadminweb/WebContent/js/ao/*.js</Name>
         <Type>5</Type>
         <ParentBuildTask>Ant War</ParentBuildTask>
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
@@ -833,7 +845,8 @@
         <ParentOptionGroup>Web-Inf</ParentOptionGroup>
     </Dependency>				
     <Dependency>
-        <Name>dmadminweb/WebContent/WEB-INF/web.xml</Name>
+        <Name>dmadminweb/WebContent/WEB-INF/web.xml</Name>
+
         <Type>5</Type>
         <ParentBuildTask>Ant War</ParentBuildTask>
         <ParentOptionGroup>Web-Inf</ParentOptionGroup>
@@ -844,6 +857,12 @@
         <ParentBuildTask>Ant War</ParentBuildTask>
         <ParentOptionGroup>Web-Inf</ParentOptionGroup>
     </Dependency>
+    <Dependency>
+        <Name>dmadminweb/WebContent/WEB-INF/schema/*.json</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Ant War</ParentBuildTask>
+        <ParentOptionGroup>Web-Inf</ParentOptionGroup>
+    </Dependency>    
     <Dependency>
         <Name>dmadminweb/WebContent/WEB-INF/*.tld</Name>
         <Type>5</Type>

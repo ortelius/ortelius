@@ -27,7 +27,7 @@ public class TableDataSet
 	implements IJSONSerializable
 {
 	private int m_cols;
-	private int m_maxrow = 0;
+	private int m_maxrow = -1;
 	private Hashtable<Integer, Object> m_values = new Hashtable<Integer, Object>();
 
 	public TableDataSet(int cols)

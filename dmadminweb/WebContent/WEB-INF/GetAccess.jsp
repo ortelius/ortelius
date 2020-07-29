@@ -28,30 +28,29 @@
 	padding:1px; !important
 }
 .tmain     {white-space:nowrap;cursor: pointer;padding: 0 5px 5px 16px; <c:if test="${em != true}">opacity: 0.5;</c:if>}
-.group     {background:url(css/images/group_16x.png) center left no-repeat;}
-.ingroup   {background:url(css/images/group_16x.png) center left no-repeat;background-color:#beebff;}
-.denygroup {background:url(css/images/group_16x.png) center left no-repeat;text-decoration:line-through;}
+.ingroup   {font-weight: bold;}
+.denygroup {text-decoration:line-through;}
 
-#leftpanel   {float: left; width: 530px; height:95%;}
-#toppanel    {float: left; width: 530px; height:49%;}
-#bottompanel {float: left; width: 530px; height:49%;}
-#spacer      {float: left; width: 10px;  height:95%;}
+#leftpanel   {float: left; width: 280px; height:95%;}
+#toppanel    {float: left; width: 280px; height:49%;}
+#bottompanel {float: left; width: 280px; height:49%;}
+#spacer      {width: 10px;}
 #access      {float: left; height:100%; clear:both;} 
 #midspacer   {float: left; width: 100%; height:10px;clear:both;}
-#${vaid}     {float: left; width: 250px; height:100%;overflow-y:scroll;}
-#${uaid}     {float: left; width: 250px; height:100%;overflow-y:scroll;}
-#${waid}     {float: left; width: 250px; height:100%;overflow-y:scroll;}
-#${raid}     {float: left; width: 250px; height:100%;overflow-y:scroll;}
-#${agid}_group     {float: left; width: 250px; height:450px;overflow-y:scroll;}
+#${vaid}     {width: 250px; overflow-y:scroll; text-align: left;}
+#${uaid}     {float: left; width: 250px; overflow-y:scroll; text-align: left;}
+#${waid}     {float: left; width: 250px; overflow-y:scroll; text-align: left;}
+#${raid}     {float: left; width: 250px; overflow-y:scroll; text-align: left;}
+#${agid}_group     {float: left; width: 250px; overflow-y:scroll; text-align: left;}
 h4           {line-height: 16px;margin: 0 0 0.4em;}
 </style>
 </head>
 <body>
-<div id="access"><h1>Items highlighted in blue are inherited from parent domains.</h1>
+<div id="access" style="padding-left:8px"><h3 style="font-weight:normal">Groups in <strong>bold</strong> are inherited from parent domains. Groups with a line remove the inherited access.</h3>
 	<div id="leftpanel">
 		<div id="toppanel">
-			<div id="${vaid}" class="ui-widget-content ui-corner-all">
-				<h4 class="ui-widget-header">View Access</h4>
+			<div id="${vaid}">
+				<h4 style="padding-left:6px">View Access</h4>
 				<c:forEach items="${inviewlist}" var="vl">
 				<div id="${vaid}${vl.id}" class="tmain ingroup <c:if test="${em != true}">disablegroup</c:if>">${vl.name}</div>
 				</c:forEach>
@@ -63,8 +62,8 @@ h4           {line-height: 16px;margin: 0 0 0.4em;}
 				</c:forEach>			
 			</div>
 			<div id="spacer">&nbsp;</div>
-			<div id="${uaid}" class="ui-widget-content ui-corner-all">
-				<h4 class="ui-widget-header">Change Access</h4>
+			<div id="${uaid}">
+				<h4 style="padding-left:6px">Change Access</h4>
 				<c:forEach items="${inupdatelist}" var="ul">
 				<div id="${uaid}${ul.id}" class="tmain ingroup">${ul.name}</div>
 				</c:forEach>
@@ -75,12 +74,12 @@ h4           {line-height: 16px;margin: 0 0 0.4em;}
 				<div id="${uaid}${ul.id}" class="tmain group">${ul.name}</div>
 				</c:forEach>
 			</div>
+			<div id="spacer">&nbsp;</div>		
+			<div id="bottompanel">
 		</div>
-		<div id="midspacer"></div>		
-		<div id="bottompanel">
 		<c:if test="${readtitle != null}">
-			<div id="${raid}" class="ui-widget-content ui-corner-all">
-				<h4 class="ui-widget-header">${readtitle}</h4>
+			<div id="${raid}">
+				<h4 style="padding-left:6px">${readtitle}</h4>
 				<c:forEach items="${inreadlist}" var="rl">
 				<div id="${raid}${rl.id}" class="tmain ingroup">${rl.name}</div>
 				</c:forEach>
@@ -94,8 +93,8 @@ h4           {line-height: 16px;margin: 0 0 0.4em;}
 			<div id="spacer">&nbsp;</div>
 		</c:if>
 		<c:if test="${writetitle != null}">
-			<div id="${waid}" class="ui-widget-content ui-corner-all">
-				<h4 class="ui-widget-header">${writetitle}</h4>
+			<div id="${waid}">
+				<h4 style="padding-left:6px">${writetitle}</h4>
 				<c:forEach items="${inwritelist}" var="wl">
 				<div id="${waid}${wl.id}" class="tmain ingroup">${wl.name}</div>
 				</c:forEach>
@@ -109,9 +108,8 @@ h4           {line-height: 16px;margin: 0 0 0.4em;}
 		</c:if>	
 		</div>
 	</div>	
-	<div id="spacer">&nbsp;</div>
-	<div id="${agid}_group" class="ui-widget-content ui-corner-all">
-	<h4 class="ui-widget-header">Available Groups</h4>
+	<div id="${agid}_group">
+	<h4 style="padding-left:6px">Available Groups</h4>
 	<c:forEach items="${grouplist}" var="gl">
 	<div id="${agid}${gl.id}" class="tmain group">${gl.name}</div>
 	</c:forEach>

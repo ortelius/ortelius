@@ -60,7 +60,7 @@ public class Datasource
 
 	@Override
 	public String getWriteTitle() {
-		return "Update/Delete Access";
+		return "Delete Access";
 	}
 	@Override
 	public IJSONSerializable getLinkJSON() {

@@ -44,16 +44,15 @@ public enum ObjectType
 	COMPONENTITEM   ( 14, "ci", "componentitem"),	// (c)omponent (i)tem
 	DROPZONEFILE    ( 15, null, null),
 	TRANSFER        ( 16, "xf", null),				// (xf)er
-	APPVERSION      ( 17, "av", null),				// (a)pplication (v)ersion
+	APPVERSION      ( 17, "av", "application"),				// (a)pplication (v)ersion
 	TASK            ( 18, "ta", "task"),			// (ta)sk
 	CREDENTIALS		( 19, "cr", "credentials"),		// (cr)edentials
 	TEMPLATE		( 20, "te", "template"),		// Notification (te)mplate
     RELEASE         ( 21, "rl", "release"),         // (ap)plication
-    RELVERSION      ( 22, "rv", null),              // (ap)plication
-    COMPVERSION     ( 23, "cv", null),              // (c)omponent (v)ersion
-    BUILDER         ( 24, "be", "buildengine"),		// (b)uild (e)ngine
-    BUILDJOB		( 25, "bj",	"buildjob"),		// (b)uild (j)ob
+    RELVERSION      ( 22, "rv", "release"),              // (ap)plication
+    COMPVERSION     ( 23, "cv", "component"),              // (c)omponent (v)ersion
     BUILDID			( 26, "bu", "buildnumber"),		// (bu)ild number
+    RPROXY   ( 27, "rp", "rproxy"),  // (rp)roxy
  
 	// Never stored in DB and not used by engine
 	ATTACHMENT_LIST	( 50, "al", null),		// Only used in web interface - (a)ttachment (l)ist
@@ -61,7 +60,7 @@ public enum ObjectType
 	SERVER_TYPE		( 52, "st", null),		// Only used by web interface - (s)erver (t)type
 	MODIFIED		( 53, "cm", null),		// Only used by web interface - (c)reated/(m)odified - used to indicate user and time
 	OWNER			( 54, "ow", null),		// Only used by web interface - (ow)ner - used to indicate either user or group	
-	ENGINE          ( 55, "ei", null),		// Only used by web interface - (e)ng(i)ne
+	ENGINE          ( 55, "ei", "engine"),		// Only used by web interface - (e)ng(i)ne
 	PLUGIN          ( 56, "pi", null),		// Only used by web interface - (p)lug(i)n
 	PROVIDERDEF     ( 57, "pd", null),		// Only used by web interface - (p)rovider (d)ef
 	CALENDAR_ENTRY	( 58, "ce", "calendar"),	// Only used by web interface - (c)alendar (e)ntry
@@ -77,6 +76,12 @@ public enum ObjectType
  ACTION_CATEGORY ( 68, "cy", "category"), // Only used by web interface - (c)tegor(y)
  FRAG_CATEGORY ( 69, "cf", "fragcategory"), // Only used by web interface - (c)tegor(y)
  COMP_CATEGORY ( 70, "cc", "compcategory"), // Only used by web interface - (c)tegor(y)
+ CATEGORY (71, "ca", "category"),  // Only used for export/import
+ XPOS (72,"xp",null), // xpos
+ YPOS (73, "yp", null), // ypos
+ PREDECESSOR (74,"pc", null), // predecessor
+ PARENT (75,"pt", null), // parent
+ COMP_KIND ( 76, "ik", null),  // Only used by web interface - (c)redential (k)ind
  
 	// Can be stored in DB but not used by engine
 	PROCEDURE		( 90, "pr", null),		// Only used in web interface - (pr)ocedure - only stored in create permissions table - DO NOT CHANGE

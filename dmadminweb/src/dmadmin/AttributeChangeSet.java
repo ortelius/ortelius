@@ -124,4 +124,19 @@ public class AttributeChangeSet
 	{
 		return (m_added.isEmpty() && m_deleted.isEmpty() && m_changed.isEmpty());
 	}
+
+ public void removeAllDeleted(List<DMAttribute> found)
+ {
+  m_deleted.removeAll(found);
+ }
+ 
+ public void removeAllAdded(List<DMAttribute> found)
+ {
+  m_added.removeAll(found);
+ }
+ 
+ public void removeAllUpdated(List<DMAttribute> found)
+ {
+  m_changed.removeAll(found);
+ }
 }

@@ -228,7 +228,7 @@ public class Server
 			} else {
 				ds.addProperty(SummaryField.LAST_PING_TIME, "Last Checked", "Never");
 			}
-			ds.addProperty(SummaryField.LAST_ERROR, "Last Error", ss.getLastError());
+			ds.addProperty(SummaryField.LAST_ERROR, "Test Result", ss.getLastError());
 		} else {
 			// No data stored for this server yet.
 			ds.addProperty(SummaryField.NAME_RESOLUTION, "Name Resolution", "");
@@ -238,7 +238,7 @@ public class Server
 			ds.addProperty(SummaryField.PING_TIME, "Ping Time (ms)", "");
 			ds.addProperty(SummaryField.IP_ADDRESS, "IPv4 Address", "");
 			ds.addProperty(SummaryField.LAST_PING_TIME, "Last Checked", "Never");
-			ds.addProperty(SummaryField.LAST_ERROR, "Last Error", "");
+			ds.addProperty(SummaryField.LAST_ERROR, "Test Result", "");
 		}
 		return ds.getJSON();
 	}
@@ -246,14 +246,34 @@ public class Server
 	@Override
 	public IJSONSerializable getSummaryJSON() {
 		PropertyDataSet ds = new PropertyDataSet();
+  Domain dom = getDomain();
+  if (dom == null)
+    ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", "");
+  else
+   ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", dom.getFullDomain());
 		ds.addProperty(SummaryField.NAME, "Name", getName());
 		ds.addProperty(SummaryField.OWNER, "Owner", (m_owner != null) ? m_owner.getLinkJSON()
 				: ((m_ownerGroup != null) ? m_ownerGroup.getLinkJSON() : null));
 		ds.addProperty(SummaryField.SUMMARY, "Summary", getSummary());
 		addCreatorModifier(ds);
-		ds.addProperty(SummaryField.SERVER_TYPE, "End Point Type",
+		ds.addProperty(SummaryField.SERVER_TYPE, "Endpoint Type",
 				(m_serverType != null) ? m_serverType.getLinkJSON() : null);
-		ds.addProperty(SummaryField.SERVER_HOSTNAME, "Hostname", m_hostname);
+
+  boolean found = false;
+  
+  if (m_servercomptype != null)
+  { 
+   for (int i=0;i<m_servercomptype.size();i++)
+   {
+    found = true;
+    ds.addProperty(SummaryField.SERVER_COMPTYPE, "Endpoint Types", m_servercomptype.get(i).getId() + ";" + m_servercomptype.get(i).getName());
+   }
+  } 
+  
+  if (!found)
+   ds.addProperty(SummaryField.SERVER_COMPTYPE, "Endpoint Types", "");
+  
+  ds.addProperty(SummaryField.SERVER_HOSTNAME, "Hostname", m_hostname);
 		ds.addProperty(SummaryField.SERVER_PROTOCOL, "Protocol", m_protocol);
 		ds.addProperty(SummaryField.SERVER_SSHPORT,"SSH Port Number",m_sshPort);
 		ds.addProperty(SummaryField.SERVER_BASEDIR, "Base Directory", m_basedir);
@@ -267,19 +287,7 @@ public class Server
 				(m_pingTemplate != null) ? m_pingTemplate.getLinkJSON() : null);
 		ds.addProperty(SummaryField.SERVER_MD5TEMPLATE, "MD5 Mismatch Template",
 				(m_md5Template != null) ? m_md5Template.getLinkJSON() : null);
-		boolean found = false;
-		
-		if (m_servercomptype != null)
-		{ 
-		 for (int i=0;i<m_servercomptype.size();i++)
-		 {
-		  found = true;
-		  ds.addProperty(SummaryField.SERVER_COMPTYPE, "End Point Component Types", m_servercomptype.get(i).getId() + ";" + m_servercomptype.get(i).getName());
-		 }
-		} 
-		
-		if (!found)
-   ds.addProperty(SummaryField.SERVER_COMPTYPE, "End Point Component Types", "");
+
 		return ds.getJSON();
 	}
 

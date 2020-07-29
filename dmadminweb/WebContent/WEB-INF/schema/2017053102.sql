@@ -1,0 +1,1 @@
+CREATE OR REPLACE FUNCTION dm.queue_event() RETURNS TRIGGER AS $$ DECLARE data xml; BEGIN data = xmlelement(name row,xmlattributes(NEW.id,NEW.clientid,NEW.credentials,NEW.stdin,NEW.command)); PERFORM pg_notify('q_event_'||NEW.clientid,CAST(data AS character varying)); RETURN NULL; END; $$ LANGUAGE plpgsql;

@@ -50,6 +50,9 @@ public class GetServerTypes
 		
 		JSONArray ret = new JSONArray();
 		for(ServerType t : types) {
+		 if (t.getName().equalsIgnoreCase("AS400") || t.getName().equalsIgnoreCase("Mac"))
+		  continue;
+		 
 			ret.add(t.getLinkJSON());
 		}
 		return ret;

@@ -74,10 +74,16 @@ public class Environment
 	@Override
 	public IJSONSerializable getSummaryJSON() {
 		PropertyDataSet ds = new PropertyDataSet();
+  Domain dom = getDomain();
+  if (dom == null)
+    ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", "");
+  else
+   ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", dom.getFullDomain());
 		ds.addProperty(SummaryField.NAME, "Name", getName());
 		ds.addProperty(SummaryField.OWNER, "Owner", (m_owner != null) ? m_owner.getLinkJSON()
 				: ((m_ownerGroup != null) ? m_ownerGroup.getLinkJSON() : null));
 		ds.addProperty(SummaryField.SUMMARY, "Summary", getSummary());
+		ds.addProperty(SummaryField.AVAILABILITY, "Availability", m_calusage);
 		addCreatorModifier(ds);
 		addAttachments(ds);
 		return ds.getJSON();

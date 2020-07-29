@@ -60,6 +60,24 @@ public class PropertyDataSet
 		}
 	}
 	
+ public void removeDupDeploy(PropertyDataSet ds)
+ {
+  boolean addedDeploy = false;
+  for (int i=0;i<m_names.size();i++) {
+   String v = (String)m_values.get(i);
+   if (v.startsWith("Deploy")) 
+   {
+    if (!addedDeploy)
+    { 
+     ds.addProperty(m_fields.get(i), m_names.get(i),(String)m_values.get(i));
+     addedDeploy = true;
+    }
+   }
+   else
+    ds.addProperty(m_fields.get(i), m_names.get(i),(String)m_values.get(i));
+  }
+ }
+	
 	public void addProperty(SummaryField field, String name, String value)
 	{
 

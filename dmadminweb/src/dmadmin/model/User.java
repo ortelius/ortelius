@@ -100,12 +100,19 @@ public class User	extends DMObject implements Comparable<Object>
 	public IJSONSerializable getSummaryJSON() {
 		System.out.println("getSummaryJSON for USER");
 		PropertyDataSet ds = new PropertyDataSet();
+  Domain dom = getDomain();
+  if (dom == null)
+    ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", "");
+  else
+   ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", dom.getFullDomain());
 		ds.addProperty(SummaryField.NAME, "User Name", m_name);
 		ds.addProperty(SummaryField.USER_REALNAME, "Real Name", m_realName);
 		ds.addProperty(SummaryField.USER_EMAIL, "Email", m_email);
 		ds.addProperty(SummaryField.USER_PHONE, "Phone", m_phone);
 		ds.addProperty(SummaryField.USER_DATE_FMT, "Date Format", m_datefmt);
 		ds.addProperty(SummaryField.USER_TIME_FMT, "Time Format", m_timefmt);
+		ds.addProperty(SummaryField.USER_DATASOURCE, "Validation Data Source",
+				(m_datasource != null)?m_datasource.getLinkJSON():null);
 		if(isUpdatable()) {
 			ds.addProperty(SummaryField.USER_PASSWORD, "Password", (String) null);			
 			ds.addProperty(SummaryField.USER_LOCKED, "Account Locked",

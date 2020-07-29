@@ -50,11 +50,17 @@ public class GetAppVersInEnvData
 	{
 		int envid = getIntParameter(request, "envid", 0);
 		int appid = getIntParameter(request, "appid", 0);
+		int delenvid = -1;
 		if((envid == 0) && (appid == 0)) {
 			return new JSONObject().add("result", false).add("error", "envid or appid must be specified");
 		}
 		
 		String reason = request.getParameter("reason");
+		String oldenv = request.getParameter("oldenv");
+		
+		if (oldenv != null && !oldenv.isEmpty())
+		 delenvid = new Integer(oldenv).intValue();
+		
 		System.out.println("GetAppVersInEnvData - reason="+reason);
 		
 		if(reason != null) {
@@ -62,7 +68,7 @@ public class GetAppVersInEnvData
 				return getEnvironmentList(session);
 			} else if (reason.equalsIgnoreCase("tgtenvlist")) {
 				int tid = getIntParameter(request, "tid", 0);
-				Application app = session.getApplication(appid, false);
+				Application app = session.getApplication(appid, true);
 				List<Environment> envs = app.getPermittedEnvironments(tid);
 				TableDataSet data = session.envListToTableData(envs); 
 				System.out.println("Done, data="+data.getJSON());
@@ -84,6 +90,12 @@ public class GetAppVersInEnvData
 				}
 				String note = request.getParameter("note");
 				boolean isVersion = Boolean.parseBoolean(request.getParameter("isversion"));
+				if (delenvid > 0)
+				{
+				 Application app = session.getApplication(appid, false);
+				 Environment env = session.getEnvironment(delenvid, false);
+				 session.clearAppInEnv(env, app);
+				}
 				setAppInEnv(session, envid, appid, isVersion, note); 
 				return addToAppsAllowedInEnv(session, envid, appid);
 			} else if(reason.equalsIgnoreCase("set")) {
@@ -205,7 +217,7 @@ public class GetAppVersInEnvData
 			}
 			boolean result;
 			if (isVersion) {
-				result = session.setAppInEnv(env, app, note);
+				result = session.setAppInEnv(env, app, note, -1);
 			} else {
 				System.out.println("*** adding app="+appid+" env="+envid+" to apps allowed in env");
 				result = session.addToAppsAllowedInEnv(env, app);

@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
 import dmadmin.json.JSONArray;
 
 public class ReportsData extends HttpServletBase
@@ -88,6 +87,128 @@ public class ReportsData extends HttpServletBase
     out.println("}");
     return;
   }    
+  else if (type.equalsIgnoreCase("AppList"))
+  {
+    JSONArray arr = session.getAppList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  }  
+  else if (type.equalsIgnoreCase("RelList"))
+  {
+    JSONArray arr = session.getReleaseList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  }  
+  else if (type.equalsIgnoreCase("CompList"))
+  {
+    JSONArray arr = session.getCompList();
+    out.println(arr.getJSON());
+    out.println("}");
+    System.out.println("{");
+    System.out.println(arr.getJSON());
+    System.out.println("}");
+    return;
+  }  
+  else if (type.equalsIgnoreCase("EnvList"))
+  {
+    JSONArray arr = session.getEnvList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  } 
+  else if (type.equalsIgnoreCase("EndPointList"))
+  {
+    JSONArray arr = session.getEndPointList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  }  
+  else if (type.equalsIgnoreCase("ActionList"))
+  {
+    JSONArray arr = session.getActionList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  }
+  else if (type.equalsIgnoreCase("ProcedureList"))
+  {
+    JSONArray arr = session.getProcedureList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  } 
+  else if (type.equalsIgnoreCase("NotifierList"))
+  {
+    JSONArray arr = session.getNotifierList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  } 
+  else if (type.equalsIgnoreCase("RepositoryList"))
+  {
+    JSONArray arr = session.getRepositoryList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  }  
+  else if (type.equalsIgnoreCase("DatasourceList"))
+  {
+    JSONArray arr = session.getDatasourceList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  } 
+  else if (type.equalsIgnoreCase("CredentialList"))
+  {
+    JSONArray arr = session.getCredentialList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  } 
+  else if (type.equalsIgnoreCase("UserList"))
+  {
+    JSONArray arr = session.getUserList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  } 
+  else if (type.equalsIgnoreCase("GroupList"))
+  {
+    JSONArray arr = session.getGroupList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  } 
+  else if (type.equalsIgnoreCase("ServerCompTypeList"))
+  {
+    JSONArray arr = session.getServerCompTypeList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  }
+  else if (type.equalsIgnoreCase("TemplateList"))
+  {
+    JSONArray arr = session.getTemplateList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  } 
+  else if (type.equalsIgnoreCase("BuildJobList"))
+  {
+    JSONArray arr = session.getBuildJobList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  }
+  else if (type.equalsIgnoreCase("DomainList"))
+  {
+    JSONArray arr = session.getDomainTableList();
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+  } 
   out.println("}");
  }
  

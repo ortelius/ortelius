@@ -84,6 +84,8 @@ public class NewsFeed
 				obj = doSubscribe(session, otid, false);
 			} else if(reason.equalsIgnoreCase("unsubscribe")) {
 				obj = doSubscribe(session, otid, true);
+   } else if(reason.equalsIgnoreCase("applogs")) {
+    obj = doAppLogs(session, otid);
 			} else {
 				throw new RuntimeException("Bad reason '" + reason + "' given to news feed");
 			}
@@ -110,6 +112,23 @@ public class NewsFeed
 		}
 		return obj;
 	}
+	
+ private JSONObject doAppLogs(DMSession session, ObjectTypeAndId otid)
+ {
+  JSONObject obj = new JSONObject();
+  try {
+   JSONArray data = session.getApplicationDeployments(otid);  
+   obj.add("result", (data != null));
+   if(data != null) {
+    obj.add("data", data);
+   }
+  } catch(Exception e) {
+   e.printStackTrace();
+   obj.add("result", false);
+   obj.add("error", e.getMessage());
+  }
+  return obj;
+ }
 	
 	private JSONObject doGetAttachments(DMSession session, ObjectTypeAndId otid)
 	{
@@ -151,13 +170,6 @@ public class NewsFeed
 					int attachid = session.addAttachmentToObject(data.getNewObject(), file.getName(), (int) file.getSize(), is); 
 					if(attachid != 0) {
 						attachCount++;
-						//Attachment attach = new Attachment(session, attachid, file.getName());
-						//File temp = attach.getAttachmentStoreFile();
-						//try {
-						//	file.write(temp);
-						//} catch (Exception e) {
-						//	e.printStackTrace();
-						//}
 					}				
 				}
 				data.addProperty("attach", attachCount);

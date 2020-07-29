@@ -330,7 +330,7 @@ function out()
 	}
 }
 
-function MoveGroupIn($item)
+function MoveDomGroupIn($item)
 {
 	console.log("adding group="+$item.attr("id")+" to task "+SelectedTask.substr(1));
 	$.ajax({
@@ -348,7 +348,7 @@ function MoveGroupIn($item)
 	});
 }
 
-function MoveGroupOut($item)
+function MoveDomGroupOut($item)
 {
 	console.log("removing group="+$item.attr("id")+" from task "+SelectedTask.substr(1));
 	$.ajax({
@@ -438,14 +438,15 @@ function seltask()
 		}
 	});
 	console.log("Getting task info");
+	$("#del_task_button").css("color", "buttontext");
 	var tt = $("#"+SelectedTask).attr("class");
 	tt=tt.replace(/icon_inline_/,"");
 	tt=tt.replace(/adjacent_icon/,"");
 	tt=tt.replace(/ /,"");
 	tt=tt.toLowerCase();
-	var hv =  	"<div class=\"panel_container_title_area tasks\"><h1 class=\"taskpanels\">Task Detail</h1>"
+	var hv =  	"<div class=\"panel_container_title_area tasks\" style=\"overflow:hidden\"><h1 class=\"taskpanels\">Task Detail</h1>"
 	<c:if test="${domain.updatable}">
-	 			+ "<button style=\"display:none\" class=\"edit_button_sub_small\" onClick=\"javascript:EditSummaryButton()\"><img alt=\"Edit\" style=\"max-width:100%;max-height:100%;\" src=\"css/images/pencil_24x22.png\"></button>"
+	 			+ "<button style=\"display:none\" class=\"edit_button_sub_small\" onClick=\"javascript:EditSummaryButton()\"><i class=\"fal fa-pencil\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Edit</button>"
 	</c:if>
 	 			+ "</div><div class=\"deploy_sub_panel_container\"><table id=\"task_summ\" class=\"dev_table\"><tbody></tbody></table></div>";
 	$("#panel_deploy").html(hv);
@@ -460,13 +461,13 @@ function seltask()
     $("#sub_panel_bottomleft").droppable({
 		drop : function(event, ui)
 		{
-			MoveGroupIn(ui.draggable);
+			MoveDomGroupIn(ui.draggable);
 		}
 	});
 	$("#sub_panel_bottommiddle").droppable({
 		drop : function(event, ui)
 		{
-			MoveGroupOut(ui.draggable);
+			MoveDomGroupOut(ui.draggable);
 		}
 	});
 	</c:if>
@@ -474,6 +475,8 @@ function seltask()
 
 function AddTask(tasktype)
 {
+ $("#new_task_dropdown").hide();
+ 
 	$.ajax({
 		async: true,
 		url: "DomainDetails?f=at&domainid=${domain.id}&tasktype="+tasktype,
@@ -507,7 +510,7 @@ function removeFromArray(arr, item) {
 
 function DeleteTask()
 {
-	
+
 	$.ajax({
 		async: true,
 		url: "DomainDetails?f=dt&domainid=${domain.id}&tid="+SelectedTask.substr(1),
@@ -517,8 +520,9 @@ function DeleteTask()
             removeFromArray(TaskList,$("#"+SelectedTask).html());
 			$("#"+SelectedTask).remove();
 			$("#hl"+SelectedTask.substr(1)).remove();
-			$("#panel_deploy").html("<div class=\"panel_container_title_area tasks\"><h1 class=\"taskpanels\">Task Detail</h1><button style=\"display:none\" class=\"edit_button_sub_small\" onClick=\"javascript:EditSummaryButton()\"><img alt=\"Edit\" src=\"images/pencil_24x22.png\"></button></div><div class=\"deploy_sub_panel_container\"><table id=\"task_summ\" class=\"dev_table\"><tbody></tbody></table></div>");
+			$("#panel_deploy").html("<div class=\"panel_container_title_area tasks\"><h1 class=\"taskpanels\">Task Detail</h1><button style=\"display:none\" class=\"edit_button_sub_small\" onClick=\"javascript:EditSummaryButton()\"><i class=\"fal fa-pencil\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Edit</button></div><div class=\"deploy_sub_panel_container\"><table id=\"task_summ\" class=\"dev_table\"><tbody></tbody></table></div>");
 			SelectedTask="";
+			$("#del_task_button").css("color","grey");
 		}
 	});
 }
@@ -528,29 +532,30 @@ var delmenu=[
 ];
 
 var taskmenu=[
-{"Add Approve Task":            {icon:"images/approve.png",onclick:function(menuItem,menu){AddTask("Approve");} }},
-{"Add Move Version Task":       {icon:"images/movever.png",onclick:function(menuItem,menu){AddTask("Move");} }},
-{"Add Remove Application Task": {icon:"images/remove.gif",onclick:function(menuItem,menu){AddTask("Remove");} }},
-{"Add Deploy Task":             {icon:"images/deploy.gif",onclick:function(menuItem,menu){AddTask("Deploy");} }},
-{"Add Request Task":  		    {icon:"images/request.png",onclick:function(menuItem,menu){AddTask("Request");} }},
-{"Add Create Version Task":     {icon:"images/appver.png",onclick:function(menuItem,menu){AddTask("CreateVersion");} }},
-{"Add Run Action Task":	        {icon:"images/action.png",onclick:function(menuItem,menu){AddTask("RunAction");} }}
+{"Approve Application Verision for move to next pipeline stage":            {icon:"images/approve.png",onclick:function(menuItem,menu){AddTask("Approve");} }},
+{"Move Application Version to the next or previous stage in the pipeline":       {icon:"images/movever.png",onclick:function(menuItem,menu){AddTask("Move");} }},
+{"Delete all Application Versions from all Endpoints in an Environment": {icon:"images/remove.gif",onclick:function(menuItem,menu){AddTask("Remove");} }},
+{"Deploy Application Version to an Environment":             {icon:"images/deploy.gif",onclick:function(menuItem,menu){AddTask("Deploy");} }},
+{"Request Calendar entry for deployment to an Environment":  		    {icon:"images/request.png",onclick:function(menuItem,menu){AddTask("Request");} }},
+{"Create new Application Version":     {icon:"images/appver.png",onclick:function(menuItem,menu){AddTask("CreateVersion");} }},
+{"Mannually trigger Action to be executed":	        {icon:"images/action.png",onclick:function(menuItem,menu){AddTask("RunAction");} }}
 ];
 
 function getmenu()
 {
-	if (CurrentTask)
-	{
-		if (SelectedTask!="") $("#hl"+SelectedTask.substr(1)).css("background-color","white");
-		SelectedTask=CurrentTask;
-		$("#hl"+SelectedTask.substr(1)).css("background-color","#96ebff");
-		console.log("returning delmenu");
-		return delmenu;
-	}
-	else
-	{
-		return taskmenu;
-	}
+
+}
+
+function toggleTaskMenu()
+{
+ var taskdd = $("#new_task_dropdown");
+ var showing = taskdd.is(":visible");
+ 
+ console.log("showing " + showing);
+ if (showing)
+  taskdd.hide();
+ else
+  taskdd.show();
 }
 
 $(function()
@@ -571,16 +576,16 @@ $(function()
 	</c:forEach>
 	SelectedTask="";
 	
-	$("#panel_deploy").html("<div class=\"panel_container_title_area tasks\"><h1 class=\"taskpanels\">Task Detail</h1><button style=\"display:none\" class=\"edit_button_sub_small\" onClick=\"javascript:EditSummaryButton()\"><img alt=\"Edit\" src=\"css/images/pencil_24x22.png\"></button></div><div class=\"deploy_sub_panel_container\"><table id=\"task_summ\" class=\"dev_table\"><tbody></tbody></table></div>");
+	$("#panel_deploy").html("<div class=\"panel_container_title_area tasks\"><h1 class=\"taskpanels\">Task Detail</h1><button style=\"display:none\" class=\"edit_button_sub_small\" onClick=\"javascript:EditSummaryButton()\"><i class=\"fal fa-pencil\" aria-hidden=\"true\" style=\"padding-right:5px\"></i>Edit</button></div><div class=\"deploy_sub_panel_container\"><table id=\"task_summ\" class=\"dev_table\"><tbody></tbody></table></div>");
 	$("#task_params").html(
 			"<div class=\"panel_container_title_area\">"
 			+ "<h1 class=\"taskpanels\">Additional Parameters</h1>"
 			+     "<div style=\"display:none\" id=\"taskparam_edit\">"
-			+          "<button class=\"edit_button_param\" onClick=\"javascript:EditParamButton();\"><img style=\"max-width:100%;max-height:100%;\" alt=\"Edit\" src=\"css/images/pencil_24x22.png\"></button>"
-	        +          "<button class=\"add_button_param\" onClick=\"javascript:AddParamButton();\"><img style=\"max-width:100%;max-height:100%;\" alt=\"Add\" src=\"css/images/add_22x22.png\"></button>"
-	        +          "<button class=\"delete_button_param\" onClick=\"javascript:DelParamButton();\"><img style=\"max-width:100%;max-height:100%;\" alt=\"Delete\" src=\"css/images/delete_22x22.png\"></button>"
-	        +          "<button class=\"up_button_param\" onClick=\"javascript:UpParamButton();\"><img style=\"max-width:100%;max-height:100%;\" alt=\"Up\" src=\"css/images/up.png\"></button>"
-	        +          "<button class=\"down_button_param\" onClick=\"javascript:DownParamButton();\"><img style=\"max-width:100%;max-height:100%;\" alt=\"Down\" src=\"css/images/down.png\"></button>"
+			+          "<button class=\"edit_button_param\" onClick=\"javascript:EditParamButton();\"><i class=\"fal fa-pencil\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i></button>"
+	        +          "<button class=\"add_button_param\" onClick=\"javascript:AddParamButton();\"><i class=\"fal fa-plus\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i></button>"
+	        +          "<button class=\"delete_button_param\" onClick=\"javascript:DelParamButton();\"><i class=\"fal fa-trash\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i></button>"
+	        +          "<button class=\"up_button_param\" onClick=\"javascript:UpParamButton();\"><i class=\"fal fa-arrow-up\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i></button>"
+	        +          "<button class=\"down_button_param\" onClick=\"javascript:DownParamButton();\"><i class=\"fal fa-arrow-down\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i></button>"
 	        +     "</div>"
 	        +"</div>");
 }); // end anonymous function
@@ -596,43 +601,5 @@ var t;
 </c:forEach>
 
 </script>
-		<!-- Tasks -->
-		<div id="panel_container_taskspaneltop">
-			<div id="sub_panel_topleft">
-				<div class="panel_container_title_area tasks ">
-				<h1 class="taskpanels">Tasks in this Domain</h1>
-				</div>
-				<div class="deploy_sub_panel_container">
-				 <ul class="subpanel">
-				   <c:forEach items="${tasklist}" var="tl">
- 					 <div id="hl${tl.id}"><li class="icon_inline_${tl.taskTypeAsString} adjacent_icon" id="t${tl.id}">${tl.name}</li></div>
-  				   </c:forEach>
-  				 </ul>	
-  				</div>			
-				</div>
-				<div id="panel_deploy"></div>
-			</div>
-		<div id="panel_container_taskspanelbottom">
-			<div id="sub_panel_bottomleft">
-			  <div class="panel_container_title_area tasks"><h1 class="taskpanels">Group Access</h1></div>
-			   <div class="deploy_sub_panel_container">
-			    <ul class="subpanel" id="tasks_assigned_groups">
- 			    </ul>
- 			   </div> 
-			</div>
-			<div id="sub_panel_bottommiddle">
-			 	<div class="panel_container_title_area"><h1 class="taskpanels">Available Groups</h1></div>
-			 	<div class="deploy_sub_panel_container">
-			 		<ul class="subpanel" id="tasks_available_groups">
- 					</ul>
- 				</div>	
- 			</div>
- 			<div id="sub_panel_bottomright">
-			 	<div id="task_params"></div>
-			 	<div id="task_param_content"></div>
- 			</div>
-		</div>
-		</div>
-		</div>
 </body>
 </html>

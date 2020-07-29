@@ -35,7 +35,8 @@ import dmadmin.model.Application;
  */
 public class GetApplicationOptions extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+ DMSession so = null;
+ HttpSession session = null;      
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -51,8 +52,11 @@ public class GetApplicationOptions extends HttpServlet {
 		// TODO Auto-generated method stub
 		PrintWriter out = response.getWriter();
 		
-		HttpSession session = request.getSession();
-		DMSession so = (DMSession)session.getAttribute("session");
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
+
 		String isRelStr = request.getParameter("isRelease");
 		boolean isRelease = false;
 		
@@ -69,6 +73,7 @@ public class GetApplicationOptions extends HttpServlet {
 			System.out.println("<option value=\""+a.getId()+"\">"+dname + "." + a.getName()+"</option>");
 			out.println("<option value=\""+a.getId()+"\">"+dname + "." + a.getName()+"</option>");
 		}
+  }
 	}
 
 	/**

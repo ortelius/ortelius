@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import dmadmin.json.IJSONSerializable;
 import dmadmin.json.JSONArray;
-import dmadmin.model.Credential;
+import dmadmin.model.DMObject;
 
 /**
  * Servlet implementation class GetCredentials
@@ -50,10 +50,10 @@ public class GetCredentials
 			HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
 	{
-		List<Credential> creds = session.getCredentials();
+		List<DMObject> creds = session.getCredentials();
 		
 		JSONArray ret = new JSONArray();
-		for(Credential c : creds) {
+		for(DMObject c : creds) {
 		 
 			ret.add(c.getLinkJSON());
 		}

@@ -1,4 +1,5 @@
 /*
+ *
  *  DeployHub is an Agile Application Release Automation Solution
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
@@ -70,12 +71,12 @@ function dtCreateTree(nodename,currentdomain)
               // The `domain` node 
               "Domain" : {
                   "icon" : {
-                      "image" : "css/images/domain_16x.png"
+                      "image" : "css/images/domains_sm.png"
                   }
               },
               "Lifecycle" : {
                   "icon" : {
-                      "image" : "css/images/lifecycle_16x.png"
+                      "image" : "css/images/lifecycles_sm.png"
                   }
               }
           }

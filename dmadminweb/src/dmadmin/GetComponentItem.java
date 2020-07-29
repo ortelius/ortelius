@@ -1,3 +1,21 @@
+/*
+ *
+ *  DeployHub is an Agile Application Release Automation Solution
+ *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package dmadmin;
 
 import java.io.IOException;
@@ -21,7 +39,8 @@ public class GetComponentItem
 	extends HttpServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+ DMSession so = null;
+ HttpSession session = null;       
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -53,13 +72,11 @@ public class GetComponentItem
 		throws ServletException, IOException
 	{
 		response.setContentType("application/json");
-		
-		HttpSession session = request.getSession();
-		DMSession so = (DMSession)session.getAttribute("session");
-		if(so == null)  {
-			System.out.println("SESSION TIMED OUT");
-			return;
-		}
+
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
 		
 		response.setHeader("Content-Disposition", "inline");
 		response.setHeader("Cache-Control", "no-cache");
@@ -148,6 +165,6 @@ public class GetComponentItem
 		System.out.println(ret);
 		out.println(ret);
 	}
-	
+	}
 }
 

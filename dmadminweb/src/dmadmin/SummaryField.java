@@ -38,7 +38,7 @@ public enum SummaryField
 	PRE_ACTION		(101, "Pre Action",					ObjectType.ACTION),
 	POST_ACTION		(102, "Post Action",				ObjectType.ACTION),
 	CUSTOM_ACTION	(103, "Custom Action",				ObjectType.ACTION),
-	APP_DATASOURCE	(104, "Change Request Datasource",	ObjectType.DATASOURCE),
+	APP_DATASOURCE	(104, "Change Request Data Source",	ObjectType.DATASOURCE),
 
 	// Server
 	SERVER_TYPE		(201, "Type",				ObjectType.SERVER_TYPE),
@@ -48,7 +48,7 @@ public enum SummaryField
 	SERVER_CRED		(205, "Credentials",		ObjectType.CREDENTIALS),
 	SERVER_AUTOPING	(206, "Auto Ping",			ObjectType.BOOLEAN),
 	SERVER_AUTOMD5	(207, "Auto MD5",			ObjectType.BOOLEAN),
-	SERVER_COMPTYPE (208, "Component Types",	ObjectType.SERVERCOMPTYPE),
+	SERVER_COMPTYPE (208, "Endpoint Types",	ObjectType.SERVERCOMPTYPE),
 	SERVER_PINGINTERVAL (209, "Ping Interval",	null),
 	SERVER_PINGSTART    (210, "Ping Start",		null),
 	SERVER_PINGEND      (211, "Ping End",		null),
@@ -82,10 +82,16 @@ public enum SummaryField
 	ITEM_TARGETDIR  	(705, "Target Directory",		null),
 	DEPLOY_ALWAYS		(706, "Always Deploy",			ObjectType.BOOLEAN),
 	BASE_DIRECTORY		(707, "Base Directory",			null),
-	COMPTYPE			(708, "Component Type",			null),
+	COMPTYPE			(708, "Endpoint Type",			null),
 	DEPLOY_SEQUENTIALLY (709, "Deploy Sequentially",	ObjectType.BOOLEAN),
-	COMP_BUILDJOB		(711, "Build Job",				ObjectType.BUILDJOB),	
+	COMP_DATASOURCE		(710, "Change Request Data Source",ObjectType.DATASOURCE),
 	COMP_LASTBUILDNUMBER(712, "Last Build Number",		null),	
+	DOCKER    (713, "Container Kind",  null),
+	XPOS (714,"xpos", null),
+ YPOS (715,"ypos", null),
+ PREDECESSOR (716,"predecessor", null),
+ PARENT (717,"parent", null),
+ COMP_KIND   (718, "Kind",   ObjectType.COMP_KIND),
  
 	// Credentials
 	CRED_KIND		(801, "Kind",		ObjectType.CREDENTIAL_KIND),// This is used in GetSummary.jsp for callback
@@ -108,6 +114,7 @@ public enum SummaryField
  
 	// Domain
 	DOMAIN_LIFECYCLE(1001,ObjectType.BOOLEAN),
+	DOMAIN_FULLNAME(1002,"Domain", null),
 	
 	// Action
 	ACTION_FILEPATH 	(1101,	"Filepath",			null),						// This is used in actiondetails.jsp for show/hide
@@ -123,6 +130,7 @@ public enum SummaryField
 	// Notifications
 	SUCCESS_TEMPLATE (1201,		"Success Template",	ObjectType.TEMPLATE),
 	FAILURE_TEMPLATE (1202,		"Failure Template",	ObjectType.TEMPLATE),
+	NOTIFIER (1203, "Notifier", ObjectType.NOTIFY),
 	
 	// Server Summary Data
 	NAME_RESOLUTION (1301,null),
@@ -139,7 +147,23 @@ public enum SummaryField
  	DELETEDIR (1402,ObjectType.BOOLEAN),
  
  	// Build Engines
- 	PROJECTNAME (1501,		"Project Name",		null);
+ 	PROJECTNAME (1501,		"Project Name",		null),
+ 
+ // Container Component Item Details
+ DOCKER_BUILDID (1601, "Build Id",  null),   
+ DOCKER_BUILDURL  (1602, "Build URL", null),
+ DOCKER_CHART  (1603, "Helm Chart", null),
+ DOCKER_OPERATOR  (1604, "Operator",  null),
+ DOCKER_BUILDDATE   (1605,"Build Date", null),
+ DOCKER_REPO  (1606, "Container Registry", null),
+ DOCKER_SHA  (1607, "Container Digest", null),
+ DOCKER_GITCOMMIT   (1608, "Git Commit", null),
+ DOCKER_GITREPO   (1609, "Git Repo", null),
+ DOCKER_GITTAG (1610, "Git Tag", null),
+ DOCKER_GITURL (1611, "Git URL", null),
+ DOCKER_CHARTVERSION  (1612, "Helm Chart Version", null),
+ DOCKER_CHARTNAMESPACE  (1613, "Helm Chart Namespace", null),
+ DOCKER_TAG  (1614, "Container Tag", null);
  
 	private final int m_value;
 	private final ObjectType m_type;

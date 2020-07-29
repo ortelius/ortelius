@@ -7,7 +7,7 @@ use File::Copy::Recursive 'dircopy';
 use File::Remove 'remove';
 use Cwd;
 
-my @build_file_list = ( 'bin/dm', 'bin/libdmapi.so', 'bin/libharvest.so', 'bin/libhttp.so', 'bin/libiisplugin.so', 'bin/libperforce.so', 'bin/librestful.so',
+my @build_file_list = ( 'bin/dm', 'bin/listener', 'bin/libdmapi.so', 'bin/libharvest.so', 'bin/libhttp.so', 'bin/libiisplugin.so', 'bin/libperforce.so', 'bin/librestful.so',
 			 'lib/dmtransfer', 'lib/libftplib.so', 'lib/libpsftplib.so', 'lib/libwinlib.so', 'trilogyd', 'trilogycli', 'setodbc', 'lib/libtrilogycli.so', 'lib/libtrilogy.so');
 my @static_file_list = ( 'dm.odbc', 'dm.asc', 'trilogy.conf', 'trilogy.lic', 'README.txt', 'odbc.template', 'post-install.sh', 'post-install.pl', 're-engine.service', 're-engine.sh');
 my @webadmin_static_files = ('re-webadmin.sh', 're-webadmin.service', 'post-install.sh', 'post-install.pl');

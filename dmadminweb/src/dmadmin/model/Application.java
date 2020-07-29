@@ -23,8 +23,6 @@ package dmadmin.model;
 import java.util.List;
 //import java.util.Map;
 
-
-
 import dmadmin.DMSession;
 import dmadmin.ObjectType;
 import dmadmin.PropertyDataSet;
@@ -175,11 +173,25 @@ public class Application
 	@Override
 	public IJSONSerializable getSummaryJSON() {
 		PropertyDataSet ds = new PropertyDataSet();
+		Domain dom = getDomain();
+		if (dom == null)
+  		ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", "");
+		else
+		 ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", dom.getFullDomain());
+		
 		ds.addProperty(SummaryField.NAME, "Name", getName());
 		ds.addProperty(SummaryField.OWNER, "Owner", (m_owner != null) ? m_owner.getLinkJSON()
 				: ((m_ownerGroup != null) ? m_ownerGroup.getLinkJSON() : null));
 		ds.addProperty(SummaryField.SUMMARY, "Summary", getSummary());
 		addCreatorModifier(ds);
+		if (!getIsRelease().equalsIgnoreCase("y")) {
+			ds.addProperty(SummaryField.APP_DATASOURCE, "Change Request Data Source",
+					(m_datasource != null)?m_datasource.getLinkJSON():null);
+		}
+		
+  ds.addProperty(SummaryField.XPOS, "XPos", getXpos());
+  ds.addProperty(SummaryField.YPOS, "YPos", getYpos());
+		
 		ds.addProperty(SummaryField.PRE_ACTION, "Pre-Action",
 			(m_preAction != null) ? m_preAction.getLinkJSON() : null);
 		ds.addProperty(SummaryField.POST_ACTION, "Post-Action",

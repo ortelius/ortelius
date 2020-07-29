@@ -58,7 +58,7 @@ public class ActionDetails
 			return;
 		}
 		CommandLine cmd = engine.showDMScript(action);
-		int res = cmd.run(true, null, true);
+		int res = cmd.runWithTrilogy(true, null);
 		response.setContentType("text/plain");
 		PrintWriter out = response.getWriter();
 		

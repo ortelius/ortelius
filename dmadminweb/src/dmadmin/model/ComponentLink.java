@@ -18,6 +18,8 @@
  */
 package dmadmin.model;
 
+import javax.servlet.http.HttpServlet;
+
 /**
  * Servlet implementation class ComponentLink
  */

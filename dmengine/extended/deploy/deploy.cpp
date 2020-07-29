@@ -159,15 +159,8 @@ int DeployThread::execute(Context &ctx)
 			// does this server already contain this component?
 			if(m_comp && !m_comp->isDeployAlways() && !ctx.isRollback()) {
 				existingcomp = s->getDeployedComponent(*m_comp);
-				if(existingcomp && (existingcomp->id() == m_comp->id() && existingcomp->buildid() == m_comp->buildid())) {
+				if(existingcomp && (existingcomp->id() == m_comp->id())) {
 					// This version of the component is already on the server - skip deployment
-					if (m_comp->buildid()) {
-						// There's a build associated with this component
-						ctx.writeToStdOut("INFO: Component '%s' (Build %d) is already present on server '%s'", 
-							m_comp->name(), m_comp->buildid(), s->name());
-					} else {
-						ctx.writeToStdOut("INFO: Component '%s' is already present on server '%s'", m_comp->name(), s->name());
-					}
 					continue;
 				} else {
 					// Not yet deployed - add to list of outstanding servers for this component
@@ -587,16 +580,10 @@ void DeployStmtImpl::createDeployThreads(
 		// does this server already contain this component?
 		if(comp && !comp->isDeployAlways() && !ctx.isRollback()) {
 			existingcomp = s->getDeployedComponent(*comp);
-			if(existingcomp && (existingcomp->id() == comp->id() && existingcomp->buildid() == comp->buildid())) {
+			if(existingcomp && (existingcomp->id() == comp->id()))
+			{
 				// This version of the component is already on the server - skip deployment
-				if (comp->buildid()) {
-					// There's a build associated with this component
-					ctx.writeToStdOut("INFO: Component '%s' (Build %d) is already present on server '%s'", 
-						comp->name(), comp->buildid(), s->name());
-				} else {
-					ctx.writeToStdOut("INFO: Component '%s' is already present on server '%s'", comp->name(), s->name());
-				}
-				
+				ctx.writeToStdOut("INFO: Component '%s' is already present on server '%s'", comp->name(), s->name());				
 				continue;
 			}
 		}

@@ -32,6 +32,7 @@ import dmadmin.json.JSONArray;
 import dmadmin.json.JSONObject;
 import dmadmin.model.CompType;
 import dmadmin.model.Component;
+import dmadmin.model.DMObject;
 
 
 /**
@@ -39,7 +40,8 @@ import dmadmin.model.Component;
  */
 public class GetComponentData extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+ DMSession so = null;
+ HttpSession session = null;      
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -52,9 +54,11 @@ public class GetComponentData extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-  HttpSession session = request.getSession();
-  DMSession so = (DMSession) session.getAttribute("session");
+
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
 
   response.setContentType("application/json");
 
@@ -63,19 +67,29 @@ public class GetComponentData extends HttpServlet {
   System.out.println("In GetComponentData");
 
   String comptype = request.getParameter("comptype");
+  String compidStr = request.getParameter("compid");
 
-  if (comptype != null)
+  if (compidStr != null)
   {
-   List<CompType> ct = so.getCompTypes();
+   int compid = new Integer(compidStr).intValue();
+   JSONArray ret = so.getComp2Endpoints(compid);
+   
+   out.println(ret);
+   System.out.println(ret);
+  }
+  else if (comptype != null)
+  {
+   List<DMObject> ct = so.getCompTypes();
    
    JSONArray arr = new JSONArray();
-   for (CompType x : ct)
+   for (DMObject x : ct)
    {
+    CompType ctype = (CompType)x;
     JSONObject obj = new JSONObject();
-    obj.add("id",x.getId());
-    obj.add("name",x.getName());
-    obj.add("database",x.getDatabase());
-    obj.add("deletedir",x.getDeletedir());
+    obj.add("id",ctype.getId());
+    obj.add("name",ctype.getName());
+    obj.add("database",ctype.getDatabase());
+    obj.add("deletedir",ctype.getDeletedir());
     
     arr.add(obj);
    }
@@ -111,6 +125,7 @@ public class GetComponentData extends HttpServlet {
 
    out.println(ret);
    System.out.println(ret);
+  }
   }
 
 	}

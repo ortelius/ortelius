@@ -21,10 +21,13 @@ package dmadmin.model;
 import java.util.List;
 
 import dmadmin.ObjectType;
+import dmadmin.PropertyDataSet;
+import dmadmin.SummaryChangeSet;
+import dmadmin.SummaryField;
 import dmadmin.json.IJSONSerializable;
 import dmadmin.json.LinkField;
 
-public class Category
+public class Category  extends DMObject
 {
 	private int m_catid;
 	private String m_catname;
@@ -48,4 +51,40 @@ public class Category
 	public IJSONSerializable getLinkJSON() {
 		return new LinkField(ObjectType.ACTION_CATEGORY, m_catid, m_catname, false);
 	}
+
+ @Override
+ public ObjectType getObjectType()
+ {
+  // TODO Auto-generated method stub
+  return null;
+ }
+
+ @Override
+ public String getDatabaseTable()
+ {
+  // TODO Auto-generated method stub
+  return null;
+ }
+
+ @Override
+ public String getForeignKey()
+ {
+  // TODO Auto-generated method stub
+  return null;
+ }
+
+ @Override
+ public IJSONSerializable getSummaryJSON() {
+  PropertyDataSet ds = new PropertyDataSet();
+
+  ds.addProperty(SummaryField.NAME, "Name", getName());
+  return ds.getJSON();
+ }
+
+ @Override
+ public boolean updateSummary(SummaryChangeSet changes)
+ {
+  // TODO Auto-generated method stub
+  return false;
+ }
 }

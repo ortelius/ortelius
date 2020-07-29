@@ -23,13 +23,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 
-/**
- * This class deals with XDR input/output. Copyright 2005-2006 Trinem Consulting
- * Limited ( www.trinem.com ) All rights reserved.
- * 
- * @author <a href="mailto:akeilhauer@trinem.com">Andreas Keilhauer</a>
- * 
- */
 public class XDR
 {
 

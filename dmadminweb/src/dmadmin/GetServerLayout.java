@@ -64,7 +64,7 @@ public class GetServerLayout extends HttpServletBase {
 		for(Server s: servers) {
 			JSONObject sobj = new JSONObject();
 			sobj.add("nodeid", s.getId());
-			sobj.add("name", s.getName());
+			sobj.add("name", s.getDomain().getFullDomain() + "." + s.getName());
 			sobj.add("xpos", s.getXpos());
 			sobj.add("ypos", s.getYpos());
 			sobj.add("typeid", s.getTypeName());

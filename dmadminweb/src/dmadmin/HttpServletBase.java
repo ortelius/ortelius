@@ -31,13 +31,13 @@ import javax.servlet.http.HttpSession;
 public abstract class HttpServletBase
 	extends HttpServlet
 {
+ DMSession so = null;
+ HttpSession session = null;
+ 
 	public HttpServletBase()
 	{
 		super();
 	}
-	
-	
-	
 	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -57,8 +57,12 @@ public abstract class HttpServletBase
 	private void internalHandleRequest(boolean isPost, HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException
 	{
-		HttpSession session = request.getSession();
-		DMSession so = (DMSession)session.getAttribute("session");
+
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+//  so.checkConnection(request.getServletContext());
+  
 		if (so == null)  {
 			session.invalidate();
 				String origurl=ServletUtils.GetURL(request);
@@ -100,7 +104,7 @@ public abstract class HttpServletBase
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		
+  }
 		
 	}
 

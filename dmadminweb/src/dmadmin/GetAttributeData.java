@@ -41,7 +41,8 @@ public class GetAttributeData
 	extends HttpServlet
 {
 	private static final long serialVersionUID = 1L;
-       
+ DMSession so = null;
+ HttpSession session = null;       
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -59,12 +60,10 @@ public class GetAttributeData
 
 		PrintWriter out = response.getWriter();
 
-		HttpSession session = request.getSession();
-		DMSession so = (DMSession)session.getAttribute("session");
-		if(so == null) {
-			// TODO: Redirect main page to login screen
-			return;
-		}
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
 
 		boolean isArrayRequest = (request.getParameter("arrid") != null);
 		boolean bReadOnly=false;
@@ -73,7 +72,7 @@ public class GetAttributeData
 		if(isArrayRequest) {
 			int arrid = ServletUtils.getIntParameter(request, "arrid");
 			attrs = so.getArrayAttributes(arrid);
-		} else {
+		} else {	 
 			int ot = ServletUtils.getIntParameter(request, "objtype");
 			int id = ServletUtils.getIntParameter(request, "id");
 			ObjectType objtype = ObjectType.fromInt(ot);
@@ -97,7 +96,8 @@ public class GetAttributeData
 		String ret = obj.toString();
 		
 		out.println(ret);
-		System.out.println(ret);		
+		System.out.println(ret);	
+  }
 	}
 
 	/**

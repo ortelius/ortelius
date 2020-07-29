@@ -16,6 +16,7 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package dmadmin;
 
 import java.io.IOException;
@@ -24,6 +25,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import dmadmin.json.JSONObject;
 
 /**
  * Servlet implementation class GetSchemaVersion
@@ -44,9 +47,12 @@ public class About extends HttpServletBase
  public void handleRequest(DMSession session, boolean isPost, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
  {
   int ver = session.getSchemaVersion();
+  String lc = session.getLicenseKey();
+  String dbuid = session.getDatabaseId();
   request.setAttribute("schemaver", ver);
+  request.setAttribute("license", lc);
+  request.setAttribute("dbuid", dbuid);
   
-  /*
   String lickey = request.getParameter("k");
   
   if (lickey != null)
@@ -55,7 +61,6 @@ public class About extends HttpServletBase
    response.getOutputStream().println(new JSONObject().toString());
   }
   else
-  */
    request.getRequestDispatcher("/WEB-INF/About.jsp").forward(request, response);
  }
 }

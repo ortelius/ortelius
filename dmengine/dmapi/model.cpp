@@ -8621,23 +8621,47 @@ void Model::recordCompOnServ(class DM &dm, Component &comp, Server &server, bool
 		long deployid = dm.deployId();
 		long serverid = server.id();
 		SQLRETURN res;
-		int n=3;
+		int n=2;
 		if (buildid) {
+			sql->PrepareStatement(
+		    "delete from dm.dm_compsonserv where compid != ? and compid in " 
+			" (SELECT a.id FROM dm_component a, dm_component b "
+            " WHERE (a.parentid = b.parentid OR a.id = b.parentid OR a.parentid = b.id OR a.id = b.id) AND b.id = ?)");
+            sql->BindParameter(1, SQL_INTEGER, sizeof(compid), &compid, sizeof(compid));
+            sql->BindParameter(2, SQL_INTEGER, sizeof(compid), &compid, sizeof(compid));
+			res = sql->ExecuteIgnoringErrors();
+			debug2("res = %d", res);
+			sql->CloseSQL();
+			sql = m_odbc.GetSQL();
+
 			res = sql->PrepareStatement(
-			"UPDATE dm_compsonserv SET compid = ?, deploymentid = ?, buildnumber = ? "
-			"WHERE serverid = ? AND compid IN (SELECT a.id FROM dm_component a, dm_component b "
-			"WHERE (a.parentid = b.parentid OR a.id = b.parentid OR a.parentid = b.id OR a.id = b.id) AND b.id = ?)");
+			"UPDATE dm_compsonserv SET deploymentid = ?, buildnumber = ? "
+			"WHERE serverid = ? AND compid = ?");
+	//		"IN (SELECT a.id FROM dm_component a, dm_component b "
+	//		"WHERE (a.parentid = b.parentid OR a.id = b.parentid OR a.parentid = b.id OR a.id = b.id) AND b.id = ?)");
 		} else {
+			sql->PrepareStatement(
+		    "delete from dm.dm_compsonserv where compid != ? and compid in " 
+			" (SELECT a.id FROM dm_component a, dm_component b "
+            " WHERE (a.parentid = b.parentid OR a.id = b.parentid OR a.parentid = b.id OR a.id = b.id) AND b.id = ?)");
+            sql->BindParameter(1, SQL_INTEGER, sizeof(compid), &compid, sizeof(compid));
+            sql->BindParameter(2, SQL_INTEGER, sizeof(compid), &compid, sizeof(compid));
+			res = sql->ExecuteIgnoringErrors();
+			debug2("res = %d", res);
+			sql->CloseSQL();
+			sql = m_odbc.GetSQL();
+			
 			res = sql->PrepareStatement(
-			"UPDATE dm_compsonserv SET compid = ?, deploymentid = ? "
-			"WHERE serverid = ? AND compid IN (SELECT a.id FROM dm_component a, dm_component b "
-			"WHERE (a.parentid = b.parentid OR a.id = b.parentid OR a.parentid = b.id OR a.id = b.id) AND b.id = ?)");
+			"UPDATE dm_compsonserv SET deploymentid = ? "
+			"WHERE serverid = ? AND compid = ?");
+	//		"IN (SELECT a.id FROM dm_component a, dm_component b "
+	//		"WHERE (a.parentid = b.parentid OR a.id = b.parentid OR a.parentid = b.id OR a.id = b.id) AND b.id = ?)");
 		}
 		if(IS_NOT_SQL_SUCCESS(res)) {
 			throw RuntimeError("Failed to update comp on serv");
 		}
-		sql->BindParameter(1, SQL_INTEGER, sizeof(compid), &compid, sizeof(compid));
-		sql->BindParameter(2, SQL_INTEGER, sizeof(deployid), &deployid, sizeof(deployid));
+	//	sql->BindParameter(1, SQL_INTEGER, sizeof(compid), &compid, sizeof(compid));
+		sql->BindParameter(1, SQL_INTEGER, sizeof(deployid), &deployid, sizeof(deployid));
 		if (buildid) {
 			sql->BindParameter(n++, SQL_INTEGER, sizeof(buildid), &buildid, sizeof(buildid));
 		}
@@ -8669,7 +8693,7 @@ void Model::recordCompOnServ(class DM &dm, Component &comp, Server &server, bool
 			if (buildid) {
 				sql->BindParameter(4, SQL_INTEGER, sizeof(buildid), &buildid, sizeof(buildid));
 			}
-			debug1("Inserting into compsonserv (%d, %d, %d, %d)", compid, serverid, deployid, buildid);
+			debug1("Inserting into compsonserv (%d, %d, %d, %d)", serverid, compid, deployid, buildid);
 			res = sql->ExecuteIgnoringErrors();
 			debug2("res = %d", res);
 			sql->CloseSQL();

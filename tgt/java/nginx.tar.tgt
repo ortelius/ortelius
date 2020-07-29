@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OMTarget>
+    <Version>6.3</Version>
+    <Name>nginx.tar</Name>
+    <Project>DEPLOY-PLUS</Project>
+    <TargetDefinitionFile>ngix.tar.tgt</TargetDefinitionFile>
+    <OSPlatform>Java</OSPlatform>
+    <BuildType>Java Tar</BuildType>
+    <IntDirectory></IntDirectory>
+    <PhoneyTarget>false</PhoneyTarget>
+    <BuildTask>
+        <Name>Ant Tar</Name>
+        <OptionGroup>
+            <GroupName>Build Task Options</GroupName>
+            <Type>0</Type>
+            <Option>
+                <Flag>basedir=</Flag>
+                <Description>Indicates the directory from which to Tar the files. If it is not used, the files will be Tarred directly from the build directory.</Description>
+                <Type>90</Type>
+            </Option>
+            <Option>
+                <Flag>compress=</Flag>
+                <Parameter>true</Parameter>
+                <Description>If true, compress the Tar file. Defaults to true.</Description>
+                <Type>90</Type>
+            </Option>
+            <Option>
+                <Flag>manifest=</Flag>
+                <Description>The name of an existing manifest file to place in the Tar file. If not specified, Ant creates a manifest file indicating the version of Ant used.</Description>
+                <Type>90</Type>
+            </Option>
+        </OptionGroup>
+    </BuildTask>
+    <Dependency>
+        <Name>nginx.conf</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Ant Tar</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>location/*.conf</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Ant Tar</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+</OMTarget>

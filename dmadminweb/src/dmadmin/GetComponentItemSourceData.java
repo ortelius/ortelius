@@ -129,6 +129,9 @@ public class GetComponentItemSourceData
 	
 	private IJSONSerializable getRepositories(DMSession session, int ciid)
 	{
+	 if (ciid < 0)
+	  return session.getRepositoryList();
+	 
 		ComponentItem ci = session.getComponentItem(ciid, true);
   
 		JSONArray ret = new JSONArray();
@@ -164,7 +167,7 @@ public class GetComponentItemSourceData
 					arr.add(d);
 				}
 			}
-		}
+		}	
 		return ret;
 	}
 }

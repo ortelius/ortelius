@@ -37,6 +37,8 @@ import dmadmin.model.TreeObject;
 public class GetCategoryContent extends HttpServlet
 {
  private static final long serialVersionUID = 1L;
+ DMSession so = null;
+ HttpSession session = null;
 
  /**
   * @see HttpServlet#HttpServlet()
@@ -56,11 +58,15 @@ public class GetCategoryContent extends HttpServlet
   Integer domainid = ServletUtils.getIntParameter(request, "domainid");
   Integer catid = ServletUtils.getIntParameter(request, "catid");
   String objtype = request.getParameter("objtype");
+  String nobuiltins = null;
   
   System.out.println("catid="+request.getParameter("catid")+" objtype="+objtype+" domainid="+domainid);
   PrintWriter out = response.getWriter();
-  HttpSession session = request.getSession();
-  DMSession so = (DMSession) session.getAttribute("session");
+
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
 
   // HashMap<Integer, Integer> hmap = new HashMap<Integer, Integer>();
   
@@ -89,7 +95,7 @@ public class GetCategoryContent extends HttpServlet
   boolean subv = false;
   for (ObjectType reltype : reltypes)
   {
-   List<TreeObject> dmo = so.getTreeObjects(reltype, domainid, catid);
+   List<TreeObject> dmo = so.getTreeObjects(reltype, domainid, catid,nobuiltins);
 
    for (TreeObject dm : dmo)
    {
@@ -151,6 +157,7 @@ public class GetCategoryContent extends HttpServlet
   }
   out.println("]");
   System.out.println("]");
+  }
  }
 
  /**
