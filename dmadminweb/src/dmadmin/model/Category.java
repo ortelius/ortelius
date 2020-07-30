@@ -29,6 +29,10 @@ import dmadmin.json.LinkField;
 
 public class Category  extends DMObject
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4129395953664594214L;
 	private int m_catid;
 	private String m_catname;
 	private List<Fragment> m_fragments;

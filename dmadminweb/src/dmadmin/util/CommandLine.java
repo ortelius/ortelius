@@ -36,6 +36,7 @@ public class CommandLine
 	private StringBuffer m_output;
 	private InputMuncherThread m_muncher;
 	private Engine m_engine;
+	private String m_password = "";
 
 	
 	public CommandLine()
@@ -49,7 +50,7 @@ public class CommandLine
 	public CommandLine(String cmd) {
 		m_cmd.add(cmd);
 	}
-	
+
 	public CommandLine add(String arg) {
 		m_cmd.add(arg);
 		return this;
@@ -67,6 +68,12 @@ public class CommandLine
 			}
 		}
 		return this;
+	}
+	
+	public CommandLine pw(String pw)
+	{
+	 m_password = pw;	
+	 return this;
 	}
 	
 	public String getOutput() {
@@ -119,6 +126,8 @@ public class CommandLine
 		//String[] envp = new String[env.size()];
 		try {
 			ProcessBuilder pb = new ProcessBuilder(m_cmd.toArray(args));
+			Map<String, String> env = pb.environment();
+			env.put("TRIFIELD1",m_password);
 			pb.redirectErrorStream(true);
 			
 			Process p = pb.start(); //Runtime.getRuntime().exec(m_cmd.toArray(args) /*, envl.toArray(envp)*/);

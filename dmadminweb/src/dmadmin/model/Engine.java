@@ -118,7 +118,8 @@ public class Engine
 	{		
 		CommandLine cmd = new CommandLine(this)
 			.add("dm")
-			.add("-usr").add(userName);
+			.add("-usr").add(userName)
+			.pw(m_session.getPassword());
 		if(sessionid != null) {
 			cmd.add("-sessionid").add(sessionid);		
 		}
@@ -143,6 +144,7 @@ public class Engine
 		CommandLine cmd = new CommandLine("C:\\Shared\\DM2\\DeploymentManager\\Windows\\Debug\\DeploymentManager.exe");
 		cmd.add("-home").add("C:\\Shared\\DM2\\DeploymentManager\\distrib")
 			.add("-usr").add(userName)
+			.pw(m_session.getPassword())
 			.add("-notify").add(nfy.getId())	
 			.add("-from").add(from)
 			.add("-template").add(templateid);
@@ -169,6 +171,7 @@ public class Engine
 		ret = new CommandLine(this)
 			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-providertest")
 			.add(po.getObjectType().toString().toLowerCase())
 			.add(po.getId());
@@ -184,6 +187,7 @@ public class Engine
 		return new CommandLine(this)
 			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-runtask").add(task.getId())
 			.add("-appid").add(app.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
@@ -196,6 +200,7 @@ public class Engine
 		return new CommandLine(this)
 		.add("dm")
 		.add("-usr").add(m_session.GetUserName())
+		.pw(m_session.getPassword())
 		.add("-sessionid").add(m_session.GetSessionId())
 		.add("-runtask").add(task.getId())
 		.add(aps);
@@ -206,6 +211,7 @@ public class Engine
 		return new CommandLine(this)
 			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-runtask").add(task.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
 			.add("-appid").add(app.getId())
@@ -217,6 +223,7 @@ public class Engine
 		return new CommandLine(this)
 			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-appid").add(app.getId())
 			.add("-envid").add(env.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
@@ -229,6 +236,7 @@ public class Engine
 		return new CommandLine(this)
 			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-checkserver").add(server.getId());
 	}
 	
@@ -237,6 +245,7 @@ public class Engine
 		return new CommandLine(this)
 			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-importscript");
 	}
 	
@@ -245,6 +254,7 @@ public class Engine
 		return new CommandLine(this)
 			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-dmscript").add(action.getId());
 	}
 	
@@ -253,6 +263,7 @@ public class Engine
 		CommandLine cmd = new CommandLine(this)
 			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-runtask").add(task.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
 			.add("-appid").add(app.getId());
@@ -270,6 +281,7 @@ public class Engine
 		return new CommandLine(this)
 			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-sessionid").add(m_session.GetSessionId())
 			.add("-runtask").add(new Integer(task.getId()).toString())
 			.add(aps);
@@ -280,6 +292,7 @@ public class Engine
 		return new CommandLine(this)
 			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-appid").add(app.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
 			.add("-runtask").add(new Integer(task.getId()).toString())
@@ -291,6 +304,7 @@ public class Engine
 		return new CommandLine(this)
 			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-compid").add(comp.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
 			.add("-runtask").add(new Integer(task.getId()).toString())
@@ -302,6 +316,7 @@ public class Engine
 		return new CommandLine(this)
 			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-envid").add(env.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
 			.add("-runtask").add(new Integer(task.getId()).toString())
@@ -338,6 +353,7 @@ public class Engine
 		CommandLine cmd = new CommandLine(this)
 			.add("dm")
 			.add("-usr").add(userName)
+			.pw(m_session.getPassword())
 			.add("-encrypt");
 		int ret = cmd.runWithTrilogy(true, value + "\n");
 		if(ret == 0) {

@@ -62,9 +62,8 @@ public class DomainDetails extends HttpServletBase {
     	if (!isPost) {
     		// GET
 
-    		Domain domain = session.getDomain(domainid);
     		TaskList tasks = session.getTasksInDomain(domainid);
-    		List<TreeObject> subdomains = session.getDomains(domainid);
+
     		String f = request.getParameter("f");
     		if (f == null) {
        JSONArray res = new JSONArray();

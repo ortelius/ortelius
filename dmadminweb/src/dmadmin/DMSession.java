@@ -226,7 +226,6 @@ public class DMSession implements AutoCloseable {
 	private String m_password;
  private String m_license_type;
  private int m_license_cnt;
- private String m_logintime;
 	
 	private boolean m_OverrideAccessControl;
 	private boolean m_EndPointsTab;
@@ -1363,7 +1362,6 @@ public class DMSession implements AutoCloseable {
   String DriverName = "";
   
 		System.out.println("connectToDatabase()");
-		Map env = System.getenv();
 		
 		DMHome = System.getenv("DMHome");
 		if (DMHome == null)
@@ -7793,7 +7791,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
    stmt.setInt(1, parentid>0?parentid:app.getId());
    if (parentid>0) stmt.setInt(2,app.getId());
    ResultSet rs = stmt.executeQuery();
-   int row = 0;
+
    while(rs.next()) {
     Environment env = this.getEnvironment(rs.getInt(1), false);
     ret.add(env.getDomain().getFullDomain() + "." + env.getName());
@@ -17098,7 +17096,6 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		{
 	  try
    {
-    String base64Original   = readFile(DMHome+"/dm.odbc");
     String base64passphrase = readFile(DMHome+"/dm.asc");
     m_passphrase = Decrypt3DES(base64passphrase,"dm15k1ng".getBytes("UTF-8"));
    }
@@ -17224,14 +17221,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_credentials ");
 		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
 				
-		int dup = 0;
   for(SummaryField field : changes) {
    switch(field) {
     case CRED_ENCUSERNAME:
     case CRED_VARUSERNAME:
-    case CRED_USERNAME: {
-      dup++;
-     }
+    case CRED_USERNAME: 
      break;
     case CRED_KIND:
      kindfromUI = (CredentialKind) changes.get(field);
@@ -27403,7 +27397,7 @@ public void SyncAnsible(ServletContext context)
      isRelease = true;
 
     List<Component> comps = getComponents(ObjectType.APPLICATION, app.getId(),isRelease);
-    int d = this.getLatestDeployment("" + appid);
+  //  int d = this.getLatestDeployment("" + appid);
   //  List<Component> comps = getComponents4Deployment(d);
     
     for (int i=0;i<comps.size();i++)
@@ -27777,11 +27771,6 @@ public JSONArray getComp2Endpoints(int compid)
     edges.add(new DeployDepsEdge(d.getEnvironment().getOtid().toString(), srv.getOtid().toString()).getJSON());
       }
    }
-
-   boolean isRelease = false;
-
-   if (d.getApplication().getIsRelease().compareToIgnoreCase("Y") == 0)
-    isRelease = true;
 
   // List<Component> comps = getComponents(ObjectType.APPLICATION, d.getApplication().getId(),isRelease);
 
@@ -29511,12 +29500,7 @@ public JSONArray getComp2Endpoints(int compid)
   obj.add("files", files);
 
   try
-  {
-   int parentid = app.getId();
-   
-   if (app.getParentId() > 0)
-    parentid = app.getParentId();
-   
+  {   
    List<Component> complist = getComponents(ObjectType.APPLICATION, app.getId(), false);
    
    String comps = "";
@@ -29939,10 +29923,6 @@ public JSONArray getComp2Endpoints(int compid)
      }
   }
 
-  boolean isRelease = false;
-
-  if (app.getIsRelease().compareToIgnoreCase("Y") == 0)
-   isRelease = true;
  
   for (int i=0;i<comps.size();i++)
   {
