@@ -119,9 +119,6 @@ public class TaskDeploy
 		return (m_cmd != null) ? m_cmd.getLastOutputLine() : null;
 	}
 	
-	public boolean engineRunning() {
-		return (m_cmd != null) ? m_cmd.trilogyJobRunning() : false;
-	}
 	
 	private int startDeployment(Application app, Environment env, String userName, String sessionid, boolean waitFor, Map<String,String> cmdline_params)
 	{

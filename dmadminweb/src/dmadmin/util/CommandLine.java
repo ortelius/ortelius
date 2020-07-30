@@ -19,8 +19,6 @@
 package dmadmin.util;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,10 +26,6 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import com.openmakesoftware.trilogy.ITrilogyOutputStream;
-import com.openmakesoftware.trilogy.TrilogyException;
-import com.openmakesoftware.trilogy.TrilogyLib;
 
 import dmadmin.DMSession;
 import dmadmin.model.Engine;
@@ -42,7 +36,7 @@ public class CommandLine
 	private StringBuffer m_output;
 	private InputMuncherThread m_muncher;
 	private Engine m_engine;
-	private TrilogyJobMonitor m_monitor;
+
 	
 	public CommandLine()
 	{}
@@ -81,7 +75,6 @@ public class CommandLine
 
 	public String getLastOutputLine() {
 		if(m_muncher != null) { return m_muncher.getLastOutputLine(); }
-		if(m_monitor != null) { return m_monitor.getLastOutputLine(); }	// TODO: May need to add  + ((m_output != null) ? ("\n" + m_output) : "")
 		if(m_output != null) { return m_output.toString(); }
 		return null;
 	}
@@ -171,16 +164,6 @@ public class CommandLine
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-		
-				/*String line;
-				java.io.BufferedReader stderr = new java.io.BufferedReader(new java.io.InputStreamReader(p.getErrorStream()));
-				while((line = stderr.readLine()) != null) {
-					System.out.println(line);
-				}
-				java.io.BufferedReader stdout = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()));
-				while((line = stdout.readLine()) != null) {
-					System.out.println(line);
-				}*/
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -217,59 +200,8 @@ public class CommandLine
         	System.out.println("No session associated with engine");
         	return -1;
         } else {
-        	System.out.println("Sending request to Trilogy Server on hostname "+server);
-        	int port = m_engine.getSession().getTrilogyPort();
-	        // int port = 2305;		// TODO: Get this from somewhere
-	        
-			String[] args = new String[m_cmd.size()];
-			
-			System.out.println("Setting output stream, waitFor = "+waitFor);
-			
-			ITrilogyOutputStream output = waitFor ? new TrilogyOutputBuffer() : new TrilogyOutputMuncher();
-	
-	        try {
-	        	// Pro Version - send password through as TRIFIELD1
-	        	String[] fields = new String[1];
-	        	fields[0] = m_engine.getSession().getPassword();
-	        	System.out.println("server is ["+server+"]");
-	        	TrilogyLib.TrilogyJob job = TrilogyLib.sendRunRequest(
-	        			server, port, m_cmd.toArray(args), fields, input, output);
-	        	if(job == null) {
-	        		return -1;
-	        	}
-	        	
-	        	if (waitFor) {
-	        		System.out.println("Waiting for Completion");
-		        	job.waitForCompletion();
-		            m_output = output.getBuffer();
-		            int ec = job.getExitCode();
-		            System.out.println("m_output="+m_output);
-					System.out.println("Exit Code: " + ec);
-					return ec;
-	        	} else {
-	        		System.out.println("Not waiting - starting job monitor");
-	        		m_monitor = new TrilogyJobMonitor(job);
-	        		m_monitor.start();
-	        		System.out.println("Job Monitor Started");
-	            	return 0;
-	        	}
-	        } catch(java.security.AccessControlException ace) {
-	        	m_output = new StringBuffer("AccessControlException: " + ace.toString());
-	        	return -1;
-	        } catch(TrilogyException e) {
-	        	m_output = new StringBuffer(e.getMessage());
-	        	return -1;
-	        } catch(Exception e) {
-	            e.printStackTrace();
-	        	m_output = new StringBuffer(e.toString());
-	        	return -1;
-	        }
-        }
-	}
-	
-	public boolean trilogyJobRunning()
-	{
-		return (m_monitor != null)?m_monitor.isAlive():false;
+        	return run(waitFor, input, true);
+       }
 	}
 	
 	/**
@@ -305,135 +237,4 @@ public class CommandLine
 			}
 		}	
 	}
-	
-	private class TrilogyOutputBuffer
-		implements ITrilogyOutputStream
-	{
-		private ByteArrayOutputStream m_str;
-
-		public TrilogyOutputBuffer() {
-			m_str = new ByteArrayOutputStream();
-		}
-
-		@Override
-		public void writeToStdOut(byte[] buf) {
-			try {
-				m_str.write(buf);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		@Override
-		public void writeToStdErr(byte[] buf) {
-			try {
-				//m_str.write("<span style=\"color: #e00\">".getBytes());
-				m_str.write(buf);
-				//m_str.write("</span>".getBytes());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}			
-		}
-		
-		@Override
-		public StringBuffer getBuffer() {
-			StringBuffer sb = new StringBuffer();
-			try {
-				BufferedReader isr = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(m_str.toByteArray())));
-				String line;
-				while((line = isr.readLine()) != null) {
-					sb.append(line).append("\n");
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return sb;
-		}
-	}
-	
-	private class TrilogyOutputMuncher
-		implements ITrilogyOutputStream
-	{
-		private byte[] m_lastbuf;
-		private StringBuffer m_sb;
-		
-		private TrilogyOutputMuncher()
-		{
-			m_sb = new StringBuffer();
-		}
-		
-		@Override
-		public void writeToStdOut(byte[] buf) {
-			m_lastbuf = buf;
-			if(m_lastbuf != null) {
-				try {
-					BufferedReader isr = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(m_lastbuf)));
-					String line;
-					while((line = isr.readLine()) != null) {
-						m_sb.append(line).append("\n");
-						System.out.println("Appending line="+line);
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-		@Override
-		public void writeToStdErr(byte[] buf) {
-			m_lastbuf = buf;
-			writeToStdOut(buf);
-		}
-		
-		@Override
-		public StringBuffer getBuffer() {
-			//StringBuffer sb = new StringBuffer();
-			//if(m_lastbuf != null) {
-			//	try {
-			//		BufferedReader isr = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(m_lastbuf)));
-			//		String line;
-			//		while((line = isr.readLine()) != null) {
-			//			sb.append(line).append("\n");
-			//		}
-			//	} catch (IOException e) {
-			//		e.printStackTrace();
-			//	}
-			//}
-			// return sb;
-			// System.out.println("getBuffer returns "+m_sb);
-			return m_sb;
-		}
-	}
-	
-	private class TrilogyJobMonitor
-		extends Thread
-	{
-		private TrilogyLib.TrilogyJob m_job;
-		private int m_exitCode = -1;
-		
-		public TrilogyJobMonitor(TrilogyLib.TrilogyJob job) {
-			m_job = job;
-		}
-		
-		// public int getExitCode()  { return m_exitCode; }
-		public String getLastOutputLine()
-		{
-			return m_job.getOutput().getBuffer().toString(); 
-		}
-		
-		@Override
-		public void run() {
-			try {
-				m_job.waitForCompletion();
-				m_exitCode = m_job.getExitCode();
-				System.out.println("exit code="+m_exitCode);
-			} catch (TrilogyException e) {
-				m_exitCode = -1;
-				ITrilogyOutputStream outbuf = m_job.getOutput();				
-				outbuf.writeToStdOut(e.toString().getBytes());
-
-    e.printStackTrace();
-			}
-		}
-	}
-}
+}	

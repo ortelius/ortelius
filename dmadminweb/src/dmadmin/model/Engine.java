@@ -117,7 +117,7 @@ public class Engine
 		String sessionid, Map<String,String> cmdline_params)
 	{		
 		CommandLine cmd = new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-usr").add(userName);
 		if(sessionid != null) {
 			cmd.add("-sessionid").add(sessionid);		
@@ -167,7 +167,7 @@ public class Engine
 	{
 		CommandLine ret;
 		ret = new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
 			.add("-providertest")
 			.add(po.getObjectType().toString().toLowerCase())
@@ -182,7 +182,7 @@ public class Engine
 	public CommandLine doApprove(Task task, Application app, boolean approved, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
 			.add("-runtask").add(task.getId())
 			.add("-appid").add(app.getId())
@@ -194,7 +194,7 @@ public class Engine
 	public CommandLine doRunAction(Task task, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-		.add("trilogy").add("DEPLOY")
+		.add("dm")
 		.add("-usr").add(m_session.GetUserName())
 		.add("-sessionid").add(m_session.GetSessionId())
 		.add("-runtask").add(task.getId())
@@ -204,7 +204,7 @@ public class Engine
 	public CommandLine doMoveCopyRequest(Task task, Application app, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
 			.add("-runtask").add(task.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
@@ -215,7 +215,7 @@ public class Engine
 	public CommandLine doRemove(Task task, Application app,Environment env, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
 			.add("-appid").add(app.getId())
 			.add("-envid").add(env.getId())
@@ -227,7 +227,7 @@ public class Engine
 	public CommandLine doTestServer(Server server)
 	{
 		return new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
 			.add("-checkserver").add(server.getId());
 	}
@@ -235,7 +235,7 @@ public class Engine
 	public CommandLine doCreateScript()
 	{
 		return new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
 			.add("-importscript");
 	}
@@ -243,7 +243,7 @@ public class Engine
 	public CommandLine showDMScript(Action action)
 	{
 		return new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
 			.add("-dmscript").add(action.getId());
 	}
@@ -251,7 +251,7 @@ public class Engine
 	public CommandLine doNewAppVer(Task task, Application app, boolean useLatest, Application pred, Map<String,String> aps)
 	{
 		CommandLine cmd = new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
 			.add("-runtask").add(task.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
@@ -268,7 +268,7 @@ public class Engine
 	public CommandLine doUserDefined(Task task, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
 			.add("-sessionid").add(m_session.GetSessionId())
 			.add("-runtask").add(new Integer(task.getId()).toString())
@@ -278,7 +278,7 @@ public class Engine
 	public CommandLine doUserDefined(Task task,Application app, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
 			.add("-appid").add(app.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
@@ -289,7 +289,7 @@ public class Engine
 	public CommandLine doUserDefined(Task task,Component comp, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
 			.add("-compid").add(comp.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
@@ -300,7 +300,7 @@ public class Engine
 	public CommandLine doUserDefined(Task task,Environment env, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
 			.add("-envid").add(env.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
@@ -311,7 +311,7 @@ public class Engine
 	public String ParseProcedure(String procbody)
 	{
 		CommandLine cmd = new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-parse").add("^");
 		System.out.println("procbody="+procbody);
 		cmd.runWithTrilogy(true, procbody);
@@ -321,7 +321,7 @@ public class Engine
 	public String dumpScript(int actionid)
 	{
 		CommandLine cmd = new CommandLine(this)
-		.add("trilogy").add("DEPLOY")
+		.add("dm")
 		.add("-dumpscript").add(actionid);
 		int ret = cmd.runWithTrilogy(true, null);
 		if (ret == 0) {
@@ -336,7 +336,7 @@ public class Engine
 	  return "";
 	 
 		CommandLine cmd = new CommandLine(this)
-			.add("trilogy").add("DEPLOY")
+			.add("dm")
 			.add("-usr").add(userName)
 			.add("-encrypt");
 		int ret = cmd.runWithTrilogy(true, value + "\n");
