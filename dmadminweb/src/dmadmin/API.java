@@ -162,6 +162,10 @@ public class API extends HttpServlet
  {
   JSONObject je = assembleJSONForAppApprovals(so, app);
   je.add("name", app.getFullName());
+  if (app.getDomain() != null)
+   je.add("domain", app.getDomain().getFullDomain());
+  else
+   je.add("domain", "");
   je.add("branch", app.getLabel(true));
   je.add("lastcompver", so.getLastComp4App(app.getId()));
   
@@ -270,6 +274,10 @@ public class API extends HttpServlet
  {
   JSONObject je = new JSONObject();
   je.add("name", comp.getFullName());
+  if (comp.getDomain() != null)
+   je.add("domain", comp.getDomain().getFullDomain());
+  else
+   je.add("domain", "");
   je.add("branch", comp.getLabel(true));
   
   DMObject owner = comp.getOwner();
@@ -1667,7 +1675,8 @@ public class API extends HttpServlet
 
  private static String toHexString(byte[] bytes)
  {
-  Formatter formatter = new Formatter();
+  try (Formatter formatter = new Formatter())
+  {
 
   for (byte b : bytes)
   {
@@ -1675,6 +1684,7 @@ public class API extends HttpServlet
   }
 
   return formatter.toString();
+  }
  }
 
  public static String calculateRFC2104HMAC(String data, String key) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException
@@ -4370,6 +4380,10 @@ public class API extends HttpServlet
   ProviderObject x = (ProviderObject)so.getDetailedObject(ObjectType.REPOSITORY, r.getId());
   
   je.add("name", x.getFullName());
+  if (x.getDomain() != null)
+   je.add("domain", x.getDomain().getFullDomain());
+  else
+   je.add("domain", "");
   je.add("summary", x.getSummary());
   
   DMObject owner = x.getOwner();
@@ -4428,6 +4442,10 @@ public class API extends HttpServlet
  {
   JSONObject je = new JSONObject();
   je.add("name", x.getFullName());
+  if (x.getDomain() != null)
+   je.add("domain", x.getDomain().getFullDomain());
+  else
+   je.add("domain", "");
   je.add("summary", x.getSummary());
   je.add("availability",x.getCalUsage());
   
@@ -4479,6 +4497,10 @@ public class API extends HttpServlet
   x = so.getServer(x.getId(), true);
   JSONObject je = new JSONObject();
   je.add("name", x.getFullName());
+  if (x.getDomain() != null)
+   je.add("domain", x.getDomain().getFullDomain());
+  else
+   je.add("domain", "");
   je.add("summary", x.getSummary());
   
   ServerType t = x.getServerType();
@@ -4530,7 +4552,7 @@ public class API extends HttpServlet
    for (int i=0;i<comptypes.size();i++)
    {
     JSONObject obj = new JSONObject();
-    obj.add("name", comptypes.get(i).getDomain().getFullDomain() + "." + comptypes.get(i).getName());
+    obj.add("name", comptypes.get(i).getName());
     arr.add(obj);
    }
   }
@@ -4543,6 +4565,10 @@ public class API extends HttpServlet
   x = so.getCredential(x.getId(), true);
   JSONObject je = new JSONObject();
   je.add("name", x.getFullName());
+  if (x.getDomain() != null)
+   je.add("domain", x.getDomain().getFullDomain());
+  else
+   je.add("domain", "");
   je.add("summary", x.getSummary());
   je.add("kind", x.getKindAsString());
   DMObject owner = x.getOwner();
@@ -4584,6 +4610,10 @@ public class API extends HttpServlet
  {
   JSONObject je = new JSONObject();
   je.add("name", x.getFullName());
+  if (x.getDomain() != null)
+   je.add("domain", x.getDomain().getFullDomain());
+  else
+   je.add("domain", "");
   je.add("summary", x.getSummary());
   je.add("realname", x.getRealName());
   je.add("email", x.getEmail());
@@ -4609,6 +4639,10 @@ public class API extends HttpServlet
  {
    JSONObject je = new JSONObject();
    je.add("name", x.getFullName());
+   if (x.getDomain() != null)
+    je.add("domain", x.getDomain().getFullDomain());
+   else
+    je.add("domain", "");
    je.add("summary", x.getSummary());
    je.add("email", x.getEmail());
    return je;
@@ -4618,6 +4652,10 @@ public class API extends HttpServlet
  {
    JSONObject je = new JSONObject();
    je.add("name", x.getParentDomain() + "." + x.getName());
+   if (x.getDomain() != null)
+    je.add("domain", x.getDomain().getFullDomain());
+   else
+    je.add("domain", "");
    return je;
  }
  /*

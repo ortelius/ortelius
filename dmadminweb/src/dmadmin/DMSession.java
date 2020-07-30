@@ -344,6 +344,11 @@ public class DMSession implements AutoCloseable {
 	    return y; 
 	}
 	
+	public String getWhenCol()
+	{
+	 return whencol; 
+	}
+	
 	private boolean ValidateKey(String key)
 	{
 		// Validate key
@@ -7751,7 +7756,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 	
 	public ArrayList<String> getAppVersInEnv(Application app)
  {
-	 ArrayList<String> ret = new ArrayList();
+	 ArrayList<String> ret = new ArrayList<String>();
   String sql;
   int parentid = app.getParentId();
   if (parentid>0) {
@@ -12974,7 +12979,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		}
 	}
 	
-	private void RecordObjectUpdate(DMObject obj, String desc)
+	protected void RecordObjectUpdate(DMObject obj, String desc)
 	{
 		RecordObjectUpdate(obj,desc,0,false);
 	}
