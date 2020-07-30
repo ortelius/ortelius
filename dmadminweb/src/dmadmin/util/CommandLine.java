@@ -19,6 +19,7 @@
 package dmadmin.util;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -129,6 +130,7 @@ public class CommandLine
 			Map<String, String> env = pb.environment();
 			env.put("TRIFIELD1",m_password);
 			pb.redirectErrorStream(true);
+			pb.directory(new File("/opt/deployhub/engine"));
 			
 			Process p = pb.start(); //Runtime.getRuntime().exec(m_cmd.toArray(args) /*, envl.toArray(envp)*/);
 			
