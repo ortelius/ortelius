@@ -129,6 +129,7 @@ public class CommandLine
 			ProcessBuilder pb = new ProcessBuilder(m_cmd.toArray(args));
 			Map<String, String> env = pb.environment();
 			env.put("TRIFIELD1",m_password);
+			env.put("DMHOME","/opt/deployhub/engine");
 			pb.redirectErrorStream(true);
 			pb.directory(new File("/opt/deployhub/engine"));
 			
