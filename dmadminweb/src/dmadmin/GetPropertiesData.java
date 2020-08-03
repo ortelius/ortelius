@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,7 @@ package dmadmin;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -62,6 +63,11 @@ public class GetPropertiesData
 		int ot = ServletUtils.getIntParameter(request, "objtype");
 		int id = ServletUtils.getIntParameter(request, "id");
 		
+		String deftype = request.getParameter("deftype");
+		
+		if (deftype != null)
+		 id = session.getDefTypeId(deftype);
+		
 		String defonly =request.getParameter("defonly");
 		 
 		ObjectType objtype = ObjectType.fromInt(ot);
@@ -75,19 +81,39 @@ public class GetPropertiesData
 		{
 	  JSONArray arr = new JSONArray();
 	  obj.add("defs", arr);
+	  obj.add("data", new JSONArray());
 	  
 	  // Lookup table of defs
 	  Hashtable<String, DMPropertyDef> defs = new Hashtable<String, DMPropertyDef>();
 	  List<DMPropertyDef> deflist = session.getPropertyDefs(id);
+	  
+	  ArrayList<DMPropertyDef> ordered_deflist = new ArrayList<DMPropertyDef>();
+	  if (deftype.equalsIgnoreCase("ldap"))
+	  {
+	   for(DMPropertyDef d : deflist) 
+	   {
+	    if (d.getName().equalsIgnoreCase("LDAP Server"))
+	     ordered_deflist.add(0,d);
+	    else
+	     ordered_deflist.add(d);
+	   }
+	   deflist = ordered_deflist;
+	  }
+	  
 	  for(DMPropertyDef d : deflist) {
+	   
+	   if ((deftype.equalsIgnoreCase("odbc") || deftype.equalsIgnoreCase("smtpemail") || deftype.equalsIgnoreCase("txtlocal")) && (d.getName().equalsIgnoreCase("username") || d.getName().equalsIgnoreCase("password")))
+	    continue;
+
 	   defs.put(d.getName(), d);
 	   arr.add(d);
 	  }		 
 		}
 		else
 		{
-		 ProviderObject po = session.getProviderObject(objtype, id, false);
+		 ProviderObject po = session.getProviderObject(objtype, id, true);
 		 boolean readOnly = !po.isUpdatable();
+		 deftype = po.getDef().getName();
 		
 	 	obj.add("readOnly", readOnly);
 	
@@ -98,6 +124,9 @@ public class GetPropertiesData
  		Hashtable<String, DMPropertyDef> defs = new Hashtable<String, DMPropertyDef>();
  		List<DMPropertyDef> deflist = po.getPropertyDefs();
  		for(DMPropertyDef d : deflist) {
+    if ((deftype.equalsIgnoreCase("odbc") || deftype.equalsIgnoreCase("smtpemail") || deftype.equalsIgnoreCase("txtlocal")) && (d.getName().equalsIgnoreCase("username") || d.getName().equalsIgnoreCase("password")))
+     continue;
+    
   			defs.put(d.getName(), d);
  			arr.add(d);
  		}

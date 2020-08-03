@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -22,10 +22,6 @@ package dmadmin.model;
 import java.util.Hashtable;
 //import java.util.Map;
 
-
-
-
-
 import dmadmin.DMSession;
 import dmadmin.PropertyDataSet;
 import dmadmin.SummaryField;
@@ -44,7 +40,7 @@ public class TaskApprove
 	private String m_text;
 	private Domain m_approvalDomain;
 	private CommandLine m_cmd;
-	
+ String noengine_output = null;
 	
 	public TaskApprove() {
 	}
@@ -74,20 +70,43 @@ public class TaskApprove
 			return false;
 		}
 		//return m_app.approve(m_approvalDomain, m_approved, m_text);
-		
+  
+  if (getPreAction() == null && getPostAction() == null && getSuccessTemplate() == null && getFailureTemplate() == null)
+  {
+   boolean res = m_session.approveApplication(getApplication(), getApprovalDomain(), m_approved, m_text);
+   
+   if (res)
+   {
+    if (m_approved)
+     noengine_output = "Application has been approved for " + getApprovalDomain().getName();
+    else
+     noengine_output = "Application has been rejected for " + getApprovalDomain().getName();
+   } 
+   else
+    noengine_output = "Application could not be Approved/Rejected for " + getApprovalDomain().getName();
+   
+   return res;
+  }  
+  
 		Domain domain = getDomain();
 		Engine engine = (domain != null) ? domain.findNearestEngine() : null;
 		if(engine == null) {
 			System.err.println("Engine was null");
 			return false;
 		}
+	
 		m_cmd = engine.doApprove(this, m_app, m_approved, m_aps);
-		return (m_cmd.run(true, m_text + "\n", true) == 0);
+		return (m_cmd.runWithTrilogy(true, m_text + "\n") == 0);
 	}
 
  @Override
  public IJSONSerializable getSummaryJSON() {
   PropertyDataSet ds = new PropertyDataSet();
+  Domain dom = getDomain();
+  if (dom == null)
+    ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", "");
+  else
+   ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", dom.getFullDomain());
   ds.addProperty(SummaryField.NAME, "Name", getName());
   addCreatorModifier(ds);
   ds.addProperty(SummaryField.PRE_ACTION, "Pre-action", ((getPreAction() != null) ? getPreAction().getLinkJSON() : null));
@@ -101,7 +120,10 @@ public class TaskApprove
  }
  
 	public String getOutput() {
-		return m_cmd.getOutput();
+  if (noengine_output != null)
+   return noengine_output;
+  else
+		 return m_cmd.getOutput();
 	}
 	
 	public boolean updateTask(Hashtable<String, String> changes) {

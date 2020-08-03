@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -35,7 +35,8 @@ import dmadmin.model.Action;
  */
 public class GetActionLayout extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+ DMSession so = null;
+ HttpSession session = null;     
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -56,8 +57,11 @@ public class GetActionLayout extends HttpServlet {
 		
 		PrintWriter out = response.getWriter();
 		
-		HttpSession session = request.getSession();
-		DMSession so = (DMSession)session.getAttribute("session");
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
+  
 		Action action = so.getAction(Integer.parseInt(actionid), false);
 		boolean readonly = !(action.isUpdatable());
 		if (action.getParentId()>0) readonly=true;	// archived actions are always readonly
@@ -118,6 +122,7 @@ public class GetActionLayout extends HttpServlet {
 		out.println("\"readonly\": " + readonly);
 		out.println("}");
 		System.out.println("MaxWinID="+so.getMaxWindowID(Integer.parseInt(actionid)));
+  }
     }
     
     private void processExport(HttpServletRequest request, HttpServletResponse response,boolean convert) throws ServletException, IOException {
@@ -132,8 +137,11 @@ public class GetActionLayout extends HttpServlet {
 		
 		PrintWriter out = response.getWriter();
 		
-		HttpSession session = request.getSession();
-		DMSession so = (DMSession)session.getAttribute("session");
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
+  
 		int id = Integer.parseInt(actionid);
 		Action action = so.getAction(id, false);
 		
@@ -152,6 +160,7 @@ public class GetActionLayout extends HttpServlet {
 	    	so.ExportFunction(id,out);
     	}
     }
+   }
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)

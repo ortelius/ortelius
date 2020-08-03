@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import dmadmin.json.IJSONSerializable;
 import dmadmin.json.JSONArray;
-import dmadmin.model.Credential;
+import dmadmin.model.DMObject;
 
 /**
  * Servlet implementation class GetCredentials
@@ -50,10 +50,10 @@ public class GetCredentials
 			HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
 	{
-		List<Credential> creds = session.getCredentials();
+		List<DMObject> creds = session.getCredentials();
 		
 		JSONArray ret = new JSONArray();
-		for(Credential c : creds) {
+		for(DMObject c : creds) {
 		 
 			ret.add(c.getLinkJSON());
 		}

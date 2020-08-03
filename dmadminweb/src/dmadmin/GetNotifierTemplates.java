@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -36,7 +36,8 @@ import dmadmin.model.NotifyTemplate;
  */
 public class GetNotifierTemplates extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+ DMSession so = null;
+ HttpSession session = null;      
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -52,8 +53,12 @@ public class GetNotifierTemplates extends HttpServlet {
 		response.setContentType("application/json");
 		Integer notifierid = ServletUtils.getIntParameter(request,"notifierid"); 
 		PrintWriter out = response.getWriter();
-		HttpSession session = request.getSession();
-		DMSession so = (DMSession)session.getAttribute("session");
+
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
+  
 		Notify notify = so.getNotify(notifierid,false);
 		List<NotifyTemplate> t = so.getTemplates(notify);
 		
@@ -67,6 +72,7 @@ public class GetNotifierTemplates extends HttpServlet {
 			subv=true;
 		}
 		out.println("]");
+  }
 	}
 
 	/**

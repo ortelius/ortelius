@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package dmadmin;
+
+import java.io.UnsupportedEncodingException;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -50,7 +52,19 @@ public class ServletUtils
 		Cookie[] cookies = request.getCookies();
 		if (cookies != null) {
 			for(int i=0; i<cookies.length; i++) {
-				if (CookieName.equals(cookies[i].getName())) return(cookies[i].getValue());
+				if (CookieName.equals(cookies[i].getName()))
+				{
+				 String val = cookies[i].getValue();
+				 try
+     {
+      val = java.net.URLDecoder.decode(val, "UTF-8");
+     }
+     catch (UnsupportedEncodingException e)
+     {
+      e.printStackTrace();
+     }
+				 return(val);
+				}
 			}
 		}
 		return null;

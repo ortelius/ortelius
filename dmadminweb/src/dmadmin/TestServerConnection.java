@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -61,7 +61,7 @@ public class TestServerConnection extends HttpServletBase
 		}
 		System.out.println("testing server "+server.getId());
 		m_cmd = engine.doTestServer(server);
-		m_cmd.run(true, "", true);
+		m_cmd.runWithTrilogy(true, "");
 		JSONObject ret = new JSONObject();
 		ret.add("success",true);
 		out.println(ret.getJSON());

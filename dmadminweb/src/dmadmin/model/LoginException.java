@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -27,6 +27,7 @@ public class LoginException	extends Exception
 		LOGIN_USER_LOCKED,
 		LOGIN_CHANGE_PASSWORD,
 		LOGIN_BAD_PASSWORD,
+  LOGIN_BAD_USER,
 		LOGIN_DATABASE_FAILURE,
 		LDAP_ERROR
 	};

@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -31,34 +31,23 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 // import javax.servlet.http.HttpSession;
 
-
-
-
-
-
-
-
-
-
-
-
-
 import dmadmin.json.JSONArray;
 import dmadmin.json.JSONObject;
 import dmadmin.model.Application;
 import dmadmin.model.Component;
 import dmadmin.model.DMAttribute;
+import dmadmin.model.DMObject;
 import dmadmin.model.Deployment;
 import dmadmin.model.Domain;
 import dmadmin.model.Environment;
 import dmadmin.model.Task;
 import dmadmin.model.Task.TaskType;
 import dmadmin.model.TaskApprove;
-import dmadmin.model.TaskParameter;
-import dmadmin.model.TaskRemove;
 import dmadmin.model.TaskCreateVersion;
 import dmadmin.model.TaskDeploy;
 import dmadmin.model.TaskMove;
+import dmadmin.model.TaskParameter;
+import dmadmin.model.TaskRemove;
 import dmadmin.model.TaskRequest;
 import dmadmin.model.TaskUserDefined;
 
@@ -147,8 +136,6 @@ extends HttpServletBase
 		}
 
 		int tid = ServletUtils.getIntParameter(request,"tid");
-		String pstr = request.getParameter("pid").replaceAll("-.*$", "");
-		int pid = Integer.parseInt(pstr);
 		String otype = request.getParameter("otid");
 		String f = request.getParameter("f");
 		Task t = session.getTask(tid,true);
@@ -159,7 +146,7 @@ extends HttpServletBase
 		else
 			otype = "";
 		
-		System.out.println("in RunTask - tt="+tt+" tid="+tid+" id="+id+" f="+f+" pid="+pid + " otype=" + otype);
+		System.out.println("in RunTask - tt="+tt+" tid="+tid+" id="+id+" f="+f+" otype=" + otype);
 
 		if (f.equalsIgnoreCase("def") || f.equalsIgnoreCase("def2"))
 		{
@@ -188,14 +175,73 @@ extends HttpServletBase
 		{
 			JSONObject obj = new JSONObject();
 			obj.add("tasktype", tt.toString());
+	  ObjectType ot = ObjectType.fromTypeString(otype);
+	  
+	  DMObject dmobj = session.getObject(ot, id);
+	  
+	  int pid = dmobj.getDomain().getId();
 			Domain dom = session.getDomain(pid);
 			String domain_name = "";
 
 			if (dom != null) {
-				domain_name = dom.getParentDomain();
+			 if (dom.getParentDomain() == null)
+			  domain_name = dom.getName();
+			 else
+				 domain_name = dom.getParentDomain();
 			}
 
-			if (tt == TaskType.DEPLOY && otype != null && otype.equalsIgnoreCase("do")) {
+   if (tt == TaskType.DEPLOY && otype != null && (otype.equalsIgnoreCase("ap") || otype.equalsIgnoreCase("av"))) {
+    Application app = session.getApplication(id, false);
+    Domain mydomain = app.getDomain();
+    List<Environment> envs = session.getEnvironmentsInDomain(mydomain);
+    
+    if (envs.isEmpty())
+    {
+     mydomain = app.getDomain().getDomain();  // Get parent domain since environment my higher in dom structure
+     if (mydomain != null)
+        envs = session.getEnvironmentsInDomain(mydomain);
+    }
+    JSONArray arr3 = new JSONArray();
+    for (Environment c: envs) {
+     JSONObject cobj = new JSONObject();
+     cobj.add("id", c.getId());
+     cobj.add("name", c.getName());
+     arr3.add(cobj);
+    }
+    obj.add("Environments", arr3);
+    obj.add("EnvironmentCount", envs.size());
+    if (dom!=null) System.out.println("mydomain.id="+mydomain.getId()+" dom.id="+dom.getId());
+    else System.out.println("dom is null");
+    List<Application> applications = session.getDeployableApplicationsInDomain(mydomain, dom, true, false);
+    JSONArray arr1 = new JSONArray();
+    for(Application c: applications) {
+      JSONObject cobj = new JSONObject();
+      cobj.add("id", c.getId());
+      cobj.add("name", c.getName());
+      cobj.add("isrelease", c.getIsRelease());
+      cobj.add("summary",c.getSummary());
+      List <Application> compvers = c.getVersions();
+      JSONArray arr2 = new JSONArray();
+      if (compvers != null) {
+       for (Application cv: compvers) {
+        JSONObject vobj = new JSONObject();
+        vobj.add("id",cv.getId());
+        vobj.add("name",cv.getName());
+        vobj.add("isrelease", c.getIsRelease());
+        vobj.add("summary",cv.getSummary());
+        arr2.add(vobj);
+       }
+       cobj.add("vercount",compvers.size());
+      } else {
+       cobj.add("vercount",0);
+      }
+      cobj.add("versions",arr2);
+      arr1.add(cobj);
+    }
+    obj.add("Applications", arr1);
+    obj.add("ApplicationCount", applications.size());
+   }
+   else	if (tt == TaskType.DEPLOY && otype != null && otype.equalsIgnoreCase("do")) {
 				Domain mydomain = session.getDomain(id);
 				List<Environment> envs = session.getEnvironmentsInDomain(mydomain);
 				JSONArray arr3 = new JSONArray();

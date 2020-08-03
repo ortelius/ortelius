@@ -1,5 +1,6 @@
 /*
- *  DeployHub is an Agile Application Release Automation Solution
+ *
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -70,12 +71,12 @@ function dtCreateTree(nodename,currentdomain)
               // The `domain` node 
               "Domain" : {
                   "icon" : {
-                      "image" : "css/images/domain_16x.png"
+                      "image" : "css/images/domains_sm.png"
                   }
               },
               "Lifecycle" : {
                   "icon" : {
-                      "image" : "css/images/lifecycle_16x.png"
+                      "image" : "css/images/lifecycles_sm.png"
                   }
               }
           }

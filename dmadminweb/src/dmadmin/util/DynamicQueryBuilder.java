@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -46,6 +46,7 @@ public class DynamicQueryBuilder
 	public DynamicQueryBuilder(Connection conn, String baseSql)
 	{
 		m_conn = conn;
+		
 		if(countParams(baseSql) != 0) {
 			throw new RuntimeException("Base SQL Fragmnent must not contain params");
 		}
@@ -165,6 +166,11 @@ public class DynamicQueryBuilder
 		return m_sql.toString();
 	}
 	
+ public ArrayList<Object> getQueryParams()
+ {
+  return (ArrayList<Object>) m_params;
+ }
+ 
 	public int getUpdateCount()
 		throws SQLException
 	{

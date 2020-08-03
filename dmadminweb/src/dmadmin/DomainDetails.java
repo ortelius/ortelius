@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -57,22 +57,25 @@ public class DomainDetails extends HttpServletBase {
 			HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
 	{
+     PrintWriter out = response.getWriter();
     	int domainid = ServletUtils.getIntParameter(request, "domainid");
     	if (!isPost) {
     		// GET
-    		Domain domain = session.getDomain(domainid);
+
     		TaskList tasks = session.getTasksInDomain(domainid);
-    		List<TreeObject> subdomains = session.getDomains(domainid);
+
     		String f = request.getParameter("f");
     		if (f == null) {
-	    		request.setAttribute("domain", domain);
-	    		request.setAttribute("tasklist",tasks);
-	    		request.setAttribute("subdomains",subdomains);
-	    		request.setAttribute("sdc",subdomains.size());
-	            request.getRequestDispatcher("/WEB-INF/domaindetails.jsp").forward(request, response);
+       JSONArray res = new JSONArray();
+       for (int i=0;i<tasks.size();i++) {
+        JSONObject obj = new JSONObject();
+        obj.add("name", tasks.get(i).getName());
+        obj.add("id", tasks.get(i).getOtid().toString());
+        res.add(obj);
+       }
+       out.print(res.getJSON());
     		} else if (f.equalsIgnoreCase("gp")) {
     			// get parameters for a task
-    			PrintWriter out = response.getWriter();
     			int tid = ServletUtils.getIntParameter(request,"tid");
     			List<TaskParameter> tparams = session.getTaskParameters(tid);
     			JSONArray res = new JSONArray();
@@ -85,18 +88,34 @@ public class DomainDetails extends HttpServletBase {
     				jo.add("arr",tparams.get(i).getArr());
     				res.add(jo);
     			}
-    			out.print(res.toString());
+    			out.print(res.getJSON());
     		} 
     	} else {
     		// POST
     		response.setContentType("application/json;charset=UTF-8");
-    		PrintWriter out = response.getWriter();
     		String f=request.getParameter("f");
     		String tasktype=request.getParameter("tasktype");
     		if (f.equalsIgnoreCase("at")) {
     			// Add a task
     			int id = session.getID("task");
-    			String taskname=tasktype+"-"+Integer.toString(id);
+    			
+    			String taskname = tasktype;
+    	  
+    			if (tasktype.equalsIgnoreCase("Approve"))
+     			 taskname = "Approve Verision for move to next pipeline stage";
+    			else if (tasktype.equalsIgnoreCase("Move"))
+    			  taskname = "Move Version to the next or previous stage in the pipeline";
+    			else if (tasktype.equalsIgnoreCase("Remove"))
+   			   taskname = "Delete all Versions from all Endpoints in an Environment";
+    			else if (tasktype.equalsIgnoreCase("CreateVersion"))
+    			  taskname = "Create new Version";
+    			else if (tasktype.equalsIgnoreCase("Deploy"))
+    			  taskname = "Deploy Version to an Environment";
+    			else if  (tasktype.equalsIgnoreCase("Request"))
+    			 taskname = "Request Calendar entry for deployment to an Environment";
+    			else if  (tasktype.equalsIgnoreCase("RunAction"))
+    				taskname = "Mannually trigger Action to be executed";
+    			
     			session.CreateNewTask(taskname,tasktype,domainid,id);
     			out.print("{\"name\" : \"" + taskname + "\", \"id\" : \"" + id + "\"}");
     		}

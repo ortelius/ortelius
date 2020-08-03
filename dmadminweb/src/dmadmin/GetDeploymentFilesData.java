@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -30,44 +30,44 @@ import javax.servlet.http.HttpServletResponse;
 import dmadmin.json.JSONObject;
 import dmadmin.model.Deployment;
 
+
 /**
  * Servlet implementation class GetDeploymentFilesData
  */
-public class GetDeploymentFilesData extends HttpServletBase
+public class GetDeploymentFilesData
+	extends HttpServletBase
 {
- private static final long serialVersionUID = 1L;
-
- /**
-  * @see HttpServlet#HttpServlet()
-  */
- public GetDeploymentFilesData()
- {
-  super();
- }
-
- @Override
- public void handleRequest(DMSession session, boolean isPost, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
- {
-  response.setContentType("application/json");
-  PrintWriter out = response.getWriter();
-  int depid = ServletUtils.getIntParameter(request, "id");
-  String f = request.getParameter("f");
-  Deployment dep = session.getDeployment(depid, true);
-  JSONObject obj = new JSONObject();
-  obj.add("readOnly", true);
-  obj.add("complete", dep.isComplete());
-  if (f.equalsIgnoreCase("f"))
-  {
-   obj.add("data", dep.getFilesJSON());
-  }
-  else if (f.equalsIgnoreCase("s"))
-  {
-   obj.add("data", dep.getScriptsJSON());
-  }
-
-  String ret = obj.toString();
-
-  out.println(ret);
-  System.out.println(ret);
- }
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public GetDeploymentFilesData() {
+        super();
+    }
+    
+    @Override
+    public void handleRequest(DMSession session, boolean isPost,
+   			HttpServletRequest request, HttpServletResponse response)
+   		throws ServletException, IOException
+   	{
+    	response.setContentType("application/json");
+		PrintWriter out = response.getWriter();
+		int depid = ServletUtils.getIntParameter(request, "id");
+		String f = request.getParameter("f");
+		Deployment dep = session.getDeployment(depid, true);
+		JSONObject obj = new JSONObject();
+		obj.add("readOnly", true);
+		obj.add("complete", dep.isComplete());
+		if (f.equalsIgnoreCase("f")) {
+			obj.add("data", dep.getFilesJSON());
+		} else if (f.equalsIgnoreCase("s")) {
+			obj.add("data", dep.getScriptsJSON());
+		} 
+		
+		String ret = obj.toString();
+		
+		out.println(ret);
+		System.out.println(ret);	
+   	}
 }

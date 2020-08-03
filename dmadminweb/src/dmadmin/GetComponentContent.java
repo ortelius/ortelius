@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -35,7 +35,9 @@ import dmadmin.model.Component;
  */
 public class GetComponentContent extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+ DMSession so = null;
+ HttpSession session = null;
+      
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -51,8 +53,12 @@ public class GetComponentContent extends HttpServlet {
 		response.setContentType("application/json");
 		Integer compid = ServletUtils.getIntParameter(request,"compid"); 
 		PrintWriter out = response.getWriter();
-		HttpSession session = request.getSession();
-		DMSession so = (DMSession)session.getAttribute("session");
+		
+  try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
+  
 		Component comp = so.getComponent(compid,false);
 
 		out.print("[");
@@ -73,6 +79,7 @@ public class GetComponentContent extends HttpServlet {
 			}
 		}
 		out.println("]");
+  }
 	}
 
 	/**

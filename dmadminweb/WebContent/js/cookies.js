@@ -1,15 +1,29 @@
 function SetCookie(name, value) {
+ value = decodeURIComponent(value);
 	console.log("SetCookie("+name+","+value+")");
-	var today = new Date();
-	today.setTime( today.getTime() );
-	expires = 86400000;	// 1 day in millisecs
-	var expires_date = new Date(today.getTime()+(expires));
-	// document.cookie = name + "=" + escape(value) + "; expires="+expires_date.toGMTString()+"; path=/";
-	document.cookie = name + "=" + escape(value);
-	console.log(name + "=" + escape(value) + "; expires="+expires_date.toGMTString()+"; path=/");
+ var d = $(location).attr('hostname');
+	$.cookie(name,value, {path: '/', domain: d});
+}
+
+function DeleteCookies() {
+ DeleteCookie("admin");
+ DeleteCookie("p1");
+ DeleteCookie("p2");
+ DeleteCookie("loggedin");
+ DeleteCookie("logindata");
+ window.location = "/dmadminweb/Home";
+}
+
+function DeleteCookie(name) {
+ console.log("DeleteCookie("+name+")");
+ var d = $(location).attr('hostname');
+ $.removeCookie(name,{path: '/', domain: d});
+ $.removeCookie(name,{path: '/dmadminweb', domain: d});
 }
 
 function GetCookie(check_name) {
+ console.log("GetCookie("+check_name+")");
+ console.log(document.cookie);
 	// first we'll split this cookie up into name/value pairs
 	// note: document.cookie only returns name=value, not the other components
 	var a_all_cookies = document.cookie.split( ';' );
@@ -21,7 +35,6 @@ function GetCookie(check_name) {
 	for ( i = 0; i < a_all_cookies.length; i++ )
 	{
 		// now we'll split apart each name=value pair
-		console.log("a_all_cookies["+i+"]="+a_all_cookies[i]);
 		e=a_all_cookies[i].indexOf("=");
 		a_temp_cookie = a_all_cookies[i].substr(0,e);
 		cookie_name = a_all_cookies[i].substr(0,e).replace(/^\s+|\s+$/g, '');
@@ -33,7 +46,6 @@ function GetCookie(check_name) {
 			// we need to handle case where cookie has no value but exists (no = sign, that is):
 			if ( a_temp_cookie.length > 1 )
 			{
-				console.log("cookie_value stripping quotes");
 				cookie_value = unescape( a_all_cookies[i].substr(e+1).replace(/^\s+|\s+$/g, '') );
 				if (cookie_value.charAt(0)=='"') {
 					console.log("cookie_value = "+cookie_value);
@@ -42,6 +54,8 @@ function GetCookie(check_name) {
 				}
 			}
 			// note that in cases where cookie is initialized but no value, null is returned
+			cookie_value = encodeURIComponent(cookie_value);
+			console.log("GetCookieRet("+check_name+","+cookie_value+")");
 			return cookie_value;
 			break;
 		}

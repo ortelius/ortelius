@@ -1,5 +1,5 @@
 If WScript.Arguments.Count>0 Then
-	qry = "SELECT * FROM win32_Service WHERE DisplayName='" & WScript.Arguments(0) & "'"
+		qry = "SELECT * FROM win32_Service WHERE DisplayName='" & WScript.Arguments(0) & "' or Name='" & WScript.Arguments(0) & "'"
 Else
 	qry = "SELECT * FROM Win32_Service"
 End If

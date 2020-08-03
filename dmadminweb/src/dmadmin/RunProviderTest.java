@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -26,13 +26,11 @@ import java.io.PrintWriter;
 //import java.util.ArrayList;
 //import java.util.List;
 
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 // import javax.servlet.http.HttpSession;
-
 
 import dmadmin.model.Domain;
 import dmadmin.model.Engine;
@@ -69,7 +67,7 @@ public class RunProviderTest
 		String rcpt = request.getParameter("rcpt");
 		ObjectType objtype = ObjectType.fromInt(ot);
 
-		ProviderObject po = session.getProviderObject(objtype, id, false);
+		ProviderObject po = session.getProviderObject(objtype, id, true);
 		if (po.getObjectType() == ObjectType.NOTIFY && rcpt != null) {
 			((Notify)po).setTestRecipient(rcpt);
 		}
@@ -83,8 +81,10 @@ public class RunProviderTest
 			return;
 		}
 		
-		CommandLine cmd = engine.doProviderTest(po);
-		cmd.run(true, null, true);
-		out.println(cmd.getOutput());
-   	}
+
+		
+	 CommandLine cmd = engine.doProviderTest(po);
+	 cmd.runWithTrilogy(true, null);
+	 out.println(cmd.getOutput());
+ }
 }

@@ -1,0 +1,14 @@
+[Unit]
+Description=DeployHub Engine Listener
+After=syslog.target network.target remote-fs.target nss-lookup.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=forking
+WorkingDirectory=/opt/deployhub/engine
+Environment="LD_LIBRARY_PATH=/opt/deployhub/engine/bin:/opt/deployhub/engine/lib"
+ExecStart=/opt/deployhub/engine/trilogyd
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target

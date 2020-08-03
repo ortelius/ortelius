@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -64,7 +64,7 @@ public class GetServerLayout extends HttpServletBase {
 		for(Server s: servers) {
 			JSONObject sobj = new JSONObject();
 			sobj.add("nodeid", s.getId());
-			sobj.add("name", s.getName());
+			sobj.add("name", s.getDomain().getFullDomain() + "." + s.getName());
 			sobj.add("xpos", s.getXpos());
 			sobj.add("ypos", s.getYpos());
 			sobj.add("typeid", s.getTypeName());

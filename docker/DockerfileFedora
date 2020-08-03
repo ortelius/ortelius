@@ -1,5 +1,9 @@
-FROM registry.fedoraproject.org/fedora:28
-MAINTAINER DeployHub
+FROM fedora:28
+MAINTAINER ortelius.io
+ARG GIT_TAG
+ARG COMMIT_SHA
+ARG REPO_NAME
+ARG BLDDATE
 
 EXPOSE 8080
 
@@ -7,13 +11,15 @@ RUN useradd -ms /bin/bash omreleng;
 
 RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm; \
     yum -y update; \
-    yum -y install git sudo unzip which iputils compat-openssl10 openssh-clients libnsl.i686 python-winrm python3-PyYAML python3-winrm python-requests-kerberos krb5-devel krb5-libs krb5-workstation ansible; \
-    pip install pywinrm[credssp]; \
-    pip3 install pywinrm[credssp] qtoml; 
+    yum -y install dos2unix jq git sudo unzip which iputils compat-openssl10 openssh-clients libnsl.i686 samba-client python-winrm python3-PyYAML python3-winrm python-requests-kerberos krb5-devel krb5-libs krb5-workstation ansible; \
+    pip install requests-credssp pywinrm[credssp]; \
+    pip3 install requests-credssp pywinrm[credssp] deployhub; \
+    curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.py; \
+    curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.ps1; 
 
-RUN curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"; \
-    unzip awscli-bundle.zip; \
-    ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws; 
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
+    unzip awscliv2.zip; \
+    ./aws/install -i /usr/local/aws -b /usr/local/bin/aws; 
 
 RUN curl -sL -o /tmp/gcloud_install.sh https://sdk.cloud.google.com; \
     chmod 777 /tmp/gcloud_install.sh; \
@@ -22,28 +28,59 @@ RUN curl -sL -o /tmp/gcloud_install.sh https://sdk.cloud.google.com; \
 
 RUN curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get; \
     chmod 777 /tmp/helm_install.sh; \
-    /tmp/helm_install.sh; 
+    /tmp/helm_install.sh; \
+    mv /usr/local/bin/helm /usr/local/bin/helm2
 
-RUN BLD=$(date|md5);curl -sL -o /tmp/deployhub-engine${BLD}.rpm https://github.com/ortelius/ortelius/blob/master/rpms/deployhub-engine.rpm?raw=true; \
-    curl -sL -o /tmp/deployhub-webadmin${BLD}.rpm https://github.com/ortelius/ortelius/blob/master/rpms/deployhub-webadmin.rpm?raw=true; \
-    yum -y install /tmp/deployhub-engine${BLD}.rpm /tmp/deployhub-webadmin${BLD}.rpm; \
+RUN curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; \
+    chmod 777 /tmp/get_helm.sh; \
+    /tmp/get_helm.sh
+
+RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_0.12.17_linux_amd64.zip -o /tmp/terraform_0.12.17_linux_amd64.zip; \
+    cd /tmp; \
+    unzip -q terraform_0.12.17_linux_amd64.zip; \
+    chmod +x terraform; \
+    mv terraform /usr/local/bin/
+    
+RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc;
+RUN echo -e "\
+[azure-cli] \n\
+name=Azure CLI \n\
+baseurl=https://packages.microsoft.com/yumrepos/azure-cli \n\
+enabled=1 \n\
+gpgcheck=1 \n\
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc \
+" > /etc/yum.repos.d/azure-cli.repo
+RUN yum -y install azure-cli
+
+COPY rpms/deployhub-engine.rpm /tmp/
+COPY rpms/deployhub-webadmin.rpm /tmp/
+
+RUN yum -y install /tmp/deployhub-engine.rpm /tmp/deployhub-webadmin.rpm; \
     yum -y clean all; \
     rm -rf /var/cache/yum; \
+    mkdir -p /winshares; \
+    chmod -R 775 /winshares; \
+    chmod -R 777  /var/lib/samba/private; \
+    chmod -R 777  /var/lib/samba/lock; \   
+    chown -R omreleng:omreleng /winshares; \
     mkdir -p /home/omreleng/.ssh; \
     mkdir -p /root/.ssh; \
     chown -R omreleng:omreleng /home/omreleng; \
-    echo 'omreleng       ALL=(ALL)       NOPASSWD: ALL' >> /etc/sudoers
+    echo 'omreleng       ALL=(ALL)       NOPASSWD: ALL' >> /etc/sudoers; 
 
 USER omreleng
-COPY entrypoint.sh /tmp
+COPY docker/entrypoint.sh /tmp/
+ENV PATH "${PATH}:/usr/local/google-cloud-sdk/bin"
 ENTRYPOINT /tmp/entrypoint.sh
 
-LABEL name="ortelius/ortelius" \
-      vendor="Ortelius" \
-      version="8.0" \
-      release="1" \
+LABEL name="ortelius" \
+      vendor="Ortelius.io" \
+      variant="$GIT_TAG" \
+      version="$COMMIT_SHA" \
+      gitrepo="$REPO_NAME" \
+      blddate="$BLDDATE" \
       summary="Ortelius" \
-      description="Ortelius will perform agentless application releases" \
-      url="https://ortelius.io/" \
-      run='docker run -v $PWD/data:/var/lib/pgsql/data:Z -p 7171:8080 -d --hostname docker_dh' \
+      description="Microservice mapping and configuration management" \
+      url="https://wwww.ortelius.io/" \
+      run='docker run -v $PWD/data:/var/lib/pgsql/data:Z -v $PWD/logs:/opt/deployhub/logs:Z -p 7171:8080 -d --hostname docker_dh' \
       stop='docker stop'

@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -20,8 +20,9 @@ package dmadmin.model;
 
 import java.util.List;
 
-import dmadmin.DMSession;
 import dmadmin.ACDChangeSet;
+import dmadmin.DMSession;
+import dmadmin.ObjectType;
 import dmadmin.PropertyDataSet;
 import dmadmin.SummaryChangeSet;
 import dmadmin.SummaryField;
@@ -47,6 +48,23 @@ public abstract class ProviderObject
 		if(m_def == null) {
 			m_def = m_session.getProviderDefForProviderObject(this);
 		}
+		
+  if (m_def.getName().equalsIgnoreCase("unconfigured"))
+  {
+   List<ProviderDefinition> deflist = m_session.getProviderDefinitionsOfType(getObjectType());
+   if (deflist != null)
+   {
+    for (int i=0;i < deflist.size(); i++)
+    {
+     if (getObjectType() == ObjectType.DATASOURCE && deflist.get(i).getName().equalsIgnoreCase("github"))
+     {
+      m_def = deflist.get(i);
+      break;
+     } 
+    }
+   }
+  }
+		
 		if(m_def == null) {
 			throw new RuntimeException("Unable to retrieve provider definition for " + getObjectType() + " " + getId());
 		}
@@ -59,7 +77,8 @@ public abstract class ProviderObject
 	}
 
 	public List<DMPropertyDef> getPropertyDefs() {
-		return m_session.getPropertyDefsForProviderDef(getDef());
+	 ProviderDefinition def = getDef();
+		return m_session.getPropertyDefsForProviderDef(def);
 	}
 	
 	public Credential getCredential()  { return m_cred; }
@@ -69,6 +88,11 @@ public abstract class ProviderObject
 	public IJSONSerializable getSummaryJSON() {
 		System.out.println("Getting Summary JSON for id "+m_id);
 		PropertyDataSet ds = new PropertyDataSet();
+  Domain dom = getDomain();
+  if (dom == null)
+    ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", "");
+  else
+   ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", dom.getFullDomain());
 		ds.addProperty(SummaryField.NAME, "Name", getName());
 		ds.addProperty(SummaryField.PROVIDER_TYPE, "Type", (m_id != -1)?getDef().getLinkJSON() : null);
 		ds.addProperty(SummaryField.OWNER, "Owner", (m_owner != null) ? m_owner.getLinkJSON()
@@ -85,6 +109,10 @@ public abstract class ProviderObject
 	}
 	
 	public boolean updateProperties(ACDChangeSet<DMProperty> changes) {
-		return m_session.updateProviderProperties(this, changes);
+		return m_session.updateProviderProperties(this, changes, false);
 	}
+	
+ public boolean updateProperties(ACDChangeSet<DMProperty> changes, boolean deleteAll) {
+  return m_session.updateProviderProperties(this, changes, deleteAll);
+ }
 }

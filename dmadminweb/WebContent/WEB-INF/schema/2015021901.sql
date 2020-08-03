@@ -9,7 +9,12 @@ basedir		char(1),
 ipaddr		char(16),
 pingtime	integer,
 lasterror	varchar(1024),
-lasttime	integer
+lasttime	integer,
+autoping	char(1),
+automd5		char(1),
+starttime	integer,
+endtime		integer,
+checkinterval	integer
 );
 
 alter table dm_server add uname varchar(256);

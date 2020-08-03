@@ -1,0 +1,1 @@
+delete from dm.dm_type f where f.name in ('Websphere War', 'Websphere Jar') and not f.id in (select b.id from dm.dm_component a, dm.dm_type b where a.comptypeid = b.id union select e.id from dm.dm_server c, dm.dm_type e where c.typeid = e.id );

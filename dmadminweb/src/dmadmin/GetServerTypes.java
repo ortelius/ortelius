@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -50,6 +50,9 @@ public class GetServerTypes
 		
 		JSONArray ret = new JSONArray();
 		for(ServerType t : types) {
+		 if (t.getName().equalsIgnoreCase("AS400") || t.getName().equalsIgnoreCase("Mac"))
+		  continue;
+		 
 			ret.add(t.getLinkJSON());
 		}
 		return ret;

@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -94,9 +94,9 @@ public class Action
 			default:
 			case UNCONFIGURED: 		return "unconfigured";
 			case SCRIPT:    		return "DMScript " + fn + " in repository";
-			case IN_DB:     		return "DMScript " + fn + " in database";
-			case LOCAL_EXTERNAL:  	return fn + " provided by local external script or program";
-			case REMOTE_EXTERNAL:  	return fn + " provided by remote external script or program";
+			case IN_DB:     		return "DMScript in Database";
+			case LOCAL_EXTERNAL:  	return "Local Script";
+			case REMOTE_EXTERNAL:  	return "Endpoint Script";
 			case PLUGIN:    		return fn + " provided by plugin";
 			case GRAPHICAL: 		return "Graphical deployment flow";
 			}
@@ -210,6 +210,11 @@ public class Action
 	public IJSONSerializable getSummaryJSON() {
 		System.out.println("Getting summary data for action "+m_id);
 		PropertyDataSet ds = new PropertyDataSet();
+  Domain dom = getDomain();
+  if (dom == null)
+    ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", "");
+  else
+   ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", dom.getFullDomain());
 		ds.addProperty(SummaryField.NAME, "Name", getName());
 		ds.addProperty(SummaryField.SUMMARY, "Summary", getSummary());
 		if (m_category != null) {

@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -27,6 +27,7 @@ import dmadmin.SummaryChangeSet;
 import dmadmin.SummaryField;
 import dmadmin.json.BooleanField;
 import dmadmin.json.IJSONSerializable;
+import dmadmin.json.LinkField;
 
 public class Component
 	extends DMObject
@@ -54,8 +55,8 @@ public class Component
 	private String m_parentlabel;
 	private Category m_category;
 	private Datasource m_datasource;
-	private BuildJob m_buildjob;
 	private int m_lastbuildnumber;
+	private ComponentItemKind m_kind;
 	
 	public Component() {
 	}
@@ -132,10 +133,7 @@ public class Component
 	
 	public Datasource getDatasource()  { return m_datasource; }
 	public void setDatasource(Datasource datasource)  { m_datasource = datasource; }
-	
-	public BuildJob getBuildJob()  { return m_buildjob; }
-	public void setBuildJob(BuildJob buildjob)  { m_buildjob = buildjob; }
-	
+		
 	public int getLastBuildNumber()  { return m_lastbuildnumber; }
 	public void setLastBuildNumber(int buildnumber)  { m_lastbuildnumber = buildnumber; }
 	
@@ -178,20 +176,37 @@ public class Component
 			+ ((m_rollback != ComponentFilter.OFF) ? "-down" : "");
 	}
 
+ public String getKindAsString() {
+   if (m_kind == ComponentItemKind.DOCKER)
+    return "Container";
+   else if (m_kind == ComponentItemKind.DATABASE)
+    return "Database";
+   else
+    return "Application File";
+ }   
+	
 	@Override
 	public IJSONSerializable getSummaryJSON() {
 		PropertyDataSet ds = new PropertyDataSet();
+  Domain dom = getDomain();
+  if (dom == null)
+    ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", "");
+  else
+   ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", dom.getFullDomain());
 		ds.addProperty(SummaryField.NAME, "Name", getName());
 		ds.addProperty(SummaryField.OWNER, "Owner", (m_owner != null) ? m_owner.getLinkJSON()
 				: ((m_ownerGroup != null) ? m_ownerGroup.getLinkJSON() : null));
 		ds.addProperty(SummaryField.SUMMARY, "Summary", getSummary());
 		addCreatorModifier(ds);
-		ds.addProperty(SummaryField.COMPTYPE, "Component Type", getComptype());
-		ds.addProperty(SummaryField.COMP_BUILDJOB, "Build Job",
-				(m_buildjob != null)?m_buildjob.getLinkJSON():null);
-		if (m_buildjob != null) {
-			ds.addProperty(SummaryField.COMP_LASTBUILDNUMBER, "Last Build Number",m_lastbuildnumber);
-		}
+  ds.addProperty(SummaryField.COMP_KIND, "Kind", new LinkField(ObjectType.COMP_KIND,
+    (m_kind != null) ? m_kind.value() : 0, getKindAsString()));
+		ds.addProperty(SummaryField.COMPTYPE, "Endpoint Type", getComptype());
+		ds.addProperty(SummaryField.COMP_DATASOURCE, "Change Request Data Source",
+				(m_datasource != null)?m_datasource.getLinkJSON():null);
+		
+  ds.addProperty(SummaryField.XPOS, "XPos", getXpos());
+  ds.addProperty(SummaryField.YPOS, "YPos", getYpos());
+  
 		ds.addProperty(SummaryField.ACTION_CATEGORY, "Category",((m_category != null) ? m_category : Category.NO_CATEGORY).getLinkJSON());
 		ds.addProperty(SummaryField.FILTER_ITEMS, "Filter Level", getFilterItems() ? "Items" : "Components");
 		ds.addProperty(SummaryField.ROLLUP, "Roll Forward", getRollup().toString());
@@ -205,6 +220,14 @@ public class Component
 			(m_postAction != null) ? m_postAction.getLinkJSON() : null);
 		ds.addProperty(SummaryField.CUSTOM_ACTION, "Custom Action",
 			(m_customAction != null) ? m_customAction.getLinkJSON() : null);
+		
+		if ( m_kind == ComponentItemKind.DOCKER || m_kind == ComponentItemKind.FILE)
+		{ 
+   if (m_lastbuildnumber > 0)
+     ds.addProperty(SummaryField.COMP_LASTBUILDNUMBER, "Last Build Number",m_lastbuildnumber);
+   else
+     ds.addProperty(SummaryField.COMP_LASTBUILDNUMBER, "Last Build Number","");
+		} 
 		return ds.getJSON();
 	}
 
@@ -212,4 +235,72 @@ public class Component
 	public boolean updateSummary(SummaryChangeSet changes) {
 		return m_session.updateComponent(this, changes);
 	}
+
+ public boolean updateCompItems(SummaryChangeSet changes)
+ {
+  String kind = "file";
+  int xpos = 100;
+  int ypos = 100;
+  String name = "";
+  
+  for (SummaryField field : changes)
+  {
+   switch (field)
+   {
+    case NAME:
+     name = (String)changes.get(field);
+     break;
+    case DOCKER_BUILDID:
+    case DOCKER_BUILDURL:
+    case DOCKER_CHART:
+    case DOCKER_CHARTVERSION:
+    case DOCKER_CHARTNAMESPACE:
+    case DOCKER_OPERATOR:
+    case DOCKER_BUILDDATE:
+    case DOCKER_REPO:
+    case DOCKER_SHA:
+    case DOCKER_GITCOMMIT:
+    case DOCKER_GITREPO:
+    case DOCKER_GITTAG:
+    case DOCKER_GITURL:
+     kind = "docker";
+     break; 
+    case XPOS:
+     xpos = new Integer((String)changes.get(field)).intValue();
+     break;
+    case YPOS:
+     ypos = new Integer((String)changes.get(field)).intValue();
+     break;     
+    default:
+     break;
+   }
+  } 
+  ComponentItem ci = m_session.getComponentItemByName(this.getId(), name);
+  int itemid = 0;
+  
+  if (ci == null)
+   itemid = m_session.componentItemNewItem(this.getId(),xpos,ypos, kind);
+  else
+   itemid = ci.getId();
+  
+  ci = m_session.getComponentItem(itemid, false);
+  
+  boolean ret = false;
+  if ((ret=m_session.updateComponentItemSummary(ci, changes)) && ci != null)
+  {
+   return m_session.updateComponentItemRelationship(this.getId(), ci.getId(), changes);
+  }
+  
+  return ret;
+ }
+
+ public ComponentItemKind getKind()
+ {
+  return m_kind;
+ }
+
+ public void setKind(ComponentItemKind m_kind)
+ {
+  this.m_kind = m_kind;
+ }
 }

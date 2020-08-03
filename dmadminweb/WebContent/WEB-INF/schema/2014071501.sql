@@ -3004,7 +3004,7 @@ INSERT INTO dm_engineconfig VALUES (1, 'threadlimit', '4');
 -- Data for Name: dm_environment; Type: TABLE DATA; Schema: dm; Owner: postgres
 --
 
-INSERT INTO dm_environment VALUES (1, 'demoenv', 1, NULL, 2, NULL, 'Demo Environment', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'N');
+INSERT INTO dm_environment VALUES (1, 'demoenv', 1, NULL, 2, NULL, 'Demo Environment', NULL, NULL, NULL, NULL, NULL, NULL, NULL , NULL, NULL, 'N');
 
 
 --

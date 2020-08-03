@@ -341,12 +341,6 @@
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
     </Dependency>
     <Dependency>
-        <Name>postgresql-9.2-1004.jdbc4.jar</Name>
-        <Type>5</Type>
-        <ParentBuildTask>Set Classpath</ParentBuildTask>
-        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
-    </Dependency>
-    <Dependency>
         <Name>rt.jar</Name>
         <Type>37</Type>
         <ParentBuildTask>Set Classpath</ParentBuildTask>
@@ -370,6 +364,12 @@
         <ParentBuildTask>Ant Javac</ParentBuildTask>
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
     </Dependency>
+    <Dependency>
+       <Name>dmadminweb/src/dmadmin/pro/*.java</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant Javac</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
     <Dependency>
         <Name>dmadminweb/src/dmadmin/json/*.java</Name>
         <Type>37</Type>
@@ -403,12 +403,6 @@
     <Dependency>
         <Name>dmadminweb/src/com/openmakesoftware/XDR/*.java</Name>
         <Type>5</Type>
-        <ParentBuildTask>Ant Javac</ParentBuildTask>
-        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
-    </Dependency>
-    <Dependency>
-        <Name>dmadminweb/src/dmadmin/EmbeddedJettyServer.java</Name>
-        <Type>41</Type>
         <ParentBuildTask>Ant Javac</ParentBuildTask>
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
     </Dependency>
@@ -469,6 +463,12 @@
     <Dependency>
         <Name>dmadminweb/WebContent/css/images/*.gif</Name>
         <Type>5</Type>
+        <ParentBuildTask>Ant War</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>dmadminweb/WebContent/css/images/*.svg</Name>
+        <Type>37</Type>
         <ParentBuildTask>Ant War</ParentBuildTask>
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
     </Dependency>
@@ -641,7 +641,7 @@
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
     </Dependency>
     <Dependency>
-        <Name>dmadminweb/WebContent/js/om/*.js</Name>
+        <Name>dmadminweb/WebContent/js/ao/*.js</Name>
         <Type>5</Type>
         <ParentBuildTask>Ant War</ParentBuildTask>
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
@@ -839,17 +839,29 @@
         <ParentOptionGroup>Web-Inf</ParentOptionGroup>
     </Dependency>
     <Dependency>
+        <Name>dmadminweb/WebContent/WEB-INF/*.jks</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Ant War</ParentBuildTask>
+        <ParentOptionGroup>Web-Inf</ParentOptionGroup>
+    </Dependency>				
+    <Dependency>
         <Name>dmadminweb/WebContent/WEB-INF/*.xml</Name>
         <Type>5</Type>
         <ParentBuildTask>Ant War</ParentBuildTask>
         <ParentOptionGroup>Web-Inf</ParentOptionGroup>
-    </Dependency>
+    </Dependency>		
     <Dependency>
         <Name>dmadminweb/WebContent/WEB-INF/schema/*.sql</Name>
         <Type>37</Type>
         <ParentBuildTask>Ant War</ParentBuildTask>
         <ParentOptionGroup>Web-Inf</ParentOptionGroup>
     </Dependency>
+    <Dependency>
+        <Name>dmadminweb/WebContent/WEB-INF/schema/*.json</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Ant War</ParentBuildTask>
+        <ParentOptionGroup>Web-Inf</ParentOptionGroup>
+    </Dependency>    
     <Dependency>
         <Name>dmadminweb/WebContent/WEB-INF/*.tld</Name>
         <Type>5</Type>

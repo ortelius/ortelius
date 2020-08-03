@@ -1,5 +1,1 @@
-update dm.dm_component a set domainid = 1 where a.name like 'ansible_%';
-update dm.dm_action a set domainid = 1 where a.name like 'ansible_%';
-select dm.dm_insert_infra();
-update dm.dm_component a set domainid = (select b.id from dm.dm_domain b where b.name = 'Infrastructure') where a.name like 'ansible_%';
-update dm.dm_action a set domainid = (select b.id from dm.dm_domain b where b.name = 'Infrastructure') where a.name like 'ansible_%';
+create or replace function dm.dm_insert_infra() returns void as $$ begin IF NOT EXISTS (SELECT 1 FROM dm.dm_domain WHERE name = 'Infrastructure') THEN insert into dm.dm_domain (id,name,domainid,ownerid,status) (select max(id)+1,'Infrastructure', 1, 1,'N' from dm.dm_domain);END IF;end;$$ LANGUAGE plpgsql;

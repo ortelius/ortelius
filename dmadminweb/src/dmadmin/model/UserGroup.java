@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -102,6 +102,11 @@ public class UserGroup	extends DMObject implements Comparable<Object>
 	@Override
 	public IJSONSerializable getSummaryJSON() {
 		PropertyDataSet ds = new PropertyDataSet();
+  Domain dom = getDomain();
+  if (dom == null)
+    ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", "");
+  else
+   ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", dom.getFullDomain());
 		ds.addProperty(SummaryField.NAME, "Group Name", m_name);
 		ds.addProperty(SummaryField.SUMMARY, "Summary", m_summary);
 		ds.addProperty(SummaryField.GROUP_EMAIL, "Email", m_email);

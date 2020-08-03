@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -30,11 +30,11 @@ import dmadmin.model.Domain;
 import dmadmin.model.Task;
 import dmadmin.model.Task.TaskType;
 import dmadmin.model.TaskApprove;
-import dmadmin.model.TaskRemove;
 import dmadmin.model.TaskCreateVersion;
 import dmadmin.model.TaskDeploy;
 import dmadmin.model.TaskList;
 import dmadmin.model.TaskMove;
+import dmadmin.model.TaskRemove;
 import dmadmin.model.TaskRequest;
 
 /**

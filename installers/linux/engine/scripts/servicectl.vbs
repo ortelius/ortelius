@@ -5,7 +5,7 @@ If WScript.Arguments.Count>2 Then
 	timeout=WScript.Arguments(2)
 End If
 
-qry = "SELECT * FROM Win32_Service WHERE DisplayName='" & service & "'"
+qry = "SELECT * FROM Win32_Service WHERE DisplayName='" & service & "' or Name='" & service & "'"
 Set wmi = GetObject("winmgmts://./root/cimv2")
 
 Sub ExitWithError(et,res)
@@ -43,6 +43,10 @@ End Sub
 
 Sub StartService(s)
 	WScript.Echo "Starting """ & s.DisplayName & """ Service"
+	If s.State = "Running" Then
+		WScript.Echo s.DisplayName & ": Service is already running"
+		WScript.Quit(0)
+	End If
 	StartTime=Timer()
 	res = s.StartService
 	If res = 0 Then
@@ -65,8 +69,8 @@ End Sub
 Sub StopService(s)
 	WScript.Echo "Stopping """ & s.DisplayName & """ Service"
 	If s.State = "Stopped" Then
-		WScript.Echo "Failed to stop """ & s.DisplayName & """ Service: Service is Not Running"
-		WScript.Quit(1)
+		WScript.Echo s.DisplayName & ": Service is already stopped"
+		WScript.Quit(0)
 	End If
 	StartTime=Timer()
 	res = s.StopService

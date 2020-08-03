@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@ public class TableDataSet
 	implements IJSONSerializable
 {
 	private int m_cols;
-	private int m_maxrow = 0;
+	private int m_maxrow = -1;
 	private Hashtable<Integer, Object> m_values = new Hashtable<Integer, Object>();
 
 	public TableDataSet(int cols)

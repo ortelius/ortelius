@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:web="http://java.sun.com/xml/ns/javaee" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
   <display-name>dmadminweb</display-name>
+  <session-config>
+     <session-timeout>1</session-timeout>
+  </session-config>
   <context-param>
     <param-name>BUILD_VERSION</param-name>
     <param-value>X_BUILD_VERSION_X</param-value>
   </context-param>
   <context-param>
     <param-name>DMHOME</param-name>
-    <param-value>/opt/deployhub/engine</param-value>
+        <param-value>/opt/deployhub/engine</param-value>
   </context-param>
   <context-param>
     <param-name>DBConnectionString</param-name>
@@ -16,6 +19,10 @@
   <context-param>
     <param-name>DBDriverName</param-name>
     <param-value>org.postgresql.Driver</param-value>
+  </context-param>
+  <context-param>
+    <param-name>TrilogyPort</param-name>
+    <param-value>2305</param-value>
   </context-param>
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>
@@ -38,6 +45,66 @@
   </servlet-mapping>
   <servlet>
     <description></description>
+    <display-name>Engine</display-name>
+    <servlet-name>Engine</servlet-name>
+    <servlet-class>dmadmin.Engine</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Engine</servlet-name>
+    <url-pattern>/Engine</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>EngineEvent</display-name>
+    <servlet-name>EngineEvent</servlet-name>
+    <servlet-class>dmadmin.EngineEvent</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>EngineEvent</servlet-name>
+    <url-pattern>/EngineEvent</url-pattern>
+  </servlet-mapping>
+   <servlet>
+    <description></description>
+    <display-name>GetCompsOnEndPoint</display-name>
+    <servlet-name>GetCompsOnEndPoint</servlet-name>
+    <servlet-class>dmadmin.GetCompsOnEndPoint</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetCompsOnEndPoint</servlet-name>
+    <url-pattern>/GetCompsOnEndPoint</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>GetApps2Comps</display-name>
+    <servlet-name>GetApps2Comps</servlet-name>
+    <servlet-class>dmadmin.GetApps2Comps</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetApps2Comps</servlet-name>
+    <url-pattern>/GetApps2Comps</url-pattern>s
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>TableFilter</display-name>
+    <servlet-name>TableFilter</servlet-name>
+    <servlet-class>dmadmin.TableFilter</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>TableFilter</servlet-name>
+    <url-pattern>/TableFilter</url-pattern>s
+  </servlet-mapping>
+    <servlet>
+    <description></description>
+    <display-name>GetComps2Apps</display-name>
+    <servlet-name>GetComps2Apps</servlet-name>
+    <servlet-class>dmadmin.GetComps2Apps</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetComps2Apps</servlet-name>
+    <url-pattern>/GetComps2Apps</url-pattern>s
+  </servlet-mapping>
+  <servlet>
+    <description></description>
     <display-name>GetTasks</display-name>
     <servlet-name>GetTasks</servlet-name>
     <servlet-class>dmadmin.GetTasks</servlet-class>
@@ -48,6 +115,16 @@
   </servlet-mapping>
   <servlet>
     <description></description>
+    <display-name>GetFullDomains</display-name>
+    <servlet-name>GetFullDomains</servlet-name>
+    <servlet-class>dmadmin.GetFullDomains</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetFullDomains</servlet-name>
+    <url-pattern>/GetFullDomains</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
     <display-name>GetEnvOwner</display-name>
     <servlet-name>GetEnvOwner</servlet-name>
     <servlet-class>dmadmin.GetEnvOwner</servlet-class>
@@ -55,6 +132,16 @@
   <servlet-mapping>
     <servlet-name>GetEnvOwner</servlet-name>
     <url-pattern>/GetEnvOwner</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>GetNotifiers</display-name>
+    <servlet-name>GetNotifiers</servlet-name>
+    <servlet-class>dmadmin.GetNotifiers</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetNotifiers</servlet-name>
+    <url-pattern>/GetNotifiers</url-pattern>
   </servlet-mapping>
   <servlet>
     <description></description>
@@ -1004,7 +1091,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>ValidateTask</servlet-name>
-    <url-pattern>/ValidateTask</url-pattern>
+    <url-pattern>/ValidateTask</url-pattern>s
   </servlet-mapping>
   <servlet>
     <description></description>
@@ -1080,6 +1167,16 @@
   </servlet-mapping>
   <servlet>
     <description></description>
+    <display-name>GetDefects</display-name>
+    <servlet-name>GetDefects</servlet-name>
+    <servlet-class>dmadmin.pro.GetDefects</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetDefects</servlet-name>
+    <url-pattern>/GetDefects</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
     <display-name>GetDeployDeps</display-name>
     <servlet-name>GetDeployDeps</servlet-name>
     <servlet-class>dmadmin.GetDeployDeps</servlet-class>
@@ -1097,56 +1194,6 @@
   <servlet-mapping>
     <servlet-name>GetTimeline</servlet-name>
     <url-pattern>/GetTimeline</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <description></description>
-    <display-name>GetBuildEngineJobs</display-name>
-    <servlet-name>GetBuildEngineJobs</servlet-name>
-    <servlet-class>dmadmin.GetBuildEngineJobs</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>GetBuildEngineJobs</servlet-name>
-    <url-pattern>/GetBuildEngineJobs</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <description></description>
-    <display-name>GetProjectsFromBuilder</display-name>
-    <servlet-name>GetProjectsFromBuilder</servlet-name>
-    <servlet-class>dmadmin.GetProjectsFromBuilder</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>GetProjectsFromBuilder</servlet-name>
-    <url-pattern>/GetProjectsFromBuilder</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <description></description>
-    <display-name>GetBuildHistory</display-name>
-    <servlet-name>GetBuildHistory</servlet-name>
-    <servlet-class>dmadmin.GetBuildHistory</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>GetBuildHistory</servlet-name>
-    <url-pattern>/GetBuildHistory</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <description></description>
-    <display-name>GetBuildJobs</display-name>
-    <servlet-name>GetBuildJobs</servlet-name>
-    <servlet-class>dmadmin.GetBuildJobs</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>GetBuildJobs</servlet-name>
-    <url-pattern>/GetBuildJobs</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <description></description>
-    <display-name>GetBuildLog</display-name>
-    <servlet-name>GetBuildLog</servlet-name>
-    <servlet-class>dmadmin.GetBuildLog</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>GetBuildLog</servlet-name>
-    <url-pattern>/GetBuildLog</url-pattern>
   </servlet-mapping>
   <servlet>
     <description></description>

@@ -1,9 +1,9 @@
 alter table dm.dm_tasktypes add component char(1);
 alter table dm.dm_tasktypes add compversion char(1);
-insert into dm.dm_fragments(id,name,summary,categoryid,exitpoints) values(95,'Run Task','Execute a Specific DeployHub Task',1,1);
+insert into dm.dm_fragments(id,name,summary,categoryid,exitpoints) values(95,'Run Task','Execute a Specific Release Engineer Task',1,1);
 insert into dm.dm_fragmenttext(fragmentid,data,type) values(95,'runtask(task:"@taskname@");',0);
 insert into dm.dm_fragmentattrs(id,typeid,attype,atname,tablename,inherit,atorder,required) values(951,95,'dropdown','TaskName','dm_task','Y',1,'Y');
-insert into dm.dm_fragments(id,name,summary,categoryid,exitpoints) values(96,'Wait for Task','"Wait for a Specific DeployHub Task to be Run"',1,1);
+insert into dm.dm_fragments(id,name,summary,categoryid,exitpoints) values(96,'Wait for Task','"Wait for a Specific Release Engineer Task to be Run"',1,1);
 insert into dm.dm_fragmenttext(fragmentid,data,type) values(96,'waitfor(task: "@taskname@");',0);
 insert into dm.dm_fragmentattrs(id,typeid,attype,atname,tablename,inherit,atorder,required) values(961,96,'dropdown','TaskName','dm_task','Y',1,'Y');
 insert into dm.dm_fragment_categories(id,categoryid) values(95,1);

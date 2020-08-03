@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -28,15 +28,19 @@ import javax.servlet.http.HttpServletResponse;
 
 import dmadmin.json.JSONObject;
 import dmadmin.model.Action;
-import dmadmin.model.BuildJob;
+import dmadmin.model.ActionKind;
+import dmadmin.model.Component;
+import dmadmin.model.ComponentFilter;
+import dmadmin.model.ComponentItem;
+import dmadmin.model.ComponentItemKind;
 import dmadmin.model.DMObject;
 import dmadmin.model.Server;
 import dmadmin.model.Task;
 import dmadmin.model.TaskAction;
 import dmadmin.model.TaskApprove;
-import dmadmin.model.TaskRemove;
 import dmadmin.model.TaskCreateVersion;
 import dmadmin.model.TaskMove;
+import dmadmin.model.TaskRemove;
 import dmadmin.model.TaskRequest;
 
 /**
@@ -63,6 +67,9 @@ public class GetSummaryData extends HttpServletBase
 
   int ot = ServletUtils.getIntParameter(request, "objtype");
   String sid = request.getParameter("id");
+  String comptype = request.getParameter("comptype");
+  String actkind = request.getParameter("actkind");
+  
   if (!sid.equalsIgnoreCase("-1")) sid = sid.replaceAll("-.*$","");
   int id = Integer.parseInt(sid);
   ObjectType objtype = ObjectType.fromInt(ot);
@@ -71,23 +78,64 @@ public class GetSummaryData extends HttpServletBase
    throw new RuntimeException("Invalid object type " + ot);
   }
 
-  DMObject dmobj = session.getDetailedObject(objtype, id);
+  System.out.println("getDetailedObject for id "+id);
+  DMObject dmobj;
+  
+  if (objtype == ObjectType.COMPONENTITEM && id < 0)
+  { 
+   ComponentItem ci = new ComponentItem();
+   if (comptype.equalsIgnoreCase("docker"))
+    ci.setItemkind(ComponentItemKind.DOCKER);
+   else if (comptype.contains("database"))
+   {
+    ci.setItemkind(ComponentItemKind.DATABASE);
+    if (comptype.startsWith("rf_"))
+    {
+     ci.setRollup(ComponentFilter.ON);
+     ci.setRollback(ComponentFilter.OFF);
+    }
+    else
+    {
+     ci.setRollup(ComponentFilter.OFF);
+     ci.setRollback(ComponentFilter.ON);
+    }     
+   }
+   else
+    ci.setItemkind(ComponentItemKind.FILE);
+   dmobj = (DMObject)ci;
+   dmobj.setSession(session);
+  }
+  else
+   dmobj = session.getDetailedObject(objtype, id);
+  
   boolean readOnly = 
 		  (dmobj.getObjectType() == ObjectType.DEPLOYMENT) ||
 		  (dmobj.getObjectType() == ObjectType.USER && id == session.GetUserID() && !session.getAclOverride()) ||	// Cannot edit yourself
 		  !dmobj.isUpdatable();
   
-  
-  if (dmobj instanceof BuildJob) {
-	  // If this is a new Build Job then get the Build Engine to which it belongs
-	  if (id == -1) {
-		  // new object - set build engine
-		  String otid = request.getParameter("be");
-		  if (otid != null) {
-			  BuildJob buildjob = (BuildJob)dmobj;
-			  buildjob.setBuilderId(Integer.parseInt(otid.substring(2)));
-		  }
-	  }
+  if (id < 0 && dmobj instanceof Component)
+  {
+   Component comp = (Component)dmobj;
+   
+   if (comptype.equalsIgnoreCase("docker"))
+    comp.setKind(ComponentItemKind.DOCKER);
+   else if (comptype.contains("database"))
+    comp.setKind(ComponentItemKind.DATABASE);
+   else
+    comp.setKind(ComponentItemKind.FILE);
+  }
+  else if (id < 0 && dmobj instanceof Action)
+  {
+   Action act = (Action)dmobj;
+   
+   if (actkind == null)
+    act.setKind(ActionKind.LOCAL_EXTERNAL);
+   else 
+   {
+    int akid = new Integer(actkind).intValue();
+    ActionKind ak = ActionKind.fromInt(akid);
+    act.setKind(ak);
+   }
   }
   
   if (dmobj instanceof Action) {

@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -37,6 +37,7 @@ public class Engine
 
 	private String m_hostname;
 	private DMSession m_session;
+	private String m_clientid;	// for SaaS
 	
 	public Engine() {
 	}
@@ -46,15 +47,18 @@ public class Engine
 		m_session = sess;
 	}
 	
-	public DMSession getSession() {
-		return m_session;
-	}
-	
 	public String getHostname()  { return m_hostname; }
 	public void setHostname(String hostname)  { m_hostname = hostname; }
 	
+	public String getClientID()  { return m_clientid; }
+	public void setClientID(String clientid)  { m_clientid = clientid; }
+	
 	public List<Plugin> getPlugins() {
 		return m_session.getPluginsForEngine(this);
+	}
+	
+	public DMSession getSession() {
+		return m_session;
 	}
 	
 	public List<ConfigEntry> getConfig() {
@@ -88,8 +92,14 @@ public class Engine
 	@Override
 	public IJSONSerializable getSummaryJSON() {
 		PropertyDataSet ds = new PropertyDataSet();
+  Domain dom = getDomain();
+  if (dom == null)
+    ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", "");
+  else
+   ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", dom.getFullDomain());
 		ds.addProperty(SummaryField.NAME, "Name", getName());
 		ds.addProperty(SummaryField.ENGINE_HOSTNAME, "Hostname", m_hostname);
+  ds.addProperty(SummaryField.ENGINE_CLIENTID, "Client Id", m_clientid);
 		//ds.addProperty("Owner", (m_owner != null) ? m_owner.getLinkJSON()
 		//		: ((m_ownerGroup != null) ? m_ownerGroup.getLinkJSON() : null));
 		//ds.addProperty("Summary", getSummary());
@@ -105,10 +115,11 @@ public class Engine
 	public CommandLine startDeployment(
 		Task task, Application app, Environment env, String userName,
 		String sessionid, Map<String,String> cmdline_params)
-	{
+	{		
 		CommandLine cmd = new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
-			.add("-usr").add(userName);
+			.add("dm")
+			.add("-usr").add(userName)
+			.pw(m_session.getPassword());
 		if(sessionid != null) {
 			cmd.add("-sessionid").add(sessionid);		
 		}
@@ -133,6 +144,7 @@ public class Engine
 		CommandLine cmd = new CommandLine("C:\\Shared\\DM2\\DeploymentManager\\Windows\\Debug\\DeploymentManager.exe");
 		cmd.add("-home").add("C:\\Shared\\DM2\\DeploymentManager\\distrib")
 			.add("-usr").add(userName)
+			.pw(m_session.getPassword())
 			.add("-notify").add(nfy.getId())	
 			.add("-from").add(from)
 			.add("-template").add(templateid);
@@ -157,8 +169,9 @@ public class Engine
 	{
 		CommandLine ret;
 		ret = new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-providertest")
 			.add(po.getObjectType().toString().toLowerCase())
 			.add(po.getId());
@@ -172,8 +185,9 @@ public class Engine
 	public CommandLine doApprove(Task task, Application app, boolean approved, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-runtask").add(task.getId())
 			.add("-appid").add(app.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
@@ -184,8 +198,9 @@ public class Engine
 	public CommandLine doRunAction(Task task, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-		.add(m_session.getDMHome()+"/bin/dm")
+		.add("dm")
 		.add("-usr").add(m_session.GetUserName())
+		.pw(m_session.getPassword())
 		.add("-sessionid").add(m_session.GetSessionId())
 		.add("-runtask").add(task.getId())
 		.add(aps);
@@ -194,8 +209,9 @@ public class Engine
 	public CommandLine doMoveCopyRequest(Task task, Application app, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-runtask").add(task.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
 			.add("-appid").add(app.getId())
@@ -205,8 +221,9 @@ public class Engine
 	public CommandLine doRemove(Task task, Application app,Environment env, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-appid").add(app.getId())
 			.add("-envid").add(env.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
@@ -217,32 +234,36 @@ public class Engine
 	public CommandLine doTestServer(Server server)
 	{
 		return new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-checkserver").add(server.getId());
 	}
 	
 	public CommandLine doCreateScript()
 	{
 		return new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-importscript");
 	}
 	
 	public CommandLine showDMScript(Action action)
 	{
 		return new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-dmscript").add(action.getId());
 	}
 	
 	public CommandLine doNewAppVer(Task task, Application app, boolean useLatest, Application pred, Map<String,String> aps)
 	{
 		CommandLine cmd = new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-runtask").add(task.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
 			.add("-appid").add(app.getId());
@@ -258,8 +279,9 @@ public class Engine
 	public CommandLine doUserDefined(Task task, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-sessionid").add(m_session.GetSessionId())
 			.add("-runtask").add(new Integer(task.getId()).toString())
 			.add(aps);
@@ -268,8 +290,9 @@ public class Engine
 	public CommandLine doUserDefined(Task task,Application app, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-appid").add(app.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
 			.add("-runtask").add(new Integer(task.getId()).toString())
@@ -279,8 +302,9 @@ public class Engine
 	public CommandLine doUserDefined(Task task,Component comp, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-compid").add(comp.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
 			.add("-runtask").add(new Integer(task.getId()).toString())
@@ -290,8 +314,9 @@ public class Engine
 	public CommandLine doUserDefined(Task task,Environment env, Map<String,String> aps)
 	{
 		return new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
+			.add("dm")
 			.add("-usr").add(m_session.GetUserName())
+			.pw(m_session.getPassword())
 			.add("-envid").add(env.getId())
 			.add("-sessionid").add(m_session.GetSessionId())
 			.add("-runtask").add(new Integer(task.getId()).toString())
@@ -301,19 +326,19 @@ public class Engine
 	public String ParseProcedure(String procbody)
 	{
 		CommandLine cmd = new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
+			.add("dm")
 			.add("-parse").add("^");
 		System.out.println("procbody="+procbody);
-		cmd.run(true,procbody,true);
+		cmd.runWithTrilogy(true, procbody);
 		return cmd.getOutput().trim();
 	}
 	
 	public String dumpScript(int actionid)
 	{
 		CommandLine cmd = new CommandLine(this)
-		.add(m_session.getDMHome()+"/bin/dm")
+		.add("dm")
 		.add("-dumpscript").add(actionid);
-		int ret = cmd.run(true, null, true);
+		int ret = cmd.runWithTrilogy(true, null);
 		if (ret == 0) {
 			return cmd.getOutput().trim();
 		}
@@ -322,11 +347,15 @@ public class Engine
 	
 	public String encryptValue(String value, String userName)
 	{
+	 if (value.trim().length() == 0)
+	  return "";
+	 
 		CommandLine cmd = new CommandLine(this)
-			.add(m_session.getDMHome()+"/bin/dm")
+			.add("dm")
 			.add("-usr").add(userName)
+			.pw(m_session.getPassword())
 			.add("-encrypt");
-		int ret = cmd.run(true, value + "\n", true);
+		int ret = cmd.runWithTrilogy(true, value + "\n");
 		if(ret == 0) {
 			return cmd.getOutput().trim();
 		}

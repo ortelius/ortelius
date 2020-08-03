@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -33,9 +33,11 @@ public class TreeObject
 	private ObjectType m_objectType;
 	private int m_objectKind;
  private ArrayList<Category> m_categories;
+ private int m_domainid;
 	
 	public TreeObject() {
 		m_objectKind=0;
+		m_domainid = 1;
 	}
 	
  public ArrayList<Category> GetCategories() {
@@ -46,10 +48,11 @@ public void SetCategories(ArrayList<Category> categories) {
   this.m_categories = categories;
 }
 
-	public TreeObject(int id,String name) {
+	public TreeObject(int id,String name, int domainid) {
 		super.setId(id);
 		super.setName(name);
 		m_objectKind=0;
+		m_domainid = domainid;
 	}
 	
 	public void SetObjectType(ObjectType ot) {
@@ -67,6 +70,10 @@ public void SetCategories(ArrayList<Category> categories) {
 	public int GetObjectKind() {
 		return m_objectKind;
 	}
+	
+ public int GetDomainId() {
+  return m_domainid;
+ }
 	
 	public ObjectTypeAndId GetOTID() {
 		return new ObjectTypeAndId(m_objectType,super.getId());

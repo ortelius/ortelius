@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -59,6 +59,24 @@ public class PropertyDataSet
 			}
 		}
 	}
+	
+ public void removeDupDeploy(PropertyDataSet ds)
+ {
+  boolean addedDeploy = false;
+  for (int i=0;i<m_names.size();i++) {
+   String v = (String)m_values.get(i);
+   if (v.startsWith("Deploy")) 
+   {
+    if (!addedDeploy)
+    { 
+     ds.addProperty(m_fields.get(i), m_names.get(i),(String)m_values.get(i));
+     addedDeploy = true;
+    }
+   }
+   else
+    ds.addProperty(m_fields.get(i), m_names.get(i),(String)m_values.get(i));
+  }
+ }
 	
 	public void addProperty(SummaryField field, String name, String value)
 	{

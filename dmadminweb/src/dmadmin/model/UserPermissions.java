@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -40,7 +40,7 @@ public class UserPermissions
 	boolean m_createdatasrc;
 	boolean m_createnotifier;
 	boolean m_createengine;
-	
+ boolean m_createservercomptype;
 	
 	public UserPermissions(DMSession sess,int groupid) {
 		sess.setUserPermissions(groupid,this);
@@ -64,7 +64,8 @@ public class UserPermissions
 	public boolean getCreateDatasrc()    { return m_createdatasrc; }
 	public boolean getCreateNotifiers()  { return m_createnotifier; }
 	public boolean getCreateEngines()    { return m_createengine; }
-	
+ public boolean getCreateServerCompType()    { return m_createservercomptype; }
+ 
 	public void setCreateUsers(boolean bval)      {  m_createuser = bval; }
 	public void setCreateGroups(boolean bval)     {  m_creategroup = bval; }
 	public void setCreateDomains(boolean bval)    {  m_createdomain = bval; }
@@ -80,7 +81,8 @@ public class UserPermissions
 	public void setCreateDatasrc(boolean bval)    {  m_createdatasrc = bval; }
 	public void setCreateNotifiers(boolean bval)  {  m_createnotifier = bval; }
 	public void setCreateEngines(boolean bval)     {  m_createengine = bval; }
-	
+ public void setCreateServerCompType(boolean bval)     {  m_createservercomptype = bval; }
+ 
 	//
 	// Returns the word "disabled" if the corresponding permission is not set.
 	// Used in "new user group" scenarios to prevent the permission being granted
@@ -101,7 +103,8 @@ public class UserPermissions
 	public String getDatasrcDisabled()   { return m_createdatasrc?"":"disabled"; } 
 	public String getNotifiersDisabled() { return m_createnotifier?"":"disabled"; } 
 	public String getEnginesDisabled()   { return m_createengine?"":"disabled"; }
-	
+ public String getServerCompTypeDisabled()   { return m_createservercomptype?"":"disabled"; }
+ 
 	public String getUsersChecked()     { return m_createuser?"Checked":""; } 
 	public String getGroupsChecked()    { return m_creategroup?"Checked":""; } 
 	public String getDomainsChecked()   { return m_createdomain?"Checked":""; } 
@@ -117,4 +120,5 @@ public class UserPermissions
 	public String getDatasrcChecked()   { return m_createdatasrc?"Checked":""; } 
 	public String getNotifiersChecked() { return m_createnotifier?"Checked":""; } 
 	public String getEnginesChecked()   { return m_createengine?"Checked":""; } 
+ public String getServerCompTypeChecked()   { return m_createservercomptype?"Checked":""; } 
 }

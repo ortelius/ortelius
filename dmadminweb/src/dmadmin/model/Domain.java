@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@ import dmadmin.SummaryChangeSet;
 import dmadmin.SummaryField;
 import dmadmin.json.BooleanField;
 import dmadmin.json.IJSONSerializable;
-import dmadmin.json.ReadOnlyTextField;
+import dmadmin.json.LinkField;
 
 public class Domain
 	extends DMObject
@@ -58,15 +58,18 @@ public class Domain
 	
 	public String getFullDomain()
 	{
-		if (!m_session.ValidDomain(getId())) return "";
-		String fqdom = getName();
-		Domain parent = getDomain();
-		while (parent != null && m_session.ValidDomain(parent.getId())) {
-			fqdom  = parent.getName() + "." + fqdom;
-			if (parent.getId()==m_session.UserBaseDomain()) break;
-			parent = parent.getDomain();
-		}
-		return fqdom;
+	//	if (!m_session.ValidDomain(getId())) return "";
+		
+		return m_session.getFQDN(getId());
+		
+//		String fqdom = getName();
+//		Domain parent = getDomain();
+//		while (parent != null && m_session.ValidDomain(parent.getId())) {
+//			fqdom  = parent.getName() + "." + fqdom;
+//			if (parent.getId()==m_session.UserBaseDomain()) break;
+//			parent = parent.getDomain();
+//		}
+//		return fqdom;
 	}
 	
 	public void setLifecycle(boolean x) { m_lifecycle = x; }
@@ -97,8 +100,13 @@ public class Domain
 	@Override
 	public IJSONSerializable getSummaryJSON() {
 		PropertyDataSet ds = new PropertyDataSet();
+  Domain dom = getDomain();
+  if (dom == null)
+    ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", "GLOBAL");
+  else
+   ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", dom.getFullDomain());
 		ds.addProperty(SummaryField.NAME, "Name", getName());
-		ds.addProperty(SummaryField.READ_ONLY, "Parent Domain", new ReadOnlyTextField(m_parentDomain));
+//		ds.addProperty(SummaryField.READ_ONLY, "Parent Domain", new ReadOnlyTextField(m_parentDomain));
 		ds.addProperty(SummaryField.SUMMARY, "Summary", getSummary());
 		ds.addProperty(SummaryField.OWNER, "Owner", (m_owner != null) ? m_owner.getLinkJSON()
 				: ((m_ownerGroup != null) ? m_ownerGroup.getLinkJSON() : null));
@@ -120,4 +128,9 @@ public class Domain
 	public boolean updateSummary(SummaryChangeSet changes) {
 		return m_session.updateDomain(this, changes);
 	}
+	
+	@Override
+ public IJSONSerializable getLinkJSON() {
+  return new LinkField(getObjectType(), m_id, this.getFullDomain());
+ }
 }

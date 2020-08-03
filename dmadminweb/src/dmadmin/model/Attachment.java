@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,6 @@
  */
 package dmadmin.model;
 
-import java.io.InputStream;
 import java.io.Writer;
 import java.util.Hashtable;
 import java.util.Map;
@@ -89,9 +88,9 @@ public class Attachment
 		return (mt != null) ? mt.getContentType() : null;
 	}
 	
-	public InputStream getAttachmentStream()
+	public String getAttachmentString()
 	{
-		return m_session.getAttachmentStream(m_id);
+		return m_session.getAttachmentString(m_id);
 		// return new File(s_attachStore, m_id + "_" + m_name);
 	}
 	

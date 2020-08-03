@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -21,6 +21,7 @@ package dmadmin;
 import java.io.IOException;
 // import java.io.PrintWriter;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,9 +31,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 // import javax.servlet.http.HttpSession;
-
-
-
 
 import dmadmin.model.Application;
 import dmadmin.model.Component;
@@ -45,9 +43,9 @@ import dmadmin.model.FragmentDetails;
 public class UpdateAttrs extends HttpServletBase
 {
 
- protected boolean isRelease = false;
+ boolean isRelease = false;
 
- protected int GetPosition(HttpServletRequest request, String pname)
+ private int GetPosition(HttpServletRequest request, String pname)
  {
   String szPos = request.getParameter(pname);
   System.out.println(pname + "=" + szPos);
@@ -65,7 +63,7 @@ public class UpdateAttrs extends HttpServletBase
  }
 
  @SuppressWarnings("rawtypes")
- protected void SaveDetails(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void SaveDetails(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int actionid = Integer.parseInt(request.getParameter("a"));
   int windowid = Integer.parseInt(request.getParameter("w"));
@@ -92,7 +90,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"title\": \"" + title + "\", \"summary\": \"" + summary + "\"}");
  }
 
- protected void WindowMoved(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void WindowMoved(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   
   int actionid = Integer.parseInt(request.getParameter("a"));
@@ -107,7 +105,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void ComponentStartMoved(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void ComponentStartMoved(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int appid = Integer.parseInt(request.getParameter("a"));
   int xpos = GetPosition(request, "xpos");
@@ -115,7 +113,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void ServerMoved(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void ServerMoved(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int envid = Integer.parseInt(request.getParameter("e"));
   int serverid = Integer.parseInt(request.getParameter("s"));
@@ -125,14 +123,14 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
  
- protected void addServerComplete(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void addServerComplete(HttpServletRequest request, DMSession so, PrintWriter out)
  {
 	 int envid = Integer.parseInt(request.getParameter("e"));
 	 String sl = request.getParameter("sl");
 	 so.NotifyServersAddedToEnvironment(envid,sl);
  }
 
- protected void applicationVersionMoved(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void applicationVersionMoved(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int appid = Integer.parseInt(request.getParameter("a"));
   int verid = Integer.parseInt(request.getParameter("v"));
@@ -142,7 +140,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void applicationNewVersion(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void applicationNewVersion(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int appid = Integer.parseInt(request.getParameter("a"));
   int xpos = GetPosition(request, "xpos");
@@ -152,7 +150,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"verid\": \"" + verid + "\", \"vername\": \"" + app.getName() + "\"}");
  }
 
- protected void componentVersionMoved(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentVersionMoved(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   int verid = Integer.parseInt(request.getParameter("v"));
@@ -162,7 +160,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void componentItemMoved(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentItemMoved(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   int itemid = Integer.parseInt(request.getParameter("ci"));
@@ -172,7 +170,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void componentApplicationMoved(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentApplicationMoved(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   int appid = Integer.parseInt(request.getParameter("a"));
@@ -182,7 +180,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"compid\": \"" + compid + "\", \"appid\": \"" + appid + "\"}"); // return some JSON so that the result fires
  }
 
- protected void componentServerAdded(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentServerAdded(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   int servid = Integer.parseInt(request.getParameter("s"));
@@ -190,7 +188,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void componentVersionServerAdded(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentVersionServerAdded(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   int servid = Integer.parseInt(request.getParameter("s"));
@@ -199,7 +197,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void componentNewVersion(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentNewVersion(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   int xpos = GetPosition(request, "xpos");
@@ -209,17 +207,32 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"verid\": \"" + verid + "\", \"vername\": \"" + comp.getName() + "\"}");
  }
 
- protected void componentItemNewItem(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentItemNewItem(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   int xpos = GetPosition(request, "xpos");
   int ypos = GetPosition(request, "ypos");
-  int itemid = so.componentItemNewItem(compid, xpos, ypos);
+  String kind = request.getParameter("kind");
+  String removeall = request.getParameter("removeall");
+ 
+  if (removeall != null && removeall.equalsIgnoreCase("Y"))
+  {
+   try
+   {
+    so.DeleteComponentItems(compid);
+   }
+   catch (SQLException e)
+   {
+    // TODO Auto-generated catch block
+    e.printStackTrace();
+   }
+  }
+  int itemid = so.componentItemNewItem(compid, xpos, ypos,kind);
   ComponentItem compitem = so.getComponentItem(itemid, false);
   out.println("{\"itemid\": \"" + itemid + "\", \"itemname\": \"" + compitem.getName() + "\"}");
  }
 
- protected void applicationNewComponent(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void applicationNewComponent(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int appid = Integer.parseInt(request.getParameter("a"));
   int xpos = GetPosition(request, "xpos");
@@ -229,7 +242,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"compid\": \"" + compid + "\", \"compname\": \"" + comp.getName() + "\"}");
  }
 
- protected void serverNewComponent(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void serverNewComponent(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int servid = Integer.parseInt(request.getParameter("s"));
   int xpos = GetPosition(request, "xpos");
@@ -240,7 +253,7 @@ public class UpdateAttrs extends HttpServletBase
  }
 
  // Redundant - see componentApplicationMoved
- // protected void applicationAddComponent(HttpServletRequest request,DMSession so,PrintWriter out)
+ // private void applicationAddComponent(HttpServletRequest request,DMSession so,PrintWriter out)
  // {
  // int appid = Integer.parseInt(request.getParameter("a"));
  // int xpos = GetPosition(request,"xpos");
@@ -251,7 +264,7 @@ public class UpdateAttrs extends HttpServletBase
  // }
 
  // Redundant - see componentServerMoved
- // protected void serverAddComponent(HttpServletRequest request,DMSession so,PrintWriter out)
+ // private void serverAddComponent(HttpServletRequest request,DMSession so,PrintWriter out)
  // {
  // int compid = Integer.parseInt(request.getParameter("c"));
  // int servid = Integer.parseInt(request.getParameter("s"));
@@ -260,21 +273,21 @@ public class UpdateAttrs extends HttpServletBase
  // so.addComponentToServer(servid,compid,xpos,ypos);
  // }
 
- protected void EnterEditMode(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void EnterEditMode(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int actionid = Integer.parseInt(request.getParameter("a"));
   so.EnterEditMode(actionid);
   out.println("{\"success\": true}");
  }
 
- protected void LeaveEditMode(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void LeaveEditMode(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int actionid = Integer.parseInt(request.getParameter("a"));
   so.LeaveEditMode(actionid);
   out.println("{\"success\": true}");
  }
 
- protected void AddFlow(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void AddFlow(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int actionid = Integer.parseInt(request.getParameter("a"));
   String fn = request.getParameter("fn");
@@ -289,7 +302,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void DeleteFlow(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void DeleteFlow(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int actionid = Integer.parseInt(request.getParameter("a"));
   String fn = request.getParameter("fn");
@@ -298,7 +311,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void AddConnector(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void AddConnector(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int envid = Integer.parseInt(request.getParameter("e"));
   int fromnode = Integer.parseInt(request.getParameter("fn"));
@@ -309,7 +322,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void applicationAddDependency(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void applicationAddDependency(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int appid = Integer.parseInt(request.getParameter("a"));
   int fromnode = Integer.parseInt(request.getParameter("fn"));
@@ -318,7 +331,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void componentAddDependency(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentAddDependency(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   int fromnode = Integer.parseInt(request.getParameter("fn"));
@@ -327,7 +340,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void componentItemAddLink(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentItemAddLink(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   int fromnode = Integer.parseInt(request.getParameter("fn"));
@@ -336,7 +349,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void applicationComponentAddLink(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void applicationComponentAddLink(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int appid = Integer.parseInt(request.getParameter("a"));
   int fromnode = Integer.parseInt(request.getParameter("fn"));
@@ -345,7 +358,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void applicationComponentDeleteLink(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void applicationComponentDeleteLink(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int appid = Integer.parseInt(request.getParameter("a"));
   int fromnode = Integer.parseInt(request.getParameter("fn"));
@@ -354,7 +367,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void applicationReplaceComponent(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void applicationReplaceComponent(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int appid = Integer.parseInt(request.getParameter("a"));
   int fromcompid = Integer.parseInt(request.getParameter("c"));
@@ -364,7 +377,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true, \"title\": \"" + comp.getName() + "\", \"prefix\": \""+prefix+"\", \"summary\": \""+ comp.getSummary() + "\" }");
  }
 
- protected void DeleteConnector(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void DeleteConnector(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int envid = Integer.parseInt(request.getParameter("e"));
   int fromnode = Integer.parseInt(request.getParameter("fn"));
@@ -375,7 +388,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void applicationDeleteDependency(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void applicationDeleteDependency(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int appid = Integer.parseInt(request.getParameter("a"));
   int fromnode = Integer.parseInt(request.getParameter("fn"));
@@ -385,7 +398,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void componentDeleteDependency(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentDeleteDependency(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   int fromnode = Integer.parseInt(request.getParameter("fn"));
@@ -395,7 +408,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void componentItemDeleteLink(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentItemDeleteLink(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   int fromnode = Integer.parseInt(request.getParameter("fn"));
@@ -405,7 +418,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void applicationSaveVersionInfo(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void applicationSaveVersionInfo(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int appid = Integer.parseInt(request.getParameter("a"));
   String Name = request.getParameter("title");
@@ -415,7 +428,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"title\": \"" + Name + "\", \"summary\": \"" + Summary + "\"}");
  }
 
- protected void componentSaveVersionInfo(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentSaveVersionInfo(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   String Name = request.getParameter("title");
@@ -427,7 +440,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"title\": \"" + Name + "\", \"summary\": \"" + Summary + "\", \"prefix\": \""+prefix+"\"}");
  }
 
- protected void componentItemSaveItemInfo(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentItemSaveItemInfo(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int ccid = Integer.parseInt(request.getParameter("ci"));
   String Name = request.getParameter("title");
@@ -437,7 +450,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"title\": \"" + Name + "\", \"summary\": \"" + Summary + "\"}");
  }
 
- protected void serverSaveDetails(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void serverSaveDetails(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int servid = Integer.parseInt(request.getParameter("s"));
   String Name = request.getParameter("title");
@@ -447,7 +460,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"title\": \"" + Name + "\", \"summary\": \"" + Summary + "\"}");
  }
 
- protected void AddNode(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void AddNode(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int actionid = Integer.parseInt(request.getParameter("a"));
   int windowid = Integer.parseInt(request.getParameter("w"));
@@ -466,7 +479,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true, \"otid\": \""+otid+"\", \"exitpoints\": \""+fd.getExitPoints()+"\", \"drilldown\": "+fd.isDrilldown()+", \"style\": \""+style+"\"}");
  }
 
- protected void DeleteNode(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void DeleteNode(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int actionid = Integer.parseInt(request.getParameter("a"));
   int windowid = Integer.parseInt(request.getParameter("w"));
@@ -474,7 +487,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void DeleteServer(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void DeleteServer(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int envid = Integer.parseInt(request.getParameter("e"));
   int windowid = Integer.parseInt(request.getParameter("w"));
@@ -482,7 +495,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void applicationDeleteVersion(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void applicationDeleteVersion(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int appid = Integer.parseInt(request.getParameter("a"));
   int verid = Integer.parseInt(request.getParameter("v"));
@@ -490,7 +503,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void componentDeleteVersion(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentDeleteVersion(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   int verid = Integer.parseInt(request.getParameter("v"));
@@ -498,7 +511,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void componentItemDeleteItem(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void componentItemDeleteItem(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   int itemid = Integer.parseInt(request.getParameter("ci"));
@@ -506,7 +519,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void applicationComponentDelete(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void applicationComponentDelete(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int appid = Integer.parseInt(request.getParameter("a"));
   int compid = Integer.parseInt(request.getParameter("c"));
@@ -514,7 +527,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void serverComponentDelete(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void serverComponentDelete(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int servid = Integer.parseInt(request.getParameter("s"));
   int compid = Integer.parseInt(request.getParameter("c"));
@@ -522,7 +535,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void updateTaskCopy(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void updateTaskCopy(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int tid = Integer.parseInt(request.getParameter("tid"));
   int tgt = Integer.parseInt(request.getParameter("tgt"));
@@ -531,7 +544,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void updateTaskMove(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void updateTaskMove(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int tid = Integer.parseInt(request.getParameter("tid"));
   int tgt = Integer.parseInt(request.getParameter("tgt"));
@@ -540,7 +553,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void updateTaskApprove(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void updateTaskApprove(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int tid = Integer.parseInt(request.getParameter("tid"));
   int tgt = Integer.parseInt(request.getParameter("tgt"));
@@ -549,7 +562,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void updateTaskRequest(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void updateTaskRequest(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int tid = Integer.parseInt(request.getParameter("tid"));
   int tgt = Integer.parseInt(request.getParameter("tgt"));
@@ -558,7 +571,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
  
- protected void updateTaskAction(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void updateTaskAction(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int tid = Integer.parseInt(request.getParameter("tid"));
   int tgt = Integer.parseInt(request.getParameter("tgt"));
@@ -567,7 +580,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void updateTaskCreateVersion(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void updateTaskCreateVersion(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int tid = Integer.parseInt(request.getParameter("tid"));
   int tgt = Integer.parseInt(request.getParameter("tgt"));
@@ -576,7 +589,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void updateBranchLabel(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void updateBranchLabel(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   String t = request.getParameter("t");
   int a = Integer.parseInt(request.getParameter("a"));
@@ -586,7 +599,7 @@ public class UpdateAttrs extends HttpServletBase
   out.println("{\"success\": true}");
  }
 
- protected void updateServerLabel(HttpServletRequest request, DMSession so, PrintWriter out)
+ private void updateServerLabel(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int envid = Integer.parseInt(request.getParameter("envid"));
   int fromid = Integer.parseInt(request.getParameter("fid"));

@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -35,6 +35,7 @@ public class TaskMove
 	private Application m_application;
 	String m_text;
 	CommandLine m_cmd;
+	String noengine_output = null;
 	
 	
 	public TaskMove() {
@@ -64,6 +65,39 @@ public class TaskMove
 	{
 		System.out.println("Running TaskMove");
 
+  if (getPreAction() == null && getPostAction() == null && getSuccessTemplate() == null && getFailureTemplate() == null)
+  {
+   String approved = m_session.getApprovalStatus(getApplication().getId()); 
+   
+   if (approved == null)
+   {
+    boolean doMove = true;
+    boolean approvalNeeded = m_session.getApprovalNeeded(getTargetDomain().getId());
+    
+    if (approvalNeeded)
+     doMove = false;
+   
+    if (doMove)
+    {
+     if (m_session.MoveApplication(getApplication(),getTargetDomain(),m_text).length() == 0)
+     {
+      noengine_output = "Application moved to " + getTargetDomain().getName();
+      return true;
+     }
+    } 
+   }
+   else if (approved.equals("Y"))
+   {
+    if (m_session.MoveApplication(getApplication(),getTargetDomain(), m_text).length() == 0)
+    {
+     noengine_output = "Application moved to " + getTargetDomain().getName();
+     return true;
+    }   
+   }
+   noengine_output = "Application has not been approved for " + getTargetDomain().getName();
+   return false;
+  }
+  
 		Domain domain = getDomain();
 		Engine engine = (domain != null) ? domain.findNearestEngine() : null;
 		if(engine == null) {
@@ -71,7 +105,7 @@ public class TaskMove
 			return false;
 		}
 		m_cmd = engine.doMoveCopyRequest(this, m_application, m_aps);
-		return (m_cmd.run(true, m_text + "\n", true) == 0);
+		return (m_cmd.runWithTrilogy(true, m_text + "\n") == 0);
 	}
 
  @Override
@@ -79,6 +113,11 @@ public class TaskMove
 	 NotifyTemplate x = getSuccessTemplate();
 	 System.out.println("x="+x);
   PropertyDataSet ds = new PropertyDataSet();
+  Domain dom = getDomain();
+  if (dom == null)
+    ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", "");
+  else
+   ds.addProperty(SummaryField.DOMAIN_FULLNAME, "Full Domain", dom.getFullDomain());
   ds.addProperty(SummaryField.NAME, "Name", getName());
   addCreatorModifier(ds);
   ds.addProperty(SummaryField.PRE_ACTION, "Pre-action", ((getPreAction() != null) ? getPreAction().getLinkJSON() : null));
@@ -91,6 +130,9 @@ public class TaskMove
   return ds.getJSON();
  }
 	public String getOutput() {
-		return m_cmd.getOutput();
+	 if (noengine_output != null)
+	  return noengine_output;
+	 else
+		 return m_cmd.getOutput();
 	}
 }

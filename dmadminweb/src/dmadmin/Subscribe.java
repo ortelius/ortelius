@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -32,7 +32,8 @@ import javax.servlet.http.HttpSession;
  */
 public class Subscribe extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+ DMSession so = null;
+ HttpSession session = null;      
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -48,8 +49,12 @@ public class Subscribe extends HttpServlet {
 		response.setContentType("application/json;charset=UTF-8");
 		
 		PrintWriter out = response.getWriter();
-		HttpSession session = request.getSession();
-		DMSession so = (DMSession)session.getAttribute("session");
+  
+		try (DMSession so = DMSession.getInstance(request)) {
+  session = request.getSession();
+  session.setAttribute("session", so);
+  so.checkConnection(request.getServletContext());
+  
 		String mode = request.getParameter("f");
 		String otid = request.getParameter("id");
 		ObjectTypeAndId o = new ObjectTypeAndId(otid);
@@ -62,6 +67,7 @@ public class Subscribe extends HttpServlet {
 			// Unsubscribe
 			so.newsUnsubscribeObject(o);
 			out.print("{\"status\" : \"ok\"}");
+		}
 		}
 	}
 

@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -19,6 +19,7 @@
 package dmadmin.util;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import dmadmin.DMSession;
 import dmadmin.model.Engine;
 
 public class CommandLine
@@ -35,6 +37,8 @@ public class CommandLine
 	private StringBuffer m_output;
 	private InputMuncherThread m_muncher;
 	private Engine m_engine;
+	private String m_password = "";
+
 	
 	public CommandLine()
 	{}
@@ -47,7 +51,7 @@ public class CommandLine
 	public CommandLine(String cmd) {
 		m_cmd.add(cmd);
 	}
-	
+
 	public CommandLine add(String arg) {
 		m_cmd.add(arg);
 		return this;
@@ -65,6 +69,12 @@ public class CommandLine
 			}
 		}
 		return this;
+	}
+	
+	public CommandLine pw(String pw)
+	{
+	 m_password = pw;	
+	 return this;
 	}
 	
 	public String getOutput() {
@@ -86,7 +96,25 @@ public class CommandLine
 	}
 	
 	public int run(boolean waitFor, String input, boolean capture)
-	{	
+	{
+		// Create an environment for the process copying all environment vars from the system
+		//Map<String,String> myenv = System.getenv();
+		//Hashtable<String,String> env = new Hashtable<String,String>();
+		//for(String key: myenv.keySet()) {
+		//	env.put(key, myenv.get(key));
+		//}	
+
+		////env.put("TRIREASON", "SCRIPT");
+		////env.put("TRIFIELD1", envName);
+		////env.put("TRIFIELD2", "Robert");
+		////env.put("TRIFIELD3", "password");
+		////env.put("TRIFIELD4", appName);
+		
+		//List<String> envl = new ArrayList<String>();
+		//for(String key: env.keySet()) {
+		//	envl.add(key + "=" + env.get(key));
+		//}
+		
 		// DEBUG
 		System.out.print("Running: ");
 		for(String s : m_cmd) {
@@ -96,13 +124,16 @@ public class CommandLine
 		// END DEBUG
 		
 		String[] args = new String[m_cmd.size()];
+		//String[] envp = new String[env.size()];
 		try {
-			ProcessBuilder pb =	 new ProcessBuilder(m_cmd.toArray(args));
+			ProcessBuilder pb = new ProcessBuilder(m_cmd.toArray(args));
+			Map<String, String> env = pb.environment();
+			env.put("TRIFIELD1",m_password);
+			env.put("DMHOME","/opt/deployhub/engine");
 			pb.redirectErrorStream(true);
-            Map<String,String> env = pb.environment();
-            String pw = m_engine.getSession().getPassword();
-            env.put("tripassword",pw);
-			Process p = pb.start();
+			pb.directory(new File("/opt/deployhub/engine"));
+			
+			Process p = pb.start(); //Runtime.getRuntime().exec(m_cmd.toArray(args) /*, envl.toArray(envp)*/);
 			
 			// If input is given, send it to the process and close the stream
 			if(input != null) {
@@ -153,8 +184,38 @@ public class CommandLine
 		return 0;
 	}
 	
-
-
+	public int runWithTrilogy(boolean waitFor, String input)
+	{
+		// DEBUG
+		System.out.print("Running: ");
+		for(String s : m_cmd) {
+			System.out.print("\"" + s + "\" ");
+		}
+		System.out.println();
+		// END DEBUG
+		
+        String server = (m_engine != null) ? m_engine.getHostname() : "localhost";
+        String clientid = (m_engine != null) ? m_engine.getClientID() : null;
+        
+        if (clientid != null) {
+        	System.out.println("Inserting request into dm.dm_queue for client id "+clientid);
+        	DMSession so = m_engine.getSession();
+        	if (so != null) {
+        		int queueid = so.insertIntoRunQueue(clientid,input,m_cmd,waitFor);
+        		if (waitFor) {
+        			m_output = new StringBuffer();
+        			int ec = so.waitForRunQueue(queueid,clientid,m_output);
+        			System.out.println("waitfor=true ec="+ec+" m_output="+m_output);
+        		}
+        		return 0;
+        	}
+        	System.out.println("No session associated with engine");
+        	return -1;
+        } else {
+        	return run(waitFor, input, true);
+       }
+	}
+	
 	/**
 	 * Sneaky little class that implements a reader thread for a process we
 	 * have started.  Rather than trying to buffer the entire output, it
@@ -188,5 +249,4 @@ public class CommandLine
 			}
 		}	
 	}
-	
-}
+}	

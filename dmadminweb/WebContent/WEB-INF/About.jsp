@@ -1,5 +1,5 @@
  <%--
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,5 +15,4 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  --%>
- 
-{"build":"${initParam.BUILD_VERSION}","schema":"${schemaver}","license":"${license}"}
+{"build":"${initParam.BUILD_VERSION}","schema":"${schemaver}","license":"${license}","dbuid":"${dbuid}"}

@@ -1,6 +1,6 @@
 /*
  *
- *  DeployHub is an Agile Application Release Automation Solution
+ *  Ortelius for Microservice Configuration Mapping
  *  Copyright (C) 2017 Catalyst Systems Corporation DBA OpenMake Software
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -82,6 +82,7 @@ public class GroupDetails extends HttpServletBase {
     		if (type.equalsIgnoreCase("AdminRights")) {
     			JSONArray js = new JSONArray();
     			if (up != null && gp != null) {
+     Add2Array(js,"override", aclDisabled,grp.getAclChecked());
 					Add2Array(js,"cusers",up.getUsersDisabled(),gp.getUsersChecked());
 					Add2Array(js,"cgroups",up.getGroupsDisabled(),gp.getGroupsChecked());
 					Add2Array(js,"cdomain",up.getDomainsDisabled(),gp.getDomainsChecked());
@@ -97,12 +98,12 @@ public class GroupDetails extends HttpServletBase {
 					Add2Array(js,"cdsrc",up.getDatasrcDisabled(),gp.getDatasrcChecked());
 					Add2Array(js,"cnotify",up.getNotifiersDisabled(),gp.getNotifiersChecked());
 					Add2Array(js,"cengine",up.getEnginesDisabled(),gp.getEnginesChecked());
+     Add2Array(js,"cservercomptype",up.getServerCompTypeDisabled(),gp.getServerCompTypeChecked());
 					Add2Array(js,"endpoints",tabEndDisabled,grp.getTabEndChecked());
 					Add2Array(js,"applications",tabAppDisabled,grp.getTabAppChecked());
 					Add2Array(js,"actions", tabActionDisabled,grp.getTabActionChecked());
 					Add2Array(js,"providers", tabProvDisabled,grp.getTabProvChecked());
 					Add2Array(js,"users", tabUserDisabled,grp.getTabUserChecked());
-					Add2Array(js,"override", aclDisabled,grp.getAclChecked());
     			}
     			PrintWriter out = response.getWriter();
     			out.println(js.toString());      
@@ -123,7 +124,7 @@ public class GroupDetails extends HttpServletBase {
     						readonly =!grp.isUpdatable();
     					}
     					o.add("id", x);
-    					o.add("name", ul1.get(i).getName()); 
+    					o.add("name", ul1.get(i).getDomain().getFullDomain() + "." + ul1.get(i).getName()); 
     					js.add(o);
     				}
     			}
@@ -138,7 +139,7 @@ public class GroupDetails extends HttpServletBase {
     				for (int i=0;i<ul2.size();i++) {
     					JSONObject o = new JSONObject();
     					o.add("id", ul2.get(i).getId());
-    					o.add("name", ul2.get(i).getName());
+    					o.add("name", ul2.get(i).getDomain().getFullDomain() + "." + ul2.get(i).getName());
     					js.add(o);
     				}
     			}
@@ -209,7 +210,8 @@ public class GroupDetails extends HttpServletBase {
     			String szCreateProcs = request.getParameter("cproc");
     			String szCreateDatasrc = request.getParameter("cdsrc");
     			String szCreateNotifiers = request.getParameter("cnotify");
-    			String szCreateEngines = request.getParameter("cengine");
+       String szCreateEngines = request.getParameter("cengine");
+       String szCreateServerCompType = request.getParameter("cservercomptype");
     			
     			UserPermissions up = new UserPermissions(session,gid);
     			
@@ -231,6 +233,7 @@ public class GroupDetails extends HttpServletBase {
     			if (szCreateDatasrc != null && op.getCreateDatasrc()) {up.setCreateDatasrc(szCreateDatasrc.equalsIgnoreCase("y"));}
     			if (szCreateNotifiers != null && op.getCreateNotifiers()) {up.setCreateNotifiers(szCreateNotifiers.equalsIgnoreCase("y"));}
     			if (szCreateEngines != null && op.getCreateEngines()) {up.setCreateEngines(szCreateEngines.equalsIgnoreCase("y"));}
+       if (szCreateServerCompType != null && op.getCreateServerCompType()) {up.setCreateServerCompType(szCreateServerCompType.equalsIgnoreCase("y"));} 
     			
     			session.setPermissionsForGroup(gid,up);
     		}
