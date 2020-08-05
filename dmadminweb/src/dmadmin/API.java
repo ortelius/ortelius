@@ -834,7 +834,7 @@ public class API extends HttpServlet
   }
  }
 
- private Application getApplicationFromNameOrID(DMSession so, String idOrName) throws ApiException
+ protected Application getApplicationFromNameOrID(DMSession so, String idOrName) throws ApiException
  {
   try
   {
