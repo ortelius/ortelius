@@ -40,7 +40,7 @@ e.g.
 docker run -v ~/ortelius/data:/var/lib/pgsql/data:Z -p 7171:8080 -d --hostname docker_dh -v ~/.ssh:/keys:Z IMAGE_ID
 ```
 ### Accessing Ortelius Homepage:
-http://localhost:7171/dmadminweb/Home
+Homepage URL : http://localhost:7171/dmadminweb/Home
 
 Login Credentials:
 
