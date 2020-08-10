@@ -28,12 +28,25 @@ Requires macOS El Capitan 10.11 and newer macOS releases are supported. We recom
 ```
 docker pull quay.io/ortelius/ortelius
 ```
-### Ortelius Start
+### Ortelius Quick Start Guide
 ```
+docker pull quay.io/ortelius/ortelius:latest
 mkdir -p ~/ortelius/data
 chmod 777 ~/ortelius/data
-docker run -v ~/ortelius/data:/var/lib/pgsql/data:Z -p 7171:8080 -d --hostname docker_dh -v ~/.ssh:/keys:Z ${IMAGE}
+docker run -v ~/ortelius/data:/var/lib/pgsql/data:Z -p 7171:8080 -d --hostname docker_dh -v ~/.ssh:/keys:Z ${IMAGE_ID_OF_ortelius}
 ```
+e.g.
+```
+docker run -v ~/ortelius/data:/var/lib/pgsql/data:Z -p 7171:8080 -d --hostname docker_dh -v ~/.ssh:/keys:Z IMAGE_ID
+```
+### Accessing Ortelius Homepage:
+Homepage URL : http://localhost:7171/dmadminweb/Home
+
+Login Credentials:
+
+Admin Username: admin
+
+Admin Password: admin
 
 ## Support
 
