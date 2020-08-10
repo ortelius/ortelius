@@ -43,7 +43,9 @@ docker run -v ~/ortelius/data:/var/lib/pgsql/data:Z -p 7171:8080 -d --hostname 
 http://localhost:7171/dmadminweb/Home
 
 Login Credentials:
+
 Admin Username: admin
+
 Admin Password: admin
 
 ## Support
