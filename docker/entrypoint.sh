@@ -31,7 +31,9 @@ export HOME=$(getent passwd `whoami` | cut -d: -f6)
 sudo cp -r /keys/* /root/.ssh
 sudo chown -R root /root/.ssh
 sudo chmod 755 /root/.ssh
-sudo chmod 600 /root/.ssh/known*
+if [ -e /root/.ssh/known_hosts]; then 
+  sudo chmod 600 /root/.ssh/known*
+fi
 
 cp -r /keys/* $HOME/.ssh
 chown -R omreleng $HOME/.ssh 

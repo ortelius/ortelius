@@ -330,7 +330,7 @@ def main():
     if (helm_exe.lower() == "helm2"):
         runcmd(fp_task, to_dir, helm_exe + ' init --client-only --upgrade')
 
-    runcmd(fp_task, to_dir, 'cat ' + to_dir + "/" + chartvalues + " | grep -v pass | grep -v ssh")
+    runcmd(fp_task, to_dir, 'cat ' + to_dir + "/" + chartvalues + " | grep -v pass | grep -v ssh | grep -v aws_access_key_id | grep -v aws_secret_access_key | grep -v serviceprincipal | grep -v tenant")
 
     if ('helmrepo' in newvals and 'url' in newvals['helmrepo']):
         mylogin = " "
@@ -357,6 +357,11 @@ def main():
         namespace = '--namespace "' + newvals['chartnamespace'] + '"'
 
     helmopts = newvals.get('helmopts', '')
+
+    helmextract = newvals.get('helmextract', None)
+
+    if (helmextract is not None):
+        runcmd(fp_task, to_dir, helm_exe + ' pull "' + chart + '" --version "' + version + '" --untar')
 
     runcmd(fp_task, to_dir, helm_exe + ' upgrade "' + releasename + '" "' + chart + '" --version "' + version + '" ' + namespace + ' ' + helmopts + ' --install -f ' + chartvalues)
 
