@@ -1,6 +1,6 @@
 # Ortelius
 
-Otelius on-prem runs as docker container.  In order to install it you need to have docker up and running.
+Ortelius on-prem runs as docker container.  In order to install it you need to have docker up and running.
 
 ## Docker Installation
 ### [Docker for Windows](https://docs.docker.com/docker-for-windows/install/)
