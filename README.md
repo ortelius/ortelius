@@ -14,17 +14,20 @@ The goals of the Ortelius Open Source Project are:
 
 ## Open Source Sub-Committees
 
-### CD Environment - Development Infrastructure and Productivity 
+### CD Environment - Development Infrastructure and Productivity
 
 Create a CD process for managing pull requests, builds, tests and releases.  
 
-Members: Anand Bhagwat, Steve Taylor, Parijat Kalita
+Contributors:
+- Anand Bhagwat
+- Steve Taylor
 
 ### Data Science and Visualization
 
 Determine what reports and maps can currently be created and/or enhanced.  Begin looking at what data can be passed back to the CD pipelines for predictive reporting, risk assessment. (Think truth tables).
 
-Members:
+Contributors:
+- Tracy Ragan
 
 ### Deployment Integrations
 
@@ -37,49 +40,58 @@ Create integrations with documentation and videos for the following CI/CD Soluti
 - Spinnaker
 - Argo
 
-Members:
+Contributors:
+- Steve Taylor
 
 ### Market Place and Domains
 
 Enhance the current Domain structure to make it more like a Marketplace for sharing Microservices.  Think API marketplace.
 
-Members: Christopher Hicks, Steve Taylor
+Contributors:
+- Christopher Hicks
+- Steve Taylor
 
 ### UX and Testing
 
 Review User Interface and make recommendations for improving with a focus on ease of use. Define test cases with automation.
 
-Members:
+Contributors:
+- Tracy Ragan
 
 ### Documentation
 
 Review documentation and re-write or clarify complexities.
 
-Members:
+Contributors:
+- Tracy Ragan
 
 ### Architecture
 
 Work to begin breaking down the monolithic into services. Starting with logging as a good first step. Integration with Istio with Routing. Solving onboarding efforts (AWS scraping for existing microservice customers)
 
-Members: Christopher Hicks, Steve Taylor
+Contributors:
+- Christopher Hicks
+- Steve Taylor
 
 ### Development
 
 Work on existing enhancements and bug fixes. Add them to the core Ortelius repository unless a doc change.
 
-Members: Steve Taylor
+Contributors:
+- Steve Taylor
 
 ### Website/Branding/Outreach
 
 Review messaging, update logo, work on blogs. 
 
-Members: Tracy Ragan
+Contributors:
+- Tracy Ragan
 
 ## Project Management
 
 Track progress, define process, work with Steve and Marky managing pull requests and releases dates.
 
-Members: Eric Courville,  Neetu Jain
+Contributors: Tracy Ragan
 
 ## Ortelius as a SaaS option.
 DeployHub Team is a hosted version of Ortelius. [Sign-up and use for free.](https://www.deployhub.com/free-team-sign-up/) 
