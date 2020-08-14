@@ -21,6 +21,7 @@ Create a CD process for managing pull requests, builds, tests and releases.
 Contributors:
 - Anand Bhagwat
 - Steve Taylor
+- Sanjay Sheel
 
 ### Data Science and Visualization
 
