@@ -82,22 +82,23 @@ Contributors:
 - Steve Taylor
 
 ### Product Management
-Website, branding, outreach 
-Review messaging, update logo, work on blogs. 
-Personas, Journey Maps, service maps, roadmaps, Value Canvas, Go-to-Market strategies, product metrics. 
-What problem or opportunity is being explored?
-How is the solution being framed to tackle this?
-What is being measured to determine if this is successful?
-Who are the people that this solution serves?
-How are they being informed about it?
-How are they learning to actually use or benefit from it?
-How are they involved in collaborating on the solution with us?
-What is the experience like for new collaborators getting started?
-How does the solution fit with both the immediate and wider ecosystem?
-Are there any roadblocks that can be removed in how we operate?
-What additional resources could be made available? Where would those resources help most?
-Where is the documentation being maintained on the project?
-Do we understand accessibility requirements? Are we meeting them?
+
+- Website, branding, outreach 
+- Review messaging, update logo, work on blogs. 
+- Personas, Journey Maps, service maps, roadmaps, Value Canvas, Go-to-Market strategies, product metrics. 
+- What problem or opportunity is being explored?
+- How is the solution being framed to tackle this?
+- What is being measured to determine if this is successful?
+- Who are the people that this solution serves?
+- How are they being informed about it?
+- How are they learning to actually use or benefit from it?
+- How are they involved in collaborating on the solution with us?
+- What is the experience like for new collaborators getting started?
+- How does the solution fit with both the immediate and wider ecosystem?
+- Are there any roadblocks that can be removed in how we operate?
+- What additional resources could be made available? Where would those resources help most?
+- Where is the documentation being maintained on the project?
+- Do we understand accessibility requirements? Are we meeting them?
 
 Contributors:
 - Tracy Ragan
