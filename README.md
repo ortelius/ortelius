@@ -19,6 +19,7 @@ Create a CD process for managing pull requests, builds, tests and releases.
 Contributors:
 - Anand Bhagwat
 - Steve Taylor
+- Sanjay Sheel
 
 ### Data Science and Visualization
 
@@ -55,6 +56,7 @@ Review User Interface and make recommendations for improving with a focus on eas
 
 Contributors:
 - Tracy Ragan
+- Parijat Kalita
 
 ### Documentation
 
@@ -78,18 +80,36 @@ Work on existing enhancements and bug fixes. Add them to the core Ortelius repos
 Contributors:
 - Steve Taylor
 
-### Website/Branding/Outreach
+### Product Management
 
-Review messaging, update logo, work on blogs. 
+- Website, branding, outreach 
+- Review messaging, update logo, work on blogs. 
+- Personas, Journey Maps, service maps, roadmaps, Value Canvas, Go-to-Market strategies, product metrics. 
+- What problem or opportunity is being explored?
+- How is the solution being framed to tackle this?
+- What is being measured to determine if this is successful?
+- Who are the people that this solution serves?
+- How are they being informed about it?
+- How are they learning to actually use or benefit from it?
+- How are they involved in collaborating on the solution with us?
+- What is the experience like for new collaborators getting started?
+- How does the solution fit with both the immediate and wider ecosystem?
+- Are there any roadblocks that can be removed in how we operate?
+- What additional resources could be made available? Where would those resources help most?
+- Where is the documentation being maintained on the project?
+- Do we understand accessibility requirements? Are we meeting them?
 
 Contributors:
 - Tracy Ragan
+- Neetu Jain
 
 ## Project Management
 
 Track progress, define process, work with Steve and Marky managing pull requests and releases dates.
 
-Contributors: Tracy Ragan
+Contributors: 
+-Tracy Ragan
+-Neetu Jain
 
 ## Ortelius as a SaaS option.
 DeployHub Team is a hosted version of Ortelius. [Sign-up and use for free.](https://www.deployhub.com/free-team-sign-up/) 
