@@ -58,6 +58,7 @@ Review User Interface and make recommendations for improving with a focus on eas
 
 Contributors:
 - Tracy Ragan
+- Parijat Kalita
 
 ### Documentation
 
