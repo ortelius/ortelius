@@ -6650,7 +6650,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		{
 			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery(
-					"SELECT	a.id, a.name, a.target, a.xpos, a.ypos, a.predecessorid, a.summary, a.rollup, a.rollback, a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace, a.operator, a.builddate, a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl			" +
+					"SELECT	a.id, a.name, a.target, a.xpos, a.ypos, a.predecessorid, a.summary, a.rollup, a.rollback, a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace, a.chartrepo, a.chartrepourl, a.operator, a.builddate, a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl			" +
 					"FROM	dm.dm_componentitem		a			" +
 					"WHERE	a.compid="+compid + " order by a.rollup desc");
 			while (rs.next())
@@ -6680,15 +6680,17 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
     ci.setChart(rs.getString(13));
     ci.setChartVersion(rs.getString(14));
     ci.setChartNamespace(rs.getString(15));
-    ci.setOperator(rs.getString(16));
-    ci.setBuildDate(rs.getString(17));
-    ci.setDockerRepo(rs.getString(18));
-    ci.setDockerSha(rs.getString(19));
-    ci.setDockerTag(rs.getString(20));
-    ci.setGitCommit(rs.getString(21));
-    ci.setGitRepo(rs.getString(22));
-    ci.setGitTag(rs.getString(23));
-    ci.setGitUrl(rs.getString(24));
+    ci.setChartRepo(rs.getString(16));
+    ci.setChartRepoUrl(rs.getString(17));
+    ci.setOperator(rs.getString(18));
+    ci.setBuildDate(rs.getString(19));
+    ci.setDockerRepo(rs.getString(20));
+    ci.setDockerSha(rs.getString(21));
+    ci.setDockerTag(rs.getString(22));
+    ci.setGitCommit(rs.getString(23));
+    ci.setGitRepo(rs.getString(24));
+    ci.setGitTag(rs.getString(25));
+    ci.setGitUrl(rs.getString(26));
     
 				ret.add(ci);
 			}
@@ -9572,7 +9574,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		System.out.println("getComponentItem, ciid="+ciid);		// +" compid="+compid
 		
 		if(detailed) {
-			sql = "SELECT a.name, a.summary, b.domainid, a.rollup, a.rollback, a.predecessorid, a.status, a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace, a.operator, a.builddate, a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl, "
+			sql = "SELECT a.name, a.summary, b.domainid, a.rollup, a.rollback, a.predecessorid, a.status, a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace,  a.chartrepo, a.chartrepourl, a.operator, a.builddate, a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl, "
 				+ "  a.compid, a.repositoryid, a.target, "
 				+ "  uc.id, uc.name, uc.realname, a.created, "
 				+ "  um.id, um.name, um.realname, a.modified, "
@@ -9583,7 +9585,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				+ "LEFT OUTER JOIN dm.dm_component b ON a.compid=b.id "			// domain
 				+ "WHERE a.id = ?";		//  AND a.compid=?	
 		} else {
-			sql = "SELECT a.name, a.summary, b.domainid, a.rollup, a.rollback, a.predecessorid, a.status, a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace, a.operator, a.builddate, a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl "
+			sql = "SELECT a.name, a.summary, b.domainid, a.rollup, a.rollback, a.predecessorid, a.status, a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace,  a.chartrepo, a.chartrepourl, a.operator, a.builddate, a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl "
 				+ "FROM dm.dm_componentitem a "
 				+ "LEFT OUTER JOIN dm.dm_component b ON a.compid=b.id "			// domain
 				+ "WHERE a.id = ?";		//  AND a.compid=?	
@@ -9620,29 +9622,31 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				ret.setChart(rs.getString(11));
     ret.setChartVersion(rs.getString(12));
     ret.setChartNamespace(rs.getString(13));
-				ret.setOperator(rs.getString(14));
-				ret.setBuildDate(rs.getString(15));
-				ret.setDockerRepo(rs.getString(16));
-    ret.setDockerSha(rs.getString(17));
-    ret.setDockerTag(rs.getString(18));
-				ret.setGitCommit(rs.getString(19));
-				ret.setGitRepo(rs.getString(20));
-				ret.setGitTag(rs.getString(21));
-				ret.setGitUrl(rs.getString(22));
+    ret.setChartRepo(rs.getString(14));
+    ret.setChartRepoUrl(rs.getString(15));
+				ret.setOperator(rs.getString(16));
+				ret.setBuildDate(rs.getString(17));
+				ret.setDockerRepo(rs.getString(18));
+    ret.setDockerSha(rs.getString(19));
+    ret.setDockerTag(rs.getString(20));
+				ret.setGitCommit(rs.getString(21));
+				ret.setGitRepo(rs.getString(22));
+				ret.setGitTag(rs.getString(23));
+				ret.setGitUrl(rs.getString(24));
 				
 				if(detailed) {
-					int compid = getInteger(rs, 23, 0);
+					int compid = getInteger(rs, 25, 0);
 					if(compid != 0) {
 						ret.setParent(getComponent(compid, false));
 					}
-					int repoid = getInteger(rs, 24, 0);
+					int repoid = getInteger(rs, 26, 0);
 					if(repoid != 0) {
 						ret.setRepository(getRepository(repoid, false));
 					}
-					ret.setTargetDir(rs.getString(25));
-					getCreatorModifier(rs, 26, ret);
-					ret.setXpos(getInteger(rs, 34, 0));
-					ret.setYpos(getInteger(rs, 35, 0));
+					ret.setTargetDir(rs.getString(27));
+					getCreatorModifier(rs, 28, ret);
+					ret.setXpos(getInteger(rs, 36, 0));
+					ret.setYpos(getInteger(rs, 37, 0));
 				}
 			} else {
 				System.out.println("No rows retrieved");
@@ -9826,6 +9830,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		   update.add(", chartnamespace = ?", (str != null) ? str : Null.STRING);
 		  }
 		  break;   
+    case DOCKER_CHARTREPO: {
+     String str = (String) changes.get(field);
+     update.add(", chartrepo = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_CHARTREPOURL: {
+     String str = (String) changes.get(field);
+     update.add(", chartrepourl = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
 		  case DOCKER_OPERATOR: {
 		   String str = (String) changes.get(field);
 		   update.add(", operator = ?", (str != null) ? str : Null.STRING);
@@ -14768,7 +14782,23 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
          stmt.execute();
          stmt.close();
          found.add(a);
-        }        
+        } 
+        else if (a.getName().equalsIgnoreCase("ChartRepo"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chartrepo = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }     
+        else if (a.getName().equalsIgnoreCase("ChartRepoUrl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chartrepourl = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }   
         else if (a.getName().equalsIgnoreCase("operator"))
         {
          PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set operator = null where id = ?");
@@ -14891,7 +14921,25 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
          stmt.execute();
          stmt.close();
          found.add(a);
-        }        
+        }   
+        else if (a.getName().equalsIgnoreCase("ChartRepo"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chartrepo = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }  
+        else if (a.getName().equalsIgnoreCase("ChartRepoUrl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chartrepourl = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
         else if (a.getName().equalsIgnoreCase("operator"))
         {
          PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set operator = ? where id = ?");
@@ -15023,7 +15071,25 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
          stmt.execute();
          stmt.close();
          found.add(a);
-        }        
+        }    
+        else if (a.getName().equalsIgnoreCase("ChartRepo"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chartrepo = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("ChartRepoUrl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set chartrepourl = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }     
         else if (a.getName().equalsIgnoreCase("operator"))
         {
          PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set operator = ? where id = ?");
@@ -19026,9 +19092,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		for (ComponentItem ci: cis)
 		{
    String sql = "INSERT INTO dm.dm_componentitem(id,name,summary,compid,repositoryid,target,"
-     +  "predecessorid,xpos,ypos,creatorid,created,modifierid,modified,status,rollup,rollback, dockerrepo, kind, buildid, buildurl, chart, operator, builddate, dockersha, dockertag, gitcommit, gitrepo, gittag, giturl, chartversion, chartnamespace) "
+     +  "predecessorid,xpos,ypos,creatorid,created,modifierid,modified,status,rollup,rollback, dockerrepo, kind, buildid, buildurl, chart, operator, builddate, dockersha, dockertag, gitcommit, gitrepo, gittag, giturl, chartversion, chartnamespace, chartrepo, chartrepourl) "
      +  "SELECT ?,name,summary,?,repositoryid,target,"
-     + "?,xpos,ypos,?,?,?,?,'N', rollup, rollback, dockerrepo, kind, buildid, buildurl, chart, operator, builddate, dockersha, dockertag, gitcommit, gitrepo, gittag, giturl, chartversion, chartnamespace "
+     + "?,xpos,ypos,?,?,?,?,'N', rollup, rollback, dockerrepo, kind, buildid, buildurl, chart, operator, builddate, dockersha, dockertag, gitcommit, gitrepo, gittag, giturl, chartversion, chartnamespace, chartrepo, chartrepourl "
      + "FROM dm.dm_componentitem "
      +  "WHERE id=? AND status='N'";
 		
@@ -28330,7 +28396,7 @@ public JSONArray getComp2Endpoints(int compid)
 	  String sep="";
 	  int n=0;
 	  for (String s : cmd) {
-		  if (++n > 2) {
+		  if (++n > 1) {
 			  c=c+sep+"\""+s+"\"";
 			  sep=",";
 		  }
@@ -29200,7 +29266,7 @@ public JSONArray getComp2Endpoints(int compid)
   return comp;
  }   
  
- public JSONObject logDeployment(Application app, Component comp, Environment env, int exitcode, String log)
+ public JSONObject logDeployment(Application app, ArrayList<Component> comps, Environment env, int exitcode, String log)
  {
   JSONObject ret = new JSONObject();
 
@@ -29226,9 +29292,11 @@ public JSONArray getComp2Endpoints(int compid)
   ret.add("deployid", deployid);
   
   long t = timeNow();
+  boolean firsttime = true;
   
-  if (comp != null)
+  for (int k=0; k< comps.size();k++)
   { 
+   Component comp = comps.get(k);
    Component newcompbase = this.getBaseCompVersion(comp);
    
    // find application on env that has same base component 
@@ -29240,14 +29308,14 @@ public JSONArray getComp2Endpoints(int compid)
    for (int i=0;i< deployedapps.size();i++)
    {
     int appid = deployedapps.get(i).getId();
-    List<Component> comps = this.getComponents(ObjectType.APPLICATION, appid, false);
+    List<Component> comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
     
-    for (int k=0; k < comps.size(); k++)
+    for (int j=0; j < comps4app.size(); j++)
     {
-     Component appcompbase = this.getBaseCompVersion(comps.get(k));
+     Component appcompbase = this.getBaseCompVersion(comps4app.get(j));
      if (newcompbase.getId() == appcompbase.getId())
      {
-      replace_compid = comps.get(k).getId();
+      replace_compid = comps4app.get(j).getId();
       found = i;
       break;
      }
@@ -29259,37 +29327,41 @@ public JSONArray getComp2Endpoints(int compid)
    
    if (found >= 0)
    {
-    Application parent_app = deployedapps.get(found);
-
-    int verid = this.applicationNewVersion(parent_app.getId(), 100, 100, false);
-    app = this.getApplication(verid, false);
-    
-    String name = parent_app.getName();
-    
-    ArrayList<String> parts = new ArrayList<String>(Arrays.asList(name.split(";")));
-    
-    if (parts.size() == 1)
-     parts.add("hotfix-1");
-    else
+    if (firsttime)
     {
-     String ver = parts.get(parts.size() - 1); 
-     if (ver.startsWith("hotfix-"))
-     {
-      ver = ver.substring("hotfix-".length());
-      int vernum = new Integer(ver).intValue();
-      vernum++;
-      ver = "hotfix-" + vernum;
-      parts.set(parts.size()-1, ver);
-     } 
+     firsttime = false;
+
+     Application parent_app = deployedapps.get(found);
+
+     int verid = this.applicationNewVersion(parent_app.getId(), 100, 100, false);
+     app = this.getApplication(verid, false);
+
+     String name = parent_app.getName();
+
+     ArrayList<String> parts = new ArrayList<String>(Arrays.asList(name.split(";")));
+
+     if (parts.size() == 1)
+      parts.add("hotfix-1");
      else
      {
-      parts.add("hotfix-1");
-     }
-    } 
-    
-    name = String.join(";", parts);
-    RenameObject("appversion",app.getId(),name);
-    
+      String ver = parts.get(parts.size() - 1); 
+      if (ver.startsWith("hotfix-"))
+      {
+       ver = ver.substring("hotfix-".length());
+       int vernum = new Integer(ver).intValue();
+       vernum++;
+       ver = "hotfix-" + vernum;
+       parts.set(parts.size()-1, ver);
+      } 
+      else
+      {
+       parts.add("hotfix-1");
+      }
+     } 
+
+     name = String.join(";", parts);
+     RenameObject("appversion",app.getId(),name);
+    }
     this.applicationReplaceComponent(app.getId(), replace_compid, comp.getId(), false);
    }
   }
@@ -29332,12 +29404,12 @@ public JSONArray getComp2Endpoints(int compid)
    if (app.getIsRelease().compareToIgnoreCase("Y") == 0)
     isRelease = true;
    
-   List<Component> comps = getComponents(ObjectType.APPLICATION, app.getId(),isRelease);
+   List<Component> comps4app = getComponents(ObjectType.APPLICATION, app.getId(),isRelease);
    List<Server> srvs = getServersInEnvironment(env.getId());
    
-   for (int k=0;k<comps.size();k++)
+   for (int k=0;k<comps4app.size();k++)
    {
-    Component c = comps.get(k);
+    Component c = comps4app.get(k);
     for (int x=0;x<srvs.size();x++)
     {
      addComponentToServer(srvs.get(x).getId(), c.getId());

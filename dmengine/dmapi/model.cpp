@@ -10564,6 +10564,8 @@ void Model::getVariablesForObject(Object &obj, Scope &vars)
 	 char chart[100];
 	 char chartversion[1024];
 	 char chartnamespace[1024];
+	 char chartrepo[1024];
+	 char chartrepourl[1024];
 	 char oper[100];
 	 char builddate[100];
 	 char dockersha[1024];
@@ -10573,7 +10575,7 @@ void Model::getVariablesForObject(Object &obj, Scope &vars)
 	 char gitrepo[100];
 	 char gittag[100];
 	 char giturl[1024];
-     SQLLEN ni_buildid = 0, ni_buildurl = 0, ni_chart = 0, ni_chartversion = 0, ni_chartnamespace = 0, ni_oper = 0, ni_builddate = 0, ni_dockersha = 0, ni_dockertag = 0, ni_gitcommit = 0, ni_gitrepo = 0, ni_gittag = 0, ni_giturl = 0, ni_dockerrepo =0;
+     SQLLEN ni_buildid = 0, ni_buildurl = 0, ni_chart = 0, ni_chartversion = 0, ni_chartnamespace = 0, ni_chartrepo= 0, ni_chartrepourl = 0, ni_oper = 0, ni_builddate = 0, ni_dockersha = 0, ni_dockertag = 0, ni_gitcommit = 0, ni_gitrepo = 0, ni_gittag = 0, ni_giturl = 0, ni_dockerrepo =0;
 
 	 sql->BindColumn(1, SQL_CHAR, buildid, sizeof(buildid), &ni_buildid);
 	 sql->BindColumn(2, SQL_CHAR, buildurl, sizeof(buildurl), &ni_buildurl);
@@ -10587,10 +10589,12 @@ void Model::getVariablesForObject(Object &obj, Scope &vars)
 	 sql->BindColumn(10, SQL_CHAR, giturl, sizeof(giturl), &ni_giturl);	 
 	 sql->BindColumn(11, SQL_CHAR, chartversion, sizeof(chartversion), &ni_chartversion);
 	 sql->BindColumn(12, SQL_CHAR, chartnamespace, sizeof(chartnamespace), &ni_chartnamespace);	 
-	 sql->BindColumn(13, SQL_CHAR, dockertag, sizeof(dockertag), &ni_dockertag);	
-	 sql->BindColumn(14, SQL_CHAR, dockerrepo, sizeof(dockerrepo), &ni_dockerrepo);	 
+     sql->BindColumn(13, SQL_CHAR, chartrepo, sizeof(chartrepo), &ni_chartrepo);	 
+	 sql->BindColumn(14, SQL_CHAR, chartrepourl, sizeof(chartrepourl), &ni_chartrepourl);	 
+	 sql->BindColumn(15, SQL_CHAR, dockertag, sizeof(dockertag), &ni_dockertag);	
+	 sql->BindColumn(16, SQL_CHAR, dockerrepo, sizeof(dockerrepo), &ni_dockerrepo);	 
 
-	 int res = sql->ExecuteSQL("select buildid, buildurl, chart, operator, builddate, dockersha, gitcommit, gitrepo, gittag, giturl, chartversion, chartnamespace, dockertag, dockerrepo from dm_componentitem where compid = %d and kind = 'docker'",obj.id());
+	 int res = sql->ExecuteSQL("select buildid, buildurl, chart, operator, builddate, dockersha, gitcommit, gitrepo, gittag, giturl, chartversion, chartnamespace, chartrepo, chartrepourl, dockertag, dockerrepo from dm_componentitem where compid = %d and kind = 'docker'",obj.id());
 	 res = sql->FetchRow();
 	 if (IS_SQL_SUCCESS(res))
 	 {
@@ -10617,6 +10621,14 @@ void Model::getVariablesForObject(Object &obj, Scope &vars)
 	  value = NULL_IND(chartnamespace, NULL);
 	  if (value != NULL  && strlen(value) > 0)
         vars.set("chartnamespace", value, nc);
+
+	  value = NULL_IND(chartrepo, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("helmrepo.name", value, nc);
+
+	  value = NULL_IND(chartrepourl, NULL);
+	  if (value != NULL  && strlen(value) > 0)
+        vars.set("helmrepo.url", value, nc);
 
       value = NULL_IND(oper, NULL);
 	  if (value != NULL  && strlen(value) > 0)

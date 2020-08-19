@@ -245,7 +245,27 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"chartnamespace_callback\" value=\"" + callback + "\"/></td>";
      tdedit3 += "<td><input type=\"hidden\" name=\"chartnamespace_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
-    }    
+    }   
+    else if (label == "Helm Chart Repo")
+    {
+     tdedit3 += "<tr>";
+     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit3 += "<td><input name=\"chartrepo_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"chartrepo_field\" value=\"" + field + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"chartrepo_callback\" value=\"" + callback + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"chartrepo_oldval\" value=\"" + val + "\"/></td>";
+     tdedit3 += "</tr>";
+    }  
+    else if (label == "Helm Chart Repo Url")
+    {
+     tdedit3 += "<tr>";
+     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit3 += "<td><input name=\"chartrepourl_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"chartrepourl_field\" value=\"" + field + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"chartrepourl_callback\" value=\"" + callback + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"chartrepourl_oldval\" value=\"" + val + "\"/></td>";
+     tdedit3 += "</tr>";
+    }  
     else if (label == "Operator")
     {
      tdedit3 += "<tr>";
@@ -790,6 +810,25 @@ function GetSaveSummaryItemData(instance, data, prefix)
   }
  } 
  
+ if (typeof view.chartrepo_val !== 'undefined' && typeof view.chartrepo_oldval !== 'undefined')
+ {
+  if (view.chartrepo_val != view.chartrepo_oldval)
+  {
+   console.log('change_' + view.chartrepo_field + ' = ' + view.chartrepo_val);
+   data['change_' + view.chartrepo_field] = view.chartrepo_val;
+   ret = true;
+  }
+ } 
+ 
+ if (typeof view.chartrepourl_val !== 'undefined' && typeof view.chartrepourl_oldval !== 'undefined')
+ {
+  if (view.chartrepourl_val != view.chartrepourl_oldval)
+  {
+   console.log('change_' + view.chartrepourl_field + ' = ' + view.chartrepourl_val);
+   data['change_' + view.chartrepourl_field] = view.chartrepourl_val;
+   ret = true;
+  }
+ } 
  
  if (typeof view.operator_val !== 'undefined' && typeof view.operator_oldval !== 'undefined')
  {

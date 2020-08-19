@@ -5075,7 +5075,7 @@ function EditSummaryButton(userDialog, prefix)
 
    var myform = pwd.find("#" + prefix + "summform");
 
-   if (myform.find(":input[name=\"preaction_val\"]").length > 0)
+   if (myform.find(":input[name=\"customaction_val\"]").length > 0)
    {
 	   console.log("About to GetActions");
     $.ajax(
@@ -5097,26 +5097,39 @@ function EditSummaryButton(userDialog, prefix)
 
       for (n = 0; n < res.length; n++)
       {
-    	var action = res[n].action;
+    	  var action = res[n].action;
+    	  
+    	  if (typeof preaction != "undefined")
+    	  { 
         if (save_preaction_val == action.id)
         preaction.append('<option id="preact' + n + '" selected value=\"' + action.type + action.id + "\">" + action.name + '</option>');
        else
         preaction.append('<option id="preact' + n + '" value=\"' + action.type + action.id + "\">" + action.name + '</option>');
+    	  }  
 
-       if (save_postaction_val == action.id)
-        postaction.append('<option id="postact' + n + '" selected value=\"' + action.type + action.id + "\">" + action.name + '</option>');
-       else
-        postaction.append('<option id="postact' + n + '" value=\"' + action.type + action.id + "\">" + action.name + '</option>');
-
-       if (save_customaction_val == action.id)
-        customaction.append('<option id="customact' + n + '" selected value=\"' + action.type + action.id + "\">" + action.name + '</option>');
-       else
-        customaction.append('<option id="customact' + n + '" value=\"' + action.type + action.id + "\">" + action.name + '</option>');
-
-       if (save_taskaction_val == action.id)
-           taskaction.append('<option id="customact' + n + '" selected value=\"' + action.type + action.id + "\">" + action.name + '</option>');
-          else
-           taskaction.append('<option id="customact' + n + '" value=\"' + action.type + action.id + "\">" + action.name + '</option>');
+    	  if (typeof postaction != "undefined")
+    	  { 
+        if (save_postaction_val == action.id)
+         postaction.append('<option id="postact' + n + '" selected value=\"' + action.type + action.id + "\">" + action.name + '</option>');
+        else
+         postaction.append('<option id="postact' + n + '" value=\"' + action.type + action.id + "\">" + action.name + '</option>');
+    	  }
+    	  
+    	  if (typeof customaction != "undefined")
+    	  {
+        if (save_customaction_val == action.id)
+         customaction.append('<option id="customact' + n + '" selected value=\"' + action.type + action.id + "\">" + action.name + '</option>');
+        else
+         customaction.append('<option id="customact' + n + '" value=\"' + action.type + action.id + "\">" + action.name + '</option>');
+    	  }
+    	  
+    	  if (typeof taskaction != "undefined")
+    	  { 
+        if (save_taskaction_val == action.id)
+          taskaction.append('<option id="customact' + n + '" selected value=\"' + action.type + action.id + "\">" + action.name + '</option>');
+        else
+          taskaction.append('<option id="customact' + n + '" value=\"' + action.type + action.id + "\">" + action.name + '</option>');
+    	  }
       }
      },
      error : function(jqxhr, status, err)

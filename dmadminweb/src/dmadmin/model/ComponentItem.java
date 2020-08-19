@@ -47,6 +47,8 @@ public class ComponentItem
 	private String BuildId = "";
 	private String BuildUrl = "";
 	private String Chart = "";
+ private String ChartRepo = "";
+ private String ChartRepoUrl = "";
  private String ChartVersion = "";
 	private String DockerSha = "";
  private String DockerRepo = "";
@@ -137,7 +139,17 @@ public class ComponentItem
   return ChartVersion;
  }
  
-
+ public String getChartRepo()
+ {
+  return ChartRepo;
+ }
+ 
+ public String getChartRepoUrl()
+ {
+  return ChartRepoUrl;
+ }
+ 
+ 
  public void setChartNamespace(String chartnamespace)
  {
   ChartNamespace = chartnamespace;
@@ -153,6 +165,17 @@ public class ComponentItem
  {
   ChartVersion = chartversion;
  }
+ 
+ public void setChartRepo(String chartrepo)
+ {
+  ChartRepo = chartrepo;
+ }
+ 
+ public void setChartRepoUrl(String chartrepourl)
+ {
+  ChartRepoUrl = chartrepourl;
+ }
+ 
  
  public String getDockerSha()
  {
@@ -326,6 +349,8 @@ public class ComponentItem
    ds.addProperty(SummaryField.DOCKER_CHART, "Helm Chart", getChart());
    ds.addProperty(SummaryField.DOCKER_CHARTVERSION, "Helm Chart Version", getChartVersion());
    ds.addProperty(SummaryField.DOCKER_CHARTNAMESPACE, "Helm Chart Namespace", getChartNamespace());
+   ds.addProperty(SummaryField.DOCKER_CHARTREPO, "Helm Chart Repo", getChartRepo());
+   ds.addProperty(SummaryField.DOCKER_CHARTREPOURL, "Helm Chart Repo Url", getChartRepoUrl());
    ds.addProperty(SummaryField.DOCKER_OPERATOR, "Operator", getOperator());
    ds.addProperty(SummaryField.DOCKER_REPO, "Container Registry", getDockerRepo());
    ds.addProperty(SummaryField.DOCKER_SHA, "Container Digest", getDockerSha());
@@ -443,6 +468,8 @@ public class ComponentItem
    obj.add("Helm Chart", getChart());
    obj.add("Helm Chart Version", getChartVersion());
    obj.add("Helm Chart Namespace", getChartNamespace());
+   obj.add("Helm Chart Repo", getChartRepo());
+   obj.add("Helm Chart Repo Url", getChartRepoUrl());
    obj.add("Operator", getOperator());
    obj.add("Build Date", getBuildDate());
    obj.add("Container Registry", getDockerRepo());
