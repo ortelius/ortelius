@@ -4,13 +4,11 @@ Welcome to Ortelius. Ortelius is an open source project that aims to simplify th
 ## Ortelius Goals
 The goals of the Ortelius Open Source Project are: 
 
-1) Collect and provide data for value stream feedback loop and predictive analysis based on a microservice and consuming application.  
-
-2) Become the go to deployment solution for Jenkins, JenkinsX, Spinnaker, Screwdriver and Tekton (add to Tekton Catalog & Hub).
-
-3) Establish a market place to share microservices with their deployment requirements and versions.
-
-4) Provide Visibility reporting of deployment meta data across clusters.
+1) Simplify deployment automation across the life cycle in traditional, hybrid and microservice environments.
+2) Allow organizations to achieve business agility by providing a clear path for fast and safe incremental releases with impact analysis and feedback loops. 
+3) Give developers the power to control how their software is released across all environments by defining deployment configurations data that is separate from the definition.   
+4) Deliver transparency into the deployment process by mapping component and microservice relationships with BOM and Difference Reports across deployed environments (clusters, cloud, physical).  
+5) Establish a market place to share microservices with their deployment requirements and versions.
 
 ## Open Source Sub-Committees
 
