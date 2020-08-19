@@ -73,7 +73,7 @@ def main():
 
     timestamp = int(time.time()*1000.0)
     to_dir = "/tmp/dh" + str(timestamp)
-    from_dir = os.getcwd()
+#    from_dir = os.getcwd()
     tempdir = tempfile.mkdtemp()
     os.chdir(tempdir)
 
@@ -159,7 +159,6 @@ def main():
     publish = newvals['lambda'].get('publish', '--publish')
     revisionid = prefix_param("--revision-id", newvals['lambda'].get('revisionid', None))
     funcname = prefix_param("--function-name", funcname)
-    
     cmd = "aws lambda update-function-code " + funcname + " " + funcfile + " " + s3bucket + " " + s3key + " " + s3objectversion + " " + publish + " " + revisionid
     runcmd(fp_task, to_dir, cmd)
     fp_task.close()
