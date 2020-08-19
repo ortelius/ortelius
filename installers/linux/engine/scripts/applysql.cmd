@@ -35,6 +35,7 @@ cd /d "%sqldir%"
 goto :loop
 
 :end_loop
+goto :exitnow
 
 if NOT "%dbtype%" == "oracle" goto :sqlserver
 
@@ -61,10 +62,12 @@ if NOT "%fileext%" == ".sql" goto :loop_ora
 
 echo.Running %sqlscript% in directory %sqldir%
 cd /d "%sqldir%"
+echo "%dbhome%\bin\sqlplus.exe" "%username%/%password%@%database%" @"%sqlscript%" 
 "%dbhome%\bin\sqlplus.exe" "%username%/%password%@%database%" @"%sqlscript%" 
 goto :loop_ora
 
 :end_loop_ora
+goto :exitnow
 
 :sqlserver
 if exist "%dbhome%" goto sqlserverhomeok
@@ -95,5 +98,6 @@ cd /d "%sqldir%"
 goto :loop_sqlserver
 
 :end_loop_sqlserver
+:exitnow
 echo.done.
 EXIT /B 0

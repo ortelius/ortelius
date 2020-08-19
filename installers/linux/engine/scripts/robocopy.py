@@ -85,7 +85,7 @@ def main():
     my_env['ANSIBLE_STDOUT_CALLBACK'] = 'minimal'
     p = subprocess.Popen('ansible-playbook runit.yml -i hosts', env=my_env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for line in p.stdout.readlines():
-        print(line.decode('ascii'))
+        print(line.decode('uft-8'))
         
     p.wait()
 

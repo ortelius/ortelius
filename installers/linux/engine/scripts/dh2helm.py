@@ -45,6 +45,11 @@ def upload_helm(override, chartvalues, newvals):
     content_list = list(filter(lambda x: 'pass' not in x, content_list))
     content_list = list(filter(lambda x: 'userid' not in x, content_list))
     content_list = list(filter(lambda x: 'username' not in x, content_list))
+    content_list = list(filter(lambda x: 'aws_access_key_id' not in x, content_list))
+    content_list = list(filter(lambda x: 'aws_secret_access_key' not in x, content_list))
+    content_list = list(filter(lambda x: 'serviceprincipal' not in x, content_list))
+    content_list = list(filter(lambda x: 'tenant' not in x, content_list))
+
     my_file = open("helm/" + chartvalues, "w")
     my_file.writelines(content_list)
     my_file.close()
@@ -150,6 +155,12 @@ def runcmd(fp_task, workdir, cmd):
     tname = cmd
     if ('--install' in cmd):
         tname = cmd.split('--install')[0]
+    elif ('aws_access_key_id' in cmd):
+        tname = cmd.split('aws_access_key_id')[0] + ' aws_access_key_id'
+    elif ('aws_secret_access_key' in cmd):
+        tname = cmd.split('aws_secret_access_key')[0] + ' aws_secret_access_key'
+    elif ('--service-principal' in cmd):
+        tname = cmd.split('--service-principal')[0] + ' --service-principal'
 
     fp_task.write("  - name: " + tname + "\n")
     fp_task.write("    shell: " + cmd + "\n")
@@ -325,6 +336,9 @@ def main():
             resourcegroup = newvals['aks']['resourcegroup']
             cluster = newvals['aks']['cluster']
             runcmd(fp_task, to_dir, 'az aks get-credentials --resource-group ' + resourcegroup + ' --name ' + cluster)
+
+    if ('kubectl_context' in newvals):
+        runcmd(fp_task, to_dir, 'kubectl config set-context ' + newvals['kubectl_context'])
 
     helm_exe = newvals.get("helm_exe", "helm")
     if (helm_exe.lower() == "helm2"):

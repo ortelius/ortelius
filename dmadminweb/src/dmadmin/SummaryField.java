@@ -163,7 +163,10 @@ public enum SummaryField
  DOCKER_GITURL (1611, "Git URL", null),
  DOCKER_CHARTVERSION  (1612, "Helm Chart Version", null),
  DOCKER_CHARTNAMESPACE  (1613, "Helm Chart Namespace", null),
- DOCKER_TAG  (1614, "Container Tag", null);
+ DOCKER_TAG  (1614, "Container Tag", null),
+ DOCKER_CHARTREPO  (1615, "Helm Chart Repo", null),
+ DOCKER_CHARTREPOURL  (1616, "Helm Chart Repo Url", null);
+ 
  
 	private final int m_value;
 	private final ObjectType m_type;

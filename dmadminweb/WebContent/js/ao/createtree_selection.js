@@ -388,10 +388,10 @@ function GetDomainDataHierarchy(typestr)
  
  console.log("GetDomainData("+typestr+")=" +lastdomain);
  var url;
- if (typestr == "components" || typestr == "fragments") {
+ if (typestr == "fragments") {
 	 url="GetDomainContent?typestr="+typestr+"&domainid=0&hierarchy=" + lastdomain;
  } else {
-	 url="GetDomainContent?typestr="+typestr+"&domainid=0";
+	 url="GetDomainContent?typestr="+typestr+"&domainid=" + userdomid;
  }
  $.ajax({
     dataType: "json",

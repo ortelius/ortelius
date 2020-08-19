@@ -3475,7 +3475,7 @@ public class API extends HttpServlet
          if (reqname == null || (reqname != null && reqname.equals(att.getName())))
          {
           JSONObject jo = new JSONObject();
-          jo.add(att.getName(), att.getValue());
+          jo.add(att.getName().replace("\\","\\\\"), att.getValue().replace("\\","\\\\"));
           as.add(jo);
          }
         }
@@ -5201,12 +5201,7 @@ public class API extends HttpServlet
   JSONObject ret = new JSONObject();
   
   try
-  {
-   String username = request.getParameter("user");
-   String password = request.getParameter("pass");
-   
-   so.Login(username, password, null);
-   
+  {   
    response.setContentType("application/json");
    PrintWriter out = response.getWriter();
    
@@ -5214,7 +5209,7 @@ public class API extends HttpServlet
    JsonObject obj  = new JsonParser().parse(requestData).getAsJsonObject();
    String envname  = (obj.get("environment") != null) ? obj.get("environment").getAsString() : "";
    String appname  = (obj.get("application") != null) ? obj.get("application").getAsString() : "";
-   String compname = (obj.get("compversion") != null) ? obj.get("compversion").getAsString() : "";
+   JsonArray compnames = (obj.get("compversion") != null) ? obj.get("compversion").getAsJsonArray() : new JsonArray();
    String rc = (obj.get("rc") != null) ? obj.get("rc").getAsString() : "-1";
    String log = (obj.get("log") != null) ? obj.get("log").getAsString() : "";
    
@@ -5230,9 +5225,9 @@ public class API extends HttpServlet
     return;
    }
    
-   if (appname == null && compname == null)
+   if (appname == null && compnames == null)
    {
-    ret.add("errormsg", "Application or Component Name required");
+    ret.add("errormsg", "Application or Component Names required");
     out.println(ret.getJSON());
     return;
    }
@@ -5274,28 +5269,32 @@ public class API extends HttpServlet
    } 
    
    Component comp = null;
+   ArrayList<Component> comps = new ArrayList<Component>();
    
-   if (compname != null  && !compname.isEmpty())
+   if (compnames != null)
    {
-    try
+    for (int k=0; k < compnames.size(); k++)
     {
-     comp = this.getComponentFromNameOrID(so, compname);
-    }
-    catch (ApiException e)
-    {
-    }
+     String compname = compnames.get(k).getAsString();
+     try
+     {
+      comp = this.getComponentFromNameOrID(so, compname);
+      comps.add(comp);
+     }
+     catch (ApiException e)
+     {
+     }
    
-    if (comp == null)
-    {
-     ret.add("errormsg", "Component not found");
-     out.println(ret.getJSON());
-     return;
-    }
-   } 
-   
-   ret = so.logDeployment(app, comp, env, exitcode, log);
-   
-   String result = ret.getJSON();
+     if (comp == null)
+     {
+      ret.add("errormsg", "Component not found");
+      out.println(ret.getJSON());
+      return;
+     }
+    } 
+   }  
+   ret = so.logDeployment(app, comps, env, exitcode, log);
+   String result = ret.getJSON(); 
    System.out.println(result);
    out.println(result);
   }
