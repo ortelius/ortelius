@@ -49,6 +49,7 @@ Enhance the current Domain structure to make it more like a Marketplace for shar
 Contributors:
 - Christopher Hicks
 - Steve Taylor
+- Ayesha Khaliq
 
 ### UX and Testing
 
@@ -73,6 +74,7 @@ Work to begin breaking down the monolithic into services. Starting with logging 
 Contributors:
 - Christopher Hicks
 - Steve Taylor
+- Ayesha Khaliq
 
 ### Development
 
