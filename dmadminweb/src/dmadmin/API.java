@@ -2840,7 +2840,7 @@ public class API extends HttpServlet
       String deployment = elements[1];
       String format = (request.getParameter("format") == null) ? "zip" : request.getParameter("format");
 
-      obj = so.getHelmChart(new Integer(deployment).intValue());
+      obj = so.getHelmChart(new Integer(deployment).intValue(), format);
 
       if (format.equalsIgnoreCase("zip"))
       {
