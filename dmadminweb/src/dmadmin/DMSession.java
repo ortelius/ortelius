@@ -24759,8 +24759,11 @@ return ret;
  
  public ArrayList<Application> getLastDeployedAppInEnv(Environment env)
  {
-  String sql = "select b.id from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c where a.envid = ? and b.status = 'N' and b.isrelease = 'N' and a.appid = b.id and a.envid = c.id "
-    + " and  a.finishts is not null  and (a.envid, a.deploymentid) in (select envid, max(deploymentid) from dm.dm_deployment group by envid) and  b.domainid in (" + m_domainlist + ")";
+//  String sql = "select b.id from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c where a.envid = ? and b.status = 'N' and b.isrelease = 'N' and a.appid = b.id and a.envid = c.id "
+//    + " and  a.finishts is not null  and (a.envid, a.deploymentid) in (select envid, max(deploymentid) from dm.dm_deployment group by envid) and  b.domainid in (" + m_domainlist + ")";
+
+  String sql = "select b.id, max(a.deploymentid) from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c "
+    + "where a.envid = ? and b.status = 'N' and b.isrelease = 'N' and a.appid = b.id and a.envid = c.id  and  b.domainid in (" + m_domainlist + ") group by b.id order by 2 desc";
 
   ArrayList<Application> ret = new ArrayList<Application>();
 
@@ -29271,6 +29274,8 @@ public JSONArray getComp2Endpoints(int compid)
  public JSONObject logDeployment(Application app, ArrayList<Component> comps, Environment env, int exitcode, String log)
  {
   JSONObject ret = new JSONObject();
+  ArrayList<Integer> comps2add = new ArrayList<Integer>();
+  HashMap<Integer, Integer> comps2replace = new HashMap<Integer, Integer>();
 
   String sql = "select max(deploymentid) from dm.dm_deployment";
   int deployid = 0;
@@ -29294,104 +29299,191 @@ public JSONArray getComp2Endpoints(int compid)
   ret.add("deployid", deployid);
 
   long t = timeNow();
-  boolean firsttime = true;
-  boolean newappver = true;
 
-  for (int k = 0; k < comps.size(); k++)
+  ArrayList<String> basecompnames = new ArrayList<String>();
+
+  if (comps.size() == 0)
   {
-   Component comp = comps.get(k);
-   Component newcompbase = this.getBaseCompVersion(comp);
-
-   boolean found = false;
-   int replace_compid = -1;
-
    int appid = app.getId();
    List<Component> comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
 
    for (int j = 0; j < comps4app.size(); j++)
    {
-    Component appcompbase = this.getBaseCompVersion(comps4app.get(j));
-    if (newcompbase.getId() == appcompbase.getId())
-    {
-     replace_compid = comps4app.get(j).getId();
-     found = true;
-     break;
-    }
+    if (!basecompnames.contains("" + comps4app.get(j).getId()))
+     basecompnames.add("" + comps4app.get(j).getId());
    }
-
-   if (firsttime)
+  }
+  else
+  {
+   for (int k = 0; k < comps.size(); k++)
    {
-    firsttime = false;
+    Component comp = comps.get(k);
+    Component newcompbase = this.getBaseCompVersion(comp);
 
-    if (found)
+    int replace_compid = -1;
+
+    int appid = app.getId();
+    List<Component> comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
+
+    for (int j = 0; j < comps4app.size(); j++)
     {
-     for (int j = 0; j < comps4app.size(); j++)
+     Component appcompbase = this.getBaseCompVersion(comps4app.get(j));
+     if (newcompbase.getId() == appcompbase.getId())
      {
-      Component appcompbase = comps4app.get(j);
-      if (comp.getId() == appcompbase.getId())
-      {
-       newappver = false;
-       break;
-      }
+      replace_compid = comps4app.get(j).getId();
+      break;
      }
     }
 
-    if (newappver)
+    if (replace_compid > 0)
+     comps2replace.put(new Integer(replace_compid), new Integer(comp.getId()));
+    else
     {
-     String name = app.getName();
-
-     int verid = this.applicationNewVersion(app.getId(), 100, 100, false);
-     app = this.getApplication(verid, false);
-     boolean dup = true;
-     do
-     {
-      ArrayList<String> parts = new ArrayList<String>(Arrays.asList(name.split(";")));
-
-      if (parts.size() == 1)
-       parts.add("hotfix-1");
-      else
-      {
-       String ver = parts.get(parts.size() - 1);
-       if (ver.startsWith("hotfix-"))
-       {
-        ver = ver.substring("hotfix-".length());
-        int vernum = new Integer(ver).intValue();
-        vernum++;
-        ver = "hotfix-" + vernum;
-        parts.set(parts.size() - 1, ver);
-       }
-       else
-       {
-        parts.add("hotfix-1");
-       }
-      }
-
-      name = String.join(";", parts);
-      Application check = null;
-
-      try
-      {
-       check = this.getApplicationByName(app.getDomain().getFullName() + "." + name);
-      }
-      catch (Exception e)
-      {
-
-      }
-
-      if (check == null)
-      {
-       RenameObject("appversion", app.getId(), name);
-       dup = false;
-      }
-     }
-     while (dup);
+     comps2add.add(new Integer(comp.getId()));
     }
    }
+   
+   // build new comp version list base on original + replace + new
+   
+   int appid = app.getId();
+   List<Component> comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
 
-   if (found)
-    this.applicationReplaceComponent(app.getId(), replace_compid, comp.getId(), false);
-   else
-    this.addComponentToApplication(app.getId(), replace_compid, 100, 100, false);
+   for (int j = 0; j < comps4app.size(); j++)
+   {
+    if (!basecompnames.contains("" + comps4app.get(j).getId()))
+    {
+     // see comp is a replace
+     if (comps2replace.containsKey(new Integer(comps4app.get(j).getId())))
+      basecompnames.add("" + comps2replace.get(new Integer(comps4app.get(j).getId())));
+     else
+      basecompnames.add("" + comps4app.get(j).getId());
+    }
+   }
+   
+   for (int j=0;j<comps2add.size();j++)
+   {
+    if (!basecompnames.contains("" + comps2add.get(j)))
+     basecompnames.add("" + comps2add.get(j));
+   }
+  }
+  
+  
+
+  Collections.sort(basecompnames);
+
+  String newAppComps = "";
+  for (int m = 0; m < basecompnames.size(); m++)
+   newAppComps += basecompnames.get(m);
+
+  // Check if current version is identical
+
+  Application baseapp = this.getBaseAppVersion(app);
+  Application latestapp = null;
+  ArrayList<Application> deployed_apps = this.getLastDeployedAppInEnv(env);
+
+  ArrayList<Application> appvers = new ArrayList<Application>();
+
+  for (int x = 0; x < deployed_apps.size(); x++)
+  {
+   Application deployedbase = this.getBaseAppVersion(deployed_apps.get(x));
+
+   if (deployedbase.getId() == baseapp.getId())
+   {
+    appvers.add(deployed_apps.get(x));
+   }
+  }
+
+  boolean identical = false;
+  for (int b = 0; b < appvers.size(); b++)
+  {
+   latestapp = appvers.get(b);
+   List<Component> latestcomps = this.getComponents(ObjectType.APPLICATION, latestapp.getId(), false);
+   ArrayList<String> deploycompnames = new ArrayList<String>();
+
+   for (int j = 0; j < latestcomps.size(); j++)
+    deploycompnames.add("" + latestcomps.get(j).getId());
+
+   Collections.sort(deploycompnames);
+
+   String deployedAppComps = "";
+   for (int m = 0; m < deploycompnames.size(); m++)
+    deployedAppComps += deploycompnames.get(m);
+
+   if (newAppComps.equals(deployedAppComps))
+   {
+    identical = true;
+    break;
+   }
+  }
+  
+  if (appvers.size() == 0 && comps2add.size() == 0 && comps2replace.size() == 0)
+   identical = true;
+
+  if (!identical)
+  {
+   String name = app.getName();
+
+   int verid = this.applicationNewVersion(app.getId(), 100, 100, false);
+   app = this.getApplication(verid, false);
+   boolean dup = true;
+   do
+   {
+    ArrayList<String> parts = new ArrayList<String>(Arrays.asList(name.split(";")));
+
+    if (parts.size() == 1)
+     parts.add("hotfix-1");
+    else
+    {
+     String ver = parts.get(parts.size() - 1);
+     if (ver.startsWith("hotfix-"))
+     {
+      ver = ver.substring("hotfix-".length());
+      int vernum = new Integer(ver).intValue();
+      vernum++;
+      ver = "hotfix-" + vernum;
+      parts.set(parts.size() - 1, ver);
+     }
+     else
+     {
+      parts.add("hotfix-1");
+     }
+    }
+
+    name = String.join(";", parts);
+    Application check = null;
+
+    try
+    {
+     check = this.getApplicationByName(app.getDomain().getFullName() + "." + name);
+    }
+    catch (Exception e)
+    {
+
+    }
+
+    if (check == null)
+    {
+     RenameObject("appversion", app.getId(), name);
+     dup = false;
+    }
+   }
+   while (dup);
+
+   // using for-each loop for iteration over Map.entrySet()
+   for (Map.Entry<Integer, Integer> entry : comps2replace.entrySet())
+   {
+    Integer replace_compid = entry.getKey();
+    Integer compid = entry.getValue();
+    this.applicationReplaceComponent(app.getId(), replace_compid.intValue(), compid.intValue(), false);
+   }
+
+   for (int k = 0; k < comps2add.size(); k++)
+    this.addComponentToApplication(app.getId(), comps2add.get(k), 100, 100, false);
+  }
+  else
+  {
+   if (latestapp != null && comps.size() > 0)
+    app = latestapp;
   }
 
   try
