@@ -75,6 +75,7 @@ Contributors:
 - Christopher Hicks
 - Steve Taylor
 - Ayesha Khaliq
+- Drishti Dhamejani
 
 ### Development
 
