@@ -66,6 +66,7 @@ Review documentation and re-write or clarify complexities.
 Contributors:
 - Tracy Ragan
 - Divya Mohan
+- Mark Peters
 
 ### Architecture
 
@@ -106,6 +107,7 @@ Contributors:
 - Tracy Ragan
 - Neetu Jain
 - Divya Mohan
+- Mark Peters
 
 ## Project Management
 
