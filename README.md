@@ -77,6 +77,7 @@ Contributors:
 - Steve Taylor
 - Ayesha Khaliq
 - Drishti Dhamejani
+- Rahul Agrawal
 
 ### Development
 
