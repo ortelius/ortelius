@@ -20,6 +20,7 @@ Contributors:
 - Anand Bhagwat
 - Steve Taylor
 - Sanjay Sheel
+- Sacha Wharton
 
 ### Data Science and Visualization
 
