@@ -20,7 +20,8 @@ Contributors:
 - Anand Bhagwat
 - Steve Taylor
 - Sanjay Sheel
-
+- Sacha Wharton
+  
 ### Data Science and Visualization
 
 Determine what reports and maps can currently be created and/or enhanced.  Begin looking at what data can be passed back to the CD pipelines for predictive reporting, risk assessment. (Think truth tables).
@@ -41,6 +42,7 @@ Create integrations with documentation and videos for the following CI/CD Soluti
 
 Contributors:
 - Steve Taylor
+- Sacha Wharton
 
 ### Market Place and Domains
 
