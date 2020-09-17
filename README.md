@@ -76,6 +76,7 @@ Contributors:
 - Christopher Hicks
 - Steve Taylor
 - Ayesha Khaliq
+- Drishti Dhamejani
 
 ### Development
 
@@ -83,6 +84,7 @@ Work on existing enhancements and bug fixes. Add them to the core Ortelius repos
 
 Contributors:
 - Steve Taylor
+- Drishti Dhamejani
 
 ### Product Management
 
