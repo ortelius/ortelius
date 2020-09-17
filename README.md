@@ -42,6 +42,7 @@ Create integrations with documentation and videos for the following CI/CD Soluti
 
 Contributors:
 - Steve Taylor
+- Sacha Wharton
 
 ### Market Place and Domains
 
