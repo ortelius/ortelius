@@ -113,6 +113,7 @@ Contributors:
 - Neetu Jain
 - Divya Mohan
 - Mark Peters
+- Alok Tanna
 
 ## Project Management
 
