@@ -8,7 +8,7 @@ ARG BLDDATE
 EXPOSE 8080
 
 RUN useradd -ms /bin/bash omreleng; 
-ENV PATH "${PATH}:/usr/local/opt/libffi/lib/pkgconfig"
+ENV PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/usr/local/opt/libffi/lib/pkgconfig"
 
 RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm; \
     yum -y update; \
