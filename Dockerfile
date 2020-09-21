@@ -4,14 +4,15 @@ ARG GIT_TAG
 ARG COMMIT_SHA
 ARG REPO_NAME
 ARG BLDDATE
-
-EXPOSE 8080
-
-RUN useradd -ms /bin/bash omreleng; 
 ARG PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/usr/local/opt/libffi/lib/pkgconfig"
 ARG LDFLAGS="-L/usr/local/opt/libffi/lib" 
 ENV PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/usr/local/opt/libffi/lib/pkgconfig"
 ENV LDFLAGS="-L/usr/local/opt/libffi/lib" 
+
+
+EXPOSE 8080
+
+RUN useradd -ms /bin/bash omreleng; 
 
 RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm; \
     yum -y update; \
