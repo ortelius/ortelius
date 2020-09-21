@@ -6,7 +6,6 @@ ARG REPO_NAME
 ARG VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python
 ARG VIRTUALENVWRAPPER_VIRTUALENV=/usr/local/bin/virtualenv
 ARG WORKON_HOME=$HOME/.virtualenvs
-RUN /usr/local/bin/virtualenvwrapper.sh
 ARG PATH=/usr/local/bin:$PATH
 RUN useradd -ms /bin/bash omreleng; 
 
