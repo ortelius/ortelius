@@ -14,6 +14,8 @@ RUN useradd -ms /bin/bash omreleng;
 RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm; \
     yum -y update; \
     yum -y install procps-ng dos2unix jq git sudo unzip which iputils compat-openssl10 openssh-clients libnsl.i686 samba-client python-winrm python3-PyYAML python3-winrm python-requests-kerberos redhat-rpm-config gcc python-devel python-cffi libffi-devel openssl-devel krb5-devel krb5-libs krb5-workstation ansible; \
+    yum -y install make git make gcc python-devel libffi-devel openssl-devel epel-release python-sphinx; \
+    yum -y install python-pip; \
     export PKG_CONFIG_PATH="/usr/local/opt/libffi/lib/pkgconfig"; \
     export LDFLAGS="-L/usr/local/opt/libffi/lib" ; \
     pip install requests-credssp pywinrm[credssp]; \
