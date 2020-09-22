@@ -15,7 +15,7 @@ RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.n
     yum -y update; \
     yum -y install procps-ng dos2unix jq git sudo unzip which iputils compat-openssl10 openssh-clients libnsl.i686 samba-client python-winrm python3-PyYAML python3-winrm python-requests-kerberos redhat-rpm-config gcc python-devel openssl-devel krb5-devel krb5-libs krb5-workstation ansible; \
     rpm -Uvh http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el7.rf.x86_64.rpm; \
-    wget http://dag.wieers.com/rpm/packages/RPM-GPG-KEY.dag.txt; \
+    wget https://dag.wieers.com/rpm/packages/RPM-GPG-KEY.dag.txt; \
     rpm --import RPM-GPG-KEY.dag.txt; \
     yum --enablerepo=rpmforge install libffi-devel; \
     #yum -y install libffi-devel; \
