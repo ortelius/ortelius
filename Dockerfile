@@ -19,10 +19,16 @@ RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.n
     yum -y install python-pip3; \
     yum -y groupinstall “Development Tools”; \
     export PKG_CONFIG_PATH="/usr/local/opt/libffi/lib/pkgconfig"; \
-    export LDFLAGS="-L/usr/local/opt/libffi/lib" ; \
+    export LDFLAGS="-L/usr/local/opt/libffi/lib"; \
+    export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python; \
+    export VIRTUALENVWRAPPER_VIRTUALENV=/usr/local/bin/virtualenv; \
+    export WORKON_HOME=$HOME/.virtualenvs; \
+    export PATH=/usr/local/bin:$PATH; \
     pip install requests-credssp pywinrm[credssp]; \
-    pip3 install requests-credssp pywinrm[credssp] deployhub; \
-    curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.py; \
+    pip3 install requests-credssp pywinrm[credssp] deployhub;
+
+RUN /usr/local/bin/virtualenvwrapper.sh;
+RUN curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.py; \
     curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.ps1; 
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
