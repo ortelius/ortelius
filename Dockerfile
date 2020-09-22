@@ -14,6 +14,7 @@ RUN useradd -ms /bin/bash omreleng;
 RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm; \
     yum -y update; \
     yum -y install procps-ng dos2unix jq git sudo unzip which iputils compat-openssl10 openssh-clients libnsl.i686 samba-client python3 python-winrm python3-PyYAML python-sphinx python3-winrm python-requests-kerberos redhat-rpm-config gcc python-devel python-cffi libffi-devel openssl-devel krb5-devel krb5-libs krb5-workstation ansible; \
+    wget -c https://github.com/libffi/libffi/releases/download/v3.3/libffi-3.3.tar.gz && tar -xzf libffi-3.3.tar.gz -C /usr/local/; \
     #yum -y install make gcc python-devel libffi-devel openssl-devel epel-release python-sphinx; \
     export LDFLAGS="-L/usr/local/opt/libffi/lib"; \
     export PKG_CONFIG_PATH="/usr/local/opt/libffi/lib/pkgconfig"; \
@@ -25,8 +26,6 @@ RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.n
     pip3 install requests-credssp pywinrm[credssp] deployhub;
 
 #RUN /usr/local/bin/virtualenvwrapper.sh;
-RUN wget -c https://github.com/libffi/libffi/releases/download/v3.3/libffi-3.3.tar.gz  && tar -xzf libffi-3.3.tar.gz -C /usr/local/;
-
 RUN curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.py; \
     curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.ps1; 
 
