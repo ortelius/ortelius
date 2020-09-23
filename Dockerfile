@@ -23,23 +23,14 @@ RUN curl -O "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awsc
     yum -y install unzip; \
     unzip awscli-exe-linux-aarch64.zip; \
     ./aws/install -i /usr/local/aws -b /usr/local/bin;
-RUN   aws --version; 
+RUN   aws --version;
+RUN curl https://sdk.cloud.google.com > install.sh;
 
 #RUN yum -y install which curl; \
-#    curl -sL -o /tmp/gcloud_install.sh https://sdk.cloud.google.com; \
+#    curl -sL -o /tmp/gcloud_install.sh https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-311.0.0-linux-x86_64.tar.gz; \
 #    chmod 777 /tmp/gcloud_install.sh; \
 #    /tmp/gcloud_install.sh --disable-prompts --install-dir=/usr/local; \
 #    /usr/local/google-cloud-sdk/bin/gcloud components install kubectl docker-credential-gcr; 
-RUN tee -a /etc/yum.repos.d/google-cloud-sdk.repo; \
-    [google-cloud-sdk]; \
-    name=Google Cloud SDK; \
-    baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el7-x86_64; \
-    enabled=1; \
-    gpgcheck=1; \
-    repo_gpgcheck=1; \
-    gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg; \
-    https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg; \
-    yum -y install kubectl docker-credential-gcr;
 
 RUN yum -y install which curl; \ 
     curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get; \
