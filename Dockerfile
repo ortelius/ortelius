@@ -6,7 +6,8 @@ ARG REPO_NAME
 EXPOSE 8080
 RUN useradd -ms /bin/bash omreleng; 
 
-RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm; \
+RUN rpm -Uvh https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8; \ 
+    #rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm; \
     yum -y update; \
     yum -y install procps-ng dos2unix jq git sudo unzip which iputils compat-openssl10 openssh-clients libnsl.i686 samba-client python-winrm python3-PyYAML python3-winrm python-requests-kerberos krb5-devel krb5-libs krb5-workstation ansible; \
     pip install requests-credssp pywinrm[credssp]; \
