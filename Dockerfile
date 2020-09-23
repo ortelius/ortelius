@@ -21,7 +21,8 @@ RUN curl -O "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awsc
     unzip awscli-exe-linux-aarch64.zip; \
     ./aws/install -i /usr/local/aws -b /usr/local/bin;
 RUN   aws --version;
-RUN curl https://sdk.cloud.google.com > install.sh;
+RUN yum -y install which curl; \
+    curl https://sdk.cloud.google.com > install.sh;
 
 #RUN yum -y install which curl; \
 #    curl -sL -o /tmp/gcloud_install.sh https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-311.0.0-linux-x86_64.tar.gz; \
