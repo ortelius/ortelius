@@ -13,6 +13,7 @@ RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.n
     pip3 install requests-credssp pywinrm[credssp] deployhub;
 
 RUN curl -O "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"; \
+    yum -y install unzip; \
     unzip awscli-exe-linux-aarch64.zip; \
     ./aws/install -i /usr/local/aws -b /usr/local/bin; 
 
