@@ -29,8 +29,8 @@ enabled=1 \n\
 gpgcheck=1 \n\
 repo_gpgcheck=1 \n\
 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg \n\
-       https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg \
-"  >  yum -y install  kubectl docker-credential-gcr;
+       https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg";  
+RUN yum -y install  kubectl docker-credential-gcr;
 
 #RUN yum -y install curl which; \
  #   curl -sL -o /tmp/gcloud_install.sh https://sdk.cloud.google.com; \
