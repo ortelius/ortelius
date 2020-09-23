@@ -57,7 +57,7 @@ enabled=1 \n\
 gpgcheck=1 \n\
 gpgkey=https://packages.microsoft.com/keys/microsoft.asc \ 
 " > /etc/yum.repos.d/azure-cli.repo
-RUN yum -y install azure-cli
+RUN yum -y install azure-cli --skip-broken;
 
 COPY rpms/deployhub-engine.rpm /tmp/
 COPY rpms/deployhub-webadmin.rpm /tmp/
