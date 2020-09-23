@@ -1,4 +1,4 @@
-FROM fedora:32
+FROM arm64v8/fedora:32
 MAINTAINER ortelius.io
 ARG GIT_TAG
 ARG COMMIT_SHA
@@ -13,7 +13,7 @@ RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.n
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
     unzip awscliv2.zip; \
-    cd /aws/install -i /usr/local/aws -b /usr/local/bin; 
+    ./aws/install -i /usr/local/aws -b /usr/local/bin; 
 
 RUN curl -sL -o /tmp/gcloud_install.sh https://sdk.cloud.google.com; \
     chmod 777 /tmp/gcloud_install.sh; \
