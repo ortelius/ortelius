@@ -3,12 +3,6 @@ MAINTAINER ortelius.io
 ARG GIT_TAG
 ARG COMMIT_SHA
 ARG REPO_NAME
-ARG PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/usr/local/opt/libffi/lib/pkgconfig"
-ARG LDFLAGS="-L/usr/local/opt/libffi/lib" 
-ARG VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python
-ARG VIRTUALENVWRAPPER_VIRTUALENV=/usr/local/bin/virtualenv
-ARG WORKON_HOME=$HOME/.virtualenvs
-ARG PATH=/usr/local/bin:$PATH
 RUN useradd -ms /bin/bash omreleng; 
 
 RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm; \
