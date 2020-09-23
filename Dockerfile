@@ -11,6 +11,12 @@ RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-8.n
     pip install requests-credssp pywinrm[credssp]; \
     pip3 install requests-credssp pywinrm[credssp] deployhub;
 
+RUN curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python3/site-packages/ansible/modules/windows/win_zip.py; \
+    curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python3/site-packages/ansible/modules/windows/win_zip.ps1; 
+
+#RUN curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.py; \
+#    curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.ps1; 
+
 RUN curl -O "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"; \
     yum -y install unzip; \
     unzip awscli-exe-linux-aarch64.zip; \
@@ -52,9 +58,6 @@ RUN yum -y install which curl; \
     chmod +x terraform; \
     mv terraform /usr/local/bin/
 
-RUN curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.py; \
-    curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.ps1; 
-    
 RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc;
 RUN echo -e "\
 [azure-cli] \n\
