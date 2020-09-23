@@ -24,7 +24,7 @@ RUN   aws --version;
 #    /tmp/gcloud_install.sh --disable-prompts --install-dir=/usr/local; \
 #    /usr/local/google-cloud-sdk/bin/gcloud components install kubectl docker-credential-gcr; 
 RUN yum -y install which curl; \
-    sudo tee -a /etc/yum.repos.d/google-cloud-sdk.repo << EOM; \
+    tee -a /etc/yum.repos.d/google-cloud-sdk.repo; \
     [google-cloud-sdk]; \
     name=Google Cloud SDK; \
     baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el7-x86_64; \
@@ -33,7 +33,6 @@ RUN yum -y install which curl; \
     repo_gpgcheck=1; \
     gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg; \
     https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg; \
-    EOM; \
     yum -y install kubectl docker-credential-gcr;
 
 RUN yum -y install which curl; \ 
