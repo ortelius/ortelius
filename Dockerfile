@@ -34,8 +34,7 @@ RUN curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm
     /tmp/helm_install.sh; \
     mv /usr/local/bin/helm /usr/local/bin/helm2
 
-RUN yum -y install which curl; \ 
-    curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; \
+RUN curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; \
     chmod 777 /tmp/get_helm.sh; \
     /tmp/get_helm.sh
 
