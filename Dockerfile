@@ -49,13 +49,13 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
 #    curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python3/site-packages/ansible/modules/windows/win_zip.ps1; 
 
 RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc;
-RUN echo -e "\
+RUN echo -e "\ 
 [azure-cli] \n\
 name=Azure CLI \n\
 baseurl=https://packages.microsoft.com/yumrepos/azure-cli \n\
 enabled=1 \n\
 gpgcheck=1 \n\
-gpgkey=https://packages.microsoft.com/keys/microsoft.asc \
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc \ 
 " > /etc/yum.repos.d/azure-cli.repo
 RUN yum -y install azure-cli
 
