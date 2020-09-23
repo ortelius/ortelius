@@ -10,10 +10,6 @@ ARG VIRTUALENVWRAPPER_VIRTUALENV=/usr/local/bin/virtualenv
 ARG WORKON_HOME=$HOME/.virtualenvs
 ARG PATH=/usr/local/bin:$PATH
 RUN useradd -ms /bin/bash omreleng; 
-RUN curl -skL -X GET https://github.com/libffi/libffi/releases/download/v3.3/libffi-3.3.tar.gz -o /tmp/libffi-3.3.tar.gz; \
-    unzip -q libffi-3.3.tar.gz; \
-    chmod +x libffi; \
-    mv libffi /usr/local/bin/
 
 RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm; \
     yum -y update; \
@@ -22,6 +18,11 @@ RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.n
     export PKG_CONFIG_PATH="/usr/local/opt/libffi/lib/pkgconfig"; \
     pip install requests-credssp pywinrm[credssp]; \
     pip3 install requests-credssp pywinrm[credssp] deployhub;
+
+RUN curl -skL -X GET https://github.com/libffi/libffi/releases/download/v3.3/libffi-3.3.tar.gz -o /tmp/libffi-3.3.tar.gz; \
+    unzip -q libffi-3.3.tar.gz; \
+    chmod +x libffi; \
+    mv libffi /usr/local/bin/
 
 RUN curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.py; \
     curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.ps1; 
