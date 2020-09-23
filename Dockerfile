@@ -13,7 +13,7 @@ RUN useradd -ms /bin/bash omreleng;
 RUN curl -skL -X GET https://github.com/libffi/libffi/releases/download/v3.3/libffi-3.3.tar.gz -o /tmp/libffi-3.3.tar.gz; \
     unzip -q libffi-3.3.tar.gz; \
     chmod +x libffi; \
-    mv terraform /usr/local/bin/
+    mv libffi /usr/local/bin/
 
 RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm; \
     yum -y update; \
