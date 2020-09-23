@@ -21,7 +21,8 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     unzip awscliv2.zip; \
     ./aws/install -i /usr/local/aws -b /usr/local/bin; 
 
-RUN curl -sL -o /tmp/gcloud_install.sh https://sdk.cloud.google.com; \
+RUN yum -y install curl which; \
+    curl -sL -o /tmp/gcloud_install.sh https://sdk.cloud.google.com; \
     chmod 777 /tmp/gcloud_install.sh; \
     /tmp/gcloud_install.sh --disable-prompts --install-dir=/usr/local; \
     /usr/local/google-cloud-sdk/bin/gcloud components install kubectl docker-credential-gcr; 
