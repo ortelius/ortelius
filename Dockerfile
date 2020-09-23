@@ -3,6 +3,7 @@ MAINTAINER ortelius.io
 ARG GIT_TAG
 ARG COMMIT_SHA
 ARG REPO_NAME
+EXPOSE 8080
 RUN useradd -ms /bin/bash omreleng; 
 
 RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm; \
