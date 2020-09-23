@@ -29,8 +29,7 @@ RUN curl https://sdk.cloud.google.com > install.sh;
 #    /tmp/gcloud_install.sh --disable-prompts --install-dir=/usr/local; \
 #    /usr/local/google-cloud-sdk/bin/gcloud components install kubectl docker-credential-gcr; 
 
-RUN yum -y install which curl; \ 
-    curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get; \
+RUN curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get; \
     chmod 777 /tmp/helm_install.sh; \
     /tmp/helm_install.sh; \
     mv /usr/local/bin/helm /usr/local/bin/helm2
@@ -40,15 +39,14 @@ RUN yum -y install which curl; \
     chmod 777 /tmp/get_helm.sh; \
     /tmp/get_helm.sh
 
-RUN yum -y install which curl; \ 
-    curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_0.12.17_linux_amd64.zip -o /tmp/terraform_0.12.17_linux_amd64.zip; \
+RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_0.12.17_linux_amd64.zip -o /tmp/terraform_0.12.17_linux_amd64.zip; \
     cd /tmp; \
     unzip -q terraform_0.12.17_linux_amd64.zip; \
     chmod +x terraform; \
     mv terraform /usr/local/bin/
 
-RUN curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python3/site-packages/ansible/modules/windows/win_zip.py; \
-    curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python3/site-packages/ansible/modules/windows/win_zip.ps1; 
+#RUN curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python3/site-packages/ansible/modules/windows/win_zip.py; \
+#    curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python3/site-packages/ansible/modules/windows/win_zip.ps1; 
 
 RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc;
 RUN echo -e "\
