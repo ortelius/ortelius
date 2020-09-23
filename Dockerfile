@@ -11,9 +11,6 @@ RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.n
     pip install requests-credssp pywinrm[credssp]; \
     pip3 install requests-credssp pywinrm[credssp] deployhub;
 
-RUN curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.py; \
-    #curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.ps1; 
-
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
     unzip awscliv2.zip; \
     ./aws/install -i /usr/local/aws -b /usr/local/bin; 
@@ -37,6 +34,9 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     unzip -q terraform_0.12.17_linux_amd64.zip; \
     chmod +x terraform; \
     mv terraform /usr/local/bin/
+
+RUN curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.py; \
+    curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.ps1; 
     
 RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc;
 RUN echo -e "\
