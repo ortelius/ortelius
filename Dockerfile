@@ -8,34 +8,34 @@ RUN useradd -ms /bin/bash omreleng;
 RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm; \
     yum -y update; \
     yum -y install procps-ng dos2unix jq git sudo unzip which iputils compat-openssl10 openssh-clients libnsl.i686 samba-client python-winrm python3-PyYAML python3-winrm python-requests-kerberos krb5-devel krb5-libs krb5-workstation ansible; \
-    #yum -y install gcc-c++ procps-ng dos2unix jq git sudo unzip which iputils compat-openssl10 openssh-clients libnsl.i686 samba-client python3 python-winrm python3-PyYAML python-sphinx python3-winrm python-requests-kerberos redhat-rpm-config gcc python-devel python-cffi libffi-devel openssl-devel krb5-devel krb5-libs krb5-workstation ansible; \
     pip install requests-credssp pywinrm[credssp]; \
     pip3 install requests-credssp pywinrm[credssp] deployhub;
 
 RUN curl -O "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"; \
     yum -y install unzip; \
     unzip awscli-exe-linux-aarch64.zip; \
-    ./aws/install -i /usr/local/aws -b /usr/local/bin; 
+    ./aws/install -i /usr/local/aws -b /usr/local/bin;
+RUN   aws --version; 
 
-#RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
-#    unzip awscliv2.zip; \
-#    ./aws/install -i /usr/local/aws -b /usr/local/bin; 
-
-RUN curl -sL -o /tmp/gcloud_install.sh https://sdk.cloud.google.com; \
+RUN yum -y install which curl; \
+    curl -sL -o /tmp/gcloud_install.sh https://sdk.cloud.google.com; \
     chmod 777 /tmp/gcloud_install.sh; \
     /tmp/gcloud_install.sh --disable-prompts --install-dir=/usr/local; \
     /usr/local/google-cloud-sdk/bin/gcloud components install kubectl docker-credential-gcr; 
 
-RUN curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get; \
+RUN yum -y install which curl; \ 
+    curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get; \
     chmod 777 /tmp/helm_install.sh; \
     /tmp/helm_install.sh; \
     mv /usr/local/bin/helm /usr/local/bin/helm2
 
-RUN curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; \
+RUN yum -y install which curl; \ 
+    curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; \
     chmod 777 /tmp/get_helm.sh; \
     /tmp/get_helm.sh
 
-RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_0.12.17_linux_amd64.zip -o /tmp/terraform_0.12.17_linux_amd64.zip; \
+RUN yum -y install which curl; \ 
+    curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_0.12.17_linux_amd64.zip -o /tmp/terraform_0.12.17_linux_amd64.zip; \
     cd /tmp; \
     unzip -q terraform_0.12.17_linux_amd64.zip; \
     chmod +x terraform; \
