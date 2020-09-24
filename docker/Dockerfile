@@ -33,7 +33,7 @@ repo_gpgcheck=1 \n\
 " > tee -a /etc/yum.repos.d/google-cloud-sdk.repo
 
 RUN yum -y update; \ 
-yum -y install kubectl docker-credential-gcr;
+    yum -y install kubectl docker-credential-gcr;
 
 #RUN yum -y install curl which; \
  #   curl -sL -o /tmp/gcloud_install.sh https://sdk.cloud.google.com; \
