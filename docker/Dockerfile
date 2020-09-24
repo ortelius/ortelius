@@ -23,14 +23,14 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 
 RUN rpm --import https://packages.cloud.google.com/yum/doc/yum-key.gpg; \
     rpm --import https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg; \  
-tee -a /etc/yum.repos.d/google-cloud-sdk.repo "\
+echo -e "\
 [google-cloud-sdk] \n\
 name=Google Cloud SDK \n\
 baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el7-x86_64 \n\
 enabled=1 \n\
 gpgcheck=1 \n\
 repo_gpgcheck=1 \n\
-" \ \
+" > tee -a /etc/yum.repos.d/google-cloud-sdk.repo
 
 RUN yum -y install kubectl docker-credential-gcr;
 
@@ -64,7 +64,7 @@ enabled=1 \n\
 gpgcheck=1 \n\
 gpgkey=https://packages.microsoft.com/keys/microsoft.asc \
 " > /etc/yum.repos.d/azure-cli.repo
-RUN yum -y install azure-cli
+RUN yum -y install azure-cli;
 
 COPY rpms/deployhub-engine.rpm /tmp/
 COPY rpms/deployhub-webadmin.rpm /tmp/
