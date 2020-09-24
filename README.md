@@ -1,5 +1,5 @@
 # Ortelius
-Welcome to Ortelius. Ortelius is an open source project that aims to simplify the implementation of microservices. By providing a central catalog of services with their deployment specs, application teams can easily consume and deploy services across cluster. Ortelius tracks application versions based on service updates and maps their service dependencies eliminating confusion and guess work.  Unique to Ortelius is the ability to track your microservice inventory across clusters mapping the differences.  Ortelius serves Site Reliability Engineers and Cloud Architects in their migration to and ongoing management of a microservice implementation.
+Welcome to Ortelius. Ortelius is an open source project that aims to simplify the implementation of microservices. By providing a central catalog of services with their deployment specs, application teams can easily consume and deploy services across cluster. Ortelius tracks application versions based on service updates and maps their service dependencies eliminating confusion and guess work.  Unique to Ortelius is the ability to track your microservice inventory across clusters mapping the differences.  Ortelius serves Site Reliability Engineers and Cloud Architects in their migration to and ongoing management of a microservice implementation. For more information, see the comprehensive documentation at http://docs.ortelius.io 
 
 ## Ortelius Goals
 The goals of the Ortelius Open Source Project are: 
@@ -20,7 +20,8 @@ Contributors:
 - Anand Bhagwat
 - Steve Taylor
 - Sanjay Sheel
-
+- Sacha Wharton
+  
 ### Data Science and Visualization
 
 Determine what reports and maps can currently be created and/or enhanced.  Begin looking at what data can be passed back to the CD pipelines for predictive reporting, risk assessment. (Think truth tables).
@@ -41,6 +42,7 @@ Create integrations with documentation and videos for the following CI/CD Soluti
 
 Contributors:
 - Steve Taylor
+- Sacha Wharton
 
 ### Market Place and Domains
 
@@ -66,6 +68,7 @@ Review documentation and re-write or clarify complexities.
 Contributors:
 - Tracy Ragan
 - Divya Mohan
+- Mark Peters
 
 ### Architecture
 
@@ -75,6 +78,8 @@ Contributors:
 - Christopher Hicks
 - Steve Taylor
 - Ayesha Khaliq
+- Drishti Dhamejani
+- Rahul Agrawal
 
 ### Development
 
@@ -82,6 +87,7 @@ Work on existing enhancements and bug fixes. Add them to the core Ortelius repos
 
 Contributors:
 - Steve Taylor
+- Drishti Dhamejani
 
 ### Product Management
 
@@ -106,6 +112,8 @@ Contributors:
 - Tracy Ragan
 - Neetu Jain
 - Divya Mohan
+- Mark Peters
+- Alok Tanna
 
 ## Project Management
 
