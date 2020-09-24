@@ -10,6 +10,10 @@ The goals of the Ortelius Open Source Project are:
 4) Deliver transparency into the deployment process by mapping component and microservice relationships with BOM and Difference Reports across deployed environments (clusters, cloud, physical).  
 5) Establish a market place to share microservices with their deployment requirements and versions.
 
+## Code of Conduct
+
+[Contributor Covenant Code of Conduct](./CODE_OF_CONDUCT.md)
+
 ## Open Source Sub-Committees
 
 ### CD Environment - Development Infrastructure and Productivity
