@@ -30,9 +30,9 @@ baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el7-x86_64 \n\
 enabled=1 \n\
 gpgcheck=1 \n\
 repo_gpgcheck=1 \n\
-" \
+" \ \
 
-RUN yum -y install  kubectl docker-credential-gcr;
+RUN yum -y install kubectl docker-credential-gcr;
 
 #RUN yum -y install curl which; \
  #   curl -sL -o /tmp/gcloud_install.sh https://sdk.cloud.google.com; \
