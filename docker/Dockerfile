@@ -23,13 +23,14 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 
 RUN rpm --import https://packages.cloud.google.com/yum/doc/yum-key.gpg; \
     rpm --import https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg; \  
-tee -a /etc/yum.repos.d/google-cloud-sdk.repo  "\
+tee -a /etc/yum.repos.d/google-cloud-sdk.repo "\
 [google-cloud-sdk] \n\
 name=Google Cloud SDK \n\
 baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el7-x86_64 \n\
 enabled=1 \n\
 gpgcheck=1 \n\
-repo_gpgcheck=1\"
+repo_gpgcheck=1 \n\
+" \
 
 RUN yum -y install  kubectl docker-credential-gcr;
 
