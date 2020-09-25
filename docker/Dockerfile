@@ -48,9 +48,9 @@ RUN yum -y install make; \
     yum -y upgrade python-setuptools; \
     yum -y update; \
     pip install py-make; \
-    pip install PyNaCl --no-use-pep517 PyNaCl; \
-    pip install cryptography --no-use-pep517 cryptography; \
-    pip install azure-cli --no-use-pep517 :all:;
+    pip install PyNaCl --no-use-pep517; \
+    pip install cryptography --no-use-pep517; \
+    pip install azure-cli --no-use-pep517;
     
 COPY rpms/deployhub-engine.rpm /tmp/
 COPY rpms/deployhub-webadmin.rpm /tmp/
