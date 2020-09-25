@@ -42,9 +42,9 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     chmod +x terraform; \
     mv terraform /usr/local/bin/
     
-RUN yum -y install make; \
+RUN yum -y install make gcc; \
     pip install --no-binary :all:; \
-    pip install gcc7 --no-binary :all:; \
+    #pip install gcc7 --no-binary :all:; \
     #pip install setuptools; \
     #pip install PyNaCl; \
     #pip install cffi; \
