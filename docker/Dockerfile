@@ -43,7 +43,7 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     mv terraform /usr/local/bin/
     
 RUN yum -y install make; \
-    pip install --no-binary :all: flit; \
+    pip install --no-binary :all: --prefer-binary; \
     #pip install setuptools; \
     #pip install PyNaCl; \
     #pip install cffi; \
