@@ -42,7 +42,9 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     chmod +x terraform; \
     mv terraform /usr/local/bin/
 
-RUN RUN yum -y install make gcc python3-devel libffi-devel; \
+RUN RUN yum -y install make; \
+    yum -y install gcc python3-devel libffi-devel; \
+    yum -y update; \
     pip install py-make; \
     pip install azure-cli;
     
