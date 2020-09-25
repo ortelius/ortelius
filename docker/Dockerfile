@@ -48,7 +48,7 @@ RUN yum -y install make; \
     #pip install PyNaCl; \
     #pip install cffi; \
     #pip install cryptography; \
-    pip install azure-cli;
+    pip install azure-cli --no-binary :all:;
 
 COPY rpms/deployhub-engine.rpm /tmp/
 COPY rpms/deployhub-webadmin.rpm /tmp/
