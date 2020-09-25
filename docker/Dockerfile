@@ -42,7 +42,7 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     chmod +x terraform; \
     mv terraform /usr/local/bin/
     
-RUN rpm -ivh --nodeps $(curl -Ls -o /dev/null -w %{url_effective} https://aka.ms/InstallAzureCliRpmEdge);
+RUN pip install azure-cli;
 
 COPY rpms/deployhub-engine.rpm /tmp/
 COPY rpms/deployhub-webadmin.rpm /tmp/
