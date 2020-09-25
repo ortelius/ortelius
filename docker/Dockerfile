@@ -44,12 +44,13 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
 
 RUN yum -y install make; \
     yum -y install gcc python3-devel libffi-devel python-wheel; \
-    yum -y install python-pip python-wheel; \
+    yum -y install python-pip; \
+    yum -y upgrade python-setuptools; \
     yum -y update; \
     pip install py-make; \
     pip install PyNaCl; \
     pip install cryptography; \
-    pip install azure-cli;
+    pip install azure-cli --no-binary :all:;
     
 COPY rpms/deployhub-engine.rpm /tmp/
 COPY rpms/deployhub-webadmin.rpm /tmp/
