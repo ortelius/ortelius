@@ -43,6 +43,7 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     mv terraform /usr/local/bin/
 
 RUN RUN yum -y install make gcc python3-devel libffi-devel; \
+    pip install py-make; \
     pip install azure-cli;
     
 COPY rpms/deployhub-engine.rpm /tmp/
