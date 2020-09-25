@@ -48,7 +48,7 @@ RUN yum -y install make; \
     yum -y upgrade python-setuptools; \
     yum -y update; \
     pip install py-make; \
-    pip install PyNaCl; \
+    pip install PyNaCl --no-binary PyNaCl; \
     pip install cryptography --no-binary cryptography; \
     pip install azure-cli --no-binary :all:;
     
