@@ -43,6 +43,8 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     mv terraform /usr/local/bin/
     
 RUN yum -y install make; \
+    pip install -U pip; \
+    pip install cffi; \
     pip install cryptography; \
     pip install azure-cli;
 
