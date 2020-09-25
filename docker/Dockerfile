@@ -42,10 +42,10 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     chmod +x terraform; \
     mv terraform /usr/local/bin/
 
-RUN yum -y install yum-utils; \
-    yumdownloader azure-cli; \
-    rpm -ivh --nodeps azure-cli-*.rpm; \
-    scl enable rh-python36 bash;
+RUN yum -y install snapd; \
+    dnf install snapd; \
+    ln -s /var/lib/snapd/snap /snap; \
+    snap install azure-cli --candidate;
     
 COPY rpms/deployhub-engine.rpm /tmp/
 COPY rpms/deployhub-webadmin.rpm /tmp/
