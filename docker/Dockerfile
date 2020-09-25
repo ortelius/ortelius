@@ -44,7 +44,6 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
 
 RUN yum -y install epel-release; \
     yum -y install snapd; \
-    systemctl enable --now snapd.socket; \
     dnf install snapd; \
     ln -s /var/lib/snapd/snap /snap; \
     snap install snapd; \
