@@ -46,6 +46,8 @@ RUN RUN yum -y install make; \
     yum -y install gcc python3-devel libffi-devel; \
     yum -y update; \
     pip install py-make; \
+    pip install PyNaCl; \
+    pip install cryptography; \
     pip install azure-cli;
     
 COPY rpms/deployhub-engine.rpm /tmp/
