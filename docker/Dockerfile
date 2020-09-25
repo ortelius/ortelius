@@ -43,13 +43,13 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     mv terraform /usr/local/bin/
     
 RUN yum -y install python-pip python-wheel make gcc cryptography; \
-    yum -y  upgrade python-setuptools; \
+    yum -y upgrade python-setuptools; \
     #pip install --no-binary :all:; \
     #pip install gcc7 --no-binary :all:; \
     #pip install setuptools; \
     #pip install PyNaCl; \
     #pip install cffi; \
-    #pip install cryptography; \
+    pip install cryptography --no-binary cryptography; \
     pip install azure-cli --no-binary :all:;
 
 COPY rpms/deployhub-engine.rpm /tmp/
