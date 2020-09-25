@@ -42,7 +42,7 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     chmod +x terraform; \
     mv terraform /usr/local/bin/
 
-RUN yum install yum-utils; \
+RUN yum -y install yum-utils; \
     yumdownloader azure-cli; \
     rpm -ivh --nodeps azure-cli-*.rpm; \
     scl enable rh-python36 bash;
