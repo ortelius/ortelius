@@ -50,7 +50,7 @@ RUN yum -y install make; \
     pip install pep517; \
     pip install py-make; \
     pip install PyNaCl; \
-    pip install cryptography; \
+    pip install cryptography --no-binary cryptography; \
     pip install azure-cli;
     
 COPY rpms/deployhub-engine.rpm /tmp/
