@@ -43,7 +43,7 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     mv terraform /usr/local/bin/
 
 RUN yum -y install make; \
-    yum -y install gcc python3-devel libffi-devel python-wheel; \
+    yum -y install redhat-rpm-config gcc python3-devel libffi-devel python-wheel; \
     yum -y install python-pip; \
     yum -y upgrade python-setuptools; \
     yum -y update; \
