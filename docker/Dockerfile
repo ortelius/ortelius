@@ -42,8 +42,9 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     chmod +x terraform; \
     mv terraform /usr/local/bin/
 
-RUN RUN yum -y install make; \
-    yum -y install gcc python3-devel libffi-devel; \
+RUN yum -y install make; \
+    yum -y install gcc python3-devel libffi-devel python-wheel; \
+    yum -y install python-pip python-wheel; \
     yum -y update; \
     pip install py-make; \
     pip install PyNaCl; \
