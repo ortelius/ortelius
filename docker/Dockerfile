@@ -25,7 +25,7 @@ RUN yum -y install which; \
     curl -sL -o /tmp/install.sh curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-311.0.0-linux-x86_64.tar.gz; \
     tar xzf google-cloud-sdk-311.0.0-linux-x86_64.tar.gz -C tmp/; \
     chmod 777 /tmp/google-cloud-sdk/install.sh; \
-    /tmp/google-cloud-sdk/install.sh /S /allusers /D=/usr/local/;
+    /tmp/google-cloud-sdk/install.sh --disable-prompts --install-dir=/usr/local;
 
 RUN curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get; \
     chmod 777 /tmp/helm_install.sh; \
