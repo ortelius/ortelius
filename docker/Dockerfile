@@ -18,7 +18,7 @@ RUN yum -y update; \
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
     yum -y install unzip; \
-    unzip awscliv2.zip; \
+    unzip -q awscliv2.zip; \
     ./aws/install -i /usr/local/aws -b /usr/local/bin; 
 
 RUN yum -y install which; \
