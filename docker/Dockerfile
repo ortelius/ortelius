@@ -10,7 +10,7 @@ EXPOSE 8080
 RUN useradd -ms /bin/bash omreleng; 
 
 RUN yum -y update; \
-    yum -y install procps-ng dos2unix jq git sudo unzip which iputils compat-openssl10 openssh-clients libnsl.i686 samba-client python-winrm python3-PyYAML python3-winrm python-requests-kerberos krb5-devel krb5-libs krb5-workstation ansible; \
+    yum -y install procps-ng dos2unix jq git sudo unzip which iputils compat-openssl10 openssh-clients libnsl samba-client python-winrm python3-PyYAML python3-winrm python-requests-kerberos krb5-devel krb5-libs krb5-workstation ansible; \
     pip install requests-credssp pywinrm[credssp]; \
     pip3 install requests-credssp pywinrm[credssp] deployhub; \
     curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python3.8/site-packages/ansible/modules/windows/win_zip.py; \
