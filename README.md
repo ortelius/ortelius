@@ -92,6 +92,7 @@ Work on existing enhancements and bug fixes. Add them to the core Ortelius repos
 Contributors:
 - Steve Taylor
 - Drishti Dhamejani
+- Melissa Albarella
 
 ### Product Management
 
