@@ -23,7 +23,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 
 RUN yum -y install which; \
     curl -sL -o /tmp/install.sh curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-311.0.0-linux-x86_64.tar.gz; \
-    tar xvzf google-cloud-sdk-311.0.0-linux-x86_64.tar.gz; \
+    tar xvzf google-cloud-sdk-311.0.0-linux-x86_64.tar.gz -C tmp/; \
     chmod 777 /tmp/install.sh; \
     /tmp/install.sh --disable-prompts --install-dir=/usr/local; \
     /usr/local/google-cloud-sdk/install.sh; 
