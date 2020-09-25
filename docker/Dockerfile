@@ -43,6 +43,7 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     mv terraform /usr/local/bin/
     
 RUN yum -y install make; \
+    pip install cryptography; \
     pip install azure-cli;
 
 COPY rpms/deployhub-engine.rpm /tmp/
