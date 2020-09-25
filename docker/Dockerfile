@@ -42,12 +42,8 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     chmod +x terraform; \
     mv terraform /usr/local/bin/
 
-RUN yum -y install epel-release; \
-    yum -y install snapd; \
-    dnf install snapd; \
-    ln -s /var/lib/snapd/snap /snap; \
-    snap install snapd; \
-    snap install azure-cli --candidate;
+RUN RUN yum -y install make gcc python3-devel libffi-devel; \
+    pip install azure-cli;
     
 COPY rpms/deployhub-engine.rpm /tmp/
 COPY rpms/deployhub-webadmin.rpm /tmp/
