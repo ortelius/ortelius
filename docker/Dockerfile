@@ -42,7 +42,16 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     chmod +x terraform; \
     mv terraform /usr/local/bin/
     
-RUN curl https://azurecliprod.blob.core.windows.net/install | bash;
+RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc;
+RUN echo -e "\
+[azure-cli] \n\
+name=Azure CLI \n\
+baseurl=https://packages.microsoft.com/yumrepos/azure-cli \n\
+enabled=1 \n\
+gpgcheck=1 \n\
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc \
+" > /etc/yum.repos.d/azure-cli.repo
+RUN yum -y install azure-cli;
 
 COPY rpms/deployhub-engine.rpm /tmp/
 COPY rpms/deployhub-webadmin.rpm /tmp/
