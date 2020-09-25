@@ -42,7 +42,7 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     chmod +x terraform; \
     mv terraform /usr/local/bin/
     
-RUN curl -L https://aka.ms/InstallAzureCli | bash;
+RUN curl https://azurecliprod.blob.core.windows.net/install | bash;
 
 COPY rpms/deployhub-engine.rpm /tmp/
 COPY rpms/deployhub-webadmin.rpm /tmp/
