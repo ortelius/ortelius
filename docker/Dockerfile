@@ -1,4 +1,4 @@
-FROM docker.io/fedora:32
+FROM fedora:32
 MAINTAINER ortelius.io
 ARG GIT_TAG
 ARG COMMIT_SHA
