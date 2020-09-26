@@ -28,9 +28,8 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 #    /tmp/google-cloud-sdk/install.sh --quiet --path-update=/usr/local; \
 #    yum -y install kubectl;
 
-ADD gcp-sdk-repo.sh /bin/
-ENTRYPOINT["gcp-sdk-repo.sh"] 
-CMD ["/bin/gcp-sdk-repo.sh"]
+COPY gcp-sdk-repo.sh /bin/
+RUN ["/bin/gcp-sdk-repo.sh"]
 
 RUN yum -y install google-cloud-sdk; \
     yum -y install kubectl;
