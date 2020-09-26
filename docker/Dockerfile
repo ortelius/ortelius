@@ -28,8 +28,10 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 #    /tmp/google-cloud-sdk/install.sh --quiet --path-update=/usr/local; \
 #    yum -y install kubectl;
 
-RUN gcp-sdk-repo.sh; \
-    yum -y install google-cloud-sdk; \
+COPY gcp-sdk-repo.sh /bin/;
+CMD ["/bin/gcp-sdk-repo.sh"];
+
+RUN yum -y install google-cloud-sdk; \
     yum -y install kubectl;
 
 RUN curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get; \
