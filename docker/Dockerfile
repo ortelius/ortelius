@@ -21,11 +21,12 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     unzip -q awscliv2.zip; \
     ./aws/install -i /usr/local/aws -b /usr/local/bin; 
 
-RUN yum -y install which kubectl; \
+RUN yum -y install which; \
     curl -sL -o /tmp/install.sh curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-311.0.0-linux-x86_64.tar.gz; \
     tar xzf google-cloud-sdk-311.0.0-linux-x86_64.tar.gz -C tmp/; \
     chmod 777 /tmp/google-cloud-sdk/install.sh; \
-    /tmp/google-cloud-sdk/install.sh --quiet --path-update=/usr/local;
+    /tmp/google-cloud-sdk/install.sh --quiet --path-update=/usr/local; \
+    yum install kubectl;
 
 RUN curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get; \
     chmod 777 /tmp/helm_install.sh; \
