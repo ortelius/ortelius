@@ -21,16 +21,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     unzip -q awscliv2.zip; \
     ./aws/install -i /usr/local/aws -b /usr/local/bin; 
 
-RUN echo $ google-cloud-sdk \n\
-    name=Google Cloud SDK \n\
-    baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el7-x86_64 \n\
-    enabled=1 \n\
-    gpgcheck=1 \n\
-    repo_gpgcheck=1 \n\
-    gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg \n\
-           https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg \n\
-    >> tee -a /etc/yum.repos.d/google-cloud-sdk.repo; \
-    yum -y install google-cloud-sdk;
+RUN curl -sSL https://sdk.cloud.google.com > /tmp/ && bash /tmp/ --install-dir=~/usr/local --disable-prompts
 
 #RUN curl -sL -o /tmp/install.sh curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-311.0.0-linux-x86_64.tar.gz; \
 #    tar xzf google-cloud-sdk-311.0.0-linux-x86_64.tar.gz -C tmp/; \
