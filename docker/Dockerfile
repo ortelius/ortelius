@@ -25,8 +25,6 @@ RUN curl -sL -o /tmp/install.sh curl -O https://dl.google.com/dl/cloudsdk/channe
     tar xzf google-cloud-sdk-311.0.0-linux-x86_64.tar.gz -C tmp/; \
     chmod 777 /tmp/google-cloud-sdk/install.sh; \
     /tmp/google-cloud-sdk/install.sh --quiet --path-update=/usr/local; \
-    gcloud init; \
-    gcloud components install kubectl;
 
 #COPY gcp-sdk-repo.sh /tmp/;
 #RUN chmod 777 /tmp/gcp-sdk-repo.sh; \
