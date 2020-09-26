@@ -22,7 +22,11 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     ./aws/install -i /usr/local/aws -b /usr/local/bin; 
 
 #RUN curl -sSL https://sdk.cloud.google.com > /tmp/gcl && bash /tmp/gcl --install-dir=~/usr/local --disable-prompts
-RUN curl -sSL https://sdk.cloud.google.com | bash;
+RUN curl https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz > /tmp/google-cloud-sdk.tar.gz
+RUN mkdir -p /usr/local/gcloud \
+  && tar -C /usr/local/gcloud -xvf /tmp/google-cloud-sdk.tar.gz \
+  && /usr/local/gcloud/google-cloud-sdk/install.sh
+ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
 
 #RUN curl -sL -o /tmp/install.sh curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-311.0.0-linux-x86_64.tar.gz; \
 #    tar xzf google-cloud-sdk-311.0.0-linux-x86_64.tar.gz -C tmp/; \
