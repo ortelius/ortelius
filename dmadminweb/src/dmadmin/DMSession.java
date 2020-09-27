@@ -3895,7 +3895,7 @@ public class DMSession implements AutoCloseable {
 				ResultSet rs1 = st1.executeQuery();
 				if (rs1.next()) {
 					// id is valid and we have its domain
-					PreparedStatement st = m_conn.prepareStatement("SELECT id,name FROM dm.dm_"+Type+" where name=? AND id<>? AND domainid=?");
+					PreparedStatement st = m_conn.prepareStatement("SELECT id,name FROM dm.dm_"+Type+" where name=? AND status = 'N' AND id<>? AND domainid=?");
 					st.setString(1,NewName);
 					st.setInt(2,id);
 					st.setInt(3,rs1.getInt(1));
@@ -18632,6 +18632,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
     { 
      found = false;
      rs1.close();
+     stmt.close();
     } 
     else
     { 
@@ -18639,6 +18640,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
      c++;
      NewName=app.getName()+";"+c;
      rs1.close();
+     stmt.close();
     } 
 			} 
    while (found); 
@@ -24757,8 +24759,11 @@ return ret;
  
  public ArrayList<Application> getLastDeployedAppInEnv(Environment env)
  {
-  String sql = "select b.id from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c where a.envid = ? and b.status = 'N' and b.isrelease = 'N' and a.appid = b.id and a.envid = c.id "
-    + " and  a.finishts is not null  and (a.envid, a.deploymentid) in (select envid, max(deploymentid) from dm.dm_deployment group by envid) and  b.domainid in (" + m_domainlist + ")";
+//  String sql = "select b.id from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c where a.envid = ? and b.status = 'N' and b.isrelease = 'N' and a.appid = b.id and a.envid = c.id "
+//    + " and  a.finishts is not null  and (a.envid, a.deploymentid) in (select envid, max(deploymentid) from dm.dm_deployment group by envid) and  b.domainid in (" + m_domainlist + ")";
+
+  String sql = "select b.id, max(a.deploymentid) from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c "
+    + "where a.envid = ? and b.status = 'N' and b.isrelease = 'N' and a.appid = b.id and a.envid = c.id  and  b.domainid in (" + m_domainlist + ") group by b.id order by 2 desc";
 
   ArrayList<Application> ret = new ArrayList<Application>();
 
@@ -29269,6 +29274,8 @@ public JSONArray getComp2Endpoints(int compid)
  public JSONObject logDeployment(Application app, ArrayList<Component> comps, Environment env, int exitcode, String log)
  {
   JSONObject ret = new JSONObject();
+  ArrayList<Integer> comps2add = new ArrayList<Integer>();
+  HashMap<Integer, Integer> comps2replace = new HashMap<Integer, Integer>();
 
   String sql = "select max(deploymentid) from dm.dm_deployment";
   int deployid = 0;
@@ -29288,84 +29295,197 @@ public JSONArray getComp2Endpoints(int compid)
   }
 
   deployid++;
-  
+
   ret.add("deployid", deployid);
-  
+
   long t = timeNow();
-  boolean firsttime = true;
-  
-  for (int k=0; k< comps.size();k++)
-  { 
-   Component comp = comps.get(k);
-   Component newcompbase = this.getBaseCompVersion(comp);
-   
-   // find application on env that has same base component 
-   ArrayList<Application> deployedapps = getLastDeployedAppInEnv(env);
-   
-   int found = -1;
-   int replace_compid = -1;
-   
-   for (int i=0;i< deployedapps.size();i++)
+
+  ArrayList<String> basecompnames = new ArrayList<String>();
+
+  if (comps.size() == 0)
+  {
+   int appid = app.getId();
+   List<Component> comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
+
+   for (int j = 0; j < comps4app.size(); j++)
    {
-    int appid = deployedapps.get(i).getId();
+    if (!basecompnames.contains("" + comps4app.get(j).getId()))
+     basecompnames.add("" + comps4app.get(j).getId());
+   }
+  }
+  else
+  {
+   for (int k = 0; k < comps.size(); k++)
+   {
+    Component comp = comps.get(k);
+    Component newcompbase = this.getBaseCompVersion(comp);
+
+    int replace_compid = -1;
+
+    int appid = app.getId();
     List<Component> comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
-    
-    for (int j=0; j < comps4app.size(); j++)
+
+    for (int j = 0; j < comps4app.size(); j++)
     {
      Component appcompbase = this.getBaseCompVersion(comps4app.get(j));
      if (newcompbase.getId() == appcompbase.getId())
      {
       replace_compid = comps4app.get(j).getId();
-      found = i;
       break;
      }
     }
-    
-    if (found >= 0)
-     break;
+
+    if (replace_compid > 0)
+     comps2replace.put(new Integer(replace_compid), new Integer(comp.getId()));
+    else
+    {
+     comps2add.add(new Integer(comp.getId()));
+    }
    }
    
-   if (found >= 0)
+   // build new comp version list base on original + replace + new
+   
+   int appid = app.getId();
+   List<Component> comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
+
+   for (int j = 0; j < comps4app.size(); j++)
    {
-    if (firsttime)
+    if (!basecompnames.contains("" + comps4app.get(j).getId()))
     {
-     firsttime = false;
-
-     Application parent_app = deployedapps.get(found);
-
-     int verid = this.applicationNewVersion(parent_app.getId(), 100, 100, false);
-     app = this.getApplication(verid, false);
-
-     String name = parent_app.getName();
-
-     ArrayList<String> parts = new ArrayList<String>(Arrays.asList(name.split(";")));
-
-     if (parts.size() == 1)
-      parts.add("hotfix-1");
+     // see comp is a replace
+     if (comps2replace.containsKey(new Integer(comps4app.get(j).getId())))
+      basecompnames.add("" + comps2replace.get(new Integer(comps4app.get(j).getId())));
      else
-     {
-      String ver = parts.get(parts.size() - 1); 
-      if (ver.startsWith("hotfix-"))
-      {
-       ver = ver.substring("hotfix-".length());
-       int vernum = new Integer(ver).intValue();
-       vernum++;
-       ver = "hotfix-" + vernum;
-       parts.set(parts.size()-1, ver);
-      } 
-      else
-      {
-       parts.add("hotfix-1");
-      }
-     } 
-
-     name = String.join(";", parts);
-     RenameObject("appversion",app.getId(),name);
+      basecompnames.add("" + comps4app.get(j).getId());
     }
-    this.applicationReplaceComponent(app.getId(), replace_compid, comp.getId(), false);
+   }
+   
+   for (int j=0;j<comps2add.size();j++)
+   {
+    if (!basecompnames.contains("" + comps2add.get(j)))
+     basecompnames.add("" + comps2add.get(j));
    }
   }
   
+  
+
+  Collections.sort(basecompnames);
+
+  String newAppComps = "";
+  for (int m = 0; m < basecompnames.size(); m++)
+   newAppComps += basecompnames.get(m);
+
+  // Check if current version is identical
+
+  Application baseapp = this.getBaseAppVersion(app);
+  Application latestapp = null;
+  ArrayList<Application> deployed_apps = this.getLastDeployedAppInEnv(env);
+
+  ArrayList<Application> appvers = new ArrayList<Application>();
+
+  for (int x = 0; x < deployed_apps.size(); x++)
+  {
+   Application deployedbase = this.getBaseAppVersion(deployed_apps.get(x));
+
+   if (deployedbase.getId() == baseapp.getId())
+   {
+    appvers.add(deployed_apps.get(x));
+   }
+  }
+
+  boolean identical = false;
+  for (int b = 0; b < appvers.size(); b++)
+  {
+   latestapp = appvers.get(b);
+   List<Component> latestcomps = this.getComponents(ObjectType.APPLICATION, latestapp.getId(), false);
+   ArrayList<String> deploycompnames = new ArrayList<String>();
+
+   for (int j = 0; j < latestcomps.size(); j++)
+    deploycompnames.add("" + latestcomps.get(j).getId());
+
+   Collections.sort(deploycompnames);
+
+   String deployedAppComps = "";
+   for (int m = 0; m < deploycompnames.size(); m++)
+    deployedAppComps += deploycompnames.get(m);
+
+   if (newAppComps.equals(deployedAppComps))
+   {
+    identical = true;
+    break;
+   }
+  }
+  
+  if (appvers.size() == 0 && comps2add.size() == 0 && comps2replace.size() == 0)
+   identical = true;
+
+  if (!identical)
+  {
+   String name = app.getName();
+
+   int verid = this.applicationNewVersion(app.getId(), 100, 100, false);
+   app = this.getApplication(verid, false);
+   boolean dup = true;
+   do
+   {
+    ArrayList<String> parts = new ArrayList<String>(Arrays.asList(name.split(";")));
+
+    if (parts.size() == 1)
+     parts.add("hotfix-1");
+    else
+    {
+     String ver = parts.get(parts.size() - 1);
+     if (ver.startsWith("hotfix-"))
+     {
+      ver = ver.substring("hotfix-".length());
+      int vernum = new Integer(ver).intValue();
+      vernum++;
+      ver = "hotfix-" + vernum;
+      parts.set(parts.size() - 1, ver);
+     }
+     else
+     {
+      parts.add("hotfix-1");
+     }
+    }
+
+    name = String.join(";", parts);
+    Application check = null;
+
+    try
+    {
+     check = this.getApplicationByName(app.getDomain().getFullName() + "." + name);
+    }
+    catch (Exception e)
+    {
+
+    }
+
+    if (check == null)
+    {
+     RenameObject("appversion", app.getId(), name);
+     dup = false;
+    }
+   }
+   while (dup);
+
+   // using for-each loop for iteration over Map.entrySet()
+   for (Map.Entry<Integer, Integer> entry : comps2replace.entrySet())
+   {
+    Integer replace_compid = entry.getKey();
+    Integer compid = entry.getValue();
+    this.applicationReplaceComponent(app.getId(), replace_compid.intValue(), compid.intValue(), false);
+   }
+
+   for (int k = 0; k < comps2add.size(); k++)
+    this.addComponentToApplication(app.getId(), comps2add.get(k), 100, 100, false);
+  }
+  else
+  {
+   if (latestapp != null && comps.size() > 0)
+    app = latestapp;
+  }
+
   try
   {
    sql = "INSERT INTO dm.dm_deployment(deploymentid, userid, startts, finishts, exitcode, exitstatus, appid, envid, started, finished, sessionid, eventid) VALUES (?, ?, now(), now(), ?, '', ?, ?, ?, ?, null, null)";
@@ -29379,54 +29499,54 @@ public JSONArray getComp2Endpoints(int compid)
    stmt.setLong(7, t);
    stmt.execute();
    stmt.close();
-   
+
    sql = "INSERT INTO dm.dm_deploymentlog(deploymentid, runtime, stream, line, thread, lineno) VALUES (?, now(), 1, ?, 1, ?)";
-   
+
    ArrayList<String> lines = new ArrayList<String>(Arrays.asList(log.split("%0A")));
-  
-   for (int i=0;i<lines.size();i++)
+
+   for (int i = 0; i < lines.size(); i++)
    {
     stmt = m_conn.prepareStatement(sql);
     stmt.setInt(1, deployid);
     stmt.setString(2, lines.get(i));
-    stmt.setInt(3, i+1);
+    stmt.setInt(3, i + 1);
     stmt.execute();
-    stmt.close();   
+    stmt.close();
    }
    m_conn.commit();
-   
+
    addToAppsAllowedInEnv(env, app);
    setAppInEnv(env, app, "Deployment #" + deployid, deployid);
    setAppDeploymentInEnv(env, app, deployid);
-   
+
    boolean isRelease = false;
 
    if (app.getIsRelease().compareToIgnoreCase("Y") == 0)
     isRelease = true;
-   
-   List<Component> comps4app = getComponents(ObjectType.APPLICATION, app.getId(),isRelease);
+
+   List<Component> comps4app = getComponents(ObjectType.APPLICATION, app.getId(), isRelease);
    List<Server> srvs = getServersInEnvironment(env.getId());
-   
-   for (int k=0;k<comps4app.size();k++)
+
+   for (int k = 0; k < comps4app.size(); k++)
    {
     Component c = comps4app.get(k);
-    for (int x=0;x<srvs.size();x++)
+    for (int x = 0; x < srvs.size(); x++)
     {
      addComponentToServer(srvs.get(x).getId(), c.getId());
-     addComponentVersionToServer(srvs.get(x).getId(), c.getId(), deployid, c.getLastBuildNumber());  
+     addComponentVersionToServer(srvs.get(x).getId(), c.getId(), deployid, c.getLastBuildNumber());
     }
-    
+
     sql = "INSERT INTO dm.dm_deploymentstep (deploymentid, stepid, type, startts, finishts, started, finished, compid) VALUES (?, ?, 'deploy', now(), now(), ?, ?, ?)";
     stmt = m_conn.prepareStatement(sql);
     stmt.setInt(1, deployid);
-    stmt.setInt(2, k+1);
+    stmt.setInt(2, k + 1);
     stmt.setLong(3, t);
     stmt.setLong(4, t);
     stmt.setLong(5, c.getId());
     stmt.execute();
-    stmt.close();   
+    stmt.close();
    }
-   
+
    m_conn.commit();
   }
   catch (SQLException e)
@@ -29543,7 +29663,7 @@ public JSONArray getComp2Endpoints(int compid)
   }
  }
  
- public JSONObject getHelmChart(int deployid)
+ public JSONObject getHelmChart(int deployid, String format)
  {
   HashMap<Integer, Integer> chartlist = new HashMap<Integer, Integer>();
   
@@ -29567,9 +29687,10 @@ public JSONArray getComp2Endpoints(int compid)
   
   JSONArray charts = new JSONArray();
   obj.add("charts", charts);
-  
+
   JSONArray files = new JSONArray();
-  obj.add("files", files);
+  if (format.equalsIgnoreCase("zip"))
+    obj.add("files", files);
 
   try
   {   
@@ -29660,6 +29781,7 @@ public JSONArray getComp2Endpoints(int compid)
       chart.add("chartname", chartname);
       chart.add("chartversion", chartversion);
       chart.add("helmrepo", helmrepo); 
+      chart.add("helmrepourl", helmrepourl); 
       chart.add("chartdigest", chartdigest);
       JSONArray images = getHelmImages(appid, compid, comp_deployid, chartdigest);
       chart.add("images", images);
@@ -29693,20 +29815,24 @@ public JSONArray getComp2Endpoints(int compid)
      JSONObject chart = new JSONObject();   
      chart.add("component", comp.getDomain().getFullDomain() + "." + comp.getName());
      chart.add("deployid", comp_deployid);
-     chart.add("chart_name", chartname);
-     chart.add("chart_version", chartversion);
-     chart.add("chart_repo", helmrepo); 
-     chart.add("chart_digest", chartdigest);
+     chart.add("chartname", chartname);
+     chart.add("chartversion", chartversion);
+     chart.add("helmrepo", helmrepo); 
+     chart.add("helmrepourl", helmrepourl); 
+     chart.add("chartdigest", chartdigest);
      JSONArray images = getHelmImages(appid, compid, comp_deployid, chartdigest);
      chart.add("images", images);
      charts.add(chart);
      chartlist.put(key, null);
     }
     
-    JSONObject f = new JSONObject();
-    f.add("filename", filename);
-    f.add("data", data);
-    files.add(f);
+    if (format.equalsIgnoreCase("zip"))
+    {
+     JSONObject f = new JSONObject();
+     f.add("filename", filename);
+     f.add("data", data);
+     files.add(f);
+    }
    }
 
    rs.close();

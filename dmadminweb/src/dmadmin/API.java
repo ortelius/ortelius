@@ -822,7 +822,7 @@ public class API extends HttpServlet
 
 
 
- private Component getComponentFromNameOrID(DMSession so, String idOrName) throws ApiException
+ protected Component getComponentFromNameOrID(DMSession so, String idOrName) throws ApiException
  {
   try
   {
@@ -2707,6 +2707,20 @@ public class API extends HttpServlet
     else if (elements[0].equals("environment"))
     {
      System.out.println("API: Environment");
+     if (elements.length == 1)
+     {
+      String newname = request.getParameter("name"); // if specified, name of new application version
+           
+      if (newname != null)
+      {
+       String[] newparms = new String[elements.length + 1];
+       for (int x=0;x<elements.length;x++)
+         newparms[x] = elements[x];
+       newparms[elements.length] = newname;
+       elements = newparms;
+      } 
+     }
+          
      if (elements.length == 2)
      {
       Environment env = getEnvironmentFromNameOrID(so, elements[1]);
@@ -2840,7 +2854,7 @@ public class API extends HttpServlet
       String deployment = elements[1];
       String format = (request.getParameter("format") == null) ? "zip" : request.getParameter("format");
 
-      obj = so.getHelmChart(new Integer(deployment).intValue());
+      obj = so.getHelmChart(new Integer(deployment).intValue(), format);
 
       if (format.equalsIgnoreCase("zip"))
       {

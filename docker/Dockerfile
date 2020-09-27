@@ -1,4 +1,4 @@
-FROM fedora:28
+FROM fedora:32
 MAINTAINER ortelius.io
 ARG GIT_TAG
 ARG COMMIT_SHA
@@ -9,22 +9,23 @@ EXPOSE 8080
 
 RUN useradd -ms /bin/bash omreleng; 
 
-RUN rpm -Uvh https://download.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm; \
-    yum -y update; \
-    yum -y install python-dev libffi-devel procps-ng dos2unix jq git sudo unzip which iputils compat-openssl10 openssh-clients libnsl.i686 samba-client python-winrm python3-PyYAML python3-winrm python-requests-kerberos krb5-devel krb5-libs krb5-workstation ansible; \
+RUN yum -y update; \
+    yum -y install procps-ng dos2unix jq git sudo unzip which iputils compat-openssl10 openssh-clients libnsl samba-client python-winrm python3-PyYAML python3-winrm python-requests-kerberos krb5-devel krb5-libs krb5-workstation ansible; \
     pip install requests-credssp pywinrm[credssp]; \
     pip3 install requests-credssp pywinrm[credssp] deployhub; \
-    curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.py; \
-    curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python2.7/site-packages/ansible/modules/windows/win_zip.ps1; 
+    curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python3.8/site-packages/ansible/modules/windows/win_zip.py; \
+    curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python3.8/site-packages/ansible/modules/windows/win_zip.ps1; 
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
-    unzip awscliv2.zip; \
+    yum -y install unzip; \
+    unzip -q awscliv2.zip; \
     ./aws/install -i /usr/local/aws -b /usr/local/bin; 
 
-RUN curl -sL -o /tmp/gcloud_install.sh https://sdk.cloud.google.com; \
-    chmod 777 /tmp/gcloud_install.sh; \
-    /tmp/gcloud_install.sh --disable-prompts --install-dir=/usr/local; \
-    /usr/local/google-cloud-sdk/bin/gcloud components install kubectl docker-credential-gcr; 
+RUN curl -sL -o /tmp/install.sh curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-311.0.0-linux-x86_64.tar.gz; \
+    tar xzf google-cloud-sdk-311.0.0-linux-x86_64.tar.gz -C tmp/; \
+    chmod 777 /tmp/google-cloud-sdk/install.sh; \
+    /tmp/google-cloud-sdk/install.sh --quiet --path-update=/usr/local;
+ENV PATH $PATH:/usr/local/google-cloud-sdk/bin;
 
 RUN curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get; \
     chmod 777 /tmp/helm_install.sh; \
@@ -40,18 +41,18 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     unzip -q terraform_0.12.17_linux_amd64.zip; \
     chmod +x terraform; \
     mv terraform /usr/local/bin/
-    
-RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc;
-RUN echo -e "\
-[azure-cli] \n\
-name=Azure CLI \n\
-baseurl=https://packages.microsoft.com/yumrepos/azure-cli \n\
-enabled=1 \n\
-gpgcheck=1 \n\
-gpgkey=https://packages.microsoft.com/keys/microsoft.asc \
-" > /etc/yum.repos.d/azure-cli.repo
-RUN yum -y install azure-cli
 
+RUN yum -y install make; \
+    yum -y install redhat-rpm-config gcc python3-devel libffi-devel python-wheel openssl-devel; \
+    yum -y install python-pip; \
+    yum -y upgrade python-setuptools; \
+    yum -y update; \
+    pip install pep517; \
+    pip install py-make; \
+    pip install PyNaCl; \
+    pip install cryptography --no-binary :all:; \
+    pip install azure-cli --no-binary :all:;
+    
 COPY rpms/deployhub-engine.rpm /tmp/
 COPY rpms/deployhub-webadmin.rpm /tmp/
 
