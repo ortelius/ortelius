@@ -17,7 +17,7 @@ RUN yum -y update; \
     curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python3.8/site-packages/ansible/modules/windows/win_zip.ps1; 
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
-    yum -y install unzip; \
+    #yum -y install unzip; \
     unzip -q awscliv2.zip; \
     ./aws/install -i /usr/local/aws -b /usr/local/bin; 
 
