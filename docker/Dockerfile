@@ -49,7 +49,7 @@ RUN pip install pep517; \
     
 COPY rpms/deployhub-engine.rpm /tmp/
 COPY rpms/deployhub-webadmin.rpm /tmp/
-COPY /docker/cat.txt /tmp/
+COPY docker/cat.txt /tmp/
 RUN docker login --username thevestedleopard --password-stdin < ~/tmp/cat.txt
 RUN yum -y install /tmp/deployhub-engine.rpm /tmp/deployhub-webadmin.rpm; \
     yum -y clean all; \
