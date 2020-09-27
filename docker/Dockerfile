@@ -18,7 +18,8 @@ RUN yum -y update; \
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
     unzip -qq awscliv2.zip; \
-    ./aws/install -i /usr/local/aws -b /usr/local/bin; 
+    ./aws/install -i /usr/local/aws -b /usr/local/bin; \
+    aws --version;
 
 RUN curl -sL -o /tmp/install.sh curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-311.0.0-linux-x86_64.tar.gz; \
     tar xzf google-cloud-sdk-311.0.0-linux-x86_64.tar.gz -C tmp/; \
