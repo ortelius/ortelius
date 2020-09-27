@@ -10,15 +10,13 @@ EXPOSE 8080
 RUN useradd -ms /bin/bash omreleng; 
 
 RUN yum -y update; \
-    yum -y install procps-ng dos2unix jq git sudo unzip which iputils compat-openssl10 openssh-clients libnsl samba-client python-winrm python3-PyYAML python3-winrm python-requests-kerberos krb5-devel krb5-libs krb5-workstation ansible; \
+    yum -y install procps-ng dos2unix jq git sudo python-pip make redhat-rpm-config gcc python3-devel libffi-devel python-wheel openssl-devel unzip glibc* python-setuptools which iputils compat-openssl10 openssh-clients libnsl samba-client python-winrm python3-PyYAML python3-winrm python-requests-kerberos krb5-devel krb5-libs krb5-workstation ansible; \
     pip install requests-credssp pywinrm[credssp]; \
     pip3 install requests-credssp pywinrm[credssp] deployhub; \
     curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python3.8/site-packages/ansible/modules/windows/win_zip.py; \
     curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python3.8/site-packages/ansible/modules/windows/win_zip.ps1; 
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
-    #yum -y install unzip; \
-    yum -y glibc*; \
     unzip -qq awscliv2.zip; \
     ./aws/install -i /usr/local/aws -b /usr/local/bin; 
 
@@ -26,7 +24,6 @@ RUN curl -sL -o /tmp/install.sh curl -O https://dl.google.com/dl/cloudsdk/channe
     tar xzf google-cloud-sdk-311.0.0-linux-x86_64.tar.gz -C tmp/; \
     chmod 777 /tmp/google-cloud-sdk/install.sh; \
     /tmp/google-cloud-sdk/install.sh --quiet --path-update=/usr/local;
-ENV PATH $PATH:/usr/local/google-cloud-sdk/bin;
 
 RUN curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get; \
     chmod 777 /tmp/helm_install.sh; \
@@ -39,16 +36,11 @@ RUN curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/m
 
 RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_0.12.17_linux_amd64.zip -o /tmp/terraform_0.12.17_linux_amd64.zip; \
     cd /tmp; \
-    unzip -q terraform_0.12.17_linux_amd64.zip; \
+    unzip -qq terraform_0.12.17_linux_amd64.zip; \
     chmod +x terraform; \
     mv terraform /usr/local/bin/
 
-RUN yum -y install make; \
-    yum -y install redhat-rpm-config gcc python3-devel libffi-devel python-wheel openssl-devel; \
-    yum -y install python-pip; \
-    yum -y upgrade python-setuptools; \
-    yum -y update; \
-    pip install pep517; \
+RUN pip install pep517; \
     pip install py-make; \
     pip install PyNaCl; \
     pip install cryptography --no-binary :all:; \
