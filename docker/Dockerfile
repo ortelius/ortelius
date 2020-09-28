@@ -41,8 +41,9 @@ RUN pip install pep517; \
     pip install cryptography --no-binary :all:; \
     pip install azure-cli --no-binary :all:;
 
-COPY ./rpms/deployhub-engine.rpm /tmp/
-COPY ./rpms/deployhub-webadmin.rpm /tmp/
+WORKDIR /rpms
+COPY . rpms/deployhub-engine.rpm /tmp/
+COPY . rpms/deployhub-webadmin.rpm /tmp/
 RUN yum -y install /tmp/deployhub-engine.rpm /tmp/deployhub-webadmin.rpm; \
     yum -y clean all; \
     rm -rf /var/cache/yum; \
