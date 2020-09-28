@@ -4,9 +4,7 @@ ARG GIT_TAG
 ARG COMMIT_SHA
 ARG REPO_NAME
 ARG BLDDATE
-
 EXPOSE 8080
-
 RUN useradd -ms /bin/bash omreleng; 
 
 RUN yum -y update; \
@@ -42,7 +40,8 @@ RUN pip install pep517; \
     pip install PyNaCl; \
     pip install cryptography --no-binary :all:; \
     pip install azure-cli --no-binary :all:;
-    
+
+WORKDIR ./rpms    
 COPY rpms/deployhub-engine.rpm /tmp/
 COPY rpms/deployhub-webadmin.rpm /tmp/
 RUN yum -y install /tmp/deployhub-engine.rpm /tmp/deployhub-webadmin.rpm; \
