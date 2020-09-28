@@ -16,15 +16,16 @@ RUN yum -y update; \
 
 RUN pip3 install awscli --upgrade --user;
 
+RUN curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get; \
+    chmod 777 /tmp/helm_install.sh; \
+    /tmp/helm_install.sh; \
+    mv /usr/local/bin/helm /usr/local/bin/helm2
+
 RUN curl -sL -o /tmp/install.sh curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-311.0.0-linux-x86_64.tar.gz; \
     tar xzf google-cloud-sdk-311.0.0-linux-x86_64.tar.gz -C tmp/; \
     chmod 777 /tmp/google-cloud-sdk/install.sh; \
     /tmp/google-cloud-sdk/install.sh --quiet --path-update=/usr/local;
 
-RUN curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get; \
-    chmod 777 /tmp/helm_install.sh; \
-    /tmp/helm_install.sh; \
-    mv /usr/local/bin/helm /usr/local/bin/helm2
 
 RUN curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; \
     chmod 777 /tmp/get_helm.sh; \
