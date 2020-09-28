@@ -16,10 +16,7 @@ RUN yum -y update; \
     curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python3.8/site-packages/ansible/modules/windows/win_zip.py; \
     curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python3.8/site-packages/ansible/modules/windows/win_zip.ps1; 
 
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"; \
-    unzip -qq awscliv2.zip; \
-    ./aws/install;
-
+RUN pip3 install awscli --upgrade --user;
 RUN curl -sL -o /tmp/install.sh curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-311.0.0-linux-x86_64.tar.gz; \
     tar xzf google-cloud-sdk-311.0.0-linux-x86_64.tar.gz -C tmp/; \
     chmod 777 /tmp/google-cloud-sdk/install.sh; \
