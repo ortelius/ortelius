@@ -42,8 +42,8 @@ RUN pip install pep517; \
     pip install azure-cli --no-binary :all:;
 
 WORKDIR /rpms
-COPY ./deployhub-engine.rpm /tmp/
-COPY ./deployhub-webadmin.rpm /tmp/
+COPY deployhub-engine.rpm /tmp/
+COPY deployhub-webadmin.rpm /tmp/
 RUN yum -y install /tmp/deployhub-engine.rpm /tmp/deployhub-webadmin.rpm; \
     yum -y clean all; \
     rm -rf /var/cache/yum; \
