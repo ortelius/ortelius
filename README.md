@@ -80,6 +80,7 @@ Contributors:
 - Ayesha Khaliq
 - Drishti Dhamejani
 - Rahul Agrawal
+- Sacha Wharton
 
 ### Development
 
