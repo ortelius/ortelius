@@ -25,6 +25,7 @@ Contributors:
 - Steve Taylor
 - Sanjay Sheel
 - Sacha Wharton
+- Sagar Utekar
   
 ### Data Science and Visualization
 
@@ -47,6 +48,7 @@ Create integrations with documentation and videos for the following CI/CD Soluti
 Contributors:
 - Steve Taylor
 - Sacha Wharton
+- Sagar Utekar
 
 ### Market Place and Domains
 
@@ -85,6 +87,7 @@ Contributors:
 - Drishti Dhamejani
 - Rahul Agrawal
 - Sacha Wharton
+- Sagar Utekar
 
 ### Development
 
@@ -94,6 +97,7 @@ Contributors:
 - Steve Taylor
 - Drishti Dhamejani
 - Melissa Albarella
+- Sagar Utekar
 
 ### Product Management
 
