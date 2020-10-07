@@ -26,6 +26,7 @@ Contributors:
 - Sanjay Sheel
 - Sacha Wharton
 - Sagar Utekar
+- Nael Fridhi
   
 ### Data Science and Visualization
 
@@ -49,6 +50,7 @@ Contributors:
 - Steve Taylor
 - Sacha Wharton
 - Sagar Utekar
+- Nael Fridhi
 
 ### Market Place and Domains
 
@@ -58,6 +60,7 @@ Contributors:
 - Christopher Hicks
 - Steve Taylor
 - Ayesha Khaliq
+- Nael Fridhi
 
 ### UX and Testing
 
@@ -88,6 +91,7 @@ Contributors:
 - Rahul Agrawal
 - Sacha Wharton
 - Sagar Utekar
+- Nael Fridhi
 
 ### Development
 
@@ -98,6 +102,7 @@ Contributors:
 - Drishti Dhamejani
 - Melissa Albarella
 - Sagar Utekar
+- Nael Fridhi
 
 ### Product Management
 
