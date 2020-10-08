@@ -681,10 +681,8 @@ public class GetDomainContent extends HttpServletBase
     out.println("]");
   }
 
-  public void handleRequest(DMSession so, boolean isPost, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+  public void handleRequest(DMSession session, boolean isPost, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
   {
-   try (DMSessionPro session = new DMSessionPro(so))
-   {   
     long startTime = System.nanoTime();
 
     PrintWriter out = response.getWriter();
@@ -761,5 +759,4 @@ public class GetDomainContent extends HttpServletBase
     long endTime = System.nanoTime();
     System.out.println("GetDomainContent exits, total time taken =" + (endTime - startTime) + " nanosecs");
   }
- }
 }
