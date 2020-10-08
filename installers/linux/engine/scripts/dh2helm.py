@@ -22,7 +22,7 @@ def get_script_path():
     return os.path.dirname(os.path.realpath(sys.argv[0]))
 
 
-def upload_helm(override, chartvalues, newvals):
+def upload_helm(override, chartvalues, newvals, helmtemplate):
     print("Starting Helm Capture")
     my_env = os.environ.copy()
 
@@ -101,6 +101,8 @@ def upload_helm(override, chartvalues, newvals):
     my_env['chartname'] = upload['chartname']
     my_env['chartversion'] = upload['chartversion']
     my_env['chartvalues'] = chartvalues
+    my_env['helmopts'] = newvals.get('helmopts', '')
+    my_env['helmtemplate'] = helmtemplate
 
     pid = subprocess.Popen(get_script_path() + "/helminfo.sh", env=my_env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     jstr = ""
@@ -368,14 +370,31 @@ def main():
 
     namespace = ""
     if ('chartnamespace' in newvals):
-        namespace = '--namespace "' + newvals['chartnamespace'] + '"'
+        namespace = '--namespace ' + newvals['chartnamespace']
 
     helmopts = newvals.get('helmopts', '')
+    helmtemplateopts = newvals.get('helmtemplateopts', '')
 
-    helmextract = newvals.get('helmextract', None)
+#    helmextract = newvals.get('helmextract', None)
+    runcmd(fp_task, to_dir, helm_exe + ' fetch "' + chart + '" --version "' + version + '" --untar')
 
-    if (helmextract is not None):
-        runcmd(fp_task, to_dir, helm_exe + ' pull "' + chart + '" --version "' + version + '" --untar')
+    if (newvals.get('helmcapture', None) is not None):
+        if ('/' in chart):
+            chartname = '/'.join(chart.split('/')[1:])
+        else:
+            chartname = chart
+
+        fp_task.write("  - name: helm template\n")
+        fp_task.write('    shell: ' + helm_exe + ' template ' + chartname + ' ' + namespace + ' ' + helmtemplateopts + ' -f ' + chartvalues + "\n")
+        fp_task.write("    args:\n")
+        fp_task.write("      chdir: " + to_dir + "\n")
+        fp_task.write("    changed_when: False\n")
+        fp_task.write("    register: myshell_output\n")
+        fp_task.write("  - name: copy the output to a local file\n")
+        fp_task.write("    copy:\n")
+        fp_task.write("      content: \"{{ myshell_output.stdout }}\"\n")
+        fp_task.write("      dest: \"" + to_dir + ".yml\"\n")
+        fp_task.write("    delegate_to: localhost\n")
 
     runcmd(fp_task, to_dir, helm_exe + ' upgrade "' + releasename + '" "' + chart + '" --version "' + version + '" ' + namespace + ' ' + helmopts + ' --install -f ' + chartvalues)
 
@@ -394,7 +413,8 @@ def main():
             print(line)
 
     pid.wait()
-    upload_helm(override, chartvalues, newvals)
+
+    upload_helm(override, chartvalues, newvals, to_dir + ".yml")
 
     os.chdir('/tmp')
 
@@ -402,6 +422,7 @@ def main():
         print(tempdir)
     else:
         shutil.rmtree(tempdir)
+        os.remove(to_dir + ".yml")
 
     exit(pid.returncode)
 

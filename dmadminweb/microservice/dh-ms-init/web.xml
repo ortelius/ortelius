@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:web="http://java.sun.com/xml/ns/javaee" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+
+  <id>WebApp_ID</id>
+  <context-param>
+    <param-name>BUILD_VERSION</param-name>
+    <param-value>X_BUILD_VERSION_X</param-value>
+  </context-param>
+  <context-param>
+    <param-name>DMHOME</param-name>
+    <param-value>/opt/deployhub/engine</param-value>
+  </context-param>
+  <context-param>
+    <param-name>DBConnectionString</param-name>
+    <param-value>jdbc:postgresql://localhost:5432/postgres</param-value>
+  </context-param>
+  <context-param>
+    <param-name>DBDriverName</param-name>
+    <param-value>org.postgresql.Driver</param-value>
+  </context-param>
+  <context-param>
+    <param-name>TrilogyPort</param-name>
+    <param-value>2305</param-value>
+  </context-param>
+  <display-name>dmadminweb</display-name>
+  <servlet>
+    <description></description>
+    <display-name>InitServer</display-name>
+    <load-on-startup>1</load-on-startup>
+    <servlet-class>dmadmin.InitServer</servlet-class>
+    <servlet-name>InitServer</servlet-name>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>InitServer</servlet-name>
+    <url-pattern>/InitServer</url-pattern>
+  </servlet-mapping>
+  <session-config>
+    <session-timeout>1</session-timeout>
+  </session-config>
+  <version>2.5</version>
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.htm</welcome-file>
+    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>default.html</welcome-file>
+    <welcome-file>default.htm</welcome-file>
+    <welcome-file>default.jsp</welcome-file>
+  </welcome-file-list>
+</web-app>

@@ -545,6 +545,12 @@
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
     </Dependency>
     <Dependency>
+       <Name>dmadminweb/WebContent/Home/*.html</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
         <Name>dmadminweb/WebContent/js/_demo/*.html</Name>
         <Type>5</Type>
         <ParentBuildTask>Ant War</ParentBuildTask>
