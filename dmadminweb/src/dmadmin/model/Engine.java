@@ -345,22 +345,48 @@ public class Engine
 		throw new RuntimeException(cmd.getOutput());
 	}
 	
-	public String encryptValue(String value, String userName)
-	{
-	 if (value.trim().length() == 0)
-	  return "";
-	 
-		CommandLine cmd = new CommandLine(this)
-			.add("dm")
-			.add("-usr").add(userName)
-			.pw(m_session.getPassword())
-			.add("-encrypt");
-		int ret = cmd.runWithTrilogy(true, value + "\n");
-		if(ret == 0) {
-			return cmd.getOutput().trim();
-		}
-		throw new RuntimeException(cmd.getOutput());
-	}
+
+public String[] splitInParts(String s, int partLength)
+{
+    int len = s.length();
+
+    // Number of parts
+    int nparts = (len + partLength - 1) / partLength;
+    String parts[] = new String[nparts];
+
+    // Break into parts
+    int offset= 0;
+    int i = 0;
+    while (i < nparts)
+    {
+        parts[i] = s.substring(offset, Math.min(offset + partLength, len));
+        offset += partLength;
+        i++;
+    }
+
+    return parts;
+}
+	
+ public String encryptValue(String value, String userName)
+ {
+  if (value.trim().length() == 0)
+   return "";
+
+  String[] parts = splitInParts(value, 1000);
+  ArrayList<String> encparts = new ArrayList<String>();
+
+  for (int i = 0; i < parts.length; i++)
+  {
+   value = parts[i];
+   CommandLine cmd = new CommandLine(this).add("dm").add("-usr").add(userName).pw(m_session.getPassword()).add("-encrypt");
+   int ret = cmd.runWithTrilogy(true, value + "\n");
+   if (ret == 0)
+    encparts.add(cmd.getOutput().trim());
+   else
+    throw new RuntimeException("Encryption Failed for " + value);
+  }
+  return String.join("^", encparts);
+ }
 	
 	public class ConfigEntry
 		implements IJSONSerializable

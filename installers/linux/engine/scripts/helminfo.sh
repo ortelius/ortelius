@@ -1,3 +1,4 @@
+
 helmexe="helm"
 if [ "$dockeruser" == "" ]; then
   dockeruser=$helmrepouser
@@ -25,7 +26,7 @@ if [ "$chartvalues" != "" ]; then
   override_values="-f $chartvalues"
 fi
 
-$helmexe repo add $helmlogin $helmrepo $helmrepourl 2>&1 1>/dev/null
+echo $helmlogin $helmrepo $helmrepourl | xargs $helmexe repo add  2>&1 1>/dev/null
 $helmexe repo update 2>&1 1>/dev/null
 $helmexe fetch $chartorg/$chartname --version $chartversion 2>&1 1>/dev/null
 digest=`sha256sum $chartname*.tgz | cut -f1 -d " "`
@@ -36,7 +37,7 @@ tar -xf $chartname*.tgz
 IFS=$'\n'
 
 let cnt=0
-for line in $($helmexe template $chartname -f $chartvalues | dos2unix | grep "image:" | cut -f 2- -d ":" | tr -d '"' | tr -d " " | sort -u)
+for line in $(cat $helmtemplate | dos2unix | grep "image:" | cut -f 2- -d ":" | tr -d '"' | tr -d " " | sort -u)
 do
  if [ "$cnt" -gt "0" ]; then
   echo ","
@@ -51,7 +52,7 @@ do
   line="$line:latest"
  fi
 
- if [ "$slashes" == "2" ]; then
+ if [ "$slashes" -ge 2 ]; then
    reg=$(echo $line | cut -d / -f 1)
    org=$(echo $line | cut -d / -f 2)
    img=$(echo $line | cut -d / -f 3- | cut -d ":" -f 1)
@@ -86,7 +87,7 @@ do
  authdomsvc=`curl --head "https://${apidomain}/v2/" 2>&1 | grep realm | cut -f2- -d "=" | tr "," "?" | tr -d '"' | tr -d "\r"`
  authscope="repository:${org}/${img}:pull"
 
- TOKEN=$(curl -s -X GET -u ${apiuser}:${apipass} "${authdomsvc}&scope=${authscope}&offline_token=1&client_id=shell" | jq -r '.token')
+ TOKEN=$(echo -u ${apiuser}:${apipass} | xargs curl -s -X GET "${authdomsvc}&scope=${authscope}&offline_token=1&client_id=shell" | jq -r '.token')
  digest=$(curl --head -s -H "Authorization: Bearer ${TOKEN}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" https://${apidomain}/v2/${org}/${img}/manifests/$tag | grep "Docker-Content-Digest:" | cut -f 2 -d " " | tr -d '"' | tr -d "\r")
  
  cat <<- EOF

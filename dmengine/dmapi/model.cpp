@@ -1122,7 +1122,35 @@ char *Credentials::internalDecryptValue(const char *value, Context &ctx)
 		return strdup("");
 	}
 
-	return decryptValue(value, strlen(value));
+	if (strchr(value, '^') != NULL)
+	{
+	 char parts[4096] = {""};
+     char *ret = (char *)malloc(4096);
+     int len = strlen(value);
+     int c = 0;
+
+	 memset(ret,'\0', 4096);
+
+	 for (int i=0; i<=len; i++)
+	 {
+	  if (*(value+i) == '\0' || *(value+i) == '^')
+	  {
+	   parts[c] = '\0';
+	   char *decrypt = decryptValue(parts, strlen(parts));
+	   strcat(ret,decrypt);
+	   memset(parts,'\0', 4096);
+	   c=0;
+	  } 
+	  else
+	  {
+	   parts[c] = *(value+i);  
+	   c++;
+	  } 
+	 }
+	 return ret;
+	}
+    else
+	 return decryptValue(value, strlen(value));
 }
 
 
