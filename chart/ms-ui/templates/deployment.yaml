@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  {{ include "ms-ui.name" . }}
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app:  {{ include "ms-ui.name" . }}
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: dh-ms-ui
+          image: "{{ .Values.DockerRepo }}:{{ .Values.DockerTag }}"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+---   
