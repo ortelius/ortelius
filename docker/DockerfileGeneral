@@ -1,0 +1,21 @@
+FROM quay.io/openmake/meister:latest
+
+WORKDIR /build/
+
+COPY . /workspace
+RUN /workspace/tgt/build-gen.sh
+
+FROM quay.io/ortelius/ms-java-base:latest
+EXPOSE 8080
+ENV DBHome /opt/deployhub
+ENV DBConnectionString jdbc:postgresql://db.deployhub.com:80/postgres
+ENV DBDriverName org.postgresql.Driver
+
+WORKDIR /opt/deployhub/webadmin/
+
+ADD http://worldtimeapi.org/api/timezone/MST buildtime
+RUN pip install --upgrade deployhub
+
+COPY --from=0 /workspace/installers/linux/webadmin/webapp-runner.jar webadmin/webapp-runner.jar
+COPY --from=0 /build/dh-ms-general.war  webadmin/dh-ms-general.war 
+CMD java -jar /opt/deployhub/webapp-runner.jar --path /dmadminweb /opt/deployhub/webadmin/dh-ms-general.war 2>&1
