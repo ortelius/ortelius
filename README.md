@@ -1,14 +1,35 @@
 # Ortelius
+
 Welcome to Ortelius. Ortelius is an open source project that aims to simplify the implementation of microservices. By providing a central catalog of services with their deployment specs, application teams can easily consume and deploy services across cluster. Ortelius tracks application versions based on service updates and maps their service dependencies eliminating confusion and guess work.  Unique to Ortelius is the ability to track your microservice inventory across clusters mapping the differences.  Ortelius serves Site Reliability Engineers and Cloud Architects in their migration to and ongoing management of a microservice implementation. For more information, see the comprehensive documentation at http://docs.ortelius.io 
 
-## Ortelius Goals
-The goals of the Ortelius Open Source Project are: 
+## Ortelius Mission
 
-1) Simplify deployment automation across the life cycle in traditional, hybrid and microservice environments.
-2) Allow organizations to achieve business agility by providing a clear path for fast and safe incremental releases with impact analysis and feedback loops. 
-3) Give developers the power to control how their software is released across all environments by defining deployment configurations data that is separate from the definition.   
-4) Deliver transparency into the deployment process by mapping component and microservice relationships with BOM and Difference Reports across deployed environments (clusters, cloud, physical).  
-5) Establish a market place to share microservices with their deployment requirements and versions.
+Our mission is to simplify the adoption of modern architecture through a world-class microservice management platform driven by a supportive and diverse global open source community.
+
+## Ortelius Value Statements
+
+- We want Members to learn and understand solutions around microservice use and their challenges through a diverse contributor base. 
+- We want our members to develop their careers, skills and gain community recognition for their work and expertise. 
+- We want our members to have the opportunity to share and reuse open source microservices to further the adoption of a cloud native development. 
+- We want members to learn how to contribute to an open source community and become part of the broader conversation around cloud native architecture.
+
+## Ortelius Benefits
+
+The benefits of the Ortelius Open Source Project are:
+
+1) Adds automated configuration management of microservices, tracking logical applications and their versions, into the continuous delivery process.
+2) Simplifies the path to adopting cloud native development practices without a major redesign of their CD pipeline.
+3) Give developers the power to control how their software is released across all environments by defining deployment configurations data that is separate from the definition.
+4) Deliver transparency into the continuous delivery process by mapping component and microservice relationships with BOM and Difference Reports across deployed environments (clusters, cloud, physical).  
+5) Serve as a central market place to share microservices with their deployment requirements and versions.
+
+## Ortelius Development Goals for 2021
+
+1) Publish our first global marketplace 
+2) Convert DMScript to Python 
+3) Website redesign that supports easy contribution (pull request) (Jenkins as an example)
+4) Improve data graphs and maps
+5) Increase adoption by simplifying end user experience
 
 ## Code of Conduct
 
@@ -16,11 +37,14 @@ The goals of the Ortelius Open Source Project are:
 
 ## Open Source Sub-Committees
 
+[Calendar of meetings with times and zoom info.](https://ortelius.io/events/)
+
 ### CD Environment - Development Infrastructure and Productivity
 
 Create a CD process for managing pull requests, builds, tests and releases.  
 
 Contributors:
+
 - Anand Bhagwat
 - Steve Taylor
 - Sanjay Sheel
@@ -33,6 +57,7 @@ Contributors:
 Determine what reports and maps can currently be created and/or enhanced.  Begin looking at what data can be passed back to the CD pipelines for predictive reporting, risk assessment. (Think truth tables).
 
 Contributors:
+
 - Tracy Ragan
 
 ### Deployment Integrations
@@ -47,6 +72,7 @@ Create integrations with documentation and videos for the following CI/CD Soluti
 - Argo
 
 Contributors:
+
 - Steve Taylor
 - Sacha Wharton
 - Sagar Utekar
@@ -57,6 +83,7 @@ Contributors:
 Enhance the current Domain structure to make it more like a Marketplace for sharing Microservices.  Think API marketplace.
 
 Contributors:
+
 - Christopher Hicks
 - Steve Taylor
 - Ayesha Khaliq
@@ -67,6 +94,7 @@ Contributors:
 Review User Interface and make recommendations for improving with a focus on ease of use. Define test cases with automation.
 
 Contributors:
+
 - Tracy Ragan
 - Parijat Kalita
 
@@ -75,6 +103,7 @@ Contributors:
 Review documentation and re-write or clarify complexities.
 
 Contributors:
+
 - Tracy Ragan
 - Divya Mohan
 - Mark Peters
@@ -85,6 +114,7 @@ Contributors:
 Work to begin breaking down the monolithic into services. Starting with logging as a good first step. Integration with Istio with Routing. Solving onboarding efforts (AWS scraping for existing microservice customers)
 
 Contributors:
+
 - Christopher Hicks
 - Steve Taylor
 - Ayesha Khaliq
@@ -99,6 +129,7 @@ Contributors:
 Work on existing enhancements and bug fixes. Add them to the core Ortelius repository unless a doc change.
 
 Contributors:
+
 - Steve Taylor
 - Drishti Dhamejani
 - Melissa Albarella
@@ -125,6 +156,7 @@ Contributors:
 - Do we understand accessibility requirements? Are we meeting them?
 
 Contributors:
+
 - Tracy Ragan
 - Neetu Jain
 - Divya Mohan
@@ -136,7 +168,7 @@ Contributors:
 
 Track progress, define process, work with Steve and Marky managing pull requests and releases dates.
 
-Contributors: 
+Contributors:
 -Tracy Ragan
 -Neetu Jain
 
