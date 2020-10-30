@@ -25,11 +25,17 @@ The benefits of the Ortelius Open Source Project are:
 
 ## Ortelius Development Goals for 2021
 
+Goals for Q1 and Q2 of 2021
+
+1) Website redesign to support easy contribution (pull request) (Jenkins as an example)
+2) Improve data graphs and maps
+3) Increase adoption by adding 'scraping' of AWS, GKE, Azure.
+
+Goals for the Q3 and Q4 months of 2021
+
 1) Publish our first global marketplace 
-2) Convert DMScript to Python 
-3) Website redesign that supports easy contribution (pull request) (Jenkins as an example)
-4) Improve data graphs and maps
-5) Increase adoption by simplifying end user experience
+2) Convert DMScript to Python
+
 
 ## Code of Conduct
 
