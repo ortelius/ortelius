@@ -169,6 +169,7 @@ Contributors:
 - Mark Peters
 - Alok Tanna
 - Arijeet Majumdar
+- Tatiana Lazebnyk
 
 ## Project Management
 
