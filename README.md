@@ -57,6 +57,7 @@ Contributors:
 - Sacha Wharton
 - Sagar Utekar
 - Nael Fridhi
+- Sanchit Khurana
   
 ### Data Science and Visualization
 
@@ -83,6 +84,7 @@ Contributors:
 - Sacha Wharton
 - Sagar Utekar
 - Nael Fridhi
+- Sanchit Khurana
 
 ### Market Place and Domains
 
@@ -129,6 +131,7 @@ Contributors:
 - Sacha Wharton
 - Sagar Utekar
 - Nael Fridhi
+- Sanchit Khurana
 
 ### Development
 
@@ -141,6 +144,7 @@ Contributors:
 - Melissa Albarella
 - Sagar Utekar
 - Nael Fridhi
+- Sanchit Khurana
 
 ### Product Management
 
