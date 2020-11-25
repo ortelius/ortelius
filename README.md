@@ -85,6 +85,7 @@ Contributors:
 - Sagar Utekar
 - Nael Fridhi
 - Sanchit Khurana
+- Karamjot Singh
 
 ### Market Place and Domains
 
@@ -96,6 +97,7 @@ Contributors:
 - Steve Taylor
 - Ayesha Khaliq
 - Nael Fridhi
+- Karamjot Singh
 
 ### UX and Testing
 
@@ -132,6 +134,7 @@ Contributors:
 - Sagar Utekar
 - Nael Fridhi
 - Sanchit Khurana
+- Karamjot Singh
 
 ### Development
 
