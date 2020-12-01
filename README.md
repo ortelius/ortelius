@@ -66,6 +66,7 @@ Determine what reports and maps can currently be created and/or enhanced.  Begin
 Contributors:
 
 - Tracy Ragan
+- Tatiana Lazebnyk
 
 ### Deployment Integrations
 
