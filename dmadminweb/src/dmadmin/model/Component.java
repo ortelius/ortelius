@@ -200,7 +200,9 @@ public class Component
 		addCreatorModifier(ds);
   ds.addProperty(SummaryField.COMP_KIND, "Kind", new LinkField(ObjectType.COMP_KIND,
     (m_kind != null) ? m_kind.value() : 0, getKindAsString()));
-		ds.addProperty(SummaryField.COMPTYPE, "Endpoint Type", getComptype());
+  CompType ct = this.m_session.getCompTypeByName(m_comptypeid + "");
+  
+		ds.addProperty(SummaryField.COMPTYPE, "Endpoint Type", ct.getFullName());
 		ds.addProperty(SummaryField.COMP_DATASOURCE, "Change Request Data Source",
 				(m_datasource != null)?m_datasource.getLinkJSON():null);
 		

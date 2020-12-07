@@ -87,7 +87,7 @@ public class GetComponentData extends HttpServlet {
     CompType ctype = (CompType)x;
     JSONObject obj = new JSONObject();
     obj.add("id",ctype.getId());
-    obj.add("name",ctype.getName());
+    obj.add("name",ctype.getFullName());
     obj.add("database",ctype.getDatabase());
     obj.add("deletedir",ctype.getDeletedir());
     
