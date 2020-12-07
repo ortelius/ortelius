@@ -19,7 +19,6 @@
 package dmadmin;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -119,6 +118,7 @@ import dmadmin.model.UserGroup;
 import dmadmin.model.UserGroupList;
 import dmadmin.model.UserList;
 import dmadmin.util.CommandLine;
+import dmadmin.util.SendMail;
 
 /**
  * API redirector servlet - all calls to the RESTful API are routed through here.
@@ -1593,7 +1593,7 @@ public class API extends HttpServlet
  private void AddUser(DMSession so, String username, HttpServletRequest request) throws ApiException
  {
   // API/new/user?name=<loginname>[&domain=<domain>&realname=<real name>&ldap=<ldap datasource>&tel=<tel no>&email=<email>&cpw=Y|N&locked=Y|N&pw=<password>]
-  // Do we have create user permission?
+  // Do we have create user permission?  
   if (!so.getCreatePermission(ObjectType.USER))
    throw new ApiException("No Create User Permission");
   if (username == null || username.length() == 0)
@@ -1694,118 +1694,6 @@ public class API extends HttpServlet
   mac.init(signingKey);
   return toHexString(mac.doFinal(data.getBytes()));
  }
-
- protected String AddSaaS(DMSession so, String domname, HttpServletRequest request) throws ApiException
- {
-  // API/new/domain/name[?domain=<domain>&lifecyle=Y]
-  // Do we have create domain permission?
-  String userid = request.getParameter("userid");
-  String lictype = request.getParameter("lictype");
-  String clientid = request.getParameter("clientid");
-  String provider = "DeployHub";
-  String providerid = "";
-  int liccnt = -1;
-  boolean validPayload = false;
-
-  if (request.getParameter("liccnt") != null)
-   liccnt = new Integer(request.getParameter("liccnt")).intValue();
-
-  if (domname.startsWith("sha1="))
-  {
-   // GitHub
-
-   StringBuffer jb = new StringBuffer();
-   String line = null;
-   try
-   {
-    BufferedReader reader = request.getReader();
-    while ((line = reader.readLine()) != null)
-     jb.append(line);
-   }
-   catch (Exception e)
-   {
-   }
-
-   if (jb.toString().contains("api.github.com"))
-   {
-    try
-    {
-     String sha1 = "sha1=" + calculateRFC2104HMAC(jb.toString(), "6808696fb52e3f36a9d67a0794dd3eddfb31a31a");
-     if (domname.equals(sha1))
-      validPayload = true;
-    }
-    catch (InvalidKeyException e)
-    {
-     e.printStackTrace();
-    }
-    catch (SignatureException e)
-    {
-     e.printStackTrace();
-    }
-    catch (NoSuchAlgorithmException e)
-    {
-     e.printStackTrace();
-    }
-    if (validPayload)
-    {
-     provider = "GitHub";
-     JsonObject json = new JsonParser().parse(jb.toString()).getAsJsonObject();
-     String u = json.getAsJsonObject("sender").get("login").getAsString();
-     String action = json.get("action").getAsString();
-     if (action.equals("purchased") || action.equals("changed") || action.equals("cancelled"))
-     {
-      String planname = json.getAsJsonObject("marketplace_purchase").getAsJsonObject("plan").get("name").getAsString();
-      String unitcnt = json.getAsJsonObject("marketplace_purchase").get("unit_count").getAsString();
-      providerid = json.getAsJsonObject("marketplace_purchase").getAsJsonObject("account").get("id").getAsString();
-      domname = "GLOBAL.Git_" + u + ".My Project.My Pipeline";
-
-      if (planname.equals("DeployHub Team"))
-      {
-       lictype = "OSS";
-       liccnt = 9999;
-      }
-      else
-      {
-       lictype = "Pro";
-       liccnt = new Integer(request.getParameter(unitcnt)).intValue();
-      }
-
-      if (action.equals("cancelled"))
-       liccnt = 0;
-
-      userid = u;
-      String user = System.getenv("dhuser");
-      String password = System.getenv("dhpass");
-      so.Login(user, password,null);
-     }
-    }
-   }
-  }
-
-  if (!so.getCreatePermission(ObjectType.DOMAIN))
-  {
-   // No!
-   throw new ApiException("No Create Domain Permission");
-  }
-  if (domname == null || domname.length() == 0)
-   throw new ApiException("domain name must be specified");
-
-  if (userid == null || userid.length() == 0)
-   throw new ApiException("userid name must be specified");
-
-  if (lictype == null || lictype.length() == 0)
-   throw new ApiException("license type name must be specified");
-
-  if (liccnt == -1)
-   throw new ApiException("license count name must be specified");
-
-  if (clientid == null)
-   clientid = UUID.randomUUID().toString();
-
-  AddSaaSBackground bg = new AddSaaSBackground(domname, so, request, userid, lictype, liccnt, provider, providerid, clientid);
-  bg.run();
-  return clientid;
-   }
 
  private void createDomains4Obj(DMSession so, String objname)
  {
@@ -3165,12 +3053,6 @@ public class API extends HttpServlet
       throw new ApiException("Path contains too many elements");
      }
     }
-    else if (elements[0].equals("marketplace"))
-    {
-     String secret = request.getHeader("X-Hub-Signature");
-     String clientid = AddSaaS(so, secret, request);
-     obj.add("clientid", clientid);
-    }
     else if (elements[0].equals("saasclient"))
     {
      SaasClient client = so.getSaasClientByName(elements[1]);
@@ -4031,11 +3913,6 @@ public class API extends HttpServlet
        AddEnvironment(so, elements[2], request);
       else if (elements[1].equals("domain"))
        AddDomain(so, elements[2], request);
-      else if (elements[1].equals("saasclient"))
-      {
-       String clientid = AddSaaS(so, elements[2], request);
-       obj.add("clientid", clientid);
-      }
       else if (elements[1].equals("credential"))
        AddCredential(so, elements[2], request);
       else if (elements[1].equals("application"))
@@ -4694,7 +4571,58 @@ public class API extends HttpServlet
   if (pass == null)
    pass=ServletUtils.GetCookie(request,"p2");
   
-  if (path.contains("/setvar"))
+  if (path.contains("/signup"))
+  {
+   try (DMSession so = DMSession.getInstance(request))
+   {
+    so.internalLogin(request.getServletContext());
+
+    String userid = request.getParameter("userid"); 
+    String domname = request.getParameter("domname");
+    String clientid = UUID.randomUUID().toString();
+    
+    JSONObject obj = new JSONObject();
+
+    String err = so.SignUp(domname, userid);
+    
+    if (err.isEmpty())
+    {   
+      AddClientId(domname, so, request, userid, clientid);
+      obj.add("err", "");
+    }
+    else
+     obj.add("err", err);
+
+    PrintWriter out = response.getWriter();
+    out.write(obj.getJSON());
+   }
+   return;
+  }
+  if (path.contains("/adddemo"))
+  {
+   try (DMSession so = DMSession.getInstance(request))
+   {
+    so.internalLogin(request.getServletContext());
+
+    String userid = request.getParameter("userid"); 
+    String domname = request.getParameter("domname");
+    String clientid = UUID.randomUUID().toString();
+    String provider = "DeployHub";
+    String providerid = "";
+    String lictype = "OSS";
+    int liccnt = 9999;
+    
+    JSONObject obj = new JSONObject();
+    Domain engineDomain = so.getDomainByName(domname);
+   
+    so.createSaaSClient(clientid, engineDomain, lictype, liccnt, provider, providerid, request);
+    obj.add("err", "");
+    PrintWriter out = response.getWriter();
+    out.write(obj.getJSON());
+    return;
+   }
+  } 
+  else if (path.contains("/setvar"))
   {
    try (DMSession so = DMSession.getInstance(request))
    {
@@ -5521,14 +5449,59 @@ public class API extends HttpServlet
      else
      {
       JsonObject linked = fielddet.get(4).getAsJsonObject();
-      if (linked.has("type") && linked.has("id"))
-       value = linked.get("type").getAsString() + linked.get("id").getAsString();
+      
+      if (field != null && (field == SummaryField.PRE_ACTION || field == SummaryField.POST_ACTION || field == SummaryField.CUSTOM_ACTION))
+      {
+       value = linked.get("name").getAsString();
+       Action action = null;
+       try
+       {
+        action = getActionFromNameOrID(so, value);
+        value = "ac" + action.getId();
+       }
+       catch (ApiException e)
+       { 
+       }
+       
+       if (action == null)
+       {
+        createDomains4Obj(so, value);
+        ObjectType atype = field.type();
+        
+        String shortname = "";
+        
+        ArrayList<String> parts = new ArrayList<String>(Arrays.asList(value.split("\\.")));
+        if (parts != null && !parts.isEmpty()) 
+        {
+         shortname = parts.get(parts.size()-1);
+         parts.remove(parts.size()-1);
+        }
+        String actdomname = String.join(".", parts);
+
+        try
+        {
+         Domain actdom = this.getDomainFromNameOrID(so, actdomname);
+         int newid = so.getID("action");
+         
+         ObjectTypeAndId otypeid = so.CreateNewAction("G", shortname, actdom.getId(), actdom.getId(), newid);
+         value = "ac" + otypeid.getId();
+        }
+        catch (ApiException e)
+        {
+        }
+       }
+      }
       else
       {
-       value = linked.get("type").getAsString();
-       if (value.equalsIgnoreCase("bb"))
-         value = linked.get("value").getAsString();
-      }
+       if (linked.has("type") && linked.has("id"))
+        value = linked.get("type").getAsString() + linked.get("id").getAsString();
+       else
+       {
+        value = linked.get("type").getAsString();
+        if (value.equalsIgnoreCase("bb"))
+          value = linked.get("value").getAsString();
+       }
+      } 
      }
      
      if (field != null && (field == SummaryField.READ_ONLY || field == SummaryField.SERVER_PINGSTART || field == SummaryField.SERVER_PINGEND || field == SummaryField.DOMAIN_FULLNAME))
@@ -5544,7 +5517,16 @@ public class API extends HttpServlet
        if (value.contains(";"))
        {
         String parts[] = value.split(";");
-        value = parts[0];
+        value = parts[1];
+        try
+        {
+         CompType ct = this.getCompTypeFromNameOrID(so, value);
+         value = ct.getId() + "";
+        }
+        catch (Exception e)
+        {
+         continue;
+        }
        }
       }
       
@@ -5868,8 +5850,41 @@ public class API extends HttpServlet
     for (int i=0;i<envs.size();i++)
     {
      String envname = envs.get(i).getAsString();
-     Environment env = so.getEnvironmentByName(envname);
+     Environment env = null;
      
+     try
+     {
+      env = so.getEnvironmentByName(envname);
+     }
+     catch (RuntimeException e)
+     {}
+     
+     if (env == null)
+     {
+      createDomains4Obj(so, envname);
+      
+      String shortname = "";
+      
+      ArrayList<String> parts = new ArrayList<String>(Arrays.asList(envname.split("\\.")));
+      if (parts != null && !parts.isEmpty()) 
+      {
+       shortname = parts.get(parts.size()-1);
+       parts.remove(parts.size()-1);
+      }
+      String actdomname = String.join(".", parts);
+
+      try
+      {
+       Domain actdom = this.getDomainFromNameOrID(so, actdomname);
+       int newid = so.getID("environment");
+       
+       ObjectTypeAndId otypeid = so.CreateNewObject("environment", shortname, actdom.getId(), actdom.getId(), newid, 0, 0, "environments", true);
+       env = so.getEnvironment(otypeid.getId(), true);
+      }
+      catch (ApiException e)
+      {
+      }
+     }
      so.addToAppsAllowedInEnv(env, (Application)dmobj);
     }
    }
@@ -6041,36 +6056,8 @@ public class API extends HttpServlet
   return (Application)dmobj;
  }
 
- class AddSaaSBackground implements Runnable
+ public void AddClientId(String domname, DMSession so, HttpServletRequest request, String userid, String clientid)
  {
-  String domname;
-  DMSession so;
-  HttpServletRequest request;
-  String userid;
-  String lictype;
-  int liccnt;
-  String provider;
-  String providerid;
-  String clientid;
-  
-  
-  public AddSaaSBackground(String domname, DMSession so, HttpServletRequest request, String userid, String lictype, int liccnt, String provider, String providerid, String clientid)
-  {
-   super();
-   this.domname = domname;
-   this.so = so;
-   this.request = request;
-   this.userid = userid;
-   this.lictype = lictype;
-   this.liccnt = liccnt;
-   this.provider = provider;
-   this.providerid = providerid;
-   this.clientid = clientid;
-  }
-
-
-  public void run(){
-   
   String parts[] = domname.split("\\.");
 
   Domain tgtdomain;
@@ -6084,7 +6071,6 @@ public class API extends HttpServlet
    e1.printStackTrace();
    return;
   }
-  Domain engineDomain = null;
   Domain companyDomain = null;
   String domStr = parts[0];
   boolean newDom = false;
@@ -6093,10 +6079,10 @@ public class API extends HttpServlet
   {
    String domain = parts[i];
    newDom = false;
-  
+
    if (domain.equalsIgnoreCase("My Pipeline"))
     continue;
-   
+
    domStr += "." + domain;
    try
    {
@@ -6129,9 +6115,6 @@ public class API extends HttpServlet
 
    if (i == 1)
     companyDomain = tgtdomain;
-   
-   if (i == 2) // Save Engine Domain
-    engineDomain = tgtdomain;
   }
 
   try
@@ -6144,35 +6127,21 @@ public class API extends HttpServlet
    e1.printStackTrace();
    return;
   }
-//  String lifecycle[] = { "Deveploment", "Testing", "Production" };
-//
-//  for (int i = 0; i < lifecycle.length; i++)
-//  {
-//   String domain = lifecycle[i];
-//
-//   try
-//   {
-//    int newid = so.getID("domain");
-//    so.CreateNewObject("domain", domain, tgtdomain.getId(), tgtdomain.getId(), newid, 0, 0, "domains", true);
-//   }
-//   catch (RuntimeException e)
-//   {
-//   }
-//  }
+
   try
   {
    String full_userid = companyDomain.getFullDomain() + "." + userid;
    User newuser = null;
-   
+
    try
    {
     newuser = so.getUserByName(full_userid);
    }
    catch (RuntimeException e)
    {
-    
+
    }
-   
+
    if (newuser == null)
    {
     int newid = so.getID("user");
@@ -6195,7 +6164,54 @@ public class API extends HttpServlet
    return;
   }
 
-   so.createSaaSClient(clientid, engineDomain, lictype, liccnt, provider, providerid, request);
-  }
+  String from = System.getenv("SMTP_USER");
+  String to = request.getParameter("email");
+  String companyname = request.getParameter("companyname");
+  String projectname = request.getParameter("projectname");
+  String firstname = request.getParameter("firstname");
+  String lastname = request.getParameter("lastname");
+  String tel = request.getParameter("tel");
+  String subject = "DeployHub Access";
+  String password = System.getenv("SMTP_PASS");
+  String msg = "";
+
+  msg += "<html xmlns=\"http://www.w3.org/1999/xhtml\" dir=\"ltr\" lang=\"en-US\">\n";
+  msg += "<head>\n";
+  msg += "<title>DeployHub Access</title>\n";
+  msg += "</head>\n";
+  msg += "<body>\n";
+  msg += "<h2>Thank you for becoming a DeployHub Team User!</h2>\n";
+  msg += "<p style=\"font-size:18px\">You're part of a growing group of cloud native specialists who understand the need for cataloging, versioning, configuring and deploying microservices. To get started access the DeployHub console from the following address: <a href=\"https://console.deployhub.com/dmadminweb/Home\">https://console.deployhub.com</a></p>\n";
+  msg += "<p style=\"font-size:18px\">Your userid is: " + userid + "</p>\n";
+  msg += "<p style=\"font-size:14px\">Your CLIENTID is <strong>" + clientid + "</strong> and will be needed when you install your DeployHub Reverse Proxy. See below.</p>\n";
+  msg += "<h2>DeployHub Sample Hipster Store</h2>\n";
+  msg += "<p style=\"font-size:18px\">Once you have logged in, review the <a href=\"https://docs.deployhub.com/userguide/introduction-to-deployhub/0-hipster-store-tutorial/\" target=\"_blank\">Hipster Store sample application</a> to take a test drive.</p>\n";
+  msg += "<h2>Your own POC</h2>\n";
+  msg += "<p style=\"font-size:18px\">To setup DeployHub for your organization, review <a href=\"https://docs.deployhub.com/userguide/first-steps/\" target=\"_blank\">the First Steps Guide.</a> Before you deploy into your own environment, you will need to install the DeployHub Reverse Proxy. The Reverse Proxy is your firewall protection. See our <a href=\"https://docs.deployhub.com/userguide/installation-and-support/0-saas-and-reverse-proxy/\">SaaS Proxy Installation Instructions</a> for more information.</p>\n";
+  msg += "<p style=\"font-size:18px\">If you would like to chat one-on-one, book some time with our team.<a href=\"https://drift.me/sbtaylor15/meeting/quickpeek/\" target=\"_blank\"> Just choose a time from the calendar.</a></p>\n";
+  msg += "<p style=\"font-size:18px\">DeployHub Team is based on the <a href=\"https://www.ortelius.io\" target=\"_blank\">Ortelius Open Source project</a>. Post questions, issues or comments to the <a href=\"https://github.com/ortelius/ortelius/issues\" target=\"_blank\">Ortelius GitHub Issues Page</a>. You can also join the <a href=\"https://discord.gg/mUtF8w\" target=_blank>Ortelius Discord Chatroom to start a conversation on any topic.</a>    </p>\n";
+  msg += "<p style=\"font-size:18px\">We look forward to working with you on making microservices easy. </p>\n";
+  msg += "<p style=\"font-size:18px\">Sincerely, DeployHub Support Team</p>\n";
+  msg += "</body>\n";
+  msg += "</html>\n";
+
+  String details = "";
+  details += "<html xmlns=\"http://www.w3.org/1999/xhtml\" dir=\"ltr\" lang=\"en-US\">\n";
+  details += "<head>\n";
+  details += "<title>New DeployHub User</title>\n";
+  details += "</head>\n";
+  details += "<body>\n";
+  details += "<p style=\"font-size:18px\">Company Name: " + companyname + "</p>\n";
+  details += "<p style=\"font-size:18px\">Project Name: " + projectname + "</p>\n";
+  details += "<p style=\"font-size:18px\">First Name: " + firstname + "</p>\n";
+  details += "<p style=\"font-size:18px\">Last Name: " + lastname + "</p>\n";
+  details += "<p style=\"font-size:18px\">Email: " + to + "</p>\n";
+  details += "<p style=\"font-size:18px\">Phone: " + tel + "</p>\n";
+  details += "<p style=\"font-size:18px\">Userid: " + userid + "</p>\n";
+  details += "</body>\n";
+  details += "</html>\n";
+
+  SendMail sendmsg = new SendMail(from, password, to, subject, msg, details);
+  sendmsg.start();
  }
 }

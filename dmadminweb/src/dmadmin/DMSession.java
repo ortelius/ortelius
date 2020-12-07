@@ -7095,7 +7095,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 	
 	private DMObject getObjectByName(ObjectType ot,String name)
 	{
-		String table_name="dm_"+ot.toString().toLowerCase();
+	 String table_name="dm_"+ot.toString().toLowerCase();
 		String sql;
 		int domainid = -1;
 		
@@ -7115,9 +7115,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 	    sql = "SELECT id FROM dm.dm_category WHERE name = ?";
 	   } else 
 	    if (ot == ObjectType.SERVERCOMPTYPE) {
-	     // Build Jobs don't have domains of their own
-	     sql = "SELECT id FROM dm.dm_type WHERE name = ?";
-
+	     try{
+	      int num = Integer.parseInt(name);
+	      sql = "SELECT id FROM dm.dm_type WHERE id = ?";
+	     } catch (NumberFormatException e) {
+	      sql = "SELECT id FROM dm.dm_type WHERE name = ?";
+	     }
 	    }  else {
 				if (m_domainlist == "") {
 					sql = "SELECT id FROM dm."+table_name+" WHERE name = ?";
@@ -7130,7 +7133,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
    if (ot == ObjectType.SERVERCOMPTYPE) {
     // Build Jobs don't have domains of their own
     sql = "SELECT id FROM dm.dm_type WHERE name = ? and domainid = ?";
-
+    String[] parts = name.split("\\.");
+    name = parts[parts.length-1];
    } else 
 			if (ot == ObjectType.TEMPLATE) {
 				// Templates don't have domains of their own
@@ -9273,6 +9277,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				update.add(", actionid = ?", (action != null) ? action.getId() : Null.INT);
 				}
 				break;
+			case COMP_BUILDJOB:
+			 break;
 			case ACTION_CATEGORY:
 				cat = (Category) changes.get(field);
 				break;
@@ -9281,7 +9287,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				Integer comptype = null;
 				if (tmp != null)
 				{
-				 CompType ct;
+				 CompType ct = null;
      try
      {
       ct = (CompType) getObjectFromNameOrID(ObjectType.SERVERCOMPTYPE, tmp);
@@ -9289,6 +9295,17 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
      }
      catch (GetObjectException e)
      {
+     }
+     if (ct == null && tmp.contains("Application File"))
+     {
+      try
+      {
+       ct = (CompType) getObjectFromNameOrID(ObjectType.SERVERCOMPTYPE, "GLOBAL.Application Server");
+       comptype = ct.getId();
+      }
+      catch (GetObjectException e)
+      {
+      }
      }
 				}
     
@@ -11369,7 +11386,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
  
  public List<DMObject> getCompTypes()
  {
-  String sql = "SELECT id, name, database, deletedir, domainid FROM dm.dm_type t ORDER BY 2";
+  String sql = "SELECT id, name, database, deletedir, domainid FROM dm.dm_type t where status = 'N' and domainid in (" + m_domainlist + ") ORDER BY 2";
   
   try
   {
@@ -17566,6 +17583,30 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		throw new RuntimeException("Unable to retrieve plugins for transfers from database");						
 	}
 	
+ public ArrayList<Integer> getComponents4Deployments(int deployid)
+ {
+  String sql = "select compid from dm.dm_deploymentcomps where deploymentid = ?";
+
+  ArrayList<Integer> comps = new ArrayList<Integer>();
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, deployid);
+   ResultSet rs = stmt.executeQuery();
+   while (rs.next())
+   {
+    comps.add(new Integer(rs.getInt(1)));
+   }
+   rs.close();
+   stmt.close();
+  }
+  catch (SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+  return comps;
+ }
 	
 	// Engine
 	
@@ -18992,6 +19033,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 	
 	public void addComponentToApplication(int appid,int compid,int xpos,int ypos, boolean isRelease)
 	{
+	 if (appid < 0 || compid < 0)
+	  return;
+	 
 		Application app = getApplication(appid,true);
 		try
 		{
@@ -20693,7 +20737,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   throw new RuntimeException("Failed to create saas client");
  }
  
- private void RunDomainImport(String fromdomain, String todomain, HttpServletRequest request)
+ void RunDomainImport(String fromdomain, String todomain, HttpServletRequest request)
  {
   String jsonpath="/WEB-INF/schema";
   System.out.println("Taking json scripts from "+jsonpath);
@@ -24837,6 +24881,9 @@ return ret;
 
   JSONArray ret = new JSONArray();
   
+  if (m_domainlist.isEmpty())
+   return ret;
+  
   try {
    PreparedStatement stmt = m_conn.prepareStatement(sql);
    ResultSet rs = stmt.executeQuery();
@@ -26816,7 +26863,17 @@ return ret;
     	 } catch(SQLException ex) {
     		 
     	 }
-     } // else System.out.println("no credential");
+     } 
+     else 
+      {
+       if (url.contains("atlassian"))
+       {
+        credUsername = "steve@deployhub.com";
+        credPassword = "8DcQPxhPutqofPZ4dWFK05C1";
+        credentials = Base64.encodeBase64((credUsername + ":" + credPassword).getBytes(StandardCharsets.UTF_8));
+       }
+      }
+     
      final PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
      connManager.setMaxTotal(200);
      connManager.setDefaultMaxPerRoute(20);
@@ -29146,10 +29203,18 @@ public JSONArray getComp2Endpoints(int compid)
   case TRANSFER:   // Simple protocol string for the moment
   case FILTER_ITEMS:  // Simple string "Components" or "Items"
   case COMPONENT_FILTER: // Simple string "OFF", "ON", "ALL"
-  case SERVERCOMPTYPE: 
    changes.add(field, value);
    return null;
 
+  case SERVERCOMPTYPE:
+   String newval = (String)changes.get(field);
+   if (newval == null)
+    newval = value + ";";
+   else
+    newval += value + ";";
+   changes.add(field, newval);
+   return null;
+   
   case BOOLEAN:
    changes.add(field, value.equalsIgnoreCase("true"));
    return null;
@@ -29729,8 +29794,8 @@ public JSONArray getComp2Endpoints(int compid)
     obj.add("files", files);
 
   try
-  {   
-   List<Component> complist = getComponents(ObjectType.APPLICATION, app.getId(), false);
+  {  
+   List<Integer> complist = getComponents4Deployments(deployid);
    
    String comps = "";
    
@@ -29739,7 +29804,7 @@ public JSONArray getComp2Endpoints(int compid)
     if (k > 0)
      comps += ",";
     
-    comps += complist.get(k).getId();
+    comps += complist.get(k).intValue();
    }
   
    String sql = "select compid, chartname, chartversion, helmrepo, helmrepourl, chartdigest, filename, line, deployid from dm.dm_helm  " 
@@ -30206,5 +30271,64 @@ public JSONArray getComp2Endpoints(int compid)
   data.add("nodes",nodes);
   data.add("edges",edges);
   return data;
+ }
+
+ public String SignUp(String domname, String username)
+ {
+  Domain dom = null;
+  try
+  {
+   String[] parts = domname.split("\\.");
+   parts = Arrays.copyOf(parts, parts.length - 1);
+   String name = String.join(".", parts);
+   dom = getDomainByName(name);
+  }
+  catch (RuntimeException e)
+  {
+  }
+  
+  if (dom != null)
+   return("Company already exist");
+  
+  dom = null;
+  try
+  {
+   dom = getDomainByName(domname);
+  }
+  catch (RuntimeException e)
+  {
+  }
+  
+  if (dom != null)
+   return("Company and Project already exist");
+  
+  User user = null;
+  
+  try
+  {
+   user = getUserByName(domname + "." + username);
+  }
+  catch (RuntimeException e)
+  {
+   
+  }
+  
+  if (user != null)
+   return("Username already exist");
+  
+  user = null;
+  try
+  {
+   user = getUserByName(username);
+  }
+  catch (RuntimeException e)
+  {
+   
+  }
+  
+  if (user != null)
+   return("Username is already in use");   
+ 
+  return "";
  }
 }
