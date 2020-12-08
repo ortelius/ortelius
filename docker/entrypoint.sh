@@ -22,26 +22,31 @@ if [ ! -e /opt/deployhub/logs ]; then
  sudo mkdir /opt/deployhub/logs
 fi
 
+if [ ! -e /opt/deployhub/engine ]; then
+ sudo mkdir /opt/deployhub/engine
+fi
+
 sudo chmod -R 777 /opt/deployhub
 sudo chown -R omreleng /opt/deployhub
 
-cd /opt/deployhub/engine
+cd /opt/deployhub/engine || exit
 export LD_LIBRARY_PATH=$PWD/lib:$PWD/bin
 export PATH=$PWD/lib:$PWD/bin:$PATH
-export HOME=$(getent passwd `whoami` | cut -d: -f6)
-
+HOME=$(getent passwd "$(whoami)" | cut -d: -f6)
+export HOME
 
 sudo cp -r /keys/* /root/.ssh
 sudo chown -R root /root/.ssh
 sudo chmod 755 /root/.ssh
+
 if [ -e /root/.ssh/known_hosts ]; then 
-  sudo chmod 600 /root/.ssh/known*
+  sudo chmod 600 /root/.ssh/known_hosts
 fi
 
-cp -r /keys/* $HOME/.ssh
-chown -R omreleng $HOME/.ssh 
-chmod 755 $HOME/.ssh
-chmod 600 $HOME/.ssh/known*
+cp -r /keys/* "$HOME/.ssh"
+chown -R omreleng "$HOME/.ssh"
+chmod 755 "$HOME/.ssh"
+chmod 600 "$HOME/.ssh/known_hosts"
 
 echo Running DeployHub Processes
 
