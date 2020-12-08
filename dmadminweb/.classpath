@@ -5,6 +5,7 @@
 	<classpathentry exported="true" kind="lib" path="WebContent/WEB-INF/lib/jstl.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/standard.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/pgjdbc-ng-0.7.1-complete.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/javax.mail.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/gson_lib"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gson-2.2.4-javadoc.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gson-2.2.4-sources.jar"/>
