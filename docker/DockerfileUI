@@ -1,0 +1,21 @@
+FROM quay.io/openmake/meister:latest AS builder
+
+WORKDIR /build/
+
+COPY . /workspace
+RUN /workspace/tgt/build-ui.sh
+
+FROM quay.io/ortelius/ms-java-base:fedora-32-java-8-v1_0_0
+EXPOSE 8080
+ENV DBHome /opt/deployhub
+ENV DBConnectionString jdbc:postgresql://db.deployhub.com:80/postgres
+ENV DBDriverName org.postgresql.Driver
+
+WORKDIR /opt/deployhub/webadmin/
+
+ADD http://worldtimeapi.org/api/timezone/MST buildtime
+RUN pip install --upgrade deployhub
+
+COPY --from=builder /workspace/installers/linux/webadmin/webapp-runner.jar webadmin/webapp-runner.jar
+COPY --from=builder /build/dh-ms-ui.war  webadmin/dh-ms-ui.war 
+CMD java -jar /opt/deployhub/webapp-runner.jar --path /dmadminweb /opt/deployhub/webadmin/dh-ms-ui.war 2>&1

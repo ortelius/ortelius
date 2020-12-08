@@ -1,0 +1,37 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    id: cloudbuild_sh
+    entrypoint: 'bash'
+    args: ['-c', 'ls -A1 | xargs rm -rf;git clone $$COMPONENT_GITURL .;git checkout --track -b $BRANCH_NAME origin/$BRANCH_NAME;env | sed "s/^/export /" >> /workspace/cloudbuild-nginx.sh']
+    env: 
+      - 'COMPONENT_GITURL=https://github.com/ortelius/ortelius'
+      - 'COMPONENT_VERSION=9.0.0'
+      - 'COMPONENT_DOCKERREPO=quay.io/ortelius/ms-nginx'
+      - 'BLDDATE=`date`'
+      - 'IMAGE_TAG="$BRANCH_NAME-v$$COMPONENT_VERSION.$$(git rev-list --count $BRANCH_NAME)-g$SHORT_SHA"'
+
+  # Login to Quay for push.
+  - name: 'gcr.io/cloud-builders/docker'
+    id: login
+    entrypoint: 'bash'
+    args: ['-c', '. /workspace/cloudbuild-nginx.sh;docker login quay.io --username "$$QUAY_USERID" --password $$QUAY_PASSWORD']
+    secretEnv: ['QUAY_USERID', 'QUAY_PASSWORD']     
+    env:
+      - 'DOCKER_CONFIG=/workspace/docker-config'
+
+  # Build and push dh-ms-general.war - quay.io/ortelius/ms-nginx
+  - name: 'gcr.io/cloud-builders/docker'
+    id: ms-nginx
+    waitFor: [ 'login' ]
+    entrypoint: 'bash'
+    args: ["-c", '. /workspace/cloudbuild-nginx.sh;docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/docker/DockerfileNginx .;docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG']
+    env:
+      - 'DOCKER_CONFIG=/workspace/docker-config'
+
+secrets:
+- kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/quay
+  secretEnv:
+    QUAY_USERID: CiQAW+P1J9UZz+Hr1uonladAW2dKqaiVd5ux8Q9EV81pK0u5V+4SNACcBdnKacvH4QXPamH1N4uJZvZ/0TMwvELgXAAlP0wR2zBw2WhCV82GMiUkW3iGVlbqz7c=
+- kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/quay-pw
+  secretEnv:
+    QUAY_PASSWORD: CiQAUULEud9Ej8XtwNAb9gkbDVhSGFZYhUGE30fNwR+7ehAOkH8SMgCz6KYeykjgS16RPxgKlrIQL/1TKDt06v4OXGIisFXOkdWC+jvdda8mTzVNCi8sT5g6 

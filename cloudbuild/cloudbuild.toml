@@ -1,0 +1,9 @@
+[Component]
+    Components = [
+         { Name = "GLOBAL.SF Tech.Online Store Company.Purchase Processing.Cart Service.cartservice", Application = "GLOBAL.SF Tech.Online Store Company.Hipster Store.Dev.Hipster Store;Labor Day Sale;1_2_10_2"}
+    ]    
+    Version = "1.2.2"
+    ChartName = "chart/cartservice"
+    DockerRepo = "quay.io/hipsterstore/cartservice"
+    GitUrl = "https://github.com/ortelius/store-cartservice"
+    CustomAction = "GLOBAL.HelmChart"

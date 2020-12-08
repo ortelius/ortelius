@@ -85,6 +85,7 @@ public enum SummaryField
 	COMPTYPE			(708, "Endpoint Type",			null),
 	DEPLOY_SEQUENTIALLY (709, "Deploy Sequentially",	ObjectType.BOOLEAN),
 	COMP_DATASOURCE		(710, "Change Request Data Source",ObjectType.DATASOURCE),
+ COMP_BUILDJOB  (711, "Build Job", null),
 	COMP_LASTBUILDNUMBER(712, "Last Build Number",		null),	
 	DOCKER    (713, "Container Kind",  null),
 	XPOS (714,"xpos", null),
