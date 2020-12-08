@@ -1,11 +1,11 @@
-FROM quay.io/openmake/meister:latest
+FROM quay.io/openmake/meister:latest AS builder
 
 WORKDIR /build/
 
 COPY . /workspace
 RUN /workspace/tgt/build-ui.sh
 
-FROM quay.io/ortelius/ms-java-base:latest
+FROM quay.io/ortelius/ms-java-base:fedora-32-java-8-v1_0_0
 EXPOSE 8080
 ENV DBHome /opt/deployhub
 ENV DBConnectionString jdbc:postgresql://db.deployhub.com:80/postgres
