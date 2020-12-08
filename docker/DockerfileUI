@@ -16,6 +16,6 @@ WORKDIR /opt/deployhub/webadmin/
 ADD http://worldtimeapi.org/api/timezone/MST buildtime
 RUN pip install --upgrade deployhub
 
-COPY --from=0 /workspace/installers/linux/webadmin/webapp-runner.jar webadmin/webapp-runner.jar
-COPY --from=0 /build/dh-ms-ui.war  webadmin/dh-ms-ui.war 
+COPY --from=builder /workspace/installers/linux/webadmin/webapp-runner.jar webadmin/webapp-runner.jar
+COPY --from=builder /build/dh-ms-ui.war  webadmin/dh-ms-ui.war 
 CMD java -jar /opt/deployhub/webapp-runner.jar --path /dmadminweb /opt/deployhub/webadmin/dh-ms-ui.war 2>&1
