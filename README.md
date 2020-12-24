@@ -189,7 +189,7 @@ Contributors:
 
 ## Installation
 
-Browse through the [Installation and Support Guide](http://docs.ortelius.io/userguide/installation-and-support/) for detailed guidance on how to sign up for & set up Ortelius.
+Browse through the [Installation and Support Guide](http://docs.ortelius.io/guides/userguide/installation-and-support/) for detailed guidance on how to sign up for & set up Ortelius.
 
 ## Support
 
