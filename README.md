@@ -87,6 +87,7 @@ Contributors:
 - Nael Fridhi
 - Sanchit Khurana
 - Karamjot Singh
+- Sergio Canales
 
 ### Market Place and Domains
 
