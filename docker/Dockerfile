@@ -20,7 +20,7 @@ COPY --from=builder /build/deployhub-webadmin.war webadmin/deployhub-webadmin.wa
 COPY --from=builder /build/DEBUG/bin engine/bin
 COPY --from=builder /build/DEBUG/setodbc engine/
 COPY --from=builder /workspace/docker/entrypoint.sh .
-RUN pip install --upgrade deployhub
+RUN sudo pip install --upgrade deployhub
 
 USER omreleng
 ENV PATH="${PATH}:/usr/pgsql-10/bin:/usr/local/google-cloud-sdk/bin"
