@@ -2879,8 +2879,19 @@ public class API extends HttpServlet
     else if (elements[0].equals("application"))
     {
      boolean idonly  = false;
+     boolean lastsuccess = false;
+     
      if (request.getParameter("idonly") != null && request.getParameter("idonly").equalsIgnoreCase("Y"))
         idonly = true;
+     
+     if (request.getParameter("lastsuccess") != null && request.getParameter("lastsuccess").equalsIgnoreCase("Y"))
+      lastsuccess = true;
+     
+     int envid = -1;
+     if (request.getParameter("envid") != null)
+     {
+      envid =  Integer.parseInt(request.getParameter("envid"));
+     } 
      
      System.out.println("API: Application");
      if (elements.length == 1)
@@ -2908,6 +2919,18 @@ public class API extends HttpServlet
       if (latest)
       {
        Application lapp = so.getLatestVersion(app, branchname);
+       if (lapp != null)
+       {
+        obj.add("result", assembleJSONForApplication(so, lapp, idonly));
+       }
+       else
+       {
+        throw new ApiException("No Application Found");
+       }
+      }
+      else if (lastsuccess)
+      {
+       Application lapp = so.getLastSuccessfulVersion(app, envid);
        if (lapp != null)
        {
         obj.add("result", assembleJSONForApplication(so, lapp, idonly));
