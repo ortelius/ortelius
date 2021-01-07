@@ -7,3 +7,4 @@
     DockerRepo = "quay.io/hipsterstore/cartservice"
     GitUrl = "https://github.com/ortelius/store-cartservice"
     CustomAction = "GLOBAL.HelmChart"
+
