@@ -20,7 +20,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <zip.h>
 
 #include "extended.h"
 #include "context.h"
@@ -44,6 +43,7 @@
 #include "audit.h"
 //#include "engineconfig.h"
 #include "task.h"
+#include "zip.h"
 
 // Just so we can register the impls
 #include "../extended/alter/alter.h"

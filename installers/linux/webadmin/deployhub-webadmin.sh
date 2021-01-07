@@ -10,7 +10,7 @@
 ### END INIT INFO
 
 dir="/opt/deployhub/webadmin"
-cmd="/usr/bin/java -server -jar deployhub-webadmin.war"
+cmd="/usr/bin/java -server -jar webapp-runner.jar --path /dmadminweb deployhub-webadmin.war"
 user=""
 
 name=`basename $0`

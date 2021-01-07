@@ -3477,12 +3477,36 @@ public class DMSession implements AutoCloseable {
 			// If the object is referenced and we have to update the status, do it here
 			System.out.println("Type=["+Type+"]");
 			if (bSetStatus) {
+    if (Type.equalsIgnoreCase("component")) 
+    {
+     Component c = getComponent(id,true); 
+     int predid = c.getPredecessorId();
+     
+     PreparedStatement stmt2 = m_conn.prepareStatement("UPDATE dm.dm_component SET predecessorid = ? WHERE predecessorid=?");
+     stmt2.setInt(1,predid);
+     stmt2.setInt(2,id);
+     stmt2.execute();
+     stmt2.close();
+    }
+    else if (Type.equalsIgnoreCase("application")) 
+    {
+     Application c = getApplication(id,true); 
+     int predid = c.getPredecessorId();
+     
+     PreparedStatement stmt2 = m_conn.prepareStatement("UPDATE dm.dm_application SET predecessorid = ? WHERE predecessorid=?");
+     stmt2.setInt(1,predid);
+     stmt2.setInt(2,id);
+     stmt2.execute();
+     stmt2.close();
+    }
+			 
 				System.out.println("UPDATE dm.dm_"+Type+" SET status='D' WHERE id="+id);
 				PreparedStatement stmt = m_conn.prepareStatement("UPDATE dm.dm_"+Type+" SET status='D' WHERE id=?");
 				stmt.setInt(1,id);
 				stmt.execute();
 				res = (stmt.getUpdateCount()<1)?1:0;
 				stmt.close();
+				
 			} else {
 				if (Type.equalsIgnoreCase("component")) {
 					// Deleting a component permanently - get rid of any variables (if we just mark it as deleted
@@ -8663,6 +8687,38 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		}
 		throw new RuntimeException("Unable to retrieve latest version of application " + app.getName() + " from database");				
 	}
+	
+ public Application getLastSuccessfulVersion(Application app, int envid)
+ {
+  try {
+   int lvid=0;
+    // No branch - just get latest version
+    String sql="select max(id) from dm.dm_application a, dm.dm_deployment b where parentid = ? and status = 'N' and a.id = b.appid and b.exitcode = 0 and b.envid = ?";
+    PreparedStatement stmt = m_conn.prepareStatement(sql);
+    if (app.getParentId() > 0)
+     stmt.setInt(1,app.getParentId());
+    else
+     stmt.setInt(1,app.getId());
+    
+    stmt.setInt(2, envid);
+    
+    ResultSet rs = stmt.executeQuery();
+    rs.next();
+    lvid = rs.getInt(1);
+    if (rs.wasNull()) 
+     lvid=0; // no successfull deployment found
+    rs.close();
+
+   return (lvid>0)?getApplication(lvid,true):null;
+  }
+  catch(SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+  throw new RuntimeException("Unable to retrieve latest version of application " + app.getName() + " from database");    
+ }
+ 
 	
 	public String getApprovalStatus(int appid)
 	{

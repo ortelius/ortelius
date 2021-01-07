@@ -308,6 +308,7 @@ $(document).click(function (e) {
     modal : true,
     dialogClass : "logindialog"
    });
+   
    $("#login_container_dialog").dialog(
    {
     draggable : false
