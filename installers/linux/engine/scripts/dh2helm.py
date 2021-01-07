@@ -23,7 +23,6 @@ def get_script_path():
 
 
 def upload_helm(override, chartvalues, newvals, helmtemplate):
-    print("Starting Helm Capture")
     my_env = os.environ.copy()
 
     if (newvals.get('helmcapture', None) is None):
@@ -35,6 +34,7 @@ def upload_helm(override, chartvalues, newvals, helmtemplate):
     if not os.path.exists('helm'):
         os.makedirs('helm')
 
+    print("Starting Helm Capture")
     os.makedirs(os.path.dirname("helm/" + chartvalues), exist_ok=True)
     shutil.copy(override, "helm/" + chartvalues)
 
@@ -376,7 +376,8 @@ def main():
     helmtemplateopts = newvals.get('helmtemplateopts', '')
 
 #    helmextract = newvals.get('helmextract', None)
-    runcmd(fp_task, to_dir, helm_exe + ' fetch "' + chart + '" --version "' + version + '" --untar')
+    if (newvals.get('helmrepo', None) is not None):
+        runcmd(fp_task, to_dir, helm_exe + ' fetch "' + chart + '" --version "' + version + '" --untar')
 
     if (newvals.get('helmcapture', None) is not None):
         if ('/' in chart):
@@ -422,7 +423,8 @@ def main():
         print(tempdir)
     else:
         shutil.rmtree(tempdir)
-        os.remove(to_dir + ".yml")
+        if (os.path.exists(to_dir + ".yml")):
+           os.remove(to_dir + ".yml")
 
     exit(pid.returncode)
 

@@ -51,4 +51,4 @@ chmod 600 "$HOME/.ssh/known_hosts"
 echo Running DeployHub Processes
 
 # /opt/deployhub/engine/trilogyd 1>/opt/deployhub/logs/engine.out 2>/opt/deployhub/logs/engine.err &
-java -jar /opt/deployhub/webadmin/webapp-runner.jar --path /dmadminweb /opt/deployhub/webadmin/deployhub-webadmin.war 1>/opt/deployhub/logs/deployhub.log 2>&1
+java -jar /opt/deployhub/webadmin/webapp-runner.jar --path /dmadminweb /opt/deployhub/webadmin/deployhub-webadmin.war  2>&1 | perl -pe '$_ = localtime.": $_"' > /opt/deployhub/logs/deployhub.log
