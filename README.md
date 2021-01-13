@@ -58,6 +58,7 @@ Contributors:
 - Sagar Utekar
 - Nael Fridhi
 - Sanchit Khurana
+- Natch Khongpasuk
   
 ### Data Science and Visualization
 
