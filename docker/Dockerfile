@@ -5,7 +5,7 @@ WORKDIR /build/
 COPY . /workspace
 RUN /workspace/tgt/build.sh
 
-FROM quay.io/ortelius/ortelius-base:fedora-32-v1_0_0
+FROM quay.io/ortelius/ortelius-base:fedora-32-v1_0_1
 
 WORKDIR /opt/deployhub/
 COPY --from=builder /workspace/installers/linux/webadmin/webapp-runner.jar webadmin/webapp-runner.jar
