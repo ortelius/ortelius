@@ -14,6 +14,7 @@ else
  sudo chown -R postgres:postgres /var/lib/pgsql
 fi
 
+sudo chmod 700 /var/lib/pgsql/data
 sudo -u postgres /usr/pgsql-10/bin/pg_ctl start --pgdata=/var/lib/pgsql/data
 sleep 10
 sudo -u postgres /usr/pgsql-10/bin/pg_ctl status --pgdata=/var/lib/pgsql/data
