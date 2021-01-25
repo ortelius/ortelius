@@ -340,7 +340,7 @@ def main():
             runcmd(fp_task, to_dir, 'az aks get-credentials --resource-group ' + resourcegroup + ' --name ' + cluster)
 
     if ('kubectl_context' in newvals):
-        runcmd(fp_task, to_dir, 'kubectl config set-context ' + newvals['kubectl_context'])
+        runcmd(fp_task, to_dir, 'kubectl config use-context ' + newvals['kubectl_context'])
 
     helm_exe = newvals.get("helm_exe", "helm")
     if (helm_exe.lower() == "helm2"):
