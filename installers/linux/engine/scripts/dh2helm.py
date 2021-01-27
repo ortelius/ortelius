@@ -286,7 +286,7 @@ def main():
     fp_task.write("      state: directory\n")
     fp_task.write("\n")
     fp_task.write("  - name: Copy File\n")
-    fp_task.write("    copy:\n")
+    fp_task.write("    synchronize:\n")
     fp_task.write("      src: " + from_dir + "/\n")
     fp_task.write("      dest: " + to_dir + "\n")
     fp_task.write("\n")
@@ -337,7 +337,10 @@ def main():
         if ('cluster' in newvals['aks'] and 'resourcegroup' in newvals['aks']):
             resourcegroup = newvals['aks']['resourcegroup']
             cluster = newvals['aks']['cluster']
-            runcmd(fp_task, to_dir, 'az aks get-credentials --resource-group ' + resourcegroup + ' --name ' + cluster)
+            admin = ''
+            if ('admin' in newvals['aks']):
+                admin = ' --admin'
+            runcmd(fp_task, to_dir, 'az aks get-credentials --resource-group ' + resourcegroup + ' --name ' + cluster + admin)
 
     if ('kubectl_context' in newvals):
         runcmd(fp_task, to_dir, 'kubectl config use-context ' + newvals['kubectl_context'])
@@ -392,7 +395,7 @@ def main():
         fp_task.write("    changed_when: False\n")
         fp_task.write("    register: myshell_output\n")
         fp_task.write("  - name: copy the output to a local file\n")
-        fp_task.write("    copy:\n")
+        fp_task.write("    synchronize:\n")
         fp_task.write("      content: \"{{ myshell_output.stdout }}\"\n")
         fp_task.write("      dest: \"" + to_dir + ".yml\"\n")
         fp_task.write("    delegate_to: localhost\n")

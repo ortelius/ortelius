@@ -6,7 +6,7 @@ RUN yum -y update; \
     yum -y install https://download.postgresql.org/pub/repos/yum/10/fedora/fedora-32-x86_64/pgdg-fedora-repo-42.0-11.noarch.rpm; \
     yum -y install python python-pip postgresql10 postgresql10-server postgresql10-contrib postgresql10-libs postgresql-odbc unixODBC libzip perl sshpass libiodbc \
                    procps-ng dos2unix jq git sudo unzip which iputils compat-openssl10 openssh-clients libnsl.i686 samba-client python-winrm \
-                   python3-PyYAML python-requests-kerberos krb5-devel krb5-libs krb5-workstation ansible diffutils java-1.8.0-openjdk-devel; \
+                   python3-PyYAML python-requests-kerberos krb5-devel krb5-libs krb5-workstation ansible diffutils rsync java-1.8.0-openjdk-devel; \
     /usr/bin/python --version; \
     /usr/bin/pip --version; \
     /usr/bin/pip install requests-credssp pywinrm[credssp] deployhub; \
