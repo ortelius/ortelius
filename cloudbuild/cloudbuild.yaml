@@ -24,7 +24,7 @@ steps:
       - 'COMPONENT_VERSION_COMMIT="v$$COMPONENT_VERSION.$$(git rev-list --count $BRANCH_NAME)-g$SHORT_SHA"'
       - 'COMPONENT_DOCKERREPO=quay.io/ortelius/ortelius'
       - 'COMPONENT_CUSTOMACTION=GLOBAL.HelmChart'
-      - 'COMPONENT_CHARTNAME=chart/ortelius'
+      - 'COMPONENT_CHARTNAME=chart/ortelius-console'
       - 'DEPLOY_ENV=GLOBAL.ortelius.saas.aks-cluster'
       - 'BLDDATE=`date`'
       - 'IMAGE_TAG="$BRANCH_NAME-v$$COMPONENT_VERSION.$$(git rev-list --count $BRANCH_NAME)-g$SHORT_SHA"'
