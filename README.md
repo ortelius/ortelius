@@ -59,6 +59,7 @@ Contributors:
 - Nael Fridhi
 - Sanchit Khurana
 - Natch Khongpasuk
+- Brad McCoy
   
 ### Data Science and Visualization
 
@@ -180,6 +181,7 @@ Contributors:
 - Alok Tanna
 - Arijeet Majumdar
 - Tatiana Lazebnyk
+- Brad McCoy
 
 ## Project Management
 
