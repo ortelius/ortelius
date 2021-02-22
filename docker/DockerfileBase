@@ -58,7 +58,8 @@ RUN yum -y clean all; \
     mkdir -p /home/omreleng/.ssh; \
     mkdir -p /root/.ssh; \
     chown -R omreleng:omreleng /home/omreleng; \
-    echo 'omreleng       ALL=(ALL)       NOPASSWD: ALL' >> /etc/sudoers; 
+    echo 'omreleng       ALL=(ALL)       NOPASSWD: ALL' >> /etc/sudoers; \
+    chmod 4755 /usr/bin/ping
 
 EXPOSE 8080
 USER omreleng
