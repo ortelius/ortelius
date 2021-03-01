@@ -60,6 +60,7 @@ Contributors:
 - Sanchit Khurana
 - Natch Khongpasuk
 - Brad McCoy
+- Zach Jones
   
 ### Data Science and Visualization
 
@@ -90,6 +91,7 @@ Contributors:
 - Sanchit Khurana
 - Karamjot Singh
 - Sergio Canales
+- Zach Jones
 
 ### Market Place and Domains
 
@@ -139,6 +141,7 @@ Contributors:
 - Nael Fridhi
 - Sanchit Khurana
 - Karamjot Singh
+- Zach Jones
 
 ### Development
 
@@ -152,6 +155,7 @@ Contributors:
 - Sagar Utekar
 - Nael Fridhi
 - Sanchit Khurana
+- Zach Jones
 
 ### Product Management
 
