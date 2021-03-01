@@ -124,6 +124,7 @@ Contributors:
 - Divya Mohan
 - Mark Peters
 - Arijeet Majumdar
+- Pawel Kulecki
 
 ### Architecture
 
