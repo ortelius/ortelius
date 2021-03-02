@@ -61,6 +61,7 @@ Contributors:
 - Natch Khongpasuk
 - Brad McCoy
 - Zach Jones
+- Aditi Agarwal
   
 ### Data Science and Visualization
 
@@ -92,6 +93,7 @@ Contributors:
 - Karamjot Singh
 - Sergio Canales
 - Zach Jones
+- Aditi Agarwal
 
 ### Market Place and Domains
 
