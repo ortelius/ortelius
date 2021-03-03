@@ -62,6 +62,7 @@ Contributors:
 - Brad McCoy
 - Zach Jones
 - Aditi Agarwal
+- Jesse Gonzalez
   
 ### Data Science and Visualization
 
@@ -94,6 +95,7 @@ Contributors:
 - Sergio Canales
 - Zach Jones
 - Aditi Agarwal
+- Jesse Gonzalez
 
 ### Market Place and Domains
 
@@ -145,6 +147,7 @@ Contributors:
 - Sanchit Khurana
 - Karamjot Singh
 - Zach Jones
+- Jesse Gonzalez
 
 ### Development
 
@@ -159,6 +162,7 @@ Contributors:
 - Nael Fridhi
 - Sanchit Khurana
 - Zach Jones
+- Jesse Gonzalez
 
 ### Product Management
 
