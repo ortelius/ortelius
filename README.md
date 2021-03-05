@@ -63,6 +63,7 @@ Contributors:
 - Zach Jones
 - Aditi Agarwal
 - Jesse Gonzalez
+- Jimmy Malhan
   
 ### Data Science and Visualization
 
