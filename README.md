@@ -45,6 +45,8 @@ Goals for the Q3 and Q4 months of 2021
 
 [Calendar of meetings with times and zoom info.](https://ortelius.io/events/)
 
+[Discord community channel](https://discord.gg/ZtXU74x)
+
 ### CD Environment - Development Infrastructure and Productivity
 
 Create a CD process for managing pull requests, builds, tests and releases.  
