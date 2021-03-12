@@ -43,8 +43,8 @@ Goals for the Q3 and Q4 months of 2021
 
 ## Become a contributor
 
-1) Review the [Ortelius Contributor Guide] (https://docs.ortelius.io/guides/contributorguide/)
-2) Add yourself to the [Ortelius Google Group] (https://groups.google.com/g/ortelius-dev)
+1) Review the [Ortelius Contributor Guide](https://docs.ortelius.io/guides/contributorguide/)
+2) Add yourself to the [Ortelius Google Group](https://groups.google.com/g/ortelius-dev)
 3) Join the [Discord community channel](https://discord.gg/ZtXU74x)
 
 ## Open Source Sub-Committees
