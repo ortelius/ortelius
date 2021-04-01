@@ -172,6 +172,7 @@ Contributors:
 - Sanchit Khurana
 - Zach Jones
 - Jesse Gonzalez
+- Temitope Bimbo Babatola
 
 ### Product Management
 
