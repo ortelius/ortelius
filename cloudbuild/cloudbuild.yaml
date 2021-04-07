@@ -44,7 +44,7 @@ steps:
     id: build_push
     waitFor: [ 'login' ]
     entrypoint: 'bash'
-    args: ["-c", '. /workspace/cloudbuild.sh;docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/docker/Dockerfile .;docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG']
+    args: ["-c", '. /workspace/cloudbuild.sh;docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG --tag $$COMPONENT_DOCKERREPO:latest -f /workspace/docker/Dockerfile .;docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG;docker push $$COMPONENT_DOCKERREPO:latest;']
     env:
       - 'DOCKER_CONFIG=/workspace/docker-config'
 
