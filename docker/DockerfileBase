@@ -9,7 +9,8 @@ RUN yum -y update; \
                    python3-PyYAML python-requests-kerberos krb5-devel krb5-libs krb5-workstation ansible diffutils rsync java-1.8.0-openjdk-devel; \
     /usr/bin/python --version; \
     /usr/bin/pip --version; \
-    /usr/bin/pip install cryptography==3.3 requests-credssp pywinrm[credssp] deployhub; \
+    /usr/bin/pip install cryptography==3.3 requests-credssp pywinrm[credssp] deployhub python-jenkins; \
+    ln -s /usr/local/lib64/python3.8/site-packages/lookup3.cpython-38-x86_64-linux-gnu.so /usr/lib/python3.8/site-packages/lookup3.so; \
     curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python3.8/site-packages/ansible/modules/windows/win_zip.py; \
     curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python3.8/site-packages/ansible/modules/windows/win_zip.ps1; 
 
