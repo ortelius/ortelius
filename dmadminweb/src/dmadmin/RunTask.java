@@ -212,7 +212,8 @@ extends HttpServletBase
     obj.add("EnvironmentCount", envs.size());
     if (dom!=null) System.out.println("mydomain.id="+mydomain.getId()+" dom.id="+dom.getId());
     else System.out.println("dom is null");
-    List<Application> applications = session.getDeployableApplicationsInDomain(mydomain, dom, true, false);
+    ArrayList<Application> applications = new ArrayList<Application>();
+    applications.add(app);
     JSONArray arr1 = new JSONArray();
     for(Application c: applications) {
       JSONObject cobj = new JSONObject();
@@ -605,6 +606,12 @@ extends HttpServletBase
 			taskDeploy.setEnvironment(depenv);
 			taskDeploy.setDeploymentSessionId(so.GetSessionId() + "_" + System.currentTimeMillis());
 			taskDeploy.setAdditionalParameters(additionalParameters);
+			
+			Application baseApp = so.getBaseAppVersion(app);
+			
+			if (baseApp != null)
+			  so.addToAppsAllowedInEnv(depenv, baseApp);
+			
 			if(taskDeploy.run()) {
 				Deployment dep = so.getDeploymentBySessionId(taskDeploy, 30);
 				if(dep != null) {

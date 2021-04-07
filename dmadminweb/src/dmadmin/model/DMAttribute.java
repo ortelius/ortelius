@@ -41,6 +41,13 @@ public class DMAttribute
 	{}
 	
 	public DMAttribute(String name, String value) {
+	 
+	 if (name != null)
+	  name = name.trim();
+	 
+	 if (value != null)
+	  value = value.trim();
+	 
 		m_name = name;
 		m_value = value;
 		m_arrayId = 0;
@@ -48,6 +55,15 @@ public class DMAttribute
 	}
 	
 	public DMAttribute(String name, int arrid, String key, String value) {
+  if (name != null)
+   name = name.trim();
+  
+  if (value != null)
+   value = value.trim();
+  
+  if (key != null)
+   key = key.trim();
+	 
 		m_name = name;
 		
 		if (name.contains("["))
@@ -69,6 +85,9 @@ public class DMAttribute
 	public String getName()  { return m_name; }
 	public void setName(String name)  
 	{
+  if (name != null)
+   name = name.trim();
+	 
   if (name.contains("["))
   {
    String[] parts = name.split("\\[|\\]");
@@ -80,10 +99,21 @@ public class DMAttribute
 	}
 	
  public String getKey()  { return m_key; }
- public void setKey(String key)  { m_key = key; }
+ 
+ public void setKey(String key)  { 
+  if (key != null)
+  key = key.trim();
+  
+  m_key = key; 
+ }
  
 	public String getValue()  { return m_value; }
-	public void setValue(String value)  { m_value = value; }
+	public void setValue(String value)  { 
+  if (value != null)
+  value = value.trim();
+  
+	 m_value = value; 
+	}
 	
 	public boolean isArray() {
 	 if (m_key != null && m_key.length() > 0)
