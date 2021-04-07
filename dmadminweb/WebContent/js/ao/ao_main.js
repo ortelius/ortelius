@@ -273,17 +273,17 @@ $(document).click(function (e) {
    l += "  </tr>";
    l += "  <tr id=\"logindlg_user\" style=\"display:none\">";
    l += "   <td class=\"login_label\" align=\"right\">Username:</td>";
-   l += "   <td align=\"left\"><input class=\"inputbox\" type=\"text\" name=\"username\" /></td>";
+   l += "   <td align=\"left\"><input class=\"inputbox\" type=\"text\" name=\"username\" id=\"username\" /></td>";
    l += "  </tr>";
    l += "  <tr id=\"logindlg_pw\" style=\"display:none\">";
    l += "   <td class=\"login_label\" align=\"right\">Password:</td>";
    l += "   <td align=\"left\"><input class=\"inputbox\" type=\"password\" id=\"password\" name=\"password\" /></td>";
    l += "  </tr>";
-   l += "  <tr class=\"newpw\" style=\"display:none\">";
+   l += "  <tr id=\"logindlg_newpw\" class=\"newpw login_hide\">";
    l += "   <td class=\"login_label\" align=\"right\">New Password:</td>";
    l += "   <td align=\"left\"><input class=\"inputbox\" type=\"password\" id=\"newpassword\" name=\"newpassword\" /></td>";
    l += "  </tr>";
-   l += "  <tr class=\"newpw\" style=\"display:none\">";
+   l += "  <tr id=\"logindlg_newpwagain\" class=\"newpw login_hide\">";
    l += "   <td class=\"login_label\" align=\"right\">Verify New Password:</td>";
    l += "   <td align=\"left\"><input class=\"inputbox\" type=\"password\" id=\"newpasswordagain\" name=\"newpasswordagain\" /></td>";
    l += "  </tr>";
@@ -466,9 +466,69 @@ $(document).click(function (e) {
    $(".ui-dialog-buttonpane button:contains('Login')").button('enable');
    $("#login_err").html("");
   }
-
  }
 
+ function VerifyEmail(field)
+ {
+  var val = $("#" + field).val();
+  var label = $("#" + field).closest('td').prev('td').text().replace(":","");
+  var filter = /^[a-z0-9][a-z0-9-_\.]+@([a-z]|[a-z0-9]?[a-z0-9-]+[a-z0-9])\.[a-z0-9]{2,10}(?:\.[a-z]{2,10})?$/
+  if (!filter.test(val))
+   $("#login_err").html(label + " must be a valid address format");
+ }
+
+ function VerifyRequired(field)
+ {
+  var val = $("#" + field).val();
+  var label = $("#" + field).closest('td').prev('td').text().replace(":","");
+  
+  if (val.replace(/ /g,"") == "")
+   $("#login_err").html(label + " is required");
+ }
+ 
+ function VerifyPassword(field)
+ {
+  var val = $("#" + field).val();
+  var label = $("#" + field).closest('td').prev('td').text().replace(":","");
+  
+  if (val.replace(/ /g,"") == "")
+   $("#login_err").html(label + " is required");
+  
+  if (val.replace(/ /g, "") != val)
+   $("#login_err").html(label + " must cannot contain spaces");
+ }
+ 
+ function VerifyField(field)
+ {
+  var val = $("#" + field).val();
+  var label = $("#" + field).closest('td').prev('td').text().replace(":","");
+  
+  if (val.replace(/ /g,"") == "")
+  {
+   $("#login_err").html(label + " is required");
+   return;
+  }
+  
+  if (val.replace(/([a-zA-Z0-9 ])/g, "") != "")
+   $("#login_err").html(label + " must contain only spaces, letters and numbers");
+
+ }
+ 
+ function VerifyUserName(field)
+ {
+  var val = $("#" + field).val();
+  var label = $("#" + field).closest('td').prev('td').text().replace(":","");
+  
+  if (val.replace(/ /g,"") == "")
+  {
+   $("#login_err").html(label + " is required");
+   return;
+  }
+  
+  if (val.replace(/([a-z0-9])/g, "") != "")
+   $("#login_err").html(label + " must be lower case and contain only letters and numbers");
+ }
+ 
  function DoAdminPasswordSet(dlg)
  {
   console.log("DoAdminPasswordSet");
@@ -496,8 +556,8 @@ $(document).click(function (e) {
     hideOSS = "Y";
    else
     hideOSS = "N";
-   SetCookie("p1",newUser);
-   SetCookie("p2",newpw);
+//   SetCookie("p1",newUser);
+//   SetCookie("p2",newpw);
    SetCookie("admin",isAdmin);
    SetCookie("loggedin",loggedin);
   } else if (data.Msg.toLowerCase() == "Login Admin".toLowerCase()) {
@@ -519,14 +579,14 @@ $(document).click(function (e) {
     hideOSS = "Y";
    else
     hideOSS = "N";
-   SetCookie("p1",newUser);
-   SetCookie("p2",newpw);
+//   SetCookie("p1",newUser);
+//   SetCookie("p2",newpw);
    SetCookie("admin",isAdmin);
    SetCookie("loggedin",loggedin);
   }
    if (loggedin=="Y") {
-    SetCookie("p1",newUser);
-    SetCookie("p2",newpw);
+//    SetCookie("p1",newUser);
+//    SetCookie("p2",newpw);
     SetCookie("admin",isAdmin);
     SetCookie("loggedin",loggedin);
     console.log("newUser="+newUser);
@@ -593,15 +653,15 @@ $(document).click(function (e) {
         if (data.toLowerCase() == "Login OK".toLowerCase()) {
             loggedin = 'Y';
             admin = 'N';
-                SetCookie("p1",myuserid);
-                SetCookie("p2",newpw);
+//                SetCookie("p1",myuserid);
+//                SetCookie("p2",newpw);
                 SetCookie("admin",isAdmin);
                 SetCookie("loggedin",loggedin);
         } else if (data.toLowerCase() == "Login Admin".toLowerCase()) {
           loggedin = 'Y';
           admin = 'N';
-              SetCookie("p1",myuserid);
-              SetCookie("p2",newpw);
+//              SetCookie("p1",myuserid);
+//              SetCookie("p2",newpw);
               SetCookie("admin",isAdmin);
               SetCookie("loggedin",loggedin);
         }
@@ -648,8 +708,8 @@ $(document).click(function (e) {
         hideOSS = "Y";
        else
         hideOSS = "N";
-       SetCookie("p1",myuserid);
-       SetCookie("p2",mypw);
+//       SetCookie("p1",myuserid);
+//       SetCookie("p2",mypw);
        SetCookie("admin",isAdmin);
        SetCookie("loggedin",loggedin);
       } else if (data.Msg.toLowerCase() == "Login Admin".toLowerCase()) {
@@ -671,14 +731,14 @@ $(document).click(function (e) {
         hideOSS = "Y";
        else
         hideOSS = "N";
-       SetCookie("p1",myuserid);
-       SetCookie("p2",mypw);
+//       SetCookie("p1",myuserid);
+//       SetCookie("p2",mypw);
        SetCookie("admin",isAdmin);
        SetCookie("loggedin",loggedin);
       }
       if (loggedin=="Y") {
-       SetCookie("p1",myuserid);
-       SetCookie("p2",mypw);
+//       SetCookie("p1",myuserid);
+//       SetCookie("p2",mypw);
        SetCookie("admin",isAdmin);
        SetCookie("loggedin",loggedin);
         parent.$("#login_container_dialog").dialog("close");
@@ -738,8 +798,8 @@ $(document).click(function (e) {
     hideOSS = "Y";
    else
     hideOSS = "N";
-   SetCookie("p1",username);
-   SetCookie("p2",provider + ":" + access_token);
+//   SetCookie("p1",username);
+//   SetCookie("p2",provider + ":" + access_token);
    SetCookie("admin",isAdmin);
    SetCookie("loggedin",loggedin);
   } else if (data.Msg.toLowerCase() == "Login Admin".toLowerCase()) {
@@ -762,8 +822,8 @@ $(document).click(function (e) {
     hideOSS = "Y";
    else
     hideOSS = "N";
-   SetCookie("p1",username);
-   SetCookie("p2",provider + ":" + access_token);
+//   SetCookie("p1",username);
+//   SetCookie("p2",provider + ":" + access_token);
    SetCookie("admin",isAdmin);
    SetCookie("loggedin",loggedin);
   }
@@ -778,8 +838,8 @@ $(document).click(function (e) {
         } 
          
   if (loggedin=="Y") {
-   SetCookie("p1",username);
-   SetCookie("p2",provider + ":" + access_token);
+//   SetCookie("p1",username);
+//   SetCookie("p2",provider + ":" + access_token);
    SetCookie("admin",isAdmin);
    SetCookie("loggedin",loggedin);
     parent.$("#login_container_dialog").dialog("close");
@@ -1120,7 +1180,6 @@ $(document).click(function (e) {
     parent.$("#summ").html(reset_html);
 
     console.log("LoadSummaryData, objtypeAsInt="+objtypeAsInt+" objtype="+objtype);
-    var addParms = "";
     
     if (objtype == "bj")
      addParms = "&be="+lastSelectedNode;
@@ -1128,6 +1187,7 @@ $(document).click(function (e) {
      addParms = "";
      
     LoadSummaryData("summ", objtypeAsInt, objtype, objid, addParms);
+    addParms = "";
    }
    break;
 

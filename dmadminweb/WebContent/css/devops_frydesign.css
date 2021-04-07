@@ -417,7 +417,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
     min-height: 200px;
 }
 
-#cr-panel {
+#defect-panel {
 	width: 50%;
 	display:inline-block;
 	border: 1px solid lightgrey;
@@ -426,13 +426,13 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
     min-height: 200px;
 }
 
-#cr_header_buttons {
+#defect_header_buttons {
   display: inline-block;
   float: right;
   padding-right:40px;
 }
 
-#cr-panel-20 {
+#defect-panel-20 {
 	width: 50%;
 	display:inline-block;
 	border: 1px solid lightgrey;
@@ -442,7 +442,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
     min-height: 200px;
 }
 
-#cr_header_buttons_20 {
+#defect_header_buttons_20 {
   display: inline-block;
   float: right;
   padding-right:40px;
@@ -1955,6 +1955,14 @@ ul.subpanel li {
 }
 
 #env4app-edit {
+	display: none;
+}
+
+#defect-edit {
+	display: none;
+}
+
+#defect-20-edit {
 	display: none;
 }
 
