@@ -1,0 +1,26 @@
+steps:
+  # Login to Quay for push.
+  - name: 'gcr.io/cloud-builders/docker'
+    id: login
+    entrypoint: 'bash'
+    args: ['-c', 'docker login quay.io --username "$$QUAY_USERID" --password $$QUAY_PASSWORD']
+    secretEnv: ['QUAY_USERID', 'QUAY_PASSWORD']     
+    env:
+      - 'DOCKER_CONFIG=/workspace/docker-config'
+
+  # Build and push deployhub-webadmin.war - quay.io/ortelius/ortelius
+  - name: 'gcr.io/cloud-builders/docker'
+    id: build_push
+    waitFor: [ 'login' ]
+    entrypoint: 'bash'
+    args: ["-c", 'docker build --tag quay.io/ortelius/ms-python-base:flask-1.0 -f /workspace/docker/DockerfileMSPythonBase .;docker push quay.io/ortelius/ms-python-base:flask-1.0;']
+    env:
+      - 'DOCKER_CONFIG=/workspace/docker-config'
+
+secrets:
+- kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/quay
+  secretEnv:
+    QUAY_USERID: CiQAW+P1J9UZz+Hr1uonladAW2dKqaiVd5ux8Q9EV81pK0u5V+4SNACcBdnKacvH4QXPamH1N4uJZvZ/0TMwvELgXAAlP0wR2zBw2WhCV82GMiUkW3iGVlbqz7c=
+- kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/quay-pw
+  secretEnv:
+    QUAY_PASSWORD: CiQAUULEud9Ej8XtwNAb9gkbDVhSGFZYhUGE30fNwR+7ehAOkH8SMgCz6KYeykjgS16RPxgKlrIQL/1TKDt06v4OXGIisFXOkdWC+jvdda8mTzVNCi8sT5g6 

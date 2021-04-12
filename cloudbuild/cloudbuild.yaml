@@ -48,19 +48,6 @@ steps:
     env:
       - 'DOCKER_CONFIG=/workspace/docker-config'
 
-  # Get image id
-  - name: 'gcr.io/cloud-builders/docker'
-    entrypoint: 'bash'
-    env:
-      - 'DOCKER_CONFIG=/workspace/docker-config'
-    args: ['-c', ". /workspace/cloudbuild.sh;echo export DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $$COMPONENT_DOCKERREPO:$$IMAGE_TAG) >> /workspace/cloudbuild.sh" ]
-
-  # Capture new component version in DeployHub
-  - name: 'quay.io/deployhub/compupdate'
-    entrypoint: 'bash'
-    secretEnv: ['DHUSER', 'DHPASS']
-    args: ['-c', '. /workspace/cloudbuild.sh;dh updatecomp --dhurl https://console.deployhub.com --appname "$$COMPONENT_APPLICATION" --compname "$$COMPONENT_NAME" --compvariant "$$COMPONENT_VARIANT" --compversion "$$COMPONENT_VERSION_COMMIT" --appautoinc --compautoinc --deployenv "$$DEPLOY_ENV" --docker --compattr "GitCommit:$SHORT_SHA" --compattr "GitUrl:$$COMPONENT_GITURL" --compattr "GitRepo:ortelius/$REPO_NAME" --compattr "GitTag:$TAG_NAME" --compattr "GitBranch:$BRANCH_NAME" --compattr "Chart:$$COMPONENT_CHARTNAME" --compattr "DockerSha:$$DIGEST" --compattr "DockerBuildDate:$$BLDDATE" --compattr "DockerRepo:$$COMPONENT_DOCKERREPO" --compattr "BuildId:$BUILD_ID" --compattr "BuildUrl:https://console.cloud.google.com/cloud-build/builds/$BUILD_ID?project=$PROJECT_ID" --compattr "CustomAction:$$COMPONENT_CUSTOMACTION" --compattr "DockerTag:$$IMAGE_TAG"']
-
 secrets:
 - kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/quay
   secretEnv:
