@@ -38,6 +38,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ParameterMetaData;
@@ -67,6 +68,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -162,6 +164,7 @@ import dmadmin.model.FragmentDetails;
 import dmadmin.model.FragmentListValues;
 import dmadmin.model.GetObjectException;
 import dmadmin.model.IPrePostAction;
+import dmadmin.model.JWTGenerateValidateRSA;
 import dmadmin.model.LoginException;
 import dmadmin.model.LoginException.LoginExceptionType;
 import dmadmin.model.Notify;
@@ -202,6 +205,8 @@ import dmadmin.model.ldapfastbind;
 import dmadmin.util.CommandLine;
 import dmadmin.util.DynamicQueryBuilder;
 import dmadmin.util.DynamicQueryBuilder.Null;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 
 public class DMSession implements AutoCloseable {
 	
@@ -474,16 +479,48 @@ public class DMSession implements AutoCloseable {
   }
 
 //	 if (session.m_conn == null)
-//	  session.connectToDatabase(request.getSession().getServletContext());
+//	  session.connectToDatabase(request.getSession().getServletContext());	
+		
+  boolean authorized = false;
 
-		String username = ServletUtils.GetCookie(request,"p1");
+  Jws<Claims> token;
+  try
+  {
+   String jwt = ServletUtils.GetCookie(request,"token");
+   if (jwt != null && jwt.trim().length() > 0)
+   {
+    token = JWTGenerateValidateRSA.parseJwt(jwt);
+    String uuid = token.getBody().getId();
+    String userid = token.getBody().getSubject();
+    authorized = session.validateAuth(Integer.parseInt(userid), uuid);
+    if (authorized)
+    {
+     User user = session.getUser(Integer.parseInt(userid));
+     session.m_userID = Integer.parseInt(userid);
+     session.m_username = user.getName();
+     session.m_userDomain = user.getDomainId();
+     session.m_datefmt  = user.getDateFmt();
+     session.m_timefmt = user.getTimeFmt();
+     session.GetDomains(session.m_userID);
+    } 
+   }
+  }
+  catch (InvalidKeySpecException | NoSuchAlgorithmException e)
+  {
+   
+  }
+  
+  String username = ServletUtils.GetCookie(request,"p1");
 		String password = ServletUtils.GetCookie(request,"p2");
 		String logintime = ServletUtils.GetCookie(request,"p3");
 		
 		session.setSession(request.getSession());
-		if (username != null && password != null) {
-			session.Login(username,password,logintime);
-		}
+		if (!authorized)
+		{
+		 if (username != null && password != null) {
+			 session.Login(username,password,logintime);
+		 }
+		} 
 		return session;
 	}
 	
@@ -826,6 +863,11 @@ public class DMSession implements AutoCloseable {
 	
 	public Domain getUserDomain()
 	{
+	 if (m_userDomain <= 0)
+	 {
+	  User user = this.getUser(m_userID);
+	  m_userDomain = user.getDomainId();
+	 }
 		return getDomain(m_userDomain);
 	}
 	
@@ -1589,7 +1631,12 @@ public class DMSession implements AutoCloseable {
 			st.setInt(1,user.getId());
 
 			ResultSet rs = st.executeQuery();
-			if (!rs.next()) throw new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD,"");	// No row retrieved
+			if (!rs.next()) 
+			{ 
+			 rs.close();
+			 st.close();
+			 throw new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD,"");	// No row retrieved
+			} 
 			int datasourceid = getInteger(rs,7,0);
 			System.out.println("datasourceid="+datasourceid);
 			//
@@ -15729,6 +15776,258 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
    }
 	 }
 	 
+  if (table.equalsIgnoreCase("dm_application"))
+  {
+   try
+   {
+    ArrayList<DMAttribute> found = new ArrayList<DMAttribute>();
+
+    for (DMAttribute a : changes.deleted())
+    {
+     if (a.getName().equalsIgnoreCase("ChangeRequestDS"))
+     {
+      try
+      {
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set datasourceid = null where id = ?");
+       stmt.setInt(1, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("PreAction"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set preactionid = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("PostAction"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set postactionid = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("CustomAction"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set actionid = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     if (a.getName().equalsIgnoreCase("successtemplate"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set successtemplateid = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("failuretemplate"))
+     {
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set failuretemplateid = null where id = ?");
+      stmt.setInt(1, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+    }
+    changes.removeAllDeleted(found);
+    found.clear();
+    
+    for (DMAttribute a : changes.added())
+    {
+     if (a.getName().equalsIgnoreCase("ChangeRequestDS"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.DATASOURCE,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set datasourceid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("PreAction"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.ACTION,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set preactionid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("PostAction"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.ACTION,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set postactionid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("CustomAction"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.ACTION,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set actionid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("successtemplate"))
+     {
+      DMObject obj = getObjectByName(ObjectType.TEMPLATE,a.getValue());
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set successtemplateid = ? where id = ?");
+      stmt.setInt(1, obj.getId());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("failuretemplate"))
+     {
+      DMObject obj = getObjectByName(ObjectType.TEMPLATE,a.getValue());
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set failuretemplateid = ? where id = ?");
+      stmt.setInt(1, obj.getId());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+    }
+    changes.removeAllAdded(found);
+    found.clear();
+    
+    for (DMAttribute a : changes.changed())
+    {
+     if (a.getName().equalsIgnoreCase("ChangeRequestDS"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.DATASOURCE,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set datasourceid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }   
+     if (a.getName().equalsIgnoreCase("PreAction"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.ACTION,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set preactionid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("PostAction"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.ACTION,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set postactionid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("CustomAction"))
+     {
+      try
+      {
+       DMObject obj = getObjectByName(ObjectType.ACTION,a.getValue());
+       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set actionid = ? where id = ?");
+       stmt.setInt(1, obj.getId());
+       stmt.setInt(2, id);
+       stmt.execute();
+       stmt.close();
+       found.add(a);
+      }
+      catch (Exception e)
+      {
+      }
+     }
+     if (a.getName().equalsIgnoreCase("successtemplate"))
+     {
+      DMObject obj = getObjectByName(ObjectType.TEMPLATE,a.getValue());
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set successtemplateid = ? where id = ?");
+      stmt.setInt(1, obj.getId());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+     else if (a.getName().equalsIgnoreCase("failuretemplate"))
+     {
+      DMObject obj = getObjectByName(ObjectType.TEMPLATE,a.getValue());
+      PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_application set failuretemplateid = ? where id = ?");
+      stmt.setInt(1, obj.getId());
+      stmt.setInt(2, id);
+      stmt.execute();
+      stmt.close();
+      found.add(a);
+     }
+    }
+    changes.removeAllUpdated(found);
+    found.clear();
+   }
+   catch (Exception e)
+   {
+    e.printStackTrace();
+   }
+  }
+  
   if (table.equalsIgnoreCase("dm_server"))
   {
    try
@@ -19509,6 +19808,53 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		}
 		throw new RuntimeException("Unable to Create New Component Item in database");
 	}
+	
+ public void assignDeploy2Comp(String compid, String deployid)
+ {
+//  try
+//  {  
+//   Statement st = m_conn.createStatement();
+//   ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_compsonserv WHERE deploymentid="+ deployid + " and compid =" + compid);
+//   rs.next();
+//   int c = rs.getInt(1);
+//   rs.close();
+//   st.close();
+//   
+//   if (c == 0)
+//   {
+//    PreparedStatement ps = m_conn.prepareStatement("INSERT INTO dm.dm_applicationcomponent(appid,compid,xpos,ypos) VALUES(?,?,?,?)");
+//
+//    ps.setInt(1,app.getId());
+//    ps.setInt(2,ver.getId());
+//    ps.setInt(3,ver.getXpos());
+//    ps.setInt(4,ver.getYpos());
+//    ps.execute();
+//    st.close();
+//   } 
+//   else
+//   {
+//    PreparedStatement ps = m_conn.prepareStatement("UPDATE dm.dm_applicationcomponent set xpos=?, ypos=? where appid=? and compid=?");
+//    
+//    ps.setInt(1,ver.getXpos());
+//    ps.setInt(2,ver.getYpos());
+//    ps.setInt(3,app.getId());
+//    ps.setInt(4,ver.getId());
+//
+//    ps.execute();
+//    st.close();
+//   }
+//   m_conn.commit();
+//   
+//   applicationComponentAddLink(app.getId(),from.getId(),to.getId());
+//   return;
+//  }
+//  catch (SQLException ex)
+//  {
+//   rollback();
+//   ex.printStackTrace();
+//  }
+//  throw new RuntimeException("Unable to Create New Component Item in database");
+ }
 	
 	public void assignComp2App(Application app, Component ver, Component from, Component to)
  {
@@ -24930,7 +25276,7 @@ return ret;
  public JSONArray getAppList()
  {
   String sql = "select b.id, b.name, c.name, a.deploymentid, a.finishts, a.exitcode, b.domainid, b.predecessorid from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c where b.status = 'N' and b.isrelease = 'N' and a.appid = b.id and a.envid = c.id " +
-               " and  a.finishts is not null  and (a.appid, a.envid, a.deploymentid) in (select appid, envid, max(deploymentid) from dm.dm_deployment group by appid, envid)  and  b.domainid in (" + m_domainlist + ")" +
+               " and (a.appid, a.envid, a.deploymentid) in (select appid, envid, max(deploymentid) from dm.dm_deployment group by appid, envid)  and  b.domainid in (" + m_domainlist + ")" +
                " union " + 
                "select b.id, b.name, '', -99,  NOW()::timestamp, -1, b.domainid, b.predecessorid from dm.dm_application b where b.status = 'N' and  b.isrelease = 'N' and  b.id not in (SELECT appid FROM dm.dm_deployment where finishts is not NULL) and  b.domainid in (" + m_domainlist + ")" +
                " order by 2,4";
@@ -25010,14 +25356,22 @@ return ret;
        obj.add("parent", "-");
      obj.add("environment", rs.getString(3));    
      obj.add("deployid", deployid);   
-     
-     Timestamp ts = rs.getTimestamp(5);
-     obj.add("finished", ts.toString());
 
      int ec = rs.getInt(6);
      String exitcode = "Failed";
      if (ec == 0)
       exitcode = "Success";
+     
+     Timestamp ts = rs.getTimestamp(5);
+     if (ts != null)
+       obj.add("finished", ts.toString());
+     else
+     {
+      obj.add("finished","-");
+      exitcode = "-";
+     } 
+     
+
      
      obj.add("exitcode",exitcode);
      ret.add(obj);     
@@ -28304,15 +28658,35 @@ public JSONArray getComp2Endpoints(int compid)
 	  return tExists;
   }
   
-  public boolean saveClientID(String clientid)
+  public boolean saveClientID(String clientid, String hostname)
   {
 	  try {
-		  PreparedStatement stmt = m_conn.prepareStatement("UPDATE dm.dm_saasclients SET lastseen=? WHERE clientid=?");
-		  stmt.setLong(1,timeNow());
-		  stmt.setString(2,clientid);
-		  stmt.execute();
-		  stmt.close();
-		  m_conn.commit();
+		  PreparedStatement stmt;
+		  
+		  if (hostname != null && !hostname.isEmpty())
+		  {
+		   stmt = m_conn.prepareStatement("UPDATE dm.dm_saasclients SET lastseen=? WHERE clientid=?");
+		   stmt.setLong(1,timeNow());
+		   stmt.setString(2,clientid);
+     stmt.execute();
+     stmt.close();
+     
+     stmt = m_conn.prepareStatement("UPDATE dm.dm_engine SET hostname=? WHERE clientid=?");
+     stmt.setString(1,hostname);
+     stmt.setString(2,clientid);
+     stmt.execute();
+     stmt.close();
+     m_conn.commit();
+		  }
+		  else
+		  {
+	    stmt = m_conn.prepareStatement("UPDATE dm.dm_saasclients SET lastseen=? WHERE clientid=?");
+	    stmt.setLong(1,timeNow());
+	    stmt.setString(2,clientid);		  
+	    stmt.execute();
+	    stmt.close();
+	    m_conn.commit();
+		  }
 	  } catch(SQLException ex) {
 		  ex.printStackTrace();
 	  }
@@ -30386,5 +30760,142 @@ public JSONArray getComp2Endpoints(int compid)
    return("Username is already in use");   
  
   return "";
+ }
+
+ public int getComp4Tag(DMSession so, String image_tag)
+ {
+  int compid = -1;
+  String sql = "select a.compid from dm.dm_componentitem a, dm.dm_component b where DockerRepo = ? and DockerTag = ? and a.compid = b.id and b.status = 'N' order by 1 desc";
+    
+  if (!image_tag.contains(":"))
+   return -1;
+  
+  String parts[] = image_tag.split(":");
+    
+  try
+  {
+   PreparedStatement estmt = m_conn.prepareStatement(sql);
+   estmt.setString(1, parts[0]);
+   estmt.setString(2, parts[1]);
+   ResultSet rs = estmt.executeQuery();
+   if (rs.next()) 
+   {
+    compid = rs.getInt(1);
+   }
+   rs.close();
+   estmt.close();
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+  }
+  return compid;
+ }
+ 
+ public int getComp4Digest(DMSession so, String digest)
+ {
+  int compid = -1;
+  String sql = "select a.compid from dm.dm_componentitem a, dm.dm_component b where DockerSha = ? and a.compid = b.id and b.status = 'N' order by 1 desc";
+    
+  if (!digest.contains(":"))
+  {
+   String parts[] = digest.split(";");
+   if (parts.length > 1)
+    digest = parts[1];
+  }
+    
+  try
+  {
+   PreparedStatement estmt = m_conn.prepareStatement(sql);
+   estmt.setString(1, digest);
+   ResultSet rs = estmt.executeQuery();
+   if (rs.next()) 
+   {
+    compid = rs.getInt(1);
+   }
+   rs.close();
+   estmt.close();
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+  }
+  return compid;
+ }
+
+ public String authUser()
+ {
+  String uuid = UUID.randomUUID().toString();
+  String jwt = "";
+  try
+  {
+   jwt = JWTGenerateValidateRSA.createJwtSignedHMAC(this.m_userID, uuid);
+  }
+  catch (InvalidKeySpecException | NoSuchAlgorithmException e)
+  {
+   e.printStackTrace();
+  }
+  
+  String isql = "INSERT INTO dm.dm_user_auth (id, jti, lastseen) VALUES(?,?, CURRENT_TIMESTAMP)";
+  String csql = "DELETE from dm.dm_user_auth where lastseen < current_timestamp - interval '1 hours'";
+  
+  try {
+     PreparedStatement istmt = m_conn.prepareStatement(isql);
+     istmt.setInt(1,this.m_userID);
+     istmt.setString(2, uuid);
+     istmt.execute();
+     istmt.close();
+     
+     istmt = m_conn.prepareStatement(csql);
+     istmt.execute();
+     istmt.close();
+     m_conn.commit();
+  } catch(SQLException ex) {
+   ex.printStackTrace();
+   rollback();
+  }
+  return jwt;
+ }
+
+ public boolean validateAuth(int uid, String uuid)
+ {
+  boolean authorized = false;
+
+  String csql = "DELETE from dm.dm_user_auth where lastseen < current_timestamp - interval '1 hours'";
+  String sql = "select count(*) from dm.dm_user_auth where id = ? and jti = ?";
+  
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(csql);
+   stmt.execute();
+   stmt.close();
+   
+   PreparedStatement cnt_stmt = m_conn.prepareStatement(sql);
+   cnt_stmt.setInt(1, uid);
+   cnt_stmt.setString(2, uuid);
+   ResultSet rs = cnt_stmt.executeQuery();
+   
+   if (rs.next())
+   {
+    int cnt = rs.getInt(1);
+    if (cnt > 0)
+    {
+     authorized = true;
+     String usql = "update dm.dm_user_auth set lastseen = current_timestamp where id = ? and jti = ?";
+     PreparedStatement ustmt = m_conn.prepareStatement(usql);
+     ustmt.setInt(1,uid);
+     ustmt.setString(2, uuid);
+     ustmt.execute();
+     ustmt.close();
+    }
+   }
+   rs.close();
+   cnt_stmt.close();  
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+  }
+  return authorized;
  }
 }
