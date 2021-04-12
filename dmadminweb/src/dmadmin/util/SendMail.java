@@ -65,7 +65,7 @@ public class SendMail extends Thread
    
    message = new MimeMessage(session);
    message.setFrom(new InternetAddress(from, "DeployHub Signup"));
-   message.setRecipients(Message.RecipientType.TO, InternetAddress.parse("steve@deployhub.com,baca@depoyhub.com,tracy@deployhub.com"));
+   message.setRecipients(Message.RecipientType.TO, InternetAddress.parse("steve@deployhub.com,baca@deployhub.com,tracy@deployhub.com"));
    message.setSubject("DeployHub Signup");
    message.setContent(details, "text/html");
 

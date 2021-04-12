@@ -98,6 +98,7 @@ import dmadmin.model.Engine;
 import dmadmin.model.Environment;
 import dmadmin.model.FragmentAttributes;
 import dmadmin.model.GetObjectException;
+import dmadmin.model.JWTGenerateValidateRSA;
 import dmadmin.model.LoginException.LoginExceptionType;
 import dmadmin.model.Notify;
 import dmadmin.model.NotifyTemplate;
@@ -119,6 +120,8 @@ import dmadmin.model.UserGroupList;
 import dmadmin.model.UserList;
 import dmadmin.util.CommandLine;
 import dmadmin.util.SendMail;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 
 /**
  * API redirector servlet - all calls to the RESTful API are routed through here.
@@ -2451,141 +2454,97 @@ public class API extends HttpServlet
     if (provider == null)
      provider = "";
     
+    boolean authorized = false;
     if (user == null)
-     user=ServletUtils.GetCookie(request,"p1");
+     user = ServletUtils.GetCookie(request,"p1");
+    
+    String jwt = ServletUtils.GetCookie(request, "token");
+    if (jwt != null && jwt.trim().length() > 0)
+    {
+     Jws<Claims> token = JWTGenerateValidateRSA.parseJwt(jwt);
+     String uuid = token.getBody().getId();
+     String userid = token.getBody().getSubject();
+     authorized = so.validateAuth(Integer.parseInt(userid), uuid);
+    }
     
     if (pass == null)
      pass=ServletUtils.GetCookie(request,"p2");
     
     response.setContentType("application/json");
 
-    if (elements[0].equals("login"))
+    if (!authorized)
     {
-     if (user == null)
+     if (elements[0].equals("login"))
      {
-      throw new ApiException("user must be specified");
-     }
-     if (pass == null)
-     {
-      throw new ApiException("password must be specified");
-     }
-
-     if (provider != null && provider.length() > 0)
-     {
-      String j = so.jsonGetRequest(pass, provider);
-      if (j == null)
-       throw new ApiException("Login failed");
-
-      if (provider.equals("github"))
+      if (user == null)
       {
-       JsonObject json = new JsonParser().parse(j).getAsJsonObject();
-       String u = json.getAsJsonObject("data").get("alias").getAsString();
-
-       if (!user.equals(u))
-        throw new ApiException("Login failed");
+       throw new ApiException("user must be specified");
       }
-      pass = "";
+      if (pass == null)
+      {
+       throw new ApiException("password must be specified");
+      }
+ 
+      if (provider != null && provider.length() > 0)
+      {
+       String j = so.jsonGetRequest(pass, provider);
+       if (j == null)
+        throw new ApiException("Login failed");
+ 
+       if (provider.equals("github"))
+       {
+        JsonObject json = new JsonParser().parse(j).getAsJsonObject();
+        String u = json.getAsJsonObject("data").get("alias").getAsString();
+ 
+        if (!user.equals(u))
+         throw new ApiException("Login failed");
+       }
+       pass = "";
+      }
+      else
+      {
+       if (so.Login(user, pass, null).getExceptionType() != LoginExceptionType.LOGIN_OKAY)
+       {
+        throw new ApiException("Login failed");
+       }
+      }
+      jwt = so.authUser();
+      obj.add("success", true);
+      obj.add("token", jwt);
+ 
+      HttpSession session = request.getSession();
+      session.setAttribute("session", so);
+      Cookie loggedinUser = new Cookie("p1", user);
+      Cookie loggedinPw = new Cookie("p2", "");
+      Cookie loggedinTime = new Cookie("p3", new Long(new Date().getTime()).toString());
+      Cookie jwt_token = new Cookie("token", jwt);
+      
+      loggedinUser.setPath("/");
+      loggedinPw.setPath("/");
+ 
+      response.addCookie(loggedinUser);
+      response.addCookie(loggedinPw);
+      response.addCookie(loggedinTime);
+      response.addCookie(jwt_token);
+      return; // finally will send result
      }
-     else
+ 
+     if (user != null)
      {
+      if (pass == null)
+       throw new ApiException("password must be specified");
       if (so.Login(user, pass, null).getExceptionType() != LoginExceptionType.LOGIN_OKAY)
       {
        throw new ApiException("Login failed");
       }
      }
-     obj.add("success", true);
 
-     HttpSession session = request.getSession();
-     session.setAttribute("session", so);
-     Cookie loggedinUser = new Cookie("p1", user);
-     Cookie loggedinPw = new Cookie("p2", pass);
-     Cookie loggedinTime = new Cookie("p3", new Long(new Date().getTime()).toString());
-     loggedinUser.setPath("/");
-     loggedinPw.setPath("/");
-
-     response.addCookie(loggedinUser);
-     response.addCookie(loggedinPw);
-     response.addCookie(loggedinTime);
-     return; // finally will send result
-    }
-
-    if (user != null)
-    {
-     if (pass == null)
-      throw new ApiException("password must be specified");
      if (so.Login(user, pass, null).getExceptionType() != LoginExceptionType.LOGIN_OKAY)
      {
       throw new ApiException("Login failed");
      }
     }
-
-    // SQL Interface for SAAS installation
-    if (elements[0].equals("sql"))
-    {
-     // SQL responses are XML
-     response.setContentType("application/xml");
-     if (so == null)
-     {
-      System.out.println("no session object - creating new one");
-      // No login session. Create a new session based on the client ID (which should be unique)
-      HttpSession session = request.getSession();
-      so.internalLoginForSQL(request.getServletContext());
-      session.setAttribute("session", so);
-      Cookie loggedinUser = new Cookie("p1", user);
-      Cookie loggedinPw = new Cookie("p2", pass);
-
-      response.addCookie(loggedinUser);
-      response.addCookie(loggedinPw);
-     }
-     if (request.getParameter("clientid") != null)
-     {
-      handleSQLClient(so, request, out);
-     }
-     else if (request.getParameter("close") != null)
-     {
-      System.out.println("closing statement");
-      handleSQLClose(so, request, out);
-     }
-     else if (request.getParameter("query") != null)
-     {
-      handleSQLQuery(so, request, out);
-     }
-     else if (request.getParameter("bind") != null)
-     {
-      // Binding a parameter
-      handleSQLBinding(so, request, out);
-     }
-     else if (request.getParameter("execute") != null)
-     {
-      handleSQLExecute(so, request, out);
-     }
-     else if (request.getParameter("end") != null)
-     {
-      handleSQLEndTransaction(so, request, out);
-     }
-     else if (request.getParameter("start") != null)
-     {
-      handleSQLAutoCommit(so, request, out);
-     }
-     delop = true; // prevent JSON reply
-    }
-    else
-    {
-     // Not doing SQL - check if there's an open session with an ID of 0. If so,
-     // clear the session.
-     if (so != null && so.GetUserID() == 0)
-     {
-      // Outstanding SQL Query session - remove the session to prevent it being used
-      request.getSession().invalidate();
-     }
-    }
-
-    // END TEMP
-    if (so.Login(user, pass, null).getExceptionType() != LoginExceptionType.LOGIN_OKAY)
-    {
-     throw new ApiException("Login failed");
-    }
-
+    
     if (elements[0].equals("deploy"))
     {
      // Go invoke a deployment
@@ -2808,6 +2767,29 @@ public class API extends HttpServlet
       }
       delop = true;
       return;
+     }
+     else
+     {
+      throw new ApiException("Path contains wrong number of elements");
+     }
+    }
+    else if (elements[0].equals("comp4tag"))
+    {
+     System.out.println("API: comp4tag");
+     if (elements.length == 1)
+     {
+      String image = request.getParameter("image"); // if specified, name of new application version
+      String digest = request.getParameter("digest");
+      
+      int compid = -1;
+      
+      if (image != null)
+       compid = so.getComp4Tag(so, image);
+
+      if (digest != null)
+       compid = so.getComp4Digest(so, digest);
+      
+      obj.add("id", compid);
      }
      else
      {
@@ -4584,16 +4566,7 @@ public class API extends HttpServlet
  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
  {
   String path = request.getPathInfo();
-  
-  String user = request.getParameter("user");
-  String pass = request.getParameter("pass");
-  
-  if (user == null)
-   user=ServletUtils.GetCookie(request,"p1");
-  
-  if (pass == null)
-   pass=ServletUtils.GetCookie(request,"p2");
-  
+   
   if (path.contains("/signup"))
   {
    try (DMSession so = DMSession.getInstance(request))
@@ -4648,12 +4621,7 @@ public class API extends HttpServlet
   else if (path.contains("/setvar"))
   {
    try (DMSession so = DMSession.getInstance(request))
-   {
-    if (so.Login(user, pass, null).getExceptionType() != LoginExceptionType.LOGIN_OKAY)
-    {
-     throw new ApiException("Login failed");
-    }
-    
+   {   
     if (path.length() > 1 && (path.charAt(0) == '/'))
      path = path.substring(1);
 
@@ -4756,13 +4724,7 @@ public class API extends HttpServlet
   if (path.contains("/deploy"))
   {
    try (DMSession so = DMSession.getInstance(request))
-   {
-    if (user != null && pass != null)
-    { 
-     if (so.Login(user, pass, null).getExceptionType() != LoginExceptionType.LOGIN_OKAY)
-       throw new ApiException("Login failed");
-    }
-    
+   {   
     logDeployment(so, request, response);
    }
    catch (Exception e)
@@ -5024,12 +4986,7 @@ public class API extends HttpServlet
   JSONObject ret = new JSONObject();
   
   try
-  {
-   String username = request.getParameter("user");
-   String password = request.getParameter("pass");
-   
-   so.Login(username, password, null);
-   
+  {  
    response.setContentType("application/json");
    PrintWriter out = response.getWriter();
    
@@ -5288,12 +5245,7 @@ public class API extends HttpServlet
   int oid = 0;
   
   try
-  {
-   String username = request.getParameter("user");
-   String password = request.getParameter("pass");
-   
-   so.Login(username, password, null);
-   
+  {  
    response.setContentType("application/json");
    PrintWriter out = response.getWriter();
    JSONObject ret = new JSONObject();
