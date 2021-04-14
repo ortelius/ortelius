@@ -55,9 +55,3 @@ secrets:
 - kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/quay-pw
   secretEnv:
     QUAY_PASSWORD: CiQAUULEud9Ej8XtwNAb9gkbDVhSGFZYhUGE30fNwR+7ehAOkH8SMgCz6KYeykjgS16RPxgKlrIQL/1TKDt06v4OXGIisFXOkdWC+jvdda8mTzVNCi8sT5g6 
-- kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/ortelius-id
-  secretEnv:
-    DHUSER: CiQAGgJuQMHWANazqTOeE/SyoX/YNVWnES7eJEVWY8mTP98Er3USMQC43iiopoGYhP/YahsQu/yUURiqJBVZURYiUiu5Z7UBkrDgUAonKCKjtzeSNUP7HoQ=
-- kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/ortelius-pw
-  secretEnv:
-    DHPASS: CiQAZySXz07McN9e6fyr6X4qwkw4iBgeULmpq16RbxIAcqg6gTESMQB98+y30zqMVPx2S/Q/8ld+qlJWWxmocnbjLe9iyepMwyMl3yf+r5e55nf85PlrBBw= 
