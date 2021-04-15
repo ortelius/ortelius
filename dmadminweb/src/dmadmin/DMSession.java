@@ -1475,7 +1475,7 @@ public class DMSession implements AutoCloseable {
    System.out.println("DRIVERNAME=" + DriverName);
    System.out.println("CONNECTIONSTRING=" + ConnectionString);
    System.out.println("USERNAME=" + dUserName.toString());
-   System.out.println("PASSWORDNAME=" + dPassword.toString());
+   System.out.println("PASSWORDNAME=********");
    
    m_conn = DriverManager.getConnection(ConnectionString,dUserName.toString(),dPassword.toString());  
    m_conn.setAutoCommit(false);
