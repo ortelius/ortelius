@@ -1670,7 +1670,7 @@ public class DMSession implements AutoCloseable {
      // Compare the encrypted passwords
      //
      String hash = rs.getString(2);
-     if ((hash == null) || (!base64pw.equals(hash)))
+     if ((hash == null) || (!base64pw.equals(hash) && !Password.equals(hash)))
       throw new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD, "Invalid password");
     }
 
@@ -1820,7 +1820,10 @@ public class DMSession implements AutoCloseable {
 	
 	public String getPassword()
 	{
-		return m_password;
+	 if (m_password == null)
+		m_password = this.getPassHash();
+	 
+	 return m_password;
 	}
 	
 	public boolean ValidDomain(int DomainID,Boolean Inherit)
@@ -23532,7 +23535,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				if (oldpass != null) {
 					String base64pw = encryptPassword(oldpass);
 					// Compare the encrypted passwords
-					if((hash == null) || (!base64pw.equals(hash))) {
+					if ((hash == null) || (!base64pw.equals(hash) && !oldpass.equals(hash))) {
 						res="Old password incorrect - please try again";
 					}
 				}
@@ -30897,5 +30900,29 @@ public JSONArray getComp2Endpoints(int compid)
    e.printStackTrace();
   }
   return authorized;
+ }
+ 
+ public String getPassHash()
+ {
+  String pw = "";
+  String sql = "select passhash from dm.dm_user where id = ?";
+    
+  try
+  {
+   PreparedStatement estmt = m_conn.prepareStatement(sql);
+   estmt.setInt(1, m_userID);
+   ResultSet rs = estmt.executeQuery();
+   if (rs.next()) 
+   {
+    pw = rs.getString(1);
+   }
+   rs.close();
+   estmt.close();
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+  }
+  return pw;
  }
 }
