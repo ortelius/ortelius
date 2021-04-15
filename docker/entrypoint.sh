@@ -15,6 +15,10 @@ else
 fi
 
 sudo chmod 700 /var/lib/pgsql/data
+
+sudo grep -qxF 'host all all 0.0.0.0/0 trust' /var/lib/pgsql/data/pg_hba.conf || sudo sed -i '$ a\'"host all all 0.0.0.0/0 trust" /var/lib/pgsql/data/pg_hba.conf
+sudo grep -qxF "listen_addresses = '*'" /var/lib/pgsql/data/postgresql.conf || sudo sed -i '$ a\'"listen_addresses = '*'" /var/lib/pgsql/data/postgresql.conf
+
 sudo -u postgres /usr/pgsql-10/bin/pg_ctl start --pgdata=/var/lib/pgsql/data
 sleep 10
 sudo -u postgres /usr/pgsql-10/bin/pg_ctl status --pgdata=/var/lib/pgsql/data
