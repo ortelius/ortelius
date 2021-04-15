@@ -1,4 +1,4 @@
 #!/bin/sh
 
 cd "$1"
-unzip "$2"
+unzip -o "$2"
