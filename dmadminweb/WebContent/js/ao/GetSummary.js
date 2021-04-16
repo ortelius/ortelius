@@ -303,6 +303,9 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 {
  var isDocker = false;
  
+ if (typeof addParams == "undefined")
+  addParams = "";
+ 
  console.log("GetSummaryData?objtype=" + objtypeAsInt + "&id=" + objid + addParams);
  
  $.ajax(
@@ -4210,6 +4213,13 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
 
 function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
 {
+ envdropdown = "";
+ appdropdown = "";
+ srvdropdown = "";
+ emailtodropdown = "";
+ groupmembershipdropdown = "";
+ usermembershipdropdown = "";
+
  summSavetablename = tablename;
  summSaveobjtypeAsInt = objtypeAsInt;
  summSaveobjtype = objtype;
