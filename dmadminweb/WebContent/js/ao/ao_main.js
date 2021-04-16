@@ -1182,12 +1182,12 @@ $(document).click(function (e) {
     console.log("LoadSummaryData, objtypeAsInt="+objtypeAsInt+" objtype="+objtype);
     
     if (objtype == "bj")
-     addParms = "&be="+lastSelectedNode;
+     addParams = "&be="+lastSelectedNode;
     else if (objtype != "pr" && objtype != "fn")
-     addParms = "";
+     addParams = "";
      
-    LoadSummaryData("summ", objtypeAsInt, objtype, objid, addParms);
-    addParms = "";
+    LoadSummaryData("summ", objtypeAsInt, objtype, objid, addParams);
+    addParams = "";
    }
    break;
 
@@ -1863,7 +1863,7 @@ $(document).click(function (e) {
    objtypeName = "Procedure";
    var parts = type.split("-ak");
    objkind=parts[1];
-   addParms="&actkind=" + objkind;
+   addParams="&actkind=" + objkind;
    NewAction(null,"P");   
   }  
   else if (type.includes("function"))
@@ -1872,7 +1872,7 @@ $(document).click(function (e) {
    objtypeName = "Function";
    var parts = type.split("-ak");
    objkind=parts[1];
-   addParms="&actkind=" + objkind;
+   addParams="&actkind=" + objkind;
    NewAction(null,"F");   
   }
   else if (type == "slack" || type == "hipchat" || type == "smtpemail" || type == "txtlocal")
