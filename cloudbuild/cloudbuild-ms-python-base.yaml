@@ -13,7 +13,7 @@ steps:
     id: build_push
     waitFor: [ 'login' ]
     entrypoint: 'bash'
-    args: ["-c", 'docker build --tag quay.io/ortelius/ms-python-base:flask-1.0 -f /workspace/docker/DockerfileMSPythonBase .;docker push quay.io/ortelius/ms-python-base:flask-1.0;']
+    args: ["-c", 'docker build --tag quay.io/ortelius/ms-python-base:flask-1.0 -f /workspace/docker/DockerfilePythonMSBase .;docker push quay.io/ortelius/ms-python-base:flask-1.0;']
     env:
       - 'DOCKER_CONFIG=/workspace/docker-config'
 
