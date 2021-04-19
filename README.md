@@ -117,6 +117,7 @@ Contributors:
 - Ayesha Khaliq
 - Nael Fridhi
 - Karamjot Singh
+- Taras Bulubas
 
 ### UX and Testing
 
@@ -157,6 +158,7 @@ Contributors:
 - Karamjot Singh
 - Zach Jones
 - Jesse Gonzalez
+- Taras Bulubas
 
 ### Development
 
@@ -174,6 +176,7 @@ Contributors:
 - Jesse Gonzalez
 - Temitope Bimbo Babatola
 - Munirat Sulaimon
+- Taras Bulubas
 
 ### Product Management
 
