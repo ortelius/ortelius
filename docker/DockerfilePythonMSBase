@@ -1,0 +1,12 @@
+FROM tiangolo/meinheld-gunicorn-flask:python3.8-alpine3.11 as base
+
+FROM base as builder                                                                                                          
+                                                                                                                              
+WORKDIR /install                                                                                                            
+RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev; \
+    pip install --prefix=/install flask-restful psycopg2;
+
+FROM base                                                                                                                     
+                                                                                                                              
+COPY --from=builder /install /usr/local    
+RUN apk --no-cache add libpq;echo > /app/prestart.sh;
