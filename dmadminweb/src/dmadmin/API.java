@@ -2521,6 +2521,8 @@ public class API extends HttpServlet
       
       loggedinUser.setPath("/");
       loggedinPw.setPath("/");
+      loggedinTime.setPath("/");
+      jwt_token.setPath("/");
  
       response.addCookie(loggedinUser);
       response.addCookie(loggedinPw);
