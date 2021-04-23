@@ -110,6 +110,7 @@ var srvdropdown = "";
 var emailtodropdown = "";
 var groupmembershipdropdown = "";
 var usermembershipdropdown = "";
+var addParams="";
 
 var displaySubTabs = "N";
 var NodeType = "";

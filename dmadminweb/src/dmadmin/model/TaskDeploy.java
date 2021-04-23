@@ -136,7 +136,7 @@ public class TaskDeploy
 		 
 		 System.out.println("Calling runWithTrilogy");
 		 
-		 return m_cmd.runWithTrilogy(waitFor, null);
+		 return m_cmd.runWithTrilogyNoCapture(waitFor, null);
 	}
 	
 	public int getDeploymentID()

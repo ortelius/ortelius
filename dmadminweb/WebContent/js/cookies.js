@@ -9,6 +9,8 @@ function DeleteCookies() {
  DeleteCookie("admin");
  DeleteCookie("p1");
  DeleteCookie("p2");
+ DeleteCookie("p3");
+ DeleteCookie("token");
  DeleteCookie("loggedin");
  DeleteCookie("logindata");
  window.location = "/dmadminweb/Home";

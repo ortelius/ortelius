@@ -348,9 +348,15 @@ public class GetDomainContent extends HttpServletBase
     
     List<TreeObject> dmo =  so.getTreeObjects(ObjectType.PROCFUNC_CATEGORY,1,-1,nobuiltins);
     
-    Domain infra = so.getDomainByName("GLOBAL.Infrastructure");
-    List<TreeObject> dmi =  so.getTreeObjects(ObjectType.DOMAIN,infra.getId(),-1,nobuiltins);
-    dmo.addAll(dmi);    
+    try
+    {
+     Domain infra = so.getDomainByName("GLOBAL.Infrastructure");
+     List<TreeObject> dmi =  so.getTreeObjects(ObjectType.DOMAIN,infra.getId(),-1,nobuiltins);
+     dmo.addAll(dmi);
+    }
+    catch (Exception e)
+    {}
+    
   //  List<TreeObject> dmc =  so.getTreeObjects(ObjectType.PROCFUNC_CATEGORY,infra.getId(),-1);
   //  dmo.addAll(dmc);    
 

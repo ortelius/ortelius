@@ -81,6 +81,7 @@ public class EngineEvent extends HttpServlet
    
    String keys = request.getParameter("getkeys");
    String clientid = request.getParameter("clientid");
+   String hostname = request.getParameter("hostname");
    String sinceStr = request.getParameter("since");
    String getevents = request.getParameter("getevents");
 
@@ -108,7 +109,7 @@ public class EngineEvent extends HttpServlet
      System.out.println("clientid=" + clientid);
      if (so.confirmClientID(clientid))
      {
-      so.saveClientID(clientid);
+      so.saveClientID(clientid, hostname);
 
       try
       {
