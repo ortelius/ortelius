@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import dmadmin.json.JSONObject;
 import dmadmin.model.Action;
 import dmadmin.model.ActionKind;
+import dmadmin.model.CompType;
 import dmadmin.model.Component;
 import dmadmin.model.ComponentFilter;
 import dmadmin.model.ComponentItem;
@@ -118,17 +119,44 @@ public class GetSummaryData extends HttpServletBase
    Component comp = (Component)dmobj;
    
    if (comptype.equalsIgnoreCase("docker"))
+   {
+    CompType ct = session.getCompTypeByName("Kubernetes");
+    if (ct != null)
+    {
+     comp.setComptypeId(ct.getId());
+     comp.setComptype(ct.getName());
+    } 
     comp.setKind(ComponentItemKind.DOCKER);
+   }
    else if (comptype.contains("database"))
+   {
+    CompType ct = session.getCompTypeByName("Postgres");
+    if (ct != null)
+    {
+     comp.setComptypeId(ct.getId());
+     comp.setComptype(ct.getName());
+    } 
     comp.setKind(ComponentItemKind.DATABASE);
+   } 
    else
+   {
+    CompType ct = session.getCompTypeByName("Application Server");
+    if (ct != null)
+    {
+     comp.setComptypeId(ct.getId());
+     comp.setComptype(ct.getName());
+    } 
     comp.setKind(ComponentItemKind.FILE);
+   } 
   }
   else if (id < 0 && dmobj instanceof Action)
   {
    Action act = (Action)dmobj;
    
    if (actkind == null)
+    actkind = "" + act.getKind().value();
+   
+   if (actkind == null || actkind.equals("0"))
     act.setKind(ActionKind.LOCAL_EXTERNAL);
    else 
    {
