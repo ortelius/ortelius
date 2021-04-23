@@ -3,25 +3,32 @@ steps:
   - name: gcr.io/cloud-builders/gcloud
     id: sshkey
     entrypoint: 'bash'
-    args: [ '-c', 'gcloud secrets versions access latest --secret=github > /root/.ssh/id_rsa;chmod 600 /root/.ssh/id_rsa;ssh-keyscan -t rsa github.com > /root/.ssh/known_hosts' ]
+    args: [ '-c', 'gcloud secrets versions access latest --secret=ortelius-github > /root/.ssh/id_rsa;chmod 600 /root/.ssh/id_rsa;ssh-keyscan -t rsa github.com > /root/.ssh/known_hosts' ]
     volumes:
     - name: 'ssh'
       path: /root/.ssh
-  
-  # Setup environment including img tag name
+
   - name: gcr.io/cloud-builders/docker
     id: cloudbuild_sh
     entrypoint: 'bash'
-    args: ['-c', 'ls -A1 | xargs rm -rf;git clone -q $$COMPONENT_GITURL .;git checkout --track -b $BRANCH_NAME origin/$BRANCH_NAME;env | sed "s/^/export /" >> /workspace/cloudbuild.sh']
+    args: ['-c', 'ls -A1 | xargs rm -rf;git clone $$COMPONENT_GITURL .;git checkout --track -b $BRANCH_NAME origin/$BRANCH_NAME;env | sed "s/^/export /" >> /workspace/cloudbuild.sh']
     volumes:
     - name: 'ssh'
       path: /root/.ssh
     env: 
-      - 'COMPONENT_GITURL=https://github.com/ortelius/ortelius'
+      - 'COMPONENT_APPLICATION=GLOBAL.ortelius.saas.ortelius'
+      - 'COMPONENT_NAME=GLOBAL.ortelius.saas.webadmin_engine'
+      - 'COMPONENT_GITURL=git@github.com:ortelius/ortelius.git'
+      - 'COMPONENT_VARIANT=$BRANCH_NAME'
       - 'COMPONENT_VERSION=9.0.0'
+      - 'COMPONENT_VERSION_COMMIT="v$$COMPONENT_VERSION.$$(git rev-list --count $BRANCH_NAME)-g$SHORT_SHA"'
       - 'COMPONENT_DOCKERREPO=quay.io/ortelius/ortelius'
+      - 'COMPONENT_CUSTOMACTION=GLOBAL.HelmChart'
+      - 'COMPONENT_CHARTNAME=chart/ortelius-console'
+      - 'DEPLOY_ENV=GLOBAL.ortelius.saas.aks-cluster'
       - 'BLDDATE=`date`'
       - 'IMAGE_TAG="$BRANCH_NAME-v$$COMPONENT_VERSION.$$(git rev-list --count $BRANCH_NAME)-g$SHORT_SHA"'
+
 
   # Login to Quay for push.
   - name: 'gcr.io/cloud-builders/docker'
@@ -37,7 +44,7 @@ steps:
     id: build_push
     waitFor: [ 'login' ]
     entrypoint: 'bash'
-    args: ["-c", '. /workspace/cloudbuild.sh;docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/docker/Dockerfile .;docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG']
+    args: ["-c", '. /workspace/cloudbuild.sh;docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG --tag $$COMPONENT_DOCKERREPO:latest -f /workspace/docker/Dockerfile .;docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG;docker push $$COMPONENT_DOCKERREPO:latest;']
     env:
       - 'DOCKER_CONFIG=/workspace/docker-config'
 
@@ -48,4 +55,3 @@ secrets:
 - kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/quay-pw
   secretEnv:
     QUAY_PASSWORD: ***REMOVED*** 
-  

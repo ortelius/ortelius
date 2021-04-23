@@ -303,6 +303,11 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 {
  var isDocker = false;
  
+ if (typeof addParams == "undefined")
+  addParams = "";
+ 
+ console.log("GetSummaryData?objtype=" + objtypeAsInt + "&id=" + objid + addParams);
+ 
  $.ajax(
    {
     url : "GetSummaryData?objtype=" + objtypeAsInt + "&id=" + objid + addParams,
@@ -1188,6 +1193,8 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Endpoint Type" && summSaveobjtype != "se")
       {
+	   if (objid === -1)
+        val = "";
        tdedit += "<tr>";
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
        tdedit += "<td ><select name=\"comptype_val\" id=\"comptype_val\" onChange=\"CompTypeChanged()\">";
@@ -1212,8 +1219,8 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //
 //       save_comptype_val = val;
 //      }   
-      else if (label == "Change Request DataSource") {
-       console.log("Change Request DataSource seen");
+      else if (label == "Change Request Data Source") {
+       console.log("Change Request Data Source seen");
        console.log(val);
        var datasource = val;
        var oldval;
@@ -3223,6 +3230,8 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        }
        else if (label == "Endpoint Type" && summSaveobjtype != "se")
        {
+        if (objid === -1)
+        	val = "";
         task_tdedit += "<tr>";
         task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
         task_tdedit += "<td ><select name=\"comptype_val\" id=\"comptype_val\" onChange=\"CompTypeChanged()\">";
@@ -3234,8 +3243,8 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
 
         save_comptype_val = val;
        } 
-       else if (label == "Change Request DataSource") {
-        console.log("Change Request DataSource seen");
+       else if (label == "Change Request Data Source") {
+        console.log("Change Request Data Source seen");
         console.log(val);
         var datasource = val;
         var oldval;
@@ -4204,6 +4213,13 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
 
 function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
 {
+ envdropdown = "";
+ appdropdown = "";
+ srvdropdown = "";
+ emailtodropdown = "";
+ groupmembershipdropdown = "";
+ usermembershipdropdown = "";
+
  summSavetablename = tablename;
  summSaveobjtypeAsInt = objtypeAsInt;
  summSaveobjtype = objtype;
@@ -4275,8 +4291,8 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   $("#servstat_data").hide();
   $("#app4env-panel").hide();
   $("#srv4env-panel").hide();
-  $("#cr-panel").hide();
-  $("#cr-panel-20").hide();
+  $("#defect-panel").hide();
+  $("#defect-panel-20").hide();
   $("#deployedenv4app-panel").hide();
   $("#planning-panel").hide();
   $("#task-panel").hide();
@@ -4315,7 +4331,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#tabs-General-row-30").show();
    $("#tabs-General-row-35").show();
    $("#tabs-General-row-40").show();
-   $("#cr-panel").show();
+   $("#defect-panel").show();
    AppMap();
    LoadAttributesData("attrib",objtypeAsInt, objtype, objid);
    
@@ -4359,7 +4375,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#tabs-General-row-30").show();
    $("#tabs-General-row-35").show();
    $("#tabs-General-row-40").show();
-   $("#cr-panel").show();
+   $("#defect-panel").show();
    
    LoadComponentItems(objid);
    CompMap();
