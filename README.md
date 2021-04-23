@@ -181,7 +181,6 @@ Contributors:
 - Alok Tanna
 - Arijeet Majumdar
 - Tatiana Lazebnyk
-- Brad McCoy
 
 ## Project Management
 
@@ -190,6 +189,13 @@ Track progress, define process, work with Steve and Marky managing pull requests
 Contributors:
 -Tracy Ragan
 -Neetu Jain
+
+## GitOps
+
+Research, define and Automate GitOps with Ortelius
+
+Contributors:
+-Brad McCoy
 
 ## Installation
 
