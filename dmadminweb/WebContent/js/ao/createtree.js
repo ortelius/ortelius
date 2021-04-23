@@ -406,6 +406,7 @@ function NewAction(tv,at)
    objtypeAsInt = 11;
    objtype = "ac";
    objid = -1;
+   lastSelectedNode = "";
    currentSubTabsSelection[currenttree][0] = "tabs-General";
    ActivateSubTabs();
   }
@@ -416,6 +417,7 @@ function NewAction(tv,at)
    objtypeAsInt = 91;
    objtype = "fn";
    objid = -1;
+   lastSelectedNode = "";
    currentSubTabsSelection[currenttree][0] = "tabs-General";
    ActivateSubTabs();
   }
@@ -426,6 +428,7 @@ function NewAction(tv,at)
    objtypeAsInt = 90;
    objtype = "pr";
    objid = -1;
+   lastSelectedNode = "";
    currentSubTabsSelection[currenttree][0] = "tabs-General";
    ActivateSubTabs();
   }

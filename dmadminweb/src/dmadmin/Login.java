@@ -103,6 +103,7 @@ public class Login extends HttpServlet {
     	String usertimefmt = so.GetUserTimeFormat();
      String userdom = "";
      int userdomid = 0;
+     int userid = so.GetUserID();
      try
      {
       Domain dom = so.getUserDomain();
@@ -160,15 +161,24 @@ public class Login extends HttpServlet {
 
 			// And redirect to the correct page
         	hs.setAttribute("logininfo","Login OK");
+        
+         String jwt = so.authUser();
+         Cookie loggedinUser = new Cookie("p1", username);
+         Cookie loggedinPw = new Cookie("p2", "");
         	Cookie loggedinTime = new Cookie("p3", new Long(new Date().getTime()).toString());
+        	Cookie jwt_token = new Cookie("token", jwt);
+        	
+         response.addCookie(loggedinUser);
+         response.addCookie(loggedinPw);
         	response.addCookie(loggedinTime);
+        	response.addCookie(jwt_token);
         	
         	if (so.getAclOverride()) {
         		// Administrator login
-        		response.getWriter().write("{\"Msg\": \"Login Admin\", \"domainid\": \""+userdomid+"\", \"domain\": \""+userdom+"\", \"datefmt\": \""+userdatefmt+"\", \"timefmt\": \""+usertimefmt+"\", \"issaas\": \""+isSaas+"\", \"lictype\": \""+so.getLicType()+"\", \"liccnt\": \""+so.getLicCnt()+"\", \"newuser\": \""+so.getNewUser()+"\", \"domlist\": \""+so.getDomainList()+"\"}");
+        		response.getWriter().write("{\"token\": \"" + jwt + "\", \"Msg\": \"Login Admin\", \"domainid\": \""+userdomid+"\", \"domain\": \""+userdom+"\", \"datefmt\": \""+userdatefmt+"\", \"timefmt\": \""+usertimefmt+"\", \"issaas\": \""+isSaas+"\", \"lictype\": \""+so.getLicType()+"\", \"liccnt\": \""+so.getLicCnt()+"\", \"newuser\": \""+so.getNewUser()+"\", \"domlist\": \""+so.getDomainList()+"\"}");
         	} else {
         		// Normal (non admin) login
-        		response.getWriter().write("{\"Msg\": \"Login OK\", \"domainid\": \""+userdomid+"\", \"domain\": \""+userdom+ "\",\"datefmt\": \""+userdatefmt+"\", \"timefmt\": \""+usertimefmt+"\", \"issaas\": \""+isSaas+"\", \"lictype\": \""+so.getLicType()+"\", \"liccnt\": \""+so.getLicCnt()+"\", \"newuser\": \""+so.getNewUser()+"\", \"domlist\": \""+so.getDomainList()+"\"}");
+        		response.getWriter().write("{\"token\": \"" + jwt + "\", \"Msg\": \"Login OK\", \"domainid\": \""+userdomid+"\", \"domain\": \""+userdom+ "\",\"datefmt\": \""+userdatefmt+"\", \"timefmt\": \""+usertimefmt+"\", \"issaas\": \""+isSaas+"\", \"lictype\": \""+so.getLicType()+"\", \"liccnt\": \""+so.getLicCnt()+"\", \"newuser\": \""+so.getNewUser()+"\", \"domlist\": \""+so.getDomainList()+"\"}");
         	}
         	break;
         case LOGIN_BAD_PASSWORD:
@@ -201,7 +211,7 @@ public class Login extends HttpServlet {
         	hs.setAttribute("logininfo","LDAP Error<BR>" + loginres.getMessage());
         	response.getWriter().write("{\"Msg\": \"LDAP Error<BR>" + loginres.getMessage()+"\", \"datefmt\": \"\", \"timefmt\":\"\"}");
         	break;
-		}
+		 }
 	 }
 	}
 }

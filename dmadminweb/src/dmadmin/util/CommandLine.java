@@ -216,6 +216,39 @@ public class CommandLine
        }
 	}
 	
+ public int runWithTrilogyNoCapture(boolean waitFor, String input)
+ {
+  // DEBUG
+  System.out.print("Running: ");
+  for(String s : m_cmd) {
+   System.out.print("\"" + s + "\" ");
+  }
+  System.out.println();
+  // END DEBUG
+  
+        String server = (m_engine != null) ? m_engine.getHostname() : "localhost";
+        String clientid = (m_engine != null) ? m_engine.getClientID() : null;
+        
+        if (clientid != null) {
+         System.out.println("Inserting request into dm.dm_queue for client id "+clientid);
+         DMSession so = m_engine.getSession();
+         if (so != null) {
+          int queueid = so.insertIntoRunQueue(clientid,input,m_cmd,waitFor);
+          if (waitFor) {
+           m_output = new StringBuffer();
+           int ec = so.waitForRunQueue(queueid,clientid,m_output);
+           System.out.println("waitfor=true ec="+ec+" m_output="+m_output);
+          }
+          return 0;
+         }
+         System.out.println("No session associated with engine");
+         return -1;
+        } else {
+         return run(waitFor, input, false);
+       }
+ }
+ 
+	
 	/**
 	 * Sneaky little class that implements a reader thread for a process we
 	 * have started.  Rather than trying to buffer the entire output, it

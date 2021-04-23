@@ -123,7 +123,7 @@ function LoadArgsData(tablename, objtypeAsInt, objtype, objid, objkind, addParam
      td += "<td>" + missing + "</td>";
      td += "<td>" + padded + "</td>"
      td += "<td>" + required + "</td>"
-     td += "<td>" + pos + "</td>"
+     td += "<td>" + inpos + "</td>"
      td += "</tr>";
     }
     else

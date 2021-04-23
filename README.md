@@ -41,9 +41,17 @@ Goals for the Q3 and Q4 months of 2021
 
 [Contributor Covenant Code of Conduct](./CODE_OF_CONDUCT.md)
 
+## Become a contributor
+
+1) Review the [Ortelius Contributor Guide](https://docs.ortelius.io/guides/contributorguide/)
+2) Add yourself to the [Ortelius Google Group](https://groups.google.com/g/ortelius-dev)
+3) Join the [Discord community channel](https://discord.gg/ZtXU74x)
+
 ## Open Source Sub-Committees
 
 [Calendar of meetings with times and zoom info.](https://ortelius.io/events/)
+
+[Discord community channel](https://discord.gg/ZtXU74x)
 
 ### CD Environment - Development Infrastructure and Productivity
 
@@ -60,6 +68,10 @@ Contributors:
 - Sanchit Khurana
 - Natch Khongpasuk
 - Brad McCoy
+- Zach Jones
+- Aditi Agarwal
+- Jesse Gonzalez
+- Jimmy Malhan
   
 ### Data Science and Visualization
 
@@ -90,6 +102,9 @@ Contributors:
 - Sanchit Khurana
 - Karamjot Singh
 - Sergio Canales
+- Zach Jones
+- Aditi Agarwal
+- Jesse Gonzalez
 
 ### Market Place and Domains
 
@@ -102,6 +117,7 @@ Contributors:
 - Ayesha Khaliq
 - Nael Fridhi
 - Karamjot Singh
+- Taras Bulubas
 
 ### UX and Testing
 
@@ -122,6 +138,7 @@ Contributors:
 - Divya Mohan
 - Mark Peters
 - Arijeet Majumdar
+- Pawel Kulecki
 
 ### Architecture
 
@@ -139,6 +156,9 @@ Contributors:
 - Nael Fridhi
 - Sanchit Khurana
 - Karamjot Singh
+- Zach Jones
+- Jesse Gonzalez
+- Taras Bulubas
 
 ### Development
 
@@ -152,6 +172,11 @@ Contributors:
 - Sagar Utekar
 - Nael Fridhi
 - Sanchit Khurana
+- Zach Jones
+- Jesse Gonzalez
+- Temitope Bimbo Babatola
+- Munirat Sulaimon
+- Taras Bulubas
 
 ### Product Management
 
@@ -182,13 +207,14 @@ Contributors:
 - Arijeet Majumdar
 - Tatiana Lazebnyk
 
-## Project Management
+### Project Management
 
 Track progress, define process, work with Steve and Marky managing pull requests and releases dates.
 
 Contributors:
--Tracy Ragan
--Neetu Jain
+
+- Tracy Ragan
+- Neetu Jain
 
 ## GitOps
 
