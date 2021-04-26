@@ -206,7 +206,6 @@ Contributors:
 - Alok Tanna
 - Arijeet Majumdar
 - Tatiana Lazebnyk
-- Brad McCoy
 
 ### Project Management
 
@@ -216,6 +215,13 @@ Contributors:
 
 - Tracy Ragan
 - Neetu Jain
+
+## GitOps
+
+Research, define and Automate GitOps with Ortelius
+
+Contributors:
+-Brad McCoy
 
 ## Installation
 
