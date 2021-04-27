@@ -1651,10 +1651,16 @@ public class DMSession implements AutoCloseable {
      {
       boolean match = DoLDAP(datasourceid, rs.getInt(1), UserName, Password, LoginTime);
       if (!match)
+	  { 
+	   rs.close();
+	   st.close();
        return new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD, "");
+	  }
      }
      catch (LoginException ex)
      {
+  	  rs.close();
+   	  st.close();
       System.out.println("LDAP Login Exception caught - returning " + ex.getMessage());
       return new LoginException(LoginExceptionType.LDAP_ERROR, ex.getMessage());
      }
@@ -1671,7 +1677,11 @@ public class DMSession implements AutoCloseable {
      //
      String hash = rs.getString(2);
      if ((hash == null) || (!base64pw.equals(hash) && !Password.equals(hash)))
+     {
+      rs.close();
+      st.close();
       throw new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD, "Invalid password");
+     }
     }
 
 			//
@@ -1691,6 +1701,9 @@ public class DMSession implements AutoCloseable {
 			m_UserPermissions = new UserPermissions(this,0);
 			m_password = Password;
 			m_username = UserName;
+			
+			rs.close();
+			st.close();
 			
 			GetDomains(m_userID);
 			
@@ -1764,8 +1777,6 @@ public class DMSession implements AutoCloseable {
 				ull.close();
 				res = new LoginException(LoginExceptionType.LOGIN_OKAY,"");
 			}
-			rs.close();
-			st.close();
 			m_conn.commit();
 			System.out.println("#############  User "+m_userID+" logged in, domains="+m_domainlist + " ##################");
 		}
