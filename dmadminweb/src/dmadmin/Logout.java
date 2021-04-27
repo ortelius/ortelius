@@ -77,7 +77,7 @@ public class Logout extends HttpServlet {
 		response.getWriter().write("</head>");
 		response.getWriter().write("<body onload=\"DeleteCookies()\">\n");
 		response.getWriter().write("You have been logged out.");
-  response.getWriter().write("</body>");s
+		response.getWriter().write("</body>");
 		response.getWriter().write("</html>"); 
 	}
 
