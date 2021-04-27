@@ -128,7 +128,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	position: absolute;
 	width: 155px;
 	height: 29px; 
-	top: 5px;
+	top: -2px;
 	left: 13px;
 	display: inline;
 	}
@@ -2978,20 +2978,10 @@ button.save_button_sub_small img {
        display: none;
    }
 
+
 #login_container_dialog img {  /*positions the splash screen */
 	position: relative;
-	top: -6px;
-	left: -13px;
-	border-top: 1px solid #fff;
-	border-left: 1px solid #fff;
-	border-bottom: 2px inset #fff;
-	border-right: 1px solid #395670;
-	border-top-left-radius: 5px;
-	border-top-right-radius: 5px;
-	border-bottom-right-radius:0;
-	border-bottom-left-radius:0;	
-	width: 500px;
-	height: 330px;
+    margin-left: 50px;
 	padding: 0;
 	}
 

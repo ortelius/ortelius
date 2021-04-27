@@ -263,7 +263,7 @@ $(document).click(function (e) {
   else
   if (loggedin != "Y")
   {
-   var l = "<img src=\"images/splash.png\" alt=\"\"  style=\"height:86px\" class=\"logindialog\" />"
+   var l = "<p class=\"logindialog\" style=\"font-size: 2.5em;margin-left: 40px;\">Ortelius</p>"
    l += "<div id=\"loginset\">";
    l += "  <form id=\"loginform\">";
    l += "<table id=\"logintab\" style=\"width: 100%;\" border=\"0\">";
