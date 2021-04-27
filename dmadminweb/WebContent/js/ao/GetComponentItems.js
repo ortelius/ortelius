@@ -551,7 +551,7 @@ function SaveSummaryItemData(instance, tablename, objtypeAsInt, objtype, objid, 
  
  var summ_pwd = parent.$("#summ_data_edit");
  var myform = summ_pwd.find("#summform");
- var kind = myform.find(":input[name=\"kind_oldval\"]").val();
+ var kind = myform.find(":input[name=\"kind_val\"]").val();
  var id = $("#compitemform > div").text();
  var repolist = id.split(",");
  
@@ -780,6 +780,16 @@ function GetSaveSummaryItemData(instance, data, prefix)
   }
  } 
 
+ if (typeof view.builddate_val !== 'undefined' && typeof view.builddate_oldval !== 'undefined')
+ {
+  if (view.builddate_val != view.builddate_oldval)
+  {
+   console.log('change_' + view.builddate_field + ' = ' + view.builddate_val);
+   data['change_' + view.builddate_field] = view.builddate_val;
+   ret = true;
+  }
+ } 
+
  if (typeof view.chart_val !== 'undefined' && typeof view.chart_oldval !== 'undefined')
  {
   if (view.chart_val != view.chart_oldval)
@@ -840,16 +850,17 @@ function GetSaveSummaryItemData(instance, data, prefix)
   }
  } 
 
- if (typeof view.builddate_val !== 'undefined' && typeof view.builddate_oldval !== 'undefined')
+
+ if (typeof view.dockerrepo_val !== 'undefined' && typeof view.dockerrepo_oldval !== 'undefined')
  {
-  if (view.builddate_val != view.builddate_oldval)
+  if (view.dockerrepo_val != view.dockerrepo_oldval)
   {
-   console.log('change_' + view.builddate_field + ' = ' + view.builddate_val);
-   data['change_' + view.builddate_field] = view.builddate_val;
+   console.log('change_' + view.dockerrepo_field + ' = ' + view.dockerrepo_val);
+   data['change_' + view.dockerrepo_field] = view.dockerrepo_val;
    ret = true;
   }
  } 
-
+ 
  if (typeof view.dockersha_val !== 'undefined' && typeof view.dockersha_oldval !== 'undefined')
  {
   if (view.dockersha_val != view.dockersha_oldval)
@@ -859,6 +870,7 @@ function GetSaveSummaryItemData(instance, data, prefix)
    ret = true;
   }
  } 
+ 
 
  if (typeof view.dockertag_val !== 'undefined' && typeof view.dockertag_oldval !== 'undefined')
  {
