@@ -9137,6 +9137,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
    update.add(", clientid = ?", name);
   }
   break;
+  
+  case COMP_KIND:
+	  break;
 		
 		default: System.err.println("ERROR: Unhandled object summary field " + field); break;
 		}
