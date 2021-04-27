@@ -22,6 +22,16 @@ COPY --from=builder /build/DEBUG/setodbc engine/
 COPY --from=builder /workspace/docker/entrypoint.sh .
 RUN sudo pip install --upgrade deployhub
 
+WORKDIR /etc/nginx/
+
+RUN sudo yum -y install nginx; \
+    sudo mkdir /etc/nginx/location; \
+    sudo mkdir /var/www;
+COPY dmadminweb/microservice/nginx.conf  /etc/nginx/
+COPY dmadminweb/microservice/location/  /etc/nginx/location/
+
+WORKDIR /opt/deployhub/
 USER omreleng
 ENV PATH="${PATH}:/usr/pgsql-10/bin:/usr/local/google-cloud-sdk/bin"
 ENTRYPOINT /opt/deployhub/entrypoint.sh
+
