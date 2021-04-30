@@ -159,6 +159,7 @@ Contributors:
 - Zach Jones
 - Jesse Gonzalez
 - Taras Bulubas
+- Neil Chen
 
 ### Development
 
@@ -177,6 +178,7 @@ Contributors:
 - Temitope Bimbo Babatola
 - Munirat Sulaimon
 - Taras Bulubas
+- Neil Chen
 
 ### Product Management
 
