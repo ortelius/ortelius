@@ -614,16 +614,21 @@ extends HttpServletBase
 			
 			if(taskDeploy.run()) {
 				Deployment dep = so.getDeploymentBySessionId(taskDeploy, 30);
-				if(dep != null) {
+				if(dep != null && dep.getId() > 0) {
 					obj.add("depno", dep.getId());
 					obj.add("error", dep.getSummary());
+					obj.add("success", "true");
 				} else {
 					String msg = taskDeploy.getLastOutputLine();
 					obj.add("error", "Timed out waiting for deployment to start" + ((msg != null) ? ("\n" + msg) : ""));
+					obj.add("deploymentid", -1);
+					obj.add("success", "false");
 				}
 			} else {
 				String msg = taskDeploy.getLastOutputLine();
-				obj.add("error", "Failed to start deployment" + ((msg != null) ? ("\n" + msg) : ""));				
+				obj.add("error", "Failed to start deployment" + ((msg != null) ? ("\n" + msg) : ""));			
+    obj.add("deploymentid", -1);
+				obj.add("success", "false");
 			}}
 		break;
 		case REQUEST: {
