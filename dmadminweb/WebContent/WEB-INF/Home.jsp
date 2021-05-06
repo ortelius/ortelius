@@ -1506,8 +1506,7 @@
 	<div id="displaylog"></div>
 	<div id="buildlog"></div>
 	<div id="throbber" style="display:none;">
-    	<img src="css/images/dog.gif" style="height:80px;border-radius: 25px;" />
-    	<p style="position:relative;left:-7px;">Sit tight....</p>
+    	<img src="css/images/cowandspaceship-animated.gif"  />
 	</div>
 </body>
 </html>
