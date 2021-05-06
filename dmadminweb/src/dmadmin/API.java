@@ -2551,7 +2551,20 @@ public class API extends HttpServlet
     {
      // Go invoke a deployment
      System.out.println("API: deploy");
-     deploymentid = doDeployment(so, elements, request);
+     try
+     {
+      deploymentid = doDeployment(so, elements, request);
+     }
+     catch (ApiException e)
+     {
+      deploymentid = -1;
+      obj.add("deploymentid", -1);
+      obj.add("success", false);
+      obj.add("error", e.getMessage());
+      PrintWriter out2 = response.getWriter();
+      out2.print(obj.getJSON());
+      return;
+     }
     }
     else if (elements[0].equals("environment"))
     {
@@ -4959,26 +4972,20 @@ public class API extends HttpServlet
   task.setWaitFor(wait);
   task.setAdditionalParameters(cmdline_params);
   task.setDeploymentSessionId(so.GetSessionId() + "_" + System.currentTimeMillis());
-  boolean success = task.run();
-  System.out.println("Grabbing deploymentid");
-  deploymentid = task.getDeploymentID();
-  System.out.println("Got it " + deploymentid);
-
-  if (!wait)
-  {
-   if (!success)
-   {
+  
+  if(task.run()) {
+   Deployment dep = so.getDeploymentBySessionId(task, 30);
+   if(dep != null && dep.getId() > 0) {
+    deploymentid = dep.getId();
+   } else {
     String msg = task.getLastOutputLine();
-    if (msg != null)
-    {
-     System.out.println(msg);
-    }
+    String error = "Timed out waiting for deployment to start" + ((msg != null) ? ("\n" + msg) : "");
+    throw new ApiException(error);
    }
-  }
-
-  if (!success)
-  {
-   throw new ApiException("Failed to deploy");
+  } else {
+   String msg = task.getLastOutputLine();
+   String error = "Failed to start deployment" + ((msg != null) ? ("\n" + msg) : "");   
+   throw new ApiException(error);
   }
   return deploymentid;
  }
