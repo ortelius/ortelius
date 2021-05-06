@@ -2463,7 +2463,7 @@ void SetEngineHostName(DM &dm,triODBC &odbc)
 		// Single row in dm_engine table - update it if the hostname is localhost and the domain is GLOBAL
 		char *hostname = dm.getHostname();
 		AutoPtr<triSQL> sql2 = odbc.GetSQL();
-		sql2->PrepareStatement("UPDATE dm_engine SET hostname=? WHERE hostname='localhost' AND domainid=1");
+		sql2->PrepareStatement("UPDATE dm_engine SET hostname=? WHERE domainid=1");
 		sql2->BindParameter(1,SQL_CHAR,strlen(hostname),hostname,strlen(hostname));
 		sql2->Execute();
 		sql2->CloseSQL();
