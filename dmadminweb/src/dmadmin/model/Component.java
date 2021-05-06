@@ -200,7 +200,13 @@ public class Component
 		addCreatorModifier(ds);
   ds.addProperty(SummaryField.COMP_KIND, "Kind", new LinkField(ObjectType.COMP_KIND,
     (m_kind != null) ? m_kind.value() : 0, getKindAsString()));
-  CompType ct = this.m_session.getCompTypeByName(m_comptypeid + "");
+  
+  CompType ct = null;
+  
+  if (m_comptypeid == 0)
+	ct =  this.m_session.getCompTypeByName("Kubernetes");
+  else  
+    ct = this.m_session.getCompTypeByName(m_comptypeid + "");
   
 		ds.addProperty(SummaryField.COMPTYPE, "Endpoint Type", ct.getFullName());
 		ds.addProperty(SummaryField.COMP_DATASOURCE, "Change Request Data Source",
