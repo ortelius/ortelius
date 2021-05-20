@@ -179,7 +179,7 @@ Contributors:
 - Munirat Sulaimon
 - Taras Bulubas
 - Neil Chen
-
+- Atul Tiwari
 ### Product Management
 
 - Website, branding, outreach 
