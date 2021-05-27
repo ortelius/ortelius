@@ -160,6 +160,7 @@ Contributors:
 - Jesse Gonzalez
 - Taras Bulubas
 - Neil Chen
+- Devendran Nehru
 
 ### Development
 
@@ -180,6 +181,7 @@ Contributors:
 - Taras Bulubas
 - Neil Chen
 - Atul Tiwari
+- Devendran Nehru
 ### Product Management
 
 - Website, branding, outreach 
