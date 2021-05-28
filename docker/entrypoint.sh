@@ -1,27 +1,32 @@
 #!/bin/sh
 set -x
-sudo chown -R postgres:postgres /var/lib/pgsql
-sudo chmod -R 777 /opt/deployhub
 
-pkill postgres
-if sudo test -f "/var/lib/pgsql/data/pg_hba.conf"; then
-  echo "Database already initialized"
-else
- mkdir /tmp/data
- sudo chown postgres:postgres /tmp/data
- sudo -u postgres /usr/pgsql-10/bin/pg_ctl initdb --pgdata=/tmp/data
- sudo cp -rp /tmp/data /var/lib/pgsql
- sudo chown -R postgres:postgres /var/lib/pgsql
+DBLOCAL="$DBConnectionString$DBUserName$DBPassword"
+
+if [[ "$DBLOCAL" == "" ]]; then
+  sudo chown -R postgres:postgres /var/lib/pgsql
+  sudo chmod -R 777 /opt/deployhub
+
+  pkill postgres
+  if sudo test -f "/var/lib/pgsql/data/pg_hba.conf"; then
+    echo "Database already initialized"
+  else
+    mkdir /tmp/data
+    sudo chown postgres:postgres /tmp/data
+    sudo -u postgres /usr/pgsql-10/bin/pg_ctl initdb --pgdata=/tmp/data
+    sudo cp -rp /tmp/data /var/lib/pgsql
+    sudo chown -R postgres:postgres /var/lib/pgsql
+  fi
+
+  sudo chmod 700 /var/lib/pgsql/data
+
+  sudo grep -qxF 'host all all 0.0.0.0/0 trust' /var/lib/pgsql/data/pg_hba.conf || sudo sed -i '$ a\'"host all all 0.0.0.0/0 trust" /var/lib/pgsql/data/pg_hba.conf
+  sudo grep -qxF "listen_addresses = '*'" /var/lib/pgsql/data/postgresql.conf || sudo sed -i '$ a\'"listen_addresses = '*'" /var/lib/pgsql/data/postgresql.conf
+
+  sudo -u postgres /usr/pgsql-10/bin/pg_ctl start --pgdata=/var/lib/pgsql/data
+  sleep 10
+  sudo -u postgres /usr/pgsql-10/bin/pg_ctl status --pgdata=/var/lib/pgsql/data
 fi
-
-sudo chmod 700 /var/lib/pgsql/data
-
-sudo grep -qxF 'host all all 0.0.0.0/0 trust' /var/lib/pgsql/data/pg_hba.conf || sudo sed -i '$ a\'"host all all 0.0.0.0/0 trust" /var/lib/pgsql/data/pg_hba.conf
-sudo grep -qxF "listen_addresses = '*'" /var/lib/pgsql/data/postgresql.conf || sudo sed -i '$ a\'"listen_addresses = '*'" /var/lib/pgsql/data/postgresql.conf
-
-sudo -u postgres /usr/pgsql-10/bin/pg_ctl start --pgdata=/var/lib/pgsql/data
-sleep 10
-sudo -u postgres /usr/pgsql-10/bin/pg_ctl status --pgdata=/var/lib/pgsql/data
 
 if [ ! -e /opt/deployhub/logs ]; then
  sudo mkdir /opt/deployhub/logs
@@ -53,10 +58,20 @@ chown -R omreleng "$HOME/.ssh"
 chmod 755 "$HOME/.ssh"
 chmod 600 "$HOME/.ssh/known_hosts"
 
-if [ "$NGINX" == "OFF" ]; then
-  echo Running DeployHub Processes
-  java -jar /opt/deployhub/webadmin/webapp-runner.jar --path /dmadminweb /opt/deployhub/webadmin/deployhub-webadmin.war  2>&1 | perl -pe '$_ = localtime.": $_"' > /opt/deployhub/logs/deployhub.log
+if [[ "$DBLOCAL" == "" ]]; then
+  if [ "$NGINX" == "OFF" ]; then
+    echo Running DeployHub Processes
+    java -jar /opt/deployhub/webadmin/webapp-runner.jar --path /dmadminweb /opt/deployhub/webadmin/deployhub-webadmin.war  2>&1 | perl -pe '$_ = localtime.": $_"' > /opt/deployhub/logs/deployhub.log
+  else
+    sudo nginx
+    java -jar /opt/deployhub/webadmin/webapp-runner.jar --port 9191 --path /dmadminweb /opt/deployhub/webadmin/deployhub-webadmin.war  2>&1 | perl -pe '$_ = localtime.": $_"' > /opt/deployhub/logs/deployhub.log
+  fi
 else
-  sudo nginx
-  java -jar /opt/deployhub/webadmin/webapp-runner.jar --port 9191 --path /dmadminweb /opt/deployhub/webadmin/deployhub-webadmin.war  2>&1 | perl -pe '$_ = localtime.": $_"' > /opt/deployhub/logs/deployhub.log
+  if [ "$NGINX" == "OFF" ]; then
+    echo Running DeployHub Processes
+    java -jar /opt/deployhub/webadmin/webapp-runner.jar --path /dmadminweb /opt/deployhub/webadmin/deployhub-webadmin.war  2>&1 | perl -pe '$_ = localtime.": $_"' 
+  else
+    sudo nginx
+    java -jar /opt/deployhub/webadmin/webapp-runner.jar --port 9191 --path /dmadminweb /opt/deployhub/webadmin/deployhub-webadmin.war  2>&1 | perl -pe '$_ = localtime.": $_"' 
+  fi
 fi
