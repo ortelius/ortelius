@@ -1,4 +1,4 @@
-# Ortelius
+## Ortelius
 
 Welcome to Ortelius. Ortelius is an open source project that aims to simplify the implementation of microservices. By providing a central catalog of services with their deployment specs, application teams can easily consume and deploy services across cluster. Ortelius tracks application versions based on service updates and maps their service dependencies eliminating confusion and guess work.  Unique to Ortelius is the ability to track your microservice inventory across clusters mapping the differences.  Ortelius serves Site Reliability Engineers and Cloud Architects in their migration to and ongoing management of a microservice implementation. For more information, see the comprehensive documentation at http://docs.ortelius.io 
 
