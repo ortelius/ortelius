@@ -1060,13 +1060,11 @@ class Expr *Restful_PostFunctionImpl::evaluate(class ExprList *args, class Conte
 		debug1("Result is JSON");
 		if(content) {
 			  char *newbuf = (char *)malloc(strlen(content)*2); 
-  			  memset(newbuf, '\0', strlen(str)*2);
+  			  memset(newbuf, '\0', strlen(content)*2);
   
   			  quote_float(content, newbuf);
-			  realloc(&content,strlen(newbuf) + 1);
-			  *content = '\0';
-			  strcpy(content,newbuf);
-			  free(newbuf);
+			  SAFE_FREE(content);
+			  content = newbuf;
   
 			LexerBuffer lb(expr_lexer, content, NULL);
 			ret = lb.parseExpression(ctx); // May raise an exception

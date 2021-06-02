@@ -2557,12 +2557,9 @@ public class API extends HttpServlet
      }
      catch (ApiException e)
      {
-      deploymentid = -1;
       obj.add("deploymentid", -1);
       obj.add("success", false);
       obj.add("error", e.getMessage());
-      PrintWriter out2 = response.getWriter();
-      out2.print(obj.getJSON());
       return;
      }
     }
@@ -3474,17 +3471,27 @@ public class API extends HttpServlet
         obj.add("started", dep.getStarted());
         obj.add("finished", dep.getFinished());
         obj.add("complete", dep.isComplete());
-        List<DeploymentLogEntry> dl = dep.getLog();
-        obj.add("loglinecount", dl.size());
-        JSONArray logdir = new JSONArray();
-        for (int i = 0; i < dl.size(); i++)
+        
+        String filelist = request.getParameter("filelist");
+        
+        if (filelist == null || filelist.equalsIgnoreCase("N"))
         {
-         DeploymentLogEntry de = dl.get(i);
-         String logline = de.getLine();
-         logline = logline.replace("\\r", "");
-         logdir.add(logline);
+         List<DeploymentLogEntry> dl = dep.getLog();
+         obj.add("loglinecount", dl.size());
+         JSONArray logdir = new JSONArray();
+         for (int i = 0; i < dl.size(); i++)
+         {
+          DeploymentLogEntry de = dl.get(i);
+          String logline = de.getLine();
+          logline = logline.replace("\\r", "");
+          logdir.add(logline);
+         }
+         obj.add("logoutput", logdir);
         }
-        obj.add("logoutput", logdir);
+        else
+        {
+//         obj.add("files", dep.getFilesListJSON());
+        }
        }
        else
        {
@@ -5174,6 +5181,61 @@ public class API extends HttpServlet
     return;
    }
    
+   String shortname = "";
+   ArrayList<String> parts = new ArrayList<String>(Arrays.asList(envname.split("\\.")));
+   if (parts != null && !parts.isEmpty()) 
+   {
+    shortname = parts.get(parts.size()-1);
+    parts.remove(parts.size()-1);
+   }
+
+   Domain tgtdomain;
+   try
+   {
+    tgtdomain = getDomainFromNameOrID(so, parts.get(0));
+   }
+   catch (ApiException e1)
+   {
+    tgtdomain = null;
+   }
+
+   String domStr = parts.get(0);
+   boolean newDom = false;
+
+   for (int i = 1; i < parts.size(); i++)
+   {
+    String domain = parts.get(i);
+    newDom = false;
+
+    domStr += "." + domain;
+    try
+    {
+     tgtdomain = getDomainFromNameOrID(so, domStr);
+    }
+    catch (Exception e)
+    {
+     newDom = true;
+    }
+
+    if (newDom)
+    {
+     int newid = so.getID("domain");
+     so.CreateNewObject("domain", domain, tgtdomain.getId(), tgtdomain.getId(), newid, 0, 0, "domains", true);
+
+     tgtdomain = so.getDomain(newid);
+
+     if (tgtdomain == null)
+     {
+      ret.add("saved", false);
+      ret.add("error", "Failed to create domain" + domain);
+      String result = ret.getJSON();
+      System.out.println(result);
+      out.println(result);
+      return;
+     }
+    }
+   } 
+   
    Environment env = null;
    try
    {
@@ -5181,6 +5243,15 @@ public class API extends HttpServlet
    }
    catch (ApiException e)
    {
+    int newid = so.getID("environment");
+    so.CreateNewObject("environment", shortname, tgtdomain.getId(), tgtdomain.getId(), newid, 0, 0, "environments", true);
+    try
+    {
+     env = this.getEnvironmentFromNameOrID(so, "" + newid);
+    }
+    catch (ApiException e1)
+    {
+    }
    } 
    
    if (env == null)
