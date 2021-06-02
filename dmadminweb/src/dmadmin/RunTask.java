@@ -91,6 +91,8 @@ extends HttpServletBase
 	{
 		int id = ServletUtils.getIntParameter(request,"id");
 		String isAudit = request.getParameter("tid");
+		
+	 session.setPassword(request); 
 
 		if (isAudit != null && isAudit.equalsIgnoreCase("Audit"))
 		{

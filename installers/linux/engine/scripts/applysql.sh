@@ -28,6 +28,6 @@ do
 		export PGPASSWORD="$password"
 		echo "Running $sqlscript in directory $sqldir"
 		cd "$sqldir"
-		"$postgreshome/bin/psql" -A -w -U "$username" -f "$sqlscript" "$database" 
+		"$postgreshome/bin/psql" -A -w -U "$username" -f "$sqlscript" $database 2>&1
 	fi
 done

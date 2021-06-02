@@ -1649,13 +1649,33 @@ public class DMSession implements AutoCloseable {
      // This user is externally authenticated.
      try
      {
-      boolean match = DoLDAP(datasourceid, rs.getInt(1), UserName, Password, LoginTime);
-      if (!match)
-	  { 
-	   rs.close();
-	   st.close();
-       return new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD, "");
-	  }
+       boolean authorized = false;
+       
+       if (Password != null && Password.trim().length() > 0)
+       {
+        Jws<Claims> token;
+        try
+        {
+         token = JWTGenerateValidateRSA.parseJwt(Password);
+         String uuid = token.getBody().getId();
+         String userid = token.getBody().getSubject();
+         authorized = validateAuth(Integer.parseInt(userid), uuid);
+        }
+        catch (Exception e)
+        {
+        }
+       }
+      
+       if (!authorized)
+       {
+        boolean match = DoLDAP(datasourceid, rs.getInt(1), UserName, Password, LoginTime);
+        if (!match)
+	       { 
+	        rs.close();
+	        st.close();
+         return new LoginException(LoginExceptionType.LOGIN_BAD_PASSWORD, "");
+	       }
+       } 
      }
      catch (LoginException ex)
      {
@@ -16659,7 +16679,6 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				stmt.setString(6, p.getName());
 				stmt.execute();
 				int cnt = stmt.getUpdateCount();
-				stmt.close();
 				
 				if (cnt == 0)
 				{
@@ -16681,7 +16700,6 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		   stmt.setString(5, p.isOverridable() ? "Y" : "N");
 		   stmt.setString(6, p.isAppendable() ? "Y" : "N");
 		   stmt.execute();
-		   stmt.close();
 				}
 				
 				if (repchange) {
@@ -25292,11 +25310,46 @@ return ret;
  
  public JSONArray getAppList()
  {
-  String sql = "select b.id, b.name, c.name, a.deploymentid, a.finishts, a.exitcode, b.domainid, b.predecessorid from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c where b.status = 'N' and b.isrelease = 'N' and a.appid = b.id and a.envid = c.id " +
-               " and (a.appid, a.envid, a.deploymentid) in (select appid, envid, max(deploymentid) from dm.dm_deployment group by appid, envid)  and  b.domainid in (" + m_domainlist + ")" +
-               " union " + 
-               "select b.id, b.name, '', -99,  NOW()::timestamp, -1, b.domainid, b.predecessorid from dm.dm_application b where b.status = 'N' and  b.isrelease = 'N' and  b.id not in (SELECT appid FROM dm.dm_deployment where finishts is not NULL) and  b.domainid in (" + m_domainlist + ")" +
-               " order by 2,4";
+  HashMap<Integer,String> fulldoms = new HashMap<Integer,String>();
+  
+  String sql = "select b.id, b.name, c.name, a.deploymentid, a.finishts, a.exitcode, b.domainid, b.predecessorid, f.name "
+    + "from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c, dm.dm_application f "
+    + "where b.status = 'N' "
+    + "and b.isrelease = 'N' "
+    + "and b.predecessorid = f.id "
+    + "and a.appid = b.id "
+    + "and a.envid = c.id  "
+    + "and (a.appid, a.envid, a.deploymentid) in (select appid, envid, max(deploymentid) from dm.dm_deployment group by appid, envid)  "
+    + "and  b.domainid in (" + m_domainlist + ") "
+    + "union "
+    + "select b.id, b.name, '', -99,  NOW()::timestamp, -1, b.domainid, b.predecessorid, f.name "
+    + "from dm.dm_application b, dm.dm_application f "
+    + "where b.status = 'N' "
+    + "and  b.isrelease = 'N' "
+    + "and b.predecessorid = f.id "
+    + "and  b.id not in "
+    + "(SELECT appid FROM dm.dm_deployment where finishts is not NULL) "
+    + "and  b.domainid in (" + m_domainlist + ") "
+    + "union "
+    + "select b.id, b.name, c.name, a.deploymentid, a.finishts, a.exitcode, b.domainid, b.predecessorid, null "
+    + "from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c "
+    + "where b.status = 'N' "
+    + "and b.isrelease = 'N' "
+    + "and b.predecessorid is null "
+    + "and a.appid = b.id "
+    + "and a.envid = c.id  "
+    + "and (a.appid, a.envid, a.deploymentid) in (select appid, envid, max(deploymentid) from dm.dm_deployment group by appid, envid)  "
+    + "and  b.domainid in (" + m_domainlist + ") "
+    + "union "
+    + "select b.id, b.name, '', -99,  NOW()::timestamp, -1, b.domainid, b.predecessorid, null "
+    + "from dm.dm_application b "
+    + "where b.status = 'N' "
+    + "and  b.isrelease = 'N' "
+    + "and b.predecessorid is null "
+    + "and  b.id not in "
+    + "(SELECT appid FROM dm.dm_deployment where finishts is not NULL) "
+    + "and  b.domainid in (" + m_domainlist + ") "
+    + "order by 2,4";
 
   JSONArray ret = new JSONArray();
   
@@ -25317,6 +25370,7 @@ return ret;
     {
      Integer parentid = rs.getInt(8);
      String id = rs.getString(1);
+     String parent = rs.getString(9);
      
      if (parentid == 0)
       id = "ap" + id;
@@ -25326,16 +25380,31 @@ return ret;
      obj.add("id", id);
      obj.add("name", rs.getString(2));   
      
-     Domain domain  = this.getDomain(rs.getInt(7));
-     String dom = domain.getFullDomain();
+     Integer domainid = rs.getInt(7);
+     
+     String dom = fulldoms.get(domainid);
+     
+     if (dom == null)
+     {
+      Domain domain  = this.getDomain(domainid);
+      dom = "";
+    
+      if (domain != null)
+      {
+       dom = domain.getFullDomain();
+       fulldoms.put(domainid, dom);
+      }
+      else
+      {
+       System.out.println("Invalid domain for:" + id + " - " + rs.getString(2));
+       continue;
+      }
+     } 
          
      obj.add("domain", dom);
-     obj.add("domainid", domain.getId());
+     obj.add("domainid", domainid);
      if (parentid > 0)
-     {
-      Application app  = this.getApplication(parentid, false);
-      obj.add("parent", app.getName());
-     }
+      obj.add("parent", parent);
      else
        obj.add("parent", "-");
      obj.add("environment", "-");    
@@ -25358,17 +25427,34 @@ return ret;
      obj.add("id", id);
      obj.add("name", rs.getString(2));   
      
-     Domain domain  = this.getDomain(rs.getInt(7));
-     String dom = domain.getFullDomain();
+     Integer domainid = rs.getInt(7);
+     String parent = rs.getString(9);
+     
+     String dom = fulldoms.get(domainid);
+     
+     if (dom == null)
+     {
+      Domain domain  = this.getDomain(domainid);
+      dom = "";
+    
+      if (domain != null)
+      {
+       dom = domain.getFullDomain();
+       fulldoms.put(domainid, dom);
+      }
+      else
+      {
+       System.out.println("Invalid domain for:" + id + " - " + rs.getString(2));
+       continue;
+      }
+     } 
+     
      int deployid = rs.getInt(4);
      
      obj.add("domain", dom);
-     obj.add("domainid", domain.getId());
+     obj.add("domainid", domainid);
      if (parentid > 0)
-     {
-      Application app  = this.getApplication(parentid, false);
-      obj.add("parent", app.getName());
-     }
+      obj.add("parent", parent);
      else
        obj.add("parent", "-");
      obj.add("environment", rs.getString(3));    
@@ -25388,8 +25474,6 @@ return ret;
       exitcode = "-";
      } 
      
-
-     
      obj.add("exitcode",exitcode);
      ret.add(obj);     
     }
@@ -25404,41 +25488,46 @@ return ret;
  }
  
  public JSONArray getCompList()
- {
-  // String sql = "Select distinct c.name As Component From dm.dm_component c Where c.domainid in (" + m_domainlist + ") Order By 1 desc"; 
-
-//  String sql = "select distinct d.id, d.name, e.name, a.deploymentid, a.finishts, a.exitcode, d.domainid, d.parentid from dm.dm_deployment a, dm.dm_application b, dm.dm_compsonserv c, dm.dm_component d, dm.dm_environment e where a.appid = b.id  " +
-//    "and c.deploymentid = a.deploymentid  " +
-//    "and c.compid = d.id  " +
-//    "and e.id = a.envid  " +
-//    "and d.status = 'N' " +
-//    "and (appid, finishts) in (SELECT appid, MAX(finishts) as finishts FROM dm.dm_deployment GROUP BY appid)  " +
-//    "union  " +
-//    "select distinct d.id, d.name, '', -99, now()::timestamp, 0, d.domainid, d.parentid from dm.dm_component d where  d.status = 'N' and d.id not in " +
-//    "(  " +
-//    "select distinct d.id from dm.dm_deployment a, dm.dm_application b, dm.dm_compsonserv c, dm.dm_component d, dm.dm_environment e where a.appid = b.id   " +
-//    "and c.deploymentid = a.deploymentid  " +
-//    "and c.compid = d.id  " +
-//    "and e.id = a.envid  " +
-//    "and d.status = 'N' " +
-//    "and (appid, finishts) in (SELECT appid, MAX(finishts) as finishts FROM dm.dm_deployment GROUP BY appid))";
+ { 
+  HashMap<Integer,String> fulldoms = new HashMap<Integer,String>();
   
-  String sql = "select distinct d.id, d.name, e.name, a.deploymentid, a.finishts, a.exitcode, d.domainid, d.predecessorid from dm.dm_deployment a, dm.dm_application b, dm.dm_compsonserv c, dm.dm_component d, dm.dm_environment e where a.appid = b.id  " +
-    "and c.deploymentid = a.deploymentid " +
-    "and c.compid = d.id  " +
-    "and e.id = a.envid  " +
-    "and d.status = 'N' " +
-    "and a.deploymentid > 0 " +
-    "and (appid, a.deploymentid) in (SELECT appid, MAX(x.deploymentid) as deploymentid FROM dm.dm_deployment x GROUP BY appid)  " +
-    "union  " +
-    "select distinct d.id, d.name, '', -99, now()::timestamp, 0, d.domainid, d.predecessorid  from dm.dm_component d where  d.status = 'N' and d.id not in " +
-    "(  " +
-    "select distinct d.id from dm.dm_deployment a, dm.dm_application b, dm.dm_compsonserv c, dm.dm_component d, dm.dm_environment e where a.appid = b.id   " +
-    "and c.deploymentid = a.deploymentid  " +
-    "and c.compid = d.id  " +
-    "and e.id = a.envid  " +
-    "and d.status = 'N' " +
-    "and (appid, a.deploymentid) in (SELECT appid, MAX(y.deploymentid) as deployid FROM dm.dm_deployment y GROUP BY appid))";
+  String sql = "select distinct d.id, d.name, e.name, a.deploymentid, a.finishts, a.exitcode, d.domainid, d.predecessorid, f.name "
+    + "from dm.dm_deployment a, dm.dm_deploymentcomps c, dm.dm_application b, "
+    + "dm.dm_component d, dm.dm_environment e, dm.dm_component f "
+    + "where a.appid = b.id "
+    + "and a.deploymentid = c.deploymentid "
+    + "and c.compid = d.id "
+    + "and d.status = 'N' "
+    + "and e.id = a.envid "
+    + "and d.predecessorid = f.id "
+    + "and d.domainid in (" + this.getDomainList() + ") "
+    + "and (a.envid, c.compid, a.deploymentid) in (SELECT envid, b.compid, MAX(x.deploymentid) as deploymentid FROM dm.dm_deployment x, dm.dm_deploymentcomps b where x.deploymentid = b.deploymentid GROUP BY x.envid, b.compid) "
+    + "union "
+    + "select distinct d.id, d.name, '', -99, now()::timestamp, 0, d.domainid, d.predecessorid, f.name "
+    + "from dm.dm_component d, dm.dm_component f "
+    + "where  d.status = 'N' "
+    + "and d.predecessorid = f.id "
+    + "and d.domainid in (" + this.getDomainList() + ") "
+    + "and d.id not in (select compid from dm.dm_deploymentcomps) "
+    + "union "
+    + "select distinct d.id, d.name, e.name, a.deploymentid, a.finishts, a.exitcode, d.domainid, d.predecessorid, null "
+    + "from dm.dm_deployment a, dm.dm_deploymentcomps c, dm.dm_application b, dm.dm_component d, dm.dm_environment e "
+    + "where a.appid = b.id "
+    + "and a.deploymentid = c.deploymentid "
+    + "and c.compid = d.id "
+    + "and d.status = 'N' "
+    + "and e.id = a.envid "
+    + "and d.predecessorid is null "
+    + "and d.domainid in (" + this.getDomainList() + ") " 
+    + "and (a.envid, c.compid, a.deploymentid) in (SELECT envid, b.compid, MAX(x.deploymentid) as deploymentid FROM dm.dm_deployment x, dm.dm_deploymentcomps b where x.deploymentid = b.deploymentid GROUP BY x.envid, b.compid) "
+    + "union "
+    + "select distinct d.id, d.name, '', -99, now()::timestamp, 0, d.domainid, d.predecessorid, null "
+    + "from dm.dm_component d "
+    + "where  d.status = 'N' "
+    + "and d.predecessorid is null "
+    + "and d.domainid in (" + this.getDomainList() + ") "
+    + "and d.id not in (select compid from dm.dm_deploymentcomps)";
+  
 
   JSONArray ret = new JSONArray();
 
@@ -25451,17 +25540,12 @@ return ret;
     JSONObject obj = new JSONObject(); 
 
     int notDeployed = rs.getInt(4);
-    int compDom = rs.getInt(7);
-    
-    String domlist = "," + this.getDomainList() + ",";
-    
-    if (!domlist.contains("," + compDom + ","))
-     continue;
     
     if (notDeployed == -99)
     {
-     Integer parentid = rs.getInt(8);
+     int parentid = rs.getInt(8);
      String id = rs.getString(1);
+     String parent = rs.getString(9);
      
      if (parentid == 0)
       id = "co" + id;
@@ -25471,31 +25555,31 @@ return ret;
      obj.add("id", id);
      obj.add("name", rs.getString(2));    
 
-     Domain domain  = this.getDomain(rs.getInt(7));
-     String dom = "";
-     int domainid = -1;
+     Integer domainid = rs.getInt(7);
      
-     if (domain != null)
+     String dom = fulldoms.get(domainid);
+     
+     if (dom == null)
      {
+      Domain domain  = this.getDomain(domainid);
+      dom = "";
+    
+      if (domain != null)
+      {
        dom = domain.getFullDomain();
-       domainid = domain.getId();
-     }
-     else
-     {
-      System.out.println("Invalid domain for:" + id + " - " + rs.getString(2));
-      continue;
-     }
+       fulldoms.put(domainid, dom);
+      }
+      else
+      {
+       System.out.println("Invalid domain for:" + id + " - " + rs.getString(2));
+       continue;
+      }
+     } 
 
      obj.add("domain", dom);
      obj.add("domainid", domainid);
      if (parentid > 0)
-     {
-      Component comp = this.getComponent(parentid, false);
-      if (comp != null)
-       obj.add("parent", comp.getName());
-      else
-       obj.add("parent", "-");
-     }
+       obj.add("parent", parent);
      else
       obj.add("parent", "-");
      
@@ -25510,6 +25594,7 @@ return ret;
     {
      Integer parentid = rs.getInt(8);
      String id = rs.getString(1);
+     String parent = rs.getString(9);
      
      if (parentid == 0)
       id = "co" + id;
@@ -25519,16 +25604,31 @@ return ret;
      obj.add("id", id);
      obj.add("name", rs.getString(2));    
 
-     Domain domain  = this.getDomain(rs.getInt(7));
-     String dom = domain.getFullDomain();
+     Integer domainid = rs.getInt(7);
+     
+     String dom = fulldoms.get(domainid);
+     
+     if (dom == null)
+     {
+      Domain domain  = this.getDomain(domainid);
+      dom = "";
+    
+      if (domain != null)
+      {
+       dom = domain.getFullDomain();
+       fulldoms.put(domainid, dom);
+      }
+      else
+      {
+       System.out.println("Invalid domain for:" + id + " - " + rs.getString(2));
+       continue;
+      }
+     } 
 
      obj.add("domain", dom);
-     obj.add("domainid", domain.getId());
+     obj.add("domainid", domainid);
      if (parentid > 0)
-     {
-      Component comp = this.getComponent(parentid, false);
-      obj.add("parent", comp.getName());
-     }
+      obj.add("parent", parent);
      else
       obj.add("parent", "-");
   
@@ -30938,5 +31038,17 @@ public JSONArray getComp2Endpoints(int compid)
    e.printStackTrace();
   }
   return pw;
+ }
+
+ public void setPassword(HttpServletRequest request)
+ {
+  if (this.getPassword() != null)
+   return;
+  
+  String jwt = ServletUtils.GetCookie(request, "token");
+  if (jwt != null && jwt.trim().length() > 0)
+  {
+   this.m_password = jwt;
+  }
  }
 }
