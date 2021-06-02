@@ -61,6 +61,9 @@ def main():
             if (value.lower() == '"false"' or value.lower() == "'false'"):
                 value = "false"
 
+            if (key.lower() == 'dep.filelist'):
+                value = value.replace('""','"')
+
             if ('?' not in key):
                 cleanvals[key] = value
 
@@ -75,7 +78,6 @@ def main():
     to_dir = "/tmp/dh" + str(timestamp)
     from_dir = os.getcwd()
     tempdir = tempfile.mkdtemp()
-    os.chdir(tempdir)
 
     if ('lambda' not in newvals):
         print("lamba variables not defined\n")
@@ -90,7 +92,7 @@ def main():
     if (funcfile is not None):
         with ZipFile(tempdir + "/" + funcname + '.zip', 'w') as myzip:
             myzip.write(filename=funcfile, arcname=arcname)
-        funcfile = "--zip-file fileb://" + to_dir + "/" + funcname + '.zip'
+        funcfile = "--zip-file fileb://" + tempdir + "/" + funcname + '.zip'
     else:
         funcfile = ""
 
@@ -150,6 +152,9 @@ def main():
         if ('aws_access_key_id' in newvals['aws']):
             runcmd(fp_task, to_dir, 'aws --profile default configure set aws_access_key_id ' + newvals['aws']['aws_access_key_id'])
 
+        if ('region' in newvals['aws']):
+            runcmd(fp_task, to_dir, 'aws --profile default configure set region ' + newvals['aws']['region'])
+
         if ('aws_secret_access_key' in newvals['aws']):
             runcmd(fp_task, to_dir, 'aws --profile default configure set aws_secret_access_key ' + newvals['aws']['aws_secret_access_key'])
 
@@ -164,8 +169,9 @@ def main():
     runcmd(fp_task, to_dir, cmd)
     fp_task.close()
 
-  #  if (os.path.exists(rspfile)):
-  #      os.remove(rspfile)
+    if (os.path.exists(rspfile)):
+        os.remove(rspfile)
+
     print(tempdir)
     my_env = os.environ.copy()
     my_env['ANSIBLE_STDOUT_CALLBACK'] = 'yaml'

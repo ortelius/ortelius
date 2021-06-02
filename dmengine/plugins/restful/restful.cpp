@@ -26,6 +26,70 @@
 
 #include "include/xml2json.hpp"
 
+// quote floats in json values
+void quote_float(char *in, char *out)
+{
+ int i=0;
+ int k=0;
+ int x=0;
+ int isfloat = 1;
+ char buf[100] = {""};
+ char work[100] = {""};
+
+ int onval = 0;
+
+ for (i=0;i<strlen(in);i++)
+ {
+  out[k] = in[i];
+  k++;
+
+  if (onval == 0 && in[i] ==':')
+  {
+   onval = 1;
+   *buf  = '\0';
+   *work = '\0';
+  } 
+  
+  if (onval && in[i] == ',')
+  {
+   onval = 0;
+   
+   isfloat = 1;
+   for (x=0;x<strlen(buf);x++)
+   {
+    if ((buf[x] < '0' || buf[x] > '9') && buf[x] != '.')
+     isfloat = 0;
+   }
+
+   if (isfloat && strchr(buf,'.'))
+   {
+     while (k>0) // work backwards to find :
+     {
+      if (out[k] != ':')
+      {
+       out[k] = '\0';
+       k--; 
+      }
+      else
+       break;
+     }
+
+     sprintf(work," \"%s\",",buf);
+     strcat(out,work);
+     k = strlen(out);
+   }
+  } 
+
+  if (onval && in[i] != ':' && in[i] != ' ')
+  {
+   work[0] = in[i];
+   work[1] = '\0'; 
+   strcat(buf,work);  
+  }
+ }
+}
+
+
 //
 // Same code as in smtp.cpp but replicated here because this is in its own library
 //
@@ -995,6 +1059,13 @@ class Expr *Restful_PostFunctionImpl::evaluate(class ExprList *args, class Conte
 		// Result is JSON - parse it
 		debug1("Result is JSON");
 		if(content) {
+			  char *newbuf = (char *)malloc(strlen(content)*2); 
+  			  memset(newbuf, '\0', strlen(content)*2);
+  
+  			  quote_float(content, newbuf);
+			  SAFE_FREE(content);
+			  content = newbuf;
+  
 			LexerBuffer lb(expr_lexer, content, NULL);
 			ret = lb.parseExpression(ctx); // May raise an exception
 		} else {

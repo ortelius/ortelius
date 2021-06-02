@@ -56,19 +56,22 @@ $.getJSON('GetPendingEnvData', "appid=" + objid, function(res) {
 	 var isRelease = (objtype=="rl" || objtype=="rv");
 	 if (isRelease) {
 		 var domains=[];
-		 for (var x=0;x<res.domains.length;x++) {
-			 var dom = res.domains[x];
-			 dom.subgroupOrder = function (a,b) {return b.subgroupOrder - a.subgroupOrder;};
-			 if (x==0) {
-				 dom.className = "vis-release";
-			 } else {
-				 var bclosed = dom.bclosed;
-				 var btotal = dom.bopen + dom.bclosed;
-				 dom.content =	"<table style=\"width:100%;height:65px;\" border=\"0\"><tr>"+
-				 				"<td><a onClick=\"javascript:SwitchDisplay('"+dom.type+dom.id+"');\">"+dom.content+"</a></td>"+
-				 				"<td style=\"width:65px;border-left:1px;border-left-style:solid;\"><div style=\"height:65px;width:65px;\" id=\"btdiv"+dom.id+"\"></div><div align=\"center\" style=\"font-size:10px;\">"+bclosed+"/"+btotal+"</div></td></tr></table>";
-			 }
-			 domains.push(dom);
+		 if ('domiains' in res)
+		 {
+			 for (var x=0;x<res.domains.length;x++) {
+				 var dom = res.domains[x];
+				 dom.subgroupOrder = function (a,b) {return b.subgroupOrder - a.subgroupOrder;};
+				 if (x==0) {
+					 dom.className = "vis-release";
+				 } else {
+					 var bclosed = dom.bclosed;
+					 var btotal = dom.bopen + dom.bclosed;
+					 dom.content =	"<table style=\"width:100%;height:65px;\" border=\"0\"><tr>"+
+					 				"<td><a onClick=\"javascript:SwitchDisplay('"+dom.type+dom.id+"');\">"+dom.content+"</a></td>"+
+					 				"<td style=\"width:65px;border-left:1px;border-left-style:solid;\"><div style=\"height:65px;width:65px;\" id=\"btdiv"+dom.id+"\"></div><div align=\"center\" style=\"font-size:10px;\">"+bclosed+"/"+btotal+"</div></td></tr></table>";
+				 }
+				 domains.push(dom);
+		     }
 		 }
 		 console.log("domains");
 		 console.log(domains);
@@ -158,9 +161,12 @@ $.getJSON('GetPendingEnvData', "appid=" + objid, function(res) {
 		  SwitchToCalendar(properties.items[0]);
 	  });
 	  if (isRelease) {
+		if ('domiains' in res)
+		{
 			for (var x=1;x<res.domains.length;x++) {
 				createBugChart("btdiv"+res.domains[x].id,res.domains[x].bopen,res.domains[x].bclosed);
 			}
+		}
 	  }
 	 });
 	
