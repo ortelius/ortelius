@@ -36,7 +36,7 @@ if [ "$chartorg" == "" ]; then
 fi
 
 # Add Helm Repo
-$helmexe repo add $helmlogin $helmrepo $helmrepourl 2>&1 1>/dev/null
+$helmexe repo add --force-update $helmlogin $helmrepo $helmrepourl 2>&1 1>/dev/null
 
 # Get latest Helm Charts
 $helmexe repo update 2>&1 1>/dev/null
