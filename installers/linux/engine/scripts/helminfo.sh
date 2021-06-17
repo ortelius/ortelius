@@ -26,7 +26,7 @@ if [ "$chartvalues" != "" ]; then
   override_values="-f $chartvalues"
 fi
 
-echo $helmlogin $helmrepo $helmrepourl | xargs $helmexe repo add  2>&1 1>/dev/null
+echo $helmlogin $helmrepo $helmrepourl | xargs $helmexe repo add --force-update  2>&1 1>/dev/null
 $helmexe repo update 2>&1 1>/dev/null
 $helmexe fetch $chartorg/$chartname --version $chartversion 2>&1 1>/dev/null
 digest=`sha256sum $chartname*.tgz | cut -f1 -d " "`
