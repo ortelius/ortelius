@@ -117,7 +117,6 @@ Contributors:
 - Ayesha Khaliq
 - Nael Fridhi
 - Karamjot Singh
-- Taras Bulubas
 
 ### UX and Testing
 
@@ -158,7 +157,6 @@ Contributors:
 - Karamjot Singh
 - Zach Jones
 - Jesse Gonzalez
-- Taras Bulubas
 - Neil Chen
 - Devendran Nehru
 
@@ -178,7 +176,6 @@ Contributors:
 - Jesse Gonzalez
 - Temitope Bimbo Babatola
 - Munirat Sulaimon
-- Taras Bulubas
 - Neil Chen
 - Atul Tiwari
 - Devendran Nehru
