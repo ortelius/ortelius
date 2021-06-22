@@ -179,6 +179,8 @@ Contributors:
 - Neil Chen
 - Atul Tiwari
 - Devendran Nehru
+- Utkarsh Kumar Sharma
+
 ### Product Management
 
 - Website, branding, outreach 
