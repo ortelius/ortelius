@@ -180,6 +180,7 @@ Contributors:
 - Atul Tiwari
 - Devendran Nehru
 - Utkarsh Kumar Sharma
+- Avikam Jha
 
 ### Product Management
 
