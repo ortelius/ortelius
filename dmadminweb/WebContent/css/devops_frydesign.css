@@ -594,7 +594,8 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 
 #row-10-right-panel {
   width: 50%;
-  margin-right: 8px;	
+  border: 1px solid lightgrey;	
+  margin: 8px;
 }
 
 #row-10-access {
@@ -617,6 +618,11 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 }
 
 #row-10-access_title {
+}
+
+#cr-panel {
+  border: 1px solid lightgrey;	
+  margin: 8px;
 }
 
 #summ_title {

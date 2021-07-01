@@ -76,13 +76,44 @@ function ciClickElement(id, comptype)
  console.log("GetSummaryData?objtype=14&id=" + id + addParams);
  $.ajax(
  {
-  url : "GetSummaryData?objtype=14&id=" + id + addParams,
-  dataType : 'json',
+  url : "/msapi/compitem?compid=" + id,
+  crossDomain: true,
+  dataType: 'json',
   async: false,
   type : 'GET',
+  error : function(jqxhr, status, err)
+  {
+   console.log(status);
+   console.log(err);
+  }, 
   success : function(res)
   {
-   console.log(res);
+   var colmap = JSON.parse(JSON.stringify(compitem_colmap));
+   var data = [];
+   
+   /* Combine rows */
+   
+   for (j=0;j<res.length;j++)
+   {
+    row = res[j];
+    for (const key in colmap)
+    {
+     if (key in row)
+     {
+      newrow = colmap[key];
+      
+      if (row[key] == null)
+        newrow.push('');
+      else
+        newrow.push(row[key]);   
+      data.push(newrow);
+     }
+     
+    }  
+   }
+   res.data = data;
+   console.log(data);
+   
    saveRes = res;
    var title = "";
    var tdedit3 = "<form id=\"compitemform\"><div style=\"display:none\">" + id + "</div><table id=\"compitemtab\" class=\"dev_table\"><tbody>";

@@ -679,16 +679,6 @@
                             <tbody></tbody>
                         </table>
                     </div>
-                    <div id="compitem_data">
-                        <table id="compitem" class="dev_table">
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                    <div id="compitem_data_edit" style="display:none";>
-                        <table id="compitemtab" class="dev_table">
-                            <tbody></tbody>
-                        </table>
-                    </div>
                     <div id="emailbody_data">
                         <table id="emailbody" class="dev_table">
                             <tbody></tbody>
@@ -734,12 +724,16 @@
                    </div>                     
                 </div>
               <div id="row-10-right-panel">  
-                <div id="tabs-General-right">
-                    <div id="tabs-General-right-header">
-                        <h2>Dependency Map</h2>
-                    </div>
-                    <div id="tabs-General-map"></div>
+                <div id="compitem_data">
+                    <table id="compitem" class="dev_table">
+                       <tbody></tbody>
+                    </table>
                 </div>
+                <div id="compitem_data_edit" style="display:none";>
+                   <table id="compitemtab" class="dev_table">
+                      <tbody></tbody>
+                   </table>
+               	</div>
                 <div id="emailto-panel">
                   <div id="emailto-panel-header">
                     <div id="emailto_title" style="text-align:left"">
@@ -1366,7 +1360,13 @@
                             <tbody></tbody>
                         </table>
                     </div> 
-                    </div>  
+                    </div> 
+                 <div id="tabs-General-right">
+                    <div id="tabs-General-right-header">
+                        <h2>Dependency Map</h2>
+                    </div>
+                    <div id="tabs-General-map"></div>
+                </div> 
                 </div>    
              <div id="tabs-General-row-50">
 		       <div id="panel_container_taskspaneltop">

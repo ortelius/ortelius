@@ -839,6 +839,40 @@ var menuForType = {
   "cr": {tm: "containers_menu", t: "credentials_tab",  image : "css/images/credentials_sm.png"}  // Credentials
   };
 
+var compitem_colmap = {};
+
+compitem_colmap['rollup'] = ["702", false, "rr", "Rollup flag"];
+compitem_colmap['rollback'] = ["703", false, "rr", "Rollback flag"];
+compitem_colmap['respositoryid'] = ["704", false, "re", "Repository"];
+compitem_colmap['target'] = ["705", false, "", "Target Directory"];
+compitem_colmap['xpos'] = ["714", false, "", "xpos"];
+compitem_colmap['ypos'] = ["715", false, "", "ypos"];
+compitem_colmap['kind'] = ["718", false,  "ik", "Kind"];
+compitem_colmap['buildid'] = ["1601", false, "", "Build Id"];
+compitem_colmap['buildurl'] = ["1602", false, "", "Build URL"];
+compitem_colmap['chart'] = ["1603", false, "", "Helm Chart"];
+compitem_colmap['operator'] = ["1604", false, "", "Operator"];
+compitem_colmap['builddate'] = ["1605", false, "", "Build Date"];
+compitem_colmap['deckerrepo'] = ["1606", false, "", "Container Registry"];
+compitem_colmap['dockersha'] = ["1607", false, "", "Container Digest"];
+compitem_colmap['gitcommit'] = ["1608", false, "", "Git Commit"];
+compitem_colmap['gitrepo'] = ["1609", false, "", "Git Repo"];
+compitem_colmap['gittag'] = ["1610", false, "", "Git Tag"];
+compitem_colmap['giturl'] = ["1611", false, "", "Git URL"];
+compitem_colmap['chartversion'] = ["1612", false, "", "Helm Chart Version"];
+compitem_colmap['chartnamespace'] = ["1613", false, "", "Helm Chart Namespace"];
+compitem_colmap['dockertag'] = ["1614", false, "", "Container Tag"];
+compitem_colmap['chartrepo'] = ["1615", false, "", "Helm Chart Repo"];
+compitem_colmap['chartrepourl'] = ["1616", false, "", "Helm Chart Repo Url"];
+compitem_colmap['serviceowner'] = ["1618", false, "", "Service Owner"];
+compitem_colmap['serviceowneremail'] = ["1619", false, "", "Service Owner Email"];
+compitem_colmap['serviceownerphone'] = ["1620", false, "", "Service Owner Phone"];
+compitem_colmap['slackchannel'] = ["1621", false, "", "Slack Channel"];
+compitem_colmap['discordchannel'] = ["1622", false, "", "Discord Channel"];
+compitem_colmap['hipchatchannel'] = ["1623", false, "", "Hipchat Channel"];
+compitem_colmap['pagerdutyurl'] = ["1624", false, "", "PagerDuty Service Url"];
+compitem_colmap['pagerdutybusinessurl'] = ["1625", false, "", "PagerDuty Business Service Url"];
+        
 
 function getLocaleDateString(){
 

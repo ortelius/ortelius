@@ -1276,16 +1276,16 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
           tdedit += "</tr>";
       }
       else if (label == "Last Build Number") {
-       if (val==0) val="";
-       else val="<a onClick=\"javascript:DisplayBuild("+objid+","+val+");\">#"+val+"</a>";
-       
-       tdedit += "<tr>";
-       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-       tdedit += "<td name=\"lastlogin_val\" >" + val + "</td>";
-       tdedit += "<td><input type=\"hidden\" name=\"lastlogin_field\" value=\"" + field + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"lastlogin_callback\" value=\"" + callback + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"lastlogin_oldval\" value=\"" + val + "\"/></td>";
-       tdedit += "</tr>";
+//       if (val==0) val="";
+//       else val="<a onClick=\"javascript:DisplayBuild("+objid+","+val+");\">#"+val+"</a>";
+//       
+//       tdedit += "<tr>";
+//       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+//       tdedit += "<td name=\"lastlogin_val\" >" + val + "</td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"lastlogin_field\" value=\"" + field + "\"/></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"lastlogin_callback\" value=\"" + callback + "\"/></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"lastlogin_oldval\" value=\"" + val + "\"/></td>";
+//       tdedit += "</tr>";
       }
       else if (label == "Project Name" || label == "Plan Name") {
        var project = val;
@@ -2152,6 +2152,10 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        
       }
       else if (label.toLowerCase() == "MD5 Mismatch Template".toLowerCase())
+      {
+       
+      }
+      else if (label.toLowerCase() == "Last Build Number".toLowerCase())
       {
        
       }
