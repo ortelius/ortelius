@@ -1,0 +1,365 @@
+{
+    "bomFormat": "CycloneDX",
+    "components": [
+        {
+            "description": "A library for parsing ISO 8601 strings.",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "eba845463838ae77585aac484f6a563c"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "1d2b7ef82963909e93c4f24ce48d4de9e66009a21bf1c1e1c85bdd0812fe412f"
+                }
+            ],
+            "licenses": [],
+            "modified": false,
+            "name": "aniso8601",
+            "publisher": "Brandon Nielsen",
+            "purl": "pkg:pypi/aniso8601@9.0.1",
+            "type": "library",
+            "version": "9.0.1"
+        },
+        {
+            "description": "Composable command line interface toolkit",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "b4233221cacc473acd422a1d54ff4c41"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause"
+                    }
+                }
+            ],
+            "modified": false,
+            "name": "click",
+            "publisher": "",
+            "purl": "pkg:pypi/click@7.1.2",
+            "type": "library",
+            "version": "7.1.2"
+        },
+        {
+            "description": "A simple framework for building complex web applications.",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "1811ab52f277d5eccfa3d7127afd7f92"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "8a4fdd8936eba2512e9c85df320a37e694c93945b33ef33c89946a340a238557"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause"
+                    }
+                }
+            ],
+            "modified": false,
+            "name": "Flask",
+            "publisher": "Armin Ronacher",
+            "purl": "pkg:pypi/flask@1.1.2",
+            "type": "library",
+            "version": "1.1.2"
+        },
+        {
+            "description": "Simple framework for creating REST APIs",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "986fef5db7bdc9aef79a4d9def9b6b28"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "d891118b951921f1cec80cabb4db98ea6058a35e6404788f9e70d5b243813ec2"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD"
+                    }
+                }
+            ],
+            "modified": false,
+            "name": "Flask-RESTful",
+            "publisher": "Twilio API Team",
+            "purl": "pkg:pypi/flask-restful@0.3.8",
+            "type": "library",
+            "version": "0.3.8"
+        },
+        {
+            "description": "Lightweight in-process concurrent programming",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "a8e5d5a2304170195a130d0f51cc8009"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "1023d7b43ca11264ab7052cb09f5635d4afdb43df55e0854498fc63070a0b206"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "MIT License"
+                    }
+                }
+            ],
+            "modified": false,
+            "name": "greenlet",
+            "publisher": "",
+            "purl": "pkg:pypi/greenlet@0.4.17",
+            "type": "library",
+            "version": "0.4.17"
+        },
+        {
+            "description": "WSGI HTTP Server for UNIX",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "c3ab53cefe85687d3b5ffa2018695ad2"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "cd4a810dd51bf497552cf3f863b575dabd73d6ad6a91075b65936b151cbf4f9c"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "MIT"
+                    }
+                }
+            ],
+            "modified": false,
+            "name": "gunicorn",
+            "publisher": "Benoit Chesneau",
+            "purl": "pkg:pypi/gunicorn@20.0.4",
+            "type": "library",
+            "version": "20.0.4"
+        },
+        {
+            "description": "Various helpers to pass data to untrusted environments and back.",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "55179072b7f84ae38f16b3fdca33aa4f"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "b12271b2047cb23eeb98c8b5622e2e5c5e9abd9784a153e9d8ef9cb4dd09d749"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD"
+                    }
+                }
+            ],
+            "modified": false,
+            "name": "itsdangerous",
+            "publisher": "Armin Ronacher",
+            "purl": "pkg:pypi/itsdangerous@1.1.0",
+            "type": "library",
+            "version": "1.1.0"
+        },
+        {
+            "description": "A very fast and expressive template engine.",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "e36888c21cb0f6716b9987be2972744d"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "f0a4641d3cf955324a89c04f3d94663aa4d638abe8f733ecd3582848e1c37035"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause"
+                    }
+                }
+            ],
+            "modified": false,
+            "name": "Jinja2",
+            "publisher": "Armin Ronacher",
+            "purl": "pkg:pypi/jinja2@2.11.2",
+            "type": "library",
+            "version": "2.11.2"
+        },
+        {
+            "description": "Safely add untrusted strings to HTML/XML markup.",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "bd858ff978ecd9437229a655ebfb33af"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "b7d644ddb4dbd407d31ffb699f1d140bc35478da613b441c582aeb7c43838dd8"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause"
+                    }
+                }
+            ],
+            "modified": false,
+            "name": "MarkupSafe",
+            "publisher": "Armin Ronacher",
+            "purl": "pkg:pypi/markupsafe@1.1.1",
+            "type": "library",
+            "version": "1.1.1"
+        },
+        {
+            "description": "High performance asynchronous Python WSGI Web Server",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "ae7cd32464bbea7bba0ace1fddd9c1c0"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "008c76937ac2117cc69e032dc69cea9f85fc605de9bac1417f447c41c16a56d6"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD"
+                    }
+                }
+            ],
+            "modified": false,
+            "name": "meinheld",
+            "publisher": "yutaka matsubara",
+            "purl": "pkg:pypi/meinheld@1.0.2",
+            "type": "library",
+            "version": "1.0.2"
+        },
+        {
+            "description": "psycopg2 - Python-PostgreSQL Database Adapter",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "3e522b5e97ac2be9dd3871de0d4b0917"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "d5062ae50b222da28253059880a871dc87e099c25cb68acf613d9d227413d6f7"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "LGPL with exceptions"
+                    }
+                }
+            ],
+            "modified": false,
+            "name": "psycopg2",
+            "publisher": "Federico Di Gregorio",
+            "purl": "pkg:pypi/psycopg2@2.8.6",
+            "type": "library",
+            "version": "2.8.6"
+        },
+        {
+            "description": "World timezone definitions, modern and historical",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "2e039ef05cc965ffe161b3a8af018431"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "eb10ce3e7736052ed3623d49975ce333bcd712c7bb19a58b9e2089d4057d0798"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "MIT"
+                    }
+                }
+            ],
+            "modified": false,
+            "name": "pytz",
+            "publisher": "Stuart Bishop",
+            "purl": "pkg:pypi/pytz@2021.1",
+            "type": "library",
+            "version": "2021.1"
+        },
+        {
+            "description": "Python 2 and 3 compatibility utilities",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "16dc2d0f87a1ed05579ad7c4965cf0ef"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "MIT"
+                    }
+                }
+            ],
+            "modified": false,
+            "name": "six",
+            "publisher": "Benjamin Peterson",
+            "purl": "pkg:pypi/six@1.15.0",
+            "type": "library",
+            "version": "1.15.0"
+        },
+        {
+            "description": "The comprehensive WSGI web application library.",
+            "hashes": [
+                {
+                    "alg": "MD5",
+                    "content": "ceaf2433ef66e2d7a3fbe43a4e44e4ca"
+                },
+                {
+                    "alg": "SHA-256",
+                    "content": "2de2a5db0baeae7b2d2664949077c2ac63fbd16d98da0ff71837f7d1dea3fd43"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "name": "BSD-3-Clause"
+                    }
+                }
+            ],
+            "modified": false,
+            "name": "Werkzeug",
+            "publisher": "Armin Ronacher",
+            "purl": "pkg:pypi/werkzeug@1.0.1",
+            "type": "library",
+            "version": "1.0.1"
+        }
+    ],
+    "specVersion": "1.2",
+    "version": 1
+}

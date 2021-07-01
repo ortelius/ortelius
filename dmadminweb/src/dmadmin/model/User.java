@@ -113,7 +113,7 @@ public class User	extends DMObject implements Comparable<Object>
 		ds.addProperty(SummaryField.USER_TIME_FMT, "Time Format", m_timefmt);
 		ds.addProperty(SummaryField.USER_DATASOURCE, "Validation Data Source",
 				(m_datasource != null)?m_datasource.getLinkJSON():null);
-		if(isUpdatable()) {
+		if(isUpdatable() || getId() == -1) {
 			ds.addProperty(SummaryField.USER_PASSWORD, "Password", (String) null);			
 			ds.addProperty(SummaryField.USER_LOCKED, "Account Locked",
 				new BooleanField(m_accountLocked));			

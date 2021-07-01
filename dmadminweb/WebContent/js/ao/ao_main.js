@@ -144,16 +144,14 @@ $(document).click(function (e) {
  //$.blockUI.defaults.theme = false;
  //$.blockUI.defaults.themedCSS.width = "15%";
    
-  loginformData = decodeURIComponent(GetCookie("logindata"));
+  loginformData = "";  // decodeURIComponent(GetCookie("logindata"));
      
   loggedin='N';
-  loginformData = loginformData.replaceAll("&initial=Y","")
+ // loginformData = loginformData.replaceAll("&initial=Y","")
   
-  if (loginformData != null && loginformData != "")
-  {
    $.ajax({
     type : "POST",
-    url : "Login?" + loginformData,
+    url : "Login",
     async : false,
     dataType: "json"
    }).done(function(data) {
@@ -196,11 +194,7 @@ $(document).click(function (e) {
     }
      SetCookie("admin",admin);
   });
-  } else {
-  loggedin = 'N';
-  admin = 'N';
-  SetCookie("admin","N");
-  }
+
   if ("${firstinstall}" == "Y" && isSaas != 'Y') {
    // First install - prompt the user to set admin password and show them
    // some basic information to get started
@@ -588,7 +582,7 @@ $(document).click(function (e) {
 //    SetCookie("p1",newUser);
 //    SetCookie("p2",newpw);
     SetCookie("admin",isAdmin);
-    SetCookie("loggedin",loggedin);
+//    SetCookie("loggedin",loggedin);
     console.log("newUser="+newUser);
      $("#modal").dialog("close");
      $.sessionTimeout({
@@ -597,7 +591,7 @@ $(document).click(function (e) {
        keepAliveUrl : "KeepAlive"
      });
      breadcrumbs.push("#applications_tree");
-     SetCookie("logindata",loginformData);
+//     SetCookie("logindata",loginformData);
      EnableTabs("application_menu");
      openList(event, 'application');
    } else {
@@ -674,7 +668,7 @@ $(document).click(function (e) {
             });
             breadcrumbs.push("#applications_tree");
             EnableTabs("application_menu");
-            SetCookie("logindata",loginformData);
+  //          SetCookie("logindata",loginformData);
             openList(event, 'application');
              } else { 
             loggedin = "N";
@@ -749,7 +743,7 @@ $(document).click(function (e) {
         });
         breadcrumbs.push("#applications_tree");
         EnableTabs("application_menu");
-        SetCookie("logindata",loginformData);
+ //       SetCookie("logindata",loginformData);
         openList(event, 'application');
       } else {
         if (data.Msg == "Password must be changed") {
@@ -850,7 +844,7 @@ $(document).click(function (e) {
     });
     breadcrumbs.push("#applications_tree");
     EnableTabs("application_menu");
-    SetCookie("logindata",loginformData);
+//    SetCookie("logindata",loginformData);
     openList(event, 'application');
   } 
      }); 

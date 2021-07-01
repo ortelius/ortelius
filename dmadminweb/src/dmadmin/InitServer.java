@@ -37,6 +37,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Timer;
@@ -503,6 +504,8 @@ public class InitServer extends HttpServletBase
    rollback();
   else
   {
+   cleanAttrs();
+	  
    try
    {
     if (updatePerformed)
@@ -553,6 +556,73 @@ public class InitServer extends HttpServletBase
   } 
   }
  }
+ 
+ public void cleanAttrs() 
+ {
+  ArrayList<String> kw = new ArrayList<>(Arrays.asList("buildid", "buildurl", "chart", "operator", "builddate",
+				"dockersha", "gitcommit", "gitrepo", "gittag", "giturl", "chartversion", "chartnamespace", "dockertag",
+				"chartrepo", "chartrepourl", "serviceowner", "serviceowneremail", "serviceownerphone", "slackchannel",
+				"discordchannel", "hipchatchannel", "pagerdutyurl", "pagerdutybusinessurl"));
+		
+  try 
+  {	
+   for (int i=0;i<kw.size();i++)
+   {
+	String key = kw.get(i);
+	String sql = "select compid, name, value from dm.dm_componentvars where lower(name) = ?";
+	
+	PreparedStatement stmt = m_conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+	stmt.setString(1,key);
+	ResultSet rs = stmt.executeQuery();
+	while(rs.next()) 
+	{
+	 int compid = rs.getInt(1);
+	 String value = rs.getString(3);
+	 
+	 // see if compitem exists if not insert row
+	 String csql = "select count(*) from dm.dm_componentitem where compid = ?";
+	 
+	 PreparedStatement cstmt = m_conn.prepareStatement(csql);
+	 cstmt.setInt(1,compid);
+	 ResultSet crs = cstmt.executeQuery();
+	 int cnt = 0;
+	 if (crs.next()) 
+	 {
+	  cnt = crs.getInt(1);
+	 }
+	 crs.close();
+	 cstmt.close();
+	 
+	 if (cnt <= 0) // insert compitem row for compid
+	 {
+	  String isql = "INSERT INTO dm.dm_componentitem(id, compid, name, xpos, ypos, creatorid, status, kind) values (nextval('dm_compitem_id_seq'), ?, 'item 1', 140, 80, 1, 'N', 'docker')";
+	  PreparedStatement istmt = m_conn.prepareStatement(isql);
+	  istmt.setInt(1, compid);
+	  istmt.execute();
+	  istmt.close();
+	 }
+	 
+	 String usql = "update dm.dm_componentitem set " + key + "=? where compid=? and " + key + " is null";
+	 PreparedStatement ustmt = m_conn.prepareStatement(usql);
+	 ustmt.setString(1,value);
+	 ustmt.setInt(2, compid);
+	 ustmt.execute();;
+	 ustmt.close();
+	 
+	 rs.deleteRow(); // delete row from componentvars
+	}
+	rs.close();
+	stmt.close();
+	m_conn.commit();
+   }
+  } 
+  catch (SQLException e) 
+  {
+		e.printStackTrace();
+  }   
+ }
+ 
 
  String readFile(String filename) throws FileNotFoundException, IOException
  {
@@ -649,8 +719,8 @@ public class InitServer extends HttpServletBase
      }
     }
     
-    DriverName = DriverName.replaceAll("org\\.postgresql\\.Driver", "com.impossibl.postgres.jdbc.PGDriver");
-    ConnectionString = ConnectionString.replaceAll("jdbc\\:postgresql", "jdbc:pgsql");
+    DriverName = DriverName.replaceAll("com\\.impossibl\\.postgres\\.jdbc\\.PGDriver", "org.postgresql.Driver");
+    ConnectionString = ConnectionString.replaceAll("jdbc\\:pgsql", "jdbc:postgresql");
     // DSN is ignored for Postgres Driver
     Class.forName(DriverName);
 

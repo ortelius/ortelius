@@ -8734,6 +8734,8 @@ void Model::recordCompOnServ(class DM &dm, Component &comp, Server &server, bool
 	} else {
 		// Component was not successfully deployed. Remove any entry from compsonserv for this
 		// component
+// Assume component failure left end-point intact so no need to rebuild server from base version to -1 version
+/*
 		SQLRETURN res = sql->PrepareStatement(
 		"DELETE FROM dm_compsonserv WHERE serverid = ? AND compid IN "
 			"(select d.id from dm_component c, dm_component d where c.id = ? and c.parentid=d.parentid	"
@@ -8755,7 +8757,7 @@ void Model::recordCompOnServ(class DM &dm, Component &comp, Server &server, bool
 		debug1("Removing component from server (%d, %d)", compid, serverid);
 		res = sql->ExecuteIgnoringErrors();
 		debug2("res = %d", res);
-		sql->CloseSQL();
+		sql->CloseSQL();*/
 	}
 }
 

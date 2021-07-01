@@ -52,6 +52,8 @@ public class TableFilter extends HttpServlet
   */
  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
  {
+  response.setHeader("Content-Type", "application/json");
+  
   try (DMSession so = DMSession.getInstance(request))
   {
    session = request.getSession();
@@ -72,6 +74,8 @@ public class TableFilter extends HttpServlet
   */
  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
  {
+  response.setHeader("Content-Type", "application/json");
+  
   try (DMSession so = DMSession.getInstance(request))
   {
    session = request.getSession();
@@ -86,12 +90,12 @@ public class TableFilter extends HttpServlet
    if (so.saveTableFilter(filtername,filtervalue))
    {
     ret.add("result", true);
-    out.println("{" + ret.getJSON() + "}");    
+    out.println(ret.getJSON());    
    }
    else
    {
      ret.add("result", false);
-     out.println("{" + ret.getJSON() + "}");
+     out.println(ret.getJSON());
    }
   }
  }

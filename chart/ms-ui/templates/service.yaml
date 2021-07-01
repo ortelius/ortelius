@@ -1,15 +1,15 @@
-kind: Service
 apiVersion: v1
+kind: Service
 metadata:
   name: {{ include "ms-ui.name" . }}
 spec:
   selector:
-    name: {{ include "ms-ui.name" . }}
+    app: {{ include "ms-ui.name" . }}
     tier: backend
   ports:
     - protocol: TCP
       port: 8080
-      nodePort: 30091
+      targetPort: 8080
   type: NodePort
 ---
  

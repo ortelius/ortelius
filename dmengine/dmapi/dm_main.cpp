@@ -934,8 +934,6 @@ char *getHomeDirectory(const char *argv0)
 #endif
 
 
-
-
 triODBC *connectToDatabase(DM &dm, const char *homeDir)
 {
 	ensurePassphraseFile(dm, homeDir);	// dm.asc HAS to exist (for password encryption)
@@ -994,6 +992,21 @@ triODBC *connectToDatabase(DM &dm, const char *homeDir)
 		if(nulls != 2) {
 			dm.exitWithError("FATAL ERROR: dm.odbc is not a valid odbc file");
 		}
+
+		char *DBUserName = getenv("DBUserName");
+	    char *DBPassword = getenv("DBPassword");
+
+		if (DBUserName != NULL)
+		{
+		 details = malloc(5);
+		 memset(details,'\0',5);
+		 strcpy(details,"dm");	
+
+		 user = DBUserName;
+		 pass = DBPassword;
+		 dsn = details;
+		}
+
 		if (getenv("tritestdb")) {
 			printf("Testing connecting to database\n");
 			printf("DSN:       [%s]\n",(const char *)details);

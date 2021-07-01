@@ -76,13 +76,44 @@ function ciClickElement(id, comptype)
  console.log("GetSummaryData?objtype=14&id=" + id + addParams);
  $.ajax(
  {
-  url : "GetSummaryData?objtype=14&id=" + id + addParams,
-  dataType : 'json',
+  url : "/msapi/compitem?compitemid=" + id,
+  crossDomain: true,
+  dataType: 'json',
   async: false,
   type : 'GET',
+  error : function(jqxhr, status, err)
+  {
+   console.log(status);
+   console.log(err);
+  }, 
   success : function(res)
   {
-   console.log(res);
+   var colmap = JSON.parse(JSON.stringify(compitem_colmap));
+   var data = [];
+   
+   /* Combine rows */
+   
+   for (j=0;j<res.length;j++)
+   {
+    row = res[j];
+    for (const key in colmap)
+    {
+     if (key in row)
+     {
+      newrow = colmap[key];
+      
+      if (row[key] == null)
+        newrow.push('');
+      else
+        newrow.push(row[key]);   
+      data.push(newrow);
+     }
+     
+    }  
+   }
+   res.data = data;
+   console.log(data);
+   
    saveRes = res;
    var title = "";
    var tdedit3 = "<form id=\"compitemform\"><div style=\"display:none\">" + id + "</div><table id=\"compitemtab\" class=\"dev_table\"><tbody>";
@@ -139,7 +170,11 @@ function ciClickElement(id, comptype)
     var isuser = true;
     var oldval = "";
 
-    if (label != "Predecessor" && label != "XPos" && label != "YPos" && label != "Summary" && label != "Name"  && label != "Kind" && label != "Roll Forward" && label != "Rollback")
+    if (label.toLowerCase() != "Predecessor".toLowerCase() && label.toLowerCase() != "XPos".toLowerCase() &&
+        label.toLowerCase() != "YPos".toLowerCase() && label.toLowerCase() != "Summary".toLowerCase() &&
+        label.toLowerCase() != "Name".toLowerCase() && label.toLowerCase() != "Kind".toLowerCase() && 
+        label.toLowerCase() != "Roll Forward".toLowerCase() && label.toLowerCase() != "Rollback".toLowerCase() &&
+        label.toLowerCase() != "Rollup flag".toLowerCase() && label.toLowerCase() != "Rollback flag".toLowerCase())
     {
      var myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
      
@@ -266,6 +301,86 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"chartrepourl_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }  
+    else if (label == "Service Owner")
+    {
+     tdedit3 += "<tr>";
+     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit3 += "<td><input name=\"serviceowner_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"serviceowner_field\" value=\"" + field + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"serviceowner_callback\" value=\"" + callback + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"serviceowner_oldval\" value=\"" + val + "\"/></td>";
+     tdedit3 += "</tr>";
+    }  
+    else if (label == "Service Owner Email")
+    {
+     tdedit3 += "<tr>";
+     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit3 += "<td><input name=\"serviceowneremail_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"serviceowneremail_field\" value=\"" + field + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"serviceowneremail_callback\" value=\"" + callback + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"serviceowneremail_oldval\" value=\"" + val + "\"/></td>";
+     tdedit3 += "</tr>";
+    }  
+    else if (label == "Service Owner Phone")
+    {
+     tdedit3 += "<tr>";
+     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit3 += "<td><input name=\"serviceownerphone_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"serviceownerphone_field\" value=\"" + field + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"serviceownerphone_callback\" value=\"" + callback + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"serviceownerphone_oldval\" value=\"" + val + "\"/></td>";
+     tdedit3 += "</tr>";
+    } 
+    else if (label == "Slack Channel")
+    {
+     tdedit3 += "<tr>";
+     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit3 += "<td><input name=\"slackchannel_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"slackchannel_field\" value=\"" + field + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"slackchannel_callback\" value=\"" + callback + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"slackchannel_oldval\" value=\"" + val + "\"/></td>";
+     tdedit3 += "</tr>";
+    }  
+    else if (label == "Discord Channel")
+    {
+     tdedit3 += "<tr>";
+     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit3 += "<td><input name=\"discordchannel_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"discordchannel_field\" value=\"" + field + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"discordchannel_callback\" value=\"" + callback + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"discordchannel_oldval\" value=\"" + val + "\"/></td>";
+     tdedit3 += "</tr>";
+    }  
+    else if (label == "Hipchat Channel")
+    {
+     tdedit3 += "<tr>";
+     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit3 += "<td><input name=\"hipchatchannel_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"hipchatchannel_field\" value=\"" + field + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"hipchatchannel_callback\" value=\"" + callback + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"hipchatchannel_oldval\" value=\"" + val + "\"/></td>";
+     tdedit3 += "</tr>";
+    }  
+    else if (label == "PagerDuty Service Url")
+    {
+     tdedit3 += "<tr>";
+     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit3 += "<td><input name=\"pagerdutyurl_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"pagerdutyurl_field\" value=\"" + field + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"pagerdutyurl_callback\" value=\"" + callback + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"pagerdutyurl_oldval\" value=\"" + val + "\"/></td>";
+     tdedit3 += "</tr>";
+    }  
+    else if (label == "PagerDuty Business Service Url")
+    {
+     tdedit3 += "<tr>";
+     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit3 += "<td><input name=\"pagerdutybusinessurl_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"pagerdutybusinessurl_field\" value=\"" + field + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"pagerdutybusinessurl_callback\" value=\"" + callback + "\"/></td>";
+     tdedit3 += "<td><input type=\"hidden\" name=\"pagerdutybusinessurl_oldval\" value=\"" + val + "\"/></td>";
+     tdedit3 += "</tr>";
+    }                                   
     else if (label == "Operator")
     {
      tdedit3 += "<tr>";
@@ -840,6 +955,87 @@ function GetSaveSummaryItemData(instance, data, prefix)
   }
  } 
  
+ if (typeof view.serviceowner_val !== 'undefined' && typeof view.serviceowner_oldval !== 'undefined')
+ {
+  if (view.serviceowner_val != view.serviceowner_oldval)
+  {
+   console.log('change_' + view.serviceowner_field + ' = ' + view.serviceowner_val);
+   data['change_' + view.serviceowner_field] = view.serviceowner_val;
+   ret = true;
+  }
+ } 
+ 
+ if (typeof view.serviceowneremail_val !== 'undefined' && typeof view.serviceowneremail_oldval !== 'undefined')
+ {
+  if (view.serviceowneremail_val != view.serviceowneremail_oldval)
+  {
+   console.log('change_' + view.serviceowneremail_field + ' = ' + view.serviceowneremail_val);
+   data['change_' + view.serviceowneremail_field] = view.serviceowneremail_val;
+   ret = true;
+  }
+ }
+ 
+ if (typeof view.serviceownerphone_val !== 'undefined' && typeof view.serviceownerphone_oldval !== 'undefined')
+ {
+  if (view.serviceownerphone_val != view.serviceownerphone_oldval)
+  {
+   console.log('change_' + view.serviceownerphone_field + ' = ' + view.serviceownerphone_val);
+   data['change_' + view.serviceownerphone_field] = view.serviceownerphone_val;
+   ret = true;
+  }
+ }
+ 
+if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_oldval !== 'undefined')
+{
+  if (view.slackchannel_val != view.slackchannel_oldval)
+  {
+   console.log('change_' + view.slackchannel_field + ' = ' + view.slackchannel_val);
+   data['change_' + view.slackchannel_field] = view.slackchannel_val;
+   ret = true;
+  }
+}
+
+ if (typeof view.discordchannel_val !== 'undefined' && typeof view.discordchannel_oldval !== 'undefined')
+ {
+  if (view.discordchannel_val != view.discordchannel_oldval)
+  {
+   console.log('change_' + view.discordchannel_field + ' = ' + view.discordchannel_val);
+   data['change_' + view.discordchannel_field] = view.discordchannel_val;
+   ret = true;
+  }
+ } 
+ 
+ if (typeof view.hipchatchannel_val !== 'undefined' && typeof view.hipchatchannel_oldval !== 'undefined')
+ {
+  if (view.hipchatchannel_val != view.hipchatchannel_oldval)
+  {
+   console.log('change_' + view.hipchatchannel_field + ' = ' + view.hipchatchannel_val);
+   data['change_' + view.hipchatchannel_field] = view.hipchatchannel_val;
+   ret = true;
+  }
+ } 
+
+ if (typeof view.pagerdutyurl_val !== 'undefined' && typeof view.pagerdutyurl_oldval !== 'undefined')
+ {
+  if (view.pagerdutyurl_val != view.pagerdutyurl_oldval)
+  {
+   console.log('change_' + view.pagerdutyurl_field + ' = ' + view.pagerdutyurl_val);
+   data['change_' + view.pagerdutyurl_field] = view.pagerdutyurl_val;
+   ret = true;
+  }
+ } 
+ 
+ if (typeof view.pagerdutybusinessurl_val !== 'undefined' && typeof view.pagerdutybusinessurl_oldval !== 'undefined')
+ {
+  if (view.pagerdutybusinessurl_val != view.pagerdutybusinessurl_oldval)
+  {
+   console.log('change_' + view.pagerdutybusinessurl_field + ' = ' + view.pagerdutybusinessurl_val);
+   data['change_' + view.pagerdutybusinessurl_field] = view.pagerdutybusinessurl_val;
+   ret = true;
+  }
+ }       
+
+  
  if (typeof view.operator_val !== 'undefined' && typeof view.operator_oldval !== 'undefined')
  {
   if (view.operator_val != view.operator_oldval)

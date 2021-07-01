@@ -282,7 +282,20 @@
              current_dom_path(current_dom_data);
             
             if (lookupDom != "")
+            {
                 $("#domnav-panel > svg > g > circle").attr("fill","rgb(110, 64, 170)").attr("fill-opacity","0.4");
+                
+                if (editdom)
+				  {
+				   setTimeout(
+					  () => {
+					    $("#summ_header_buttons > button.edit_button").click();
+					  },
+					  1 * 1000
+					);
+				   editdom=false;
+				  }
+			}
         });
     });
         }
@@ -522,6 +535,7 @@
    dataType: "json",
    success: function(data) {
      lookupDom = data.name;
+     editdom = true;
      DomNav();
    }
   }); 

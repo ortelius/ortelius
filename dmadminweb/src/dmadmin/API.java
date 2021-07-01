@@ -70,6 +70,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -119,7 +120,6 @@ import dmadmin.model.UserGroup;
 import dmadmin.model.UserGroupList;
 import dmadmin.model.UserList;
 import dmadmin.util.CommandLine;
-import dmadmin.util.SendMail;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 
@@ -2301,6 +2301,8 @@ public class API extends HttpServlet
    compname = domparts.get(domparts.size()-1);
    domparts.remove(domparts.size() - 1);
    String domname = StringUtils.join(domparts,".");
+   
+   createDomains4Obj(so, domname + "." + compname);
    
    Domain dom = so.getDomainByName(domname);
    
@@ -5010,7 +5012,7 @@ public class API extends HttpServlet
    JsonObject obj = new JsonParser().parse(requestData).getAsJsonObject();
 
    String deployment = (obj.get("deployid") != null) ? obj.get("deployid").getAsString() : "";
-   String compname = (obj.get("component") != null) ? obj.get("component").getAsString() : "";
+   String compname = (!(obj.get("component") instanceof JsonNull)) ? obj.get("component").getAsString() : "";
    String chartdigest = (obj.get("chartdigest") != null) ? obj.get("chartdigest").getAsString() : "";
    String chartname = (obj.get("chartname") != null) ? obj.get("chartname").getAsString() : "";
    String chartversion = (obj.get("chartversion") != null) ? obj.get("chartversion").getAsString() : "";
@@ -5046,7 +5048,7 @@ public class API extends HttpServlet
     
     for (int k=0;k<comps.size();k++)
     {
-     if (comps.get(k).getName().equals(compname)) 
+     if (comps.get(k).getFullName().equals(compname)) 
      {
       comp = comps.get(k);
       break;
@@ -5161,6 +5163,7 @@ public class API extends HttpServlet
    JsonArray compnames = (obj.get("compversion") != null) ? obj.get("compversion").getAsJsonArray() : new JsonArray();
    String rc = (obj.get("rc") != null) ? obj.get("rc").getAsString() : "-1";
    String log = (obj.get("log") != null) ? obj.get("log").getAsString() : "";
+   String skipdeploy = (!(obj.get("skipdeploy") instanceof JsonNull))  ? obj.get("skipdeploy").getAsString() : "N";
    
    int exitcode = 0;
      
@@ -5261,6 +5264,61 @@ public class API extends HttpServlet
     return;
    }  
 
+   // add app domains
+   shortname = "";
+   parts = new ArrayList<String>(Arrays.asList(appname.split("\\.")));
+   if (parts != null && !parts.isEmpty()) 
+   {
+    shortname = parts.get(parts.size()-1);
+    parts.remove(parts.size()-1);
+   }
+
+   try
+   {
+    tgtdomain = getDomainFromNameOrID(so, parts.get(0));
+   }
+   catch (ApiException e1)
+   {
+    tgtdomain = null;
+   }
+
+   domStr = parts.get(0);
+   newDom = false;
+
+   for (int i = 1; i < parts.size(); i++)
+   {
+    String domain = parts.get(i);
+    newDom = false;
+
+    domStr += "." + domain;
+    try
+    {
+     tgtdomain = getDomainFromNameOrID(so, domStr);
+    }
+    catch (Exception e)
+    {
+     newDom = true;
+    }
+
+    if (newDom)
+    {
+     int newid = so.getID("domain");
+     so.CreateNewObject("domain", domain, tgtdomain.getId(), tgtdomain.getId(), newid, 0, 0, "domains", true);
+
+     tgtdomain = so.getDomain(newid);
+
+     if (tgtdomain == null)
+     {
+      ret.add("saved", false);
+      ret.add("error", "Failed to create domain" + domain);
+      String result = ret.getJSON();
+      System.out.println(result);
+      out.println(result);
+      return;
+     }
+    }
+   } 
+
    Application app = null;
    
    if (appname != null  && !appname.isEmpty())
@@ -5268,16 +5326,22 @@ public class API extends HttpServlet
     try
     {
      app = this.getApplicationFromNameOrID(so, appname);
+     app = so.getLatestVersion(app, null);
     }
     catch (ApiException e)
     {
-    }
-   
-    if (app == null)
-    {
-     ret.add("errormsg", "Application not found");
-     out.println(ret.getJSON());
-     return;
+     String[] p2 = appname.split(";");
+     if (p2 != null && p2.length >= 1)
+     {
+      try
+      {
+       app = this.getApplicationFromNameOrID(so, p2[0]);
+       app = so.getLatestVersion(app, null);
+      }
+      catch (ApiException e1)
+      {
+      }
+     }
     }
    } 
    
@@ -5306,7 +5370,7 @@ public class API extends HttpServlet
      }
     } 
    }  
-   ret = so.logDeployment(app, comps, env, exitcode, log);
+   ret = so.logDeployment(appname, app, comps, env, exitcode, log, skipdeploy);
    String result = ret.getJSON(); 
    System.out.println(result);
    out.println(result);
@@ -6218,55 +6282,5 @@ public class API extends HttpServlet
    e.printStackTrace();
    return;
   }
-
-  String from = System.getenv("SMTP_USER");
-  String to = request.getParameter("email");
-  String companyname = request.getParameter("companyname");
-  String projectname = request.getParameter("projectname");
-  String firstname = request.getParameter("firstname");
-  String lastname = request.getParameter("lastname");
-  String tel = request.getParameter("tel");
-  String subject = "DeployHub Access";
-  String password = System.getenv("SMTP_PASS");
-  String msg = "";
-
-  msg += "<html xmlns=\"http://www.w3.org/1999/xhtml\" dir=\"ltr\" lang=\"en-US\">\n";
-  msg += "<head>\n";
-  msg += "<title>DeployHub Access</title>\n";
-  msg += "</head>\n";
-  msg += "<body>\n";
-  msg += "<h2>Thank you for becoming a DeployHub Team User!</h2>\n";
-  msg += "<p style=\"font-size:18px\">You're part of a growing group of cloud native specialists who understand the need for cataloging, versioning, configuring and deploying microservices. To get started access the DeployHub console from the following address: <a href=\"https://console.deployhub.com/dmadminweb/Home\">https://console.deployhub.com</a></p>\n";
-  msg += "<p style=\"font-size:18px\">Your userid is: " + userid + "</p>\n";
-  msg += "<p style=\"font-size:14px\">Your CLIENTID is <strong>" + clientid + "</strong> and will be needed when you install your DeployHub Reverse Proxy. See below.</p>\n";
-  msg += "<h2>DeployHub Sample Hipster Store</h2>\n";
-  msg += "<p style=\"font-size:18px\">Once you have logged in, review the <a href=\"https://docs.deployhub.com/userguide/introduction-to-deployhub/0-hipster-store-tutorial/\" target=\"_blank\">Hipster Store sample application</a> to take a test drive.</p>\n";
-  msg += "<h2>Your own POC</h2>\n";
-  msg += "<p style=\"font-size:18px\">To setup DeployHub for your organization, review <a href=\"https://docs.deployhub.com/userguide/first-steps/\" target=\"_blank\">the First Steps Guide.</a> Before you deploy into your own environment, you will need to install the DeployHub Reverse Proxy. The Reverse Proxy is your firewall protection. See our <a href=\"https://docs.deployhub.com/userguide/installation-and-support/0-saas-and-reverse-proxy/\">SaaS Proxy Installation Instructions</a> for more information.</p>\n";
-  msg += "<p style=\"font-size:18px\">If you would like to chat one-on-one, book some time with our team.<a href=\"https://drift.me/sbtaylor15/meeting/quickpeek/\" target=\"_blank\"> Just choose a time from the calendar.</a></p>\n";
-  msg += "<p style=\"font-size:18px\">DeployHub Team is based on the <a href=\"https://www.ortelius.io\" target=\"_blank\">Ortelius Open Source project</a>. Post questions, issues or comments to the <a href=\"https://github.com/ortelius/ortelius/issues\" target=\"_blank\">Ortelius GitHub Issues Page</a>. You can also join the <a href=\"https://discord.gg/mUtF8w\" target=_blank>Ortelius Discord Chatroom to start a conversation on any topic.</a>    </p>\n";
-  msg += "<p style=\"font-size:18px\">We look forward to working with you on making microservices easy. </p>\n";
-  msg += "<p style=\"font-size:18px\">Sincerely, DeployHub Support Team</p>\n";
-  msg += "</body>\n";
-  msg += "</html>\n";
-
-  String details = "";
-  details += "<html xmlns=\"http://www.w3.org/1999/xhtml\" dir=\"ltr\" lang=\"en-US\">\n";
-  details += "<head>\n";
-  details += "<title>New DeployHub User</title>\n";
-  details += "</head>\n";
-  details += "<body>\n";
-  details += "<p style=\"font-size:18px\">Company Name: " + companyname + "</p>\n";
-  details += "<p style=\"font-size:18px\">Project Name: " + projectname + "</p>\n";
-  details += "<p style=\"font-size:18px\">First Name: " + firstname + "</p>\n";
-  details += "<p style=\"font-size:18px\">Last Name: " + lastname + "</p>\n";
-  details += "<p style=\"font-size:18px\">Email: " + to + "</p>\n";
-  details += "<p style=\"font-size:18px\">Phone: " + tel + "</p>\n";
-  details += "<p style=\"font-size:18px\">Userid: " + userid + "</p>\n";
-  details += "</body>\n";
-  details += "</html>\n";
-
-  SendMail sendmsg = new SendMail(from, password, to, subject, msg, details);
-  sendmsg.start();
  }
 }

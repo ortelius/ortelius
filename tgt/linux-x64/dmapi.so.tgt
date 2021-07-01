@@ -425,11 +425,23 @@
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
     </Dependency>
     <Dependency>
-        <Name>dmengine\notifiers\smtpemail\smtp.cpp</Name>
+        <Name>dmengine\notifiers\smtpemail\csmtp.cpp</Name>
         <Type>37</Type>
         <ParentBuildTask>Compile</ParentBuildTask>
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
     </Dependency>
+    <Dependency>
+        <Name>dmengine\notifiers\smtpemail\md5.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>
+    <Dependency>
+        <Name>dmengine\notifiers\smtpemail\base64.cpp</Name>
+        <Type>37</Type>
+        <ParentBuildTask>Compile</ParentBuildTask>
+        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+    </Dependency>        
     <Dependency>
         <Name>dmengine\notifiers\smtpemail\smtpemail.cpp</Name>
         <Type>37</Type>

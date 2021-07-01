@@ -354,6 +354,8 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       if (label == "Full Domain")
       {
        // label = "Domain";
+       if (summSaveobjtype == "do")
+         label = "Parent Domain";
        tdedit += "<tr>";
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Full Domain:</td>";
        tdedit += "<td ><select name=\"fulldomain_val\">";
@@ -409,6 +411,8 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Name")
       {
+       if (summSaveobjtype == "do")
+         label = "Domain Name";
        objName = val;
        tdedit += "<tr>";
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -1276,16 +1280,16 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
           tdedit += "</tr>";
       }
       else if (label == "Last Build Number") {
-       if (val==0) val="";
-       else val="<a onClick=\"javascript:DisplayBuild("+objid+","+val+");\">#"+val+"</a>";
-       
-       tdedit += "<tr>";
-       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-       tdedit += "<td name=\"lastlogin_val\" >" + val + "</td>";
-       tdedit += "<td><input type=\"hidden\" name=\"lastlogin_field\" value=\"" + field + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"lastlogin_callback\" value=\"" + callback + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"lastlogin_oldval\" value=\"" + val + "\"/></td>";
-       tdedit += "</tr>";
+//       if (val==0) val="";
+//       else val="<a onClick=\"javascript:DisplayBuild("+objid+","+val+");\">#"+val+"</a>";
+//       
+//       tdedit += "<tr>";
+//       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+//       tdedit += "<td name=\"lastlogin_val\" >" + val + "</td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"lastlogin_field\" value=\"" + field + "\"/></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"lastlogin_callback\" value=\"" + callback + "\"/></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"lastlogin_oldval\" value=\"" + val + "\"/></td>";
+//       tdedit += "</tr>";
       }
       else if (label == "Project Name" || label == "Plan Name") {
        var project = val;
@@ -2152,6 +2156,10 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        
       }
       else if (label.toLowerCase() == "MD5 Mismatch Template".toLowerCase())
+      {
+       
+      }
+      else if (label.toLowerCase() == "Last Build Number".toLowerCase())
       {
        
       }
@@ -4234,6 +4242,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   window.history.pushState('dhnav', null, href + '#dhmain#dhnav');
  
  $("#summ_data_edit").hide();
+ $("#summ_data").show();
  $('.save_button').css("color","grey");
  $('.cancel_button').css("color","grey");
  
@@ -4303,6 +4312,10 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   $("#row-10-audit").hide();
   $("#tabs-General-right-15").hide();
   $("#tabs-General-right-20").hide();
+  $("#tabs-General-row-12").hide();
+  $("#tabs-General-row-12a").hide();
+  $("#licensemd-panel").hide();
+  $("#cr-panel-20").hide();
   $("#tabs-General-row-15").hide();
   $("#tabs-General-row-20").hide();
   $("#tabs-General-row-25").hide();
@@ -4368,6 +4381,10 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#tabs-CompItems-left").show();
    $("#compitem_data").show();
    $("#row-10-right-panel").show();
+   $("#tabs-General-row-12").show();
+   $("#tabs-General-row-12a").show(); 
+   $("#licensemd-panel").show(); 
+   $("#cr-panel-20").show(); 
    $("#tabs-General-row-15").show();
    $("#tabs-General-right-15").show();
    $("#feedback-panel").show();
@@ -4377,12 +4394,17 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#tabs-General-row-40").show();
    $("#defect-panel").show();
    
+   LoadReadme(objid);
+   LoadSwagger(objid);
+   LoadLicense(objid);
    LoadComponentItems(objid);
    CompMap();
    LoadAttributesData("attrib",objtypeAsInt, objtype, objid);
    LoadApp4CompData("app4comp", objtypeAsInt, objtype, objid, addParams);
    LoadSrv4CompData("srv4comp", objtypeAsInt, objtype, objid, "");
-
+   getLicenseList("list");
+   getCVEList("list");
+   
    CreateCurrentEnv2Comps(objid);
    
    $("#row-35-access").show();
@@ -4636,6 +4658,58 @@ function LoadComponentItems(objid)
    });
 }
 
+
+function LoadLicense(objid)
+{
+    $.ajax(
+    {
+     url : "/msapi/textfile?compid=" + objid + "&filetype=license",
+     type : 'GET',
+     success : function(res)
+     {
+	  var converter = new showdown.Converter({openLinksInNewWindow: true});
+	  converter.setFlavor('github');
+      html      = converter.makeHtml(res);
+      $("#licensemd-data").html(html);
+     }
+   }); 
+}
+
+function LoadReadme(objid)
+{
+
+    $.ajax(
+    {
+     url : "/msapi/textfile?compid=" + objid + "&filetype=readme",
+     type : 'GET',
+     success : function(res)
+     {
+	  var converter = new showdown.Converter({openLinksInNewWindow: true});
+	  converter.setFlavor('github');
+      html      = converter.makeHtml(res);
+      $("#readme-data").html(html);
+     }
+   }); 
+}
+
+
+function LoadSwagger(objid)
+{
+  const ui = SwaggerUIBundle({
+    url: "/msapi/textfile?compid=" + objid + "&filetype=swagger",
+    dom_id: '#swagger-data',
+    deepLinking: true,
+    presets: [
+      SwaggerUIBundle.presets.apis,
+      SwaggerUIStandalonePreset
+    ],
+    plugins: [
+      SwaggerUIBundle.plugins.DownloadUrl
+    ],
+    layout: "StandaloneLayout"
+  });
+}
+
 function HideFields()
 {
 	console.log("HideFields - summSaveobjtype="+summSaveobjtype+" summProtocol="+summProtocol);
@@ -4756,6 +4830,8 @@ function endsWith(str, suffix) {
 
 function summOK(isProfile, prefix)
 {
+ $('.edit_button').css("color","#3367d6");
+ 
  var dom_summSavetablename = summSavetablename;
  var dom_summSaveobjtypeAsInt = summSaveobjtypeAsInt;
  var dom_summSaveobjtype = summSaveobjtype;
@@ -4975,6 +5051,7 @@ function summCancel(prefix)
  if (summSaveobjid < 0)
    $("#panel_container.right").hide();
  
+ $('.edit_button').css("color","#3367d6");
  $('.save_button').css("color","grey");
  $('.cancel_button').css("color","grey");
  pwd.hide();
@@ -5020,6 +5097,13 @@ function summCancel(prefix)
 
 function EditSummaryButton(userDialog, prefix)
 {
+
+ console.log($('.edit_button').css("color"));
+ 
+ if ($('.edit_button').css("color") == "rgb(128, 128, 128)")
+   return;
+   
+ $('.edit_button').css("color","grey");
  $('.save_button').css("color","#3367d6");
  $('.cancel_button').css("color","#3367d6");
  
@@ -7242,6 +7326,11 @@ function SaveSummaryData(instance, tablename, objtypeAsInt, objtype, objid, addP
       SaveAdminRightsData();
       SaveSummaryItemData(instance, tablename, objtypeAsInt, objtype, objid, addParams);
       LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams);
+      if (summSaveobjtype == "do" && 'change_1' in savedata)
+      {
+       lookupDom = savedata.newname;
+       LoadDomNav();
+      } 
      }
     }
     else

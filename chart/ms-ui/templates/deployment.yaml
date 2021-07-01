@@ -3,7 +3,12 @@ kind: Deployment
 metadata:
   name:  {{ include "ms-ui.name" . }}
 spec:
-  replicas: 3
+  replicas: 1
+  selector:
+    matchLabels:
+      app:  {{ include "ms-ui.name" . }}
+      tier: backend
+      track: stable
   template:
     metadata:
       labels:
@@ -12,9 +17,25 @@ spec:
         track: stable
     spec:
       containers:
-        - name: dh-ms-ui
+        - name: {{ include "ms-ui.name" . }}
           image: "{{ .Values.DockerRepo }}:{{ .Values.DockerTag }}"
           imagePullPolicy: Always
+          env:
+            - name: DBUserName
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBUserName
+            - name: DBPassword
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBPassword
+            - name: DBConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBConnectionString          
           ports:
             - name: http
               containerPort: 8080

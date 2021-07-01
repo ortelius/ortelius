@@ -213,7 +213,7 @@ public class DMSession implements AutoCloseable {
 	private String m_defaultdatefmt = "MM/dd/yyyy";
 	private String m_defaulttimefmt = "HH:mm";
 	
-	private Map<Integer, String> m_domains;
+	protected Map<Integer, String> m_domains;
 	protected Connection m_conn;
 	private String m_domainlist;
 	private String m_parentdomains;
@@ -723,7 +723,7 @@ public class DMSession implements AutoCloseable {
     System.out.println("parentid=" + parentid);
     if (parentid != 0)
     {
-     m_domains.put(parentid, "N");
+     getDomainMap().put(parentid, "N");
      //
      // Recurse
      //
@@ -753,7 +753,7 @@ public class DMSession implements AutoCloseable {
      System.out.println("parentid=" + parentid);
      if (parentid != 0)
      {
-      m_domains.put(parentid, "N");
+      getDomainMap().put(parentid, "N");
      }
     } 
     rs.close();
@@ -795,10 +795,10 @@ public class DMSession implements AutoCloseable {
 				//
 				// Okay, now derive a list of all our sub-domains
 				//
-				System.out.println("Before GetParentDomains, m_domains.size()="+m_domains.size());
+				System.out.println("Before GetParentDomains, m_domains.size()="+getDomainMap().size());
 				GetParentDomains(m_userDomain);
-				System.out.println("After GetParentDomains, m_domains.size()="+m_domains.size());
-				Iterator<Map.Entry<Integer,String>> it = m_domains.entrySet().iterator();
+				System.out.println("After GetParentDomains, m_domains.size()="+getDomainMap().size());
+				Iterator<Map.Entry<Integer,String>> it = getDomainMap().entrySet().iterator();
 				String sep="";
 				while (it.hasNext())
 				{
@@ -807,14 +807,14 @@ public class DMSession implements AutoCloseable {
 				    sep=",";
 				}
 				System.out.println("m_parentdomains="+m_parentdomains);
-				m_domains.put(m_userDomain, "Y");
+				getDomainMap().put(m_userDomain, "Y");
 				
-				GetSubDomains(m_domains,m_userDomain);
+				GetSubDomains(getDomainMap(),m_userDomain);
 				
 				//
 				// Create a "domainlist" string for queries
 				//
-				it = m_domains.entrySet().iterator();
+				it = getDomainMap().entrySet().iterator();
 				sep="";
 				while (it.hasNext())
 				{
@@ -1466,8 +1466,11 @@ public class DMSession implements AutoCloseable {
     }
    }   
    // DSN is ignored for Postgres Driver
-   DriverName = DriverName.replaceAll("org\\.postgresql\\.Driver", "com.impossibl.postgres.jdbc.PGDriver");
-   ConnectionString = ConnectionString.replaceAll("jdbc\\:postgresql", "jdbc:pgsql");
+ //  DriverName = DriverName.replaceAll("org\\.postgresql\\.Driver", "com.impossibl.postgres.jdbc.PGDriver");
+ //  ConnectionString = ConnectionString.replaceAll("jdbc\\:postgresql", "jdbc:pgsql");
+   
+   DriverName = DriverName.replaceAll("com\\.impossibl\\.postgres\\.jdbc\\.PGDriver", "org.postgresql.Driver");
+   ConnectionString = ConnectionString.replaceAll("jdbc\\:pgsql", "jdbc:postgresql");
    
    Class.forName(DriverName);
 
@@ -1477,7 +1480,7 @@ public class DMSession implements AutoCloseable {
    System.out.println("USERNAME=" + dUserName.toString());
    System.out.println("PASSWORDNAME=********");
    
-   m_conn = DriverManager.getConnection(ConnectionString,dUserName.toString(),dPassword.toString());  
+   m_conn = DriverManager.getConnection(ConnectionString, dUserName.toString(), dPassword.toString());  
    m_conn.setAutoCommit(false);
   } catch (FileNotFoundException e) {
    res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,e.getMessage());
@@ -1859,10 +1862,11 @@ public class DMSession implements AutoCloseable {
 	
 	public boolean ValidDomain(int DomainID,Boolean Inherit)
 	{
-		if (DomainID >= -9999) return true;	// Any Domain ID 0 or below is considered valid
+	//	if (DomainID >= -9999) return true;	// Any Domain ID 0 or below is considered valid
+	 if (DomainID < 0) return true;
 		
 		boolean res = false;
-		Iterator<Map.Entry<Integer,String>> it = m_domains.entrySet().iterator();
+		Iterator<Map.Entry<Integer,String>> it = getDomainMap().entrySet().iterator();
 		while (it.hasNext())
 		{
 		    Map.Entry<Integer,String> pairs = it.next();
@@ -2512,7 +2516,7 @@ public class DMSession implements AutoCloseable {
 			if (objtype.equalsIgnoreCase("domain"))
 			{
 				// need to add this domain to our allowed domain list.
-				m_domains.put(id,"Y");
+				getDomainMap().put(id,"Y");
 				m_domainlist=m_domainlist+","+id;
 				m_domainlist = StringUtils.stripStart(m_domainlist, ",");
 				m_domainlist = StringUtils.stripEnd(m_domainlist, ",");
@@ -7257,7 +7261,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 			}
 			System.out.println("b) sql="+sql);
 			PreparedStatement stmt = m_conn.prepareStatement(sql);
-			stmt.setString(1,name);
+			if (ot == ObjectType.SERVERCOMPTYPE && sql.contains("id = ?"))
+			 stmt.setInt(1, new Integer(name).intValue());
+			else
+			 stmt.setString(1,name);
 			if (domainid != DOMAIN_NOT_SPECIFIED) stmt.setInt(2, domainid);
 			ResultSet rs = stmt.executeQuery();
 			DMObject ret = null;
@@ -8758,6 +8765,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				lvid = rs.getInt(1);
 				if (rs.wasNull()) lvid=app.getId();	// no children so "latest" is this version
 				rs.close();
+				stmt.close();
 			}
 			return (lvid>0)?getApplication(lvid,true):null;
 		}
@@ -9919,179 +9927,272 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   }
  }
  	
-	public boolean updateComponentItemSummary(ComponentItem ci, SummaryChangeSet changes)
-	{
-		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_componentitem ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
-				
-		for(SummaryField field : changes) {
-		 switch(field) {
-		  case DOMAIN_FULLNAME: {
-		   if (changes.get(field) == null)
-		    update.add(", domainid = ?", Null.INT);
-		   else
-		   {
-		    int id =  new Integer((String)changes.get(field)).intValue();
-		    update.add(", domainid = ?", id);
-		   }
-		  } 
-		  break; 
-		  case ROLLUP:
-		  case ROLLBACK: {
-		   ComponentFilter cf = ComponentFilter.OFF;
-		   String scf = (String) changes.get(field);
-		   if(scf != null) {
-		    if(scf.equalsIgnoreCase("ON")) {
-		     cf = ComponentFilter.ON;
-		    } else if(scf.equalsIgnoreCase("ALL")) {
-		     cf = ComponentFilter.ALL;
-		    }
-		   }
-		   if(field == SummaryField.ROLLUP) {
-		    update.add(", rollup = ?", cf.value());
-		   } else {
-		    update.add(", rollback = ?", cf.value());					
-		   }}
-		  break;
-		  case ITEM_REPOSITORY: {
-		   DMObject repo = (DMObject) changes.get(field);
-		   update.add(", repositoryid = ?", (repo != null) ? repo.getId() : Null.INT);
-		  }
-		  break;
-		  case ITEM_TARGETDIR: {
-		   String targetDir = (String) changes.get(field);
-		   update.add(", target = ?", (targetDir != null) ? targetDir : Null.STRING);
-		  }
-		  break;
-		  case DOCKER_BUILDID: {
-		   String str = (String) changes.get(field);
-		   update.add(", buildid = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break;	
-		  case DOCKER_BUILDURL: {
-		   String str = (String) changes.get(field);
-		   update.add(", buildurl = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break;  
-		  case DOCKER_CHART: {
-		   String str = (String) changes.get(field);
-		   update.add(", chart = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break;  
-		  case DOCKER_CHARTVERSION: {
-		   String str = (String) changes.get(field);
-		   update.add(", chartversion = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break;  
-		  case DOCKER_CHARTNAMESPACE: {
-		   String str = (String) changes.get(field);
-		   update.add(", chartnamespace = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break;   
-    case DOCKER_CHARTREPO: {
+ public boolean updateComponentItemSummary(ComponentItem ci, SummaryChangeSet changes)
+ {
+  DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_componentitem ");
+  update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
+
+  for (SummaryField field : changes)
+  {
+   switch (field)
+   {
+    case DOMAIN_FULLNAME:
+    {
+     if (changes.get(field) == null)
+      update.add(", domainid = ?", Null.INT);
+     else
+     {
+      int id = new Integer((String) changes.get(field)).intValue();
+      update.add(", domainid = ?", id);
+     }
+    }
+    break;
+    case ROLLUP:
+    case ROLLBACK:
+    {
+     ComponentFilter cf = ComponentFilter.OFF;
+     String scf = (String) changes.get(field);
+     if (scf != null)
+     {
+      if (scf.equalsIgnoreCase("ON"))
+      {
+       cf = ComponentFilter.ON;
+      }
+      else if (scf.equalsIgnoreCase("ALL"))
+      {
+       cf = ComponentFilter.ALL;
+      }
+     }
+     if (field == SummaryField.ROLLUP)
+     {
+      update.add(", rollup = ?", cf.value());
+     }
+     else
+     {
+      update.add(", rollback = ?", cf.value());
+     }
+    }
+    break;
+    case ITEM_REPOSITORY:
+    {
+     DMObject repo = (DMObject) changes.get(field);
+     update.add(", repositoryid = ?", (repo != null) ? repo.getId() : Null.INT);
+    }
+    break;
+    case ITEM_TARGETDIR:
+    {
+     String targetDir = (String) changes.get(field);
+     update.add(", target = ?", (targetDir != null) ? targetDir : Null.STRING);
+    }
+    break;
+    case DOCKER_BUILDID:
+    {
+     String str = (String) changes.get(field);
+     update.add(", buildid = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_BUILDURL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", buildurl = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_CHART:
+    {
+     String str = (String) changes.get(field);
+     update.add(", chart = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_CHARTVERSION:
+    {
+     String str = (String) changes.get(field);
+     update.add(", chartversion = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_CHARTNAMESPACE:
+    {
+     String str = (String) changes.get(field);
+     update.add(", chartnamespace = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_CHARTREPO:
+    {
      String str = (String) changes.get(field);
      update.add(", chartrepo = ?", (str != null) ? str : Null.STRING);
     }
     break;
-    case DOCKER_CHARTREPOURL: {
+    case DOCKER_CHARTREPOURL:
+    {
      String str = (String) changes.get(field);
      update.add(", chartrepourl = ?", (str != null) ? str : Null.STRING);
     }
     break;
-		  case DOCKER_OPERATOR: {
-		   String str = (String) changes.get(field);
-		   update.add(", operator = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break; 
-		  case DOCKER_BUILDDATE: {
-		   String str = (String) changes.get(field);
-		   update.add(", builddate = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break; 
-		  case DOCKER_SHA: {
-		   String str = (String) changes.get(field);
-		   update.add(", dockersha = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break; 
-    case DOCKER_TAG: {
+    case DOCKER_OPERATOR:
+    {
+     String str = (String) changes.get(field);
+     update.add(", operator = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_BUILDDATE:
+    {
+     String str = (String) changes.get(field);
+     update.add(", builddate = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_SHA:
+    {
+     String str = (String) changes.get(field);
+     update.add(", dockersha = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_TAG:
+    {
      String str = (String) changes.get(field);
      update.add(", dockertag = ?", (str != null) ? str : Null.STRING);
     }
+    break;
+    case DOCKER_REPO:
+    {
+     String str = (String) changes.get(field);
+     update.add(", dockerrepo = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_GITCOMMIT:
+    {
+     String str = (String) changes.get(field);
+     update.add(", gitcommit = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_GITREPO:
+    {
+     String str = (String) changes.get(field);
+     update.add(", gitrepo = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_GITTAG:
+    {
+     String str = (String) changes.get(field);
+     update.add(", gittag = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_GITURL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", giturl = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    
+    case SERVICE_OWNER:
+    {
+     String str = (String) changes.get(field);
+     update.add(", serviceowner = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    
+    case SERVICE_OWNER_PHONE:
+    {
+     String str = (String) changes.get(field);
+     update.add(", serviceownerphone = ?", (str != null) ? str : Null.STRING);
+    }
     break; 
-		  case DOCKER_REPO: {
-		   String str = (String) changes.get(field);
-		   update.add(", dockerrepo = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break;  
-		  case DOCKER_GITCOMMIT: {
-		   String str = (String) changes.get(field);
-		   update.add(", gitcommit = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break; 
-		  case DOCKER_GITREPO: {
-		   String str = (String) changes.get(field);
-		   update.add(", gitrepo = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break; 
-		  case DOCKER_GITTAG: {
-		   String str = (String) changes.get(field);
-		   update.add(", gittag = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break; 
-		  case DOCKER_GITURL: {
-		   String str = (String) changes.get(field);
-		   update.add(", giturl = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break;  
-		  case PARENT: 
-		  case PREDECESSOR:
-		   break;
-		  case XPOS:
-		  {
-		   if (changes.get(field) == null)
-		    update.add(", xpos = ?", Null.INT);
-		   else
-		   {
-		    int id =  new Integer((String)changes.get(field)).intValue();
-		    update.add(", xpos = ?", id);
-		   }
-		  } 
-		  break;
+    
+    case SERVICE_OWNER_EMAIL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", serviceowneremail = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+   
+    case SLACK_CHANNEL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", slackchannel = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    
+    case DISCORD_CHANNEL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", discordchannel = ?", (str != null) ? str : Null.STRING);
+    }
+    break;   
+    
+    case HIPCHAT_CHANNEL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", hipchatchannel = ?", (str != null) ? str : Null.STRING);
+    }
+    break;    
+    
+    case PAGERDUTY_SERVICE_URL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", pagerdutyurl = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
 
-		  case YPOS:
-		  {
-		   if (changes.get(field) == null)
-		    update.add(", ypos = ?", Null.INT);
-		   else
-		   {
-		    int id =  new Integer((String)changes.get(field)).intValue();
-		    update.add(", ypos = ?", id);
-		   }
-		  } 
-		  break;
-		  default:
-		   if(field.value() <= SummaryField.OBJECT_MAX) {
-		    updateObjectSummaryField(ci,update, field, changes);
-		   } else {
-		    System.err.println("ERROR: Unhandled summary field " + field);
-		   }
-		   break;
-		 }
-		}
-		
-		update.add(" WHERE id = ?", ci.getId());
-		
-		try {
-			update.execute();
-			m_conn.commit();
-			update.close();
-			return true;
-		} catch(SQLException e) {
-			e.printStackTrace();
-			rollback();
-		}
-		return false;
-	}
+    case PAGERDUTY_BUSINESS_URL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", pagerdutybusinessurl = ?", (str != null) ? str : Null.STRING);
+    }
+    break;    
+    
+    case PARENT:
+    case PREDECESSOR:
+    break;
+    case XPOS:
+    {
+     if (changes.get(field) == null)
+      update.add(", xpos = ?", Null.INT);
+     else
+     {
+      int id = new Integer((String) changes.get(field)).intValue();
+      update.add(", xpos = ?", id);
+     }
+    }
+    break;
+
+    case YPOS:
+    {
+     if (changes.get(field) == null)
+      update.add(", ypos = ?", Null.INT);
+     else
+     {
+      int id = new Integer((String) changes.get(field)).intValue();
+      update.add(", ypos = ?", id);
+     }
+    }
+    break;
+    default:
+     if (field.value() <= SummaryField.OBJECT_MAX)
+     {
+      updateObjectSummaryField(ci, update, field, changes);
+     }
+     else
+     {
+      System.err.println("ERROR: Unhandled summary field " + field);
+     }
+    break;
+   }
+  }
+
+  update.add(" WHERE id = ?", ci.getId());
+
+  try
+  {
+   update.execute();
+   m_conn.commit();
+   update.close();
+   return true;
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+   rollback();
+  }
+  return false;
+ }
 
  public boolean updateComponentItemRelationship(int compid, int itemid, SummaryChangeSet changes)
  {
@@ -15053,7 +15154,79 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
          stmt.execute();
          stmt.close();
          found.add(a);
+        }        
+        else if (a.getName().equalsIgnoreCase("serviceowner"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowner = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }   
+        else if (a.getName().equalsIgnoreCase("serviceowner"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowner = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
         }    
+        else if (a.getName().equalsIgnoreCase("serviceowneremail"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowneremail = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("serviceownerphone"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceownerphone = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("slackchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set slackchannel = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("discordchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set discordchannel = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("hipchatchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set hipchatchannel = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("pagerdutyurl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set pagerdutyurl = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("pagerdutybusinessurl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set pagerdutybusinessurl = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }   
        }
        changes.removeAllDeleted(found);
        found.clear();
@@ -15204,6 +15377,87 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
          stmt.close();
          found.add(a);
         }    
+        else if (a.getName().equalsIgnoreCase("serviceowner"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowner=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }   
+        else if (a.getName().equalsIgnoreCase("serviceowner"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowner=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("serviceowneremail"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowneremail=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("serviceownerphone"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceownerphone=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("slackchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set slackchannel=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("discordchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set discordchannel=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("hipchatchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set hipchatchannel=? where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("pagerdutyurl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set pagerdutyurl=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("pagerdutybusinessurl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set pagerdutybusinessurl=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }   
+        
        }
        changes.removeAllUpdated(found);
        found.clear();
@@ -15353,7 +15607,87 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
          stmt.execute();
          stmt.close();
          found.add(a);
+        } 
+        else if (a.getName().equalsIgnoreCase("serviceowner"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowner=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }   
+        else if (a.getName().equalsIgnoreCase("serviceowner"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowner=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
         }    
+        else if (a.getName().equalsIgnoreCase("serviceowneremail"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowneremail=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("serviceownerphone"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceownerphone=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("slackchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set slackchannel=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("discordchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set discordchannel=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("hipchatchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set hipchatchannel=? where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("pagerdutyurl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set pagerdutyurl=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("pagerdutybusinessurl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set pagerdutybusinessurl=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        } 
        }
        changes.removeAllAdded(found);
        found.clear();
@@ -15486,7 +15820,20 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
      if (a.getName().equalsIgnoreCase("buildnumber"))
      {
       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set lastbuildnumber = ? where id = ?");
-      stmt.setString(1, a.getValue());
+      int buildnumber = -1;
+
+      try
+      {
+       buildnumber = Integer.parseInt(a.getValue());
+      }
+      catch (NumberFormatException nfe)
+      {
+      }
+      
+      if (buildnumber < 0)
+        stmt.setNull(1, Types.INTEGER);
+      else
+       stmt.setInt(1, buildnumber);
       stmt.setInt(2, id);
       stmt.execute();
       stmt.close();
@@ -15637,7 +15984,20 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
      if (a.getName().equalsIgnoreCase("buildnumber"))
      {
       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set lastbuildnumber = ? where id = ?");
-      stmt.setString(1, a.getValue());
+      int buildnumber = -1;
+
+      try
+      {
+       buildnumber = Integer.parseInt(a.getValue());
+      }
+      catch (NumberFormatException nfe)
+      {
+      }
+      
+      if (buildnumber < 0)
+        stmt.setNull(1, Types.INTEGER);
+      else
+       stmt.setInt(1, buildnumber);
       stmt.setInt(2, id);
       stmt.execute();
       stmt.close();
@@ -21221,6 +21581,103 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   {
    e.printStackTrace();
   } 
+  
+  try
+  {
+   String csql = "SELECT fulldomain(domainid) || '.' || name FROM dm.dm_component where fulldomain(domainid) like ?";
+   PreparedStatement st1 = m_conn.prepareStatement(csql);
+   st1.setString(1, todomain + "%");
+   ResultSet rs1 = st1.executeQuery();
+
+   while (rs1.next())
+   {
+    String compname = rs1.getString(1);
+    LoadCompFiles(request, compname);
+   }
+   rs1.close();
+   st1.close();
+  }
+  catch (SQLException ex)
+  {
+   ex.printStackTrace();
+  }
+ }
+
+ private void LoadCompFiles(HttpServletRequest request, String compname)
+ {
+  String jsonpath="/WEB-INF/schema";
+  System.out.println("Taking json scripts from "+jsonpath);
+    
+  String user = System.getenv("dhuser");
+  String password = System.getenv("dhpass");
+  
+  String safety = request.getServletContext().getRealPath(jsonpath) + "/safety.json";
+  String cyclone = request.getServletContext().getRealPath(jsonpath) + "/cyclonedx.json";
+  String readme = request.getServletContext().getRealPath(jsonpath) + "/README.md";
+  String swagger = request.getServletContext().getRealPath(jsonpath) + "/swagger.json";
+  String license = request.getServletContext().getRealPath(jsonpath) + "/LICENSE.md";
+  
+  String[] parts = compname.split(";");
+  String compversion = "";
+  
+  if (parts.length > 1)
+  {
+   compname = parts[0];
+   compversion = parts[1];
+  }
+
+  
+  List<String> commands = new ArrayList<String>(); 
+  commands.add("/usr/local/bin/dh"); 
+  commands.add("updatecomp");  
+  commands.add("--dhurl"); 
+  commands.add("https://dev.ortelius.io"); 
+  commands.add("--dhuser"); 
+  commands.add(user); 
+  commands.add("--dhpass"); 
+  commands.add(password); 
+  commands.add("--compname"); 
+  commands.add(compname);
+  commands.add("--compversion"); 
+  commands.add(compversion);  
+  commands.add("--compattr"); 
+  commands.add("Readme:" + readme); 
+  commands.add("--compattr"); 
+  commands.add("Swagger:" + swagger); 
+  commands.add("--compattr"); 
+  commands.add("License:" + license); 
+  
+  
+  System.out.print("COMPFILE=");
+  for (int i=0;i<commands.size();i++)
+  {
+   String cmd = commands.get(i);
+   System.out.print(" '" + cmd + "' ");
+  }
+  System.out.println("\n");
+  
+  ProcessBuilder pb = new ProcessBuilder(commands); 
+   
+  Process process;
+  try
+  {
+   pb.redirectErrorStream(true); 
+   process = pb.start();
+
+   BufferedReader stdInput = new BufferedReader(new
+    InputStreamReader(process.getInputStream())); 
+   String s = null; 
+   while ((s = stdInput.readLine()) != null) 
+   { 
+    System.out.println(s); 
+   }
+   process.waitFor();
+  }
+  catch (IOException | InterruptedException e)
+  {
+   e.printStackTrace();
+  } 
+  
  }
 
  public Engine createEngine(int domainid, String name)
@@ -29919,7 +30376,7 @@ public JSONArray getComp2Endpoints(int compid)
   return comp;
  }   
  
- public JSONObject logDeployment(Application app, ArrayList<Component> comps, Environment env, int exitcode, String log)
+ public JSONObject logDeployment(String appname, Application app, ArrayList<Component> comps, Environment env, int exitcode, String log, String skipdeploy)
  {
   JSONObject ret = new JSONObject();
   ArrayList<Integer> comps2add = new ArrayList<Integer>();
@@ -29943,22 +30400,68 @@ public JSONArray getComp2Endpoints(int compid)
   }
 
   deployid++;
+  
+  if (skipdeploy.equalsIgnoreCase("Y"))
+   deployid = -1;
 
   ret.add("deployid", deployid);
 
   long t = timeNow();
 
-  ArrayList<String> basecompnames = new ArrayList<String>();
+  if (app == null)  // Create base app
+  {
+    String[] p2 = appname.split(";");
+    if (p2 != null && p2.length >= 1)
+    {
+     try
+     {
+      String name = "";
+      ArrayList<String> parts = new ArrayList<String>(Arrays.asList(p2[0].split("\\.")));
+      if (parts != null && !parts.isEmpty()) 
+      {
+       name = parts.get(parts.size()-1);
+       parts.remove(parts.size()-1);
+      }
+      
+      Domain tgtdomain = null;
+      try
+      {
+       String domname = String.join(".", parts);
+       
+       tgtdomain = (Domain) this.getObjectFromNameOrID(ObjectType.DOMAIN, domname);
+      }
+      catch (Exception e1)
+      {
+      }
+      
+      int newid = this.getID("application");
+      this.CreateNewObject("application",name, tgtdomain.getId(), tgtdomain.getId(), newid, 0, 0, "applications", true);
+      app = this.getApplication(newid, true);
+      this.RenameObject("application", newid, name);
+     }
+     catch (Exception e1)
+     {
+     }
+    }
+  }
+
+  
+  ArrayList<Integer> basecompnames = new ArrayList<Integer>();
 
   if (comps.size() == 0)
   {
-   int appid = app.getId();
-   List<Component> comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
-
+   List<Component> comps4app = new ArrayList<Component>();
+   
+   if (app != null)
+   {
+    int appid = app.getId();
+    comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
+   }
+   
    for (int j = 0; j < comps4app.size(); j++)
    {
-    if (!basecompnames.contains("" + comps4app.get(j).getId()))
-     basecompnames.add("" + comps4app.get(j).getId());
+    if (!basecompnames.contains(comps4app.get(j).getId()))
+     basecompnames.add(comps4app.get(j).getId());
    }
   }
   else
@@ -29969,10 +30472,14 @@ public JSONArray getComp2Endpoints(int compid)
     Component newcompbase = this.getBaseCompVersion(comp);
 
     int replace_compid = -1;
-
-    int appid = app.getId();
-    List<Component> comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
-
+    List<Component> comps4app = new ArrayList<Component>();
+    
+    if (app != null)
+    {
+     int appid = app.getId();
+     comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
+    }
+    
     for (int j = 0; j < comps4app.size(); j++)
     {
      Component appcompbase = this.getBaseCompVersion(comps4app.get(j));
@@ -29992,31 +30499,33 @@ public JSONArray getComp2Endpoints(int compid)
    }
    
    // build new comp version list base on original + replace + new
+   List<Component> comps4app = new ArrayList<Component>();
    
-   int appid = app.getId();
-   List<Component> comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
-
+   if (app != null)
+   {
+    int appid = app.getId();
+    comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
+   }
+   
    for (int j = 0; j < comps4app.size(); j++)
    {
-    if (!basecompnames.contains("" + comps4app.get(j).getId()))
+    if (!basecompnames.contains(comps4app.get(j).getId()))
     {
      // see comp is a replace
      if (comps2replace.containsKey(new Integer(comps4app.get(j).getId())))
-      basecompnames.add("" + comps2replace.get(new Integer(comps4app.get(j).getId())));
+      basecompnames.add(comps2replace.get(new Integer(comps4app.get(j).getId())));
      else
-      basecompnames.add("" + comps4app.get(j).getId());
+      basecompnames.add(comps4app.get(j).getId());
     }
    }
    
    for (int j=0;j<comps2add.size();j++)
    {
-    if (!basecompnames.contains("" + comps2add.get(j)))
-     basecompnames.add("" + comps2add.get(j));
+    if (!basecompnames.contains(comps2add.get(j)))
+     basecompnames.add(comps2add.get(j));
    }
   }
-  
-  
-
+ 
   Collections.sort(basecompnames);
 
   String newAppComps = "";
@@ -30024,32 +30533,34 @@ public JSONArray getComp2Endpoints(int compid)
    newAppComps += basecompnames.get(m);
 
   // Check if current version is identical
-
-  Application baseapp = this.getBaseAppVersion(app);
-  Application latestapp = null;
-  ArrayList<Application> deployed_apps = this.getLastDeployedAppInEnv(env);
-
   ArrayList<Application> appvers = new ArrayList<Application>();
-
-  for (int x = 0; x < deployed_apps.size(); x++)
+  Application latestapp = null;
+  
+  if (app != null)
   {
-   Application deployedbase = this.getBaseAppVersion(deployed_apps.get(x));
-
-   if (deployedbase.getId() == baseapp.getId())
+   Application baseapp = this.getBaseAppVersion(app);
+   ArrayList<Application> deployed_apps = this.getLastDeployedAppInEnv(env);
+  
+   for (int x = 0; x < deployed_apps.size(); x++)
    {
-    appvers.add(deployed_apps.get(x));
+    Application deployedbase = this.getBaseAppVersion(deployed_apps.get(x));
+ 
+    if (deployedbase.getId() == baseapp.getId())
+    {
+     appvers.add(deployed_apps.get(x));
+    }
    }
   }
-
+  
   boolean identical = false;
   for (int b = 0; b < appvers.size(); b++)
   {
    latestapp = appvers.get(b);
    List<Component> latestcomps = this.getComponents(ObjectType.APPLICATION, latestapp.getId(), false);
-   ArrayList<String> deploycompnames = new ArrayList<String>();
+   ArrayList<Integer> deploycompnames = new ArrayList<Integer>();
 
    for (int j = 0; j < latestcomps.size(); j++)
-    deploycompnames.add("" + latestcomps.get(j).getId());
+    deploycompnames.add(latestcomps.get(j).getId());
 
    Collections.sort(deploycompnames);
 
@@ -30066,56 +30577,153 @@ public JSONArray getComp2Endpoints(int compid)
   
   if (appvers.size() == 0 && comps2add.size() == 0 && comps2replace.size() == 0)
    identical = true;
+  
+  if (appvers.size() == 0 && comps2add.size() == 0)
+  {
+   int cnt=comps2replace.size();
+   
+   for (Map.Entry<Integer,Integer> entry : comps2replace.entrySet())
+   {
+    int key = entry.getKey();
+    int val = entry.getValue();
+    if ( key == val)
+     cnt--;
+   }
+   
+   if (cnt == 0)
+    identical = true;
+  }
 
   if (!identical)
   {
-   String name = app.getName();
-
-   int verid = this.applicationNewVersion(app.getId(), 100, 100, false);
-   app = this.getApplication(verid, false);
-   boolean dup = true;
-   do
+   String name = "";
+   ArrayList<String> parts = new ArrayList<String>(Arrays.asList(appname.split("\\.")));
+   if (parts != null && !parts.isEmpty()) 
    {
-    ArrayList<String> parts = new ArrayList<String>(Arrays.asList(name.split(";")));
-
-    if (parts.size() == 1)
-     parts.add("hotfix-1");
-    else
-    {
-     String ver = parts.get(parts.size() - 1);
-     if (ver.startsWith("hotfix-"))
-     {
-      ver = ver.substring("hotfix-".length());
-      int vernum = new Integer(ver).intValue();
-      vernum++;
-      ver = "hotfix-" + vernum;
-      parts.set(parts.size() - 1, ver);
-     }
-     else
-     {
-      parts.add("hotfix-1");
-     }
-    }
-
-    name = String.join(";", parts);
-    Application check = null;
-
+    name = parts.get(parts.size()-1);
+    parts.remove(parts.size()-1);
+   }
+   
+   if (app == null)
+   {
+    Domain tgtdomain = null;
     try
     {
-     check = this.getApplicationByName(app.getDomain().getFullName() + "." + name);
+     String domname = String.join(".", parts);
+     
+     tgtdomain = (Domain) this.getObjectFromNameOrID(ObjectType.DOMAIN, domname);
     }
-    catch (Exception e)
+    catch (Exception e1)
     {
-
     }
-
-    if (check == null)
-    {
-     RenameObject("appversion", app.getId(), name);
-     dup = false;
-    }
+    
+    int newid = this.getID("application");
+    this.CreateNewObject("application",name, tgtdomain.getId(), tgtdomain.getId(), newid, 0, 0, "applications", true);
+    app = this.getApplication(newid, true);
+    this.RenameObject("application", newid, name);
+    app.setName(name);
    }
-   while (dup);
+   else
+   {
+    int verid = this.applicationNewVersion(app.getId(), 100, 100, false);
+    app = this.getApplication(verid, false);
+   }
+   
+   boolean dup = true;
+   int vercnt = 1;
+   
+   Application check = null;
+   
+   try
+   {
+    check = this.getApplicationByName(appname);
+   }
+   catch (Exception e)
+   {
+
+   }
+
+   if (check == null)
+   {
+    RenameObject("appversion", app.getId(), name);
+    app.setName(name);
+    dup = false;
+   }
+   else
+   {
+    do
+    {
+     parts = new ArrayList<String>(Arrays.asList(name.split(";")));
+ 
+     if (parts.size() > 1)
+     {
+      String schema[] = parts.get(1).split("_");
+      if (schema.length > 1)
+      {
+       Integer lastdigit = new Integer(0);
+       
+       try
+       {
+        lastdigit = new Integer(schema[schema.length-1]);
+        lastdigit++;
+        schema[schema.length-1] = lastdigit.toString();
+        parts.set(1,String.join("_", schema));
+       }
+       catch (Exception e)
+       {
+        
+       }
+      }
+      else
+      {
+       parts.set(1,"" + vercnt);
+       vercnt++;
+      }
+     }
+       
+     if (parts.size() == 1)
+     {
+       parts.add("" + vercnt);
+       vercnt++;
+     }  
+ //    else
+ //    {
+ //     String ver = parts.get(parts.size() - 1);
+ //     if (ver.startsWith("hotfix-"))
+ //     {
+ //      ver = ver.substring("hotfix-".length());
+ //      int vernum = new Integer(ver).intValue();
+ //      vernum++;
+ //      ver = "hotfix-" + vernum;
+ //      parts.set(parts.size() - 1, ver);
+ //     }
+ //     else
+ //     {
+ //      parts.add("hotfix-1");
+ //     }
+ //    }
+ 
+     name = String.join(";", parts);
+     check = null;
+ 
+     try
+     {
+      check = this.getApplicationByName(app.getDomain().getFullName() + "." + name);
+     }
+     catch (Exception e)
+     {
+ 
+     }
+ 
+     if (check == null)
+     {
+      RenameObject("appversion", app.getId(), name);
+      app.setName(name);
+      dup = false;
+     }
+    }
+    while (dup);
+   }
 
    // using for-each loop for iteration over Map.entrySet()
    for (Map.Entry<Integer, Integer> entry : comps2replace.entrySet())
@@ -30125,8 +30733,13 @@ public JSONArray getComp2Endpoints(int compid)
     this.applicationReplaceComponent(app.getId(), replace_compid.intValue(), compid.intValue(), false);
    }
 
+   int fromnode = 0;
    for (int k = 0; k < comps2add.size(); k++)
-    this.addComponentToApplication(app.getId(), comps2add.get(k), 100, 100, false);
+   {
+    this.addComponentToApplication(app.getId(), comps2add.get(k), 100, 100*(k+1), false);
+    this.applicationComponentAddLink(app.getId(), fromnode, comps2add.get(k));
+    fromnode = comps2add.get(k);
+   }
   }
   else
   {
@@ -30134,72 +30747,82 @@ public JSONArray getComp2Endpoints(int compid)
     app = latestapp;
   }
 
-  try
-  {
-   sql = "INSERT INTO dm.dm_deployment(deploymentid, userid, startts, finishts, exitcode, exitstatus, appid, envid, started, finished, sessionid, eventid) VALUES (?, ?, now(), now(), ?, '', ?, ?, ?, ?, null, null)";
-   PreparedStatement stmt = m_conn.prepareStatement(sql);
-   stmt.setInt(1, deployid);
-   stmt.setInt(2, this.GetUserID());
-   stmt.setInt(3, exitcode);
-   stmt.setInt(4, app.getId());
-   stmt.setInt(5, env.getId());
-   stmt.setLong(6, t);
-   stmt.setLong(7, t);
-   stmt.execute();
-   stmt.close();
-
-   sql = "INSERT INTO dm.dm_deploymentlog(deploymentid, runtime, stream, line, thread, lineno) VALUES (?, now(), 1, ?, 1, ?)";
-
-   ArrayList<String> lines = new ArrayList<String>(Arrays.asList(log.split("%0A")));
-
-   for (int i = 0; i < lines.size(); i++)
+  if (skipdeploy.equalsIgnoreCase("N"))
+  { 
+   try
    {
-    stmt = m_conn.prepareStatement(sql);
+    sql = "INSERT INTO dm.dm_deployment(deploymentid, userid, startts, finishts, exitcode, exitstatus, appid, envid, started, finished, sessionid, eventid) VALUES (?, ?, now(), now(), ?, '', ?, ?, ?, ?, null, null)";
+    PreparedStatement stmt = m_conn.prepareStatement(sql);
     stmt.setInt(1, deployid);
-    stmt.setString(2, lines.get(i));
-    stmt.setInt(3, i + 1);
+    stmt.setInt(2, this.GetUserID());
+    stmt.setInt(3, exitcode);
+    stmt.setInt(4, app.getId());
+    stmt.setInt(5, env.getId());
+    stmt.setLong(6, t);
+    stmt.setLong(7, t);
     stmt.execute();
     stmt.close();
-   }
-   m_conn.commit();
 
-   addToAppsAllowedInEnv(env, app);
-   setAppInEnv(env, app, "Deployment #" + deployid, deployid);
-   setAppDeploymentInEnv(env, app, deployid);
+    sql = "INSERT INTO dm.dm_deploymentlog(deploymentid, runtime, stream, line, thread, lineno) VALUES (?, now(), 1, ?, 1, ?)";
 
-   boolean isRelease = false;
+    ArrayList<String> lines = new ArrayList<String>(Arrays.asList(log.split("%0A")));
 
-   if (app.getIsRelease().compareToIgnoreCase("Y") == 0)
-    isRelease = true;
-
-   List<Component> comps4app = getComponents(ObjectType.APPLICATION, app.getId(), isRelease);
-   List<Server> srvs = getServersInEnvironment(env.getId());
-
-   for (int k = 0; k < comps4app.size(); k++)
-   {
-    Component c = comps4app.get(k);
-    for (int x = 0; x < srvs.size(); x++)
+    for (int i = 0; i < lines.size(); i++)
     {
-     addComponentToServer(srvs.get(x).getId(), c.getId());
-     addComponentVersionToServer(srvs.get(x).getId(), c.getId(), deployid, c.getLastBuildNumber());
+     stmt = m_conn.prepareStatement(sql);
+     stmt.setInt(1, deployid);
+     stmt.setString(2, lines.get(i));
+     stmt.setInt(3, i + 1);
+     stmt.execute();
+     stmt.close();
+    }
+    m_conn.commit();
+
+    addToAppsAllowedInEnv(env, app);
+    ret.add("application", app.getFullName());
+    ret.add("appid", app.getId());
+    setAppInEnv(env, app, "Deployment #" + deployid, deployid);
+    setAppDeploymentInEnv(env, app, deployid);
+
+    boolean isRelease = false;
+
+    if (app.getIsRelease().compareToIgnoreCase("Y") == 0)
+     isRelease = true;
+
+    List<Component> comps4app = getComponents(ObjectType.APPLICATION, app.getId(), isRelease);
+    List<Server> srvs = getServersInEnvironment(env.getId());
+
+    for (int k = 0; k < comps4app.size(); k++)
+    {
+     Component c = comps4app.get(k);
+     for (int x = 0; x < srvs.size(); x++)
+     {
+      addComponentToServer(srvs.get(x).getId(), c.getId());
+      addComponentVersionToServer(srvs.get(x).getId(), c.getId(), deployid, c.getLastBuildNumber());
+     }
+
+     sql = "INSERT INTO dm.dm_deploymentstep (deploymentid, stepid, type, startts, finishts, started, finished, compid) VALUES (?, ?, 'deploy', now(), now(), ?, ?, ?)";
+     stmt = m_conn.prepareStatement(sql);
+     stmt.setInt(1, deployid);
+     stmt.setInt(2, k + 1);
+     stmt.setLong(3, t);
+     stmt.setLong(4, t);
+     stmt.setLong(5, c.getId());
+     stmt.execute();
+     stmt.close();
     }
 
-    sql = "INSERT INTO dm.dm_deploymentstep (deploymentid, stepid, type, startts, finishts, started, finished, compid) VALUES (?, ?, 'deploy', now(), now(), ?, ?, ?)";
-    stmt = m_conn.prepareStatement(sql);
-    stmt.setInt(1, deployid);
-    stmt.setInt(2, k + 1);
-    stmt.setLong(3, t);
-    stmt.setLong(4, t);
-    stmt.setLong(5, c.getId());
-    stmt.execute();
-    stmt.close();
+    m_conn.commit();
    }
-
-   m_conn.commit();
+   catch (SQLException e)
+   {
+    System.out.println(e.getMessage());
+   }
   }
-  catch (SQLException e)
+  else
   {
-   System.out.println(e.getMessage());
+   ret.add("application", app.getFullName());
+   ret.add("appid", app.getId());
   }
   return ret;
  }
@@ -31050,5 +31673,10 @@ public JSONArray getComp2Endpoints(int compid)
   {
    this.m_password = jwt;
   }
+ }
+
+ public Map<Integer, String> getDomainMap()
+ {
+  return m_domains;
  }
 }

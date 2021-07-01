@@ -1162,7 +1162,7 @@ function RunTask(taskname,otid,taskid)
    
    if (tasktype == "DEPLOY" && typeof applications != "undefined")
    {
-    td = "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Environment:</td><td><select onchange=\"javascript:RefreshDropDowns();\" name=\"envs\" id=\"envs\">";   
+    td = "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Environment:</td><td><select onchange=\"javascript:RefreshDropDowns();\" name=\"envs\" id=\"envs\" style=\"width:100%\">";   
     
     var rowcnt = 0;
     var dups = [];
@@ -1177,7 +1177,7 @@ function RunTask(taskname,otid,taskid)
      } 
     }    
     
-    td += "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Application:</td><td><select onchange=\"javascript:RefreshDropDowns();\" name=\"apps\" id=\"apps\">"; 
+    td += "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Application:</td><td><select onchange=\"javascript:RefreshDropDowns();\" name=\"apps\" id=\"apps\" style=\"width:100%\">"; 
     rowcnt = 0;
     dups = [];
     
@@ -1208,7 +1208,7 @@ function RunTask(taskname,otid,taskid)
     $.getJSON('GetAppVersInEnvData', "appid=" + id + "&reason="+rsn+"&tid="+taskid, function(res)
      {
       td = "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Application:</td><td>" + objName + "<input type=\"hidden\" id=\"apps\" value=\"app"+id+"\"></td></tr>";
-      td += "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Environment:</td><td><select onchange=\"javascript:RefreshDropDowns();\" name=\"envs\" id=\"envs\">"; 
+      td += "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Environment:</td><td><select onchange=\"javascript:RefreshDropDowns();\" name=\"envs\" id=\"envs\" style=\"width:100%\">"; 
        
       var rowcnt = 0;
       console.log(res['data']);
