@@ -29,7 +29,7 @@ public enum SummaryField
 	ATTACHMENTS		(4, ObjectType.ATTACHMENT_LIST),
 	// Engine
 	ENGINE_HOSTNAME (5, null),
- ENGINE_CLIENTID (6, null),
+	ENGINE_CLIENTID (6, null),
 	
 	// Environment
 	AVAILABILITY	(10,  "Availability",		null),
@@ -85,15 +85,15 @@ public enum SummaryField
 	COMPTYPE			(708, "Endpoint Type",			null),
 	DEPLOY_SEQUENTIALLY (709, "Deploy Sequentially",	ObjectType.BOOLEAN),
 	COMP_DATASOURCE		(710, "Change Request Data Source",ObjectType.DATASOURCE),
- COMP_BUILDJOB  (711, "Build Job", null),
+	COMP_BUILDJOB  (711, "Build Job", null),
 	COMP_LASTBUILDNUMBER(712, "Last Build Number",		null),	
 	DOCKER    (713, "Container Kind",  null),
 	XPOS (714,"xpos", null),
- YPOS (715,"ypos", null),
- PREDECESSOR (716,"predecessor", null),
- PARENT (717,"parent", null),
- COMP_KIND   (718, "Kind",   ObjectType.COMP_KIND),
- 
+	YPOS (715,"ypos", null),
+	PREDECESSOR (716,"predecessor", null),
+	PARENT (717,"parent", null),
+	COMP_KIND   (718, "Kind",   ObjectType.COMP_KIND),
+
 	// Credentials
 	CRED_KIND		(801, "Kind",		ObjectType.CREDENTIAL_KIND),// This is used in GetSummary.jsp for callback
 	CRED_ENCUSERNAME(802, "Username",	ObjectType.ENCRYPTED),		// This is used in CredDetails.jsp for show/hide
@@ -166,8 +166,17 @@ public enum SummaryField
  DOCKER_CHARTNAMESPACE  (1613, "Helm Chart Namespace", null),
  DOCKER_TAG  (1614, "Container Tag", null),
  DOCKER_CHARTREPO  (1615, "Helm Chart Repo", null),
- DOCKER_CHARTREPOURL  (1616, "Helm Chart Repo Url", null);
- 
+ DOCKER_CHARTREPOURL  (1616, "Helm Chart Repo Url", null),
+ COMP_README (1617, "Readme", null),
+ SERVICE_OWNER (1618, "Service Owner", null),
+ SERVICE_OWNER_EMAIL (1619, "Service Owner Email", null),
+ SERVICE_OWNER_PHONE (1620, "Service Owner Phone", null),
+ SLACK_CHANNEL (1621, "Slack Channel", null),
+ DISCORD_CHANNEL (1622, "Discord Channel", null),	
+ HIPCHAT_CHANNEL (1623, "Hipchat Channel", null),
+ PAGERDUTY_SERVICE_URL (1624, "PagerDuty Service Url", null),
+ PAGERDUTY_BUSINESS_URL (1625, "PagerDuty Business Service Url", null),
+ COMP_SWAGGER (1626, "Swagger", null);
  
 	private final int m_value;
 	private final ObjectType m_type;

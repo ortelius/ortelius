@@ -870,12 +870,44 @@ $(CFG)/dmapi/slack.o : dmengine/notifiers/slack/slack.cpp \
 	ALLRELOPTIONS TBTOG(Compile|Build Task Options)[378]{ -DDEV_VERSION -DDMAPI_EXPORTS -DLDAP_DEPRECATED -fpermissive}  RUL(Compile)[25]{ g++ -fPIC $(BLD_OPTIONS_A) -DHAVE_UNIXODBC -DDEV_VERSION -D__LINUX__ -DHAVE_VA_LIST_STRUCT -w -Wno-write-strings} BTOG(Compile|Build Task Options)[0]{}
 	ALLDEBOPTIONS TBTOG(Compile|Build Task Options)[378]{ -DDEV_VERSION -DDMAPI_EXPORTS -DLDAP_DEPRECATED -fpermissive}  RUL(Compile)[17]{ -g} RUL(Compile)[25]{ g++ -fPIC $(BLD_OPTIONS_A) -DHAVE_UNIXODBC -DDEV_VERSION -D__LINUX__ -DHAVE_VA_LIST_STRUCT -w -Wno-write-strings} BTOG(Compile|Build Task Options)[0]{}
 
-$(CFG)/dmapi/smtp.o : dmengine/notifiers/smtpemail/smtp.cpp \
+$(CFG)/dmapi/csmtp.o : dmengine/notifiers/smtpemail/csmtp.cpp \
 		VERSIONINFO  \
 		RELOPTIONS TBTOG(Compile|Build Task Options)[378]{ -DDEV_VERSION -DDMAPI_EXPORTS -DLDAP_DEPRECATED -fpermissive}  RUL(Compile)[25]{ g++ -fPIC $(BLD_OPTIONS_A) -DHAVE_UNIXODBC -DDEV_VERSION -D__LINUX__ -DHAVE_VA_LIST_STRUCT -w -Wno-write-strings} BTOG(Compile|Build Task Options)[0]{} DT[37] \
 		DEBOPTIONS TBTOG(Compile|Build Task Options)[378]{ -DDEV_VERSION -DDMAPI_EXPORTS -DLDAP_DEPRECATED -fpermissive}  RUL(Compile)[17]{ -g} RUL(Compile)[25]{ g++ -fPIC $(BLD_OPTIONS_A) -DHAVE_UNIXODBC -DDEV_VERSION -D__LINUX__ -DHAVE_VA_LIST_STRUCT -w -Wno-write-strings} BTOG(Compile|Build Task Options)[0]{} DT[37]
 	FINALTARGET $(CFG)/bin/libdmapi.so
-	TARGET $(CFG)/dmapi/smtp.o
+	TARGET $(CFG)/dmapi/csmtp.o
+	TGTFILENAME dmapi.so.tgt
+	PROJECTDIRS $(CFG)/dmapi;dmengine/notifiers/smtpemail;
+	INTDIR $(CFG)/dmapi
+	BUILDTYPE DM Shared Object
+	BUILDTASK Compile
+	SCRIPT GNU gcc Compiler.sc
+	OSNAME Linux
+	ALLRELOPTIONS TBTOG(Compile|Build Task Options)[378]{ -DDEV_VERSION -DDMAPI_EXPORTS -DLDAP_DEPRECATED -fpermissive}  RUL(Compile)[25]{ g++ -fPIC $(BLD_OPTIONS_A) -DHAVE_UNIXODBC -DDEV_VERSION -D__LINUX__ -DHAVE_VA_LIST_STRUCT -w -Wno-write-strings} BTOG(Compile|Build Task Options)[0]{}
+	ALLDEBOPTIONS TBTOG(Compile|Build Task Options)[378]{ -DDEV_VERSION -DDMAPI_EXPORTS -DLDAP_DEPRECATED -fpermissive}  RUL(Compile)[17]{ -g} RUL(Compile)[25]{ g++ -fPIC $(BLD_OPTIONS_A) -DHAVE_UNIXODBC -DDEV_VERSION -D__LINUX__ -DHAVE_VA_LIST_STRUCT -w -Wno-write-strings} BTOG(Compile|Build Task Options)[0]{}
+
+$(CFG)/dmapi/md5.o : dmengine/notifiers/smtpemail/md5.cpp \
+		VERSIONINFO  \
+		RELOPTIONS TBTOG(Compile|Build Task Options)[378]{ -DDEV_VERSION -DDMAPI_EXPORTS -DLDAP_DEPRECATED -fpermissive}  RUL(Compile)[25]{ g++ -fPIC $(BLD_OPTIONS_A) -DHAVE_UNIXODBC -DDEV_VERSION -D__LINUX__ -DHAVE_VA_LIST_STRUCT -w -Wno-write-strings} BTOG(Compile|Build Task Options)[0]{} DT[37] \
+		DEBOPTIONS TBTOG(Compile|Build Task Options)[378]{ -DDEV_VERSION -DDMAPI_EXPORTS -DLDAP_DEPRECATED -fpermissive}  RUL(Compile)[17]{ -g} RUL(Compile)[25]{ g++ -fPIC $(BLD_OPTIONS_A) -DHAVE_UNIXODBC -DDEV_VERSION -D__LINUX__ -DHAVE_VA_LIST_STRUCT -w -Wno-write-strings} BTOG(Compile|Build Task Options)[0]{} DT[37]
+	FINALTARGET $(CFG)/bin/libdmapi.so
+	TARGET $(CFG)/dmapi/md5.o
+	TGTFILENAME dmapi.so.tgt
+	PROJECTDIRS $(CFG)/dmapi;dmengine/notifiers/smtpemail;
+	INTDIR $(CFG)/dmapi
+	BUILDTYPE DM Shared Object
+	BUILDTASK Compile
+	SCRIPT GNU gcc Compiler.sc
+	OSNAME Linux
+	ALLRELOPTIONS TBTOG(Compile|Build Task Options)[378]{ -DDEV_VERSION -DDMAPI_EXPORTS -DLDAP_DEPRECATED -fpermissive}  RUL(Compile)[25]{ g++ -fPIC $(BLD_OPTIONS_A) -DHAVE_UNIXODBC -DDEV_VERSION -D__LINUX__ -DHAVE_VA_LIST_STRUCT -w -Wno-write-strings} BTOG(Compile|Build Task Options)[0]{}
+	ALLDEBOPTIONS TBTOG(Compile|Build Task Options)[378]{ -DDEV_VERSION -DDMAPI_EXPORTS -DLDAP_DEPRECATED -fpermissive}  RUL(Compile)[17]{ -g} RUL(Compile)[25]{ g++ -fPIC $(BLD_OPTIONS_A) -DHAVE_UNIXODBC -DDEV_VERSION -D__LINUX__ -DHAVE_VA_LIST_STRUCT -w -Wno-write-strings} BTOG(Compile|Build Task Options)[0]{}
+
+$(CFG)/dmapi/base64.o : dmengine/notifiers/smtpemail/base64.cpp \
+		VERSIONINFO  \
+		RELOPTIONS TBTOG(Compile|Build Task Options)[378]{ -DDEV_VERSION -DDMAPI_EXPORTS -DLDAP_DEPRECATED -fpermissive}  RUL(Compile)[25]{ g++ -fPIC $(BLD_OPTIONS_A) -DHAVE_UNIXODBC -DDEV_VERSION -D__LINUX__ -DHAVE_VA_LIST_STRUCT -w -Wno-write-strings} BTOG(Compile|Build Task Options)[0]{} DT[37] \
+		DEBOPTIONS TBTOG(Compile|Build Task Options)[378]{ -DDEV_VERSION -DDMAPI_EXPORTS -DLDAP_DEPRECATED -fpermissive}  RUL(Compile)[17]{ -g} RUL(Compile)[25]{ g++ -fPIC $(BLD_OPTIONS_A) -DHAVE_UNIXODBC -DDEV_VERSION -D__LINUX__ -DHAVE_VA_LIST_STRUCT -w -Wno-write-strings} BTOG(Compile|Build Task Options)[0]{} DT[37]
+	FINALTARGET $(CFG)/bin/libdmapi.so
+	TARGET $(CFG)/dmapi/base64.o
 	TGTFILENAME dmapi.so.tgt
 	PROJECTDIRS $(CFG)/dmapi;dmengine/notifiers/smtpemail;
 	INTDIR $(CFG)/dmapi
@@ -1430,10 +1462,18 @@ $(CFG)/bin/libdmapi.so : libldap.so \
 		VERSIONINFO  \
 		RELOPTIONS RUL(Link)[25]{ gcc -shared -L/usr/lib $(BLD_OPTIONS_C) -lm -lrt} BTOG(Link|Build Task Options)[0]{} DT[5] \
 		DEBOPTIONS RUL(Link)[17]{ -g} RUL(Link)[25]{ gcc -shared -L/usr/lib $(BLD_OPTIONS_C) -lm -lrt} BTOG(Link|Build Task Options)[0]{} DT[5] \
-	$(CFG)/dmapi/smtp.o \
+	$(CFG)/dmapi/csmtp.o \
 		VERSIONINFO  \
 		RELOPTIONS RUL(Link)[25]{ gcc -shared -L/usr/lib $(BLD_OPTIONS_C) -lm -lrt} BTOG(Link|Build Task Options)[0]{} DT[5] \
 		DEBOPTIONS RUL(Link)[17]{ -g} RUL(Link)[25]{ gcc -shared -L/usr/lib $(BLD_OPTIONS_C) -lm -lrt} BTOG(Link|Build Task Options)[0]{} DT[5] \
+	$(CFG)/dmapi/md5.o \
+		VERSIONINFO  \
+		RELOPTIONS RUL(Link)[25]{ gcc -shared -L/usr/lib $(BLD_OPTIONS_C) -lm -lrt} BTOG(Link|Build Task Options)[0]{} DT[5] \
+		DEBOPTIONS RUL(Link)[17]{ -g} RUL(Link)[25]{ gcc -shared -L/usr/lib $(BLD_OPTIONS_C) -lm -lrt} BTOG(Link|Build Task Options)[0]{} DT[5] \
+	$(CFG)/dmapi/base64.o \
+		VERSIONINFO  \
+		RELOPTIONS RUL(Link)[25]{ gcc -shared -L/usr/lib $(BLD_OPTIONS_C) -lm -lrt} BTOG(Link|Build Task Options)[0]{} DT[5] \
+		DEBOPTIONS RUL(Link)[17]{ -g} RUL(Link)[25]{ gcc -shared -L/usr/lib $(BLD_OPTIONS_C) -lm -lrt} BTOG(Link|Build Task Options)[0]{} DT[5] \				
 	$(CFG)/dmapi/smtpemail.o \
 		VERSIONINFO  \
 		RELOPTIONS RUL(Link)[25]{ gcc -shared -L/usr/lib $(BLD_OPTIONS_C) -lm -lrt} BTOG(Link|Build Task Options)[0]{} DT[5] \

@@ -1,9 +1,18 @@
+#include <stdarg.h>
 #include <stdio.h>
-#ifndef WIN32
-#include <unistd.h>
-#else
+#include <string.h>
+#ifdef WIN32
+#include <winsock2.h>
 #include <windows.h>
-#endif
+#else
+#include <stdlib.h>
+#include <errno.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <unistd.h>
+#endif /*WIN32*/
+#include <time.h>
 
 #include "https.h"
 
@@ -18,6 +27,41 @@
 
 // in smtp.cpp
 int EstablishOutgoingConnection(int destination_port, const char *HostName);
+
+int EstablishOutgoingConnection(int destination_port, const char *HostName)
+{
+	int					sock;
+	int					res;
+	struct sockaddr_in	name;
+	struct hostent		*hp;
+
+	hp = gethostbyname(HostName);
+	if (hp == (struct hostent *)0)
+	{
+		// gethostbyname fails	
+		errno=h_errno;
+		sock = -1;
+	}
+	else
+	{
+		// Create a socket on which to send.
+		sock = socket(AF_INET, SOCK_STREAM, 0);
+		name.sin_family = AF_INET;
+		name.sin_addr.s_addr = *((int *)hp->h_addr);
+		name.sin_port = htons(destination_port);
+		//printf("Resolved to %d.%d.%d.%d\n", hp->h_addr[0], hp->h_addr[1], hp->h_addr[2], hp->h_addr[3]);
+		res = connect(sock,(struct sockaddr *)&name,sizeof(name));
+		if (res != 0)
+		{
+			// Connection failure
+#ifdef WIN32
+			errno=WSAGetLastError();
+#endif
+			sock = 0;
+		}
+	}
+	return sock;
+}
 
 #ifdef WIN32
 void InitialiseWinsock();

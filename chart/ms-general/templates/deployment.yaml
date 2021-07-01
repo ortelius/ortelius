@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  {{ include "ms-general.name" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app:  {{ include "ms-general.name" . }}
+      tier: backend
+      track: stable
+  template:
+    metadata:
+      labels:
+        app:  {{ include "ms-general.name" . }}
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: {{ include "ms-general.name" . }}
+          image: "{{ .Values.DockerRepo }}:{{ .Values.DockerTag }}"
+          imagePullPolicy: Always
+          env:
+            - name: DBUserName
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBUserName
+            - name: DBPassword
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBPassword
+            - name: DBConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBConnectionString
+            - name: dhuser
+              valueFrom:
+                secretKeyRef:
+                  name: ortelius-user
+                  key: dhuser
+            - name: dhpass
+              valueFrom:
+                secretKeyRef:
+                  name: ortelius-user
+                  key: dhpass
+          ports:
+            - name: http
+              containerPort: 8080
+---   

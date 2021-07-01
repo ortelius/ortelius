@@ -10,7 +10,7 @@
 class SmtpEmailNotifyImpl
 	: public virtual NotifyProviderImpl
 {
-private:
+public:
 	char *m_mailserver;
 	class Expr *m_from;
 	char *m_username;
@@ -20,7 +20,6 @@ private:
 	bool  m_useHTML;
 	char *m_logfile;
 
-public:
 	SmtpEmailNotifyImpl(
 		NotifyProviderImplFactory &factory, DMINT32 implId, Notify &notify,
 		const char *mailserver, class Expr *from, const char *username,

@@ -27,7 +27,7 @@ WORKDIR /etc/nginx/
 RUN sudo yum -y install nginx; \
     sudo mkdir /etc/nginx/location; \
     sudo mkdir /var/www;
-COPY dmadminweb/microservice/nginx.conf  /etc/nginx/
+COPY dmadminweb/microservice/nginx-onprem.conf  /etc/nginx/nginx.conf
 COPY dmadminweb/microservice/location/  /etc/nginx/location/
 
 WORKDIR /opt/deployhub/

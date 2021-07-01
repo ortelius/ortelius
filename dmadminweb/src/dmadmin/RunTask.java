@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -195,23 +196,51 @@ extends HttpServletBase
    if (tt == TaskType.DEPLOY && otype != null && (otype.equalsIgnoreCase("ap") || otype.equalsIgnoreCase("av"))) {
     Application app = session.getApplication(id, false);
     Domain mydomain = app.getDomain();
-    List<Environment> envs = session.getEnvironmentsInDomain(mydomain);
     
-    if (envs.isEmpty())
+    ArrayList<Domain> domlist = new ArrayList<Domain>();
+    domlist.add(mydomain);
+    
+    HashMap<Integer, Integer> hmap = new HashMap<Integer, Integer>();
+    session.getAllChildDomains(mydomain.getId(), hmap);
+    
+    for (Integer key : hmap.keySet()) 
     {
-     mydomain = app.getDomain().getDomain();  // Get parent domain since environment my higher in dom structure
-     if (mydomain != null)
-        envs = session.getEnvironmentsInDomain(mydomain);
+     Domain dom2 = session.getDomain(key);
+     domlist.add(dom2);       
     }
+
+    String parentdoms = session.getDomainHeirarchy(mydomain.getId());
+    String parts[] = parentdoms.split(",");
+    
+    if (parts != null)
+    {
+     for (int i=0;i<parts.length;i++)
+     {
+      Domain dom2 = session.getDomain(new Integer(parts[i]).intValue());
+      domlist.add(dom2);
+     }
+    }
+    
     JSONArray arr3 = new JSONArray();
-    for (Environment c: envs) {
-     JSONObject cobj = new JSONObject();
-     cobj.add("id", c.getId());
-     cobj.add("name", c.getName());
-     arr3.add(cobj);
+    int envlen = 0;
+    
+    for (int i=0;i<domlist.size();i++)
+    {
+     Domain dom3 = domlist.get(i);
+
+     List<Environment> envs = session.getEnvironmentsInDomain(dom3);
+     envlen += envs.size();
+     System.out.println("Domain=" + dom3.getName() + " cnt=" + envs.size());
+     
+     for (Environment c: envs) {
+      JSONObject cobj = new JSONObject();
+      cobj.add("id", c.getId());
+      cobj.add("name", c.getFullName());
+      arr3.add(cobj);
+     }
     }
     obj.add("Environments", arr3);
-    obj.add("EnvironmentCount", envs.size());
+    obj.add("EnvironmentCount", envlen);
     if (dom!=null) System.out.println("mydomain.id="+mydomain.getId()+" dom.id="+dom.getId());
     else System.out.println("dom is null");
     ArrayList<Application> applications = new ArrayList<Application>();

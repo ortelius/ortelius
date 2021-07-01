@@ -1,3 +1,4 @@
+#!/bin/sh
 
 helmexe="helm"
 if [ "$dockeruser" == "" ]; then
@@ -37,7 +38,7 @@ tar -xf $chartname*.tgz
 IFS=$'\n'
 
 let cnt=0
-for line in $(cat $helmtemplate | dos2unix | grep "image:" | cut -f 2- -d ":" | tr -d '"' | tr -d " " | sort -u)
+for line in $(cat $helmtemplate | tr -d '\015' | grep "image:" | cut -f 2- -d ":" | tr -d '"' | tr -d " " | sort -u)
 do
  if [ "$cnt" -gt "0" ]; then
   echo ","
@@ -88,7 +89,7 @@ do
  authscope="repository:${org}/${img}:pull"
 
  TOKEN=$(echo -u ${apiuser}:${apipass} | xargs curl -s -X GET "${authdomsvc}&scope=${authscope}&offline_token=1&client_id=shell" | jq -r '.token')
- digest=$(curl --head -s -H "Authorization: Bearer ${TOKEN}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" https://${apidomain}/v2/${org}/${img}/manifests/$tag | grep "Docker-Content-Digest:" | cut -f 2 -d " " | tr -d '"' | tr -d "\r")
+ digest=$(curl --head -s -H "Authorization: Bearer ${TOKEN}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" https://${apidomain}/v2/${org}/${img}/manifests/$tag | grep -i "Docker-Content-Digest:" | cut -f 2 -d " " | tr -d '"' | tr -d "\r")
  
  cat <<- EOF
         {
@@ -103,6 +104,3 @@ done
 echo "]"
 echo "}"
 rm $chartname*.tgz
-
-
-

@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "smtpemail.h"
+#include "csmtp.h"
 
 #include "../../dmapi/expr.h"
 #include "../../dmapi/charptr.h"
@@ -17,8 +18,6 @@
 #include "../../dmapi/dm.h"
 #include "../../dmapi/extended.h"
 #include "../../dmapi/properties.h"
-
-#include "smtp.h"
 
 
 #define SMTPEMAIL_PLUGIN_VERSION "1.00"
@@ -154,6 +153,7 @@ void SmtpEmailNotifyImpl::notify(
 {
 	StringList lto;
 	StringList lcc;
+	bool bError = false;
 	
 	ExprPtr eto = stmt.getArg("to", ctx);
 	handleRecipients(stmt, eto, lto, ctx);
@@ -190,8 +190,34 @@ void SmtpEmailNotifyImpl::notify(
 
 	bool isTestMode = stmt.getArgAsBoolean("isTestMode", ctx);
 
-	SMTP smtp(m_mailserver, m_mailport, m_username, m_password, from, subject,
-		body.buffer(), m_logfile, m_useSSL, m_useHTML, (isTestMode ? ctx.dm().toOutputStream() : NULL));
+try
+{
+	
+	CSmtp mail;
+	
+	mail.SetLogfile(m_logfile);
+	mail.SetSMTPServer(m_mailserver,m_mailport);
+	mail.SetSecurityType(USE_TLS);
+	mail.SetLogin(m_username);
+	mail.SetPassword(m_password);
+	mail.SetSenderMail(from);
+	mail.SetReplyTo(from);
+  	mail.SetSubject(subject);
+
+	mail.AddMsgLine(body.buffer());
+
+	if (m_logfile)
+	{
+		FILE *fp = fopen(m_logfile, "a");
+		fprintf(fp,"SetSMTPServer(%s)\n",m_mailserver);
+		fprintf(fp,"SetLogin(%s)\n",m_username);
+		fprintf(fp,"SetSenderMail(%s)\n",(const char *)from);
+		fprintf(fp,"SetReplyTo(%s)\n",(const char *)from);
+		fprintf(fp,"SetSubject(%s)\n",(const char *)subject);
+		fprintf(fp,"AddMsgLine(%s)\n",body.buffer());
+		fclose(fp);	
+	}
+
 	//if(email) {
 	//	ctx.dm().writeToLogFile("Adding recipient [<%s>]", (const char*) email);
 	//	smtp.addRecipient(email);
@@ -199,7 +225,7 @@ void SmtpEmailNotifyImpl::notify(
 		StringListIterator iter(lto);
 		for(const char *email = iter.first(); email; email = iter.next()) {
 			ctx.dm().writeToLogFile("Adding recipient [<%s>]", email);
-			smtp.addRecipient(email);
+			mail.AddRecipient(email);
 		}
 	} else {
 		// No "to" specified, so first try and find the server owner(s), then the environment owner
@@ -209,7 +235,7 @@ void SmtpEmailNotifyImpl::notify(
 				ConstCharPtr owneremail = getOwnerEmail(ps, ctx);
 				debug1("server \"%s\" owner \"%s\"", ps->name(), (owneremail ? (const char*) owneremail : "(no email address)"));
 				if(owneremail) {
-					smtp.addRecipient(owneremail);
+					mail.AddRecipient(owneremail);
 				}
 			}
 		}
@@ -218,7 +244,7 @@ void SmtpEmailNotifyImpl::notify(
 			ConstCharPtr owneremail = getOwnerEmail(env, ctx);
 			debug1("environment \"%s\" owner \"%s\"", env->name(), (owneremail ? (const char*) owneremail : "(no email address)"));
 			if(owneremail) {
-				smtp.addRecipient(owneremail);
+					mail.AddRecipient(owneremail);
 			}
 		}
 	}
@@ -231,29 +257,59 @@ void SmtpEmailNotifyImpl::notify(
 		StringListIterator iter(lto);
 		for(const char *email = iter.first(); email; email = iter.next()) {
 			ctx.dm().writeToLogFile("Adding cc recipient [<%s>]", email);
-			smtp.addCarbonCopy(email);
+			mail.AddCCRecipient(email);
 		}
 	}
 
 	if(attach) {
-		smtp.addAttachment("attachment.txt", (unsigned char*) attach->buffer(), attach->size());
+		FILE *fp = fopen("attachment.txt","w");
+		fprintf(fp,"%s",(unsigned char*) attach->buffer());
+		fclose(fp);
+
+		mail.AddAttachment("attachment.txt");
 	}
 	if(attachments) {
 		ListIterator<Attachment> iter(*attachments);
 		for(Attachment *att = iter.first(); att; att = iter.next()) {
-			smtp.addAttachment(att->name(), att->data(), att->datasize());
+			FILE *fp = fopen(att->name(),"w");
+			fprintf(fp,"%s",(unsigned char*) att->data());
+			fclose(fp);
+			mail.AddAttachment(att->name());
 		}
 	}
 
-	if(smtp.isOkay()) {
-		ctx.dm().writeToLogFile("Sending email notification");
-		if(getenv("trinonotify")) {
-			smtp.dump();
-		} else {
-			smtp.sendMessage();
+	mail.Send();
+	}
+	catch(ECSmtp e)
+	{
+		ctx.writeToStdOut("Error: %s\n", e.GetErrorText().c_str());
+		bError = true;
+
+		if (m_logfile)
+		{
+		 FILE *fp = fopen(m_logfile, "a");
+		 fprintf(fp,"Error: %s\n", e.GetErrorText().c_str());
+		 fclose(fp);	
 		}
-	} else {
+	}
+	if(bError)
+	{
 		ctx.writeToStdOut("Message not okay - no recipients?\n");
+		if (m_logfile)
+		{
+		 FILE *fp = fopen(m_logfile, "a");
+		 fprintf(fp,"Message not okay - no recipients?\n");
+		 fclose(fp);	
+		}
+	}
+	else
+	{
+		if (m_logfile)
+		{
+		 FILE *fp = fopen(m_logfile, "a");
+		 fprintf(fp,"Message sent\n");
+		 fclose(fp);	
+		}
 	}
 }
 
