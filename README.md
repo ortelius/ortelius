@@ -138,6 +138,7 @@ Contributors:
 - Mark Peters
 - Arijeet Majumdar
 - Pawel Kulecki
+- Jayesh Srivastava
 
 ### Architecture
 
@@ -181,6 +182,7 @@ Contributors:
 - Devendran Nehru
 - Utkarsh Kumar Sharma
 - Avikam Jha
+- Jayesh Srivastava
 
 ### Product Management
 
