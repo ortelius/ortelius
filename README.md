@@ -72,6 +72,7 @@ Contributors:
 - Aditi Agarwal
 - Jesse Gonzalez
 - Jimmy Malhan
+- Arvind Singharpuria
   
 ### Data Science and Visualization
 
@@ -160,6 +161,7 @@ Contributors:
 - Jesse Gonzalez
 - Neil Chen
 - Devendran Nehru
+- Arvind Singharpuria
 
 ### Development
 
@@ -183,6 +185,7 @@ Contributors:
 - Utkarsh Kumar Sharma
 - Avikam Jha
 - Jayesh Srivastava
+- Arvind Singharpuria
 
 ### Product Management
 
