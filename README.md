@@ -230,9 +230,8 @@ Contributors:
 Research, define and Automate GitOps with Ortelius
 
 Contributors:
-
--Brad McCoy
--Arvind Singharpuria
+- Brad McCoy
+- Arvind Singharpuria
 
 ## Installation
 
