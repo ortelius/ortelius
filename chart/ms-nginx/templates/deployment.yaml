@@ -1,13 +1,18 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "ms-nginx.name" . }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app:  {{ include "ms-nginx.name" . }}
+      tier: frontend
+      track: stable
   template:
     metadata:
       labels:
-        app: ms-nginx
+        app:  {{ include "ms-nginx.name" . }}
         tier: frontend
         track: stable
     spec:
