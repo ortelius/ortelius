@@ -13,7 +13,7 @@ steps:
     id: login
     waitFor: ['ssh_keys']
     entrypoint: 'bash'
-    args: ['-c', 'docker login quay.io --username "$$QUAY_USERID" --password $$QUAY_PASSWORD;ls -l /workspace/docker-config/config.json']
+    args: ['-c', 'docker login quay.io --username "$$QUAY_USERID" --password $$QUAY_PASSWORD]
     secretEnv: ['QUAY_USERID', 'QUAY_PASSWORD']     
     env:
       - 'DOCKER_CONFIG=/workspace/docker-config'
@@ -23,7 +23,7 @@ steps:
     id: nginx_env
     waitFor: ['login']
     entrypoint: 'bash'
-    args: ['-c', 'ls -A1 | xargs rm -rf;git clone -q $$COMPONENT_GITURL .;git checkout --track -b $BRANCH_NAME origin/$BRANCH_NAME;env | sed "s/^/export /" >> /workspace/cloudbuild.sh']
+    args: ['-c', 'ls -A1 | grep -v docker-config | xargs rm -rf;git init; git remote add origin $$COMPONENT_GITURL;git fetch;git checkout --track -b $BRANCH_NAME origin/$BRANCH_NAME;env | sed "s/^/export /" >> /workspace/cloudbuild.sh']
     volumes:
     - name: 'ssh'
       path: /root/.ssh
