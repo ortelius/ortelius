@@ -12,7 +12,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     id: login
     entrypoint: 'bash'
-    args: ['-c', '. /workspace/cloudbuild.sh;docker login quay.io --username "$$QUAY_USERID" --password $$QUAY_PASSWORD']
+    args: ['-c', 'docker login quay.io --username "$$QUAY_USERID" --password $$QUAY_PASSWORD']
     secretEnv: ['QUAY_USERID', 'QUAY_PASSWORD']     
     env:
       - 'DOCKER_CONFIG=/workspace/docker-config'
