@@ -48,7 +48,7 @@ steps:
     id: build_push_nginx
     waitFor: ['nginx_env']
     entrypoint: 'bash'
-    args: ["-c", '. /workspace/cloudbuild.sh;docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/docker/DockerfileNginx .;docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG']
+    args: ["-c", '. /workspace/cloudbuild.sh;cat $$DOCKER_CONFIG/config.json;docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/docker/DockerfileNginx .;docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG']
     env:
       - 'DOCKER_CONFIG=/workspace/docker-config'
 
