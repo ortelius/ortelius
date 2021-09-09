@@ -1,7 +1,7 @@
 steps:
   # Get ssh key from Google Secret Manager
   - name: gcr.io/cloud-builders/gcloud
-    id: ssh keys
+    id: ssh_keys
     entrypoint: 'bash'
     args: [ '-c', 'gcloud secrets versions access latest --secret=github > /root/.ssh/id_rsa;chmod 600 /root/.ssh/id_rsa;ssh-keyscan -t rsa github.com > /root/.ssh/known_hosts' ]
     volumes:
@@ -19,7 +19,7 @@ steps:
 
   # Setup environment including img tag name for nginx
   - name: gcr.io/cloud-builders/docker
-    id: nginx env setup
+    id: nginx_env
     entrypoint: 'bash'
     args: ['-c', 'ls -A1 | xargs rm -rf;git clone -q $$COMPONENT_GITURL .;git checkout --track -b $BRANCH_NAME origin/$BRANCH_NAME;env | sed "s/^/export /" >> /workspace/cloudbuild.sh']
     volumes:
@@ -43,7 +43,6 @@ steps:
   # Build and push dh-ms-general.war - quay.io/ortelius/ms-nginx
   - name: 'gcr.io/cloud-builders/docker'
     id: build_push_nginx
-    waitFor: [ 'login' ]
     entrypoint: 'bash'
     args: ["-c", '. /workspace/cloudbuild.sh;docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/docker/DockerfileNginx .;docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG']
     env:
@@ -68,7 +67,7 @@ steps:
   - name: gcr.io/cloud-builders/docker
     id: env_ui
     entrypoint: 'bash'
-    args: ['-c', 'ls -A1 | xargs rm -rf;git clone -q $$COMPONENT_GITURL .;git checkout --track -b $BRANCH_NAME origin/$BRANCH_NAME;env | sed "s/^/export /" >> /workspace/cloudbuild-ui.sh']
+    args: ['-c', 'env | sed "s/^/export /" >> /workspace/cloudbuild-ui.sh']
     volumes:
     - name: 'ssh'
       path: /root/.ssh
@@ -90,7 +89,6 @@ steps:
   # Build and push dh-ms-ui.war - quay.io/ortelius/ms-ui
   - name: 'gcr.io/cloud-builders/docker'
     id: build_push_ui
-    waitFor: [ 'login' ]
     entrypoint: 'bash'
     args: ["-c", '. /workspace/cloudbuild-ui.sh;docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/docker/DockerfileUI .;docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG']
     env:
@@ -115,7 +113,7 @@ steps:
   - name: gcr.io/cloud-builders/docker
     id: env_general
     entrypoint: 'bash'
-    args: ['-c', 'ls -A1 | xargs rm -rf;git clone -q $$COMPONENT_GITURL .;git checkout --track -b $BRANCH_NAME origin/$BRANCH_NAME;env | sed "s/^/export /" >> /workspace/cloudbuild-general.sh']
+    args: ['-c', 'env | sed "s/^/export /" >> /workspace/cloudbuild-general.sh']
     volumes:
     - name: 'ssh'
       path: /root/.ssh
@@ -136,8 +134,6 @@ steps:
 
   # Build and push dh-ms-general.war - quay.io/ortelius/ms-general
   - name: 'gcr.io/cloud-builders/docker'
-    id: build_push_general
-    waitFor: [ 'login' ]
     entrypoint: 'bash'
     args: ["-c", '. /workspace/cloudbuild-general.sh;docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/docker/DockerfileGeneral .;docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG']
     env:
