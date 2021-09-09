@@ -3,7 +3,12 @@ kind: Deployment
 metadata:
   name:  {{ include "ms-general.name" . }}
 spec:
-  replicas: 3
+  replicas: 1
+  selector:
+    matchLabels:
+      app:  {{ include "ms-general.name" . }}
+      tier: backend
+      track: stable
   template:
     metadata:
       labels:
@@ -12,7 +17,7 @@ spec:
         track: stable
     spec:
       containers:
-        - name: ms-general
+        - name: {{ include "ms-general.name" . }}
           image: "{{ .Values.DockerRepo }}:{{ .Values.DockerTag }}"
           imagePullPolicy: Always
           ports:
