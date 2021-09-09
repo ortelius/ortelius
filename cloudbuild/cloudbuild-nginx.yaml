@@ -41,6 +41,7 @@ steps:
       - 'DEPLOY_ENV=GLOBAL.ortelius.saas.aks-cluster'
       - 'BLDDATE=`date`'
       - 'IMAGE_TAG="$BRANCH_NAME-v$$COMPONENT_VERSION.$$(git rev-list --count $BRANCH_NAME)-g$SHORT_SHA"'
+      - 'DOCKER_CONFIG=/workspace/docker-config'
 
   # Build and push dh-ms-general.war - quay.io/ortelius/ms-nginx
   - name: 'gcr.io/cloud-builders/docker'
@@ -91,6 +92,7 @@ steps:
       - 'DEPLOY_ENV=GLOBAL.ortelius.saas.aks-cluster'
       - 'BLDDATE=`date`'
       - 'IMAGE_TAG="$BRANCH_NAME-v$$COMPONENT_VERSION.$$(git rev-list --count $BRANCH_NAME)-g$SHORT_SHA"'
+      - 'DOCKER_CONFIG=/workspace/docker-config'
 
   # Build and push dh-ms-ui.war - quay.io/ortelius/ms-ui
   - name: 'gcr.io/cloud-builders/docker'
@@ -141,6 +143,7 @@ steps:
       - 'DEPLOY_ENV=GLOBAL.ortelius.saas.aks-cluster'
       - 'BLDDATE=`date`'
       - 'IMAGE_TAG="$BRANCH_NAME-v$$COMPONENT_VERSION.$$(git rev-list --count $BRANCH_NAME)-g$SHORT_SHA"'
+      - 'DOCKER_CONFIG=/workspace/docker-config'
 
   # Build and push dh-ms-general.war - quay.io/ortelius/ms-general
   - name: 'gcr.io/cloud-builders/docker'
