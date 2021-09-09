@@ -26,6 +26,17 @@ if [[ "$DBLOCAL" == "" ]]; then
   sudo -u postgres /usr/pgsql-10/bin/pg_ctl start --pgdata=/var/lib/pgsql/data
   sleep 10
   sudo -u postgres /usr/pgsql-10/bin/pg_ctl status --pgdata=/var/lib/pgsql/data
+else
+  DBHost=`echo $DBConnectionString | cut -d "/" -f3 | cut -d ":" -f1`
+  DBPort=`echo $DBConnectionString | cut -d "/" -f3 | cut -d ":" -f2`
+  DBName=`echo $DBConnectionString | cut -d "/" -f4 | cut -f1 -d "?"`
+
+  sudo sed -i.bak -e "s|Servername=localhost|Servername=$DBHost|" /etc/odbc.ini
+  sudo sed -i.bak -e "s|Database=postgres|Database=$DBName|" /etc/odbc.ini
+  sudo sed -i.bak -e "s|Port=5432|Port=$DBPort|" /etc/odbc.ini
+  if [[ $DBConnectionString =~ "require" ]]; then
+    sudo sed -i.bak -e "s|CommLog=0|CommLog=0\nSSLmode=require\n|" /etc/odbc.ini
+  fi
 fi
 
 if [ ! -e /opt/deployhub/logs ]; then
