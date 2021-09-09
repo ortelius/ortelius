@@ -11,7 +11,7 @@ steps:
   # Login to Quay for push.
   - name: 'gcr.io/cloud-builders/docker'
     id: login
-    waitfor: ['ssh_keys']
+    waitFor: ['ssh_keys']
     entrypoint: 'bash'
     args: ['-c', 'docker login quay.io --username "$$QUAY_USERID" --password $$QUAY_PASSWORD']
     secretEnv: ['QUAY_USERID', 'QUAY_PASSWORD']     
@@ -21,7 +21,7 @@ steps:
   # Setup environment including img tag name for nginx
   - name: gcr.io/cloud-builders/docker
     id: nginx_env
-    waitfor: ['login']
+    waitFor: ['login']
     entrypoint: 'bash'
     args: ['-c', 'ls -A1 | xargs rm -rf;git clone -q $$COMPONENT_GITURL .;git checkout --track -b $BRANCH_NAME origin/$BRANCH_NAME;env | sed "s/^/export /" >> /workspace/cloudbuild.sh']
     volumes:
@@ -45,7 +45,7 @@ steps:
   # Build and push dh-ms-general.war - quay.io/ortelius/ms-nginx
   - name: 'gcr.io/cloud-builders/docker'
     id: build_push_nginx
-    waitfor: ['nginx_env']
+    waitFor: ['nginx_env']
     entrypoint: 'bash'
     args: ["-c", '. /workspace/cloudbuild.sh;docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/docker/DockerfileNginx .;docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG']
     env:
@@ -54,7 +54,7 @@ steps:
   # Get image id for nginx
   - name: 'gcr.io/cloud-builders/docker'
     id: digest_nginx
-    waitfor: ['build_push_nginx']
+    waitFor: ['build_push_nginx']
     entrypoint: 'bash'
     env:
       - 'DOCKER_CONFIG=/workspace/docker-config'
@@ -63,7 +63,7 @@ steps:
   # Capture nginx component version in DeployHub
   - name: 'quay.io/deployhub/compupdate'
     id: compupdate_nginx
-    waitfor: ['digest_nginx']
+    waitFor: ['digest_nginx']
     entrypoint: 'bash'
     secretEnv: ['DHUSER', 'DHPASS']
     args: ['-c', '. /workspace/cloudbuild.sh;dh updatecomp --dhurl https://console.deployhub.com --appname "$$COMPONENT_APPLICATION" --compname "$$COMPONENT_NAME" --compvariant "$$COMPONENT_VARIANT" --compversion "$$COMPONENT_VERSION_COMMIT" --docker --compattr "GitCommit:$SHORT_SHA" --compattr "GitUrl:$$COMPONENT_GITURL" --compattr "GitRepo:ortelius/$REPO_NAME" --compattr "GitTag:$TAG_NAME" --compattr "GitBranch:$BRANCH_NAME" --compattr "Chart:$$COMPONENT_CHARTNAME" --compattr "DockerSha:$$DIGEST" --compattr "DockerBuildDate:$$BLDDATE" --compattr "DockerRepo:$$COMPONENT_DOCKERREPO" --compattr "BuildId:$BUILD_ID" --compattr "BuildUrl:https://console.cloud.google.com/cloud-build/builds/$BUILD_ID?project=$PROJECT_ID" --compattr "CustomAction:$$COMPONENT_CUSTOMACTION" --compattr "DockerTag:$$IMAGE_TAG" --compattr "ChartNamespace:$$COMPONENT_CHARTNAMESPACE"']
@@ -71,7 +71,7 @@ steps:
   # Setup environment including img tag name for ui
   - name: gcr.io/cloud-builders/docker
     id: env_ui
-    waitfor: ['compupdate_nginx']
+    waitFor: ['compupdate_nginx']
     entrypoint: 'bash'
     args: ['-c', 'env | sed "s/^/export /" >> /workspace/cloudbuild-ui.sh']
     volumes:
@@ -95,7 +95,7 @@ steps:
   # Build and push dh-ms-ui.war - quay.io/ortelius/ms-ui
   - name: 'gcr.io/cloud-builders/docker'
     id: build_push_ui
-    waitfor: ['env_ui']
+    waitFor: ['env_ui']
     entrypoint: 'bash'
     args: ["-c", '. /workspace/cloudbuild-ui.sh;docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/docker/DockerfileUI .;docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG']
     env:
@@ -104,7 +104,7 @@ steps:
   # Get image id
   - name: 'gcr.io/cloud-builders/docker'
     id: digest_ui
-    waitfor: ['build_push_ui']
+    waitFor: ['build_push_ui']
     entrypoint: 'bash'
     env:
       - 'DOCKER_CONFIG=/workspace/docker-config'
@@ -113,7 +113,7 @@ steps:
   # Capture new UI component version in DeployHub
   - name: 'quay.io/deployhub/compupdate'
     id: compupdate_ui
-    waitfor: ['digest_ui']
+    waitFor: ['digest_ui']
     entrypoint: 'bash'
     secretEnv: ['DHUSER', 'DHPASS']
     args: ['-c', '. /workspace/cloudbuild-ui.sh;dh updatecomp --dhurl https://console.deployhub.com --appname "$$COMPONENT_APPLICATION" --compname "$$COMPONENT_NAME" --compvariant "$$COMPONENT_VARIANT" --compversion "$$COMPONENT_VERSION_COMMIT" --docker --compattr "GitCommit:$SHORT_SHA" --compattr "GitUrl:$$COMPONENT_GITURL" --compattr "GitRepo:ortelius/$REPO_NAME" --compattr "GitTag:$TAG_NAME" --compattr "GitBranch:$BRANCH_NAME" --compattr "Chart:$$COMPONENT_CHARTNAME" --compattr "DockerSha:$$DIGEST" --compattr "DockerBuildDate:$$BLDDATE" --compattr "DockerRepo:$$COMPONENT_DOCKERREPO" --compattr "BuildId:$BUILD_ID" --compattr "BuildUrl:https://console.cloud.google.com/cloud-build/builds/$BUILD_ID?project=$PROJECT_ID" --compattr "CustomAction:$$COMPONENT_CUSTOMACTION" --compattr "DockerTag:$$IMAGE_TAG" --compattr "ChartNamespace:$$COMPONENT_CHARTNAMESPACE"']
@@ -121,7 +121,7 @@ steps:
   # setup env for general
   - name: gcr.io/cloud-builders/docker
     id: env_general
-    waitfor: ['compupdate_ui']
+    waitFor: ['compupdate_ui']
     entrypoint: 'bash'
     args: ['-c', 'env | sed "s/^/export /" >> /workspace/cloudbuild-general.sh']
     volumes:
@@ -145,7 +145,7 @@ steps:
   # Build and push dh-ms-general.war - quay.io/ortelius/ms-general
   - name: 'gcr.io/cloud-builders/docker'
     id: build_push_general
-    waitfor: ['env_general']
+    waitFor: ['env_general']
     entrypoint: 'bash'
     args: ["-c", '. /workspace/cloudbuild-general.sh;docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/docker/DockerfileGeneral .;docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG']
     env:
@@ -154,7 +154,7 @@ steps:
   # Get image id
   - name: 'gcr.io/cloud-builders/docker'
     id: digest_general
-    waitfor: ['build_push_general']
+    waitFor: ['build_push_general']
     entrypoint: 'bash'
     env:
       - 'DOCKER_CONFIG=/workspace/docker-config'
@@ -163,7 +163,7 @@ steps:
   # Capture new component version in DeployHub
   - name: 'quay.io/deployhub/compupdate'
     id: compupdate_general
-    waitfor: ['digest_general']
+    waitFor: ['digest_general']
     entrypoint: 'bash'
     secretEnv: ['DHUSER', 'DHPASS']
     args: ['-c', '. /workspace/cloudbuild-general.sh;dh updatecomp --dhurl https://console.deployhub.com --appname "$$COMPONENT_APPLICATION" --compname "$$COMPONENT_NAME" --compvariant "$$COMPONENT_VARIANT" --compversion "$$COMPONENT_VERSION_COMMIT" --deployenv "$$DEPLOY_ENV" --docker --compattr "GitCommit:$SHORT_SHA" --compattr "GitUrl:$$COMPONENT_GITURL" --compattr "GitRepo:ortelius/$REPO_NAME" --compattr "GitTag:$TAG_NAME" --compattr "GitBranch:$BRANCH_NAME" --compattr "Chart:$$COMPONENT_CHARTNAME" --compattr "DockerSha:$$DIGEST" --compattr "DockerBuildDate:$$BLDDATE" --compattr "DockerRepo:$$COMPONENT_DOCKERREPO" --compattr "BuildId:$BUILD_ID" --compattr "BuildUrl:https://console.cloud.google.com/cloud-build/builds/$BUILD_ID?project=$PROJECT_ID" --compattr "CustomAction:$$COMPONENT_CUSTOMACTION" --compattr "DockerTag:$$IMAGE_TAG" --compattr "ChartNamespace:$$COMPONENT_CHARTNAMESPACE"']
