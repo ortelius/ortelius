@@ -13,7 +13,7 @@ steps:
     id: login
     waitFor: ['ssh_keys']
     entrypoint: 'bash'
-    args: ['-c', 'docker login quay.io --username "$$QUAY_USERID" --password $$QUAY_PASSWORD]
+    args: ['-c', 'docker login quay.io --username "$$QUAY_USERID" --password $$QUAY_PASSWORD']
     secretEnv: ['QUAY_USERID', 'QUAY_PASSWORD']     
     env:
       - 'DOCKER_CONFIG=/workspace/docker-config'
