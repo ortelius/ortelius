@@ -76,7 +76,7 @@ function ciClickElement(id, comptype)
  console.log("GetSummaryData?objtype=14&id=" + id + addParams);
  $.ajax(
  {
-  url : "/msapi/compitem?compid=" + id,
+  url : "/msapi/compitem?compitemid=" + id,
   crossDomain: true,
   dataType: 'json',
   async: false,
@@ -170,7 +170,11 @@ function ciClickElement(id, comptype)
     var isuser = true;
     var oldval = "";
 
-    if (label != "Predecessor" && label != "XPos" && label != "YPos" && label != "Summary" && label != "Name"  && label != "Kind" && label != "Roll Forward" && label != "Rollback")
+    if (label.toLowerCase() != "Predecessor".toLowerCase() && label.toLowerCase() != "XPos".toLowerCase() &&
+        label.toLowerCase() != "YPos".toLowerCase() && label.toLowerCase() != "Summary".toLowerCase() &&
+        label.toLowerCase() != "Name".toLowerCase() && label.toLowerCase() != "Kind".toLowerCase() && 
+        label.toLowerCase() != "Roll Forward".toLowerCase() && label.toLowerCase() != "Rollback".toLowerCase() &&
+        label.toLowerCase() != "Rollup flag".toLowerCase() && label.toLowerCase() != "Rollback flag".toLowerCase())
     {
      var myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
      

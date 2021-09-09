@@ -70,6 +70,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -2301,6 +2302,8 @@ public class API extends HttpServlet
    compname = domparts.get(domparts.size()-1);
    domparts.remove(domparts.size() - 1);
    String domname = StringUtils.join(domparts,".");
+   
+   createDomains4Obj(so, domname + "." + compname);
    
    Domain dom = so.getDomainByName(domname);
    
@@ -5010,7 +5013,7 @@ public class API extends HttpServlet
    JsonObject obj = new JsonParser().parse(requestData).getAsJsonObject();
 
    String deployment = (obj.get("deployid") != null) ? obj.get("deployid").getAsString() : "";
-   String compname = (obj.get("component") != null) ? obj.get("component").getAsString() : "";
+   String compname = (!(obj.get("component") instanceof JsonNull)) ? obj.get("component").getAsString() : "";
    String chartdigest = (obj.get("chartdigest") != null) ? obj.get("chartdigest").getAsString() : "";
    String chartname = (obj.get("chartname") != null) ? obj.get("chartname").getAsString() : "";
    String chartversion = (obj.get("chartversion") != null) ? obj.get("chartversion").getAsString() : "";
@@ -5046,7 +5049,7 @@ public class API extends HttpServlet
     
     for (int k=0;k<comps.size();k++)
     {
-     if (comps.get(k).getName().equals(compname)) 
+     if (comps.get(k).getFullName().equals(compname)) 
      {
       comp = comps.get(k);
       break;
@@ -5261,6 +5264,61 @@ public class API extends HttpServlet
     return;
    }  
 
+   // add app domains
+   shortname = "";
+   parts = new ArrayList<String>(Arrays.asList(appname.split("\\.")));
+   if (parts != null && !parts.isEmpty()) 
+   {
+    shortname = parts.get(parts.size()-1);
+    parts.remove(parts.size()-1);
+   }
+
+   try
+   {
+    tgtdomain = getDomainFromNameOrID(so, parts.get(0));
+   }
+   catch (ApiException e1)
+   {
+    tgtdomain = null;
+   }
+
+   domStr = parts.get(0);
+   newDom = false;
+
+   for (int i = 1; i < parts.size(); i++)
+   {
+    String domain = parts.get(i);
+    newDom = false;
+
+    domStr += "." + domain;
+    try
+    {
+     tgtdomain = getDomainFromNameOrID(so, domStr);
+    }
+    catch (Exception e)
+    {
+     newDom = true;
+    }
+
+    if (newDom)
+    {
+     int newid = so.getID("domain");
+     so.CreateNewObject("domain", domain, tgtdomain.getId(), tgtdomain.getId(), newid, 0, 0, "domains", true);
+
+     tgtdomain = so.getDomain(newid);
+
+     if (tgtdomain == null)
+     {
+      ret.add("saved", false);
+      ret.add("error", "Failed to create domain" + domain);
+      String result = ret.getJSON();
+      System.out.println(result);
+      out.println(result);
+      return;
+     }
+    }
+   } 
+
    Application app = null;
    
    if (appname != null  && !appname.isEmpty())
@@ -5268,16 +5326,22 @@ public class API extends HttpServlet
     try
     {
      app = this.getApplicationFromNameOrID(so, appname);
+     app = so.getLatestVersion(app, null);
     }
     catch (ApiException e)
     {
-    }
-   
-    if (app == null)
-    {
-     ret.add("errormsg", "Application not found");
-     out.println(ret.getJSON());
-     return;
+     String[] p2 = appname.split(";");
+     if (p2 != null && p2.length >= 1)
+     {
+      try
+      {
+       app = this.getApplicationFromNameOrID(so, p2[0]);
+       app = so.getLatestVersion(app, null);
+      }
+      catch (ApiException e1)
+      {
+      }
+     }
     }
    } 
    
@@ -5306,7 +5370,7 @@ public class API extends HttpServlet
      }
     } 
    }  
-   ret = so.logDeployment(app, comps, env, exitcode, log);
+   ret = so.logDeployment(appname, app, comps, env, exitcode, log);
    String result = ret.getJSON(); 
    System.out.println(result);
    out.println(result);

@@ -19,8 +19,9 @@
 /***** Start Application List ****/
   
  function applist_table_resize(){
-  var h = $(document).height();
-  $("#applist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#applist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getAppList(displaytype)
@@ -190,10 +191,15 @@
    $("#applist_map").hide();
    
   applist_table = $('#applist').DataTable( {
-   responsive: false, 
-   pageResize: true,
-   select:         true,
-   dom: "rtip",
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
+   destroy: true,
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=AppList",
     "type": "GET"
@@ -233,7 +239,19 @@
                  selector: 'td:first-child'
              }         
   } );
-  
+
+  $('#applist_checkall').click(function() {
+        if (applist_table.rows({
+                selected: true
+            }).count() > 0) {
+            applist_table.rows().deselect();
+            return;
+        }
+
+        applist_table.rows().select();
+    });
+
+
   $.ajax({
    type : "GET",
    async: false,
@@ -270,6 +288,11 @@
     var data = applist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	 if (dt.rows().count() == data.length)
+	   $('#applist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#applist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -297,6 +320,13 @@
     $("#applist_buttons > button:nth-child(3)").css("color", "lightgrey");
     $("#applist_buttons > button:nth-child(4)").css("color", "lightgrey");
     $(".taskMenuButton").css("color", "lightgrey");
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#applist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#applist_checkall i').attr('class', 'far fa-minus-square');
+    }
    }
   });
  }
@@ -364,12 +394,14 @@
    }
   });
  } 
+ applist_table_resize();
 }
  
 /**** Comp List ****/
  function complist_table_resize(){
-  var h = $(document).height();
-  $("#complist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#complist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getCompList(displaytype)
@@ -536,11 +568,15 @@
    $("#complist_map").hide();
    
   complist_table =$('#complist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=CompList",
     "type": "GET"
@@ -582,6 +618,16 @@
                 }  
   } );
   
+  $('#complist_checkall').click(function() {
+        if (complist_table.rows({
+                selected: true
+            }).count() > 0) {
+            complist_table.rows().deselect();
+            return;
+        }
+
+        complist_table.rows().select();
+    });
 
   $.ajax({
    type : "GET",
@@ -619,6 +665,11 @@
     var data = complist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	 if (dt.rows().count() == data.length)
+	   $('#complist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#complist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -643,8 +694,14 @@
    if ( type === 'row' ) {
     $("#complist_buttons > button:nth-child(3)").css("color", "lightgrey");
     $("#complist_buttons > button:nth-child(4)").css("color", "lightgrey");
-   }
-  });
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#complist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#complist_checkall i').attr('class', 'far fa-minus-square');
+    }
+  }});
  }
   else // map
   {
@@ -711,13 +768,15 @@
     }
    });
   } 
+ complist_table_resize();
 }
 /***** End Comp List  *****/
 /***** Start Env List *****/ 
 
  function envlist_table_resize(){
-  var h = $(document).height();
-  $("#envlist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#envlist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getEnvList(displaytype)
@@ -840,11 +899,15 @@
    $("#envlist_list").height(h-160);
    
   envlist_table =$('#envlist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=EnvList",
     "type": "GET"
@@ -881,6 +944,16 @@
                 }  
   } );
   
+  $('#envlist_checkall').click(function() {
+        if (envlist_table.rows({
+                selected: true
+            }).count() > 0) {
+            envlist_table.rows().deselect();
+            return;
+        }
+
+        envlist_table.rows().select();
+    });
 
   $.ajax({
    type : "GET",
@@ -918,6 +991,11 @@
     var data = envlist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	 if (dt.rows().count() == data.length)
+	   $('#envlist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#envlist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -940,16 +1018,25 @@
   envlist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
     $("#envlist_buttons > button:nth-child(3)").css("color", "lightgrey");
-   }
-  });
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#envlist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#envlist_checkall i').attr('class', 'far fa-minus-square');
+    }
+  }});
  }
+
+ envlist_table_resize();
 } 
  /***** End Env List  *****/
  /***** Start Endpoint List *****/ 
 
  function endpointlist_table_resize(){
-  var h = $(document).height();
-  $("#endpointlist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#endpointlist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getEndpointList(displaytype)
@@ -1074,11 +1161,15 @@
    $("#endpointlist_list").show();
    
   endpointlist_table =$('#endpointlist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=EndPointList",
     "type": "GET"
@@ -1115,6 +1206,16 @@
                 }  
   } );
   
+  $('#endpointlist_checkall').click(function() {
+        if (endpointlist_table.rows({
+                selected: true
+            }).count() > 0) {
+            endpointlist_table.rows().deselect();
+            return;
+        }
+
+        endpointlist_table.rows().select();
+    });
 
   $.ajax({
    type : "GET",
@@ -1152,6 +1253,11 @@
     var data = endpointlist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	 if (dt.rows().count() == data.length)
+	   $('#endpointlist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#endpointlist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -1175,15 +1281,26 @@
    if ( type === 'row' ) {
     $("#endpointlist_buttons > button:nth-child(3)").css("color", "lightgrey");
    }
+
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#endpointlist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#endpointlist_checkall i').attr('class', 'far fa-minus-square');
+    }
   });
  }
+ 
+endpointlist_table_resize();
 } 
  /***** End Endpoint List  *****/
  /***** Start Build Engine List *****/ 
 
  function buildenglist_table_resize(){
-  var h = $(document).height();
-  $("#buildenglist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#buildenglist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getBuildEngList(displaytype)
@@ -1308,11 +1425,15 @@
    $("#buildenglist_list").show();
    
   buildenglist_table =$('#buildenglist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=buildengList",
     "type": "GET"
@@ -1349,6 +1470,16 @@
                 }  
   } );
   
+  $('#buildenglist_checkall').click(function() {
+        if (buildenglist_table.rows({
+                selected: true
+            }).count() > 0) {
+            buildenglist_table.rows().deselect();
+            return;
+        }
+
+        buildenglist_table.rows().select();
+    });
 
   $.ajax({
    type : "GET",
@@ -1386,6 +1517,11 @@
     var data = buildenglist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	 if (dt.rows().count() == data.length)
+	   $('#buildenglist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#buildenglist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -1409,15 +1545,25 @@
    if ( type === 'row' ) {
     $("#buildenglist_buttons > button:nth-child(3)").css("color", "lightgrey");
    }
+
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#buildenglist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#buildenglist_checkall i').attr('class', 'far fa-minus-square');
+    }
   });
  } 
+ buildenglist_table_resize();
 } 
  /***** End Build Engine List  *****/
   /***** Start Actions List *****/ 
 
  function actionlist_table_resize(){
-  var h = $(document).height();
-  $("#actionlist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#actopmlist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getActionList(displaytype)
@@ -1542,11 +1688,15 @@
    $("#actionlist_list").show();
    
   actionlist_table =$('#actionlist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=actionList",
     "type": "GET"
@@ -1583,6 +1733,16 @@
                 }  
   } );
   
+  $('#actionlist_checkall').click(function() {
+        if (actionlist_table.rows({
+                selected: true
+            }).count() > 0) {
+            actionlist_table.rows().deselect();
+            return;
+        }
+
+        actionlist_table.rows().select();
+    });
 
   $.ajax({
    type : "GET",
@@ -1620,6 +1780,11 @@
     var data = actionlist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	 if (dt.rows().count() == data.length)
+	   $('#actiolist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#actionlist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -1643,6 +1808,14 @@
    if ( type === 'row' ) {
     $("#actionlist_buttons > button:nth-child(3)").css("color", "lightgrey");
    }
+
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#actionlist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#actionlist_checkall i').attr('class', 'far fa-minus-square');
+    }
   });
  } 
 } 
@@ -1680,11 +1853,13 @@
     alert("failed!");
    });
   } 
+actionlist_table_resize();
 } 
  
  function procedurelist_table_resize(){
-  var h = $(document).height();
-  $("#procedurelist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#procedurelist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getProcedureList(displaytype)
@@ -1816,11 +1991,15 @@
    $("#procedurelist_list").show();
    
   procedurelist_table =$('#procedurelist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=procedureList",
     "type": "GET"
@@ -1858,6 +2037,16 @@
                 }  
   } );
   
+  $('#procedurelist_checkall').click(function() {
+        if (procedurelist_table.rows({
+                selected: true
+            }).count() > 0) {
+            procedurelist_table.rows().deselect();
+            return;
+        }
+
+        procedurelist_table.rows().select();
+    });
 
   $.ajax({
    type : "GET",
@@ -1895,6 +2084,11 @@
     var data = procedurelist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	 if (dt.rows().count() == data.length)
+	   $('#procedurelist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#procedurelist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -1920,15 +2114,25 @@
     $("#procedurelist_buttons > button:nth-child(4)").css("color", "lightgrey");
     $("#procedurelist_buttons > button:nth-child(5)").css("color", "lightgrey");
    }
+
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#procedurelist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#procedurelist_checkall i').attr('class', 'far fa-minus-square');
+    }
   });
  } 
+ procedurelist_table_resize();
 } 
  /***** End Procedure List  *****/
  /***** Start Notifier List *****/ 
 
  function notifierlist_table_resize(){
-  var h = $(document).height();
-  $("#notifierlist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#notifierlist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getNotifierList(displaytype)
@@ -2053,11 +2257,15 @@
    $("#notifierlist_list").show();
    
   notifierlist_table =$('#notifierlist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=notifierList",
     "type": "GET"
@@ -2094,6 +2302,16 @@
                 }  
   } );
   
+  $('#notifierlist_checkall').click(function() {
+        if (notifierlist_table.rows({
+                selected: true
+            }).count() > 0) {
+            notifierlist_table.rows().deselect();
+            return;
+        }
+
+        notifierlist_table.rows().select();
+    });
 
   $.ajax({
    type : "GET",
@@ -2131,6 +2349,11 @@
     var data = notifierlist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	 if (dt.rows().count() == data.length)
+	   $('#notifierlist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#notifierlist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -2154,15 +2377,25 @@
    if ( type === 'row' ) {
     $("#notifierlist_buttons > button:nth-child(3)").css("color", "lightgrey");
    }
+
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#notifierlist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#notifierlist_checkall i').attr('class', 'far fa-minus-square');
+    }
   });
  } 
+ notifierlist_table_resize();
 } 
  /***** End Notifier List  *****/
  /***** Start Repository List *****/ 
 
  function repositorylist_table_resize(){
-  var h = $(document).height();
-  $("#repositorylist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#repositorylist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getRepositoryList(displaytype)
@@ -2287,11 +2520,15 @@
    $("#repositorylist_list").show();
    
   repositorylist_table =$('#repositorylist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=repositoryList",
     "type": "GET"
@@ -2329,6 +2566,17 @@
   } );
   
 
+  $('#repositorylist_checkall').click(function() {
+        if (repositorylist_table.rows({
+                selected: true
+            }).count() > 0) {
+            repositorylist_table.rows().deselect();
+            return;
+        }
+
+        repositorylist_table.rows().select();
+    });
+
   $.ajax({
    type : "GET",
    async: false,
@@ -2365,6 +2613,11 @@
     var data = repositorylist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+     if (dt.rows().count() == data.length)
+	   $('#repositorylist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#repositorylist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -2388,15 +2641,25 @@
    if ( type === 'row' ) {
     $("#repositorylist_buttons > button:nth-child(3)").css("color", "lightgrey");
    }
+
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#repositorylist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#repositorylist_checkall i').attr('class', 'far fa-minus-square');
+    }
   });
  } 
+ repositorylist_table_resize();
 } 
  /***** End Repository List  *****/
  /***** Start Datasource List *****/ 
 
  function datasourcelist_table_resize(){
-  var h = $(document).height();
-  $("#datasourcelist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#datasourcelist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getDatasourceList(displaytype)
@@ -2521,11 +2784,15 @@
    $("#datasourcelist_list").show();
    
   datasourcelist_table =$('#datasourcelist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=datasourceList",
     "type": "GET"
@@ -2562,6 +2829,16 @@
                 }  
   } );
   
+  $('#datasourcelist_checkall').click(function() {
+        if (datasourcelist_table.rows({
+                selected: true
+            }).count() > 0) {
+            datasourcelist_table.rows().deselect();
+            return;
+        }
+
+        datasourcelist_table.rows().select();
+    });
 
   $.ajax({
    type : "GET",
@@ -2599,6 +2876,11 @@
     var data = datasourcelist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	if (dt.rows().count() == data.length)
+	   $('#datasourcelist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#datasourcelist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -2622,15 +2904,25 @@
    if ( type === 'row' ) {
     $("#datasourcelist_buttons > button:nth-child(3)").css("color", "lightgrey");
    }
+
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#datasourcelist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#datasourcelist_checkall i').attr('class', 'far fa-minus-square');
+    }
   });
  } 
+datasourcelist_table_resize();
 } 
  /***** End Datasource List  *****/
  /***** Start Credential List *****/ 
 
  function credentiallist_table_resize(){
-  var h = $(document).height();
-  $("#credentiallist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#credentiallist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getCredentialList(displaytype)
@@ -2755,11 +3047,15 @@
    $("#credentiallist_list").show();
    
   credentiallist_table =$('#credentiallist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=credentialList",
     "type": "GET"
@@ -2796,6 +3092,16 @@
                 }  
   } );
   
+  $('#credentiallist_checkall').click(function() {
+        if (credentiallist_table.rows({
+                selected: true
+            }).count() > 0) {
+            credentiallist_table.rows().deselect();
+            return;
+        }
+
+        credentiallist_table.rows().select();
+    });
 
   $.ajax({
    type : "GET",
@@ -2833,6 +3139,11 @@
     var data = credentiallist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	 if (dt.rows().count() == data.length)
+	   $('#credentiallist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#credentiallist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -2856,15 +3167,25 @@
    if ( type === 'row' ) {
     $("#credentiallist_buttons > button:nth-child(3)").css("color", "lightgrey");
    }
+
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#credentiallist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#credentiallist_checkall i').attr('class', 'far fa-minus-square');
+    }
   });
  } 
+ credentiallist_table_resize();
 } 
  /***** End Credential List  *****/
  /***** Start User List *****/ 
 
  function userlist_table_resize(){
-  var h = $(document).height();
-  $("#userlist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#userlist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getUserList(displaytype)
@@ -2989,11 +3310,15 @@
    $("#userlist_list").show();
    
   userlist_table =$('#userlist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=userList",
     "type": "GET"
@@ -3030,6 +3355,16 @@
                 }  
   } );
   
+  $('#userlist_checkall').click(function() {
+        if (userlist_table.rows({
+                selected: true
+            }).count() > 0) {
+            userlist_table.rows().deselect();
+            return;
+        }
+
+        userlist_table.rows().select();
+    });
 
   $.ajax({
    type : "GET",
@@ -3067,6 +3402,11 @@
     var data = userlist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	 if (dt.rows().count() == data.length)
+	   $('#userlist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#userlist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -3090,15 +3430,25 @@
    if ( type === 'row' ) {
     $("#userlist_buttons > button:nth-child(3)").css("color", "lightgrey");
    }
+
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#userlist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#userlist_checkall i').attr('class', 'far fa-minus-square');
+    }
   });
  } 
+ userlist_table_resize();
 } 
  /***** End User List  *****/
  /***** Start Group List *****/ 
 
  function grouplist_table_resize(){
-  var h = $(document).height();
-  $("#grouplist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#grouplist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getGroupList(displaytype)
@@ -3223,11 +3573,15 @@
    $("#grouplist_list").show();
    
   grouplist_table =$('#grouplist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=groupList",
     "type": "GET"
@@ -3265,6 +3619,17 @@
   } );
   
 
+  $('#grouplist_checkall').click(function() {
+        if (grouplist_table.rows({
+                selected: true
+            }).count() > 0) {
+            grouplist_table.rows().deselect();
+            return;
+        }
+
+        grouplist_table.rows().select();
+    });
+
   $.ajax({
    type : "GET",
    async: false,
@@ -3301,6 +3666,11 @@
     var data = grouplist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	 if (dt.rows().count() == data.length)
+	   $('#grouplist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#grouplist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -3324,15 +3694,25 @@
    if ( type === 'row' ) {
     $("#grouplist_buttons > button:nth-child(3)").css("color", "lightgrey");
    }
+
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#grouplist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#grouplist_checkall i').attr('class', 'far fa-minus-square');
+    }
   });
  } 
+ grouplist_table_resize();
 } 
  /***** End Group List  *****/
  /***** Start Server Comp Type List *****/ 
 
  function servercomptypelist_table_resize(){
-  var h = $(document).height();
-  $("#servercomptypelist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#servercomptypelist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getServerCompTypeList(displaytype)
@@ -3456,11 +3836,15 @@
    $("#servercomptypelist_list").show();
    
   servercomptypelist_table =$('#servercomptypelist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=servercomptypeList",
     "type": "GET"
@@ -3497,6 +3881,16 @@
                 }  
   } );
   
+  $('#servercomptypelist_checkall').click(function() {
+        if (servercomptypelist_table.rows({
+                selected: true
+            }).count() > 0) {
+            servercomptypelist_table.rows().deselect();
+            return;
+        }
+
+        servercomptypelist_table.rows().select();
+    });
 
   $.ajax({
    type : "GET",
@@ -3534,6 +3928,11 @@
     var data = servercomptypelist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	 if (dt.rows().count() == data.length)
+	   $('#servercomptypelist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#servercomptypelist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -3557,15 +3956,25 @@
    if ( type === 'row' ) {
     $("#servercomptypelist_buttons > button:nth-child(3)").css("color", "lightgrey");
    }
+
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#servercomptypelist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#servercomptypelist_checkall i').attr('class', 'far fa-minus-square');
+    }
   });
  } 
+ servercomptypelist_table_resize();
 } 
  /***** End Server Comp Type List  *****/
  /***** Start Template List *****/ 
 
  function templatelist_table_resize(){
-  var h = $(document).height();
-  $("#templatelist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#templatelist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getTemplateList(displaytype)
@@ -3690,11 +4099,15 @@
    $("#templatelist_list").show();
    
   templatelist_table =$('#templatelist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=templateList",
     "type": "GET"
@@ -3726,6 +4139,16 @@
                 }  
   } );
   
+  $('#templatelist_checkall').click(function() {
+        if (templatelist_table.rows({
+                selected: true
+            }).count() > 0) {
+            templatelist_table.rows().deselect();
+            return;
+        }
+
+        templatelist_table.rows().select();
+    });
 
   $.ajax({
    type : "GET",
@@ -3763,6 +4186,11 @@
     var data = templatelist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	 if (dt.rows().count() == data.length)
+	   $('#templatelist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#templatelist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -3786,15 +4214,25 @@
    if ( type === 'row' ) {
     $("#templatelist_buttons > button:nth-child(3)").css("color", "lightgrey");
    }
+
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#templatelist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#templatelist_checkall i').attr('class', 'far fa-minus-square');
+    }
   });
  } 
+ templatelist_table_resize();
 } 
  /***** End Template List  *****/
  /***** Start Build Job List *****/ 
 
  function buildjoblist_table_resize(){
-  var h = $(document).height();
-  $("#buildjoblist_list").height(h-160);
+  var h = $("#panel_container_menu").height();
+  $("#buildjoblist_list").height(h-60);
+  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
  }
  
  function getBuildJobList(displaytype)
@@ -3919,11 +4357,15 @@
    $("#buildjoblist_list").show();
    
   buildjoblist_table =$('#buildjoblist').DataTable( {
-   responsive: false, 
-   pageResize: true,
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "60vh",
+   scroller: true,
+   pageLength: 25,
    destroy: true,
-   select:         true,
-   dom: "rtip",
+   sDom: 't<"bottom"lip>',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=buildjobList",
     "type": "GET"
@@ -3955,6 +4397,16 @@
                 }  
   } );
   
+  $('#buildjoblist_checkall').click(function() {
+        if (buildjoblist_table.rows({
+                selected: true
+            }).count() > 0) {
+            buildjoblist_table.rows().deselect();
+            return;
+        }
+
+        buildjoblist_table.rows().select();
+    });
 
   $.ajax({
    type : "GET",
@@ -3992,6 +4444,11 @@
     var data = buildjoblist_table.rows({selected:  true}).data();
     if (data != null && data.length > 0)
     {
+	 if (dt.rows().count() == data.length)
+	   $('#buildjoblist_checkall i').attr('class', 'far fa-check-square');
+     else
+	   $('#buildjoblist_checkall i').attr('class', 'far fa-minus-square');
+
      lastsel_id = data[0]['id'];
      lastSelectedNode = data[0]['id'];
      lastset_rel = "";
@@ -4015,10 +4472,176 @@
    if ( type === 'row' ) {
     $("#buildjoblist_buttons > button:nth-child(3)").css("color", "lightgrey");
    }
+
+	if (dt.rows({selected: true}).count() === 0) {
+	  $('#buildjoblist_checkall i').attr('class', 'far fa-square');
+    }
+    else
+    {
+	 $('#buildjoblist_checkall i').attr('class', 'far fa-minus-square');
+    }
   });
  } 
+ buildjoblist_table_resize();
 } 
- /***** End Build Job List  *****/
+/***** End Build Job List  *****/
+ 
+/***** Start License List *****/ 
+ 
+ function getLicenseList(displaytype)
+ {
+  if (displaytype == "list")
+  {
+   if (typeof licenselist_table != "undefined" && licenselist_table != null)
+   {
+    licenselist_table.clear();
+    licenselist_table.destroy();
+    licenselist_table = null;
+   }
+   var h = $(document).height();
+   $("#licenselist_list").height(h-160);
+   
+   $("#licenselist_list").show();
+   
+  licenselist_table =$('#licenselist').DataTable( {
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   scrollCollapse: true,
+   scroller: true,
+   pageLength: 25,
+   destroy: true,
+   sDom: 't<"bottom"lip>',
+   "ajax": {
+    "url": "/msapi/deppkg?deptype=license&compid=" + objid,
+    "type": "GET"
+  },
+  "order": [[ 1, "asc" ], [2, "asc"]],
+  "rowGroup": {
+            "dataSrc": 1,
+            "emptyDataGroup": "No License" 
+  },
+  "drawCallback": function ( settings ) {
+    var api = this.api();
+    var rows = api.rows( {page:'current'} ).nodes();
+    var last=null;
+ 
+    api.column(1, {page:'current'} ).data().each( function ( group, i ) {
+       if ( last !== group)  {
+         row = $(rows).eq(i);
+         data = licenselist_table.row(row).data();
+         
+         urllink = "<a href='"+data.url+"' target=_blank>"+data.name+"</a>";
+         if (group.length > 0)
+             $(rows).eq( i ).before('<tr class="dtrg-group"><td colspan="5">'+urllink+'</td></tr>');
+         last = group;
+        }
+     });
+   },         
+  "columns": [
+       { "data": "url" },
+       { "data": "name" },
+       { "data": "packagename" },
+       { "data": "packageversion" }     ],
+   "columnDefs": [
+                 {
+                  "targets": [ 0 ],
+                  "visible": false
+                 },
+                 {
+                  "targets": [ 1 ],
+                  "visible": false
+                 },
+                 {
+                  "targets": [ 2 ],
+                  "width": 150
+                 }
+                ]
+   });
+  }
+ }
+ 
+/***** End License List  *****/
+/***** Start CVE List *****/ 
+ 
+ function getCVEList(displaytype)
+ {
+  if (displaytype == "list")
+  {
+   if (typeof cvelist_table != "undefined" && cvelist_table != null)
+   {
+    cvelist_table.clear();
+    cvelist_table.destroy();
+    cvelist_table = null;
+   }
+   var h = $(document).height();
+   $("#cvelist_list").height(h-160);
+   
+   $("#cvelist_list").show();
+   
+  cvelist_table =$('#cvelist').DataTable( {
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   scrollCollapse: true,
+   scroller: true,
+   pageLength: 25,
+   destroy: true,
+   sDom: 't<"bottom"lip>',
+   "ajax": {
+    "url": "/msapi/deppkg?deptype=cve&compid=" + objid,
+    "type": "GET"
+  },
+  "order": [[ 1, "asc" ], [2, "asc"]],
+  "rowGroup": {
+            "dataSrc": "name"
+  },
+  "initComplete": function(settings, json) {
+        $("#cvelist tr.dtrg-start").hide();
+  },
+  "drawCallback": function ( settings ) {
+    var api = this.api();
+    var rows = api.rows( {page:'current'} ).nodes();
+    var last=null;
+ 
+    api.column(1, {page:'current'} ).data().each( function ( group, i ) {
+       if ( last !== group)  {
+         row = $(rows).eq(i);
+         data = cvelist_table.row(row).data();
+         
+         urllink = "<a href='"+data.url+"' target=_blank>"+data.name+"</a>";
+         if (group.length > 0)
+             $(rows).eq( i ).before('<tr class="dtrg-group"><td colspan="5">'+urllink+'</td></tr>');
+         last = group;
+        }
+     });
+   },         
+  "columns": [
+       { "data": "url" },
+       { "data": "name" },
+       { "data": "packagename" },
+       { "data": "packageversion" },
+       { "data": "summary" },
+   ],
+   "columnDefs": [
+                 {
+                  "targets": [ 0 ],
+                  "visible": false
+                 },
+                 {
+                  "targets": [ 1 ],
+                  "visible": false
+                 },
+                 {
+                  "targets": [ 2 ],
+                  "width": 150
+                 }
+                ]
+   });
+  }
+ }
+ 
+
+ 
+/***** End CVE List  *****/
+
+
  
  function HideSetup()
  {

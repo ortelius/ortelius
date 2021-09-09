@@ -175,7 +175,8 @@ public enum SummaryField
  DISCORD_CHANNEL (1622, "Discord Channel", null),	
  HIPCHAT_CHANNEL (1623, "Hipchat Channel", null),
  PAGERDUTY_SERVICE_URL (1624, "PagerDuty Service Url", null),
- PAGERDUTY_BUSINESS_URL (1625, "PagerDuty Business Service Url", null);
+ PAGERDUTY_BUSINESS_URL (1625, "PagerDuty Business Service Url", null),
+ COMP_SWAGGER (1626, "Swagger", null);
  
 	private final int m_value;
 	private final ObjectType m_type;

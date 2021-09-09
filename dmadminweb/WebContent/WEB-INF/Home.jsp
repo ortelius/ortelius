@@ -44,7 +44,9 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.6/css/buttons.dataTables.min.css" />
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css" />
 <link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.0/css/select.dataTables.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/rowgroup/1.1.3/css/rowGroup.dataTables.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.6.0/swagger-ui.css">
 <link rel="stylesheet" type="text/css" href="css/devops_frydesign.css" />
 
 <script type="text/javascript" src="js/jquery.min.js"></script>
@@ -99,7 +101,10 @@
 <script type="text/javascript" src="js/jquery.form.js"></script>
 <script type="text/javascript" src="js/jquery.fileDownload.js"></script>
 <script type="text/javascript" src="js/edit_area/edit_area_full.js"></script>
- 
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.6.0/swagger-ui-bundle.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.6.0/swagger-ui-standalone-preset.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.flash.min.js"></script>
@@ -111,6 +116,7 @@
 <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/features/pageResize/dataTables.pageResize.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/select/1.3.0/js/dataTables.select.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
 <script src="https://d3js.org/d3.v5.min.js"></script>
@@ -225,7 +231,11 @@
 		  <table id="applist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
-                <th></th>
+                <th>
+                  <button style="border: none; background: transparent;" id="applist_checkall">
+                    <i class="far fa-square"></i>  
+                  </button>
+                </th>
 				<th style="text-align: left;">Version</th> 
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">Parent</th> 	
@@ -265,7 +275,11 @@
 		  <table id="complist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
-                <th></th>
+                <th>
+                  <button style="border: none; background: transparent;" id="complist_checkall">
+                    <i class="far fa-square"></i>  
+                  </button>
+                </th>
 				<th style="text-align: left;">Version</th> 
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">Parent</th>
@@ -301,7 +315,11 @@
 		  <table id="envlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
-                <th></th>
+                <th>
+                  <button style="border: none; background: transparent;" id="envlist_checkall">
+                    <i class="far fa-square"></i>  
+                  </button>
+                </th>
 				<th style="text-align: left;">Environment</th> 
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">domainid</th>  
@@ -325,7 +343,11 @@
 		  <table id="endpointlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
-                <th></th>
+                <th>
+                  <button style="border: none; background: transparent;" id="endpointlist_checkall">
+                    <i class="far fa-square"></i>  
+                  </button>
+                </th>
 				<th style="text-align: left;">Endpoint</th> 
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">domainid</th>  
@@ -349,7 +371,11 @@
 		  <table id="actionlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
-                <th></th>
+                <th>
+                  <button style="border: none; background: transparent;" id="actionlist_checkall">
+                    <i class="far fa-square"></i>  
+                  </button>
+                </th>
 				<th style="text-align: left;">Action</th> 
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">domainid</th>  
@@ -390,7 +416,11 @@
 		  <table id="procedurelist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
-                <th></th>
+                <th>
+                  <button style="border: none; background: transparent;" id="procedurelist_checkall">
+                    <i class="far fa-square"></i>  
+                  </button>
+                </th>
 				<th style="text-align: left;">Name</th> 
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">Type</th>
@@ -423,7 +453,11 @@
 		  <table id="notifierlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
-                <th></th>
+                <th>
+                  <button style="border: none; background: transparent;" id="notifierlist_checkall">
+                    <i class="far fa-square"></i>  
+                  </button>
+                </th>
 				<th style="text-align: left;">Notifier</th> 
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">domainid</th>  
@@ -455,7 +489,11 @@
 		  <table id="repositorylist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
-                <th></th>
+                <th>
+                  <button style="border: none; background: transparent;" id="repositorylist_checkall">
+                    <i class="far fa-square"></i>  
+                  </button>
+                </th>
 				<th style="text-align: left;">Repository</th> 
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">domainid</th>  
@@ -488,7 +526,11 @@
 		  <table id="datasourcelist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
-                <th></th>
+                <th>
+                  <button style="border: none; background: transparent;" id="datasourcelist_checkall">
+                    <i class="far fa-square"></i>  
+                  </button>
+                </th>
 				<th style="text-align: left;">Data Source</th> 
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">domainid</th>  
@@ -518,7 +560,11 @@
 		  <table id="credentiallist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
-                <th></th>
+                <th>
+                  <button style="border: none; background: transparent;" id="credentiallist_checkall">
+                    <i class="far fa-square"></i>  
+                  </button>
+                </th>
 				<th style="text-align: left;">Credential</th> 
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">domainid</th>  
@@ -542,7 +588,11 @@
 		  <table id="userlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
-                <th></th>
+                <th>
+                  <button style="border: none; background: transparent;" id="userlist_checkall">
+                    <i class="far fa-square"></i>  
+                  </button>
+                </th>
 				<th style="text-align: left;">User</th> 
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">domainid</th>  
@@ -564,7 +614,11 @@
 		  <table id="grouplist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
-                <th></th>
+                <th>
+                  <button style="border: none; background: transparent;" id="grouplist_checkall">
+                    <i class="far fa-square"></i>  
+                  </button>
+                </th>
 				<th style="text-align: left;">Group</th> 
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">domainid</th>  
@@ -588,7 +642,11 @@
 		  <table id="servercomptypelist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
-                <th></th>
+                <th>
+                  <button style="border: none; background: transparent;" id="servercomptypelist_checkall">
+                    <i class="far fa-square"></i>  
+                  </button>
+                </th>
 				<th style="text-align: left;">Type</th> 
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">domainid</th>  
@@ -612,7 +670,11 @@
 		  <table id="templatelist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
-                <th></th>
+                <th>
+                  <button style="border: none; background: transparent;" id="templatelist_checkall">
+                    <i class="far fa-square"></i>  
+                  </button>
+                </th>
 				<th style="text-align: left;">Template</th> 
 				<th style="text-align: left;">Notifier</th>
 				<th style="text-align: left;">templateid</th>  	    
@@ -889,6 +951,64 @@
                 </div>  
             </div>
            </div> 
+           <div id="tabs-General-row-12">
+            	<div id="readme-panel">
+            	  <div id="readme_title" style="text-align:left"">
+                            <h2>Readme</h2>
+                  </div>
+                  <div id="readme-data">
+                  </div>
+            	</div>
+            	<div id="swagger-panel">
+            	  <div id="swagger_title" style="text-align:left"">
+                      <h2>Swagger</h2>
+                  </div>
+                  <div id="swagger-data">
+                  </div>
+            	</div>
+            </div>	
+            <div id="tabs-General-row-12a">
+            	<div id="cve-panel">
+            	  <div id="cve_title" style="text-align:left"">
+                      <h2>CVE Issues</h2>
+                  </div>
+                  <div id="cve-data">
+                     <div id="cvelist_list" style="width:96%;height:100px;display:inline""></div>
+                        <table id="cvelist" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Package</th>
+                                    <th>Version</th>
+                                    <th style="text-align:left;">CVE</th>
+                                    <th style="text-align:left">Package/Version</th>
+                                    <th style="text-align:left">Summary</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                  </div>
+                 </div>
+            	<div id="license-panel">
+            	  <div id="license_title" style="text-align:left"">
+                      <h2>License Consumption</h2>
+                  </div>
+                  <div id="license-data">
+                     <div id="licenselist_list" style="width:96%;height:100px;display:inline""></div>
+                        <table id="licenselist" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Package</th>
+                                    <th>Version</th>
+                                    <th style="text-align:left;">License</th>
+                                    <th style="text-align:left">Package/Version</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                  </div>
+                  </div>
+            	</div>
+            </div>	
             <div id="tabs-General-row-15">
                 <div id="logs-panel">
                         <div id="logs_title" style="text-align:left"">
@@ -908,36 +1028,49 @@
                         </table>
                         </div>
                 </div>
-                <div id="srv4comp-panel">
-                  <div id="srv4comp-panel-header">
-                    <div id="srv4comp_title">
-                        <h2>Endpoints</h2>
+                                <div id="attrs-panel">
+                 	<div id="attrs-header">
+                     	<div id="attrs_title">
+                      	  <h2>Key Value Configuration</h2>
+                    	</div>
+                    	<div id="attrs_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddAttrRow('attrib')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditAttrRow('attrib')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteAttrRow('attrib')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveAttrRow('attrib')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelAttrRow('attrib')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                    	</div>
+                    </div>  
+                    <div id="attrib-data">
+                        <table id="attrib" class="cb_dev_table" width="100%" >
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="attrib-edit" class="cb_dev_table" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
                     </div>
-                    <div id="srv4comp_header_buttons">
-                        	<button class="add_button" onClick="javascript:AddSrv4CompRow('srv4comp')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
-                        	<button class="edit_button" onClick="javascript:EditSrv4CompRow('srv4comp')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
-                        	<button class="delete_button" onClick="javascript:DeleteSrv4CompRow('srv4comp')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
-                        	<button class="save_button" onClick="javascript:SaveSrv4CompRow('srv4comp')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
-                        	<button class="cancel_button" onClick="javascript:CancelSrv4CompRow('srv4comp')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
-                     </div>
+                </div>
+          		<div id="licensemd-panel">
+            	  <div id="licensemd_title" style="text-align:left"">
+                            <h2>License</h2>
                   </div>
-                  <div> 
-                   	<table id="srv4comp" class="cb_dev_table" width="100%" >
-           				<thead>
-            				<tr><th>&nbsp;</th><th>Endpoint</th><th>Deployment</th></tr>
-           				</thead>	   
-           				<tbody>
-           				</tbody> 
-          			</table>
-          			<table id="srv4comp-edit" class="cb_dev_table" width="100%" >
-           				<thead>
-            				<tr><th>&nbsp;</th><th>Endpoint</th><th>Deployment</th></tr>
-           				</thead>	   
-           				<tbody>
-           				</tbody> 
-          			</table>
-          		 </div>	
-                </div> 
+                  <div id="licensemd-data">
+                  </div>
+            	</div>
                 <div id="outerworkflow" class="versionsandinformation">
      	 			<div class="versions">
 	     				<div id="innerworkflow" style="height:600px;width:100%;">
@@ -1003,42 +1136,6 @@
            				<tbody>
            				</tbody> 
           			</table>  
-                </div>
-                 <div id="attrs-panel">
-                 	<div id="attrs-header">
-                     	<div id="attrs_title">
-                      	  <h2>Key Value Configuration</h2>
-                    	</div>
-                    	<div id="attrs_header_buttons">
-                        	<button class="add_button" onClick="javascript:AddAttrRow('attrib')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
-                        	<button class="edit_button" onClick="javascript:EditAttrRow('attrib')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
-                        	<button class="delete_button" onClick="javascript:DeleteAttrRow('attrib')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
-                        	<button class="save_button" onClick="javascript:SaveAttrRow('attrib')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
-                        	<button class="cancel_button" onClick="javascript:CancelAttrRow('attrib')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
-                    	</div>
-                    </div>  
-                    <div id="attrib-data">
-                        <table id="attrib" class="cb_dev_table" width="100%" >
-                            <thead>
-                                <tr>
-                                    <th>&nbsp;</th>
-                                    <th>Name</th>
-                                    <th>Value</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                        <table id="attrib-edit" class="cb_dev_table" width="100%">
-                            <thead>
-                                <tr>
-                                    <th>&nbsp;</th>
-                                    <th>Name</th>
-                                    <th>Value</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
                 </div>
                <div id="srv4env-panel">
                  	<div id="srv4env-header">
@@ -1274,6 +1371,56 @@
             </div>
             <div id="tabs-General-row-25">
             </div>
+            <div id="tabs-General-row-30">
+                <div id="app4comp-panel">
+                        <div id="app4comp_title" style="text-align:left"">
+                            <h2>Consuming Applications</h2>
+                        </div>
+                      	<table id="app4comp" class="dev_table" width="100%">
+           					<thead>
+           					</thead>	   
+           					<tbody>
+           					</tbody> 
+          			  	</table>
+          		</div>
+               <div id="srv4comp-panel">
+                  <div id="srv4comp-panel-header">
+                    <div id="srv4comp_title">
+                        <h2>Endpoints</h2>
+                    </div>
+                    <div id="srv4comp_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddSrv4CompRow('srv4comp')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditSrv4CompRow('srv4comp')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteSrv4CompRow('srv4comp')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveSrv4CompRow('srv4comp')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelSrv4CompRow('srv4comp')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                     </div>
+                  </div>
+                  <div> 
+                   	<table id="srv4comp" class="cb_dev_table" width="100%" >
+           				<thead>
+            				<tr><th>&nbsp;</th><th>Endpoint</th><th>Deployment</th></tr>
+           				</thead>	   
+           				<tbody>
+           				</tbody> 
+          			</table>
+          			<table id="srv4comp-edit" class="cb_dev_table" width="100%" >
+           				<thead>
+            				<tr><th>&nbsp;</th><th>Endpoint</th><th>Deployment</th></tr>
+           				</thead>	   
+           				<tbody>
+           				</tbody> 
+          			</table>
+          		 </div>	
+                </div> 
+          		<div id="planning-panel">
+                        <div id="planning_title" style="text-align:left"">
+                            <h2>Applications scheduled for this Release</h2>
+                        </div>
+          		        <div id="planningtimeline">
+          		        </div>       
+               </div> 
+            </div>  
             <div id="tabs-General-row-28">
                  <div id="feedback-panel">
                     <div id="feedback-panel-header">
@@ -1292,26 +1439,7 @@
                  </div>
                 </div>
             </div>
-            <div id="tabs-General-row-30">
-                <div id="app4comp-panel">
-                        <div id="app4comp_title" style="text-align:left"">
-                            <h2>Consuming Applications</h2>
-                        </div>
-                      	<table id="app4comp" class="dev_table" width="100%">
-           					<thead>
-           					</thead>	   
-           					<tbody>
-           					</tbody> 
-          			  	</table>
-          		</div>
-          		<div id="planning-panel">
-                        <div id="planning_title" style="text-align:left"">
-                            <h2>Applications scheduled for this Release</h2>
-                        </div>
-          		        <div id="planningtimeline">
-          		        </div>       
-               </div> 
-             </div>  
+
                <div id="tabs-General-row-35">
                 <div id="row-35-audit">
                         <div id="audit35_title" style="text-align:left"">
@@ -1486,8 +1614,6 @@
 	 </div>
    </div>
    </div>  <!-- end container -->
-	<div id="footer_container">	 
-	</div>
 	<div class="clear">
 	</div>
 	<div id="login_container_dialog"></div>
@@ -1508,6 +1634,10 @@
 	<div id="throbber" style="display:none;">
     	<img src="css/images/cowandspaceship-animated.gif"  />
 	</div>
+ <footer class="footer">
+	<div id="footer_container">	 
+	</div>
+ </footer>
 </body>
 </html>
 

@@ -1,0 +1,896 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OMTarget>
+   <Version>6.3</Version>
+   <Name>ao-ms-general.war</Name>
+   <Project>DEPLOY-PLUS</Project>
+   <TargetDefinitionFile>ao-ms-general.tgt</TargetDefinitionFile>
+   <OSPlatform>Java</OSPlatform>
+   <BuildType>Java War</BuildType>
+   <IntDirectory></IntDirectory>
+   <PhoneyTarget>false</PhoneyTarget>
+   <BuildTask>
+       <Name>Set Classpath</Name>
+       <Description>Add dependencies to the Set Classpath Build Task that need to be included in the class path prior to compilation.</Description>
+       <OptionGroup>
+           <GroupName>Build Task Options</GroupName>
+           <Type>1</Type>
+       </OptionGroup>
+   </BuildTask>
+   <BuildTask>
+       <Name>Ant Javac</Name>
+       <Description>Uses the Ant "javac" task to compile Java source code files. All dependencies added to this Build Task will be compiled using the compiler specified in the "compiler" Option parameter. If you want  to place the compiled files in a subdirectory of the build location, use the "destdir" Option parameter.</Description>
+       <OptionGroup>
+           <GroupName>Build Task Options</GroupName>
+           <Type>1</Type>
+           <Option>
+               <Flag>debug=</Flag>
+               <Parameter>true</Parameter>
+               <Description>If true, compile source with debug information.</Description>
+               <Type>338</Type>
+           </Option>
+           <Option>
+               <Flag>destdir=</Flag>
+               <Parameter></Parameter>
+               <Description>Indicates the directory, relative to the build directory, where the class files should be stored. If it is not used, the class files will be stored in the build directory.</Description>
+               <Type>90</Type>
+           </Option>
+           <Option>
+               <Flag>compiler=</Flag>
+               <Parameter>modern</Parameter>
+               <Description>Valid parameters are: modern, classic, jikes, gcj, sj, javac1.2, javac1.3 and javac1.4</Description>
+               <Type>347</Type>
+           </Option>
+           <Option>
+               <Flag>destdir=</Flag>
+               <Parameter>"dmadminweb/src"</Parameter>
+               <Description>Indicates the directory, relative to the build directory, where the class files should be stored. If it is not used, the class files will be stored in the build directory.</Description>
+               <Type>378</Type>
+           </Option>
+       </OptionGroup>
+   </BuildTask>
+   <BuildTask>
+       <Name>Ant War</Name>
+       <Description>All dependencies placed added at the Ant War Build Task level will end up at a root level in the final target .war file. The exception is the files defined as the parameters for the "webxml" and "manifest" options. These dependencies will be moved into the appropriate directories within the .war file. If these dependencies are derived from a subdirectory (e.g. an IDE project directory), you should set the basedir Option Parameter to that subdirectory.</Description>
+       <OptionGroup>
+           <GroupName>Build Task Options</GroupName>
+           <Type>1</Type>
+           <Option>
+               <Flag>basedir=</Flag>
+               <Parameter></Parameter>
+               <Description>Indicates the directory from which to war the files. If it is not used, the files will be warred directly from the build directory.</Description>
+               <Type>90</Type>
+           </Option>
+           <Option>
+               <Flag>compress=</Flag>
+               <Parameter>true</Parameter>
+               <Description>If true, compress the final target .war file.</Description>
+               <Type>346</Type>
+           </Option>
+           <Option>
+               <Flag>manifest=</Flag>
+               <Parameter></Parameter>
+               <Description>The name of the manifest file to use.</Description>
+               <Type>90</Type>
+           </Option>
+           <Option>
+               <Flag>webxml=</Flag>
+               <Parameter></Parameter>
+               <Description>The name of the deployment descriptor for the final target .war file. It is renamed web.xml and placed in the WEB-INF directory.</Description>
+               <Type>91</Type>
+           </Option>
+           <Option>
+               <Flag>basedir=</Flag>
+               <Parameter>"dmadminweb/WebContent"</Parameter>
+               <Description>Indicates the directory from which to war the files. If it is not used, the files will be warred directly from the build directory.</Description>
+               <Type>378</Type>
+           </Option>
+           <Option>
+               <Flag>manifest=</Flag>
+               <Parameter>"dmadminweb/WebContent/META-INF/MANIFEST.MF"</Parameter>
+               <Description>The name of the manifest file to use.</Description>
+               <Type>378</Type>
+           </Option>
+           <Option>
+               <Flag>webxml=</Flag>
+               <Parameter>"dmadminweb/microservice/ao-ms-general/web.xml"</Parameter>
+               <Description>The name of the deployment descriptor for the final target .war file. It is renamed web.xml and placed in the WEB-INF directory.</Description>
+               <Type>379</Type>
+           </Option>
+       </OptionGroup>
+       <OptionGroup>
+           <GroupName>Meta-Inf</GroupName>
+           <Type>1</Type>
+           <Option>
+               <Flag>dir=</Flag>
+               <Parameter></Parameter>
+               <Description>Indicates the directory where the dependencies need to be pulled from. If it is not used, the dependencies will be pulled directly from the build directory.</Description>
+               <Type>90</Type>
+           </Option>
+           <Option>
+               <Flag>prefix=</Flag>
+               <Parameter>META-INF</Parameter>
+               <Description>Ant attribute used to push target the WEB-INF directory in the .war file.</Description>
+               <Type>95</Type>
+           </Option>
+           <Option>
+               <Flag>dir=</Flag>
+               <Parameter>"dmadminweb/WebContent/META-INF"</Parameter>
+               <Description>Indicates the directory where the dependencies need to be pulled from. If it is not used, the dependencies will be pulled directly from the build directory.</Description>
+               <Type>378</Type>
+           </Option>
+       </OptionGroup>
+       <OptionGroup>
+           <GroupName>Web-Inf</GroupName>
+           <Type>1</Type>
+           <Option>
+               <Flag>dir=</Flag>
+               <Parameter></Parameter>
+               <Description>Indicates the directory where the dependencies need to be pulled from. If it is not used, the dependencies will be pulled directly from the build directory.</Description>
+               <Type>26</Type>
+           </Option>
+           <Option>
+               <Flag>prefix=</Flag>
+               <Parameter>WEB-INF</Parameter>
+               <Description>Ant attribute used to push target the WEB-INF directory in the .war file.</Description>
+               <Type>95</Type>
+           </Option>
+           <Option>
+               <Flag>dir=</Flag>
+               <Parameter>"dmadminweb/WebContent/WEB-INF"</Parameter>
+               <Description>Indicates the directory where the dependencies need to be pulled from. If it is not used, the dependencies will be pulled directly from the build directory.</Description>
+               <Type>314</Type>
+           </Option>
+       </OptionGroup>
+       <OptionGroup>
+           <GroupName>Web-Inf Classes</GroupName>
+           <Type>1</Type>
+           <Option>
+               <Flag>dir=</Flag>
+               <Parameter></Parameter>
+               <Description>Indicates the directory where the class files need to be pulled from. If it is not used, the classes will be pulled directly from the build directory.</Description>
+               <Type>90</Type>
+           </Option>
+           <Option>
+               <Flag>prefix=</Flag>
+               <Parameter>WEB-INF/classes</Parameter>
+               <Description>Ant attribute used to push target the WEB-INF/classes directory in the .war file.</Description>
+               <Type>95</Type>
+           </Option>
+           <Option>
+               <Flag>dir=</Flag>
+               <Parameter>"dmadminweb/src"</Parameter>
+               <Description>Indicates the directory where the class files need to be pulled from. If it is not used, the classes will be pulled directly from the build directory.</Description>
+               <Type>378</Type>
+           </Option>
+       </OptionGroup>
+       <OptionGroup>
+           <GroupName>Web-Inf Lib</GroupName>
+           <Type>1</Type>
+           <Option>
+               <Flag>dir=</Flag>
+               <Parameter></Parameter>
+               <Description>Indicates the directory where the dependencies need to be pulled from. If it is not used, the dependencies will be pulled directly from the build directory.</Description>
+               <Type>90</Type>
+           </Option>
+           <Option>
+               <Flag>prefix=</Flag>
+               <Parameter>WEB-INF/lib</Parameter>
+               <Description>Ant attribute used to push target the WEB-INF directory in the .war file.</Description>
+               <Type>95</Type>
+           </Option>
+           <Option>
+               <Flag>dir=</Flag>
+               <Parameter>"dmadminweb/WebContent/WEB-INF/lib"</Parameter>
+               <Description>Indicates the directory where the dependencies need to be pulled from. If it is not used, the dependencies will be pulled directly from the build directory.</Description>
+               <Type>378</Type>
+           </Option>
+       </OptionGroup>
+       <OptionGroup>
+           <GroupName>Help</GroupName>
+           <Type>1</Type>
+           <Option>
+               <Flag>dir=</Flag>
+               <Parameter></Parameter>
+               <Description>Indicates the directory where the dependencies need to be pulled from. If it is not used, the dependencies will be pulled directly from the build directory.</Description>
+               <Type>26</Type>
+           </Option>
+           <Option>
+               <Flag>prefix=</Flag>
+               <Parameter>"Help"</Parameter>
+               <Description>Ant attribute used to push target the Help directory in the .war file.</Description>
+               <Type>31</Type>
+           </Option>
+           <Option>
+               <Flag>dir=</Flag>
+               <Parameter>"NetHelp"</Parameter>
+               <Description>Indicates the directory where the dependencies need to be pulled from. If it is not used, the dependencies will be pulled directly from the build directory.</Description>
+               <Type>314</Type>
+           </Option>
+       </OptionGroup>
+   </BuildTask>
+   <Dependency>
+       <Name>dmadminweb/WebContent/WEB-INF/lib/*.jar</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>annotations-api.jar</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>catalina.jar</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>catalina-ant.jar</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>catalina-ha.jar</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>catalina-tribes.jar</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>ecj-P20140317-1600.jar</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>el-api.jar</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>jasper.jar</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>jasper-el.jar</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>jsp-api.jar</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>servlet-api.jar</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>tomcat-api.jar</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>tomcat-coyote.jar</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>tomcat-dbcp.jar</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>tomcat-i18n-es.jar</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>tomcat-i18n-fr.jar</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>tomcat-i18n-ja.jar</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>tomcat-jdbc.jar</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>tomcat-util.jar</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>tomcat7-websocket.jar</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>websocket-api.jar</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>rt.jar</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>jce.jar</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Set Classpath</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>Set Classpath results</Name>
+       <Type>38</Type>
+       <ParentBuildTask>Ant Javac</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/src/dmadmin/*.java</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant Javac</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+      <Name>dmadminweb/src/dmadmin/pro/*.java</Name>
+      <Type>5</Type>
+      <ParentBuildTask>Ant Javac</ParentBuildTask>
+      <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+  </Dependency>
+   <Dependency>
+       <Name>dmadminweb/src/dmadmin/json/*.java</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant Javac</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/src/dmadmin/jsp/*.java</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant Javac</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/src/dmadmin/util/*.java</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant Javac</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/src/dmadmin/model/*.java</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant Javac</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/src/com/openmakesoftware/trilogy/*.java</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant Javac</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/src/com/openmakesoftware/XDR/*.java</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant Javac</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/*.jsp</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/css/img/network/*.png</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>			
+   <Dependency>
+       <Name>dmadminweb/WebContent/css/img/timeline/*.png</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>							
+   <Dependency>
+       <Name>dmadminweb/WebContent/css/*.css</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/css/*.gif</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/css/*.png</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/css/cupertino/images/*.gif</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/css/cupertino/images/*.png</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/css/cupertino/*.css</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/css/images/*.gif</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/css/images/*.svg</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/css/images/*.png</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/css/images/images/*.gif</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/css/images/images/*.png</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/Rest/**/*.*</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>				
+   <Dependency>
+       <Name>dmadminweb/WebContent/hot/*.css</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/hot/*.js</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/images/*.png</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/images/*.gif</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/images/filetypes/*.png</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/*.js</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/_demo/*.png</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/*.html</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+      <Name>dmadminweb/WebContent/Home/*.html</Name>
+      <Type>37</Type>
+      <ParentBuildTask>Ant War</ParentBuildTask>
+      <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/_demo/*.html</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/_docs/*.css</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/_docs/*.png</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/_docs/*.html</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/_docs/*.xml</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/_docs/syntax/*.js</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/_docs/syntax/*.css</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/_docs/syntax/*.png</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/_lib/*.js</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/*.js</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/edit_area/**/*.*</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/cultures/*.js</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/i18n/*.js</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/*.css</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/minified/i18n/*.js</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/minified/*.js</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/ao/*.js</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/plugins/*.js</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/themes/apple/*.jpg</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/themes/apple/*.png</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/themes/apple/*.gif</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/themes/apple/*.css</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/themes/classic/*.gif</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/themes/classic/*.png</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/themes/classic/*.css</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/themes/default/*.gif</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/themes/default/*.png</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/themes/default/*.css</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/themes/default-rtl/*.gif</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/themes/default-rtl/*.png</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/themes/default-rtl/*.css</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/themes/apple/*.jpg</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/themes/apple/*.png</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/themes/apple/*.gif</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/themes/apple/*.css</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/themes/classic/*.gif</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/themes/classic/*.png</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/themes/classic/*.css</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/themes/default/*.gif</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/themes/default/*.png</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/themes/default/*.css</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/themes/default-rtl/*.gif</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/themes/default-rtl/*.png</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/themes/default-rtl/*.css</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/userimages/*.png</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/js/jqwidgets/**/*.*</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/reports/*.html</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/META-INF/*.MF</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Meta-Inf</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/WEB-INF/*.jsp</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Web-Inf</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/WEB-INF/*.jks</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Web-Inf</ParentOptionGroup>
+   </Dependency>				
+   <Dependency>
+       <Name>dmadminweb/microservice/ao-ms-general/web.xml</Name>
+
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Web-Inf</ParentOptionGroup>
+   </Dependency>		
+   <Dependency>
+       <Name>dmadminweb/WebContent/WEB-INF/schema/*.sql</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Web-Inf</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/WEB-INF/schema/*.json</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Web-Inf</ParentOptionGroup>
+   </Dependency>    
+   <Dependency>
+       <Name>dmadminweb/WebContent/WEB-INF/*.tld</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Web-Inf</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>Ant Javac results</Name>
+       <Type>38</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Web-Inf Classes</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>dmadminweb/WebContent/WEB-INF/lib/*.jar</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Web-Inf Lib</ParentOptionGroup>
+   </Dependency>
+   <Dependency>
+       <Name>NetHelp/**/*.*</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Help</ParentOptionGroup>
+   </Dependency>
+</OMTarget>

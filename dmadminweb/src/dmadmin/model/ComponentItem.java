@@ -47,20 +47,27 @@ public class ComponentItem
 	private String BuildId = "";
 	private String BuildUrl = "";
 	private String Chart = "";
- private String ChartRepo = "";
- private String ChartRepoUrl = "";
- private String ChartVersion = "";
+	private String ChartRepo = "";
+	private String ChartRepoUrl = "";
+	private String ChartVersion = "";
 	private String DockerSha = "";
- private String DockerRepo = "";
+	private String DockerRepo = "";
 	private String GitCommit = "";
 	private String GitRepo = "";
 	private String GitTag = "";
 	private String GitUrl = "";
- private String Operator = "";
- private String BuildDate = "";
- private String DockerTag = "";
-
- private String ChartNamespace;
+	private String Operator = "";
+	private String BuildDate = "";
+	private String DockerTag = "";
+	private String ChartNamespace = "";
+	private String SlackChannel = "";
+	private String ServiceOwner = "";
+	private String ServiceOwnerEmail = "";
+	private String ServiceOwnerPhone = "";
+	private String DiscordChannel = "";
+	private String HipChatChannel = "";
+	private String PagerDutyServiceUrl = "";
+	private String PagerDutyBusinessServiceUrl = "";
 	
 	public ComponentItem() {
         super.setId(0);
@@ -258,8 +265,74 @@ public class ComponentItem
  {
   BuildDate = buildDate;
  }
+ 
+ 
 
- @Override
+ public String getSlackChannel() {
+	return SlackChannel;
+}
+
+public void setSlackChannel(String slackChannel) {
+	SlackChannel = slackChannel;
+}
+
+public String getServiceOwner() {
+	return ServiceOwner;
+}
+
+public void setServiceOwner(String serviceOwner) {
+	ServiceOwner = serviceOwner;
+}
+
+public String getServiceOwnerEmail() {
+	return ServiceOwnerEmail;
+}
+
+public void setServiceOwnerEmail(String serviceOwnerEmail) {
+	ServiceOwnerEmail = serviceOwnerEmail;
+}
+
+public String getServiceOwnerPhone() {
+	return ServiceOwnerPhone;
+}
+
+public void setServiceOwnerPhone(String serviceOwnerPhone) {
+	ServiceOwnerPhone = serviceOwnerPhone;
+}
+
+public String getDiscordChannel() {
+	return DiscordChannel;
+}
+
+public void setDiscordChannel(String discordChannel) {
+	DiscordChannel = discordChannel;
+}
+
+public String getHipChatChannel() {
+	return HipChatChannel;
+}
+
+public void setHipChatChannel(String hipChatChannel) {
+	HipChatChannel = hipChatChannel;
+}
+
+public String getPagerDutyServiceUrl() {
+	return PagerDutyServiceUrl;
+}
+
+public void setPagerDutyServiceUrl(String pagerDutyServiceUrl) {
+	PagerDutyServiceUrl = pagerDutyServiceUrl;
+}
+
+public String getPagerDutyBusinessServiceUrl() {
+	return PagerDutyBusinessServiceUrl;
+}
+
+public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
+	PagerDutyBusinessServiceUrl = pagerDutyBusinessServiceUrl;
+}
+
+@Override
 	public ObjectType getObjectType() {
 		System.out.println("component getObjectType Returning "+ObjectType.COMPONENT);
 		return ObjectType.COMPONENTITEM;
@@ -359,6 +432,14 @@ public class ComponentItem
    ds.addProperty(SummaryField.DOCKER_GITREPO, "Git Repo", getGitRepo());
    ds.addProperty(SummaryField.DOCKER_GITTAG, "Git Tag", getGitTag());
    ds.addProperty(SummaryField.DOCKER_GITURL, "Git URL", getGitUrl());
+   ds.addProperty(SummaryField.SERVICE_OWNER, "Service Owner", getServiceOwner());
+   ds.addProperty(SummaryField.SERVICE_OWNER_EMAIL, "Service Owner Email", getServiceOwnerEmail());
+   ds.addProperty(SummaryField.SERVICE_OWNER_PHONE, "Service Owner Phone", getServiceOwnerPhone());
+   ds.addProperty(SummaryField.SLACK_CHANNEL, "Slack Channel", getSlackChannel());
+   ds.addProperty(SummaryField.DISCORD_CHANNEL, "Slack Channel", getDiscordChannel());
+   ds.addProperty(SummaryField.HIPCHAT_CHANNEL, "Slack Channel", getHipChatChannel());
+   ds.addProperty(SummaryField.PAGERDUTY_SERVICE_URL, "Pager Duty Service Url", getPagerDutyServiceUrl());
+   ds.addProperty(SummaryField.PAGERDUTY_BUSINESS_URL, "Pager Duty Business Service Url", getPagerDutyBusinessServiceUrl());
   }
   
   if (getItemkind() == ComponentItemKind.DATABASE || getItemkind() == ComponentItemKind.FILE)
@@ -479,6 +560,14 @@ public class ComponentItem
    obj.add("Git Repo", getGitRepo());
    obj.add("Git Tag", getGitTag());
    obj.add("Git URL", getGitUrl());
+   obj.add("Service Owner", getServiceOwner());
+   obj.add("Service Owner Email", getServiceOwnerEmail());
+   obj.add("Service Owner Phone", getServiceOwnerPhone());
+   obj.add("Slack Channel", getSlackChannel());
+   obj.add("Slack Channel", getDiscordChannel());
+   obj.add("Slack Channel", getHipChatChannel());
+   obj.add("Pager Duty Service Url", getPagerDutyServiceUrl());
+   obj.add("Pager Duty Business Service Url", getPagerDutyBusinessServiceUrl());
   }
   
   return obj;

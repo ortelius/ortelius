@@ -212,6 +212,14 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 		display: flex;
 }	
 	
+#tabs-General-row-12 {
+		display: flex;
+}		
+
+#tabs-General-row-12a {
+		display: flex;
+}		
+	
 #tabs-General-row-15 {
 		display: flex;
 }	
@@ -311,8 +319,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 }				
 		
 #tabs-General-row-30 {
-    margin:8px;	
-    margin-top: 16px;
+	display: flex;
 }
 
 #tabs-General-row-35 {
@@ -485,13 +492,11 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 }
 
 #app4comp-panel {
-	width: 100%;
+	width: 50%;
 	display:inline-block;
 	border: 1px solid lightgrey;
-    margin-top: 8px;
-    max-height: 200px;
-    overflow-y: auto;
-}
+	margin: 8px;
+}	
 
 #planning-panel {
 	width: 100%;
@@ -1153,10 +1158,6 @@ iframe.dialog_white {
   	font-size: .85em;
   	padding: .5em .5em .5em .7em;
 }
-
-//.ui-accordion li {
-//	margin-bottom: 5px;
-//   }
    
 /* IE7-/Win - Fix extra vertical space in lists */
 .ui-accordion a {
@@ -1179,7 +1180,6 @@ iframe.dialog_white {
   	margin-top: -2px;
   	position: relative;
   	top: 1px;
-//  	margin-bottom: 2px;
   	overflow: auto;
   	display: none;  
   
@@ -1686,7 +1686,7 @@ h1.dialog_subtitle  {
 
 span.subtitle {
 	font-weight: normal;
-	font-style: normal;s
+	font-style: normal;
 }
 
 h1.appversion_noicon, .taskpanels {  
@@ -2057,6 +2057,123 @@ ul.subpanel li {
   margin-left: 10px;
   float: left;
 }
+
+/*** start readme ***/
+#readme-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+    overflow-y: auto;
+    max-height: 300px;
+}	
+
+#readme_title {
+	display: inline-block;
+}
+
+#readme-data {
+	font-size: 14px;
+}
+
+/* end readme */
+
+/*** start swagger ***/
+#swagger-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+    overflow-y: auto;
+    max-height: 300px;
+}	
+
+#swagger_title {
+	display: inline-block;
+}
+
+#swagger-data {
+	width: calc(100% - 40px);
+	position: relative;
+    top: -20px;
+}
+
+#swagger-data > section > div.topbar {
+	display: none;
+}
+
+#swagger-data > section > div.swagger-ui > div > div.information-container.wrapper > section > div > hgroup > h2 > small > pre {
+	all: revert;
+	font-size: 1.5em;
+}
+
+#swagger-data > section > div.swagger-ui > div > div.information-container.wrapper > section > div > hgroup > a {
+	display: none;
+}
+
+
+#swagger-data > section > div.wrapper > section > span {
+	display: none;
+}
+
+/* end swagger */
+
+/*** start cve ***/
+#cve-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+    overflow-y: auto;
+    max-height: 300px;
+}	
+
+#cve_title {
+	display: inline-block;
+}
+
+/* end cve */
+
+/*** start license ***/
+#license-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+    margin:8px;
+    overflow-y: auto;
+    max-height: 300px;
+}	
+
+#license_title {
+	display: inline-block;
+}
+
+#licenselist > tbody > tr > td.sorting_2 {
+    white-space: nowrap;
+}
+
+
+/* end license */
+
+/*** start licensemd ***/
+#licensemd-panel {
+	width: 50%;
+	display:inline-block;
+	border: 1px solid lightgrey;
+	margin: 8px;
+    overflow-y: auto;
+    max-height: 300px;
+}	
+
+#licensemd_title {
+	display: inline-block;
+}
+
+#licensemd-data {
+	font-size: 14px;
+}
+
+/* end licensemd */
 
 /*** start srv4comp ***/
 
@@ -3063,7 +3180,6 @@ button.save_button_sub_small img {
 	font-size: .75em;
 	font-weight: 600;
 	text-align: center;
-	maring-top
 	margin-left: 15px;
 	margin-right: 15px; 
 	}
@@ -3424,7 +3540,7 @@ div.dt-buttons {
     display: inline-block;
     color: #fff;
     height: 30px;
-    margin-right: 13px;s
+    margin-right: 13px;
     position: relative;
     top: -2px;
     vertical-align: middle;
@@ -3439,7 +3555,7 @@ div.dt-buttons {
     display: inline-block;
     color: #fff;
     height: 30px;
-    margin-right: 13px;s
+    margin-right: 13px;
     position: relative;
     top: -2px;
     vertical-align: middle;
@@ -3712,11 +3828,7 @@ div.dt-buttons {
     width: 30px;
 }
 
-#applist_length {
-	display: none;
-}
-
-#applist_pane, #complist_pane, #envlist_pane. #endpointlist_pane, #buildenglist_pane, #buildjoblist_pane, #actionlist_pane, #procdurelist_pane, #notifierlist_pane, #repositorylist_pane, #datasourcelist_pane, #credentiallist_pane, #userlist_pane, #grouplist_pane, #templatelist_pane {
+#applist_pane, #complist_pane, #envlist_pane, #endpointlist_pane, #buildenglist_pane, #buildjoblist_pane, #actionlist_pane, #procdurelist_pane, #notifierlist_pane, #repositorylist_pane, #datasourcelist_pane, #credentiallist_pane, #userlist_pane, #grouplist_pane, #templatelist_pane {
     bottom: 20%;
     box-sizing: border-box;
     position: absolute;

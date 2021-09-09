@@ -4381,12 +4381,17 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#tabs-General-row-40").show();
    $("#defect-panel").show();
    
+   LoadReadme(objid);
+   LoadSwagger(objid);
+   LoadLicense(objid);
    LoadComponentItems(objid);
    CompMap();
    LoadAttributesData("attrib",objtypeAsInt, objtype, objid);
    LoadApp4CompData("app4comp", objtypeAsInt, objtype, objid, addParams);
    LoadSrv4CompData("srv4comp", objtypeAsInt, objtype, objid, "");
-
+   getLicenseList("list");
+   getCVEList("list");
+   
    CreateCurrentEnv2Comps(objid);
    
    $("#row-35-access").show();
@@ -4638,6 +4643,58 @@ function LoadComponentItems(objid)
     for (var i=0;i<data.Nodes.length;i++)
       ciClickElement(data.Nodes[i].nodeid, "");
    });
+}
+
+
+function LoadLicense(objid)
+{
+    $.ajax(
+    {
+     url : "/msapi/textfile?compid=" + objid + "&filetype=license",
+     type : 'GET',
+     success : function(res)
+     {
+	  var converter = new showdown.Converter({openLinksInNewWindow: true});
+	  converter.setFlavor('github');
+      html      = converter.makeHtml(res);
+      $("#licensemd-data").html(html);
+     }
+   }); 
+}
+
+function LoadReadme(objid)
+{
+
+    $.ajax(
+    {
+     url : "/msapi/textfile?compid=" + objid + "&filetype=readme",
+     type : 'GET',
+     success : function(res)
+     {
+	  var converter = new showdown.Converter({openLinksInNewWindow: true});
+	  converter.setFlavor('github');
+      html      = converter.makeHtml(res);
+      $("#readme-data").html(html);
+     }
+   }); 
+}
+
+
+function LoadSwagger(objid)
+{
+  const ui = SwaggerUIBundle({
+    url: "/msapi/textfile?compid=" + objid + "&filetype=swagger",
+    dom_id: '#swagger-data',
+    deepLinking: true,
+    presets: [
+      SwaggerUIBundle.presets.apis,
+      SwaggerUIStandalonePreset
+    ],
+    plugins: [
+      SwaggerUIBundle.plugins.DownloadUrl
+    ],
+    layout: "StandaloneLayout"
+  });
 }
 
 function HideFields()

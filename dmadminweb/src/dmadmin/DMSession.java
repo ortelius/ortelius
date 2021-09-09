@@ -8758,6 +8758,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				lvid = rs.getInt(1);
 				if (rs.wasNull()) lvid=app.getId();	// no children so "latest" is this version
 				rs.close();
+				stmt.close();
 			}
 			return (lvid>0)?getApplication(lvid,true):null;
 		}
@@ -15053,7 +15054,79 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
          stmt.execute();
          stmt.close();
          found.add(a);
+        }        
+        else if (a.getName().equalsIgnoreCase("serviceowner"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowner = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }   
+        else if (a.getName().equalsIgnoreCase("serviceowner"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowner = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
         }    
+        else if (a.getName().equalsIgnoreCase("serviceowneremail"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowneremail = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("serviceownerphone"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceownerphone = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("slackchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set slackchannel = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("discordchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set discordchannel = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("hipchatchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set hipchatchannel = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("pagerdutyurl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set pagerdutyurl = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("pagerdutybusinessurl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set pagerdutybusinessurl = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }   
        }
        changes.removeAllDeleted(found);
        found.clear();
@@ -15204,6 +15277,87 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
          stmt.close();
          found.add(a);
         }    
+        else if (a.getName().equalsIgnoreCase("serviceowner"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowner=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }   
+        else if (a.getName().equalsIgnoreCase("serviceowner"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowner=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("serviceowneremail"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowneremail=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("serviceownerphone"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceownerphone=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("slackchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set slackchannel=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("discordchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set discordchannel=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("hipchatchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set hipchatchannel=? where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("pagerdutyurl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set pagerdutyurl=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("pagerdutybusinessurl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set pagerdutybusinessurl=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }   
+        
        }
        changes.removeAllUpdated(found);
        found.clear();
@@ -15353,7 +15507,87 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
          stmt.execute();
          stmt.close();
          found.add(a);
+        } 
+        else if (a.getName().equalsIgnoreCase("serviceowner"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowner=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }   
+        else if (a.getName().equalsIgnoreCase("serviceowner"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowner=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
         }    
+        else if (a.getName().equalsIgnoreCase("serviceowneremail"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceowneremail=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("serviceownerphone"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set serviceownerphone=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("slackchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set slackchannel=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("discordchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set discordchannel=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("hipchatchannel"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set hipchatchannel=? where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("pagerdutyurl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set pagerdutyurl=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }    
+        else if (a.getName().equalsIgnoreCase("pagerdutybusinessurl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set pagerdutybusinessurl=? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        } 
        }
        changes.removeAllAdded(found);
        found.clear();
@@ -29919,7 +30153,7 @@ public JSONArray getComp2Endpoints(int compid)
   return comp;
  }   
  
- public JSONObject logDeployment(Application app, ArrayList<Component> comps, Environment env, int exitcode, String log)
+ public JSONObject logDeployment(String appname, Application app, ArrayList<Component> comps, Environment env, int exitcode, String log)
  {
   JSONObject ret = new JSONObject();
   ArrayList<Integer> comps2add = new ArrayList<Integer>();
@@ -29948,17 +30182,60 @@ public JSONArray getComp2Endpoints(int compid)
 
   long t = timeNow();
 
-  ArrayList<String> basecompnames = new ArrayList<String>();
+  if (app == null)  // Create base app
+  {
+    String[] p2 = appname.split(";");
+    if (p2 != null && p2.length >= 1)
+    {
+     try
+     {
+      String name = "";
+      ArrayList<String> parts = new ArrayList<String>(Arrays.asList(p2[0].split("\\.")));
+      if (parts != null && !parts.isEmpty()) 
+      {
+       name = parts.get(parts.size()-1);
+       parts.remove(parts.size()-1);
+      }
+      
+      Domain tgtdomain = null;
+      try
+      {
+       String domname = String.join(".", parts);
+       
+       tgtdomain = (Domain) this.getObjectFromNameOrID(ObjectType.DOMAIN, domname);
+      }
+      catch (Exception e1)
+      {
+      }
+      
+      int newid = this.getID("application");
+      this.CreateNewObject("application",name, tgtdomain.getId(), tgtdomain.getId(), newid, 0, 0, "applications", true);
+      app = this.getApplication(newid, true);
+      this.RenameObject("application", newid, name);
+     }
+     catch (Exception e1)
+     {
+     }
+    }
+  }
+
+  
+  ArrayList<Integer> basecompnames = new ArrayList<Integer>();
 
   if (comps.size() == 0)
   {
-   int appid = app.getId();
-   List<Component> comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
-
+   List<Component> comps4app = new ArrayList<Component>();
+   
+   if (app != null)
+   {
+    int appid = app.getId();
+    comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
+   }
+   
    for (int j = 0; j < comps4app.size(); j++)
    {
-    if (!basecompnames.contains("" + comps4app.get(j).getId()))
-     basecompnames.add("" + comps4app.get(j).getId());
+    if (!basecompnames.contains(comps4app.get(j).getId()))
+     basecompnames.add(comps4app.get(j).getId());
    }
   }
   else
@@ -29969,10 +30246,14 @@ public JSONArray getComp2Endpoints(int compid)
     Component newcompbase = this.getBaseCompVersion(comp);
 
     int replace_compid = -1;
-
-    int appid = app.getId();
-    List<Component> comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
-
+    List<Component> comps4app = new ArrayList<Component>();
+    
+    if (app != null)
+    {
+     int appid = app.getId();
+     comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
+    }
+    
     for (int j = 0; j < comps4app.size(); j++)
     {
      Component appcompbase = this.getBaseCompVersion(comps4app.get(j));
@@ -29992,31 +30273,33 @@ public JSONArray getComp2Endpoints(int compid)
    }
    
    // build new comp version list base on original + replace + new
+   List<Component> comps4app = new ArrayList<Component>();
    
-   int appid = app.getId();
-   List<Component> comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
-
+   if (app != null)
+   {
+    int appid = app.getId();
+    comps4app = this.getComponents(ObjectType.APPLICATION, appid, false);
+   }
+   
    for (int j = 0; j < comps4app.size(); j++)
    {
-    if (!basecompnames.contains("" + comps4app.get(j).getId()))
+    if (!basecompnames.contains(comps4app.get(j).getId()))
     {
      // see comp is a replace
      if (comps2replace.containsKey(new Integer(comps4app.get(j).getId())))
-      basecompnames.add("" + comps2replace.get(new Integer(comps4app.get(j).getId())));
+      basecompnames.add(comps2replace.get(new Integer(comps4app.get(j).getId())));
      else
-      basecompnames.add("" + comps4app.get(j).getId());
+      basecompnames.add(comps4app.get(j).getId());
     }
    }
    
    for (int j=0;j<comps2add.size();j++)
    {
-    if (!basecompnames.contains("" + comps2add.get(j)))
-     basecompnames.add("" + comps2add.get(j));
+    if (!basecompnames.contains(comps2add.get(j)))
+     basecompnames.add(comps2add.get(j));
    }
   }
-  
-  
-
+ 
   Collections.sort(basecompnames);
 
   String newAppComps = "";
@@ -30024,32 +30307,34 @@ public JSONArray getComp2Endpoints(int compid)
    newAppComps += basecompnames.get(m);
 
   // Check if current version is identical
-
-  Application baseapp = this.getBaseAppVersion(app);
-  Application latestapp = null;
-  ArrayList<Application> deployed_apps = this.getLastDeployedAppInEnv(env);
-
   ArrayList<Application> appvers = new ArrayList<Application>();
-
-  for (int x = 0; x < deployed_apps.size(); x++)
+  Application latestapp = null;
+  
+  if (app != null)
   {
-   Application deployedbase = this.getBaseAppVersion(deployed_apps.get(x));
-
-   if (deployedbase.getId() == baseapp.getId())
+   Application baseapp = this.getBaseAppVersion(app);
+   ArrayList<Application> deployed_apps = this.getLastDeployedAppInEnv(env);
+  
+   for (int x = 0; x < deployed_apps.size(); x++)
    {
-    appvers.add(deployed_apps.get(x));
+    Application deployedbase = this.getBaseAppVersion(deployed_apps.get(x));
+ 
+    if (deployedbase.getId() == baseapp.getId())
+    {
+     appvers.add(deployed_apps.get(x));
+    }
    }
   }
-
+  
   boolean identical = false;
   for (int b = 0; b < appvers.size(); b++)
   {
    latestapp = appvers.get(b);
    List<Component> latestcomps = this.getComponents(ObjectType.APPLICATION, latestapp.getId(), false);
-   ArrayList<String> deploycompnames = new ArrayList<String>();
+   ArrayList<Integer> deploycompnames = new ArrayList<Integer>();
 
    for (int j = 0; j < latestcomps.size(); j++)
-    deploycompnames.add("" + latestcomps.get(j).getId());
+    deploycompnames.add(latestcomps.get(j).getId());
 
    Collections.sort(deploycompnames);
 
@@ -30066,56 +30351,153 @@ public JSONArray getComp2Endpoints(int compid)
   
   if (appvers.size() == 0 && comps2add.size() == 0 && comps2replace.size() == 0)
    identical = true;
+  
+  if (appvers.size() == 0 && comps2add.size() == 0)
+  {
+   int cnt=comps2replace.size();
+   
+   for (Map.Entry<Integer,Integer> entry : comps2replace.entrySet())
+   {
+    int key = entry.getKey();
+    int val = entry.getValue();
+    if ( key == val)
+     cnt--;
+   }
+   
+   if (cnt == 0)
+    identical = true;
+  }
 
   if (!identical)
   {
-   String name = app.getName();
-
-   int verid = this.applicationNewVersion(app.getId(), 100, 100, false);
-   app = this.getApplication(verid, false);
-   boolean dup = true;
-   do
+   String name = "";
+   ArrayList<String> parts = new ArrayList<String>(Arrays.asList(appname.split("\\.")));
+   if (parts != null && !parts.isEmpty()) 
    {
-    ArrayList<String> parts = new ArrayList<String>(Arrays.asList(name.split(";")));
-
-    if (parts.size() == 1)
-     parts.add("hotfix-1");
-    else
-    {
-     String ver = parts.get(parts.size() - 1);
-     if (ver.startsWith("hotfix-"))
-     {
-      ver = ver.substring("hotfix-".length());
-      int vernum = new Integer(ver).intValue();
-      vernum++;
-      ver = "hotfix-" + vernum;
-      parts.set(parts.size() - 1, ver);
-     }
-     else
-     {
-      parts.add("hotfix-1");
-     }
-    }
-
-    name = String.join(";", parts);
-    Application check = null;
-
+    name = parts.get(parts.size()-1);
+    parts.remove(parts.size()-1);
+   }
+   
+   if (app == null)
+   {
+    Domain tgtdomain = null;
     try
     {
-     check = this.getApplicationByName(app.getDomain().getFullName() + "." + name);
+     String domname = String.join(".", parts);
+     
+     tgtdomain = (Domain) this.getObjectFromNameOrID(ObjectType.DOMAIN, domname);
     }
-    catch (Exception e)
+    catch (Exception e1)
     {
-
     }
-
-    if (check == null)
-    {
-     RenameObject("appversion", app.getId(), name);
-     dup = false;
-    }
+    
+    int newid = this.getID("application");
+    this.CreateNewObject("application",name, tgtdomain.getId(), tgtdomain.getId(), newid, 0, 0, "applications", true);
+    app = this.getApplication(newid, true);
+    this.RenameObject("application", newid, name);
+    app.setName(name);
    }
-   while (dup);
+   else
+   {
+    int verid = this.applicationNewVersion(app.getId(), 100, 100, false);
+    app = this.getApplication(verid, false);
+   }
+   
+   boolean dup = true;
+   int vercnt = 1;
+   
+   Application check = null;
+   
+   try
+   {
+    check = this.getApplicationByName(appname);
+   }
+   catch (Exception e)
+   {
+
+   }
+
+   if (check == null)
+   {
+    RenameObject("appversion", app.getId(), name);
+    app.setName(name);
+    dup = false;
+   }
+   else
+   {
+    do
+    {
+     parts = new ArrayList<String>(Arrays.asList(name.split(";")));
+ 
+     if (parts.size() > 1)
+     {
+      String schema[] = parts.get(1).split("_");
+      if (schema.length > 1)
+      {
+       Integer lastdigit = new Integer(0);
+       
+       try
+       {
+        lastdigit = new Integer(schema[schema.length-1]);
+        lastdigit++;
+        schema[schema.length-1] = lastdigit.toString();
+        parts.set(1,String.join("_", schema));
+       }
+       catch (Exception e)
+       {
+        
+       }
+      }
+      else
+      {
+       parts.set(1,"" + vercnt);
+       vercnt++;
+      }
+     }
+       
+     if (parts.size() == 1)
+     {
+       parts.add("" + vercnt);
+       vercnt++;
+     }  
+ //    else
+ //    {
+ //     String ver = parts.get(parts.size() - 1);
+ //     if (ver.startsWith("hotfix-"))
+ //     {
+ //      ver = ver.substring("hotfix-".length());
+ //      int vernum = new Integer(ver).intValue();
+ //      vernum++;
+ //      ver = "hotfix-" + vernum;
+ //      parts.set(parts.size() - 1, ver);
+ //     }
+ //     else
+ //     {
+ //      parts.add("hotfix-1");
+ //     }
+ //    }
+ 
+     name = String.join(";", parts);
+     check = null;
+ 
+     try
+     {
+      check = this.getApplicationByName(app.getDomain().getFullName() + "." + name);
+     }
+     catch (Exception e)
+     {
+ 
+     }
+ 
+     if (check == null)
+     {
+      RenameObject("appversion", app.getId(), name);
+      app.setName(name);
+      dup = false;
+     }
+    }
+    while (dup);
+   }
 
    // using for-each loop for iteration over Map.entrySet()
    for (Map.Entry<Integer, Integer> entry : comps2replace.entrySet())
@@ -30125,8 +30507,13 @@ public JSONArray getComp2Endpoints(int compid)
     this.applicationReplaceComponent(app.getId(), replace_compid.intValue(), compid.intValue(), false);
    }
 
+   int fromnode = 0;
    for (int k = 0; k < comps2add.size(); k++)
-    this.addComponentToApplication(app.getId(), comps2add.get(k), 100, 100, false);
+   {
+    this.addComponentToApplication(app.getId(), comps2add.get(k), 100, 100*(k+1), false);
+    this.applicationComponentAddLink(app.getId(), fromnode, comps2add.get(k));
+    fromnode = comps2add.get(k);
+   }
   }
   else
   {
@@ -30164,6 +30551,7 @@ public JSONArray getComp2Endpoints(int compid)
    m_conn.commit();
 
    addToAppsAllowedInEnv(env, app);
+   ret.add("application", app.getFullName());
    setAppInEnv(env, app, "Deployment #" + deployid, deployid);
    setAppDeploymentInEnv(env, app, deployid);
 

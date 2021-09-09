@@ -103,6 +103,7 @@ var credentiallist_table = undefined;
 var userlist_table = undefined;
 var grouplist_table = undefined;
 var servercomptypelist_table = undefined;
+var licenselist_table = undefined;
 
 var envdropdown = "";
 var appdropdown = "";
