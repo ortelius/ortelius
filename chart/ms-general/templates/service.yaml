@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "ms-general.name" . }}
+spec:
+  selector:
+    name: {{ include "ms-general.name" . }}
+    tier: backend
+  ports:
+    - protocol: TCP
+      port: 8080
+      nodePort: 30091
+  type: NodePort
+---
+ 

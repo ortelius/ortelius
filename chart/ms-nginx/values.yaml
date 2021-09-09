@@ -1,8 +1,13 @@
-# Default values for ms-ui.
+# Default values for dh-ms-nginx.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
+
+image:
+  repository: quay.io/ortelius/ms-nginx
+  tag: latest
+  pullPolicy: Always
 
 nameOverride: ""
 fullnameOverride: ""

@@ -1,0 +1,29 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: {{ include "ms-nginx.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: ms-nginx
+        tier: frontend
+        track: stable
+    spec:
+      containers:
+        - name: {{ include "ms-nginx.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}           
+          ports:
+            - name: http
+              containerPort: 80
+            - name: https
+              containerPort: 443
+          volumeMounts:
+            - name: ssl-volume
+              mountPath: /etc/nginx/ssl
+      volumes:
+        - name: ssl-volume
+          secret:
+            secretName: nginx-secret              
