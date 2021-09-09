@@ -113,26 +113,26 @@ steps:
 
   # setup env for general
   - name: gcr.io/cloud-builders/docker
-      id: env_general
-      entrypoint: 'bash'
-      args: ['-c', 'ls -A1 | xargs rm -rf;git clone -q $$COMPONENT_GITURL .;git checkout --track -b $BRANCH_NAME origin/$BRANCH_NAME;env | sed "s/^/export /" >> /workspace/cloudbuild-general.sh']
-      volumes:
-      - name: 'ssh'
-        path: /root/.ssh
-      env: 
-        - 'COMPONENT_APPLICATION=GLOBAL.ortelius.saas.ortelius-devops'
-        - 'COMPONENT_NAME=GLOBAL.ortelius.saas.ms-general'
-        - 'COMPONENT_GITURL=git@github.com:ortelius/ortelius.git'
-        - 'COMPONENT_VARIANT=$BRANCH_NAME'
-        - 'COMPONENT_VERSION=10.0.0'
-        - 'COMPONENT_VERSION_COMMIT="v$$COMPONENT_VERSION.$$(git rev-list --count $BRANCH_NAME)-g$SHORT_SHA"'
-        - 'COMPONENT_DOCKERREPO=quay.io/ortelius/ortelius'
-        - 'COMPONENT_CUSTOMACTION=GLOBAL.HelmChart'
-        - 'COMPONENT_CHARTNAME=chart/ms-general'
-        - 'COMPONENT_CHARTNAMESPACE=ortelius'
-        - 'DEPLOY_ENV=GLOBAL.ortelius.saas.aks-cluster'
-        - 'BLDDATE=`date`'
-        - 'IMAGE_TAG="$BRANCH_NAME-v$$COMPONENT_VERSION.$$(git rev-list --count $BRANCH_NAME)-g$SHORT_SHA"'
+    id: env_general
+    entrypoint: 'bash'
+    args: ['-c', 'ls -A1 | xargs rm -rf;git clone -q $$COMPONENT_GITURL .;git checkout --track -b $BRANCH_NAME origin/$BRANCH_NAME;env | sed "s/^/export /" >> /workspace/cloudbuild-general.sh']
+    volumes:
+    - name: 'ssh'
+      path: /root/.ssh
+    env: 
+      - 'COMPONENT_APPLICATION=GLOBAL.ortelius.saas.ortelius-devops'
+      - 'COMPONENT_NAME=GLOBAL.ortelius.saas.ms-general'
+      - 'COMPONENT_GITURL=git@github.com:ortelius/ortelius.git'
+      - 'COMPONENT_VARIANT=$BRANCH_NAME'
+      - 'COMPONENT_VERSION=10.0.0'
+      - 'COMPONENT_VERSION_COMMIT="v$$COMPONENT_VERSION.$$(git rev-list --count $BRANCH_NAME)-g$SHORT_SHA"'
+      - 'COMPONENT_DOCKERREPO=quay.io/ortelius/ortelius'
+      - 'COMPONENT_CUSTOMACTION=GLOBAL.HelmChart'
+      - 'COMPONENT_CHARTNAME=chart/ms-general'
+      - 'COMPONENT_CHARTNAMESPACE=ortelius'
+      - 'DEPLOY_ENV=GLOBAL.ortelius.saas.aks-cluster'
+      - 'BLDDATE=`date`'
+      - 'IMAGE_TAG="$BRANCH_NAME-v$$COMPONENT_VERSION.$$(git rev-list --count $BRANCH_NAME)-g$SHORT_SHA"'
 
   # Build and push dh-ms-general.war - quay.io/ortelius/ms-general
   - name: 'gcr.io/cloud-builders/docker'
