@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: {{ include "ms-nginx.name" . }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.DockerRepo }}:{{ .Values.DockerTag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}           
           ports:
             - name: http
