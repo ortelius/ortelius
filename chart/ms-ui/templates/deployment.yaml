@@ -30,7 +30,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: pgcred
-                  key: DBPassword          
+                  key: DBPassword
+            - name: DBConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBConnectionString          
           ports:
             - name: http
               containerPort: 8080
