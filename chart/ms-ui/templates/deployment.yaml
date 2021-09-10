@@ -20,6 +20,17 @@ spec:
         - name: {{ include "ms-ui.name" . }}
           image: "{{ .Values.DockerRepo }}:{{ .Values.DockerTag }}"
           imagePullPolicy: Always
+          env:
+            - name: DBUserName
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBUserName
+            - name: DBPassword
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBPassword          
           ports:
             - name: http
               containerPort: 8080
