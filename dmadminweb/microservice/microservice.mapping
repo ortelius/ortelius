@@ -103,7 +103,7 @@ ms-general:8080:UpdatePropertiesData
 ms-general:8080:UpdateSummaryData
 ms-general:8080:UserDetails
 ms-general:8080:ValidateTask
-ms-init:8080:InitServer
+ms-general:8080:InitServer
 ms-ui:8080:About
 ms-ui:8080:DomainDetails
 ms-ui:8080:GetAccess

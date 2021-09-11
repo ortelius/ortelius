@@ -641,6 +641,13 @@
     <servlet-class>dmadmin.ValidateTask</servlet-class>
     <servlet-name>ValidateTask</servlet-name>
   </servlet>
+  <servlet>
+    <description></description>
+    <display-name>InitServer</display-name>
+    <load-on-startup>1</load-on-startup>
+    <servlet-class>dmadmin.InitServer</servlet-class>
+    <servlet-name>InitServer</servlet-name>
+  </servlet>
   <servlet-mapping>
     <servlet-name>ActionDetails</servlet-name>
     <url-pattern>/ActionDetails</url-pattern>
@@ -1064,6 +1071,10 @@
   </content>
     <servlet-name>ValidateTask</servlet-name>
     <url-pattern>/ValidateTask</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>InitServer</servlet-name>
+    <url-pattern>/InitServer</url-pattern>
   </servlet-mapping>
   <session-config>
     <session-timeout>1</session-timeout>
