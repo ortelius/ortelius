@@ -225,6 +225,10 @@
               width: 20,
       className: 'select-checkbox'
      },
+     {
+      targets: 1,
+       "type": "objname",
+     },
                  {
                   "targets": [ 8 ],
                   "visible": false
@@ -603,6 +607,10 @@
                width: 20,
                className: 'select-checkbox'
               },
+              {
+               targets: 1,
+       		   "type": "objname",
+     		  },
                  {
                   "targets": [ 8 ],
                   "visible": false
@@ -4681,3 +4689,44 @@ datasourcelist_table_resize();
    $("#verttab_group").show();    
   }
  }
+ 
+ function isNumeric(num){
+    num = "" + num; //coerce num to be a string
+    return !isNaN(num) && !isNaN(parseFloat(num));
+}
+ 
+ $.fn.dataTable.ext.type.order['objname-pre'] = function ( data ) {
+    var parts = data.split(';')
+    
+    for (var k=0;k<parts.length;k++)
+    {
+     var version = parts[k].trim();
+     
+     if (isNumeric(version))
+      parts[k] = 100000 + Number(version);
+     else if (version.includes("_g"))
+     {
+      var schemantic_git = version.split("_g");
+      var schemantic = schemantic_git[0].replace(/^v|V/, '');
+      var verparts = schemantic.split('_')
+      for (var i=0;i<verparts.length;i++)
+       verparts[i] = 100000 + Number(verparts[i]);
+       
+      parts[k] = "v" + verparts.join('_') + schemantic_git[1]
+     }
+	 else if (version.includes("_"))
+     {
+      var verparts = version.split("_");
+      for (var i=0;i<verparts.length;i++)
+      {
+       var verpart = verparts[i].replace(/^v|V/, '');
+       verparts[i] = 100000 + Number(verpart);
+      }
+      parts[k] = "v" + verparts.join('_');
+     } 
+    }
+    
+    var result = parts.join(";");
+    console.log(result);
+    return result;
+};
