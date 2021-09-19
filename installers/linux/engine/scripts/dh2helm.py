@@ -366,7 +366,11 @@ def main():
         if ('helmrepopass' in newvals):
             mylogin = mylogin + "--password " + newvals['helmrepopass'] + " "
 
-        runcmd(fp_task, to_dir, helm_exe + ' repo add ' + mylogin + newvals['helmrepo']['name'] + " " + newvals['helmrepo']['url'])
+        if (helm_exe.lower() == "helm2"):
+            runcmd(fp_task, to_dir, helm_exe + ' repo add ' + mylogin + newvals['helmrepo']['name'] + " " + newvals['helmrepo']['url'])
+        else:
+            runcmd(fp_task, to_dir, helm_exe + ' repo add --force-update ' + mylogin + newvals['helmrepo']['name'] + " " + newvals['helmrepo']['url'])
+        # runcmd(fp_task, to_dir, helm_exe + ' repo add ' + mylogin + newvals['helmrepo']['name'] + " " + newvals['helmrepo']['url'])
         runcmd(fp_task, to_dir, helm_exe + ' repo update')
 
     version = newvals.get('chartversion', 'latest')

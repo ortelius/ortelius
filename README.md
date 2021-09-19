@@ -72,6 +72,7 @@ Contributors:
 - Aditi Agarwal
 - Jesse Gonzalez
 - Jimmy Malhan
+- Arvind Singharpuria
   
 ### Data Science and Visualization
 
@@ -117,7 +118,6 @@ Contributors:
 - Ayesha Khaliq
 - Nael Fridhi
 - Karamjot Singh
-- Taras Bulubas
 
 ### UX and Testing
 
@@ -139,6 +139,7 @@ Contributors:
 - Mark Peters
 - Arijeet Majumdar
 - Pawel Kulecki
+- Jayesh Srivastava
 
 ### Architecture
 
@@ -158,9 +159,9 @@ Contributors:
 - Karamjot Singh
 - Zach Jones
 - Jesse Gonzalez
-- Taras Bulubas
 - Neil Chen
 - Devendran Nehru
+- Arvind Singharpuria
 
 ### Development
 
@@ -178,10 +179,14 @@ Contributors:
 - Jesse Gonzalez
 - Temitope Bimbo Babatola
 - Munirat Sulaimon
-- Taras Bulubas
 - Neil Chen
 - Atul Tiwari
 - Devendran Nehru
+- Utkarsh Kumar Sharma
+- Avikam Jha
+- Jayesh Srivastava
+- Arvind Singharpuria
+
 ### Product Management
 
 - Website, branding, outreach 
@@ -226,6 +231,7 @@ Research, define and Automate GitOps with Ortelius
 
 Contributors:
 - Brad McCoy
+- Arvind Singharpuria
 - Amit Dsouza
 
 ## Installation
