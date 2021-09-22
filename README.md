@@ -233,6 +233,7 @@ Contributors:
 - Brad McCoy
 - Arvind Singharpuria
 - Amit Dsouza
+- Ayesha Khaliq
 
 ## Installation
 
