@@ -4307,6 +4307,10 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   $("#row-10-audit").hide();
   $("#tabs-General-right-15").hide();
   $("#tabs-General-right-20").hide();
+  $("#tabs-General-row-12").hide();
+  $("#tabs-General-row-12a").hide();
+  $("#licensemd-panel").hide();
+  $("#cr-panel-20").hide();
   $("#tabs-General-row-15").hide();
   $("#tabs-General-row-20").hide();
   $("#tabs-General-row-25").hide();
@@ -4336,6 +4340,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#tabs-General-row-35").show();
    $("#tabs-General-row-40").show();
    $("#defect-panel").show();
+   
    AppMap();
    LoadAttributesData("attrib",objtypeAsInt, objtype, objid);
    
@@ -4372,6 +4377,10 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#tabs-CompItems-left").show();
    $("#compitem_data").show();
    $("#row-10-right-panel").show();
+   $("#tabs-General-row-12").show();
+   $("#tabs-General-row-12a").show(); 
+   $("#licensemd-panel").show(); 
+   $("#cr-panel-20").show(); 
    $("#tabs-General-row-15").show();
    $("#tabs-General-right-15").show();
    $("#feedback-panel").show();

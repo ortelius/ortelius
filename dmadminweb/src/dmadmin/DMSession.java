@@ -9920,179 +9920,272 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   }
  }
  	
-	public boolean updateComponentItemSummary(ComponentItem ci, SummaryChangeSet changes)
-	{
-		DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_componentitem ");
-		update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
-				
-		for(SummaryField field : changes) {
-		 switch(field) {
-		  case DOMAIN_FULLNAME: {
-		   if (changes.get(field) == null)
-		    update.add(", domainid = ?", Null.INT);
-		   else
-		   {
-		    int id =  new Integer((String)changes.get(field)).intValue();
-		    update.add(", domainid = ?", id);
-		   }
-		  } 
-		  break; 
-		  case ROLLUP:
-		  case ROLLBACK: {
-		   ComponentFilter cf = ComponentFilter.OFF;
-		   String scf = (String) changes.get(field);
-		   if(scf != null) {
-		    if(scf.equalsIgnoreCase("ON")) {
-		     cf = ComponentFilter.ON;
-		    } else if(scf.equalsIgnoreCase("ALL")) {
-		     cf = ComponentFilter.ALL;
-		    }
-		   }
-		   if(field == SummaryField.ROLLUP) {
-		    update.add(", rollup = ?", cf.value());
-		   } else {
-		    update.add(", rollback = ?", cf.value());					
-		   }}
-		  break;
-		  case ITEM_REPOSITORY: {
-		   DMObject repo = (DMObject) changes.get(field);
-		   update.add(", repositoryid = ?", (repo != null) ? repo.getId() : Null.INT);
-		  }
-		  break;
-		  case ITEM_TARGETDIR: {
-		   String targetDir = (String) changes.get(field);
-		   update.add(", target = ?", (targetDir != null) ? targetDir : Null.STRING);
-		  }
-		  break;
-		  case DOCKER_BUILDID: {
-		   String str = (String) changes.get(field);
-		   update.add(", buildid = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break;	
-		  case DOCKER_BUILDURL: {
-		   String str = (String) changes.get(field);
-		   update.add(", buildurl = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break;  
-		  case DOCKER_CHART: {
-		   String str = (String) changes.get(field);
-		   update.add(", chart = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break;  
-		  case DOCKER_CHARTVERSION: {
-		   String str = (String) changes.get(field);
-		   update.add(", chartversion = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break;  
-		  case DOCKER_CHARTNAMESPACE: {
-		   String str = (String) changes.get(field);
-		   update.add(", chartnamespace = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break;   
-    case DOCKER_CHARTREPO: {
+ public boolean updateComponentItemSummary(ComponentItem ci, SummaryChangeSet changes)
+ {
+  DynamicQueryBuilder update = new DynamicQueryBuilder(m_conn, "UPDATE dm.dm_componentitem ");
+  update.add("SET modified = ?, modifierid = ?", timeNow(), m_userID);
+
+  for (SummaryField field : changes)
+  {
+   switch (field)
+   {
+    case DOMAIN_FULLNAME:
+    {
+     if (changes.get(field) == null)
+      update.add(", domainid = ?", Null.INT);
+     else
+     {
+      int id = new Integer((String) changes.get(field)).intValue();
+      update.add(", domainid = ?", id);
+     }
+    }
+    break;
+    case ROLLUP:
+    case ROLLBACK:
+    {
+     ComponentFilter cf = ComponentFilter.OFF;
+     String scf = (String) changes.get(field);
+     if (scf != null)
+     {
+      if (scf.equalsIgnoreCase("ON"))
+      {
+       cf = ComponentFilter.ON;
+      }
+      else if (scf.equalsIgnoreCase("ALL"))
+      {
+       cf = ComponentFilter.ALL;
+      }
+     }
+     if (field == SummaryField.ROLLUP)
+     {
+      update.add(", rollup = ?", cf.value());
+     }
+     else
+     {
+      update.add(", rollback = ?", cf.value());
+     }
+    }
+    break;
+    case ITEM_REPOSITORY:
+    {
+     DMObject repo = (DMObject) changes.get(field);
+     update.add(", repositoryid = ?", (repo != null) ? repo.getId() : Null.INT);
+    }
+    break;
+    case ITEM_TARGETDIR:
+    {
+     String targetDir = (String) changes.get(field);
+     update.add(", target = ?", (targetDir != null) ? targetDir : Null.STRING);
+    }
+    break;
+    case DOCKER_BUILDID:
+    {
+     String str = (String) changes.get(field);
+     update.add(", buildid = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_BUILDURL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", buildurl = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_CHART:
+    {
+     String str = (String) changes.get(field);
+     update.add(", chart = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_CHARTVERSION:
+    {
+     String str = (String) changes.get(field);
+     update.add(", chartversion = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_CHARTNAMESPACE:
+    {
+     String str = (String) changes.get(field);
+     update.add(", chartnamespace = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_CHARTREPO:
+    {
      String str = (String) changes.get(field);
      update.add(", chartrepo = ?", (str != null) ? str : Null.STRING);
     }
     break;
-    case DOCKER_CHARTREPOURL: {
+    case DOCKER_CHARTREPOURL:
+    {
      String str = (String) changes.get(field);
      update.add(", chartrepourl = ?", (str != null) ? str : Null.STRING);
     }
     break;
-		  case DOCKER_OPERATOR: {
-		   String str = (String) changes.get(field);
-		   update.add(", operator = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break; 
-		  case DOCKER_BUILDDATE: {
-		   String str = (String) changes.get(field);
-		   update.add(", builddate = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break; 
-		  case DOCKER_SHA: {
-		   String str = (String) changes.get(field);
-		   update.add(", dockersha = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break; 
-    case DOCKER_TAG: {
+    case DOCKER_OPERATOR:
+    {
+     String str = (String) changes.get(field);
+     update.add(", operator = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_BUILDDATE:
+    {
+     String str = (String) changes.get(field);
+     update.add(", builddate = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_SHA:
+    {
+     String str = (String) changes.get(field);
+     update.add(", dockersha = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_TAG:
+    {
      String str = (String) changes.get(field);
      update.add(", dockertag = ?", (str != null) ? str : Null.STRING);
     }
+    break;
+    case DOCKER_REPO:
+    {
+     String str = (String) changes.get(field);
+     update.add(", dockerrepo = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_GITCOMMIT:
+    {
+     String str = (String) changes.get(field);
+     update.add(", gitcommit = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_GITREPO:
+    {
+     String str = (String) changes.get(field);
+     update.add(", gitrepo = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_GITTAG:
+    {
+     String str = (String) changes.get(field);
+     update.add(", gittag = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    case DOCKER_GITURL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", giturl = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    
+    case SERVICE_OWNER:
+    {
+     String str = (String) changes.get(field);
+     update.add(", serviceowner = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    
+    case SERVICE_OWNER_PHONE:
+    {
+     String str = (String) changes.get(field);
+     update.add(", serviceownerphone = ?", (str != null) ? str : Null.STRING);
+    }
     break; 
-		  case DOCKER_REPO: {
-		   String str = (String) changes.get(field);
-		   update.add(", dockerrepo = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break;  
-		  case DOCKER_GITCOMMIT: {
-		   String str = (String) changes.get(field);
-		   update.add(", gitcommit = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break; 
-		  case DOCKER_GITREPO: {
-		   String str = (String) changes.get(field);
-		   update.add(", gitrepo = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break; 
-		  case DOCKER_GITTAG: {
-		   String str = (String) changes.get(field);
-		   update.add(", gittag = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break; 
-		  case DOCKER_GITURL: {
-		   String str = (String) changes.get(field);
-		   update.add(", giturl = ?", (str != null) ? str : Null.STRING);
-		  }
-		  break;  
-		  case PARENT: 
-		  case PREDECESSOR:
-		   break;
-		  case XPOS:
-		  {
-		   if (changes.get(field) == null)
-		    update.add(", xpos = ?", Null.INT);
-		   else
-		   {
-		    int id =  new Integer((String)changes.get(field)).intValue();
-		    update.add(", xpos = ?", id);
-		   }
-		  } 
-		  break;
+    
+    case SERVICE_OWNER_EMAIL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", serviceowneremail = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+   
+    case SLACK_CHANNEL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", slackchannel = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+    
+    case DISCORD_CHANNEL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", discordchannel = ?", (str != null) ? str : Null.STRING);
+    }
+    break;   
+    
+    case HIPCHAT_CHANNEL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", hipchatchannel = ?", (str != null) ? str : Null.STRING);
+    }
+    break;    
+    
+    case PAGERDUTY_SERVICE_URL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", pagerdutyurl = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
 
-		  case YPOS:
-		  {
-		   if (changes.get(field) == null)
-		    update.add(", ypos = ?", Null.INT);
-		   else
-		   {
-		    int id =  new Integer((String)changes.get(field)).intValue();
-		    update.add(", ypos = ?", id);
-		   }
-		  } 
-		  break;
-		  default:
-		   if(field.value() <= SummaryField.OBJECT_MAX) {
-		    updateObjectSummaryField(ci,update, field, changes);
-		   } else {
-		    System.err.println("ERROR: Unhandled summary field " + field);
-		   }
-		   break;
-		 }
-		}
-		
-		update.add(" WHERE id = ?", ci.getId());
-		
-		try {
-			update.execute();
-			m_conn.commit();
-			update.close();
-			return true;
-		} catch(SQLException e) {
-			e.printStackTrace();
-			rollback();
-		}
-		return false;
-	}
+    case PAGERDUTY_BUSINESS_URL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", pagerdutybusinessurl = ?", (str != null) ? str : Null.STRING);
+    }
+    break;    
+    
+    case PARENT:
+    case PREDECESSOR:
+    break;
+    case XPOS:
+    {
+     if (changes.get(field) == null)
+      update.add(", xpos = ?", Null.INT);
+     else
+     {
+      int id = new Integer((String) changes.get(field)).intValue();
+      update.add(", xpos = ?", id);
+     }
+    }
+    break;
+
+    case YPOS:
+    {
+     if (changes.get(field) == null)
+      update.add(", ypos = ?", Null.INT);
+     else
+     {
+      int id = new Integer((String) changes.get(field)).intValue();
+      update.add(", ypos = ?", id);
+     }
+    }
+    break;
+    default:
+     if (field.value() <= SummaryField.OBJECT_MAX)
+     {
+      updateObjectSummaryField(ci, update, field, changes);
+     }
+     else
+     {
+      System.err.println("ERROR: Unhandled summary field " + field);
+     }
+    break;
+   }
+  }
+
+  update.add(" WHERE id = ?", ci.getId());
+
+  try
+  {
+   update.execute();
+   m_conn.commit();
+   update.close();
+   return true;
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+   rollback();
+  }
+  return false;
+ }
 
  public boolean updateComponentItemRelationship(int compid, int itemid, SummaryChangeSet changes)
  {
