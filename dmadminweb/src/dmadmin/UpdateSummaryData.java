@@ -58,6 +58,7 @@ public class UpdateSummaryData
 		}
 		
 		System.out.println("In UpdateSummaryData");
+  session.setPassword(request); 
 		
 		if (id < 0 && objtype == ObjectType.COMPONENTITEM)
 		{

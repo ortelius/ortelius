@@ -15,6 +15,5 @@ chmod -R 777 $todir
 cd $todir
 rm -rf *
 rm -rf .git
-git clone $1 $todir
-git -c advice.detachedHead=false checkout -f $branch 2>&1
-
+echo git clone $1 --branch $branch --depth 1 --single-branch $todir 
+git clone $1 --branch $branch --depth 1 --single-branch $todir 2>&1

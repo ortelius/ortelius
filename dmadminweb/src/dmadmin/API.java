@@ -5164,6 +5164,7 @@ public class API extends HttpServlet
    JsonArray compnames = (obj.get("compversion") != null) ? obj.get("compversion").getAsJsonArray() : new JsonArray();
    String rc = (obj.get("rc") != null) ? obj.get("rc").getAsString() : "-1";
    String log = (obj.get("log") != null) ? obj.get("log").getAsString() : "";
+   String skipdeploy = (!(obj.get("skipdeploy") instanceof JsonNull))  ? obj.get("skipdeploy").getAsString() : "N";
    
    int exitcode = 0;
      
@@ -5370,7 +5371,7 @@ public class API extends HttpServlet
      }
     } 
    }  
-   ret = so.logDeployment(appname, app, comps, env, exitcode, log);
+   ret = so.logDeployment(appname, app, comps, env, exitcode, log, skipdeploy);
    String result = ret.getJSON(); 
    System.out.println(result);
    out.println(result);

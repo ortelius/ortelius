@@ -67,6 +67,11 @@ public class SubDomains extends HttpServletBase {
    		
    		for (int i=0;i<subdomains.size();i++) {
    			TreeObject sub = subdomains.get(i);
+   			
+   			
+   			if (!session.ValidDomain(sub.getId(),true))
+   			 continue;
+   			
    			JSONObject o = new JSONObject();
    			o.add("id", sub.getId());
    			o.add("name",sub.getName());

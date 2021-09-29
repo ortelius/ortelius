@@ -1466,8 +1466,11 @@ public class DMSession implements AutoCloseable {
     }
    }   
    // DSN is ignored for Postgres Driver
-   DriverName = DriverName.replaceAll("org\\.postgresql\\.Driver", "com.impossibl.postgres.jdbc.PGDriver");
-   ConnectionString = ConnectionString.replaceAll("jdbc\\:postgresql", "jdbc:pgsql");
+ //  DriverName = DriverName.replaceAll("org\\.postgresql\\.Driver", "com.impossibl.postgres.jdbc.PGDriver");
+ //  ConnectionString = ConnectionString.replaceAll("jdbc\\:postgresql", "jdbc:pgsql");
+   
+   DriverName = DriverName.replaceAll("com\\.impossibl\\.postgres\\.jdbc\\.PGDriver", "org.postgresql.Driver");
+   ConnectionString = ConnectionString.replaceAll("jdbc\\:pgsql", "jdbc:postgresql");
    
    Class.forName(DriverName);
 
@@ -1477,7 +1480,7 @@ public class DMSession implements AutoCloseable {
    System.out.println("USERNAME=" + dUserName.toString());
    System.out.println("PASSWORDNAME=********");
    
-   m_conn = DriverManager.getConnection(ConnectionString,dUserName.toString(),dPassword.toString());  
+   m_conn = DriverManager.getConnection(ConnectionString, dUserName.toString(), dPassword.toString());  
    m_conn.setAutoCommit(false);
   } catch (FileNotFoundException e) {
    res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,e.getMessage());
@@ -1859,7 +1862,8 @@ public class DMSession implements AutoCloseable {
 	
 	public boolean ValidDomain(int DomainID,Boolean Inherit)
 	{
-		if (DomainID >= -9999) return true;	// Any Domain ID 0 or below is considered valid
+	//	if (DomainID >= -9999) return true;	// Any Domain ID 0 or below is considered valid
+	 if (DomainID < 0) return true;
 		
 		boolean res = false;
 		Iterator<Map.Entry<Integer,String>> it = m_domains.entrySet().iterator();
@@ -30246,7 +30250,7 @@ public JSONArray getComp2Endpoints(int compid)
   return comp;
  }   
  
- public JSONObject logDeployment(String appname, Application app, ArrayList<Component> comps, Environment env, int exitcode, String log)
+ public JSONObject logDeployment(String appname, Application app, ArrayList<Component> comps, Environment env, int exitcode, String log, String skipdeploy)
  {
   JSONObject ret = new JSONObject();
   ArrayList<Integer> comps2add = new ArrayList<Integer>();
@@ -30270,6 +30274,9 @@ public JSONArray getComp2Endpoints(int compid)
   }
 
   deployid++;
+  
+  if (skipdeploy.equalsIgnoreCase("Y"))
+   deployid = -1;
 
   ret.add("deployid", deployid);
 
@@ -30614,73 +30621,82 @@ public JSONArray getComp2Endpoints(int compid)
     app = latestapp;
   }
 
-  try
-  {
-   sql = "INSERT INTO dm.dm_deployment(deploymentid, userid, startts, finishts, exitcode, exitstatus, appid, envid, started, finished, sessionid, eventid) VALUES (?, ?, now(), now(), ?, '', ?, ?, ?, ?, null, null)";
-   PreparedStatement stmt = m_conn.prepareStatement(sql);
-   stmt.setInt(1, deployid);
-   stmt.setInt(2, this.GetUserID());
-   stmt.setInt(3, exitcode);
-   stmt.setInt(4, app.getId());
-   stmt.setInt(5, env.getId());
-   stmt.setLong(6, t);
-   stmt.setLong(7, t);
-   stmt.execute();
-   stmt.close();
-
-   sql = "INSERT INTO dm.dm_deploymentlog(deploymentid, runtime, stream, line, thread, lineno) VALUES (?, now(), 1, ?, 1, ?)";
-
-   ArrayList<String> lines = new ArrayList<String>(Arrays.asList(log.split("%0A")));
-
-   for (int i = 0; i < lines.size(); i++)
+  if (skipdeploy.equalsIgnoreCase("N"))
+  { 
+   try
    {
-    stmt = m_conn.prepareStatement(sql);
+    sql = "INSERT INTO dm.dm_deployment(deploymentid, userid, startts, finishts, exitcode, exitstatus, appid, envid, started, finished, sessionid, eventid) VALUES (?, ?, now(), now(), ?, '', ?, ?, ?, ?, null, null)";
+    PreparedStatement stmt = m_conn.prepareStatement(sql);
     stmt.setInt(1, deployid);
-    stmt.setString(2, lines.get(i));
-    stmt.setInt(3, i + 1);
+    stmt.setInt(2, this.GetUserID());
+    stmt.setInt(3, exitcode);
+    stmt.setInt(4, app.getId());
+    stmt.setInt(5, env.getId());
+    stmt.setLong(6, t);
+    stmt.setLong(7, t);
     stmt.execute();
     stmt.close();
-   }
-   m_conn.commit();
 
-   addToAppsAllowedInEnv(env, app);
-   ret.add("application", app.getFullName());
-   setAppInEnv(env, app, "Deployment #" + deployid, deployid);
-   setAppDeploymentInEnv(env, app, deployid);
+    sql = "INSERT INTO dm.dm_deploymentlog(deploymentid, runtime, stream, line, thread, lineno) VALUES (?, now(), 1, ?, 1, ?)";
 
-   boolean isRelease = false;
+    ArrayList<String> lines = new ArrayList<String>(Arrays.asList(log.split("%0A")));
 
-   if (app.getIsRelease().compareToIgnoreCase("Y") == 0)
-    isRelease = true;
-
-   List<Component> comps4app = getComponents(ObjectType.APPLICATION, app.getId(), isRelease);
-   List<Server> srvs = getServersInEnvironment(env.getId());
-
-   for (int k = 0; k < comps4app.size(); k++)
-   {
-    Component c = comps4app.get(k);
-    for (int x = 0; x < srvs.size(); x++)
+    for (int i = 0; i < lines.size(); i++)
     {
-     addComponentToServer(srvs.get(x).getId(), c.getId());
-     addComponentVersionToServer(srvs.get(x).getId(), c.getId(), deployid, c.getLastBuildNumber());
+     stmt = m_conn.prepareStatement(sql);
+     stmt.setInt(1, deployid);
+     stmt.setString(2, lines.get(i));
+     stmt.setInt(3, i + 1);
+     stmt.execute();
+     stmt.close();
+    }
+    m_conn.commit();
+
+    addToAppsAllowedInEnv(env, app);
+    ret.add("application", app.getFullName());
+    ret.add("appid", app.getId());
+    setAppInEnv(env, app, "Deployment #" + deployid, deployid);
+    setAppDeploymentInEnv(env, app, deployid);
+
+    boolean isRelease = false;
+
+    if (app.getIsRelease().compareToIgnoreCase("Y") == 0)
+     isRelease = true;
+
+    List<Component> comps4app = getComponents(ObjectType.APPLICATION, app.getId(), isRelease);
+    List<Server> srvs = getServersInEnvironment(env.getId());
+
+    for (int k = 0; k < comps4app.size(); k++)
+    {
+     Component c = comps4app.get(k);
+     for (int x = 0; x < srvs.size(); x++)
+     {
+      addComponentToServer(srvs.get(x).getId(), c.getId());
+      addComponentVersionToServer(srvs.get(x).getId(), c.getId(), deployid, c.getLastBuildNumber());
+     }
+
+     sql = "INSERT INTO dm.dm_deploymentstep (deploymentid, stepid, type, startts, finishts, started, finished, compid) VALUES (?, ?, 'deploy', now(), now(), ?, ?, ?)";
+     stmt = m_conn.prepareStatement(sql);
+     stmt.setInt(1, deployid);
+     stmt.setInt(2, k + 1);
+     stmt.setLong(3, t);
+     stmt.setLong(4, t);
+     stmt.setLong(5, c.getId());
+     stmt.execute();
+     stmt.close();
     }
 
-    sql = "INSERT INTO dm.dm_deploymentstep (deploymentid, stepid, type, startts, finishts, started, finished, compid) VALUES (?, ?, 'deploy', now(), now(), ?, ?, ?)";
-    stmt = m_conn.prepareStatement(sql);
-    stmt.setInt(1, deployid);
-    stmt.setInt(2, k + 1);
-    stmt.setLong(3, t);
-    stmt.setLong(4, t);
-    stmt.setLong(5, c.getId());
-    stmt.execute();
-    stmt.close();
+    m_conn.commit();
    }
-
-   m_conn.commit();
+   catch (SQLException e)
+   {
+    System.out.println(e.getMessage());
+   }
   }
-  catch (SQLException e)
+  else
   {
-   System.out.println(e.getMessage());
+   ret.add("application", app.getFullName());
+   ret.add("appid", app.getId());
   }
   return ret;
  }

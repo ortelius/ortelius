@@ -153,6 +153,7 @@ var readonly = false;
 var hasAppVersionAccess = false;
 var forcepwchange = false;
 var saveRes = null;
+var editdom = false;
 var tdedit = "";
 var tdedit2 = "";
 var tdedit3 = "";

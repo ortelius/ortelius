@@ -203,7 +203,6 @@ extends HttpServletBase
     HashMap<Integer, Integer> hmap = new HashMap<Integer, Integer>();
     session.getAllChildDomains(mydomain.getId(), hmap);
     
-
     for (Integer key : hmap.keySet()) 
     {
      Domain dom2 = session.getDomain(key);

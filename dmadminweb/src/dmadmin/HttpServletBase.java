@@ -71,9 +71,12 @@ public abstract class HttpServletBase
 				request.getRequestDispatcher("Login").forward(request, response);
 			return;
 		}
+		
+  so.setPassword(request); 
 
 		response.setHeader("Content-Disposition", "inline");
 		response.setHeader("Cache-Control", "no-cache");
+  response.setHeader("Content-Type", "application/json");
 		
 		//System.out.println("********************** COOKIES ************************");
 		//Cookie[] cookies = request.getCookies();

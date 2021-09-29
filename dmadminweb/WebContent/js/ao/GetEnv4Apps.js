@@ -54,6 +54,7 @@ $.getJSON('GetPendingEnvData', "appid=" + objid, function(res) {
 	  
 	 var groups;
 	 var isRelease = (objtype=="rl" || objtype=="rv");
+
 	 if (isRelease) {
 		 var domains=[];
 		 if ('domiains' in res)

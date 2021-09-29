@@ -1,3 +1,4 @@
+
 function SetCookie(name, value) {
  value = decodeURIComponent(value);
 	console.log("SetCookie("+name+","+value+")");
@@ -18,9 +19,14 @@ function DeleteCookies() {
 
 function DeleteCookie(name) {
  console.log("DeleteCookie("+name+")");
- var d = $(location).attr('hostname');
- $.removeCookie(name,{path: '/', domain: d});
- $.removeCookie(name,{path: '/dmadminweb', domain: d});
+
+ var days = -1;
+ var value = "";
+ var date = new Date();
+ date.setTime(date.getTime()+(days*24*60*60*1000));
+ var expires = "; expires="+date.toGMTString();
+ document.cookie = name+"="+value+expires+"; path=/";
+ document.cookie = name+"="+value+expires+"; path=/dmadminweb";
 }
 
 function GetCookie(check_name) {

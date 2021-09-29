@@ -165,7 +165,7 @@ def runcmd(fp_task, workdir, cmd):
         tname = cmd.split('--service-principal')[0] + ' --service-principal'
 
     fp_task.write("  - name: " + tname + "\n")
-    fp_task.write("    shell: " + cmd + "\n")
+    fp_task.write("    shell: " + cmd + " 2>&1 \n")
     fp_task.write("    args:\n")
     fp_task.write("      chdir: " + workdir + "\n")
     fp_task.write("    changed_when: False\n")
@@ -285,7 +285,7 @@ def main():
     fp_task.write("      path: " + to_dir + "\n")
     fp_task.write("      state: directory\n")
     fp_task.write("\n")
-    fp_task.write("  - name: Copy File\n")
+    fp_task.write("  - name: Sync dropzone to work area\n")
     fp_task.write("    synchronize:\n")
     fp_task.write("      src: " + from_dir + "/\n")
     fp_task.write("      dest: " + to_dir + "\n")
@@ -399,7 +399,7 @@ def main():
         fp_task.write("    changed_when: False\n")
         fp_task.write("    register: myshell_output\n")
         fp_task.write("  - name: copy the output to a local file\n")
-        fp_task.write("    synchronize:\n")
+        fp_task.write("    copy:\n")
         fp_task.write("      content: \"{{ myshell_output.stdout }}\"\n")
         fp_task.write("      dest: \"" + to_dir + ".yml\"\n")
         fp_task.write("    delegate_to: localhost\n")

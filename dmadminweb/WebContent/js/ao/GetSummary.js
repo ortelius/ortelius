@@ -354,6 +354,8 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       if (label == "Full Domain")
       {
        // label = "Domain";
+       if (summSaveobjtype == "do")
+         label = "Parent Domain";
        tdedit += "<tr>";
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Full Domain:</td>";
        tdedit += "<td ><select name=\"fulldomain_val\">";
@@ -409,6 +411,8 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Name")
       {
+       if (summSaveobjtype == "do")
+         label = "Domain Name";
        objName = val;
        tdedit += "<tr>";
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -4340,7 +4344,6 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#tabs-General-row-35").show();
    $("#tabs-General-row-40").show();
    $("#defect-panel").show();
-   
    AppMap();
    LoadAttributesData("attrib",objtypeAsInt, objtype, objid);
    

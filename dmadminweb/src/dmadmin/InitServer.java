@@ -719,8 +719,8 @@ public class InitServer extends HttpServletBase
      }
     }
     
-    DriverName = DriverName.replaceAll("org\\.postgresql\\.Driver", "com.impossibl.postgres.jdbc.PGDriver");
-    ConnectionString = ConnectionString.replaceAll("jdbc\\:postgresql", "jdbc:pgsql");
+    DriverName = DriverName.replaceAll("com\\.impossibl\\.postgres\\.jdbc\\.PGDriver", "org.postgresql.Driver");
+    ConnectionString = ConnectionString.replaceAll("jdbc\\:pgsql", "jdbc:postgresql");
     // DSN is ignored for Postgres Driver
     Class.forName(DriverName);
 
