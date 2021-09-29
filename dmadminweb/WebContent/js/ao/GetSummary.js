@@ -4242,6 +4242,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   window.history.pushState('dhnav', null, href + '#dhmain#dhnav');
  
  $("#summ_data_edit").hide();
+ $("#summ_data").show();
  $('.save_button').css("color","grey");
  $('.cancel_button').css("color","grey");
  
@@ -4829,6 +4830,8 @@ function endsWith(str, suffix) {
 
 function summOK(isProfile, prefix)
 {
+ $('.edit_button').css("color","#3367d6");
+ 
  var dom_summSavetablename = summSavetablename;
  var dom_summSaveobjtypeAsInt = summSaveobjtypeAsInt;
  var dom_summSaveobjtype = summSaveobjtype;
@@ -5048,6 +5051,7 @@ function summCancel(prefix)
  if (summSaveobjid < 0)
    $("#panel_container.right").hide();
  
+ $('.edit_button').css("color","#3367d6");
  $('.save_button').css("color","grey");
  $('.cancel_button').css("color","grey");
  pwd.hide();
@@ -5093,6 +5097,13 @@ function summCancel(prefix)
 
 function EditSummaryButton(userDialog, prefix)
 {
+
+ console.log($('.edit_button').css("color"));
+ 
+ if ($('.edit_button').css("color") == "rgb(128, 128, 128)")
+   return;
+   
+ $('.edit_button').css("color","grey");
  $('.save_button').css("color","#3367d6");
  $('.cancel_button').css("color","#3367d6");
  
@@ -7315,6 +7326,11 @@ function SaveSummaryData(instance, tablename, objtypeAsInt, objtype, objid, addP
       SaveAdminRightsData();
       SaveSummaryItemData(instance, tablename, objtypeAsInt, objtype, objid, addParams);
       LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams);
+      if (summSaveobjtype == "do" && 'change_1' in savedata)
+      {
+       lookupDom = savedata.newname;
+       LoadDomNav();
+      } 
      }
     }
     else
