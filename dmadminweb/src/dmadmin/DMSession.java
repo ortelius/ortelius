@@ -21581,6 +21581,82 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   {
    e.printStackTrace();
   } 
+  
+  try
+  {
+   String csql = "SELECT fulldomain(domainid) || '.' || name FROM dm.dm_component where fulldomain(domainid) like ?";
+   PreparedStatement st1 = m_conn.prepareStatement(csql);
+   st1.setString(1, todomain + "%");
+   ResultSet rs1 = st1.executeQuery();
+
+   while (rs1.next())
+   {
+    String compname = rs1.getString(1);
+    LoadCompFiles(request, compname);
+   }
+   rs1.close();
+   st1.close();
+  }
+  catch (SQLException ex)
+  {
+   ex.printStackTrace();
+  }
+ }
+
+ private void LoadCompFiles(HttpServletRequest request, String compname)
+ {
+  String jsonpath="/WEB-INF/schema";
+  System.out.println("Taking json scripts from "+jsonpath);
+    
+  String user = System.getenv("dhuser");
+  String password = System.getenv("dhpass");
+  
+  String safety = request.getServletContext().getRealPath(jsonpath) + "/safety.json";
+  String cyclone = request.getServletContext().getRealPath(jsonpath) + "/cyclonedx.json";
+  String readme = request.getServletContext().getRealPath(jsonpath) + "/README.md";
+  String swagger = request.getServletContext().getRealPath(jsonpath) + "/swagger.json";
+  String license = request.getServletContext().getRealPath(jsonpath) + "/LICENSE.md";
+  
+  List<String> commands = new ArrayList<String>(); 
+  commands.add("/usr/local/bin/dh"); 
+  commands.add("import");  
+  commands.add("--dhurl"); 
+  commands.add("http://localhost:8080"); 
+  commands.add("--dhuser"); 
+  commands.add(user); 
+  commands.add("--dhpass"); 
+  commands.add(password); 
+  commands.add("--compname"); 
+  commands.add(compname);
+  commands.add("--compattr"); 
+  commands.add("Readme:" + readme); 
+  commands.add("--compattr"); 
+  commands.add("Swagger:" + swagger); 
+  commands.add("--compattr"); 
+  commands.add("License:" + license); 
+  
+  ProcessBuilder pb = new ProcessBuilder(commands); 
+   
+  Process process;
+  try
+  {
+   pb.redirectErrorStream(true); 
+   process = pb.start();
+
+   BufferedReader stdInput = new BufferedReader(new
+    InputStreamReader(process.getInputStream())); 
+   String s = null; 
+   while ((s = stdInput.readLine()) != null) 
+   { 
+    System.out.println(s); 
+   }
+   process.waitFor();
+  }
+  catch (IOException | InterruptedException e)
+  {
+   e.printStackTrace();
+  } 
+  
  }
 
  public Engine createEngine(int domainid, String name)

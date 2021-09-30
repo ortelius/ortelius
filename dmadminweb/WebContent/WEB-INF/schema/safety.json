@@ -1,0 +1,20 @@
+[
+    [
+        "pip",
+        "<21.1",
+        "20.1.1",
+        "Pip 21.1 stops splitting on unicode separators in git references, which could be maliciously used to install a different revision on the repository. See: <https://github.com/pypa/pip/issues/9827>. Additionally, pip 21.1 updates urllib3 to 1.26.4 to fix CVE-2021-28363.",
+        "40291",
+        null,
+        null
+    ],
+    [
+        "jinja2",
+        ">=0.0.0,<2.11.3",
+        "2.11.2",
+        "This affects the package jinja2 from 0.0.0 and before 2.11.3. The ReDOS vulnerability of the regex is mainly due to the sub-pattern [a-zA-Z0-9._-]+.[a-zA-Z0-9._-]+ This issue can be mitigated by Markdown to format user content instead of the urlize filter, or by implementing request timeouts and limiting process memory. See CVE-2020-28493.",
+        "39525",
+        null,
+        null
+    ]
+]
