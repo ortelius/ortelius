@@ -213,7 +213,7 @@ public class DMSession implements AutoCloseable {
 	private String m_defaultdatefmt = "MM/dd/yyyy";
 	private String m_defaulttimefmt = "HH:mm";
 	
-	private Map<Integer, String> m_domains;
+	protected Map<Integer, String> m_domains;
 	protected Connection m_conn;
 	private String m_domainlist;
 	private String m_parentdomains;
@@ -723,7 +723,7 @@ public class DMSession implements AutoCloseable {
     System.out.println("parentid=" + parentid);
     if (parentid != 0)
     {
-     m_domains.put(parentid, "N");
+     getDomainMap().put(parentid, "N");
      //
      // Recurse
      //
@@ -753,7 +753,7 @@ public class DMSession implements AutoCloseable {
      System.out.println("parentid=" + parentid);
      if (parentid != 0)
      {
-      m_domains.put(parentid, "N");
+      getDomainMap().put(parentid, "N");
      }
     } 
     rs.close();
@@ -795,10 +795,10 @@ public class DMSession implements AutoCloseable {
 				//
 				// Okay, now derive a list of all our sub-domains
 				//
-				System.out.println("Before GetParentDomains, m_domains.size()="+m_domains.size());
+				System.out.println("Before GetParentDomains, m_domains.size()="+getDomainMap().size());
 				GetParentDomains(m_userDomain);
-				System.out.println("After GetParentDomains, m_domains.size()="+m_domains.size());
-				Iterator<Map.Entry<Integer,String>> it = m_domains.entrySet().iterator();
+				System.out.println("After GetParentDomains, m_domains.size()="+getDomainMap().size());
+				Iterator<Map.Entry<Integer,String>> it = getDomainMap().entrySet().iterator();
 				String sep="";
 				while (it.hasNext())
 				{
@@ -807,14 +807,14 @@ public class DMSession implements AutoCloseable {
 				    sep=",";
 				}
 				System.out.println("m_parentdomains="+m_parentdomains);
-				m_domains.put(m_userDomain, "Y");
+				getDomainMap().put(m_userDomain, "Y");
 				
-				GetSubDomains(m_domains,m_userDomain);
+				GetSubDomains(getDomainMap(),m_userDomain);
 				
 				//
 				// Create a "domainlist" string for queries
 				//
-				it = m_domains.entrySet().iterator();
+				it = getDomainMap().entrySet().iterator();
 				sep="";
 				while (it.hasNext())
 				{
@@ -1866,7 +1866,7 @@ public class DMSession implements AutoCloseable {
 	 if (DomainID < 0) return true;
 		
 		boolean res = false;
-		Iterator<Map.Entry<Integer,String>> it = m_domains.entrySet().iterator();
+		Iterator<Map.Entry<Integer,String>> it = getDomainMap().entrySet().iterator();
 		while (it.hasNext())
 		{
 		    Map.Entry<Integer,String> pairs = it.next();
@@ -2516,7 +2516,7 @@ public class DMSession implements AutoCloseable {
 			if (objtype.equalsIgnoreCase("domain"))
 			{
 				// need to add this domain to our allowed domain list.
-				m_domains.put(id,"Y");
+				getDomainMap().put(id,"Y");
 				m_domainlist=m_domainlist+","+id;
 				m_domainlist = StringUtils.stripStart(m_domainlist, ",");
 				m_domainlist = StringUtils.stripEnd(m_domainlist, ",");
@@ -7261,7 +7261,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 			}
 			System.out.println("b) sql="+sql);
 			PreparedStatement stmt = m_conn.prepareStatement(sql);
-			stmt.setString(1,name);
+			if (ot == ObjectType.SERVERCOMPTYPE && sql.contains("id = ?"))
+			 stmt.setInt(1, new Integer(name).intValue());
+			else
+			 stmt.setString(1,name);
 			if (domainid != DOMAIN_NOT_SPECIFIED) stmt.setInt(2, domainid);
 			ResultSet rs = stmt.executeQuery();
 			DMObject ret = null;
@@ -15817,7 +15820,20 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
      if (a.getName().equalsIgnoreCase("buildnumber"))
      {
       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set lastbuildnumber = ? where id = ?");
-      stmt.setString(1, a.getValue());
+      int buildnumber = -1;
+
+      try
+      {
+       buildnumber = Integer.parseInt(a.getValue());
+      }
+      catch (NumberFormatException nfe)
+      {
+      }
+      
+      if (buildnumber < 0)
+        stmt.setNull(1, Types.INTEGER);
+      else
+       stmt.setInt(1, buildnumber);
       stmt.setInt(2, id);
       stmt.execute();
       stmt.close();
@@ -15968,7 +15984,20 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
      if (a.getName().equalsIgnoreCase("buildnumber"))
      {
       PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_component set lastbuildnumber = ? where id = ?");
-      stmt.setString(1, a.getValue());
+      int buildnumber = -1;
+
+      try
+      {
+       buildnumber = Integer.parseInt(a.getValue());
+      }
+      catch (NumberFormatException nfe)
+      {
+      }
+      
+      if (buildnumber < 0)
+        stmt.setNull(1, Types.INTEGER);
+      else
+       stmt.setInt(1, buildnumber);
       stmt.setInt(2, id);
       stmt.execute();
       stmt.close();
@@ -31547,5 +31576,10 @@ public JSONArray getComp2Endpoints(int compid)
   {
    this.m_password = jwt;
   }
+ }
+
+ public Map<Integer, String> getDomainMap()
+ {
+  return m_domains;
  }
 }
