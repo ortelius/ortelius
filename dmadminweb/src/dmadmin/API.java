@@ -120,7 +120,6 @@ import dmadmin.model.UserGroup;
 import dmadmin.model.UserGroupList;
 import dmadmin.model.UserList;
 import dmadmin.util.CommandLine;
-import dmadmin.util.SendMail;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 
@@ -6283,55 +6282,5 @@ public class API extends HttpServlet
    e.printStackTrace();
    return;
   }
-
-  String from = System.getenv("SMTP_USER");
-  String to = request.getParameter("email");
-  String companyname = request.getParameter("companyname");
-  String projectname = request.getParameter("projectname");
-  String firstname = request.getParameter("firstname");
-  String lastname = request.getParameter("lastname");
-  String tel = request.getParameter("tel");
-  String subject = "DeployHub Access";
-  String password = System.getenv("SMTP_PASS");
-  String msg = "";
-
-  msg += "<html xmlns=\"http://www.w3.org/1999/xhtml\" dir=\"ltr\" lang=\"en-US\">\n";
-  msg += "<head>\n";
-  msg += "<title>DeployHub Access</title>\n";
-  msg += "</head>\n";
-  msg += "<body>\n";
-  msg += "<h2>Thank you for becoming a DeployHub Team User!</h2>\n";
-  msg += "<p style=\"font-size:18px\">You're part of a growing group of cloud native specialists who understand the need for cataloging, versioning, configuring and deploying microservices. To get started access the DeployHub console from the following address: <a href=\"https://console.deployhub.com/dmadminweb/Home\">https://console.deployhub.com</a></p>\n";
-  msg += "<p style=\"font-size:18px\">Your userid is: " + userid + "</p>\n";
-  msg += "<p style=\"font-size:14px\">Your CLIENTID is <strong>" + clientid + "</strong> and will be needed when you install your DeployHub Reverse Proxy. See below.</p>\n";
-  msg += "<h2>DeployHub Sample Hipster Store</h2>\n";
-  msg += "<p style=\"font-size:18px\">Once you have logged in, review the <a href=\"https://docs.deployhub.com/userguide/introduction-to-deployhub/0-hipster-store-tutorial/\" target=\"_blank\">Hipster Store sample application</a> to take a test drive.</p>\n";
-  msg += "<h2>Your own POC</h2>\n";
-  msg += "<p style=\"font-size:18px\">To setup DeployHub for your organization, review <a href=\"https://docs.deployhub.com/userguide/first-steps/\" target=\"_blank\">the First Steps Guide.</a> Before you deploy into your own environment, you will need to install the DeployHub Reverse Proxy. The Reverse Proxy is your firewall protection. See our <a href=\"https://docs.deployhub.com/userguide/installation-and-support/0-saas-and-reverse-proxy/\">SaaS Proxy Installation Instructions</a> for more information.</p>\n";
-  msg += "<p style=\"font-size:18px\">If you would like to chat one-on-one, book some time with our team.<a href=\"https://drift.me/sbtaylor15/meeting/quickpeek/\" target=\"_blank\"> Just choose a time from the calendar.</a></p>\n";
-  msg += "<p style=\"font-size:18px\">DeployHub Team is based on the <a href=\"https://www.ortelius.io\" target=\"_blank\">Ortelius Open Source project</a>. Post questions, issues or comments to the <a href=\"https://github.com/ortelius/ortelius/issues\" target=\"_blank\">Ortelius GitHub Issues Page</a>. You can also join the <a href=\"https://discord.gg/mUtF8w\" target=_blank>Ortelius Discord Chatroom to start a conversation on any topic.</a>    </p>\n";
-  msg += "<p style=\"font-size:18px\">We look forward to working with you on making microservices easy. </p>\n";
-  msg += "<p style=\"font-size:18px\">Sincerely, DeployHub Support Team</p>\n";
-  msg += "</body>\n";
-  msg += "</html>\n";
-
-  String details = "";
-  details += "<html xmlns=\"http://www.w3.org/1999/xhtml\" dir=\"ltr\" lang=\"en-US\">\n";
-  details += "<head>\n";
-  details += "<title>New DeployHub User</title>\n";
-  details += "</head>\n";
-  details += "<body>\n";
-  details += "<p style=\"font-size:18px\">Company Name: " + companyname + "</p>\n";
-  details += "<p style=\"font-size:18px\">Project Name: " + projectname + "</p>\n";
-  details += "<p style=\"font-size:18px\">First Name: " + firstname + "</p>\n";
-  details += "<p style=\"font-size:18px\">Last Name: " + lastname + "</p>\n";
-  details += "<p style=\"font-size:18px\">Email: " + to + "</p>\n";
-  details += "<p style=\"font-size:18px\">Phone: " + tel + "</p>\n";
-  details += "<p style=\"font-size:18px\">Userid: " + userid + "</p>\n";
-  details += "</body>\n";
-  details += "</html>\n";
-
-  SendMail sendmsg = new SendMail(from, password, to, subject, msg, details);
-  sendmsg.start();
  }
 }

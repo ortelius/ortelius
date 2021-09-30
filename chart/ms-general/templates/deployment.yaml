@@ -36,6 +36,16 @@ spec:
                 secretKeyRef:
                   name: pgcred
                   key: DBConnectionString
+            - name: dhuser
+              valueFrom:
+                secretKeyRef:
+                  name: ortelius-user
+                  key: dhuser
+            - name: dhpass
+              valueFrom:
+                secretKeyRef:
+                  name: ortelius-user
+                  key: dhpass
           ports:
             - name: http
               containerPort: 8080
