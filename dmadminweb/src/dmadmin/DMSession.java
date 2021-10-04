@@ -21619,7 +21619,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   
   List<String> commands = new ArrayList<String>(); 
   commands.add("/usr/local/bin/dh"); 
-  commands.add("import");  
+  commands.add("updatecomp");  
   commands.add("--dhurl"); 
   commands.add("https://dev.ortelius.io"); 
   commands.add("--dhuser"); 
