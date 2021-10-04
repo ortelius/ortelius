@@ -21635,6 +21635,15 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   commands.add("--compattr"); 
   commands.add("License:" + license); 
   
+  
+  System.out.print("COMPFILE=");
+  for (int i=0;i<commands.size();i++)
+  {
+   String cmd = commands.get(i);
+   System.out.print(" '" + cmd + "' ");
+  }
+  System.out.println("\n");
+  
   ProcessBuilder pb = new ProcessBuilder(commands); 
    
   Process process;
