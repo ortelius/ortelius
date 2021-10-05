@@ -21612,7 +21612,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   String password = System.getenv("dhpass");
   
   String safety = request.getServletContext().getRealPath(jsonpath) + "/safety.json";
-  String cyclone = request.getServletContext().getRealPath(jsonpath) + "/cyclonedx.json";
+  String cyclonedx = request.getServletContext().getRealPath(jsonpath) + "/cyclonedx.json";
   String readme = request.getServletContext().getRealPath(jsonpath) + "/README.md";
   String swagger = request.getServletContext().getRealPath(jsonpath) + "/swagger.json";
   String license = request.getServletContext().getRealPath(jsonpath) + "/LICENSE.md";
@@ -21646,7 +21646,10 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   commands.add("Swagger:" + swagger); 
   commands.add("--compattr"); 
   commands.add("License:" + license); 
-  
+  commands.add("--deppkg"); 
+  commands.add("cyclonedx@" + cyclonedx); 
+  commands.add("--deppkg"); 
+  commands.add("safety@" + safety);   
   
   System.out.print("COMPFILE=");
   for (int i=0;i<commands.size();i++)
