@@ -21617,6 +21617,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   String swagger = request.getServletContext().getRealPath(jsonpath) + "/swagger.json";
   String license = request.getServletContext().getRealPath(jsonpath) + "/LICENSE.md";
   
+  String[] parts = compname.split(";");
+  String compversion = "";
+  
+  if (parts.length > 1)
+  {
+   compname = parts[0];
+   compversion = parts[1];
+  }
+
+  
   List<String> commands = new ArrayList<String>(); 
   commands.add("/usr/local/bin/dh"); 
   commands.add("updatecomp");  
@@ -21628,6 +21638,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   commands.add(password); 
   commands.add("--compname"); 
   commands.add(compname);
+  commands.add("--compversion"); 
+  commands.add(compversion);  
   commands.add("--compattr"); 
   commands.add("Readme:" + readme); 
   commands.add("--compattr"); 
