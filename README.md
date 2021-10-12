@@ -73,6 +73,8 @@ Contributors:
 - Jesse Gonzalez
 - Jimmy Malhan
 - Arvind Singharpuria
+- Interas LLC - Corporate Contributer
+   - Ujwal Yelmareddy
   
 ### Data Science and Visualization
 
