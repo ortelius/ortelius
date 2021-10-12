@@ -72,6 +72,7 @@ Contributors:
 - Aditi Agarwal
 - Jesse Gonzalez
 - Jimmy Malhan
+- Arvind Singharpuria
   
 ### Data Science and Visualization
 
@@ -138,6 +139,7 @@ Contributors:
 - Mark Peters
 - Arijeet Majumdar
 - Pawel Kulecki
+- Jayesh Srivastava
 
 ### Architecture
 
@@ -159,6 +161,7 @@ Contributors:
 - Jesse Gonzalez
 - Neil Chen
 - Devendran Nehru
+- Arvind Singharpuria
 
 ### Development
 
@@ -181,6 +184,8 @@ Contributors:
 - Devendran Nehru
 - Utkarsh Kumar Sharma
 - Avikam Jha
+- Jayesh Srivastava
+- Arvind Singharpuria
 
 ### Product Management
 
@@ -225,7 +230,10 @@ Contributors:
 Research, define and Automate GitOps with Ortelius
 
 Contributors:
--Brad McCoy
+- Brad McCoy
+- Arvind Singharpuria
+- Amit Dsouza
+- Ayesha Khaliq
 
 ## Installation
 
