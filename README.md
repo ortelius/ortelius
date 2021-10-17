@@ -164,6 +164,7 @@ Contributors:
 - Neil Chen
 - Devendran Nehru
 - Arvind Singharpuria
+- Turker Aslan
 
 ### Development
 
@@ -217,6 +218,7 @@ Contributors:
 - Alok Tanna
 - Arijeet Majumdar
 - Tatiana Lazebnyk
+- Turker Aslan
 
 ### Project Management
 
