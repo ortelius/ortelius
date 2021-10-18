@@ -9,6 +9,8 @@ GitCommit: 6d649a4
 GitRepo: ortelius/ortelius
 GitTag: svc_cat
 GitUrl: git@github.com:ortelius/ortelius.git
+image:
+  pullPolicy: "IfNotPresent"
 RE_PHYSICAL_HOSTNAME: localhost
 RE_PHYSICAL_SERVER: localhost
 aks:
