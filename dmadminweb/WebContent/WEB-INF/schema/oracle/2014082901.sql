@@ -1,1 +1,0 @@
-update dm.dm_fragments set summary = 'Takes items from the specified dropzone and deploys then to the server(s) within the targeted environment. Use IF conditions to filter the server list to those matching the specified criteria' where id = 40;

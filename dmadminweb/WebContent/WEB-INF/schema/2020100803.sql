@@ -1,1 +1,0 @@
-CREATE OR REPLACE FUNCTION dm.snapshot_comps_for_deployment() RETURNS trigger AS $$ BEGIN insert into dm.dm_deploymentcomps (deploymentid, compid) (select  b.deploymentid, a.compid from dm.dm_applicationcomponent a, dm.dm_deployment b where a.appid = b.appid and b.deploymentid = NEW.deploymentid); RETURN NULL; END; $$ LANGUAGE plpgsql;
