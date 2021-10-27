@@ -951,8 +951,13 @@
            </div> 
            <div id="tabs-General-row-12">
             	<div id="readme-panel">
-            	  <div id="readme_title" style="text-align:left"">
-                            <h2>Readme</h2>
+            	  <div id="readme_header">
+	            	  <div id="readme_title" style="text-align:left"">
+	                            <h2>Readme</h2>
+	                  </div>
+	                  <div id="readme_header_buttons">
+                       	<button class="add_button" id="upload_readme"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Upload</button>
+	                  </div>
                   </div>
                   <div id="readme-data">
                   </div>
