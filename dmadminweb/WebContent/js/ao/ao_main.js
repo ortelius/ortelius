@@ -437,6 +437,13 @@ $(document).click(function (e) {
     clearTimeout(tid);
   }
   
+  let fileHandle;
+  document.getElementById('upload_readme').addEventListener('click', async () => {
+     [fileHandle] = await window.showOpenFilePicker();
+     const file = await fileHandle.getFile();
+     const contents = await file.text();
+     AddReadme(contents);
+  });
  });
 
  function VerifyPW()
@@ -2182,4 +2189,28 @@ $(document).click(function (e) {
  }
  else
   hookTaskMenu(currenttree);  
+}
+
+function AddReadme(file_data)
+{
+ encoded_bytes = btoa(file_data)
+
+ var file = [];
+
+ for (var i = 0, charsLength = encoded_bytes.length; i < charsLength; i += 76) 
+ {
+  file.push(encoded_bytes.substring(i, i + 76));
+ }
+
+ payload = JSON.stringify({'compid': parseInt(objid), 'filetype': 'readme', 'file': file})
+    
+ $.ajax({
+      type : "POST",
+      dataType : 'json',
+      url : "/msapi/textfile/",
+	  contentType: "application/json",
+      data : payload
+     }).done(function(data) { 
+      console.log(data.errtext);
+     });
 }
