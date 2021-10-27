@@ -893,30 +893,29 @@ void DeployStmtImpl::executeDeployComponent(
                    if (item->getKind() == NULL || strcmp(item->getKind(),"docker") != 0)
 				   {
 					Repository *repo = item->getRepository();
-					if(!repo) {
-						throw RuntimeError(m_parent, newctx.stack(),
-							"Repository not found for component '%s' (item %s)", comp->name(),item->name());
-					}
-					const char *target = item->getTargetFolder();
-					debug1("ComponentItem(%d, '%s', '%s')", item->id(), (repo ? repo->name() : "(null)"), (target ? target : "(null)"));
-
-					// We use a delegating ComponentDeployStmt between us and the real parent stmt
-					ComponentDeployStmt newparent(m_parent, *item);
-					DropzoneCallback callback(repo, (item->id() * 1000 + m_auditEntry->stepId()), dz, ctx, item);
-					doCheckout(newparent, *repo, dz, target, callback, newctx);
-					summary->checkout_summary(callback.total(), callback.success(), callback.failed(), callback.notProcessed());
-
-				    if (callback.total() == 0)
+					if(repo) 
 					{
+					 const char *target = item->getTargetFolder();
+					 debug1("ComponentItem(%d, '%s', '%s')", item->id(), (repo ? repo->name() : "(null)"), (target ? target : "(null)"));
+
+					 // We use a delegating ComponentDeployStmt between us and the real parent stmt
+					 ComponentDeployStmt newparent(m_parent, *item);
+					 DropzoneCallback callback(repo, (item->id() * 1000 + m_auditEntry->stepId()), dz, ctx, item);
+					 doCheckout(newparent, *repo, dz, target, callback, newctx);
+					 summary->checkout_summary(callback.total(), callback.success(), callback.failed(), callback.notProcessed());
+
+				     if (callback.total() == 0)
+					 {
 					  throw RuntimeError(m_parent, newctx.stack(),
 							"\"%s\" - Item \"%s\": Checked out %d file(s) from repository \"%s\"",comp->name(),
 						item->name() ? item->name() : "Unnamed",
 						callback.success(),repo->name());
-					}
-					ctx.dm().writeToStdOut("INFO: \"%s\" - Item \"%s\": Checked out %d file(s) from repository \"%s\"",comp->name(),
+					 }
+					 ctx.dm().writeToStdOut("INFO: \"%s\" - Item \"%s\": Checked out %d file(s) from repository \"%s\"",comp->name(),
 						item->name() ? item->name() : "Unnamed",
 						callback.success(),repo->name());
-					FilesPulled = true;
+					 FilesPulled = true;
+					}
 				   }
 				   else
 				   {
