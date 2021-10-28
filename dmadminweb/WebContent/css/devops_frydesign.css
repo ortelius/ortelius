@@ -674,6 +674,12 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
   padding-right:40px;
 }
 
+#swagger_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
 #attrs_header_buttons {
   display: inline-block;
   float: right;
