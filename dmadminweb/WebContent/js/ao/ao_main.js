@@ -442,7 +442,14 @@ $(document).click(function (e) {
      [fileHandle] = await window.showOpenFilePicker();
      const file = await fileHandle.getFile();
      const contents = await file.text();
-     AddReadme(contents);
+     AddCompFile(contents, 'readme');
+  });
+  
+  document.getElementById('upload_swagger').addEventListener('click', async () => {
+     [fileHandle] = await window.showOpenFilePicker();
+     const file = await fileHandle.getFile();
+     const contents = await file.text();
+     AddCompFile(contents, 'swagger');
   });
  });
 
@@ -2191,7 +2198,7 @@ $(document).click(function (e) {
   hookTaskMenu(currenttree);  
 }
 
-function AddReadme(file_data)
+function AddCompFile(file_data, filetype)
 {
  encoded_bytes = btoa(file_data)
 
@@ -2202,7 +2209,7 @@ function AddReadme(file_data)
   file.push(encoded_bytes.substring(i, i + 76));
  }
 
- payload = JSON.stringify({'compid': parseInt(objid), 'filetype': 'readme', 'file': file})
+ payload = JSON.stringify({'compid': parseInt(objid), 'filetype': filetype, 'file': file})
     
  $.ajax({
       type : "POST",
@@ -2211,6 +2218,10 @@ function AddReadme(file_data)
 	  contentType: "application/json",
       data : payload
      }).done(function(data) { 
+      if (filetype == 'readme')
+        LoadReadme(objid);
+      else if (filetype == 'swagger')  
+        LoadSwagger(objid);
       console.log(data.errtext);
      });
 }
