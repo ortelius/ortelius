@@ -963,8 +963,13 @@
                   </div>
             	</div>
             	<div id="swagger-panel">
-            	  <div id="swagger_title" style="text-align:left"">
-                      <h2>Swagger</h2>
+            	  <div id="swagger_header">
+	            	  <div id="swagger_title" style="text-align:left"">
+	                            <h2>Swagger</h2>
+	                  </div>
+	                  <div id="swagger_header_buttons">
+                       	<button class="add_button" id="upload_swagger"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Upload</button>
+	                  </div>
                   </div>
                   <div id="swagger-data">
                   </div>
