@@ -399,6 +399,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }   
       else if (label == "Summary")
       {
+       label = "Description";
        tdedit += "<tr>";
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
        tdedit += "<td><input name=\"summary_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
@@ -791,68 +792,73 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Owner")
       {
-       var owner = val;
-       if (typeof owner.name != "undefined")
-       {
-        val = owner.name;
-        if (owner.type != "us")
-         isuser = false;
-       }
-       else
-       {
-        owner = new Object();
-        owner.type = "us";
-        owner.name = "";
-        owner.id = 0;
-        val = "";
-       }
+// Skip displaying Owner - 10/28/21 SBT
 
-       tdedit += "<tr>";
-       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Owner Type:</td>";
-       tdedit += "<td ><select id=\"ownertype_val\" name=\"ownertype_val\">";
-       if (isuser)
-       { 
-        tdedit += "<option value=\"User\" selected>User</option>";
-        tdedit += "<option value=\"Group\">Group</option>";
-       }
-       else
-       { 
-        tdedit += "<option value=\"User\">User</option>";
-        tdedit += "<option value=\"Group\" selected>Group</option>";
-       } 
-       tdedit += "</select></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"ownertype_field\" value=\"" + field + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"ownertype_callback\" value=\"" + callback + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"ownertype_oldval\" value=\"" + owner.type + "\"/></td>";
-       tdedit += "</tr>";
-       
-       tdedit += "<tr id=\"owner_row\">";
-       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Owner:</td>";
-       tdedit += "<td ><select name=\"owner_val\">";
-       save_owner_val = owner.name;
-       tdedit += "</td>";
-       tdedit += "<td><input type=\"hidden\" name=\"owner_field\" value=\"" + field + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"owner_callback\" value=\"" + callback + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"owner_oldval\" value=\"" + owner.type + owner.id + "\"/></td>";
-       tdedit += "</tr>";
-       
-       tdedit += "<tr id=\"group_row\">";
-       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Groups:</td>";
-       tdedit += "<td ><select name=\"groupowner_val\">";
-       save_groupowner_val = owner.name;
-       tdedit += "</td>";
-       tdedit += "<td><input type=\"hidden\" name=\"groupowner_field\" value=\"" + field + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"groupowner_callback\" value=\"" + callback + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"groupowner_oldval\" value=\"" + owner.type + owner.id + "\"/></td>";
-       tdedit += "</tr>";
-       
-       td += "<tr id=\"ownertype\" ><td class=\"summlabel\">";
-       td += "Owner Type";
-       td += ":</td><td>";
-       if (owner.type == "us")
-         td += "User";
-       else
-         td += "Group";
+	   continue;
+      
+//      
+//       var owner = val;
+//       if (typeof owner.name != "undefined")
+//       {
+//        val = owner.name;
+//        if (owner.type != "us")
+//         isuser = false;
+//       }
+//       else
+//       {
+//        owner = new Object();
+//        owner.type = "us";
+//        owner.name = "";
+//        owner.id = 0;
+//        val = "";
+//       }
+//
+//       tdedit += "<tr>";
+//       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Owner Type:</td>";
+//       tdedit += "<td ><select id=\"ownertype_val\" name=\"ownertype_val\">";
+//       if (isuser)
+//       { 
+//        tdedit += "<option value=\"User\" selected>User</option>";
+//        tdedit += "<option value=\"Group\">Group</option>";
+//       }
+//       else
+//       { 
+//        tdedit += "<option value=\"User\">User</option>";
+//        tdedit += "<option value=\"Group\" selected>Group</option>";
+//       } 
+//       tdedit += "</select></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"ownertype_field\" value=\"" + field + "\"/></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"ownertype_callback\" value=\"" + callback + "\"/></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"ownertype_oldval\" value=\"" + owner.type + "\"/></td>";
+//       tdedit += "</tr>";
+//       
+//       tdedit += "<tr id=\"owner_row\">";
+//       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Owner:</td>";
+//       tdedit += "<td ><select name=\"owner_val\">";
+//       save_owner_val = owner.name;
+//       tdedit += "</td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"owner_field\" value=\"" + field + "\"/></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"owner_callback\" value=\"" + callback + "\"/></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"owner_oldval\" value=\"" + owner.type + owner.id + "\"/></td>";
+//       tdedit += "</tr>";
+//       
+//       tdedit += "<tr id=\"group_row\">";
+//       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Groups:</td>";
+//       tdedit += "<td ><select name=\"groupowner_val\">";
+//       save_groupowner_val = owner.name;
+//       tdedit += "</td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"groupowner_field\" value=\"" + field + "\"/></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"groupowner_callback\" value=\"" + callback + "\"/></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"groupowner_oldval\" value=\"" + owner.type + owner.id + "\"/></td>";
+//       tdedit += "</tr>";
+//       
+//       td += "<tr id=\"ownertype\" ><td class=\"summlabel\">";
+//       td += "Owner Type";
+//       td += ":</td><td>";
+//       if (owner.type == "us")
+//         td += "User";
+//       else
+//         td += "Group";
       }
       else if (label == "Parent Domain")
       {
@@ -1934,45 +1940,53 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Created")
       {
-       var created = val;
-       if (typeof created.when != "undefined")
-       {
-        //var d = convertDate(created.when);
-        //val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
-        val = created.when + " by " + created.tooltip;
-       }
-       else
-        val = "";
-       
-       tdedit += "<tr>";
-       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-       tdedit += "<td>" + val + "</td>";
-       tdedit += "<td><input type=\"hidden\" name=\"created_field\" value=\"" + field + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"created_callback\" value=\"" + callback + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"created_oldval\" value=\"" + val + "\"/></td>";
-       tdedit += "</tr>";
+// Skip Display - 10/28/21 SBT   
+
+	   continue;
+      
+//       var created = val;
+//       if (typeof created.when != "undefined")
+//       {
+//        //var d = convertDate(created.when);
+//        //val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+//        val = created.when + " by " + created.tooltip;
+//       }
+//       else
+//        val = "";
+//       
+//       tdedit += "<tr>";
+//       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+//       tdedit += "<td>" + val + "</td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"created_field\" value=\"" + field + "\"/></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"created_callback\" value=\"" + callback + "\"/></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"created_oldval\" value=\"" + val + "\"/></td>";
+//       tdedit += "</tr>";
       }
       else if (label == "Modified")
       {
-       var modified = val;
-       console.log("modified (Modified)");
-       console.log(modified);
-       if (typeof modified.when != "undefined")
-       {
-        //var d = convertDate(modified.when);
-        //val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
-        val = modified.when + " by " + modified.tooltip;
-       }
-       else
-        val = "";
-       
-       tdedit += "<tr>";
-       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-       tdedit += "<td>" + val + "</td>";
-       tdedit += "<td><input type=\"hidden\" name=\"created_field\" value=\"" + field + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"created_callback\" value=\"" + callback + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"created_oldval\" value=\"" + val + "\"/></td>";
-       tdedit += "</tr>";
+// Skip Display - 10/28/21 SBT    
+
+	   continue;
+          
+//       var modified = val;
+//       console.log("modified (Modified)");
+//       console.log(modified);
+//       if (typeof modified.when != "undefined")
+//       {
+//        //var d = convertDate(modified.when);
+//        //val = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+//        val = modified.when + " by " + modified.tooltip;
+//       }
+//       else
+//        val = "";
+//       
+//       tdedit += "<tr>";
+//       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+//       tdedit += "<td>" + val + "</td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"created_field\" value=\"" + field + "\"/></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"created_callback\" value=\"" + callback + "\"/></td>";
+//       tdedit += "<td><input type=\"hidden\" name=\"created_oldval\" value=\"" + val + "\"/></td>";
+//       tdedit += "</tr>";
       }
       else if (label == "Last Login")
       {
@@ -2086,16 +2100,20 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Kind")
       {
-        td += "<tr id='kind_sumrow_desc'><td id=\"kind_summ_desc\" class=\"summlabel\">";
-        td += "Object:";
-        td += "</td><td>";
-        td += objtypeName;
-        td += "</td></tr>";
+// Skip displaying Object - 10/28/21 SBT
 
-       td += "<tr id='kind_sumrow'><td id=\"kind_summ\" class=\"summlabel\">";
-       td += "Type";
-       td += ":</td><td>";
-       td += val;
+	   continue;
+      
+//        td += "<tr id='kind_sumrow_desc'><td id=\"kind_summ_desc\" class=\"summlabel\">";
+//        td += "Object:";
+//        td += "</td><td>";
+//        td += objtypeName;
+//        td += "</td></tr>";
+//
+//       td += "<tr id='kind_sumrow'><td id=\"kind_summ\" class=\"summlabel\">";
+//       td += "Type";
+//       td += ":</td><td>";
+//       td += val;
       }
       else if (label.toLowerCase() == "Filter Level".toLowerCase() && save_filter_val == "Items")
       {
@@ -2472,6 +2490,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        }   
        else if (label == "Summary")
        {
+        label = "Description";
         task_tdedit += "<tr>";
         task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
         task_tdedit += "<td><input name=\"summary_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
@@ -4249,10 +4268,28 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
  
  console.log("LoadSummaryData, tablename="+tablename);
  
+ if (objtype == "co" || objtype == "cv")
+ {
+  $("#summ_header_buttons").hide();
+  $("#tabs-General-left").css('margin-right','0px');
+  $("#row-10-right-panel").css('margin-left','0px');
+  $("#summ_title").html("<h2>Component Overview</h2>");
+ }
+ else
+ {
+  $("#compowner_summ_title").hide();
+  $("#compowner_summ_header_buttons").hide();
+  $("#tabs-General-left").css('margin-right','8px');
+  $("#row-10-right-panel").css('margin-left','8px');
+  $("#summ_title").html("<h2>Details</h2>");
+ }
+ 
  if (objtype != "do")
  {
   $("#summ_header_buttons > button.add_button").hide();
   $("#summ_header_buttons > button.delete_button").hide();
+  $("#compowner_summ_header_buttons > button.add_button").hide();
+  $("#compowner_summ_header_buttons > button.delete_button").hide();
   $("#domnav-panel").hide();
  }
  else
@@ -4276,6 +4313,8 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   $("#logs-panel").hide();
   $("#steps-panel").hide();
   $("#srv4comp-panel").hide();
+  $("#compowner_summ_data_edit").hide();
+  $("#compowner_summ_data").hide();
   $("#compitem_data").hide();
   $("#compitem_data_edit").hide();
   $("#emailbody_data").hide();
@@ -4377,6 +4416,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#attrs-panel").show();
    $("#tabs-General-right").show();
    $("#tabs-CompItems-left").show();
+   $("#compowner_summ_data").show();
    $("#compitem_data").show();
    $("#row-10-right-panel").show();
    $("#tabs-General-row-12").show();
@@ -5057,6 +5097,9 @@ function summCancel(prefix)
  
  if (objtype == "cv" || objtype == "co")
  {
+  parent.$("#compowner_summ_data_edit").hide();
+  parent.$("#compowner_summ_data").show();
+  
   parent.$("#compitem_data_edit").hide();
   parent.$("#compitem_data").show();
  }
@@ -6102,6 +6145,8 @@ function EditSummaryButton(userDialog, prefix)
    title = "New " + objstr;
  }
 
+ parent.$("#compowner_summ_data_edit").hide();
+ parent.$("#compowner_summ_data").hide();
  parent.$("#compitem_data").hide();
  parent.$("#compitem_data_edit").hide();
  parent.$("#emailbody_data").hide();
@@ -6116,6 +6161,7 @@ function EditSummaryButton(userDialog, prefix)
  if (objtype == "co" || objtype == "cv")
  { 
    parent.$("#compitem_data_edit").show();
+   parent.$("#compowner_summ_data_edit").show();
  }
  else if (objtype == "te")
  {

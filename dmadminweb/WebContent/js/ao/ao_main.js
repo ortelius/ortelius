@@ -2222,6 +2222,8 @@ function AddCompFile(file_data, filetype)
         LoadReadme(objid);
       else if (filetype == 'swagger')  
         LoadSwagger(objid);
+      else if (filetype == 'license')  
+        LoadLicense(objid);
       console.log(data.errtext);
      });
 }
