@@ -86,7 +86,6 @@ function ciClickElement(id, comptype)
   }, 
   success : function(res)
   {
-   var colmap = JSON.parse(JSON.stringify(compitem_colmap));
    var data = [];
    
    /* Combine rows */
@@ -94,11 +93,12 @@ function ciClickElement(id, comptype)
    for (j=0;j<res.length;j++)
    {
     row = res[j];
-    for (const key in colmap)
+    
+    for (let [key, value] of compitem_colmap)
     {
      if (key in row)
      {
-      newrow = colmap[key];
+      newrow = JSON.parse(JSON.stringify(value));
       
       if (row[key] == null)
         newrow.push('');
@@ -106,8 +106,7 @@ function ciClickElement(id, comptype)
         newrow.push(row[key]);   
       data.push(newrow);
      }
-     
-    }  
+    }
    }
    res.data = data;
    console.log(data);
@@ -115,7 +114,9 @@ function ciClickElement(id, comptype)
    saveRes = res;
    var title = "";
    var tdedit3 = "<form id=\"compitemform\"><div style=\"display:none\">" + id + "</div><table id=\"compitemtab\" class=\"dev_table\"><tbody>";
+   var tdedit4 = "<form id=\"compownerform\"><div style=\"display:none\">" + id + "</div><table id=\"compownertab\" class=\"dev_table\"><tbody>";
    var td = "";
+   var compowner_td = "";
    var repolist = [];
    var prefix = "";
    var findprefix = "";
@@ -168,11 +169,28 @@ function ciClickElement(id, comptype)
     var isuser = true;
     var oldval = "";
 
-    if (label.toLowerCase() != "Predecessor".toLowerCase() && label.toLowerCase() != "XPos".toLowerCase() &&
-        label.toLowerCase() != "YPos".toLowerCase() && label.toLowerCase() != "Summary".toLowerCase() &&
-        label.toLowerCase() != "Name".toLowerCase() && label.toLowerCase() != "Kind".toLowerCase() && 
-        label.toLowerCase() != "Roll Forward".toLowerCase() && label.toLowerCase() != "Rollback".toLowerCase() &&
-        label.toLowerCase() != "Rollup flag".toLowerCase() && label.toLowerCase() != "Rollback flag".toLowerCase())
+   if (label.toLowerCase() != "Predecessor".toLowerCase() && label.toLowerCase() != "XPos".toLowerCase() &&
+       label.toLowerCase() != "YPos".toLowerCase() && label.toLowerCase() != "Summary".toLowerCase() &&
+       label.toLowerCase() != "Name".toLowerCase() && label.toLowerCase() != "Kind".toLowerCase() && 
+       label.toLowerCase() != "Roll Forward".toLowerCase() && label.toLowerCase() != "Rollback".toLowerCase() &&
+       label.toLowerCase() != "Rollup flag".toLowerCase() && label.toLowerCase() != "Rollback flag".toLowerCase())
+   {
+    if (label == "Service Owner" || label == "Service Owner Email" || label == "Service Owner Phone" ||
+        label == "Slack Channel" || label == "Discord Channel" || label == "Hipchat Channel" ||
+        label == "PagerDuty Service Url" || label == "PagerDuty Business Service Url")
+    {
+     var myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
+     
+     myid = myid.replace("rollforward","rf_");
+     myid = myid.replace("rollback","rb_");
+     
+     compowner_td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\">";
+     compowner_td += label;
+     compowner_td += ":</td><td>";
+     compowner_td += val;
+     compowner_td += "</tr>";
+    }    
+    else
     {
      var myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
      
@@ -185,6 +203,8 @@ function ciClickElement(id, comptype)
      td += val;
      td += "</tr>";
     }
+   } 
+     
     
     if (label == "Summary")
     {
@@ -301,83 +321,83 @@ function ciClickElement(id, comptype)
     }  
     else if (label == "Service Owner")
     {
-     tdedit3 += "<tr>";
-     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-     tdedit3 += "<td><input name=\"serviceowner_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"serviceowner_field\" value=\"" + field + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"serviceowner_callback\" value=\"" + callback + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"serviceowner_oldval\" value=\"" + val + "\"/></td>";
-     tdedit3 += "</tr>";
+     tdedit4 += "<tr>";
+     tdedit4 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit4 += "<td><input name=\"serviceowner_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"serviceowner_field\" value=\"" + field + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"serviceowner_callback\" value=\"" + callback + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"serviceowner_oldval\" value=\"" + val + "\"/></td>";
+     tdedit4 += "</tr>";
     }  
     else if (label == "Service Owner Email")
     {
-     tdedit3 += "<tr>";
-     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-     tdedit3 += "<td><input name=\"serviceowneremail_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"serviceowneremail_field\" value=\"" + field + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"serviceowneremail_callback\" value=\"" + callback + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"serviceowneremail_oldval\" value=\"" + val + "\"/></td>";
-     tdedit3 += "</tr>";
+     tdedit4 += "<tr>";
+     tdedit4 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit4 += "<td><input name=\"serviceowneremail_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"serviceowneremail_field\" value=\"" + field + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"serviceowneremail_callback\" value=\"" + callback + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"serviceowneremail_oldval\" value=\"" + val + "\"/></td>";
+     tdedit4 += "</tr>";
     }  
     else if (label == "Service Owner Phone")
     {
-     tdedit3 += "<tr>";
-     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-     tdedit3 += "<td><input name=\"serviceownerphone_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"serviceownerphone_field\" value=\"" + field + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"serviceownerphone_callback\" value=\"" + callback + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"serviceownerphone_oldval\" value=\"" + val + "\"/></td>";
-     tdedit3 += "</tr>";
+     tdedit4 += "<tr>";
+     tdedit4 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit4 += "<td><input name=\"serviceownerphone_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"serviceownerphone_field\" value=\"" + field + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"serviceownerphone_callback\" value=\"" + callback + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"serviceownerphone_oldval\" value=\"" + val + "\"/></td>";
+     tdedit4 += "</tr>";
     } 
     else if (label == "Slack Channel")
     {
-     tdedit3 += "<tr>";
-     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-     tdedit3 += "<td><input name=\"slackchannel_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"slackchannel_field\" value=\"" + field + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"slackchannel_callback\" value=\"" + callback + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"slackchannel_oldval\" value=\"" + val + "\"/></td>";
-     tdedit3 += "</tr>";
+     tdedit4 += "<tr>";
+     tdedit4 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit4 += "<td><input name=\"slackchannel_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"slackchannel_field\" value=\"" + field + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"slackchannel_callback\" value=\"" + callback + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"slackchannel_oldval\" value=\"" + val + "\"/></td>";
+     tdedit4 += "</tr>";
     }  
     else if (label == "Discord Channel")
     {
-     tdedit3 += "<tr>";
-     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-     tdedit3 += "<td><input name=\"discordchannel_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"discordchannel_field\" value=\"" + field + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"discordchannel_callback\" value=\"" + callback + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"discordchannel_oldval\" value=\"" + val + "\"/></td>";
-     tdedit3 += "</tr>";
+     tdedit4 += "<tr>";
+     tdedit4 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit4 += "<td><input name=\"discordchannel_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"discordchannel_field\" value=\"" + field + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"discordchannel_callback\" value=\"" + callback + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"discordchannel_oldval\" value=\"" + val + "\"/></td>";
+     tdedit4 += "</tr>";
     }  
     else if (label == "Hipchat Channel")
     {
-     tdedit3 += "<tr>";
-     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-     tdedit3 += "<td><input name=\"hipchatchannel_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"hipchatchannel_field\" value=\"" + field + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"hipchatchannel_callback\" value=\"" + callback + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"hipchatchannel_oldval\" value=\"" + val + "\"/></td>";
-     tdedit3 += "</tr>";
+     tdedit4 += "<tr>";
+     tdedit4 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit4 += "<td><input name=\"hipchatchannel_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"hipchatchannel_field\" value=\"" + field + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"hipchatchannel_callback\" value=\"" + callback + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"hipchatchannel_oldval\" value=\"" + val + "\"/></td>";
+     tdedit4 += "</tr>";
     }  
     else if (label == "PagerDuty Service Url")
     {
-     tdedit3 += "<tr>";
-     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-     tdedit3 += "<td><input name=\"pagerdutyurl_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"pagerdutyurl_field\" value=\"" + field + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"pagerdutyurl_callback\" value=\"" + callback + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"pagerdutyurl_oldval\" value=\"" + val + "\"/></td>";
-     tdedit3 += "</tr>";
+     tdedit4 += "<tr>";
+     tdedit4 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit4 += "<td><input name=\"pagerdutyurl_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"pagerdutyurl_field\" value=\"" + field + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"pagerdutyurl_callback\" value=\"" + callback + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"pagerdutyurl_oldval\" value=\"" + val + "\"/></td>";
+     tdedit4 += "</tr>";
     }  
     else if (label == "PagerDuty Business Service Url")
     {
-     tdedit3 += "<tr>";
-     tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-     tdedit3 += "<td><input name=\"pagerdutybusinessurl_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"pagerdutybusinessurl_field\" value=\"" + field + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"pagerdutybusinessurl_callback\" value=\"" + callback + "\"/></td>";
-     tdedit3 += "<td><input type=\"hidden\" name=\"pagerdutybusinessurl_oldval\" value=\"" + val + "\"/></td>";
-     tdedit3 += "</tr>";
+     tdedit4 += "<tr>";
+     tdedit4 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+     tdedit4 += "<td><input name=\"pagerdutybusinessurl_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"pagerdutybusinessurl_field\" value=\"" + field + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"pagerdutybusinessurl_callback\" value=\"" + callback + "\"/></td>";
+     tdedit4 += "<td><input type=\"hidden\" name=\"pagerdutybusinessurl_oldval\" value=\"" + val + "\"/></td>";
+     tdedit4 += "</tr>";
     }                                   
     else if (label == "Operator")
     {
@@ -592,7 +612,15 @@ function ciClickElement(id, comptype)
    
     pwd = parent.$("#compitem_data_edit");
     pwd.empty().append(tdedit3);
+    
+    tdedit4 += "</tbody></table></form>";
+    var pwd = parent.$("#compowner_summ");
+    pwd.empty().append(compowner_td);
+   
+    pwd = parent.$("#compowner_summ_data_edit");
+    pwd.empty().append(tdedit4);
    } 
+   
    var myform = pwd.find("#compitemform");
    
    var prefix = "";
@@ -806,6 +834,10 @@ function GetSaveSummaryItemData(instance, data, prefix)
 
  var form = $("#compitemform");
  var viewArr = form.serializeArray();
+ var viewArr2 = $("#compownerform").serializeArray();
+ 
+ viewArr = viewArr.concat(viewArr2);
+ 
  var view = {};
 
  for ( var i in viewArr)

@@ -657,6 +657,17 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 }
 
 
+#compowner_summ_title {
+	display: inline-block;
+}
+
+#compowner_summ_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+
 #task_summ_title {
 	display: inline-block;
 }
@@ -675,6 +686,12 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 }
 
 #swagger_header_buttons {
+  display: inline-block;
+  float: right;
+  padding-right:40px;
+}
+
+#licensemd_header_buttons {
   display: inline-block;
   float: right;
   padding-right:40px;
