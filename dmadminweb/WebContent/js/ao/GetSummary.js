@@ -4261,7 +4261,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
  $("#summ_data_edit").hide();
  $("#summ_data").show();
  $('.save_button').css("color","grey");
- $('.cancel_button').css("color","grey");
+ $('.cancel_button').css("color","grey"); 
  
  if (objid < 0 && (objtype == "co" || objtype == "cv"))
   addParams += "&comptype=" + addcomptype
@@ -4274,6 +4274,8 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   $("#tabs-General-left").css('margin-right','0px');
   $("#row-10-right-panel").css('margin-left','0px');
   $("#summ_title").html("<h2>Component Overview</h2>");
+  $("#tabs-General-left").css("border-right-width","0");
+  $("#row-10-right-panel").css("border-left-width","0");
  }
  else
  {
@@ -4282,6 +4284,8 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   $("#tabs-General-left").css('margin-right','8px');
   $("#row-10-right-panel").css('margin-left','8px');
   $("#summ_title").html("<h2>Details</h2>");
+  $("#tabs-General-left").css("border-right-width","1px");
+  $("#row-10-right-panel").css("border-left-width","1px");
  }
  
  if (objtype != "do")
@@ -4425,8 +4429,8 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#cr-panel-20").show(); 
    $("#tabs-General-row-15").show();
    $("#tabs-General-right-15").show();
-   $("#feedback-panel").show();
-   $("#tabs-General-row-28").show();
+ //  $("#feedback-panel").show();      // SBT remove for components 11/4/21
+ //  $("#tabs-General-row-28").show(); // SBT remove for components 11/4/21
    $("#tabs-General-row-30").show();
    $("#tabs-General-row-35").show();
    $("#tabs-General-row-40").show();

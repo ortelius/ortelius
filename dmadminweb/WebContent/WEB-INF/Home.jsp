@@ -708,26 +708,6 @@
                         <div id="compowner_summ_title">
                             <h2>Component Owner</h2>
                         </div>
-                        <div id="compowner_summ_header_buttons">
-                            <button class="edit_button" onClick="javascript:EditSummaryButton(false,'')">
-                                <i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit
-                            </button>
-                            <button class="save_button" onClick="javascript:summOK(false,'')">
-                                <i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save
-                            </button>
-                            <button class="cancel_button" onClick="javascript:summCancel('')">
-                                <i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel
-                            </button>
-                            <button class="test_button" onClick="javascript:TestServer('servstat',objtypeAsInt,objid)">
-                                <i class="fad fa-alien" aria-hidden="true"  style="padding-right:5px"></i>Test Connection
-                            </button>
-                            <button class="add_button" onClick="javascript:AddDomain(objtypeAsInt,objid)">
-                                <i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add Subdomain
-                            </button>
-                            <button class="delete_button" onClick="javascript:DeleteDomain(objtypeAsInt,objid)">
-                                <i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete Domain
-                            </button>
-                        </div>
                         <div id="compowner_summ_data">
                           <table id="compowner_summ" class="dev_table">
                             <tbody></tbody>
@@ -820,6 +800,26 @@
                 <div id="summ_title">
                     <h2>Component Details</h2>
                 </div> 
+                <div id="compowner_summ_header_buttons">
+                            <button class="edit_button" onClick="javascript:EditSummaryButton(false,'')">
+                                <i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit
+                            </button>
+                            <button class="save_button" onClick="javascript:summOK(false,'')">
+                                <i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save
+                            </button>
+                            <button class="cancel_button" onClick="javascript:summCancel('')">
+                                <i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel
+                            </button>
+                            <button class="test_button" onClick="javascript:TestServer('servstat',objtypeAsInt,objid)">
+                                <i class="fad fa-alien" aria-hidden="true"  style="padding-right:5px"></i>Test Connection
+                            </button>
+                            <button class="add_button" onClick="javascript:AddDomain(objtypeAsInt,objid)">
+                                <i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add Subdomain
+                            </button>
+                            <button class="delete_button" onClick="javascript:DeleteDomain(objtypeAsInt,objid)">
+                                <i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete Domain
+                            </button>
+                </div>
                 <div id="compitem_data">
                     <table id="compitem" class="dev_table">
                        <tbody></tbody>
