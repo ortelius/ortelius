@@ -46,12 +46,12 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 
  } 
  .selectBoxInput{
-  border:0px;
+  border: 0;
   padding-left:1px;
   height:16px;
   position:absolute;
-  top:0px;
-  left:0px;
+  top: 0;
+  left: 0;
   border: 1px solid #DDDDDD;
  }
 
@@ -80,7 +80,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
  .selectBoxIframe{
   position:absolute;
   background-color:#FFF;
-  border:0px;
+  border: 0;
   z-index:999;
  } 
 
@@ -171,8 +171,8 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	border-radius:5px;
 	position: absolute;
 	top: 23px;
-	right: 0px;
-	bottom: 0px;
+	right: 0;
+	bottom: 0;
 	left: 0;
 	overflow-x: auto;  /* ADD THE SCRIPT FOR CONROLLING THE OVERFLOW-Y */
 }
@@ -216,8 +216,8 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	border-radius:5px; */
 	position: absolute;
 	top: 65px;
-	right: 0px;
-	bottom: 0px;
+	right: 0;
+	bottom: 0;
 	}
 	
 #tabs-General-data {
@@ -226,18 +226,22 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	
 #tabs-General-row-10 {
 		display: flex;
+		background-color: white;
 }	
 	
 #tabs-General-row-12 {
 		display: flex;
+		background-color: white;
 }		
 
 #tabs-General-row-12a {
 		display: flex;
+		background-color: white;
 }		
 	
 #tabs-General-row-15 {
 		display: flex;
+		background-color: white;
 }	
 
 #tabs-CompItems-left {
@@ -249,10 +253,12 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 		
 #tabs-General-row-20 {
 		display: flex;
+		background-color: white;
 }	
 
 #tabs-General-row-25 {
 		display: flex;
+		background-color: white;
 }	
 
 #tabs-General-row-28 {
@@ -336,15 +342,17 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 		
 #tabs-General-row-30 {
 	display: flex;
+	background-color: white;
 }
 
 #tabs-General-row-35 {
 	display: flex;
+	background-color: white;
 }
 
 #tabs-General-row-40 {
-    margin:8px;	
-    margin-top: 16px;
+    background-color: white;
+    padding-top: 8px;
 }
 
 #tabs-General-row-50 {
@@ -363,8 +371,10 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 
 #tabs-General-right {
 	border: 1px solid lightgrey;
-    margin:8px;
-    height: calc(100% - 16px);
+    margin-top: 16px;
+    margin-left: 8px;
+    margin-right: 8px;
+    height: 500px;
 }
 
 #tabs-General-left-20 {
@@ -379,13 +389,13 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-    margin-bottom: 0px;
+    margin-bottom: 0;
     text-align:center;
 }
 
 #tabs-General-map {
 	width: 100%;
-    height: calc(100% - 40px);
+	height: calc(100% - 40px);
 }
 
 #emailhelp-panel {
@@ -422,7 +432,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	width: 50%;
 	display:inline-block;
 /*	border: 1px solid lightgrey; */
-    margin-top: 0px;
+    margin-top: 0;
     margin-bottom: 8px;
     min-height: 200px;
 }
@@ -435,7 +445,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	width: 50%;
 	display:inline-block;
 /*	border: 1px solid lightgrey; */
-    margin-top: 0px;
+    margin-top: 0;
     margin-bottom: 8px;
     min-height: 200px;
 }
@@ -444,7 +454,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	width: 50%;
 	display:inline-block;
 	border: 1px solid lightgrey;
-    margin-top: 0px;
+    margin-top: 0;
     margin-bottom: 8px;
     min-height: 200px;
 }
@@ -460,8 +470,8 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin: 8px;
-    margin-left: 0px;
-    margin-bottom: 0px;
+    margin-left: 0;
+    margin-bottom: 0;
     min-height: 200px;
 }
 
@@ -484,7 +494,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin: 8px;
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 #deployedenv4app > tbody > tr > td:nth-child(1) {
@@ -643,7 +653,8 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 
 #cr-panel {
   border: 1px solid lightgrey;	
-  margin: 8px;
+  margin-left: 8px;
+  margin-right: 8px;
 }
 
 #summ_title {
@@ -844,7 +855,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	border: 2px solid #d4dde7;
 	border-radius:5px;
 	overflow: hidden;
-	top: 0px;
+	top: 0;
     height: calc(100%); 
 	overflow-y: scroll;
 	left: calc(79%); 
@@ -959,7 +970,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 
 #sub_panel_bottomright {
   margin: 8px;
-  margin-right: 0px;
+  margin-right: 0;
    width: 25%;	 
 }
 
@@ -1014,7 +1025,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
     float: left;
     position: absolute;
     right: 20px;
-    top: 0px;
+    top: 0;
 }	
 	
 	
@@ -1839,7 +1850,7 @@ ul.subpanel li {
 	width: 100%;
     border-collapse: collapse;
     border: none;
-    border-spacing: 0px;
+    border-spacing: 0;
 }
 	
 .dev_table td:first-child {
@@ -1900,7 +1911,7 @@ ul.subpanel li {
 	width: 100%;
     border-collapse: collapse;
     border: none;
-    border-spacing: 0px;
+    border-spacing: 0;
 }
 	
 .cb_dev_table td:first-child {
@@ -2270,7 +2281,7 @@ ul.subpanel li {
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }	
 
 #comp4srv_title {
@@ -2310,7 +2321,7 @@ ul.subpanel li {
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }	
 
 #inputparams_title {
@@ -2350,7 +2361,7 @@ ul.subpanel li {
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }	
 
 #switchargs_title {
@@ -2788,7 +2799,7 @@ button.edit_button {
   background-color: inherit;
   font-family: 'Open Sans', sans-serif;
   padding-left: 16px;
-  padding-right: 0px;
+  padding-right: 0;
   padding-top:8px;
   padding-bottom: 8px;
   border-radius: 2px;
@@ -2812,7 +2823,7 @@ button.delete_button {
   background-color: inherit;
   font-family: 'Open Sans', sans-serif;
   padding-left: 16px;
-  padding-right: 0px;
+  padding-right: 0;
   padding-top:8px;
   padding-bottom: 8px;
   border-radius: 2px;
@@ -2836,7 +2847,7 @@ button.add_button {
   background-color: inherit;
   font-family: 'Open Sans', sans-serif;
   padding-left: 16px;
-  padding-right: 0px;
+  padding-right: 0;
   padding-top:8px;
   padding-bottom: 8px;
   border-radius: 2px;
@@ -2860,7 +2871,7 @@ button.save_button {
   background-color: inherit;
   font-family: 'Open Sans', sans-serif;
   padding-left: 16px;
-  padding-right: 0px;
+  padding-right: 0;
   padding-top:8px;
   padding-bottom: 8px;
   border-radius: 2px;
@@ -2879,7 +2890,7 @@ button.cancel_button {
   background-color: inherit;
   font-family: 'Open Sans', sans-serif;
   padding-left: 16px;
-  padding-right: 0px;
+  padding-right: 0;
   padding-top:8px;
   padding-bottom: 8px;
   border-radius: 2px;
@@ -2898,7 +2909,7 @@ button.test_button {
   background-color: inherit;
   font-family: 'Open Sans', sans-serif;
   padding-left: 16px;
-  padding-right: 0px;
+  padding-right: 0;
   padding-top:8px;
   padding-bottom: 8px;
   border-radius: 2px;
@@ -2929,7 +2940,7 @@ button.up_button {
   background-color: inherit;
   font-family: 'Open Sans', sans-serif;
   padding-left: 16px;
-  padding-right: 0px;
+  padding-right: 0;
   padding-top:8px;
   padding-bottom: 8px;
   border-radius: 2px;
@@ -2958,7 +2969,7 @@ button.down_button {
   background-color: inherit;
   font-family: 'Open Sans', sans-serif;
   padding-left: 16px;
-  padding-right: 0px;
+  padding-right: 0;
   padding-top:8px;
   padding-bottom: 8px;
   border-radius: 2px;
@@ -3135,7 +3146,7 @@ button.save_button_sub_small img {
 	}
 
 .loginDialog  {
-   border-width: 0px;
+   border-width: 0;
    background-color: transparent;
    background-position: 100% 100%;
    background-image: none;
@@ -3184,7 +3195,7 @@ button.save_button_sub_small img {
 	position: relative;
 	width:  380px;
 	top: 4px;
-	left: 0px;
+	left: 0;
 	margin: 0 60px 0 auto; 
 	}
 
@@ -3363,8 +3374,8 @@ button.save_button_sub_small img {
 
 #about_dialog img {  /*positions the splash screen */
 	position: absolute;
-	top: 0px;
-	left: 0px;
+	top: 0;
+	left: 0;
 	padding: 0;
 	border-bottom: 2px solid #fff;
 }
@@ -3385,7 +3396,7 @@ button.save_button_sub_small img {
 #subdomainlist         { list-style-type: none; margin: 0; padding: 0; }
 #subdomainlist li      { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 18px; height: 10px; background:url(images/domains_sm.png) 0px 5px no-repeat;cursor: pointer;}
 #subdomainlist li.islifecycle     { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 18px; height: 10px; background:url(images/buildengines_sm.png) 0px 5px no-repeat;cursor: pointer;}
-#subdomainlist li span { position: absolute; margin-left: 0px; cursor: pointer; }
+#subdomainlist li span { position: absolute; margin-left: 0; cursor: pointer; }
 
 /* @end */
 
@@ -3966,8 +3977,8 @@ div.dt-buttons {
 #pickproc {
 	display: block;
     position: relative;
-    top: 0px;
-    left: 0px;
+    top: 0;
+    left: 0;
 }
 
 /* Style the buttons that are used to open the tab content */
@@ -4058,7 +4069,7 @@ div.dt-buttons {
     width: 50% !important;
     height: calc(100% - 232px) !important;	
     border: none;
-    border-radius: 0px;
+    border-radius: 0;
     background-color: none;
 }
 
@@ -4090,14 +4101,14 @@ input[type=text], textarea {
   -o-transition: all 0.30s ease-in-out;
   outline: none;
   padding: 3px 0px 3px 3px;
-  margin: 5px 1px 3px 0px;
+  margin: 5px 1px 3px 0;
   border: 1px solid #DDDDDD;
 }
  
 input[type=text]:focus, textarea:focus {
   box-shadow: 0 0 5px rgba(81, 203, 238, 1);
   padding: 3px 0px 3px 3px;
-  margin: 5px 1px 3px 0px;
+  margin: 5px 1px 3px 0;
   border: 1px solid rgba(81, 203, 238, 1);
 }
 
