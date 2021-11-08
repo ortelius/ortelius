@@ -17,6 +17,7 @@
 package dmadmin;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -48,6 +49,8 @@ public class GetActions extends JSONServletBase {
 			HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
 	{
+	 ArrayList<Integer> dups = new ArrayList<Integer>();
+	 
 		String reason = request.getParameter("reason");
 		JSONArray ret = new JSONArray();
 		if (reason.equalsIgnoreCase("getrefs")) {
@@ -65,6 +68,10 @@ public class GetActions extends JSONServletBase {
 			for(Action a : actions) {
 				if (reason.equalsIgnoreCase("actonly")) {
 					if (a.getKind() == ActionKind.GRAPHICAL || a.isFunction()) {
+					 if (dups.contains(a.getId()))
+					  continue;
+
+					 dups.add(a.getId());
 						JSONObject t = new JSONObject();
 						t.add("action",a.getLinkJSON());
 						System.out.println("** action="+a.getName()+" uselink="+session.ValidDomain(a.getDomainId())+" a.getDomainId()="+a.getDomainId());
