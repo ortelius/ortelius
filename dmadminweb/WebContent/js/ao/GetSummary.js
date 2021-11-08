@@ -5239,6 +5239,11 @@ function EditSummaryButton(userDialog, prefix)
       var postaction = myform.find(":input[name=\"postaction_val\"]");
       var customaction = myform.find(":input[name=\"customaction_val\"]");
       var taskaction = myform.find(":input[name=\"taskaction_val\"]");
+      
+      preaction.empty();
+      postaction.empty();
+      customaction.empty();
+      taskaction.empty();
 
       for (n = 0; n < res.length; n++)
       {
