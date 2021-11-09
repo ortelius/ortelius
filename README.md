@@ -129,6 +129,7 @@ Contributors:
 
 - Tracy Ragan
 - Parijat Kalita
+- Ashutosh Srivastava
 
 ### Documentation
 
@@ -190,6 +191,7 @@ Contributors:
 - Jayesh Srivastava
 - Arvind Singharpuria
 - Aman Saxena
+- Ashutosh Srivastava
 
 ### Product Management
 
