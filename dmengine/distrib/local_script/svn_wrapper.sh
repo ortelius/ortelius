@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Copyright (c) 2021 Linux Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/bin/sh
 # ""C:\Cygwin\bin\svn.exe" "--non-interactive" "--trust-server-cert"
 #     "--no-auth-cache" "-r" "1" "--username" "harvest" "--password" "harvest"
 #     "checkout" "svn://linux-gnh2/dmdemo/target" "/tmp/tdm.0.fred""

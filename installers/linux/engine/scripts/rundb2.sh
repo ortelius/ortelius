@@ -1,3 +1,5 @@
+#!/bin/ksh
+
 # Copyright (c) 2021 Linux Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/bin/ksh
 . /home/db2inst4/sqllib/db2profile
 dbname="$1"
 user="$2"
