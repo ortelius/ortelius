@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Copyright (c) 2021 Linux Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/bin/sh
-#
 systemctl stop deployhub-webadmin 2>/dev/null 1>/dev/null
 exit 0
