@@ -36,6 +36,10 @@ RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_
     unzip -q terraform_0.12.17_linux_amd64.zip; \
     chmod +x terraform; \
     mv terraform /usr/local/bin/
+
+RUN yum -y install yum-utils; \
+    yum-config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo; \
+    yum -y install gh
     
 RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc;
 RUN echo -e "\
