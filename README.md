@@ -165,6 +165,7 @@ Contributors:
 - Devendran Nehru
 - Arvind Singharpuria
 - Turker Aslan
+- Leniuska Alvarado
 
 ### Development
 
@@ -190,6 +191,7 @@ Contributors:
 - Jayesh Srivastava
 - Arvind Singharpuria
 - Aman Saxena
+- Leniuska Alvarado
 
 ### Product Management
 
