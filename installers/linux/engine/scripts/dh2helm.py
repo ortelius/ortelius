@@ -39,16 +39,9 @@ def get_script_path():
 def upload_helm(override, chartvalues, newvals, helmtemplate):
     my_env = os.environ.copy()
 
-    if (newvals.get('helmcapture', None) is None):
-        return
-
-    if ('helmrepo' not in newvals):
-        return
-
     if not os.path.exists('helm'):
         os.makedirs('helm')
 
-    print("Starting Helm Capture")
     os.makedirs(os.path.dirname("helm/" + chartvalues), exist_ok=True)
     shutil.copy(override, "helm/" + chartvalues)
 
@@ -74,7 +67,7 @@ def upload_helm(override, chartvalues, newvals, helmtemplate):
     dhusr = newvals.get('dhuser', '')
     dhpw = newvals.get('dhpass', '')
 
-    repovars = newvals['helmrepo']
+    repovars = newvals.get('helmrepo', {})
 
     if ('helmrepouser' in newvals):
         helmrepouser = newvals['helmrepouser']
@@ -117,14 +110,32 @@ def upload_helm(override, chartvalues, newvals, helmtemplate):
     my_env['chartvalues'] = chartvalues
     my_env['helmopts'] = newvals.get('helmopts', '')
     my_env['helmtemplate'] = helmtemplate
+    my_env['environment'] = newvals.get('environment', 'ci')
+    my_env['component'] = newvals.get('component','') 
+
+    if (newvals.get('chartpublish', None) is not None):
+        pid = subprocess.Popen(get_script_path() + "/git-chartpublish.sh", env=my_env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        lines = ""
+        for line in pid.stdout.readlines():
+            line = line.decode('utf-8')
+            lines = lines + line
+        pid.wait()
+
+    if (newvals.get('helmcapture', None) is None):
+        return
+
+    if ('helmrepo' not in newvals):
+        return
+
+    print("Starting Helm Capture")
 
     pid = subprocess.Popen(get_script_path() + "/helminfo.sh", env=my_env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     jstr = ""
     for line in pid.stdout.readlines():
         line = line.decode('utf-8')
         jstr = jstr + line
-
     pid.wait()
+
     # print(jstr)
     dobj = json.loads(jstr)
     upload['chartdigest'] = dobj.get("chartdigest", "")
@@ -387,7 +398,12 @@ def main():
         # runcmd(fp_task, to_dir, helm_exe + ' repo add ' + mylogin + newvals['helmrepo']['name'] + " " + newvals['helmrepo']['url'])
         runcmd(fp_task, to_dir, helm_exe + ' repo update')
 
-    version = newvals.get('chartversion', 'latest')
+    version = newvals.get('chartversion', None)
+
+    if (version is not None):
+        version = '--version "' + version + '"'
+    else:
+        version = ''
 
     namespace = ""
     if ('chartnamespace' in newvals):
@@ -398,7 +414,7 @@ def main():
 
 #    helmextract = newvals.get('helmextract', None)
     if (newvals.get('helmrepo', None) is not None):
-        runcmd(fp_task, to_dir, helm_exe + ' fetch "' + chart + '" --version "' + version + '" --untar')
+        runcmd(fp_task, to_dir, helm_exe + ' fetch "' + chart + '" ' + version + ' --untar')
 
     if (newvals.get('helmcapture', None) is not None):
         if ('/' in chart):
@@ -418,7 +434,7 @@ def main():
         fp_task.write("      dest: \"" + to_dir + ".yml\"\n")
         fp_task.write("    delegate_to: localhost\n")
 
-    runcmd(fp_task, to_dir, helm_exe + ' upgrade "' + releasename + '" "' + chart + '" --version "' + version + '" ' + namespace + ' ' + helmopts + ' --install -f ' + chartvalues)
+    runcmd(fp_task, to_dir, helm_exe + ' upgrade "' + releasename + '" "' + chart + '" ' + version + ' ' + namespace + ' ' + helmopts + ' --install -f ' + chartvalues)
 
     fp_task.close()
 
