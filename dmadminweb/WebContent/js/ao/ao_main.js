@@ -1221,6 +1221,24 @@ $(document).click(function (e) {
   case "tabs-PackageComponents":
    if (((objtype == "av" || objtype == "ap") && currenttree == "#applications_tree") || ((objtype == "co" || objtype == "cv") && currenttree == "#components_tree"))
    {
+    if ((objtype == "av" || objtype == "ap") && currenttree == "#applications_tree")
+    {
+     $("#tabs-General-row-15").hide();
+     $("#tabs-General-row-20").hide();
+     $("#tabs-General-row-30").hide();
+     $("#tabs-General-row-28").hide();
+     $("#tabs-General-row-35").hide();
+     $("#tabs-General-row-40").hide();
+    }
+    else
+    {
+     $("#tabs-General-row-15").show();
+     $("#tabs-General-row-20").show();
+     $("#tabs-General-row-30").show();
+     $("#tabs-General-row-35").show();
+     $("#tabs-General-row-40").show();
+    } 
+   
     $("#panel_container_right").show();
     if (objtype == "ap" || objtype == "co")
     {
