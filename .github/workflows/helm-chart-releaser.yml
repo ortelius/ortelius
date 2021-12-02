@@ -4,7 +4,9 @@ on:
   push:
     branches:
       - svc_cat
-
+    paths:
+      - 'chart/**'
+      
 jobs:
   release:
     runs-on: ubuntu-latest
