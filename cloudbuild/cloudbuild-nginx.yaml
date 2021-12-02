@@ -194,7 +194,7 @@ steps:
     waitFor: ['compupdate_general']
     entrypoint: 'bash'
     secretEnv: ['DHUSER', 'DHPASS']
-    args: ['-c', '. /workspace/cloudbuild-general.sh;dh updatecomp --dhurl https://console.deployhub.com --appname "$$COMPONENT_APPLICATION" --appversion "$$COMPONENT_APPLICATION_VERSION" --appautoinc Y --deployenv "$$DEPLOY_ENV" --deploydata /workspace/appcomps.json]    
+    args: ['-c', '. /workspace/cloudbuild-general.sh;dh updatecomp --dhurl https://console.deployhub.com --appname "$$COMPONENT_APPLICATION" --appversion "$$COMPONENT_APPLICATION_VERSION" --appautoinc Y --deployenv "$$DEPLOY_ENV" --deploydata /workspace/appcomps.json']    
 
 secrets:
 - kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/quay
