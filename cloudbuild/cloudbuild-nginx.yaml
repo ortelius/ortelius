@@ -42,8 +42,6 @@ steps:
     - name: 'ssh'
       path: /root/.ssh
     env: 
-      - 'COMPONENT_APPLICATION=GLOBAL.ortelius.saas.ortelius-devops'
-      - 'COMPONENT_APPLICATION_VERSION=10.0.0'
       - 'COMPONENT_NAME=GLOBAL.ortelius.saas.ms-nginx'
       - 'COMPONENT_GITURL=git@github.com:ortelius/ortelius.git'
       - 'COMPONENT_VARIANT=$BRANCH_NAME'
@@ -94,8 +92,6 @@ steps:
     - name: 'ssh'
       path: /root/.ssh
     env: 
-      - 'COMPONENT_APPLICATION=GLOBAL.ortelius.saas.ortelius-devops'
-      - 'COMPONENT_APPLICATION_VERSION=10.0.0'
       - 'COMPONENT_NAME=GLOBAL.ortelius.saas.ms-ui'
       - 'COMPONENT_GITURL=git@github.com:ortelius/ortelius.git'
       - 'COMPONENT_VARIANT=$BRANCH_NAME'
@@ -146,8 +142,6 @@ steps:
     - name: 'ssh'
       path: /root/.ssh
     env: 
-      - 'COMPONENT_APPLICATION=GLOBAL.ortelius.saas.ortelius-devops'
-      - 'COMPONENT_APPLICATION_VERSION=10.0.0'
       - 'COMPONENT_NAME=GLOBAL.ortelius.saas.ms-general'
       - 'COMPONENT_GITURL=git@github.com:ortelius/ortelius.git'
       - 'COMPONENT_VARIANT=$BRANCH_NAME'
@@ -195,6 +189,9 @@ steps:
     entrypoint: 'bash'
     secretEnv: ['DHUSER', 'DHPASS']
     args: ['-c', '. /workspace/cloudbuild-general.sh;cat /workspace/appcomps.json;dh updatecomp --dhurl https://console.deployhub.com --appname "$$COMPONENT_APPLICATION" --appversion "$$COMPONENT_APPLICATION_VERSION" --appautoinc Y --deployenv "$$DEPLOY_ENV" --deploydata /workspace/appcomps.json']    
+    env:      
+      - 'COMPONENT_APPLICATION=GLOBAL.ortelius.saas.ortelius-devops'
+      - 'COMPONENT_APPLICATION_VERSION=10.0.0'
 
 secrets:
 - kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/quay
