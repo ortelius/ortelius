@@ -1,11 +1,11 @@
 Chart: chart/ms-nginx
 ChartNamespace: ortelius
 DockerRepo: quay.io/ortelius/ms-nginx
-DockerSha: 94a85ed6b7fa69bd8897617bea782a0237df19086f2992902342a35146a05f16
-DockerTag: svc_cat_fix-v10.0.0.494-g1c019fa
+DockerSha: fb359684923412f04bea48cb44f374db2572dc4e47c7bf08fb170fdf286f4697
+DockerTag: svc_cat_fix-v10.0.0.500-gbc20415
 EXT: sh
 GitBranch: svc_cat_fix
-GitCommit: 1c019fa
+GitCommit: bc20415
 GitRepo: ortelius/ortelius
 GitTag: svc_cat_fix
 GitUrl: git@github.com:ortelius/ortelius.git
@@ -16,20 +16,20 @@ aks:
   certificate: /root/.ssh/aks.pem
   cluster: cluster2-aks
   resourcegroup: cluster1-rg
-application: ortelius-devops;10_0_0
-builddate: Mon Dec  6 17:42:41 UTC 2021
-buildid: 4d84fb81-3c78-49c7-aa9c-fa5e81d031ab
-buildurl: https://console.cloud.google.com/cloud-build/builds/4d84fb81-3c78-49c7-aa9c-fa5e81d031ab?project=eighth-physics-169321
+application: ortelius-devops;10_0_1
+builddate: Mon Dec  6 21:08:31 UTC 2021
+buildid: c8d931d2-61ce-4b6a-bf9a-4aa1559bf051
+buildurl: https://console.cloud.google.com/cloud-build/builds/c8d931d2-61ce-4b6a-bf9a-4aa1559bf051?project=eighth-physics-169321
 chart: chart/ms-nginx
 chartnamespace: ortelius
 chartpublish: Y
-component: ms-nginx;svc_cat_fix;v10_0_0_494_g1c019fa
+component: ms-nginx;svc_cat_fix;v10_0_0_500_gbc20415
 dockerrepo: quay.io/ortelius/ms-nginx
-dockersha: 94a85ed6b7fa69bd8897617bea782a0237df19086f2992902342a35146a05f16
-dockertag: svc_cat_fix-v10.0.0.494-g1c019fa
-dropzone: /tmp/tdm.1473.1
+dockersha: fb359684923412f04bea48cb44f374db2572dc4e47c7bf08fb170fdf286f4697
+dockertag: svc_cat_fix-v10.0.0.500-gbc20415
+dropzone: /tmp/tdm.1474.1
 environment: aks-cluster
-gitcommit: 1c019fa
+gitcommit: bc20415
 gitrepo: ortelius/ortelius
 gittag: svc_cat_fix
 giturl: git@github.com:ortelius/ortelius.git
