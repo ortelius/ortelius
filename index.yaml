@@ -2,6 +2,14 @@ apiVersion: v1
 entries:
   ms-general:
   - apiVersion: v1
+    created: "2021-12-07T17:28:30.922979893Z"
+    description: A Helm chart for Kubernetes
+    digest: db95486bb708d3bcf3e51c6466f85731ecff86c94a72ef27d2125ca62faa787d
+    name: ms-general
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-general-10.0.0-build.500/ms-general-10.0.0-build.500.tgz
+    version: 10.0.0-build.500
+  - apiVersion: v1
     created: "2021-12-02T19:43:36.150628932Z"
     description: A Helm chart for Kubernetes
     digest: a4f3e3e7ba229a33d55107880140cb1e32668ce6cd34f6296b6fbd9609a07844
@@ -20,6 +28,14 @@ entries:
     version: 0.1.0
   ms-nginx:
   - apiVersion: v1
+    created: "2021-12-07T17:28:31.064063683Z"
+    description: A Helm chart for Kubernetes
+    digest: d16c09aa5bc1a94171fb7427fdc6d188f9636f74fced884248538cdcb3de9f40
+    name: ms-nginx
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-nginx-10.0.0-build.505/ms-nginx-10.0.0-build.505.tgz
+    version: 10.0.0-build.505
+  - apiVersion: v1
     appVersion: "1.0"
     created: "2021-10-21T18:04:22.788580159Z"
     description: A Helm chart for Kubernetes
@@ -29,6 +45,14 @@ entries:
     - https://github.com/ortelius/ortelius/releases/download/ms-nginx-0.1.0/ms-nginx-0.1.0.tgz
     version: 0.1.0
   ms-ui:
+  - apiVersion: v1
+    created: "2021-12-07T17:28:31.246432998Z"
+    description: A Helm chart for Kubernetes
+    digest: 78e25cdc9a5a8d3b2b6ddee33f07f4f029390d4f95059d1d5e0d86f2555821a6
+    name: ms-ui
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.0-build.500/ms-ui-10.0.0-build.500.tgz
+    version: 10.0.0-build.500
   - apiVersion: v1
     appVersion: "1.0"
     created: "2021-10-21T18:04:22.977260421Z"
@@ -48,4 +72,4 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/ortelius-console-0.1.0/ortelius-console-0.1.0.tgz
     version: 0.1.0
-generated: "2021-12-02T19:43:36.150644433Z"
+generated: "2021-12-07T17:28:31.246457999Z"
