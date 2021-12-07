@@ -6,7 +6,7 @@ on:
       - svc_cat
       - svc_cat_fix
     paths:
-      - 'chart/**'
+      - 'chart/ms-general/**'
 jobs:
   release:
     runs-on: ubuntu-latest
