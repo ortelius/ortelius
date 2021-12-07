@@ -7,7 +7,6 @@ on:
       - svc_cat_fix
     paths:
       - 'chart/**'
-      
 jobs:
   release:
     runs-on: ubuntu-latest
