@@ -13,4 +13,4 @@
 
 description: A Helm chart for Kubernetes
 name: ms-ui
-version: "10.0.0-build.500"
+version: "10.0.0-build.505"
