@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - svc_cat
-        svc_cat_fix
+      - svc_cat_fix
     paths:
       - 'chart/**'
       
