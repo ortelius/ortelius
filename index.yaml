@@ -2,6 +2,14 @@ apiVersion: v1
 entries:
   ms-general:
   - apiVersion: v1
+    created: "2021-12-09T21:39:27.428277391Z"
+    description: A Helm chart for Kubernetes
+    digest: 44524c7d072977831b5299e78d9e4e9b6a1023259c5489c63d3f57f96fbe96f3
+    name: ms-general
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-general-10.0.0-build.510/ms-general-10.0.0-build.510.tgz
+    version: 10.0.0-build.510
+  - apiVersion: v1
     created: "2021-12-07T17:29:55.652679896Z"
     description: A Helm chart for Kubernetes
     digest: be07546176d77a8ceb5d2e082e30de6a8b4e647174f63ec5901188fe6f228733
@@ -28,6 +36,14 @@ entries:
     version: 0.1.0
   ms-nginx:
   - apiVersion: v1
+    created: "2021-12-09T21:39:27.600552861Z"
+    description: A Helm chart for Kubernetes
+    digest: c907b9539c1f6e9d8472f685d3bc6ef231bdad898e19adf79256198c26b18203
+    name: ms-nginx
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-nginx-10.0.0-build.510/ms-nginx-10.0.0-build.510.tgz
+    version: 10.0.0-build.510
+  - apiVersion: v1
     appVersion: "1.0"
     created: "2021-10-21T18:04:22.788580159Z"
     description: A Helm chart for Kubernetes
@@ -37,6 +53,14 @@ entries:
     - https://github.com/ortelius/ortelius/releases/download/ms-nginx-0.1.0/ms-nginx-0.1.0.tgz
     version: 0.1.0
   ms-ui:
+  - apiVersion: v1
+    created: "2021-12-09T21:39:27.752195691Z"
+    description: A Helm chart for Kubernetes
+    digest: 63f314c2e050c5182a6d53b1d9f7ad14d71d42d4553fb1bab198760b74dd045e
+    name: ms-ui
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.0-build.510/ms-ui-10.0.0-build.510.tgz
+    version: 10.0.0-build.510
   - apiVersion: v1
     created: "2021-12-07T17:28:59.999691461Z"
     description: A Helm chart for Kubernetes
@@ -64,4 +88,4 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/ortelius-console-0.1.0/ortelius-console-0.1.0.tgz
     version: 0.1.0
-generated: "2021-12-07T17:29:55.652702696Z"
+generated: "2021-12-09T21:39:27.752249694Z"
