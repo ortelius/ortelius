@@ -75,6 +75,7 @@ Contributors:
 - Arvind Singharpuria
 - Interas LLC - Corporate Contributer
    - Ujwal Yelmareddy
+- Lakshmi Viswanath
   
 ### Data Science and Visualization
 
@@ -108,6 +109,7 @@ Contributors:
 - Zach Jones
 - Aditi Agarwal
 - Jesse Gonzalez
+- Lakshmi Viswanath
 
 ### Market Place and Domains
 
@@ -169,6 +171,7 @@ Contributors:
 - Turker Aslan
 - Leniuska Alvarado
 - Ankur Kumar
+- Lakshmi Viswanaths
 
 ### Development
 
