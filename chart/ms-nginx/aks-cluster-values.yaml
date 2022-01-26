@@ -27,7 +27,7 @@ component: ms-nginx;svc_cat_fix;v10_0_0_494_g1c019fa
 dockerrepo: quay.io/ortelius/ms-nginx
 dockersha: 94a85ed6b7fa69bd8897617bea782a0237df19086f2992902342a35146a05f16
 dockertag: svc_cat_fix-v10.0.0.494-g1c019fa
-dropzone: /tmp/tdm.1497.1
+dropzone: /tmp/tdm.1501.1
 environment: aks-cluster
 gitcommit: 1c019fa
 gitrepo: ortelius/ortelius
