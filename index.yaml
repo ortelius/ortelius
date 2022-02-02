@@ -18,14 +18,6 @@ entries:
     - https://github.com/ortelius/ortelius/releases/download/ms-general-10.0.0-build.505/ms-general-10.0.0-build.505.tgz
     version: 10.0.0-build.505
   - apiVersion: v1
-    created: "2022-02-02T21:10:48.91611891Z"
-    description: A Helm chart for Kubernetes
-    digest: a3e99b874944b99c331a1eb873fa4d796c993d4edd75fbd5308561a59aabc37e
-    name: ms-general
-    urls:
-    - https://github.com/ortelius/ortelius/releases/download/ms-general-10.0.0-build.494/ms-general-10.0.0-build.494.tgz
-    version: 10.0.0-build.494
-  - apiVersion: v1
     created: "2021-12-02T19:43:36.150628932Z"
     description: A Helm chart for Kubernetes
     digest: a4f3e3e7ba229a33d55107880140cb1e32668ce6cd34f6296b6fbd9609a07844
@@ -52,13 +44,13 @@ entries:
     - https://github.com/ortelius/ortelius/releases/download/ms-nginx-10.0.0-build.510/ms-nginx-10.0.0-build.510.tgz
     version: 10.0.0-build.510
   - apiVersion: v1
-    created: "2022-02-02T21:10:49.083083536Z"
+    created: "2022-02-02T21:11:14.982379635Z"
     description: A Helm chart for Kubernetes
-    digest: 38e7e1b015cd6a93ac0c6d98c9b6f93c1eb5e32d2370377d43d6189ab0287afd
+    digest: e44a32b0f5c675d3f3390f5bcce44103dff80b8492aa262ff2b97ceae97e6fa6
     name: ms-nginx
     urls:
-    - https://github.com/ortelius/ortelius/releases/download/ms-nginx-10.0.0-build.494/ms-nginx-10.0.0-build.494.tgz
-    version: 10.0.0-build.494
+    - https://github.com/ortelius/ortelius/releases/download/ms-nginx-10.0.0-build.493/ms-nginx-10.0.0-build.493.tgz
+    version: 10.0.0-build.493
   - apiVersion: v1
     appVersion: "1.0"
     created: "2021-10-21T18:04:22.788580159Z"
@@ -86,14 +78,6 @@ entries:
     - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.0-build.505/ms-ui-10.0.0-build.505.tgz
     version: 10.0.0-build.505
   - apiVersion: v1
-    created: "2022-02-02T21:10:49.293107843Z"
-    description: A Helm chart for Kubernetes
-    digest: e97a1c8c78fd1e71d857e54330ca8d1a3344e81d39125478120f86bd52d07303
-    name: ms-ui
-    urls:
-    - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.0-build.494/ms-ui-10.0.0-build.494.tgz
-    version: 10.0.0-build.494
-  - apiVersion: v1
     appVersion: "1.0"
     created: "2021-10-21T18:04:22.977260421Z"
     description: A Helm chart for Kubernetes
@@ -112,4 +96,4 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/ortelius-console-0.1.0/ortelius-console-0.1.0.tgz
     version: 0.1.0
-generated: "2022-02-02T21:10:49.293170143Z"
+generated: "2022-02-02T21:11:14.982412035Z"
