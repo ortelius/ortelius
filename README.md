@@ -76,6 +76,7 @@ Contributors:
 - Interas LLC - Corporate Contributer
    - Ujwal Yelmareddy
 - Lakshmi Viswanath
+- Hamid Gholami
   
 ### Data Science and Visualization
 
@@ -248,6 +249,7 @@ Contributors:
 - Arvind Singharpuria
 - Amit Dsouza
 - Ayesha Khaliq
+- Hamid Gholami
 
 ## Installation
 
