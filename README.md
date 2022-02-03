@@ -134,6 +134,7 @@ Contributors:
 - Parijat Kalita
 - Ashutosh Srivastava
 - Poovaraj Thangamariappan
+- Yasaman Khazaie
 
 ### Documentation
 
