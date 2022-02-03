@@ -249,6 +249,7 @@ Contributors:
 - Arvind Singharpuria
 - Amit Dsouza
 - Ayesha Khaliq
+- Kingsathurthi
 - Hamid Gholami
 
 ## Installation
