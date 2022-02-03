@@ -77,6 +77,7 @@ Contributors:
    - Ujwal Yelmareddy
 - Lakshmi Viswanath
 - Hamid Gholami
+- Kingsathurthi
   
 ### Data Science and Visualization
 
@@ -111,6 +112,7 @@ Contributors:
 - Aditi Agarwal
 - Jesse Gonzalez
 - Lakshmi Viswanath
+- Kingsathurthi
 
 ### Market Place and Domains
 
