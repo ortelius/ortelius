@@ -75,6 +75,8 @@ Contributors:
 - Interas LLC - Corporate Contributer
   - Ujwal Yelmareddy
 - Lakshmi Viswanath
+- Hamid Gholami
+- Kingsathurthi
   
 ### Data Science and Visualization
 
@@ -109,6 +111,7 @@ Contributors:
 - Aditi Agarwal
 - Jesse Gonzalez
 - Lakshmi Viswanath
+- Kingsathurthi
 
 ### Market Place and Domains
 
@@ -132,6 +135,7 @@ Contributors:
 - Parijat Kalita
 - Ashutosh Srivastava
 - Poovaraj Thangamariappan
+- Yasaman Khazaie
 
 ### Documentation
 
@@ -249,6 +253,8 @@ Contributors,
 - Amit Dsouza
 - Ayesha Khaliq
 - Saif Ul Islam
+- Kingsathurthi
+- Hamid Gholami
 
 ## Installation
 
