@@ -78,6 +78,7 @@ Contributors:
 - Lakshmi Viswanath
 - Hamid Gholami
 - Kingsathurthi
+- Vrukshali Torawane
   
 ### Data Science and Visualization
 
@@ -254,6 +255,7 @@ Contributors:
 - Ayesha Khaliq
 - Kingsathurthi
 - Hamid Gholami
+- Vrukshali Torawane
 
 ## Installation
 
