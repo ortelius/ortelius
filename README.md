@@ -254,6 +254,7 @@ Contributors:
 - Ayesha Khaliq
 - Kingsathurthi
 - Hamid Gholami
+- Anuja Kumari
 
 ## Installation
 
