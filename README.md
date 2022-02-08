@@ -78,6 +78,7 @@ Contributors:
 - Lakshmi Viswanath
 - Hamid Gholami
 - Kingsathurthi
+- Bassem Riahi
   
 ### Data Science and Visualization
 
