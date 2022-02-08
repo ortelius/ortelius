@@ -255,6 +255,7 @@ Contributors,
 - Saif Ul Islam
 - Kingsathurthi
 - Hamid Gholami
+- Vrukshali Torawane
 
 ## Installation
 
