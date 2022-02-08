@@ -113,6 +113,7 @@ Contributors:
 - Jesse Gonzalez
 - Lakshmi Viswanath
 - Kingsathurthi
+- Bassem Riahi
 
 ### Market Place and Domains
 
@@ -176,6 +177,7 @@ Contributors:
 - Leniuska Alvarado
 - Ankur Kumar
 - Lakshmi Viswanaths
+- Bassem Riahi
 
 ### Development
 
@@ -203,6 +205,7 @@ Contributors:
 - Aman Saxena
 - Ashutosh Srivastava
 - Leniuska Alvarado
+- Bassem Riahi
 
 ### Product Management
 
