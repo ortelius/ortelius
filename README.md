@@ -175,6 +175,7 @@ Contributors:
 - Leniuska Alvarado
 - Ankur Kumar
 - Lakshmi Viswanaths
+- Paul Li
 
 ### Development
 
@@ -202,6 +203,7 @@ Contributors:
 - Aman Saxena
 - Ashutosh Srivastava
 - Leniuska Alvarado
+- Paul Li
 
 ### Product Management
 
