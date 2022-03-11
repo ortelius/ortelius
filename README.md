@@ -176,6 +176,7 @@ Contributors:
 - Ankur Kumar
 - Lakshmi Viswanaths
 - Paul Li
+- Joseph Akayesi
 
 ### Development
 
@@ -204,6 +205,7 @@ Contributors:
 - Ashutosh Srivastava
 - Leniuska Alvarado
 - Paul Li
+- Joseph Akayesi
 
 ### Product Management
 
@@ -259,6 +261,7 @@ Contributors,
 - Hamid Gholami
 - Anuja Kumari
 - Vrukshali Torawane
+- Joseph Akayesi
 
 ## Installation
 
