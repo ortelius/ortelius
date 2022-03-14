@@ -262,6 +262,7 @@ Contributors,
 - Anuja Kumari
 - Vrukshali Torawane
 - Joseph Akayesi
+- Rakesh Arumalla
 
 ## Installation
 
