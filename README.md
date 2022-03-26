@@ -177,6 +177,7 @@ Contributors:
 - Lakshmi Viswanaths
 - Paul Li
 - Joseph Akayesi
+- Christian De Leon
 
 ### Development
 
@@ -206,6 +207,7 @@ Contributors:
 - Leniuska Alvarado
 - Paul Li
 - Joseph Akayesi
+- Christian De Leon
 
 ### Product Management
 
