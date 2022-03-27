@@ -15,7 +15,7 @@ ortelius-generic-microservice:
   additionalPorts:       # optional - list of additional ports the pod should expose (e. g. for debugging purposes); these are not exposed in the service
 
   persistence:
-    stateful:             # optional - switch to use a StatefulSet instead of a Deployment; this improves upgrade behavior for applications with Persistent Volume Claims (default: false)
+    stateful:             # optional - switch to use a StatefulSet instead of a Deployment; this improves upgrade behaviour for applications with Persistent Volume Claims (default: false)
     volumeClaimTemplates: # optional - specify list of volumeClaimTemplates for the statefulset
       - name:             #   for each volumeClaimTemplate specify name (to be referenced in mount.volumeMounts)
         size:             #   and size (e.G. 10Gi)
@@ -64,7 +64,7 @@ ortelius-generic-microservice:
 
   dtTags:
     enabled:             # optional - to add custom dynatrace tags (default: false)
-    tags:               # Custom tags eg: tags: Enviornment=noAlert Enviornment=Alert
+    tags:               # Custom tags eg: tags: Environment=noAlert Environment=Alert
 
   readinessProbe:
     enabled:             # optional - switch to enable http request readiness probe (default: true)
