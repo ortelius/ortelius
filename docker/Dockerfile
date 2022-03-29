@@ -46,6 +46,6 @@ COPY dmadminweb/microservice/location/  /etc/nginx/location/
 
 WORKDIR /opt/deployhub/
 USER omreleng
-ENV PATH="${PATH}:/usr/pgsql-10/bin:/usr/local/google-cloud-sdk/bin"
+ENV PATH="${PATH}:/usr/pgsql-13/bin:/usr/local/google-cloud-sdk/bin"
 ENTRYPOINT /opt/deployhub/entrypoint.sh
 

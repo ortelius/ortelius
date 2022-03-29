@@ -1,6 +1,6 @@
 # Ortelius
 
-Welcome to Ortelius. Ortelius is an open source project that aims to simplify the implementation of microservices. By providing a central catalog of services with their deployment specs, application teams can easily consume and deploy services across cluster. Ortelius tracks application versions based on service updates and maps their service dependencies eliminating confusion and guess work.  Unique to Ortelius is the ability to track your microservice inventory across clusters mapping the differences.  Ortelius serves Site Reliability Engineers and Cloud Architects in their migration to and ongoing management of a microservice implementation. For more information, see the comprehensive documentation at http://docs.ortelius.io 
+Welcome to Ortelius. Ortelius is an open source project that aims to simplify the implementation of micro-services. By providing a central catalog of services with their deployment specs, application teams can easily consume and deploy services across cluster. Ortelius tracks application versions based on service updates and maps their service dependencies eliminating confusion and guess work.  Unique to Ortelius is the ability to track your microservice inventory across clusters mapping the differences.  Ortelius serves Site Reliability Engineers and Cloud Architects in their migration to and ongoing management of a microservice implementation. For more information, see the comprehensive documentation at [Ortelius' documentation](http://docs.ortelius.io).
 
 ## Ortelius Mission
 
@@ -8,20 +8,20 @@ Our mission is to simplify the adoption of modern architecture through a world-c
 
 ## Ortelius Value Statements
 
-- We want Members to learn and understand solutions around microservice use and their challenges through a diverse contributor base. 
-- We want our members to develop their careers, skills and gain community recognition for their work and expertise. 
-- We want our members to have the opportunity to share and reuse open source microservices to further the adoption of a cloud native development. 
+- We want Members to learn and understand solutions around microservice use and their challenges through a diverse contributor base.
+- We want our members to develop their careers, skills and gain community recognition for their work and expertise.
+- We want our members to have the opportunity to share and reuse open source micro-services to further the adoption of a cloud native development.
 - We want members to learn how to contribute to an open source community and become part of the broader conversation around cloud native architecture.
 
 ## Ortelius Benefits
 
 The benefits of the Ortelius Open Source Project are:
 
-1) Adds automated configuration management of microservices, tracking logical applications and their versions, into the continuous delivery process.
+1) Adds automated configuration management of micro-services, tracking logical applications and their versions, into the continuous delivery process.
 2) Simplifies the path to adopting cloud native development practices without a major redesign of their CD pipeline.
 3) Give developers the power to control how their software is released across all environments by defining deployment configurations data that is separate from the definition.
-4) Deliver transparency into the continuous delivery process by mapping component and microservice relationships with BOM and Difference Reports across deployed environments (clusters, cloud, physical).  
-5) Serve as a central market place to share microservices with their deployment requirements and versions.
+4) Deliver transparency into the continuous delivery process by mapping component and microservice relationships with BOM and Difference Reports across deployed environments (clusters, cloud, physical).
+5) Serve as a central market place to share micro-services with their deployment requirements and versions.
 
 ## Ortelius Development Goals for 2021
 
@@ -33,9 +33,8 @@ Goals for Q1 and Q2 of 2021
 
 Goals for the Q3 and Q4 months of 2021
 
-1) Publish our first global marketplace 
+1) Publish our first global marketplace
 2) Convert DMScript to Python
-
 
 ## Code of Conduct
 
@@ -74,7 +73,7 @@ Contributors:
 - Jimmy Malhan
 - Arvind Singharpuria
 - Interas LLC - Corporate Contributer
-   - Ujwal Yelmareddy
+  - Ujwal Yelmareddy
 - Lakshmi Viswanath
 - Hamid Gholami
 - Kingsathurthi
@@ -179,6 +178,8 @@ Contributors:
 - Ankur Kumar
 - Lakshmi Viswanaths
 - Bassem Riahi
+- Paul Li
+- Joseph Akayesi
 
 ### Development
 
@@ -207,12 +208,14 @@ Contributors:
 - Ashutosh Srivastava
 - Leniuska Alvarado
 - Bassem Riahi
+- Paul Li
+- Joseph Akayesi
 
 ### Product Management
 
-- Website, branding, outreach 
-- Review messaging, update logo, work on blogs. 
-- Personas, Journey Maps, service maps, roadmaps, Value Canvas, Go-to-Market strategies, product metrics. 
+- Website, branding, outreach
+- Review messaging, update logo, work on blogs.
+- Personas, Journey Maps, service maps, roadmaps, Value Canvas, Go-to-Market strategies, product metrics.
 - What problem or opportunity is being explored?
 - How is the solution being framed to tackle this?
 - What is being measured to determine if this is successful?
@@ -251,13 +254,19 @@ Contributors:
 
 Research, define and Automate GitOps with Ortelius
 
-Contributors:
+Contributors,
+
 - Brad McCoy
 - Arvind Singharpuria
 - Amit Dsouza
 - Ayesha Khaliq
+- Saif Ul Islam
 - Kingsathurthi
 - Hamid Gholami
+- Anuja Kumari
+- Vrukshali Torawane
+- Joseph Akayesi
+- Rakesh Arumalla
 
 ## Installation
 
@@ -265,5 +274,4 @@ Browse through the [Installation and Support Guide](http://docs.ortelius.io/guid
 
 ## Support
 
-https://github.com/ortelius/ortelius/issues
-
+- [Issues](https://github.com/ortelius/ortelius/issues)
