@@ -77,6 +77,7 @@ Contributors:
 - Lakshmi Viswanath
 - Hamid Gholami
 - Kingsathurthi
+- Bassem Riahi
   
 ### Data Science and Visualization
 
@@ -112,6 +113,7 @@ Contributors:
 - Jesse Gonzalez
 - Lakshmi Viswanath
 - Kingsathurthi
+- Bassem Riahi
 
 ### Market Place and Domains
 
@@ -175,6 +177,7 @@ Contributors:
 - Leniuska Alvarado
 - Ankur Kumar
 - Lakshmi Viswanaths
+- Bassem Riahi
 - Paul Li
 - Joseph Akayesi
 
@@ -204,6 +207,7 @@ Contributors:
 - Aman Saxena
 - Ashutosh Srivastava
 - Leniuska Alvarado
+- Bassem Riahi
 - Paul Li
 - Joseph Akayesi
 
