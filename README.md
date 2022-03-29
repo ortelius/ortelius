@@ -180,6 +180,7 @@ Contributors:
 - Bassem Riahi
 - Paul Li
 - Joseph Akayesi
+- Christian De Leon
 
 ### Development
 
@@ -210,6 +211,7 @@ Contributors:
 - Bassem Riahi
 - Paul Li
 - Joseph Akayesi
+- Christian De Leon
 
 ### Product Management
 
