@@ -12,47 +12,87 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+options:
+  env:
+    - "BRANCH_NAME=${BRANCH_NAME}"
+    - "BUILD_ID=${BUILD_ID}"
+    - "DHURL=https://console.deployhub.com"
+    - "DOCKER_CONFIG=/workspace/docker-config"
+    - "PROJECT_ID=${PROJECT_ID}"
+    - "SHORT_SHA=${SHORT_SHA}"
+    - "TAG_NAME=${TAG_NAME}"
 steps:
-  # Get ssh key from Google Secret Manager
-  - name: gcr.io/cloud-builders/gcloud
+  # Setup environment including img tag name for nginx
+  - name: python
+    id: gitvars
+    secretEnv: ['DHUSER', 'DHPASS']
     entrypoint: 'bash'
-    args: [ '-c', 'gcloud secrets versions access latest --secret=github > /root/.ssh/id_rsa;chmod 600 /root/.ssh/id_rsa;ssh-keyscan -t rsa github.com > /root/.ssh/known_hosts' ]
-    volumes:
-    - name: 'ssh'
-      path: /root/.ssh
-
-  # Setup environment including img tag name
-  - name: gcr.io/cloud-builders/docker
-    id: cloudbuild_sh
-    entrypoint: 'bash'
-    args: ['-c', 'ls -A1 | xargs rm -rf;git clone -q $$COMPONENT_GITURL .;git checkout --track -b $BRANCH_NAME origin/$BRANCH_NAME;env | sed "s/^/export /" >> /workspace/cloudbuild-general.sh']
-    volumes:
-    - name: 'ssh'
-      path: /root/.ssh
-    env: 
-      - 'COMPONENT_GITURL=https://github.com/ortelius/ortelius'
-      - 'COMPONENT_VERSION=9.0.0'
-      - 'COMPONENT_DOCKERREPO=quay.io/ortelius/ms-general'
-      - 'BLDDATE=`date`'
-      - 'IMAGE_TAG="$BRANCH_NAME-v$$COMPONENT_VERSION.$$(git rev-list --count $BRANCH_NAME)-g$SHORT_SHA"'
+    args:
+      - '-c'
+      - |
+        git fetch --unshallow; \
+        export BUILDNUM=`git log --oneline | wc -l | tr -d " "`; \
+        export GIT_REPO=`git config --get remote.origin.url | sed 's/.*://;s/.git$//;s#^//github.com/##;'`; \
+        export GIT_URL=`git config --get remote.origin.url`; \
+        pip3 install deployhub | grep -i deployhub; \
+        dh envscript --envvars /workspace/component.toml --envvars_sh /workspace/cloudbuild.sh;
 
   # Login to Quay for push.
   - name: 'gcr.io/cloud-builders/docker'
     id: login
+    secretEnv: ['QUAY_USERID', 'QUAY_PASSWORD']  
     entrypoint: 'bash'
-    args: ['-c', '. /workspace/cloudbuild-general.sh;docker login quay.io --username "$$QUAY_USERID" --password $$QUAY_PASSWORD']
-    secretEnv: ['QUAY_USERID', 'QUAY_PASSWORD']     
-    env:
-      - 'DOCKER_CONFIG=/workspace/docker-config'
+    args: 
+      - '-c'
+      - | 
+        source /workspace/cloudbuild.sh; \
+        docker login quay.io --username "$$QUAY_USERID" --password $$QUAY_PASSWORD  
 
-  # Build and push dh-ms-general.war - quay.io/ortelius/ms-general
+  # Build and push quay.io/ortelius/ms-textfile-crud
   - name: 'gcr.io/cloud-builders/docker'
     id: build_push
-    waitFor: [ 'login' ]
     entrypoint: 'bash'
-    args: ["-c", '. /workspace/cloudbuild-general.sh;docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/docker/DockerfileGeneral .;docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG']
-    env:
-      - 'DOCKER_CONFIG=/workspace/docker-config'
+    args: 
+      - '-c'
+      - |
+        source /workspace/cloudbuild.sh; \
+        docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/Dockerfile .; \
+        docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG
+
+  #syft scan
+  - name: 'gcr.io/cloud-builders/docker'
+    id: scan
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        source /workspace/cloudbuild.sh; \
+        curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin; \
+        echo $$COMPONENT_DOCKERREPO:$$IMAGE_TAG; \
+        syft packages $$COMPONENT_DOCKERREPO:$$IMAGE_TAG --scope all-layers -o cyclonedx-json > /workspace/cyclonedx.json; \
+        cat /workspace/cyclonedx.json;
+
+  # Get image id
+  - name: 'gcr.io/cloud-builders/docker'
+    id: digest
+    entrypoint: 'bash'
+    args: 
+      - '-c'
+      - |
+        source /workspace/cloudbuild.sh; \
+        echo export DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $$COMPONENT_DOCKERREPO:$$IMAGE_TAG | cut -d: -f2 | cut -c-12) >> /workspace/cloudbuild.sh
+
+  # Capture new component version in DeployHub
+  - name: python
+    id: compupdate
+    secretEnv: ['DHUSER', 'DHPASS']
+    entrypoint: 'bash'
+    args: 
+      - '-c'
+      - |
+        pip install deployhub | grep -i deployhub; \
+        source /workspace/cloudbuild.sh; \
+        dh updatecomp --rsp /workspace/component-general.toml --deppkg "cyclonedx@/workspace/cyclonedx.json";
 
 secrets:
 - kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/quay
@@ -61,4 +101,9 @@ secrets:
 - kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/quay-pw
   secretEnv:
     QUAY_PASSWORD: ***REMOVED*** 
-  
+- kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/ortelius-id
+  secretEnv:
+    DHUSER: CiQAGgJuQMHWANazqTOeE/SyoX/YNVWnES7eJEVWY8mTP98Er3USMQC43iiopoGYhP/YahsQu/yUURiqJBVZURYiUiu5Z7UBkrDgUAonKCKjtzeSNUP7HoQ=
+- kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/ortelius-pw
+  secretEnv:
+    DHPASS: CiQAZySXz07McN9e6fyr6X4qwkw4iBgeULmpq16RbxIAcqg6gTESMQB98+y30zqMVPx2S/Q/8ld+qlJWWxmocnbjLe9iyepMwyMl3yf+r5e55nf85PlrBBw=   
