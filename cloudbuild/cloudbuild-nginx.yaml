@@ -31,7 +31,7 @@ steps:
     env:
       - 'DOCKER_CONFIG=/workspace/docker-config'
 
-  # Build and push dh-ms-general.war - quay.io/ortelius/ms-nginx
+  # Build and push ao-ms-general.war - quay.io/ortelius/ms-nginx
   - name: 'gcr.io/cloud-builders/docker'
     id: build_push
     waitFor: [ 'login' ]

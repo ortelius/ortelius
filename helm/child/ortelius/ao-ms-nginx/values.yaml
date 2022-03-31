@@ -1,8 +1,13 @@
-# Default values for ms-ui.
+# Default values for ao-ms-nginx.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 3
+replicaCount: 1
+
+image:
+  repository: quay.io/deployhub/ao-ms-nginx
+  tag: svccat-v9.0.0.3316-g78f92e6
+  pullPolicy: Always
 
 nameOverride: ""
 fullnameOverride: ""

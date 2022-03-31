@@ -1,8 +1,13 @@
-# Default values for cartservice.
+# Default values for ao-ms-ui.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
+
+image:
+  repository: quay.io/deployhub/ao-ms-ui
+  tag: svccat-v9.0.0.3311-gc21cb2e
+  pullPolicy: Always
 
 nameOverride: ""
 fullnameOverride: ""
@@ -11,10 +16,6 @@ service:
   type: ClusterIP
   port: 80
 
-DockerRepo: "quay.io/ortelius/ortelius-console"
-DockerTag: "latest"
-postgresDiskURI: "/subscriptions/a5f033ff-a3d7-4de3-a510-45a9d37e2d9e/resourceGroups/MC_ortelius_aks-cluster_eastus/providers/Microsoft.Compute/disks/postgresDisk"
-
 ingress:
   enabled: false
   annotations: {}
@@ -22,7 +23,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   paths: []
   hosts:
-    - dh-ms-docs.local
+    - chart-example.local
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:

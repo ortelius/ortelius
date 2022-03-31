@@ -31,7 +31,7 @@ steps:
     env:
       - 'DOCKER_CONFIG=/workspace/docker-config'
 
-  # Build and push dh-ms-ui.war - quay.io/ortelius/ms-ui
+  # Build and push ao-ms-ui.war - quay.io/ortelius/ms-ui
   - name: 'gcr.io/cloud-builders/docker'
     id: build_push
     waitFor: [ 'login' ]  
