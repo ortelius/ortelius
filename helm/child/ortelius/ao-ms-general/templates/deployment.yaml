@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ao-ms-general.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app:  {{ include "ao-ms-general.name" . }}
+      tier: backend
+      track: stable
+  template:
+    metadata:
+      labels:
+        app: ao-ms-general
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: {{ include "ao-ms-general.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: DBUserName
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBUserName
+            - name: DBPassword
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBPassword
+            - name: DBConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBConnectionString 
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: jwt-volume
+              mountPath: /opt/deployhub/keys
+      volumes:
+        - name: jwt-volume
+          secret:
+            secretName: jwtkeys  
+---

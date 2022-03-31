@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-load
+spec:
+  ttlSecondsAfterFinished: 30
+  template:
+    spec:
+      containers:
+        - name: db-load
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: LOAD_DB
+              value: "yes"
+            - name: INIT_ONLY
+              value: "yes"
+            - name: DBUserName
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBUserName
+            - name: DBPassword
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBPassword
+            - name: DBConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: pgcred
+                  key: DBConnectionString 
+      restartPolicy: Never
+      

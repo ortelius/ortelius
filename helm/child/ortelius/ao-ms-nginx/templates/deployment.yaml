@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ao-ms-nginx.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app:  {{ include "ao-ms-nginx.name" . }}
+      tier: frontend
+      track: stable
+  template:
+    metadata:
+      labels:
+        app: ao-ms-nginx
+        tier: frontend
+        track: stable
+    spec:
+      containers:
+        - name: {{ include "ao-ms-nginx.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}           
+          ports:
+            - name: http
+              containerPort: 80
+            - name: https
+              containerPort: 443
+          {{ if or .Values.SSLChainedCert .Values.MountSSL }}
+          volumeMounts:
+            - name: ssl-volume
+              mountPath: /etc/nginx/ssl
+          {{ end }}
+          env:
+            - name: SSLTYPE
+              value: {{ .Values.SSLType | default "" | quote }}
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+      {{ if or .Values.SSLChainedCert .Values.MountSSL }}                         
+      volumes:
+        - name: ssl-volume
+          secret:
+            secretName: nginx-secret
+      {{ end }}
