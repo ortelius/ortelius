@@ -1,0 +1,35 @@
+apiVersion: v2
+name: Ortelius
+description: A Parent Helm chart for Ortelius
+type: application
+version: 0.1.0
+appVersion: 0.1.0
+
+dependencies:
+  - name: dh-ms-ui
+    version: 0.1.0
+    repository: "@dh-ms-ui"
+  - name: keptn-ortelius-service
+    version: 0.1.0
+    repository: "@keptn-ortelius-service"
+  - name: ms-compitem-crud
+    version: 0.1.0
+    repository: "@ortelius-ms-compitem-crud"
+  - name: ms-dep-pkg-r
+    version: 0.1.0
+    repository: "@ms-dep-pkg-r"
+  - name: ms-general
+    version: 0.1.0
+    repository: "@ms-general"
+  - name: ms-nginx
+    version: 0.1.0
+    repository: "@ms-nginx"
+  - name: ms-text-crud
+    version: 0.1.0
+    repository: "@ms-text-crud"
+  - name: ms-ui
+    version: 0.1.0
+    repository: "@ms-ui"
+  - name: ms-validate-user
+    version: 0.1.0
+    repository: "@ms-validate-user"

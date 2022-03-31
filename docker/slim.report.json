@@ -1,0 +1,811 @@
+{
+  "version": "1.0",
+  "engine": "linux|Transformer|1.37.3|97eb3c8c7f8c4e295a26c13882feb3f0539ab50f|2021-12-10_09:37:29AM",
+  "containerized": false,
+  "host_distro": {
+    "name": "Ubuntu",
+    "version": "20.10",
+    "display_name": "Ubuntu 20.10"
+  },
+  "type": "build",
+  "state": "done",
+  "target_reference": "quay.io/ortelius/ortelius:latest",
+  "system": {
+    "type": "Linux",
+    "release": "5.4.72-microsoft-standard-WSL2",
+    "distro": {
+      "name": "Fedora",
+      "version": "34",
+      "display_name": "Fedora 34 (Container Image)"
+    }
+  },
+  "source_image": {
+    "identity": {
+      "id": "sha256:3c79c5a721a96b9742f52e7b8d61100823a5c58a5f3cc7983e850afc0e3222d9",
+      "tags": [
+        "latest"
+      ],
+      "names": [
+        "quay.io/ortelius/ortelius:latest"
+      ],
+      "digests": [
+        "sha256:48c67c243a74baf19fcf3a8aecdfd0cf7641d24731843ef90c1ee371602e801a"
+      ],
+      "full_digests": [
+        "quay.io/ortelius/ortelius@sha256:48c67c243a74baf19fcf3a8aecdfd0cf7641d24731843ef90c1ee371602e801a"
+      ]
+    },
+    "size": 4944590479,
+    "size_human": "4.9 GB",
+    "create_time": "2022-01-27T17:03:45Z",
+    "docker_version": "20.10.12",
+    "architecture": "amd64",
+    "user": "omreleng",
+    "exposed_ports": [
+      "8080/tcp"
+    ],
+    "os": "linux",
+    "labels": {
+      "maintainer": "Clement Verna <cverna@fedoraproject.org>"
+    },
+    "env_vars": [
+      "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/google-cloud-sdk/bin:/usr/pgsql-10/bin:/usr/local/google-cloud-sdk/bin",
+      "DISTTAG=f34container",
+      "FGC=f34",
+      "FBR=f34"
+    ],
+    "container_entry": {
+      "exe_path": ""
+    }
+  },
+  "minified_image_size": 9326063,
+  "minified_image_size_human": "9.3 MB",
+  "minified_image": "ortelius:lowfat",
+  "minified_image_has_data": true,
+  "minified_by": 530.1905508251446,
+  "artifact_location": "/tmp/docker-slim-state/.docker-slim-state/images/3c79c5a721a96b9742f52e7b8d61100823a5c58a5f3cc7983e850afc0e3222d9/artifacts",
+  "container_report_name": "creport.json",
+  "seccomp_profile_name": "quay.io-ortelius-ortelius-seccomp.json",
+  "apparmor_profile_name": "quay.io-ortelius-ortelius-apparmor-profile",
+  "image_stack": [
+    {
+      "is_top_image": true,
+      "id": "sha256:3c79c5a721a96b9742f52e7b8d61100823a5c58a5f3cc7983e850afc0e3222d9",
+      "full_name": "quay.io/ortelius/ortelius:latest",
+      "repo_name": "quay.io/ortelius/ortelius",
+      "version_tag": "latest",
+      "raw_tags": [
+        "quay.io/ortelius/ortelius:latest"
+      ],
+      "create_time": "2022-01-27T17:03:45Z",
+      "new_size": 4944590479,
+      "new_size_human": "4.9 GB",
+      "instructions": [
+        {
+          "type": "LABEL",
+          "time": "2021-04-01T17:59:37Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "maintainer=Clement Verna <cverna@fedoraproject.org>",
+          "command_snippet": "LABEL maintainer=Clement Verna <cverna@fedor...",
+          "command_all": "LABEL maintainer=Clement Verna <cverna@fedoraproject.org>"
+        },
+        {
+          "type": "ENV",
+          "time": "2021-04-01T18:00:19Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "DISTTAG=f34container FGC=f34 FBR=f34",
+          "command_snippet": "ENV DISTTAG=f34container FGC=f34 FBR=f34",
+          "command_all": "ENV DISTTAG=f34container FGC=f34 FBR=f34"
+        },
+        {
+          "type": "ADD",
+          "time": "2021-11-29T20:28:46Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 177588235,
+          "size_human": "178 MB",
+          "params": "file:bad3c06fb9159af0b058293570963f1b154fe14243fbffb1d6cf6cdf25b4104a in /",
+          "command_snippet": "ADD file:bad3c06fb9159af0b058293570963f1b154...",
+          "command_all": "ADD file:bad3c06fb9159af0b058293570963f1b154fe14243fbffb1d6cf6cdf25b4104a /",
+          "target": "/",
+          "source_type": "file"
+        },
+        {
+          "type": "CMD",
+          "time": "2021-11-29T20:28:46Z",
+          "is_nop": true,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "[\"/bin/bash\"]\n",
+          "command_snippet": "CMD [\"/bin/bash\"]\n",
+          "command_all": "CMD [\"/bin/bash\"]\n"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T21:43:35Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 3785,
+          "size_human": "3.8 kB",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"useradd\",\"-ms\",\"/...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"useradd\",\"-ms\",\"/bin/bash\",\"omreleng;\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"useradd\",\"-ms\",\"/bin/bash\",\"omreleng",
+            "\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T21:56:16Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 1327132717,
+          "size_human": "1.3 GB",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"yum\",\"-y\",\"update...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"yum\",\"-y\",\"update;\",\"yum\",\"-y\",\"install\",\"https://download.postgresql.org/pub/repos/yum/reporpms/F-34-x86_64/pgdg-fedora-repo-latest.noarch.rpm;\",\"yum\",\"-y\",\"install\",\"python\",\"python-pip\",\"postgresql10\",\"postgresql10-server\",\"postgresql10-contrib\",\"postgresql10-libs\",\"postgresql-odbc\",\"unixODBC\",\"libzip\",\"perl\",\"sshpass\",\"libiodbc\",\"procps-ng\",\"dos2unix\",\"jq\",\"git\",\"sudo\",\"unzip\",\"which\",\"iputils\",\"openssl\",\"openssl-libs\",\"openssh-clients\",\"libnsl.i686\",\"samba-client\",\"python-winrm\",\"python3-PyYAML\",\"python-requests-kerberos\",\"krb5-devel\",\"krb5-libs\",\"krb5-workstation\",\"diffutils\",\"rsync\",\"java-1.8.0-openjdk-devel\",\"ansible;\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"yum\",\"-y\",\"update",
+            "\",\"yum\",\"-y\",\"install\",\"https://download.postgresql.org/pub/repos/yum/reporpms/F-34-x86_64/pgdg-fedora-repo-latest.noarch.rpm",
+            "\",\"yum\",\"-y\",\"install\",\"python\",\"python-pip\",\"postgresql10\",\"postgresql10-server\",\"postgresql10-contrib\",\"postgresql10-libs\",\"postgresql-odbc\",\"unixODBC\",\"libzip\",\"perl\",\"sshpass\",\"libiodbc\",\"procps-ng\",\"dos2unix\",\"jq\",\"git\",\"sudo\",\"unzip\",\"which\",\"iputils\",\"openssl\",\"openssl-libs\",\"openssh-clients\",\"libnsl.i686\",\"samba-client\",\"python-winrm\",\"python3-PyYAML\",\"python-requests-kerberos\",\"krb5-devel\",\"krb5-libs\",\"krb5-workstation\",\"diffutils\",\"rsync\",\"java-1.8.0-openjdk-devel\",\"ansible",
+            "\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T21:56:17Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"/usr/bin/python\",...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"/usr/bin/python\",\"--version;\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"/usr/bin/python\",\"--version",
+            "\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T21:56:20Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"/usr/bin/pip\",\"--...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"/usr/bin/pip\",\"--version;\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"/usr/bin/pip\",\"--version",
+            "\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T21:56:48Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 15362752,
+          "size_human": "15 MB",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"/usr/bin/pip\",\"in...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"/usr/bin/pip\",\"install\",\"cryptography==3.3.2\",\"requests-credssp\",\"pywinrm[credssp]\",\"deployhub\",\"python-jenkins;\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"/usr/bin/pip\",\"install\",\"cryptography==3.3.2\",\"requests-credssp\",\"pywinrm[credssp]\",\"deployhub\",\"python-jenkins",
+            "\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T21:56:49Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 1597,
+          "size_human": "1.6 kB",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-sL\",\"http...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-sL\",\"https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py\",\"-o\",\"/usr/lib/python3.9/site-packages/ansible/modules/windows/win_zip.py;\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-sL\",\"https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py\",\"-o\",\"/usr/lib/python3.9/site-packages/ansible/modules/windows/win_zip.py",
+            "\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T21:56:51Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 1562,
+          "size_human": "1.6 kB",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-sL\",\"http...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-sL\",\"https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1\",\"-o\",\"/usr/lib/python3.9/site-packages/ansible/modules/windows/win_zip.ps1;\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-sL\",\"https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1\",\"-o\",\"/usr/lib/python3.9/site-packages/ansible/modules/windows/win_zip.ps1",
+            "\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T21:57:11Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 353243354,
+          "size_human": "353 MB",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"https://aw...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\",\"-o\",\"awscliv2.zip;\",\"unzip\",\"awscliv2.zip;\",\"./aws/install\",\"-i\",\"/usr/local/aws\",\"-b\",\"/usr/local/bin;\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\",\"-o\",\"awscliv2.zip",
+            "\",\"unzip\",\"awscliv2.zip",
+            "\",\"./aws/install\",\"-i\",\"/usr/local/aws\",\"-b\",\"/usr/local/bin",
+            "\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T22:03:45Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 1472696133,
+          "size_human": "1.5 GB",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-sL\",\"-o\",...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-sL\",\"-o\",\"/tmp/gcloud_install.sh\",\"https://sdk.cloud.google.com;\",\"chmod\",\"777\",\"/tmp/gcloud_install.sh;\",\"/tmp/gcloud_install.sh\",\"--disable-prompts\",\"--install-dir=/usr/local;\",\"/usr/local/google-cloud-sdk/bin/gcloud\",\"components\",\"install\",\"kubectl\",\"docker-credential-gcr;\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-sL\",\"-o\",\"/tmp/gcloud_install.sh\",\"https://sdk.cloud.google.com",
+            "\",\"chmod\",\"777\",\"/tmp/gcloud_install.sh",
+            "\",\"/tmp/gcloud_install.sh\",\"--disable-prompts\",\"--install-dir=/usr/local",
+            "\",\"/usr/local/google-cloud-sdk/bin/gcloud\",\"components\",\"install\",\"kubectl\",\"docker-credential-gcr",
+            "\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T22:03:56Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 80558602,
+          "size_human": "81 MB",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-sL\",\"-o\",...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-sL\",\"-o\",\"/tmp/helm_install.sh\",\"https://raw.githubusercontent.com/helm/helm/master/scripts/get;\",\"chmod\",\"777\",\"/tmp/helm_install.sh;\",\"/tmp/helm_install.sh;\",\"mv\",\"/usr/local/bin/helm\",\"/usr/local/bin/helm2\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-sL\",\"-o\",\"/tmp/helm_install.sh\",\"https://raw.githubusercontent.com/helm/helm/master/scripts/get",
+            "\",\"chmod\",\"777\",\"/tmp/helm_install.sh",
+            "\",\"/tmp/helm_install.sh",
+            "\",\"mv\",\"/usr/local/bin/helm\",\"/usr/local/bin/helm2\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T22:04:05Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 45079444,
+          "size_human": "45 MB",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-fsSL\",\"-o...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-fsSL\",\"-o\",\"/tmp/get_helm.sh\",\"https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3;\",\"chmod\",\"777\",\"/tmp/get_helm.sh;\",\"/tmp/get_helm.sh\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-fsSL\",\"-o\",\"/tmp/get_helm.sh\",\"https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3",
+            "\",\"chmod\",\"777\",\"/tmp/get_helm.sh",
+            "\",\"/tmp/get_helm.sh\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T22:04:16Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 67669575,
+          "size_human": "68 MB",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-skL\",\"-X\"...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-skL\",\"-X\",\"GET\",\"https://releases.hashicorp.com/terraform/0.12.17/terraform_0.12.17_linux_amd64.zip\",\"-o\",\"/tmp/terraform_0.12.17_linux_amd64.zip;\",\"cd\",\"/tmp;\",\"unzip\",\"-q\",\"terraform_0.12.17_linux_amd64.zip;\",\"chmod\",\"+x\",\"terraform;\",\"mv\",\"terraform\",\"/usr/local/bin/\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"curl\",\"-skL\",\"-X\",\"GET\",\"https://releases.hashicorp.com/terraform/0.12.17/terraform_0.12.17_linux_amd64.zip\",\"-o\",\"/tmp/terraform_0.12.17_linux_amd64.zip",
+            "\",\"cd\",\"/tmp",
+            "\",\"unzip\",\"-q\",\"terraform_0.12.17_linux_amd64.zip",
+            "\",\"chmod\",\"+x\",\"terraform",
+            "\",\"mv\",\"terraform\",\"/usr/local/bin/\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T22:05:00Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 74303975,
+          "size_human": "74 MB",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"yum\",\"-y\",\"instal...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"yum\",\"-y\",\"install\",\"yum-utils;\",\"yum-config-manager\",\"--add-repo\",\"https://cli.github.com/packages/rpm/gh-cli.repo;\",\"yum\",\"-y\",\"install\",\"gh\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"yum\",\"-y\",\"install\",\"yum-utils",
+            "\",\"yum-config-manager\",\"--add-repo\",\"https://cli.github.com/packages/rpm/gh-cli.repo",
+            "\",\"yum\",\"-y\",\"install\",\"gh\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T22:05:01Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 25976832,
+          "size_human": "26 MB",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"rpm\",\"--import\",\"...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"rpm\",\"--import\",\"https://packages.microsoft.com/keys/microsoft.asc;\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"rpm\",\"--import\",\"https://packages.microsoft.com/keys/microsoft.asc",
+            "\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T22:05:02Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 169,
+          "size_human": "169 B",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"echo\",\"-e\",\"[azur...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"echo\",\"-e\",\"[azure-cli] nname=Azure CLI nbaseurl=https://packages.microsoft.com/yumrepos/azure-cli nenabled=1 ngpgcheck=1 ngpgkey=https://packages.microsoft.com/keys/microsoft.asc \",\">\",\"/etc/yum.repos.d/azure-cli.repo\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"echo\",\"-e\",\"[azure-cli] nname=Azure CLI nbaseurl=https://packages.microsoft.com/yumrepos/azure-cli nenabled=1 ngpgcheck=1 ngpgkey=https://packages.microsoft.com/keys/microsoft.asc \",\">\",\"/etc/yum.repos.d/azure-cli.repo\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T22:07:25Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 897569924,
+          "size_human": "898 MB",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"yum\",\"-y\",\"instal...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"yum\",\"-y\",\"install\",\"azure-cli\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"yum\",\"-y\",\"install\",\"azure-cli\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T22:07:54Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 4961084,
+          "size_human": "5.0 MB",
+          "command_snippet": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"yum\",\"-y\",\"update...",
+          "command_all": "RUN [\"RUN\",\"/bin/sh\",\"-c\",\"yum\",\"-y\",\"update;\",\"yum\",\"-y\",\"clean\",\"all;\",\"rm\",\"-rf\",\"/var/cache/yum;\",\"mkdir\",\"-p\",\"/winshares;\",\"chmod\",\"-R\",\"775\",\"/winshares;\",\"chmod\",\"-R\",\"777\",\"/var/lib/samba/private;\",\"chmod\",\"-R\",\"777\",\"/var/lib/samba/lock;\",\"chown\",\"-R\",\"omreleng:omreleng\",\"/winshares;\",\"mkdir\",\"-p\",\"/home/omreleng/.ssh;\",\"mkdir\",\"-p\",\"/root/.ssh;\",\"chown\",\"-R\",\"omreleng:omreleng\",\"/home/omreleng;\",\"echo\",\"omreleng       ALL=(ALL)       NOPASSWD: ALL\",\">>\",\"/etc/sudoers;\",\"chmod\",\"4755\",\"/usr/bin/ping\"]",
+          "system_commands": [
+            "[\"RUN\",\"/bin/sh\",\"-c\",\"yum\",\"-y\",\"update",
+            "\",\"yum\",\"-y\",\"clean\",\"all",
+            "\",\"rm\",\"-rf\",\"/var/cache/yum",
+            "\",\"mkdir\",\"-p\",\"/winshares",
+            "\",\"chmod\",\"-R\",\"775\",\"/winshares",
+            "\",\"chmod\",\"-R\",\"777\",\"/var/lib/samba/private",
+            "\",\"chmod\",\"-R\",\"777\",\"/var/lib/samba/lock",
+            "\",\"chown\",\"-R\",\"omreleng:omreleng\",\"/winshares",
+            "\",\"mkdir\",\"-p\",\"/home/omreleng/.ssh",
+            "\",\"mkdir\",\"-p\",\"/root/.ssh",
+            "\",\"chown\",\"-R\",\"omreleng:omreleng\",\"/home/omreleng",
+            "\",\"echo\",\"omreleng       ALL=(ALL)       NOPASSWD: ALL\",\">>\",\"/etc/sudoers",
+            "\",\"chmod\",\"4755\",\"/usr/bin/ping\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T22:07:54Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "command_snippet": "RUN [\"EXPOSE\",\"map[8080/tcp:{}]\"]",
+          "command_all": "RUN [\"EXPOSE\",\"map[8080/tcp:{}]\"]",
+          "system_commands": [
+            "[\"EXPOSE\",\"map[8080/tcp:{}]\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T22:07:54Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "command_snippet": "RUN [\"USER\",\"omreleng\"]",
+          "command_all": "RUN [\"USER\",\"omreleng\"]",
+          "system_commands": [
+            "[\"USER\",\"omreleng\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T22:07:54Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "command_snippet": "RUN [\"ENV\",\"PATH=/usr/local/sbin:/usr/local/...",
+          "command_all": "RUN [\"ENV\",\"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/google-cloud-sdk/bin\"]",
+          "system_commands": [
+            "[\"ENV\",\"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/google-cloud-sdk/bin\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-26T22:07:54Z",
+          "is_nop": false,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "command_snippet": "RUN [\"ENTRYPOINT\",\"[/bin/sh\",\"-c\",\"/bin/sh]\"...",
+          "command_all": "RUN [\"ENTRYPOINT\",\"[/bin/sh\",\"-c\",\"/bin/sh]\"]",
+          "system_commands": [
+            "[\"ENTRYPOINT\",\"[/bin/sh\",\"-c\",\"/bin/sh]\"]"
+          ],
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "type": "WORKDIR",
+          "time": "2022-01-27T17:01:15Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "/opt/deployhub/",
+          "command_snippet": "WORKDIR /opt/deployhub/",
+          "command_all": "WORKDIR /opt/deployhub/",
+          "system_commands": [
+            "mkdir -p /opt/deployhub/"
+          ]
+        },
+        {
+          "type": "COPY",
+          "time": "2022-01-27T17:01:16Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 8363154,
+          "size_human": "8.4 MB",
+          "params": "file:53ccb7969648dded73c92988df825c7cabde5e2f4b838ff5095b65855efd9d59 in webadmin/webapp-runner.jar",
+          "command_snippet": "COPY file:53ccb7969648dded73c92988df825c7cab...",
+          "command_all": "COPY file:53ccb7969648dded73c92988df825c7cabde5e2f4b838ff5095b65855efd9d59 webadmin/webapp-runner.jar",
+          "target": "webadmin/webapp-runner.jar",
+          "source_type": "file"
+        },
+        {
+          "type": "COPY",
+          "time": "2022-01-27T17:01:16Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 129182,
+          "size_human": "129 kB",
+          "params": "dir:d8effd0723a340d87ae142792b73e5b639a44412d7d40ff64dc9d6865b29411f in engine/scripts",
+          "command_snippet": "COPY dir:d8effd0723a340d87ae142792b73e5b639a...",
+          "command_all": "COPY dir:d8effd0723a340d87ae142792b73e5b639a44412d7d40ff64dc9d6865b29411f engine/scripts",
+          "target": "engine/scripts",
+          "source_type": "dir"
+        },
+        {
+          "type": "COPY",
+          "time": "2022-01-27T17:01:16Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 47046,
+          "size_human": "47 kB",
+          "params": "dir:ad734809135be9f524524045b78b7e42538b0d9f4f3620adeff333cf4e837368 in engine/lib",
+          "command_snippet": "COPY dir:ad734809135be9f524524045b78b7e42538...",
+          "command_all": "COPY dir:ad734809135be9f524524045b78b7e42538b0d9f4f3620adeff333cf4e837368 engine/lib",
+          "target": "engine/lib",
+          "source_type": "dir"
+        },
+        {
+          "type": "COPY",
+          "time": "2022-01-27T17:01:16Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 1452,
+          "size_human": "1.5 kB",
+          "params": "dir:23865f96f6a5a29b842569518b17e8ab36c24081bcc47f45d8af2b67bc9a981b in engine/demorep",
+          "command_snippet": "COPY dir:23865f96f6a5a29b842569518b17e8ab36c...",
+          "command_all": "COPY dir:23865f96f6a5a29b842569518b17e8ab36c24081bcc47f45d8af2b67bc9a981b engine/demorep",
+          "target": "engine/demorep",
+          "source_type": "dir"
+        },
+        {
+          "type": "COPY",
+          "time": "2022-01-27T17:01:17Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 1068,
+          "size_human": "1.1 kB",
+          "params": "dir:69ac83b866c70bc0a816f71cb6082ff27654410cad1236d93316796846ead36d in engine/demo",
+          "command_snippet": "COPY dir:69ac83b866c70bc0a816f71cb6082ff2765...",
+          "command_all": "COPY dir:69ac83b866c70bc0a816f71cb6082ff27654410cad1236d93316796846ead36d engine/demo",
+          "target": "engine/demo",
+          "source_type": "dir"
+        },
+        {
+          "type": "COPY",
+          "time": "2022-01-27T17:01:17Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 128,
+          "size_human": "128 B",
+          "params": "multi:cb6273dfaabcb5458c241178b2dbcb6c306e4ea17bc781c448ea8578e04303c8 in engine/",
+          "command_snippet": "COPY multi:cb6273dfaabcb5458c241178b2dbcb6c3...",
+          "command_all": "COPY multi:cb6273dfaabcb5458c241178b2dbcb6c306e4ea17bc781c448ea8578e04303c8 engine/",
+          "target": "engine/",
+          "source_type": "multi"
+        },
+        {
+          "type": "COPY",
+          "time": "2022-01-27T17:01:18Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 355,
+          "size_human": "355 B",
+          "params": "file:0602493c23f7d9c16f3fa7d17964559b92430a17470a4bffefaee249dc412208 in /etc/odbc.ini",
+          "command_snippet": "COPY file:0602493c23f7d9c16f3fa7d17964559b92...",
+          "command_all": "COPY file:0602493c23f7d9c16f3fa7d17964559b92430a17470a4bffefaee249dc412208 /etc/odbc.ini",
+          "target": "/etc/odbc.ini",
+          "source_type": "file"
+        },
+        {
+          "type": "COPY",
+          "time": "2022-01-27T17:01:18Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 907,
+          "size_human": "907 B",
+          "params": "multi:5ab9bb4da9a153fe6188aecfa81bc852b4a695c62b35d3d34219d531ca228402 in engine/",
+          "command_snippet": "COPY multi:5ab9bb4da9a153fe6188aecfa81bc852b...",
+          "command_all": "COPY multi:5ab9bb4da9a153fe6188aecfa81bc852b4a695c62b35d3d34219d531ca228402 engine/",
+          "target": "engine/",
+          "source_type": "multi"
+        },
+        {
+          "type": "COPY",
+          "time": "2022-01-27T17:01:19Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 15408030,
+          "size_human": "15 MB",
+          "params": "file:a9d4c9121f4291201e7e566cd0c4efd736638319497e97e7ec62aa6ab3257d2e in webadmin/deployhub-webadmin.war",
+          "command_snippet": "COPY file:a9d4c9121f4291201e7e566cd0c4efd736...",
+          "command_all": "COPY file:a9d4c9121f4291201e7e566cd0c4efd736638319497e97e7ec62aa6ab3257d2e webadmin/deployhub-webadmin.war",
+          "target": "webadmin/deployhub-webadmin.war",
+          "source_type": "file"
+        },
+        {
+          "type": "COPY",
+          "time": "2022-01-27T17:01:20Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 6394936,
+          "size_human": "6.4 MB",
+          "params": "dir:d14e7d5686b4616b823437030a87165f7e0b7aa8347e03036bd9d45ff531b9f7 in engine/bin",
+          "command_snippet": "COPY dir:d14e7d5686b4616b823437030a87165f7e0...",
+          "command_all": "COPY dir:d14e7d5686b4616b823437030a87165f7e0b7aa8347e03036bd9d45ff531b9f7 engine/bin",
+          "target": "engine/bin",
+          "source_type": "dir"
+        },
+        {
+          "type": "COPY",
+          "time": "2022-01-27T17:01:20Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 105336,
+          "size_human": "105 kB",
+          "params": "file:f776b21c37202633c783eb689770f3228e4d47cfd88b76c12a71ebcde0b96a63 in engine/",
+          "command_snippet": "COPY file:f776b21c37202633c783eb689770f3228e...",
+          "command_all": "COPY file:f776b21c37202633c783eb689770f3228e4d47cfd88b76c12a71ebcde0b96a63 engine/",
+          "target": "engine/",
+          "source_type": "file"
+        },
+        {
+          "type": "COPY",
+          "time": "2022-01-27T17:01:20Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 3933,
+          "size_human": "3.9 kB",
+          "params": "file:cc9401c19cec1dd4fc139c41474d3f5751baf5f8f3c870f64462776d91911e7e in .",
+          "command_snippet": "COPY file:cc9401c19cec1dd4fc139c41474d3f5751...",
+          "command_all": "COPY file:cc9401c19cec1dd4fc139c41474d3f5751baf5f8f3c870f64462776d91911e7e .",
+          "target": ".",
+          "source_type": "file"
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-27T17:01:23Z",
+          "is_nop": false,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 29846,
+          "size_human": "30 kB",
+          "command_snippet": "RUN sudo pip install --upgrade deployhub",
+          "command_all": "RUN sudo pip install --upgrade deployhub",
+          "system_commands": [
+            "sudo pip install --upgrade deployhub"
+          ]
+        },
+        {
+          "type": "WORKDIR",
+          "time": "2022-01-27T17:01:23Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "/etc/nginx/",
+          "command_snippet": "WORKDIR /etc/nginx/",
+          "command_all": "WORKDIR /etc/nginx/",
+          "system_commands": [
+            "mkdir -p /etc/nginx/"
+          ]
+        },
+        {
+          "type": "RUN",
+          "time": "2022-01-27T17:03:42Z",
+          "is_nop": false,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 371778408,
+          "size_human": "372 MB",
+          "command_snippet": "RUN sudo yum -y install nginx;     sudo mkdi...",
+          "command_all": "RUN sudo yum -y install nginx;     sudo mkdir /etc/nginx/location;     sudo mkdir /var/www;",
+          "system_commands": [
+            "sudo yum -y install nginx",
+            "sudo mkdir /etc/nginx/location",
+            "sudo mkdir /var/www",
+            ""
+          ]
+        },
+        {
+          "type": "COPY",
+          "time": "2022-01-27T17:03:44Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 1948,
+          "size_human": "1.9 kB",
+          "params": "file:09194f64989af268b4afae929f1a050dfd38f7360ccfe768e6b691363a2a8f68 in /etc/nginx/nginx.conf",
+          "command_snippet": "COPY file:09194f64989af268b4afae929f1a050dfd...",
+          "command_all": "COPY file:09194f64989af268b4afae929f1a050dfd38f7360ccfe768e6b691363a2a8f68 /etc/nginx/nginx.conf",
+          "target": "/etc/nginx/nginx.conf",
+          "source_type": "file"
+        },
+        {
+          "type": "COPY",
+          "time": "2022-01-27T17:03:44Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 175010,
+          "size_human": "175 kB",
+          "params": "dir:a0559d955503eeabbe274992204996ed8e20a5a8e9f7a7f771e1b7bc606e6b80 in /etc/nginx/location/",
+          "command_snippet": "COPY dir:a0559d955503eeabbe274992204996ed8e2...",
+          "command_all": "COPY dir:a0559d955503eeabbe274992204996ed8e20a5a8e9f7a7f771e1b7bc606e6b80 /etc/nginx/location/",
+          "target": "/etc/nginx/location/",
+          "source_type": "dir"
+        },
+        {
+          "type": "WORKDIR",
+          "time": "2022-01-27T17:03:44Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "/opt/deployhub/",
+          "command_snippet": "WORKDIR /opt/deployhub/",
+          "command_all": "WORKDIR /opt/deployhub/",
+          "system_commands": [
+            "mkdir -p /opt/deployhub/"
+          ]
+        },
+        {
+          "type": "USER",
+          "time": "2022-01-27T17:03:44Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "omreleng",
+          "command_snippet": "USER omreleng",
+          "command_all": "USER omreleng"
+        },
+        {
+          "type": "ENV",
+          "time": "2022-01-27T17:03:45Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/google-cloud-sdk/bin:/usr/pgsql-10/bin:/usr/local/google-cloud-sdk/bin",
+          "command_snippet": "ENV PATH=/usr/local/sbin:/usr/local/bin:/usr...",
+          "command_all": "ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/google-cloud-sdk/bin:/usr/pgsql-10/bin:/usr/local/google-cloud-sdk/bin"
+        },
+        {
+          "type": "ENTRYPOINT",
+          "time": "2022-01-27T17:03:45Z",
+          "is_last_instruction": true,
+          "is_nop": true,
+          "local_image_exists": true,
+          "layer_index": 0,
+          "size": 0,
+          "params": "/opt/deployhub/entrypoint.sh",
+          "command_snippet": "ENTRYPOINT /opt/deployhub/entrypoint.sh",
+          "command_all": "ENTRYPOINT /opt/deployhub/entrypoint.sh",
+          "raw_tags": [
+            "quay.io/ortelius/ortelius:latest"
+          ]
+        }
+      ]
+    }
+  ]
+}
