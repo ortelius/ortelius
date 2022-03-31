@@ -92,7 +92,8 @@ steps:
       - |
         pip install deployhub | grep -i deployhub; \
         source /workspace/cloudbuild.sh; \
-        dh updatecomp --rsp /workspace/component-general.toml --deppkg "cyclonedx@/workspace/cyclonedx.json";
+        env | sort; \
+        dh updatecomp --rsp /workspace/component-general.toml";
 
 secrets:
 - kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/quay
