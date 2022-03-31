@@ -56,7 +56,7 @@ steps:
       - '-c'
       - |
         source /workspace/cloudbuild.sh; \
-        docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/Dockerfile .; \
+        docker build --tag $$COMPONENT_DOCKERREPO:$$IMAGE_TAG -f /workspace/docker/DockerfileGeneral .; \
         docker push $$COMPONENT_DOCKERREPO:$$IMAGE_TAG
 
   #syft scan
