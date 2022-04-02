@@ -5,7 +5,7 @@ on:
     branches:
       - svc_cat
     paths:
-      - 'chart/**'
+      - 'helm/chart/child/**'
       
 jobs:
   release:
