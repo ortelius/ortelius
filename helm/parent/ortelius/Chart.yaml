@@ -20,10 +20,10 @@ dependencies:
 - name: ms-ui
   version: 10.0.10
   repository: https://ortelius.github.io/ortelius/ 
-- name: ao-postgres
+- name: ms-postgres
   version: 10.0.0
   repository: https://ortelius.github.io/ortelius/ 
-- name: ao-jwt
+- name: ms-jwt
   version: 10.0.0
   repository: https://ortelius.github.io/ortelius/ 
 - name: ms-dep-pkg-cud
