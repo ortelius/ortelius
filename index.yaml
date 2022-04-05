@@ -1,13 +1,13 @@
 apiVersion: v1
 entries:
-  ms-nginx:
+  ms-general:
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2022-04-05T21:02:27.214818828Z"
+    created: "2022-04-05T21:02:48.263439604Z"
     description: A Helm chart for Kubernetes
-    digest: a575a865f4e7042bec3369cf7a185b52612a3f859f68b2d9f452f822b2a8e3d9
-    name: ms-nginx
+    digest: 36ef273dc8ababad72f578b6eab417d4687ba97e1af15a0eb97850af9e2b5c2e
+    name: ms-general
     urls:
-    - https://github.com/ortelius/ortelius/releases/download/ms-nginx-10.0.13/ms-nginx-10.0.13.tgz
-    version: 10.0.13
-generated: "2022-04-05T21:02:27.214825728Z"
+    - https://github.com/ortelius/ortelius/releases/download/ms-general-10.0.30/ms-general-10.0.30.tgz
+    version: 10.0.30
+generated: "2022-04-05T21:02:48.263443504Z"
