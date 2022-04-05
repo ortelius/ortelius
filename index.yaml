@@ -29,6 +29,16 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/ms-nginx-10.0.10/ms-nginx-10.0.10.tgz
     version: 10.0.10
+  ms-postgres:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2022-04-05T19:27:29.8138934Z"
+    description: A Helm chart for Kubernetes
+    digest: 3ef67ccd6c67ca597c3172e111a7ec8da50b970cb57114d236a46546c3c352d9
+    name: ms-postgres
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-postgres-10.0.0/ms-postgres-10.0.0.tgz
+    version: 10.0.0
   ms-ui:
   - apiVersion: v1
     appVersion: "1.0"
@@ -39,4 +49,4 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.10/ms-ui-10.0.10.tgz
     version: 10.0.10
-generated: "2022-04-05T18:58:29.918587012Z"
+generated: "2022-04-05T19:27:29.8138992Z"
