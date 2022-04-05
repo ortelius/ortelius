@@ -1,11 +1,11 @@
 Chart: chart/ms-ui
 ChartNamespace: ortelius
 DockerRepo: quay.io/ortelius/ms-ui
-DockerSha: d3d9dbc7b5b1
-DockerTag: svc_cat-v10.0.0.546-gef0883e
+DockerSha: 3aad6d75d1e1
+DockerTag: svc_cat-v10.0.0.553-g3e3ef6d
 EXT: sh
 GitBranch: svc_cat
-GitCommit: ef0883e
+GitCommit: 3e3ef6d
 GitRepo: ortelius/ortelius
 GitTag: svc_cat
 GitUrl: https://github.com/ortelius/ortelius.git
@@ -16,18 +16,18 @@ aks:
   cluster: cluster2-aks
   resourcegroup: cluster1-rg
 application: ortelius;10_0_0
-builddate: Tue Apr  5 01:46:35 2022
-buildid: 7b5eaa55-f828-42f1-a79d-fafc2244bf51
-buildurl: https://console.cloud.google.com/cloud-build/builds/7b5eaa55-f828-42f1-a79d-fafc2244bf51?project=eighth-physics-169321
+builddate: Tue Apr  5 01:59:27 2022
+buildid: 521e7082-c7fb-4d64-b543-8df8d91ee6c3
+buildurl: https://console.cloud.google.com/cloud-build/builds/521e7082-c7fb-4d64-b543-8df8d91ee6c3?project=eighth-physics-169321
 chart: chart/ms-ui
 chartnamespace: ortelius
-component: ms-ui;svc_cat;v10_0_0_546_gef0883e
+component: ms-ui;svc_cat;v10_0_0_553_g3e3ef6d
 dockerrepo: quay.io/ortelius/ms-ui
-dockersha: d3d9dbc7b5b1
-dockertag: svc_cat-v10.0.0.546-gef0883e
-dropzone: /tmp/tdm.1644.2
+dockersha: 3aad6d75d1e1
+dockertag: svc_cat-v10.0.0.553-g3e3ef6d
+dropzone: /tmp/tdm.1646.2
 environment: aks-cluster
-gitcommit: ef0883e
+gitcommit: 3e3ef6d
 gitrepo: ortelius/ortelius
 gittag: svc_cat
 giturl: https://github.com/ortelius/ortelius.git
