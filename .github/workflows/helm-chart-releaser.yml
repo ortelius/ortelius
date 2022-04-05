@@ -5,7 +5,7 @@ on:
     branches:
       - svc_cat
     paths:
-      - 'helm/chart/child/**'
+      - 'helm/child/**/Chart.yaml'
       
 jobs:
   release:
@@ -29,6 +29,6 @@ jobs:
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.2.1
         with:
-          charts_dir: helm/chart/child
+          charts_dir: helm/child
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
