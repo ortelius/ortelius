@@ -33,3 +33,4 @@ Version = "v10.0.0.${BUILDNUM}-g${SHORT_SHA}"
      HelmValues = "chart/ortelius/ms-general/values.yaml"
      "image.tag" = "${DockerTag}"
      "image.repository" = "${DockerRepo}"
+
