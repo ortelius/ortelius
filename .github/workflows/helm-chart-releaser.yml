@@ -5,7 +5,7 @@ on:
     branches:
       - svc_cat
     paths:
-      - 'helm/parent/**/Chart.yaml'
+      - 'chart/**/Chart.yaml'
       
 jobs:
   release:
@@ -29,6 +29,6 @@ jobs:
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.2.1
         with:
-          charts_dir: helm/parent
+          charts_dir: chart/ortelius
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
