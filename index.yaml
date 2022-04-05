@@ -3,6 +3,15 @@ entries:
   ao-ms-general:
   - apiVersion: v1
     appVersion: "1.0"
+    created: "2022-04-05T17:22:41.467235305Z"
+    description: A Helm chart for Kubernetes
+    digest: 04aff985dcc936a9ff9aa8effe3884423cddf7d3094826bd988d53e59e972724
+    name: ao-ms-general
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ao-ms-general-10.0.25/ao-ms-general-10.0.25.tgz
+    version: 10.0.25
+  - apiVersion: v1
+    appVersion: "1.0"
     created: "2022-04-05T17:18:22.598011992Z"
     description: A Helm chart for Kubernetes
     digest: 682f37341e37c29cea6a6ea11163a10e29528679d515e98eea346fabfcb04d7c
@@ -10,16 +19,6 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/ao-ms-general-10.0.24/ao-ms-general-10.0.24.tgz
     version: 10.0.24
-  ao-ms-ui:
-  - apiVersion: v1
-    appVersion: "1.0"
-    created: "2022-04-05T17:22:24.995622144Z"
-    description: A Helm chart for Kubernetes
-    digest: 43dcca1161f7b5e6a584dd43300b4d8553be3a3336fa710f37a1c91a8706a42d
-    name: ao-ms-ui
-    urls:
-    - https://github.com/ortelius/ortelius/releases/download/ao-ms-ui-10.0.10/ao-ms-ui-10.0.10.tgz
-    version: 10.0.10
   ms-general:
   - apiVersion: v1
     created: "2021-12-09T21:39:27.428277391Z"
@@ -116,4 +115,4 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/ortelius-console-0.1.0/ortelius-console-0.1.0.tgz
     version: 0.1.0
-generated: "2022-04-05T17:22:24.995655445Z"
+generated: "2022-04-05T17:22:41.467294606Z"
