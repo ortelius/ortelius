@@ -1,0 +1,52 @@
+apiVersion: v1
+entries:
+  ms-general:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2022-04-05T22:14:23.839821597Z"
+    description: A Helm chart for Kubernetes
+    digest: d58455efd56a638a0fc2b2f9ee13d1709c0f818c84b7f900f560b95cdc2179b2
+    name: ms-general
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-general-10.0.33/ms-general-10.0.33.tgz
+    version: 10.0.33
+  ms-jwt:
+  - apiVersion: v1
+    created: "2022-04-05T22:14:24.004070935Z"
+    description: A Helm chart for Kubernetes
+    digest: 282f444def74ebb560777b4ec594b4ec5b1fad4524f8da119b5f945ccc79c9d3
+    name: ms-jwt
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-jwt-10.0.0/ms-jwt-10.0.0.tgz
+    version: 10.0.0
+  ms-nginx:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2022-04-05T22:14:24.173342679Z"
+    description: A Helm chart for Kubernetes
+    digest: bba576afecaa9c50cb3489e9e6df088a49bdaa750b9d74dabed90ad9a90cd119
+    name: ms-nginx
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-nginx-10.0.15/ms-nginx-10.0.15.tgz
+    version: 10.0.15
+  ms-postgres:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2022-04-05T22:14:24.339923266Z"
+    description: A Helm chart for Kubernetes
+    digest: aad18b239bdcdcba04502df041bfce674f0186097187e3a23b5aa52fe8458fd0
+    name: ms-postgres
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-postgres-10.0.0/ms-postgres-10.0.0.tgz
+    version: 10.0.0
+  ms-ui:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2022-04-05T22:14:24.490566419Z"
+    description: A Helm chart for Kubernetes
+    digest: ba25d432b118f405892aa80207cba4f9a42ebfbd9d908311d6cc60d1c51fd029
+    name: ms-ui
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.13/ms-ui-10.0.13.tgz
+    version: 10.0.13
+generated: "2022-04-05T22:14:24.49057302Z"
