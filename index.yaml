@@ -1,5 +1,54 @@
 apiVersion: v1
 entries:
+  ao-jwt:
+  - apiVersion: v1
+    created: "2022-04-05T17:18:08.896628683Z"
+    description: A Helm chart for Kubernetes
+    digest: 5e8914ff592d68390e707e27e292b990858743582de87e65632e83d1a7804dae
+    name: ao-jwt
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ao-jwt-10.0.0/ao-jwt-10.0.0.tgz
+    version: 10.0.0
+  ao-ms-general:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2022-04-05T17:18:09.013712333Z"
+    description: A Helm chart for Kubernetes
+    digest: 605604cf814d24e17d7ce405b349790fe0722e3477fb7bd75143a12afc1f8a15
+    name: ao-ms-general
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ao-ms-general-10.0.23/ao-ms-general-10.0.23.tgz
+    version: 10.0.23
+  ao-ms-nginx:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2022-04-05T17:18:09.135488174Z"
+    description: A Helm chart for Kubernetes
+    digest: 562bc3c9dca863a584410e4b894514a8bbeb608352cfcfc9bcbc2996c9f27f28
+    name: ao-ms-nginx
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ao-ms-nginx-10.0.10/ao-ms-nginx-10.0.10.tgz
+    version: 10.0.10
+  ao-ms-ui:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2022-04-05T17:18:09.272263603Z"
+    description: A Helm chart for Kubernetes
+    digest: 7b72858ca832f597a7102431efa0b76ba3b13d4146184a5baf8cef4981efafca
+    name: ao-ms-ui
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ao-ms-ui-10.0.9/ao-ms-ui-10.0.9.tgz
+    version: 10.0.9
+  ao-postgres:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2022-04-05T17:18:09.399465949Z"
+    description: A Helm chart for Kubernetes
+    digest: 4e36a6fd70273584053aaf2f60a533ef7e350883ace88d2204f46b25463bb105
+    name: ao-postgres
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ao-postgres-10.0.0/ao-postgres-10.0.0.tgz
+    version: 10.0.0
   ms-general:
   - apiVersion: v1
     created: "2021-12-09T21:39:27.428277391Z"
@@ -96,4 +145,4 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/ortelius-console-0.1.0/ortelius-console-0.1.0.tgz
     version: 0.1.0
-generated: "2022-02-02T21:11:48.298993283Z"
+generated: "2022-04-05T17:18:09.39952125Z"
