@@ -1,6 +1,6 @@
 Application = "GLOBAL.ortelius.saas.ortelius"
 Application_Version = "10.0.0"
-DeployEnv = "GLOBAL.ortelius.saas.aks-cluster"
+# DeployEnv = "GLOBAL.ortelius.saas.aks-cluster"
 
 Name = "GLOBAL.ortelius.saas.ms-general"
 Variant = "${BRANCH_NAME}"
