@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "ao-ms-ui.name" . }}
+  name: {{ include "ms-ui.name" . }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app:  {{ include "ao-ms-ui.name" . }}
+      app:  {{ include "ms-ui.name" . }}
       tier: backend
       track: stable
   template:
     metadata:
       labels:
-        app: ao-ms-ui
+        app: ms-ui
         tier: backend
         track: stable
     spec:
       containers:
-        - name: {{ include "ao-ms-ui.name" . }}
+        - name: {{ include "ms-ui.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:

@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "ao-ms-nginx.name" . }}
+  name: {{ include "ms-nginx.name" . }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app:  {{ include "ao-ms-nginx.name" . }}
+      app:  {{ include "ms-nginx.name" . }}
       tier: frontend
       track: stable
   template:
     metadata:
       labels:
-        app: ao-ms-nginx
+        app: ms-nginx
         tier: frontend
         track: stable
     spec:
       containers:
-        - name: {{ include "ao-ms-nginx.name" . }}
+        - name: {{ include "ms-nginx.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}           
           ports:
