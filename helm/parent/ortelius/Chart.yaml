@@ -12,20 +12,20 @@ version: 10.0.0
 appVersion: 10.0.0
 dependencies:
 - name: ms-nginx
-  version: 10.0.0
-  repository: https://ortelius.github.io/ortelius/charts/ 
+  version: 10.0.10
+  repository: https://ortelius.github.io/ortelius/
 - name: ms-general
-  version: 10.0.0
-  repository: https://ortelius.github.io/ortelius/charts/ 
+  version: 10.0.25
+  repository: https://ortelius.github.io/ortelius/ 
 - name: ms-ui
-  version: 10.0.0
-  repository: https://ortelius.github.io/ortelius/charts/ 
+  version: 10.0.10
+  repository: https://ortelius.github.io/ortelius/ 
 - name: ao-postgres
   version: 10.0.0
-  repository: https://ortelius.github.io/ortelius/charts/ 
+  repository: https://ortelius.github.io/ortelius/ 
 - name: ao-jwt
   version: 10.0.0
-  repository: https://ortelius.github.io/ortelius/charts/ 
+  repository: https://ortelius.github.io/ortelius/ 
 - name: ms-dep-pkg-cud
   version: 10.0.0-build.66
   repository: https://ortelius.github.io/ortelius-ms-dep-pkg-cud/
