@@ -12,5 +12,5 @@
 # limitations under the License.
 
 description: A Helm chart for Kubernetes
-name: ao-jwt
+name: ms-jwt
 version: 10.0.0
