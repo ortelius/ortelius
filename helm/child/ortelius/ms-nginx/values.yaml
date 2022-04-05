@@ -3,7 +3,7 @@ fullnameOverride: ''
 image:
   pullPolicy: Always
   repository: quay.io/ortelius/ms-nginx
-  tag: svc_cat-v10.0.0.546-gef0883e
+  tag: svc_cat-v10.0.0.553-g3e3ef6d
 ingress:
   annotations: {}
   enabled: false
