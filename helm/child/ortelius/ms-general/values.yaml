@@ -3,7 +3,7 @@ fullnameOverride: ''
 image:
   pullPolicy: Always
   repository: quay.io/ortelius/ms-general
-  tag: svc_cat-v10.0.0.541-g4177122
+  tag: svc_cat-v10.0.0.546-gef0883e
 ingress:
   annotations: {}
   enabled: false
