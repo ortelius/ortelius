@@ -1,50 +1,36 @@
-# Copyright (c) 2021 Linux Foundation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 Chart: chart/ms-ui
 ChartNamespace: ortelius
 DockerRepo: quay.io/ortelius/ms-ui
-DockerSha: e3baef2f7d455a2070fe123fd7f262eaac4ac5958240ae23141ea0253f6eaf76
-DockerTag: svc_cat-v10.0.0.492-g6d649a4
+DockerSha: d3d9dbc7b5b1
+DockerTag: svc_cat-v10.0.0.546-gef0883e
 EXT: sh
 GitBranch: svc_cat
-GitCommit: 6d649a4
+GitCommit: ef0883e
 GitRepo: ortelius/ortelius
 GitTag: svc_cat
-GitUrl: git@github.com:ortelius/ortelius.git
+GitUrl: https://github.com/ortelius/ortelius.git
 RE_PHYSICAL_HOSTNAME: localhost
 RE_PHYSICAL_SERVER: localhost
 aks:
   admin: true
   cluster: cluster2-aks
   resourcegroup: cluster1-rg
-application: ortelius-devops;10_0_0
-builddate: Tue Oct  5 17:39:54 UTC 2021
-buildid: fd777db3-f715-47eb-ba64-8500bf374062
-buildurl: https://console.cloud.google.com/cloud-build/builds/fd777db3-f715-47eb-ba64-8500bf374062?project=eighth-physics-169321
+application: ortelius;10_0_0
+builddate: Tue Apr  5 01:46:35 2022
+buildid: 7b5eaa55-f828-42f1-a79d-fafc2244bf51
+buildurl: https://console.cloud.google.com/cloud-build/builds/7b5eaa55-f828-42f1-a79d-fafc2244bf51?project=eighth-physics-169321
 chart: chart/ms-ui
 chartnamespace: ortelius
-component: ms-ui;svc_cat;v10_0_0_492_g6d649a4
-dockerrepo: quay.io/ortelius/ms-general
-dockersha: e3baef2f7d455a2070fe123fd7f262eaac4ac5958240ae23141ea0253f6eaf76
-dockertag: svc_cat-v10.0.0.492-g6d649a4
-dropzone: /tmp/tdm.1292.1
+component: ms-ui;svc_cat;v10_0_0_546_gef0883e
+dockerrepo: quay.io/ortelius/ms-ui
+dockersha: d3d9dbc7b5b1
+dockertag: svc_cat-v10.0.0.546-gef0883e
+dropzone: /tmp/tdm.1644.2
 environment: aks-cluster
-gitcommit: 6d649a4
+gitcommit: ef0883e
 gitrepo: ortelius/ortelius
 gittag: svc_cat
-giturl: git@github.com:ortelius/ortelius.git
+giturl: https://github.com/ortelius/ortelius.git
 kubectl_context: cluster2-aks-admin
 server_hostname: localhost
 server_name: localhost
