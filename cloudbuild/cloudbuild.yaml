@@ -108,7 +108,9 @@ steps:
         export GIT_REPO=`git config --get remote.origin.url | sed 's/.*://;s/.git$//;s#^//github.com/##;'`; \
         export GIT_URL=`git config --get remote.origin.url`; \
         pip3 install deployhub | grep -i deployhub; \
-        dh envscript --envvars /workspace/component-ui.toml --envvars_sh /workspace/cloudbuild.sh;
+        dh envscript --envvars /workspace/component-ui.toml --envvars_sh /workspace/cloudbuild.sh; \
+        source /workspace/cloudbuild.sh; \
+        env 
 
   # Build and push quay.io/ortelius/ms-textfile-crud
   - name: 'gcr.io/cloud-builders/docker'
