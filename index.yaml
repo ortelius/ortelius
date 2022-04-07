@@ -3,6 +3,15 @@ entries:
   ms-general:
   - apiVersion: v1
     appVersion: "1.0"
+    created: "2022-04-07T16:51:53.399637977Z"
+    description: A Helm chart for Kubernetes
+    digest: 4b1be28b262b609201d8d399c1221459de691f9f3fd2cb7fe4e5b3f66e18e6a9
+    name: ms-general
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-general-10.0.38/ms-general-10.0.38.tgz
+    version: 10.0.38
+  - apiVersion: v1
+    appVersion: "1.0"
     created: "2022-04-06T21:11:39.273407157Z"
     description: A Helm chart for Kubernetes
     digest: fc473ae0fa06bea0d106d436b9eb59e8a6d9965a24ea2a75767a3962e57778ff
@@ -20,6 +29,15 @@ entries:
     - https://github.com/ortelius/ortelius/releases/download/ms-jwt-10.0.0/ms-jwt-10.0.0.tgz
     version: 10.0.0
   ms-nginx:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2022-04-07T16:51:53.727158372Z"
+    description: A Helm chart for Kubernetes
+    digest: 69aa9afc18dff11dad700ef3450604bcef931706b5fb97a3cf836cd5db05c761
+    name: ms-nginx
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-nginx-10.0.18/ms-nginx-10.0.18.tgz
+    version: 10.0.18
   - apiVersion: v1
     appVersion: "1.0"
     created: "2022-04-06T21:11:39.731207247Z"
@@ -42,6 +60,15 @@ entries:
   ms-ui:
   - apiVersion: v1
     appVersion: "1.0"
+    created: "2022-04-07T16:51:54.071357828Z"
+    description: A Helm chart for Kubernetes
+    digest: fd870df5be960de05dfed75d381955169add34aa0a27c88839aa7b06f11c9eca
+    name: ms-ui
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.17/ms-ui-10.0.17.tgz
+    version: 10.0.17
+  - apiVersion: v1
+    appVersion: "1.0"
     created: "2022-04-06T21:31:04.685980274Z"
     description: A Helm chart for Kubernetes
     digest: 9859ed2b190f03bb629ed1f7cb5bf72a91ec6a656272230614b2ca2c756c8d2f
@@ -58,4 +85,4 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.15/ms-ui-10.0.15.tgz
     version: 10.0.15
-generated: "2022-04-06T21:31:04.685987574Z"
+generated: "2022-04-07T16:51:54.071373228Z"
