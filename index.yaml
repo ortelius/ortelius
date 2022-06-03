@@ -3,13 +3,13 @@ entries:
   ms-general:
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2022-06-03T21:51:07.898063071Z"
+    created: "2022-06-03T21:51:38.277215104Z"
     description: A Helm chart for Kubernetes
-    digest: 00d6fe5bcde745eeeabd981383a302001f3a8b37bbf777b9094805ec8bb85aff
+    digest: a14a3b972b8dfc5f925995900839d71fa236717efc0bcf691cc121248f28cc07
     name: ms-general
     urls:
-    - https://github.com/ortelius/ortelius/releases/download/ms-general-10.0.45/ms-general-10.0.45.tgz
-    version: 10.0.45
+    - https://github.com/ortelius/ortelius/releases/download/ms-general-10.0.46/ms-general-10.0.46.tgz
+    version: 10.0.46
   - apiVersion: v1
     appVersion: "1.0"
     created: "2022-06-03T21:00:11.200796327Z"
@@ -148,4 +148,4 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.15/ms-ui-10.0.15.tgz
     version: 10.0.15
-generated: "2022-06-03T21:51:07.898101171Z"
+generated: "2022-06-03T21:51:38.277287005Z"
