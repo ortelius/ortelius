@@ -74,6 +74,7 @@ Contributors:
 - Hamid Gholami
 - Kingsathurthi
 - Bassem Riahi
+- Arnab Maity
   
 
 ### CD Integrations
@@ -102,6 +103,7 @@ Contributors:
 - Lakshmi Viswanath
 - Kingsathurthi
 - Bassem Riahi
+- Arnab Maity
 
 ### Market Place and Domains
 
@@ -257,6 +259,7 @@ Contributors,
 - Vrukshali Torawane
 - Joseph Akayesi
 - Rakesh Arumalla
+- Arnab Maity
 
 ## Installation
 
