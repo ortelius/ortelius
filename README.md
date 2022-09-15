@@ -202,6 +202,7 @@ Contributors:
 - Paul Li
 - Joseph Akayesi
 - Christian De Leon
+- Akshat Jain
 
 ### Product Management
 
