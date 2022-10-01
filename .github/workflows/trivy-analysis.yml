@@ -24,9 +24,9 @@ jobs:
           export VERSION=$(curl --silent "https://api.github.com/repos/aquasecurity/trivy/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
           wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-64bit.tar.gz
           tar zxvf trivy_${VERSION}_Linux-64bit.tar.gz
-          ./trivy --timeout "600s" --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@contrib/sarif.tpl" -o trivy-results.sarif "localbuild/testimage:${{ github.sha }}"
-          ./trivy --exit-code 0 --cache-dir .trivycache/ --no-progress --severity HIGH "localbuild/testimage:${{ github.sha }}"
-          ./trivy --exit-code 1 --cache-dir .trivycache/ --severity CRITICAL --no-progress "localbuild/testimage:${{ github.sha }}"
+          ./trivy image --timeout "600s" --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@contrib/sarif.tpl" -o trivy-results.sarif "localbuild/testimage:${{ github.sha }}"
+          ./trivy image --exit-code 0 --cache-dir .trivycache/ --no-progress --severity HIGH "localbuild/testimage:${{ github.sha }}"
+          ./trivy image --exit-code 1 --cache-dir .trivycache/ --severity CRITICAL --no-progress "localbuild/testimage:${{ github.sha }}"
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1
         with:
