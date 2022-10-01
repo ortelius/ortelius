@@ -25,8 +25,6 @@ jobs:
           wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-64bit.tar.gz
           tar zxvf trivy_${VERSION}_Linux-64bit.tar.gz
           ./trivy image --timeout "600s" --exit-code 0 --security-checks vuln --cache-dir .trivycache/ --no-progress --format template --template "@contrib/sarif.tpl" -o trivy-results.sarif "localbuild/testimage:${{ github.sha }}"
-          ./trivy image  --timeout "600s" --exit-code 0 --cache-dir .trivycache/ --security-checks vuln  --severity HIGH "localbuild/testimage:${{ github.sha }}"
-          ./trivy image --timeout "600s"  --exit-code 1 --cache-dir .trivycache/ --severity CRITICAL --security-checks vuln "localbuild/testimage:${{ github.sha }}"
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
         with:
