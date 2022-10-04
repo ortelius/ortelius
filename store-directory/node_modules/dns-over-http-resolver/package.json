@@ -1,0 +1,48 @@
+{
+  "name": "dns-over-http-resolver",
+  "version": "1.2.3",
+  "description": "DNS over HTTP resolver",
+  "main": "src/index.js",
+  "author": "Vasco Santos",
+  "scripts": {
+    "test": "aegir test -t node -t browser",
+    "test:browser": "aegir test -t browser",
+    "test:node": "aegir test -t node",
+    "lint": "aegir lint",
+    "release": "aegir release --docs",
+    "release-minor": "aegir release --type minor --docs",
+    "release-major": "aegir release -t node -t browser --type major --docs",
+    "build": "aegir build"
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "devDependencies": {
+    "aegir": "^33.1.0",
+    "sinon": "^10.0.0",
+    "util": "^0.12.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vasco-santos/dns-over-http-resolver.git"
+  },
+  "keywords": [
+    "doh",
+    "dns",
+    "http"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vasco-santos/dns-over-http-resolver/issues"
+  },
+  "homepage": "https://github.com/vasco-santos/dns-over-http-resolver#readme",
+  "dependencies": {
+    "debug": "^4.3.1",
+    "native-fetch": "^3.0.0",
+    "receptacle": "^1.3.2"
+  },
+  "contributors": [
+    "Vasco Santos <vasco.santos@moxy.studio>"
+  ]
+}

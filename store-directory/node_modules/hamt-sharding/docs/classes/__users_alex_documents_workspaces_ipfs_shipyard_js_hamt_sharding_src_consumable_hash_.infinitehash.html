@@ -1,0 +1,474 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>InfiniteHash | hamt-sharding - v2.0.0</title>
+	<meta name="description" content="Documentation for hamt-sharding - v2.0.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<link href="https://unpkg.com/nord-highlightjs@0.1.0/dist/nord.css" rel="stylesheet" type="text/css" />
+	<style>
+        .toolbar-icon {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .toolbar-icon-search {
+            box-sizing: border-box;
+            position: absolute;
+            overflow: hidden;
+            right: -40px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            @media (min-width: 901px){
+                display: none
+            }
+        }
+            @media (min-width: 901px){
+                .toolbar-icon-menu {
+                    display: none
+                }
+                .toolbar-icon-options {
+                    display: none
+                }
+            }
+
+        .gg-menu {
+            transform: scale(var(--ggs,1))
+        }
+        .gg-menu,
+        .gg-menu::after,
+        .gg-menu::before {
+            box-sizing: border-box;
+            position: relative;
+            display: block;
+            width: 20px;
+            height: 2px;
+            border-radius: 3px;
+            background: currentColor
+        }
+        .gg-menu::after,
+        .gg-menu::before {
+            content: "";
+            position: absolute;
+            top: -6px
+        }
+        .gg-menu::after {
+            top: 6px
+        }
+        .gg-options {
+            box-sizing: border-box;
+            position: relative;
+            display: block;
+            transform: scale(var(--ggs,1));
+            width: 10px;
+            height: 2px;
+            box-shadow:
+                -3px 4px 0 0,
+                3px -4px 0 0
+        }
+        .gg-options::after,
+        .gg-options::before {
+            content: "";
+            display: block;
+            box-sizing: border-box;
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border: 2px solid;
+            border-radius: 100%
+        }
+        .gg-options::before {
+            top: -7px;
+            left: -4px
+        }
+        .gg-options::after {
+            bottom: -7px;
+            right: -4px
+        }
+        .gg-search {
+            box-sizing: border-box;
+            position: relative;
+            display: block;
+            transform: scale(var(--ggs,1));
+            width: 16px;
+            height: 16px;
+            border: 2px solid;
+            border-radius: 100%;
+            margin-left: -4px;
+            margin-top: -4px
+        }
+        .gg-search::after {
+            content: "";
+            display: block;
+            box-sizing: border-box;
+            position: absolute;
+            border-radius: 3px;
+            width: 2px;
+            height: 8px;
+            background: currentColor;
+            transform: rotate(-45deg);
+            top: 10px;
+            left: 12px
+        }
+    </style>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="toolbar-icon toolbar-icon-search"><i class="gg-search"></i></label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">hamt-sharding - v2.0.0</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<a href="#" class="toolbar-icon toolbar-icon-menu" data-toggle="menu"><i class="gg-menu"></i></a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules/__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.html">/Users/alex/Documents/Workspaces/ipfs-shipyard/js-hamt-sharding/src/consumable-hash</a>
+				</li>
+				<li>
+					<a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html">InfiniteHash</a>
+				</li>
+			</ul>
+			<h1>Class InfiniteHash</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">InfiniteHash</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section tsd-is-not-exported">
+							<h3>Constructors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-not-exported"><a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-not-exported">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-not-exported"><a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#_availablebits" class="tsd-kind-icon">_available<wbr>Bits</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-not-exported"><a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#_buffers" class="tsd-kind-icon">_buffers</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-not-exported"><a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#_currentbufferindex" class="tsd-kind-icon">_current<wbr>Buffer<wbr>Index</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-not-exported"><a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#_depth" class="tsd-kind-icon">_depth</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-not-exported"><a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#_hashfn" class="tsd-kind-icon">_hash<wbr>Fn</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-not-exported"><a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#_value" class="tsd-kind-icon">_value</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-not-exported">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-not-exported"><a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#_producemorebits" class="tsd-kind-icon">_produce<wbr>More<wbr>Bits</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-not-exported"><a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#take" class="tsd-kind-icon">take</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-not-exported"><a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#untake" class="tsd-kind-icon">untake</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-not-exported">
+				<h2>Constructors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-is-not-exported">
+					<a name="constructor" class="tsd-anchor"></a>
+					<h3>constructor</h3>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-not-exported">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Infinite<wbr>Hash<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span>, hashFn<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html" class="tsd-signature-type">InfiniteHash</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">Uint8Array</span></h5>
+								</li>
+								<li>
+									<h5>hashFn: <span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+										</div>
+									</div>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-signature">
+											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">&gt;</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-parameters-title">Parameters</h4>
+													<ul class="tsd-parameters">
+														<li>
+															<h5>value: <span class="tsd-signature-type">Uint8Array</span></h5>
+														</li>
+													</ul>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">&gt;</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html" class="tsd-signature-type">InfiniteHash</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-not-exported">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+					<a name="_availablebits" class="tsd-anchor"></a>
+					<h3>_available<wbr>Bits</h3>
+					<div class="tsd-signature tsd-kind-icon">_available<wbr>Bits<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+					<a name="_buffers" class="tsd-anchor"></a>
+					<h3>_buffers</h3>
+					<div class="tsd-signature tsd-kind-icon">_buffers<span class="tsd-signature-symbol">:</span> <a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_buffer_.consumablebuffer.html" class="tsd-signature-type">ConsumableBuffer</a><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+					<a name="_currentbufferindex" class="tsd-anchor"></a>
+					<h3>_current<wbr>Buffer<wbr>Index</h3>
+					<div class="tsd-signature tsd-kind-icon">_current<wbr>Buffer<wbr>Index<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+					<a name="_depth" class="tsd-anchor"></a>
+					<h3>_depth</h3>
+					<div class="tsd-signature tsd-kind-icon">_depth<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+					<a name="_hashfn" class="tsd-anchor"></a>
+					<h3>_hash<wbr>Fn</h3>
+					<div class="tsd-signature tsd-kind-icon">_hash<wbr>Fn<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-signature">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property tsd-is-not-exported">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">&gt;</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>value: <span class="tsd-signature-type">Uint8Array</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">&gt;</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+					<a name="_value" class="tsd-anchor"></a>
+					<h3>_value</h3>
+					<div class="tsd-signature tsd-kind-icon">_value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Uint8Array</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-not-exported">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+					<a name="_producemorebits" class="tsd-anchor"></a>
+					<h3>_produce<wbr>More<wbr>Bits</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+						<li class="tsd-signature tsd-kind-icon">_produce<wbr>More<wbr>Bits<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+					<a name="take" class="tsd-anchor"></a>
+					<h3>take</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+						<li class="tsd-signature tsd-kind-icon">take<span class="tsd-signature-symbol">(</span>bits<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>bits: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+					<a name="untake" class="tsd-anchor"></a>
+					<h3>untake</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+						<li class="tsd-signature tsd-kind-icon">untake<span class="tsd-signature-symbol">(</span>bits<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>bits: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" tsd-kind-module">
+						<a href="../modules/__hamt_sharding_.html"> hamt-sharding</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="../modules/__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_bucket_.html">/Users/alex/Documents/Workspaces/ipfs-shipyard/js-hamt-sharding/src/bucket</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="../modules/__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_buffer_.html">/Users/alex/Documents/Workspaces/ipfs-shipyard/js-hamt-sharding/src/consumable-buffer</a>
+					</li>
+					<li class="current tsd-kind-module">
+						<a href="../modules/__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.html">/Users/alex/Documents/Workspaces/ipfs-shipyard/js-hamt-sharding/src/consumable-hash</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class tsd-parent-kind-module tsd-is-not-exported">
+						<a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html" class="tsd-kind-icon">Infinite<wbr>Hash</a>
+						<ul>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-not-exported">
+								<a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+								<a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#_availablebits" class="tsd-kind-icon">_available<wbr>Bits</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+								<a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#_buffers" class="tsd-kind-icon">_buffers</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+								<a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#_currentbufferindex" class="tsd-kind-icon">_current<wbr>Buffer<wbr>Index</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+								<a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#_depth" class="tsd-kind-icon">_depth</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+								<a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#_hashfn" class="tsd-kind-icon">_hash<wbr>Fn</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+								<a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#_value" class="tsd-kind-icon">_value</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+								<a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#_producemorebits" class="tsd-kind-icon">_produce<wbr>More<wbr>Bits</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+								<a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#take" class="tsd-kind-icon">take</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+								<a href="__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.infinitehash.html#untake" class="tsd-kind-icon">untake</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+					<li class=" tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.html#consumablebuffer" class="tsd-kind-icon">Consumable<wbr>Buffer</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer>
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-namespace"><span class="tsd-kind-icon">Namespace</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

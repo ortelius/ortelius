@@ -1,0 +1,1 @@
+{"version":3,"file":"root-node.d.ts","sourceRoot":"","sources":["../../lib/rooted/root-node.js"],"names":[],"mappings":"AASA;;;;;GAKG;AACH,kCAJW,SAAS,OAAO,kBAAkB,EAAE,GAAG,CAAC,UACxC,SAAS,OAAO,kBAAkB,EAAE,GAAG,CAAC,GACtC,QAAQ,OAAO,oBAAoB,EAAE,KAAK,UAAU,CAAC,CAejE;AAED;;;GAGG;AACH,iCAHW,GAAG,GACD,OAAO,CASnB;uBApCa,CAAC,aAAa,EAAE,GAAG,EAAE,EAAE,GAAG,EAAE,CAAC"}

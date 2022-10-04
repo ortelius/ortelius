@@ -1,0 +1,31 @@
+{
+  "name": "browser-readablestream-to-it",
+  "version": "1.0.3",
+  "description": "Turns a browser readble stream into an async iterator",
+  "main": "index.js",
+  "repository": "github:achingbrain/it",
+  "homepage": "https://github.com/achingbrain/it/tree/master/packages/browser-readablestream-to-it#readme",
+  "bugs": "https://github.com/achingbrain/it/issues",
+  "scripts": {
+    "test": "playwright-test",
+    "lint": "standard",
+    "coverage": "playwright-test",
+    "check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "build": "npm run build:types",
+    "build:types": "tsc --emitDeclarationOnly --declarationDir dist",
+    "prepublishOnly": "npm run build"
+  },
+  "author": "Alex Potsides <alex@achingbrain.net>",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "it-all": "^1.0.6",
+    "mocha": "8.0.1",
+    "playwright-test": "^0.7.1",
+    "standard": "^16.0.3",
+    "typescript": "^4.0.2"
+  },
+  "types": "dist/index.d.ts",
+  "gitHead": "29126fa87dae108acef381693812f22ac8f9362b"
+}

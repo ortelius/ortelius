@@ -1,0 +1,50 @@
+{
+  "name": "stream-to-it",
+  "version": "0.2.4",
+  "description": "Convert Node.js streams to streaming iterables",
+  "main": "index.js",
+  "files": [
+    "duplex.js",
+    "sink.js",
+    "source.js",
+    "transform.js"
+  ],
+  "scripts": {
+    "test": "ava test/*.test.js --verbose",
+    "lint": "standard",
+    "coverage": "nyc --reporter=text --reporter=lcov npm test"
+  },
+  "keywords": [
+    "stream",
+    "readablestream",
+    "iterable",
+    "iterator",
+    "async"
+  ],
+  "author": "Alan Shaw",
+  "license": "MIT",
+  "dependencies": {
+    "get-iterator": "^1.0.2"
+  },
+  "devDependencies": {
+    "ava": "^3.10.1",
+    "bl": "^5.0.0",
+    "delay": "^5.0.0",
+    "it-pipe": "^1.1.0",
+    "nyc": "^15.1.0",
+    "p-fifo": "^1.0.0",
+    "standard": "^16.0.3",
+    "streaming-iterables": "^6.0.0"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alanshaw/stream-to-it.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alanshaw/stream-to-it/issues"
+  },
+  "homepage": "https://github.com/alanshaw/stream-to-it#readme"
+}

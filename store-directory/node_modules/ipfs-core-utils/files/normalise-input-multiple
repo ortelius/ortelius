@@ -1,0 +1,1 @@
+module.exports = require('./../cjs/src/files/normalise-input-multiple.js')

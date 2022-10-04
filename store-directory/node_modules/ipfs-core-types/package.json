@@ -1,0 +1,60 @@
+{
+  "name": "ipfs-core-types",
+  "version": "0.8.4",
+  "description": "IPFS interface definitions used by implementations for API compatibility.",
+  "leadMaintainer": "Alex Potsides <alex@achingbrain.net>",
+  "types": "types/src/index.d.ts",
+  "homepage": "https://github.com/ipfs/js-ipfs/tree/master/packages/ipfs-core-types#readme",
+  "bugs": "https://github.com/ipfs/js-ipfs/issues",
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "lint": "aegir ts -p check && aegir lint",
+    "build": "aegir build && copyfiles src/* src/**/* package.json README.md CHANGELOG.md COPYRIGHT LICENSE-APACHE LICENSE-MIT dist"
+  },
+  "files": [
+    "*",
+    "!**/*.tsbuildinfo"
+  ],
+  "typesVersions": {
+    "*": {
+      "src/*": [
+        "types/src/*",
+        "types/src/*/index"
+      ],
+      "src/": [
+        "types/src/index"
+      ]
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs"
+  },
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ipfs/js-ipfs.git"
+  },
+  "keywords": [
+    "IPFS",
+    "types",
+    "interface",
+    "API"
+  ],
+  "license": "(Apache-2.0 OR MIT)",
+  "dependencies": {
+    "interface-datastore": "^6.0.2",
+    "multiaddr": "^10.0.0",
+    "multiformats": "^9.4.13"
+  },
+  "devDependencies": {
+    "aegir": "^36.0.1",
+    "copyfiles": "^2.4.1",
+    "rimraf": "^3.0.2"
+  },
+  "contributors": [
+    "Irakli Gozalishvili <dev@gozala.io>"
+  ],
+  "gitHead": "6178708aedf5ea86bf537862c08db49f5b8ea20b"
+}

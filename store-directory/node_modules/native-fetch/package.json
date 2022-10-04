@@ -1,0 +1,36 @@
+{
+  "name": "native-fetch",
+  "version": "3.0.0",
+  "description": "Returns native fetch if available or the node-fetch module if not",
+  "main": "src/index.js",
+  "types": "dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "test": "aegir test -t node -t browser -t webworker -t electron-main -t electron-renderer",
+    "lint": "aegir lint && aegir ts -p check",
+    "prepare": "aegir build --no-bundle",
+    "release": "aegir release --docs false",
+    "release-minor": "aegir release --type minor --docs false",
+    "release-major": "aegir release --type major --docs false"
+  },
+  "author": "Alex Potsides <alex@achingbrain.net>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/achingbrain/native-fetch.git"
+  },
+  "peerDependencies": {
+    "node-fetch": "*"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.5.8",
+    "aegir": "^30.3.0",
+    "node-fetch": "^2.6.0"
+  },
+  "contributors": [
+    "achingbrain <alex@achingbrain.net>"
+  ]
+}

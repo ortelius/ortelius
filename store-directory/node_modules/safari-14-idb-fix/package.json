@@ -1,0 +1,39 @@
+{
+  "name": "safari-14-idb-fix",
+  "version": "3.0.0",
+  "description": "Working around a Safari 14 IndexedDB bug",
+  "homepage": "https://github.com/jakearchibald/safari-14-idb-fix",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "module": "./dist/index.js",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./dist/cjs": "./dist/index.cjs",
+    "./dist/cjs-compat": "./dist/index.cjs",
+    "./dist/esm": "./dist/index.js",
+    "./dist/esm-compat": "./dist/index.js",
+    "./dist/iife": "./dist/iife.min.js",
+    "./dist/iife-compat": "./dist/iife.min.js",
+    "./package.json": "./package.json"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c",
+    "prepack": "npm run build"
+  },
+  "files": [
+    "dist/**"
+  ],
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "del": "^6.0.0",
+    "prettier": "^2.3.1",
+    "rollup": "^2.52.1",
+    "rollup-plugin-terser": "^7.0.2",
+    "typescript": "^4.3.3"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "parse-duration",
+  "version": "1.0.2",
+  "description": "convert a human readable duration string to a duration format",
+  "keywords": [
+    "parse",
+    "duration",
+    "time"
+  ],
+  "module": "./index.mjs",
+  "main": "./index.js",
+  "exports": {
+    "require": "./index.js",
+    "import": "./index.mjs"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "tape": "^4.8.0"
+  },
+  "scripts": {
+    "test": "node test"
+  },
+  "repository": "git://github.com/jkroso/parse-duration.git",
+  "bugs": "https://github.com/jkroso/parse-duration/issues",
+  "author": "Jake Rosoman",
+  "files": [
+    "index.js",
+    "index.mjs",
+    "index.d.ts"
+  ],
+  "license": "MIT",
+  "typings": "./index.d.ts"
+}

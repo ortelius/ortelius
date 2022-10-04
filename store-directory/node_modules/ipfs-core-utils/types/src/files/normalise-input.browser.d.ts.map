@@ -1,0 +1,1 @@
+{"version":3,"file":"normalise-input.browser.d.ts","sourceRoot":"","sources":["../../../src/files/normalise-input.browser.js"],"names":[],"mappings":"AAGA;;;;GAIG;AAEH;;;;;;;;;;;GAWG;AACH,sCAHW,eAAe,GAAG,qBAAqB,GACrC,eAAe,sBAAsB,EAAE,IAAI,EAAE,SAAS,CAAC,CAKnE;oCApBY,OAAO,2BAA2B,EAAE,qBAAqB;8BACzD,OAAO,2BAA2B,EAAE,eAAe;qCACnD,OAAO,2BAA2B,EAAE,sBAAsB"}

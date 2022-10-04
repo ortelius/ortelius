@@ -1,0 +1,42 @@
+{
+  "name": "it-parallel-batch",
+  "version": "1.0.11",
+  "description": "Takes an async iterator that emits promise-returning functions, invokes them in parallel and emits the results in the same order as the input",
+  "main": "index.js",
+  "repository": "github:achingbrain/it",
+  "homepage": "https://github.com/achingbrain/it/tree/master/packages/it-parallel-batch#readme",
+  "bugs": "https://github.com/achingbrain/it/issues",
+  "scripts": {
+    "test": "ava",
+    "lint": "standard",
+    "coverage": "nyc --reporter html --reporter lcov ava",
+    "clean": "rm -rf .nyc_output coverage dist",
+    "check": "npm run build:dep:types && tsc --noEmit",
+    "build": "npm run build:types",
+    "build:dep:types": "cd node_modules/it-batch && npm run build:types",
+    "build:types": "npm run build:dep:types && tsc --emitDeclarationOnly --declarationDir dist",
+    "prepublishOnly": "npm run build"
+  },
+  "author": "Alex Potsides <alex@achingbrain.net>",
+  "license": "ISC",
+  "devDependencies": {
+    "ava": "^3.12.1",
+    "delay": "^4.3.0",
+    "it-all": "^1.0.6",
+    "nyc": "^15.1.0",
+    "standard": "^16.0.3",
+    "typescript": "^4.0.2"
+  },
+  "dependencies": {
+    "it-batch": "^1.0.9"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        ".",
+        "dist/*"
+      ]
+    }
+  },
+  "gitHead": "b621056a11c9bfe991d1040b22a46651fa907a3c"
+}

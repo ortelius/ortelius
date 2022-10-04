@@ -1,0 +1,1 @@
+{"version":3,"file":"splitter.d.ts","sourceRoot":"","sources":["../../lib/simple/splitter.js"],"names":[],"mappings":"AAqBA;IA2CE;;;OAGG;IACH,sBAHW,IAAI,cACJ,MAAM,8BAMhB;IAED;;;OAGG;IACH,8BAHW,cAAc,UAAU,CAAC,cACzB,MAAM,8BAKhB;IA3DD;;;OAGG;IACH,oBAHW,UAAU,cACV,MAAM,EAQhB;IAFC,oBAAqB;IACrB,oBAA6B;IAG/B,iEA4BC;CAoBF;yBA9EY,OAAO,eAAe,EAAE,WAAW,GAAG,OAAO,eAAe,EAAE,WAAW"}

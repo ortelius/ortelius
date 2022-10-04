@@ -1,0 +1,1 @@
+var idbReady=function(){"use strict";return function(){var e;return!navigator.userAgentData&&/Safari\//.test(navigator.userAgent)&&!/Chrom(e|ium)\//.test(navigator.userAgent)&&indexedDB.databases?new Promise((function(n){var t=function(){return indexedDB.databases().finally(n)};e=setInterval(t,100),t()})).finally((function(){return clearInterval(e)})):Promise.resolve()}}();

@@ -1,0 +1,55 @@
+{
+  "name": "iso-url",
+  "version": "1.2.1",
+  "description": "Isomorphic/Universal WHATWG URL API with some support legacy node URL API",
+  "repository": "hugomrdias/iso-url",
+  "author": "Hugo Dias <hugomrdias@gmail.com> (hugodias.me)",
+  "license": "MIT",
+  "main": "index.js",
+  "engines": {
+    "node": ">=12"
+  },
+  "browser": {
+    "./src/url.js": "./src/url-browser.js"
+  },
+  "scripts": {
+    "check": "yarn lint && yarn prepare && yarn test && yarn test:browser",
+    "prepare": "tsc",
+    "test": "c8 -r json --report-dir .nyc_output --clean node test.js | tap-spec",
+    "test:browser": "playwright-test test.js --runner zora --cov | tap-spec",
+    "test:rn:ios": "rn-test --platform ios test.js | tap-spec",
+    "test:rn:android": "rn-test --platform android test.js | tap-spec",
+    "lint": "eslint *.js src/*.js",
+    "cov": "yarn test && yarn test:browser && nyc report --reporter=html && sirv coverage"
+  },
+  "files": [
+    "dist/src",
+    "dist/index.d.ts",
+    "dist/index.d.ts.map",
+    "src",
+    "index.js"
+  ],
+  "types": "dist/index.js",
+  "keywords": [
+    "url",
+    "node",
+    "browser"
+  ],
+  "devDependencies": {
+    "c8": "^7.10.0",
+    "eslint": "^7.20.0",
+    "eslint-config-ipfs": "^2.0.1",
+    "np": "^7.4.0",
+    "nyc": "^15.0.0",
+    "playwright-test": "^7.1.0",
+    "react-native-polyfill-globals": "^3.1.0",
+    "react-native-test-runner": "^5.0.0",
+    "sirv-cli": "^1.0.14",
+    "tap-spec": "^5.0.0",
+    "typescript": "^4.4.4",
+    "zora": "^4.0.2"
+  },
+  "eslintConfig": {
+    "extends": "ipfs"
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "name": "ipfs-unixfs",
+  "version": "6.0.9",
+  "description": "JavaScript implementation of IPFS' unixfs (a Unix FileSystem representation on top of a MerkleDAG)",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/ipfs/js-ipfs-unixfs/tree/master/packages/ipfs-unixfs#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ipfs/js-ipfs-unixfs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ipfs/js-ipfs-unixfs/issues"
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "types": "types/src/index.d.ts",
+  "files": [
+    "*",
+    "!**/*.tsbuildinfo",
+    "!**/browser-test",
+    "!**/node-test"
+  ],
+  "exports": {
+    ".": {
+      "browser": "./esm/src/index.js",
+      "require": "./cjs/src/index.js",
+      "import": "./esm/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    },
+    "ignorePatterns": [
+      "src/unixfs.d.ts"
+    ]
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "chore",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      [
+        "@semantic-release/npm",
+        {
+          "pkgRoot": "dist"
+        }
+      ],
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
+  "scripts": {
+    "prepare": "aegir build --no-bundle && cp -R types dist",
+    "prepare:proto": "pbjs -t static-module -w es6 -r ipfs-unixfs --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/unixfs.js ./src/unixfs.proto",
+    "prepare:proto-types": "pbts -o src/unixfs.d.ts src/unixfs.js",
+    "pretest": "aegir build --esm-tests",
+    "test": "aegir test",
+    "test:node": "aegir test -t node --cov",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "build": "aegir build && cp -R types dist",
+    "clean": "rimraf ./dist ./types",
+    "lint": "aegir ts -p check && aegir lint",
+    "dep-check": "aegir dep-check -i mkdirp -i npm-run-all -i copy -i util",
+    "release": "semantic-release"
+  },
+  "dependencies": {
+    "err-code": "^3.0.1",
+    "protobufjs": "^6.10.2"
+  },
+  "devDependencies": {
+    "aegir": "^36.2.3",
+    "copy": "^0.3.2",
+    "mkdirp": "^1.0.4",
+    "npm-run-all": "^4.1.5",
+    "uint8arrays": "^3.0.0",
+    "util": "^0.12.3"
+  },
+  "browser": {
+    ".": "./cjs/src/index.js"
+  },
+  "main": "./cjs/src/index.js",
+  "publishConfig": {
+    "directory": "dist"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "name": "nft.storage",
+  "version": "7.0.0",
+  "description": "A client library for the https://nft.storage/ service. It provides a convenient interface for working with the HTTP API from a web browser or Node.js",
+  "license": "(Apache-2.0 OR MIT)",
+  "type": "module",
+  "types": "./dist/src/lib.d.ts",
+  "module": "./src/lib.js",
+  "main": "./dist/src/lib.cjs",
+  "files": [
+    "src",
+    "dist/src",
+    "dist/bundle*"
+  ],
+  "exports": {
+    ".": {
+      "browser": "./src/lib.js",
+      "require": "./dist/src/lib.cjs",
+      "node": "./src/lib.js"
+    },
+    "./src/platform.js": {
+      "browser": "./src/platform.web.js",
+      "require": "./dist/src/platform.cjs",
+      "node": "./src/platform.js"
+    },
+    "./src/token.js": {
+      "browser": "./src/token.js",
+      "require": "./dist/src/token.cjs",
+      "node": "./src/token.js"
+    },
+    "./dist/bundle.esm.min.js": {
+      "browser": "./dist/bundle.esm.min.js",
+      "require": "./dist/bundle.esm.min.js",
+      "node": "./dist/bundle.esm.min.js"
+    }
+  },
+  "browser": {
+    "./src/platform.js": "./src/platform.web.js"
+  },
+  "scripts": {
+    "test": "run-s test:*",
+    "test:web": "node test/test.js playwright-test test/*.spec.js --cov && nyc report",
+    "test:es": "node test/test.js hundreds mocha test/*.spec.js --exit",
+    "test:cjs": "npm run build:cjs && node test/test.js mocha dist/**/*.spec.cjs --exit",
+    "build": "run-s build:*",
+    "build:ts": "tsc --build",
+    "build:cjs": "rollup --config rollup.config.js",
+    "build:esm": "rollup --config rollup.esm.config.js",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && npx codecov",
+    "typedoc": "typedoc",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@ipld/car": "^3.2.3",
+    "@ipld/dag-cbor": "^6.0.13",
+    "@web-std/blob": "^3.0.1",
+    "@web-std/fetch": "^3.0.3",
+    "@web-std/file": "^3.0.0",
+    "@web-std/form-data": "^3.0.0",
+    "carbites": "^1.0.6",
+    "ipfs-car": "^0.6.2",
+    "it-pipe": "^1.1.0",
+    "multiformats": "^9.6.4",
+    "p-retry": "^4.6.1",
+    "streaming-iterables": "^6.0.0",
+    "throttled-queue": "^2.1.2"
+  },
+  "devDependencies": {
+    "@ipld/dag-json": "^8.0.4",
+    "@rollup/plugin-commonjs": "^19.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.0.0",
+    "@ssttevee/multipart-parser": "0.1.9",
+    "@types/mocha": "^9.0.0",
+    "hundreds": "0.0.9",
+    "ipfs-unixfs-importer": "^9.0.6",
+    "ipld": "0.30.2",
+    "ipld-dag-pb": "0.22.3",
+    "ipld-garbage": "^4.0.1",
+    "ipld-in-memory": "8.0.0",
+    "mocha": "^9.1.0",
+    "multicodec": "^3.2.1",
+    "multihashing-async": "^2.1.2",
+    "npm-run-all": "^4.1.5",
+    "nyc": "15.1.0",
+    "playwright-test": "^7.2.1",
+    "rollup": "2.50.1",
+    "rollup-plugin-multi-input": "1.3.1",
+    "rollup-plugin-terser": "^7.0.2",
+    "typedoc": "^0.22.14",
+    "typedoc-plugin-mdn-links": "^1.0.4",
+    "typedoc-plugin-missing-exports": "^0.22.3",
+    "uvu": "0.5.2"
+  },
+  "homepage": "https://github.com/nftstorage/nft.storage/tree/main/packages/client",
+  "bugs": "https://github.com/nftstorage/nft.storage/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nftstorage/nft.storage.git",
+    "directory": "packages/client"
+  }
+}

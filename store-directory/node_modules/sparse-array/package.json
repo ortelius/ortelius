@@ -1,0 +1,28 @@
+{
+  "name": "sparse-array",
+  "version": "1.3.2",
+  "description": "Sparse array implementation in JS with no dependencies",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape tests/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pgte/js-sparse-array.git"
+  },
+  "keywords": [
+    "sparse",
+    "array",
+    "sparse",
+    "array"
+  ],
+  "author": "pgte",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pgte/js-sparse-array/issues"
+  },
+  "homepage": "https://github.com/pgte/js-sparse-array#readme",
+  "devDependencies": {
+    "tape": "^4.6.3"
+  }
+}

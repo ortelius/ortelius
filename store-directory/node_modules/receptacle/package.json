@@ -1,0 +1,63 @@
+{
+  "name": "receptacle",
+  "description": "In memory cache lru cache with ttl support.",
+  "version": "1.3.2",
+  "author": "Dylan Piercey <pierceydylan@gmail.com>",
+  "bugs": "https://github.com/DylanPiercey/receptacle/issues",
+  "dependencies": {
+    "ms": "^2.1.1"
+  },
+  "devDependencies": {
+    "browserify": "^16.2.2",
+    "bundle-collapser": "^1.3.0",
+    "coveralls": "^3.0.1",
+    "exorcist": "^1.0.1",
+    "istanbul": "^0.4.5",
+    "mocha": "^5.2.0",
+    "snazzy": "^7.1.1",
+    "standard": "^11.0.1",
+    "uglifyjs": "^2.4.11"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "homepage": "https://github.com/DylanPiercey/receptacle",
+  "keywords": [
+    "cache",
+    "expires",
+    "lru",
+    "map",
+    "memory",
+    "receptacle",
+    "ttl"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DylanPiercey/receptacle"
+  },
+  "scripts": {
+    "build": "make build",
+    "coveralls": "make coveralls",
+    "lint": "make lint",
+    "test": "npm run lint && make test",
+    "test-ci": "npm run lint && make test-ci"
+  },
+  "typings": "./index.d.ts",
+  "standard": {
+    "globals": [
+      "GIT_COMMIT",
+      "describe",
+      "it",
+      "before",
+      "beforeEach",
+      "after",
+      "afterEach"
+    ],
+    "ignore": [
+      "dist/"
+    ]
+  }
+}

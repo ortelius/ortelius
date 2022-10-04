@@ -1,0 +1,202 @@
+{
+  "name": "ipfs-core-utils",
+  "version": "0.12.2",
+  "description": "Package to share code between ipfs and ipfs-http-client",
+  "author": "Alex Potsides <alex@achingbrain.net>",
+  "homepage": "https://github.com/ipfs/js-ipfs/tree/master/packages/ipfs-core-utils#readme",
+  "bugs": "https://github.com/ipfs/js-ipfs/issues",
+  "leadMaintainer": "Alex Potsides <alex@achingbrain.net>",
+  "main": "./cjs/src/index.js",
+  "types": "types/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "types/*",
+        "types/src/*"
+      ],
+      "types/*": [
+        "types/*",
+        "types/src/*"
+      ]
+    }
+  },
+  "files": [
+    "*",
+    "!**/*.tsbuildinfo"
+  ],
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "exports": {
+    ".": {
+      "browser": "./esm/src/index.js",
+      "require": "./cjs/src/index.js",
+      "import": "./esm/src/index.js"
+    },
+    "./files/normalise-input-single": {
+      "browser": "./esm/src/files/normalise-input-single.js",
+      "require": "./cjs/src/files/normalise-input-single.js",
+      "import": "./esm/src/files/normalise-input-single.js"
+    },
+    "./files/normalise-input-single.browser": {
+      "browser": "./esm/src/files/normalise-input-single.browser.js",
+      "require": "./cjs/src/files/normalise-input-single.browser.js",
+      "import": "./esm/src/files/normalise-input-single.browser.js"
+    },
+    "./files/normalise-input-multiple": {
+      "browser": "./esm/src/files/normalise-input-multiple.js",
+      "require": "./cjs/src/files/normalise-input-multiple.js",
+      "import": "./esm/src/files/normalise-input-multiple.js"
+    },
+    "./files/normalise-input-multiple.browser": {
+      "browser": "./esm/src/files/normalise-input-multiple.browser.js",
+      "require": "./cjs/src/files/normalise-input-multiple.browser.js",
+      "import": "./esm/src/files/normalise-input-multiple.browser.js"
+    },
+    "./files/normalise-content": {
+      "browser": "./esm/src/files/normalise-content.js",
+      "require": "./cjs/src/files/normalise-content.js",
+      "import": "./esm/src/files/normalise-content.js"
+    },
+    "./files/normalise-content.browser": {
+      "browser": "./esm/src/files/normalise-content.browser.js",
+      "require": "./cjs/src/files/normalise-content.browser.js",
+      "import": "./esm/src/files/normalise-content.browser.js"
+    },
+    "./files/format-mode": {
+      "browser": "./esm/src/files/format-mode.js",
+      "require": "./cjs/src/files/format-mode.js",
+      "import": "./esm/src/files/format-mode.js"
+    },
+    "./files/format-mtime": {
+      "browser": "./esm/src/files/format-mtime.js",
+      "require": "./cjs/src/files/format-mtime.js",
+      "import": "./esm/src/files/format-mtime.js"
+    },
+    "./pins/normalise-input": {
+      "browser": "./esm/src/pins/normalise-input.js",
+      "require": "./cjs/src/pins/normalise-input.js",
+      "import": "./esm/src/pins/normalise-input.js"
+    },
+    "./errors": {
+      "browser": "./esm/src/errors.js",
+      "require": "./cjs/src/errors.js",
+      "import": "./esm/src/errors.js"
+    },
+    "./multibases": {
+      "browser": "./esm/src/multibases.js",
+      "require": "./cjs/src/multibases.js",
+      "import": "./esm/src/multibases.js"
+    },
+    "./multicodecs": {
+      "browser": "./esm/src/multicodecs.js",
+      "require": "./cjs/src/multicodecs.js",
+      "import": "./esm/src/multicodecs.js"
+    },
+    "./multihashes": {
+      "browser": "./esm/src/multihashes.js",
+      "require": "./cjs/src/multihashes.js",
+      "import": "./esm/src/multihashes.js"
+    },
+    "./to-cid-and-path": {
+      "browser": "./esm/src/to-cid-and-path.js",
+      "require": "./cjs/src/to-cid-and-path.js",
+      "import": "./esm/src/to-cid-and-path.js"
+    },
+    "./to-url-string": {
+      "browser": "./esm/src/to-url-string.js",
+      "require": "./cjs/src/to-url-string.js",
+      "import": "./esm/src/to-url-string.js"
+    },
+    "./with-timeout-option": {
+      "browser": "./esm/src/with-timeout-option.js",
+      "require": "./cjs/src/with-timeout-option.js",
+      "import": "./esm/src/with-timeout-option.js"
+    },
+    "./agent": {
+      "browser": "./esm/src/agent.browser.js",
+      "require": "./cjs/src/agent.js",
+      "import": "./esm/src/agent.js"
+    },
+    "./multipart-request": {
+      "browser": "./esm/src/multipart-request.browser.js",
+      "require": "./cjs/src/multipart-request.js",
+      "import": "./esm/src/multipart-request.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ipfs/js-ipfs.git"
+  },
+  "scripts": {
+    "test": "aegir test",
+    "test:node": "aegir test -t node",
+    "test:browser": "aegir test -t browser",
+    "test:electron-main": "aegir build --esm-tests && aegir test -t electron-main -f ./dist/cjs/node-test/**/*.spec.js",
+    "test:electron-renderer": "aegir build --esm-tests && aegir test -t electron-renderer -f ./dist/cjs/browser-test/**/*.spec.js",
+    "lint": "aegir ts -p check && aegir lint",
+    "clean": "rimraf ./dist",
+    "dep-check": "aegir dep-check -i rimraf -i ipfs-core-types",
+    "build": "aegir build"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "any-signal": "^2.1.2",
+    "blob-to-it": "^1.0.1",
+    "browser-readablestream-to-it": "^1.0.1",
+    "debug": "^4.1.1",
+    "err-code": "^3.0.1",
+    "ipfs-core-types": "^0.8.4",
+    "ipfs-unixfs": "^6.0.3",
+    "ipfs-utils": "^9.0.2",
+    "it-all": "^1.0.4",
+    "it-map": "^1.0.4",
+    "it-peekable": "^1.0.2",
+    "it-to-stream": "^1.0.0",
+    "merge-options": "^3.0.4",
+    "multiaddr": "^10.0.0",
+    "multiaddr-to-uri": "^8.0.0",
+    "multiformats": "^9.4.13",
+    "nanoid": "^3.1.23",
+    "parse-duration": "^1.0.0",
+    "timeout-abort-controller": "^1.1.1",
+    "uint8arrays": "^3.0.0"
+  },
+  "devDependencies": {
+    "@web-std/file": "^1.1.2",
+    "aegir": "^36.0.1",
+    "rimraf": "^3.0.2"
+  },
+  "gitHead": "6178708aedf5ea86bf537862c08db49f5b8ea20b",
+  "browser": {
+    ".": "./cjs/src/index.js",
+    "./files/normalise-input-single": "./cjs/src/files/normalise-input-single.js",
+    "./files/normalise-input-single.browser": "./cjs/src/files/normalise-input-single.browser.js",
+    "./files/normalise-input-multiple": "./cjs/src/files/normalise-input-multiple.js",
+    "./files/normalise-input-multiple.browser": "./cjs/src/files/normalise-input-multiple.browser.js",
+    "./files/normalise-content": "./cjs/src/files/normalise-content.js",
+    "./files/normalise-content.browser": "./cjs/src/files/normalise-content.browser.js",
+    "./files/format-mode": "./cjs/src/files/format-mode.js",
+    "./files/format-mtime": "./cjs/src/files/format-mtime.js",
+    "./pins/normalise-input": "./cjs/src/pins/normalise-input.js",
+    "./errors": "./cjs/src/errors.js",
+    "./multibases": "./cjs/src/multibases.js",
+    "./multicodecs": "./cjs/src/multicodecs.js",
+    "./multihashes": "./cjs/src/multihashes.js",
+    "./to-cid-and-path": "./cjs/src/to-cid-and-path.js",
+    "./to-url-string": "./cjs/src/to-url-string.js",
+    "./with-timeout-option": "./cjs/src/with-timeout-option.js",
+    "./agent": "./cjs/src/agent.browser.js",
+    "./esm/src/agent.js": "./esm/src/agent.browser.js",
+    "./cjs/src/agent.js": "./cjs/src/agent.browser.js",
+    "./multipart-request": "./cjs/src/multipart-request.browser.js",
+    "./esm/src/multipart-request.js": "./esm/src/multipart-request.browser.js",
+    "./cjs/src/multipart-request.js": "./cjs/src/multipart-request.browser.js"
+  }
+}

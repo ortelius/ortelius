@@ -1,0 +1,75 @@
+{
+  "name": "streaming-iterables",
+  "version": "6.2.0",
+  "description": "A collection of utilities for async iterables. Designed to replace your streams.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "exports": {
+    "require": "./dist/index.js",
+    "import": "./dist/index.mjs"
+  },
+  "types": "dist/index.d.ts",
+  "repository": "git@github.com:reconbot/streaming-iterables.git",
+  "homepage": "https://github.com/reconbot/streaming-iterables",
+  "runkitExampleFilename": "example.js",
+  "scripts": {
+    "test": "npm run unit-test && npm run lint",
+    "unit-test": "c8 -r html -r text mocha",
+    "check-coverage": "c8 check-coverage --lines 95 --functions 95 --branches 94",
+    "lint": "tsc && tslint lib/*.ts",
+    "format": "tslint lib/*.ts --fix",
+    "build": "tsc -p tsconfig-build.json && rollup -c && api-extractor run --local --verbose",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "async",
+    "generators",
+    "async generators",
+    "async iterables",
+    "iterators",
+    "async iterators",
+    "promise",
+    "stream",
+    "fp",
+    "transform",
+    "generator functions",
+    "async generator functions",
+    "bluestream",
+    "ramda"
+  ],
+  "author": "reconbot",
+  "license": "MIT",
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.8.15",
+    "@types/chai": "^4.2.11",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "^17.0.14",
+    "@types/sinon": "^10.0.10",
+    "benchmark": "^2.1.4",
+    "bluestream": "^10.3.3",
+    "c8": "^7.11.0",
+    "chai": "^4.3.6",
+    "mocha": "^9.2.0",
+    "prettier": "^2.5.1",
+    "rollup": "^2.67.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "sinon": "^13.0.1",
+    "through2-concurrent": "^2.0.0",
+    "ts-node": "^10.4.0",
+    "tslib": "^2.0.0",
+    "tslint": "^6.1.2",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-plugin-prettier": "^2.3.0",
+    "typescript": "^4.5.5"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "mocha": {
+    "bail": true,
+    "require": [
+      "ts-node/register"
+    ],
+    "spec": "lib/*-test.ts"
+  }
+}

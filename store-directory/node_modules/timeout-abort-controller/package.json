@@ -1,0 +1,39 @@
+{
+  "name": "timeout-abort-controller",
+  "version": "1.1.1",
+  "description": "An AbortController that aborts after a specified timeout",
+  "main": "index.js",
+  "files": [
+    "index.js"
+  ],
+  "scripts": {
+    "test": "npm run lint && nyc --reporter=lcov --reporter=text tape test.js",
+    "test:browser": "npm run test:chrome && npm run test:firefox && npm run test:webkit",
+    "test:chrome": "playwright-test test.js --browser chromium --runner tape",
+    "test:firefox": "playwright-test test.js --browser firefox --runner tape",
+    "test:webkit": "playwright-test test.js --browser webkit --runner tape",
+    "lint": "standard"
+  },
+  "keywords": [],
+  "author": "Jacob Heun",
+  "license": "MIT",
+  "dependencies": {
+    "abort-controller": "^3.0.0",
+    "retimer": "^2.0.0"
+  },
+  "devDependencies": {
+    "delay": "^4.3.0",
+    "nyc": "^15.0.1",
+    "playwright-test": "^0.7.1",
+    "standard": "^14.3.1",
+    "tape": "^5.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jacobheun/timeout-abort-controller.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jacobheun/timeout-abort-controller/issues"
+  },
+  "homepage": "https://github.com/jacobheun/timeout-abort-controller#readme"
+}

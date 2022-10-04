@@ -1,0 +1,61 @@
+{
+  "name": "react-native-fetch-api",
+  "description": "A fetch API polyfill for React Native with text streaming support.",
+  "version": "2.0.0",
+  "main": "fetch.js",
+  "author": {
+    "name": "André Costa Lima",
+    "email": "andreclima.pt@gmail.com",
+    "url": "https://github.com/acostalima/"
+  },
+  "repository": "react-native-community/fetch",
+  "license": "MIT",
+  "keywords": [
+    "react-native",
+    "fetch",
+    "stream"
+  ],
+  "devDependencies": {
+    "@babel/core": "^7.12.3",
+    "@babel/eslint-parser": "^7.12.1",
+    "@babel/eslint-plugin": "^7.12.1",
+    "@babel/plugin-syntax-class-properties": "^7.12.1",
+    "@babel/preset-flow": "^7.12.1",
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
+    "@react-native-community/eslint-config": "^2.0.0",
+    "conventional-github-releaser": "^3.1.5",
+    "delay": "^4.4.0",
+    "eslint": "^6.5.1",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-flowtype": "^5.2.0",
+    "execa": "^5.0.0",
+    "flow-bin": "^0.136.0",
+    "husky": "^4.3.7",
+    "lint-staged": "^10.5.3",
+    "querystring": "^0.2.0",
+    "react-native-polyfill-globals": "^2.0.0",
+    "react-native-test-runner": "^5.0.0",
+    "react-native-url-polyfill": "^1.2.0",
+    "standard-version": "^9.1.0",
+    "text-encoding": "^0.7.0",
+    "web-streams-polyfill": "^3.0.1",
+    "zora": "^4.0.2"
+  },
+  "files": [
+    "src",
+    "fetch.js",
+    "fetch.js.flow"
+  ],
+  "scripts": {
+    "flow": "flow",
+    "lint": "eslint --cache --ignore-path .gitignore .",
+    "test:ios": "./run-tests.js --platform ios test/index.js",
+    "test:android": "./run-tests.js --platform android test/index.js",
+    "release": "standard-version",
+    "postrelease": "git push --follow-tags origin HEAD && conventional-github-releaser -p angular"
+  },
+  "dependencies": {
+    "p-defer": "^3.0.0"
+  }
+}

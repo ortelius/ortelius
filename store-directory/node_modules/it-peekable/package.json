@@ -1,0 +1,30 @@
+{
+  "name": "it-peekable",
+  "version": "1.0.3",
+  "description": "Allows peeking/pushing an iterable",
+  "main": "index.js",
+  "repository": "github:achingbrain/it",
+  "homepage": "https://github.com/achingbrain/it/tree/master/packages/it-peekable#readme",
+  "bugs": "https://github.com/achingbrain/it/issues",
+  "scripts": {
+    "test": "ava",
+    "lint": "standard",
+    "coverage": "nyc --reporter html --reporter lcov ava",
+    "clean": "rm -rf .nyc_output coverage dist",
+    "check": "tsc --noEmit",
+    "build": "npm run build:types",
+    "build:types": "tsc --emitDeclarationOnly --declarationDir dist",
+    "prepublishOnly": "npm run build"
+  },
+  "author": "Alex Potsides <alex@achingbrain.net>",
+  "license": "ISC",
+  "devDependencies": {
+    "ava": "^3.12.1",
+    "it-all": "^1.0.6",
+    "nyc": "^15.1.0",
+    "standard": "^16.0.3",
+    "typescript": "^4.0.2"
+  },
+  "types": "dist/index.d.ts",
+  "gitHead": "29126fa87dae108acef381693812f22ac8f9362b"
+}

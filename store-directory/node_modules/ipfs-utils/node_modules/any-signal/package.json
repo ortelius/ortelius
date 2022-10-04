@@ -1,0 +1,34 @@
+{
+  "name": "any-signal",
+  "version": "3.0.1",
+  "description": "Combines an array of AbortSignals into a single signal that is aborted when any signal is",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "abort-controller.js",
+    "abort-controller.browser.js"
+  ],
+  "scripts": {
+    "test": "npm run lint && nyc --reporter=lcov --reporter=text ava --verbose",
+    "lint": "standard"
+  },
+  "keywords": [],
+  "author": "Jacob Heun",
+  "license": "MIT",
+  "devDependencies": {
+    "ava": "^3.11.1",
+    "nyc": "^15.1.0",
+    "p-defer": "^3.0.0",
+    "standard": "^16.0.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jacobheun/any-signal.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jacobheun/any-signal/issues"
+  },
+  "homepage": "https://github.com/jacobheun/any-signal#readme"
+}

@@ -1,0 +1,53 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": false,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "strictFunctionTypes": false,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "strictBindCallApply": true,
+    "strict": true,
+    "alwaysStrict": true,
+    "esModuleInterop": true,
+    "target": "ES2018",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "types",
+    "skipLibCheck": true,
+    "stripInternal": true,
+    "resolveJsonModule": true,
+    "emitDeclarationOnly": true,
+    "baseUrl": ".",
+    "paths": {
+      "carbites": [
+        "lib/"
+      ],
+      "carbites/rooted": [
+        "./lib/rooted/"
+      ],
+      "carbites/simple": [
+        "./lib/simple/"
+      ]
+      ,
+      "carbites/treewalk": [
+        "./lib/treewalk/"
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "esm",
+    "cjs",
+    "test"
+  ],
+  "compileOnSave": false
+}

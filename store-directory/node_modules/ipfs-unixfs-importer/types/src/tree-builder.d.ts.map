@@ -1,0 +1,1 @@
+{"version":3,"file":"tree-builder.d.ts","sourceRoot":"","sources":["../../src/tree-builder.js"],"names":[],"mappings":";2BAMa,OAAO,SAAS,EAAE,YAAY;qCAC9B,OAAO,SAAS,EAAE,sBAAsB;8BACxC,OAAO,SAAS,EAAE,eAAe;yBACjC,OAAO,sBAAsB,EAAE,UAAU;mCAChC,cAAc,sBAAsB,CAAC,cAAc,UAAU,WAAW,eAAe,KAAK,cAAc,YAAY,CAAC;AAqE7I;;GAEG;AACH,2OAiCC"}

@@ -1,0 +1,383 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>hamt-sharding - v2.0.0</title>
+	<meta name="description" content="Documentation for hamt-sharding - v2.0.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+	<link href="https://unpkg.com/nord-highlightjs@0.1.0/dist/nord.css" rel="stylesheet" type="text/css" />
+	<style>
+        .toolbar-icon {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .toolbar-icon-search {
+            box-sizing: border-box;
+            position: absolute;
+            overflow: hidden;
+            right: -40px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            @media (min-width: 901px){
+                display: none
+            }
+        }
+            @media (min-width: 901px){
+                .toolbar-icon-menu {
+                    display: none
+                }
+                .toolbar-icon-options {
+                    display: none
+                }
+            }
+
+        .gg-menu {
+            transform: scale(var(--ggs,1))
+        }
+        .gg-menu,
+        .gg-menu::after,
+        .gg-menu::before {
+            box-sizing: border-box;
+            position: relative;
+            display: block;
+            width: 20px;
+            height: 2px;
+            border-radius: 3px;
+            background: currentColor
+        }
+        .gg-menu::after,
+        .gg-menu::before {
+            content: "";
+            position: absolute;
+            top: -6px
+        }
+        .gg-menu::after {
+            top: 6px
+        }
+        .gg-options {
+            box-sizing: border-box;
+            position: relative;
+            display: block;
+            transform: scale(var(--ggs,1));
+            width: 10px;
+            height: 2px;
+            box-shadow:
+                -3px 4px 0 0,
+                3px -4px 0 0
+        }
+        .gg-options::after,
+        .gg-options::before {
+            content: "";
+            display: block;
+            box-sizing: border-box;
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border: 2px solid;
+            border-radius: 100%
+        }
+        .gg-options::before {
+            top: -7px;
+            left: -4px
+        }
+        .gg-options::after {
+            bottom: -7px;
+            right: -4px
+        }
+        .gg-search {
+            box-sizing: border-box;
+            position: relative;
+            display: block;
+            transform: scale(var(--ggs,1));
+            width: 16px;
+            height: 16px;
+            border: 2px solid;
+            border-radius: 100%;
+            margin-left: -4px;
+            margin-top: -4px
+        }
+        .gg-search::after {
+            content: "";
+            display: block;
+            box-sizing: border-box;
+            position: absolute;
+            border-radius: 3px;
+            width: 2px;
+            height: 8px;
+            background: currentColor;
+            transform: rotate(-45deg);
+            top: 10px;
+            left: 12px
+        }
+    </style>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="toolbar-icon toolbar-icon-search"><i class="gg-search"></i></label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">hamt-sharding - v2.0.0</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<a href="#" class="toolbar-icon toolbar-icon-menu" data-toggle="menu"><i class="gg-menu"></i></a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+			</ul>
+			<h1>hamt-sharding - v2.0.0</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#hamt-sharding" id="hamt-sharding" style="color: inherit; text-decoration: none;">
+					<h1>hamt-sharding</h1>
+				</a>
+				<p><a href="http://ipn.io"><img src="https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square" alt=""></a>
+					<a href="http://ipfs.io/"><img src="https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square" alt=""></a>
+					<a href="http://webchat.freenode.net/?channels=%23ipfs"><img src="https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square" alt=""></a>
+					<a href="https://github.com/RichardLitt/standard-readme"><img src="https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square" alt="standard-readme compliant"></a>
+					<a href="https://travis-ci.com/ipfs-shipyard/js-hamt-sharding"><img src="https://flat.badgen.net/travis/ipfs-shipyard/js-hamt-sharding" alt="Build Status"></a>
+					<a href="https://codecov.io/gh/ipfs-shipyard/js-hamt-sharding"><img src="https://codecov.io/gh/ipfs-shipyard/js-hamt-sharding/branch/master/graph/badge.svg" alt="Codecov"></a>
+					<a href="https://david-dm.org/ipfs/js-hamt-sharding"><img src="https://david-dm.org/ipfs-shipyard/js-hamt-sharding.svg?style=flat-square" alt="Dependency Status"></a>
+					<a href="https://github.com/feross/standard"><img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square" alt="js-standard-style"></a>
+					<img src="https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square" alt="">
+				<img src="https://img.shields.io/badge/Node.js-%3E%3D10.0.0-orange.svg?style=flat-square" alt=""></p>
+				<blockquote>
+					<p>JavaScript implementation of hamt for use in sharding</p>
+				</blockquote>
+				<a href="#lead-maintainer" id="lead-maintainer" style="color: inherit; text-decoration: none;">
+					<h2>Lead Maintainer</h2>
+				</a>
+				<p><a href="https://github.com/achingbrain">Alex Potsides</a></p>
+				<a href="#table-of-contents" id="table-of-contents" style="color: inherit; text-decoration: none;">
+					<h2>Table of Contents</h2>
+				</a>
+				<ul>
+					<li><a href="#hamt-sharding">hamt-sharding</a><ul>
+							<li><a href="#lead-maintainer">Lead Maintainer</a></li>
+							<li><a href="#table-of-contents">Table of Contents</a></li>
+							<li><a href="#install">Install</a></li>
+							<li><a href="#usage">Usage</a><ul>
+									<li><a href="#example">Example</a></li>
+								</ul>
+							</li>
+							<li><a href="#api">API</a><ul>
+									<li><a href="#bucketputkey-value"><code>bucket.put(key, value)</code></a></li>
+									<li><a href="#bucketgetkey"><code>bucket.get(key)</code></a></li>
+									<li><a href="#bucketdelkey"><code>bucket.del(key)</code></a></li>
+									<li><a href="#bucketleafcount"><code>bucket.leafCount()</code></a></li>
+									<li><a href="#bucketchildrencount"><code>bucket.childrenCount()</code></a></li>
+									<li><a href="#bucketonlychild"><code>bucket.onlyChild()</code></a></li>
+									<li><a href="#bucketeachleafseries"><code>bucket.eachLeafSeries()</code></a></li>
+									<li><a href="#bucketserializemap-reduce"><code>bucket.serialize(map, reduce)</code></a></li>
+									<li><a href="#bucketasynctransformasyncmap-asyncreduce"><code>bucket.asyncTransform(asyncMap, asyncReduce)</code></a></li>
+									<li><a href="#buckettojson"><code>bucket.toJSON()</code></a></li>
+									<li><a href="#bucketprettyprint"><code>bucket.prettyPrint()</code></a></li>
+									<li><a href="#buckettablesize"><code>bucket.tableSize()</code></a></li>
+								</ul>
+							</li>
+							<li><a href="#contribute">Contribute</a></li>
+							<li><a href="#license">License</a></li>
+						</ul>
+					</li>
+				</ul>
+				<a href="#install" id="install" style="color: inherit; text-decoration: none;">
+					<h2>Install</h2>
+				</a>
+				<pre><code><span class="hljs-meta">&gt;</span> <span class="javascript">npm install hamt-sharding</span>
+</code></pre>
+				<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
+					<h2>Usage</h2>
+				</a>
+				<a href="#example" id="example" style="color: inherit; text-decoration: none;">
+					<h3>Example</h3>
+				</a>
+				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { createHAMT } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;hamt-sharding&#x27;</span>)
+<span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto-promise&#x27;</span>)
+
+<span class="hljs-comment">// decide how to hash buffers made from keys, can return a Promise</span>
+<span class="hljs-keyword">const</span> hashFn = <span class="hljs-keyword">async</span> (buf) =&gt; {
+  <span class="hljs-keyword">return</span> crypto
+    .createHash(<span class="hljs-string">&#x27;sha256&#x27;</span>)
+    .update(buf)
+    .digest()
+}
+
+<span class="hljs-keyword">const</span> bucket = createHAMT({
+  <span class="hljs-attr">hashFn</span>: hashFn
+})
+
+<span class="hljs-keyword">await</span> bucket.put(<span class="hljs-string">&#x27;key&#x27;</span>, <span class="hljs-string">&#x27;value&#x27;</span>)
+
+<span class="hljs-keyword">const</span> output = <span class="hljs-keyword">await</span> bucket.get(<span class="hljs-string">&#x27;key&#x27;</span>)
+<span class="hljs-comment">// output === &#x27;value&#x27;</span>
+</code></pre>
+				<a href="#api" id="api" style="color: inherit; text-decoration: none;">
+					<h2>API</h2>
+				</a>
+				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { createHAMT } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;hamt-sharding&#x27;</span>)
+</code></pre>
+				<a href="#bucketputkey-value" id="bucketputkey-value" style="color: inherit; text-decoration: none;">
+					<h3><code>bucket.put(key, value)</code></h3>
+				</a>
+				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { createHAMT } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;hamt-sharding&#x27;</span>)
+<span class="hljs-keyword">const</span> bucket = createHAMT({...})
+
+<span class="hljs-keyword">await</span> bucket.put(<span class="hljs-string">&#x27;key&#x27;</span>, <span class="hljs-string">&#x27;value&#x27;</span>)
+</code></pre>
+				<a href="#bucketgetkey" id="bucketgetkey" style="color: inherit; text-decoration: none;">
+					<h3><code>bucket.get(key)</code></h3>
+				</a>
+				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { createHAMT } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;hamt-sharding&#x27;</span>)
+<span class="hljs-keyword">const</span> bucket = createHAMT({...})
+
+<span class="hljs-keyword">await</span> bucket.put(<span class="hljs-string">&#x27;key&#x27;</span>, <span class="hljs-string">&#x27;value&#x27;</span>)
+
+<span class="hljs-built_in">console</span>.info(<span class="hljs-keyword">await</span> bucket.get(<span class="hljs-string">&#x27;key&#x27;</span>)) <span class="hljs-comment">// &#x27;value&#x27;</span>
+</code></pre>
+				<a href="#bucketdelkey" id="bucketdelkey" style="color: inherit; text-decoration: none;">
+					<h3><code>bucket.del(key)</code></h3>
+				</a>
+				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { createHAMT } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;hamt-sharding&#x27;</span>)
+<span class="hljs-keyword">const</span> bucket = createHAMT({...})
+
+<span class="hljs-keyword">await</span> bucket.put(<span class="hljs-string">&#x27;key&#x27;</span>, <span class="hljs-string">&#x27;value&#x27;</span>)
+<span class="hljs-keyword">await</span> bucket.del(<span class="hljs-string">&#x27;key&#x27;</span>, <span class="hljs-string">&#x27;value&#x27;</span>)
+
+<span class="hljs-built_in">console</span>.info(<span class="hljs-keyword">await</span> bucket.get(<span class="hljs-string">&#x27;key&#x27;</span>)) <span class="hljs-comment">// undefined</span>
+</code></pre>
+				<a href="#bucketleafcount" id="bucketleafcount" style="color: inherit; text-decoration: none;">
+					<h3><code>bucket.leafCount()</code></h3>
+				</a>
+				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { createHAMT } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;hamt-sharding&#x27;</span>)
+<span class="hljs-keyword">const</span> bucket = createHAMT({...})
+
+<span class="hljs-built_in">console</span>.info(bucket.leafCount()) <span class="hljs-comment">// 0</span>
+
+<span class="hljs-keyword">await</span> bucket.put(<span class="hljs-string">&#x27;key&#x27;</span>, <span class="hljs-string">&#x27;value&#x27;</span>)
+
+<span class="hljs-built_in">console</span>.info(bucket.leafCount()) <span class="hljs-comment">// 1</span>
+</code></pre>
+				<a href="#bucketchildrencount" id="bucketchildrencount" style="color: inherit; text-decoration: none;">
+					<h3><code>bucket.childrenCount()</code></h3>
+				</a>
+				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { createHAMT } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;hamt-sharding&#x27;</span>)
+<span class="hljs-keyword">const</span> bucket = createHAMT({...})
+
+<span class="hljs-built_in">console</span>.info(bucket.childrenCount()) <span class="hljs-comment">// 0</span>
+
+<span class="hljs-keyword">await</span> bucket.put(<span class="hljs-string">&#x27;key&#x27;</span>, <span class="hljs-string">&#x27;value&#x27;</span>)
+
+<span class="hljs-built_in">console</span>.info(bucket.childrenCount()) <span class="hljs-comment">// 234 -- dependent on hashing algorithm</span>
+</code></pre>
+				<a href="#bucketonlychild" id="bucketonlychild" style="color: inherit; text-decoration: none;">
+					<h3><code>bucket.onlyChild()</code></h3>
+				</a>
+				<a href="#bucketeachleafseries" id="bucketeachleafseries" style="color: inherit; text-decoration: none;">
+					<h3><code>bucket.eachLeafSeries()</code></h3>
+				</a>
+				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { createHAMT } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;hamt-sharding&#x27;</span>)
+<span class="hljs-keyword">const</span> bucket = createHAMT({...})
+
+<span class="hljs-keyword">await</span> bucket.put(<span class="hljs-string">&#x27;key&#x27;</span>, <span class="hljs-string">&#x27;value&#x27;</span>)
+
+<span class="hljs-keyword">for</span> <span class="hljs-keyword">await</span> (<span class="hljs-keyword">const</span> child <span class="hljs-keyword">of</span> bucket.eachLeafSeries()) {
+  <span class="hljs-built_in">console</span>.info(child.value) <span class="hljs-comment">// &#x27;value&#x27;</span>
+}
+</code></pre>
+				<a href="#bucketserializemap-reduce" id="bucketserializemap-reduce" style="color: inherit; text-decoration: none;">
+					<h3><code>bucket.serialize(map, reduce)</code></h3>
+				</a>
+				<a href="#bucketasynctransformasyncmap-asyncreduce" id="bucketasynctransformasyncmap-asyncreduce" style="color: inherit; text-decoration: none;">
+					<h3><code>bucket.asyncTransform(asyncMap, asyncReduce)</code></h3>
+				</a>
+				<a href="#buckettojson" id="buckettojson" style="color: inherit; text-decoration: none;">
+					<h3><code>bucket.toJSON()</code></h3>
+				</a>
+				<a href="#bucketprettyprint" id="bucketprettyprint" style="color: inherit; text-decoration: none;">
+					<h3><code>bucket.prettyPrint()</code></h3>
+				</a>
+				<a href="#buckettablesize" id="buckettablesize" style="color: inherit; text-decoration: none;">
+					<h3><code>bucket.tableSize()</code></h3>
+				</a>
+				<a href="#contribute" id="contribute" style="color: inherit; text-decoration: none;">
+					<h2>Contribute</h2>
+				</a>
+				<p>Feel free to join in. All welcome. Open an <a href="https://github.com/ipfs-shipyard/js-hamt-sharding/issues">issue</a>!</p>
+				<p>This repository falls under the IPFS <a href="https://github.com/ipfs/community/blob/master/code-of-conduct.md">Code of Conduct</a>.</p>
+				<p><a href="https://github.com/ipfs/community/blob/master/contributing.md"><img src="https://cdn.rawgit.com/jbenet/contribute-ipfs-gif/master/img/contribute.gif" alt=""></a></p>
+				<a href="#license" id="license" style="color: inherit; text-decoration: none;">
+					<h2>License</h2>
+				</a>
+				<p><a href="LICENSE">MIT</a></p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" tsd-kind-module">
+						<a href="modules/__hamt_sharding_.html"> hamt-sharding</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_bucket_.html">/Users/alex/Documents/Workspaces/ipfs-shipyard/js-hamt-sharding/src/bucket</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_buffer_.html">/Users/alex/Documents/Workspaces/ipfs-shipyard/js-hamt-sharding/src/consumable-buffer</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/__users_alex_documents_workspaces_ipfs_shipyard_js_hamt_sharding_src_consumable_hash_.html">/Users/alex/Documents/Workspaces/ipfs-shipyard/js-hamt-sharding/src/consumable-hash</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer>
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-namespace"><span class="tsd-kind-icon">Namespace</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

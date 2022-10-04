@@ -1,0 +1,7 @@
+{
+  "type": "module",
+  "browser": {
+    "./src/agent.js": "./src/agent.browser.js",
+    "./src/multipart-request.js": "./src/multipart-request.browser.js"
+  }
+}

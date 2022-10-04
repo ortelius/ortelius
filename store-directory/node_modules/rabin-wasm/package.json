@@ -1,0 +1,56 @@
+{
+  "name": "rabin-wasm",
+  "version": "0.1.5",
+  "description": "Rabin fingerprinting implemented in AssemblyScript",
+  "homepage": "https://github.com/hugomrdias/rabin-wasm",
+  "bugs": {
+    "url": "https://github.com/hugomrdias/rabin-wasm/issues"
+  },
+  "license": "MIT",
+  "author": "Hugo Dias",
+  "bin": "cli/bin.js",
+  "main": "src/index.js",
+  "browser": {
+    "./dist/rabin-wasm.node.js": "./dist/rabin-wasm.js"
+  },
+  "files": [
+    "src",
+    "dist",
+    "cli"
+  ],
+  "scripts": {
+    "asbuild:untouched": "asc assembly/index.ts -b build/untouched.wasm -t build/untouched.wat --sourceMap --validate --debug",
+    "asbuild:optimized": "asc assembly/index.ts -b build/optimized.wasm -t build/optimized.wat --sourceMap --validate --optimize",
+    "asbuild": "npm run asbuild:untouched && npm run asbuild:optimized",
+    "build": "asc assembly/index.ts -b dist/rabin.wasm -d dist/rabin-wasm.d.ts --runtime full --sourceMap --validate -O3 --noAssert && ./tools/wasm2js dist/rabin.wasm -o dist/rabin-wasm.js && browserify src/index.js -s Rabin -o dist/rabin.umd.js",
+    "size": "size-limit dist/rabin.umd.js",
+    "test": "asp --nortrace && yarn build && npx tape test/test.js",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hugomrdias/rabin-wasm.git"
+  },
+  "dependencies": {
+    "@assemblyscript/loader": "^0.9.4",
+    "bl": "^5.0.0",
+    "debug": "^4.3.1",
+    "minimist": "^1.2.5",
+    "node-fetch": "^2.6.1",
+    "readable-stream": "^3.6.0"
+  },
+  "devDependencies": {
+    "@as-pect/cli": "^2.8.1",
+    "@size-limit/preset-small-lib": "^4.2.1",
+    "assemblyscript": "^0.9.4",
+    "benchmark": "^2.1.4",
+    "browserify": "^16.3.0",
+    "buffer": "^6.0.3",
+    "iso-random-stream": "^2.0.0",
+    "long": "^4.0.0",
+    "np": "^6.2.0",
+    "rabin": "^2.0.0",
+    "size-limit": "^4.2.1",
+    "tape": "^4.13.2"
+  }
+}

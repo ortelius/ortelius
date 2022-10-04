@@ -1,0 +1,43 @@
+{
+  "name": "get-iterator",
+  "version": "1.0.2",
+  "description": "Get the default iterator or async iterator for an Iterable.",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard && nyc --reporter=lcov --reporter=text ava --verbose"
+  },
+  "keywords": [
+    "iterator",
+    "iterable",
+    "get",
+    "getter",
+    "@@iterator",
+    "Symbol.iterator",
+    "Symbol.asyncIterator"
+  ],
+  "author": "Alan Shaw",
+  "license": "MIT",
+  "devDependencies": {
+    "ava": "^1.0.0-rc.1",
+    "babel-eslint": "^10.0.1",
+    "nyc": "^13.1.0",
+    "standard": "^12.0.1"
+  },
+  "ava": {
+    "babel": false,
+    "compileEnhancements": false,
+    "failWithoutAssertions": false
+  },
+  "standard": {
+    "parser": "babel-eslint"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alanshaw/get-iterator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alanshaw/get-iterator/issues"
+  },
+  "homepage": "https://github.com/alanshaw/get-iterator#readme"
+}

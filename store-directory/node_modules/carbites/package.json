@@ -1,0 +1,108 @@
+{
+  "name": "carbites",
+  "version": "1.0.6",
+  "description": "Chunking for CAR files. Split a single CAR into multiple CARs.",
+  "main": "./cjs/lib/index.js",
+  "types": "./types/index.d.ts",
+  "scripts": {
+    "build": "npm run build:js && npm run build:types",
+    "build:js": "ipjs build --tests --main && npm run build:copy",
+    "build:copy": "cp -a tsconfig.json lib test dist/ ",
+    "build:types": "npm run build:copy && cd dist && tsc --build",
+    "test": "npm run lint && npm run test:node && npm run test:cjs",
+    "test:node": "ava --verbose 'test/*.spec.js'",
+    "test:cjs": "npm run build:js && ava --verbose dist/cjs/node-test/*.spec.js",
+    "coverage": "c8 npm run test",
+    "lint": "standard"
+  },
+  "author": "Alan Shaw",
+  "license": "(Apache-2.0 AND MIT)",
+  "dependencies": {
+    "@ipld/car": "^3.0.1",
+    "@ipld/dag-cbor": "^6.0.3",
+    "@ipld/dag-pb": "^2.0.2",
+    "multiformats": "^9.0.4"
+  },
+  "devDependencies": {
+    "@web-std/blob": "^2.1.0",
+    "ava": "^3.15.0",
+    "c8": "^7.7.2",
+    "ipjs": "^5.0.0",
+    "ipld-garbage": "^4.0.1",
+    "standard": "^16.0.3",
+    "typescript": "^4.2.4"
+  },
+  "standard": {
+    "ignore": [
+      "dist"
+    ]
+  },
+  "exports": {
+    ".": {
+      "browser": "./esm/lib/index.js",
+      "require": "./cjs/lib/index.js",
+      "import": "./esm/lib/index.js"
+    },
+    "./rooted": {
+      "browser": "./esm/lib/rooted/index.js",
+      "require": "./cjs/lib/rooted/index.js",
+      "import": "./esm/lib/rooted/index.js"
+    },
+    "./simple": {
+      "browser": "./esm/lib/simple/index.js",
+      "require": "./cjs/lib/simple/index.js",
+      "import": "./esm/lib/simple/index.js"
+    },
+    "./treewalk": {
+      "browser": "./esm/lib/treewalk/index.js",
+      "require": "./cjs/lib/treewalk/index.js",
+      "import": "./esm/lib/treewalk/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "types/*"
+      ],
+      "simple": [
+        "types/simple/index.d.ts"
+      ],
+      "rooted": [
+        "types/rooted/index.d.ts"
+      ],
+      "treewalk": [
+        "types/treewalk/index.d.ts"
+      ],
+      "types/*": [
+        "types/*"
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nftstorage/carbites.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nftstorage/carbites/issues"
+  },
+  "homepage": "https://github.com/nftstorage/carbites#readme",
+  "keywords": [
+    "car",
+    "content",
+    "archive",
+    "CID",
+    "IPLD",
+    "multiformats",
+    "chunk",
+    "chunker",
+    "chunking",
+    "split",
+    "splitter"
+  ],
+  "browser": {
+    ".": "./cjs/lib/index.js",
+    "./rooted": "./cjs/lib/rooted/index.js",
+    "./simple": "./cjs/lib/simple/index.js",
+    "./treewalk": "./cjs/lib/treewalk/index.js"
+  }
+}

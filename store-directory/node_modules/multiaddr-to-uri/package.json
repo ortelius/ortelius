@@ -1,0 +1,34 @@
+{
+  "name": "multiaddr-to-uri",
+  "version": "8.0.0",
+  "description": "Convert a Multiaddr to a URI /dnsaddr/ipfs.io/http -> http://ipfs.io",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run lint && npm run test:coverage",
+    "test:coverage": "nyc --reporter=lcov --reporter=text ava",
+    "lint": "standard"
+  },
+  "keywords": [
+    "multiaddr",
+    "toString",
+    "URL"
+  ],
+  "author": "Alan Shaw",
+  "license": "MIT",
+  "devDependencies": {
+    "ava": "^3.11.1",
+    "nyc": "^15.0.0",
+    "standard": "^16.0.3"
+  },
+  "dependencies": {
+    "multiaddr": "^10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/multiformats/js-multiaddr-to-uri.git"
+  },
+  "bugs": {
+    "url": "https://github.com/multiformats/js-multiaddr-to-uri/issues"
+  },
+  "homepage": "https://github.com/multiformats/js-multiaddr-to-uri#readme"
+}

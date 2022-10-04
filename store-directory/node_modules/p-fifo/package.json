@@ -1,0 +1,43 @@
+{
+  "name": "p-fifo",
+  "version": "1.0.0",
+  "description": "Promised First-In-First-Out buffer. Await on push to be told when a value is consumed and await on shift for a value to consume when the buffer is empty.",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava test.js --verbose",
+    "lint": "standard",
+    "coverage": "nyc --reporter=text --reporter=lcov npm test"
+  },
+  "keywords": [
+    "fifo",
+    "buffer",
+    "queue",
+    "promise",
+    "push",
+    "shift",
+    "array"
+  ],
+  "author": "Alan Shaw",
+  "license": "MIT",
+  "dependencies": {
+    "fast-fifo": "^1.0.0",
+    "p-defer": "^3.0.0"
+  },
+  "devDependencies": {
+    "ava": "^2.2.0",
+    "nyc": "^14.1.1",
+    "standard": "^13.1.0"
+  },
+  "ava": {
+    "babel": false,
+    "compileEnhancements": false
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alanshaw/p-fifo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alanshaw/p-fifo/issues"
+  },
+  "homepage": "https://github.com/alanshaw/p-fifo#readme"
+}

@@ -1,0 +1,80 @@
+{
+  "name": "electron-fetch",
+  "version": "1.9.1",
+  "description": "A light-weight module that brings window.fetch to electron's background process",
+  "main": "lib/index.js",
+  "module": "lib/index.es.js",
+  "types": "index.d.ts",
+  "files": [
+    "lib/index.js",
+    "lib/index.es.js",
+    "index.d.ts"
+  ],
+  "engines": {
+    "node": ">=6"
+  },
+  "scripts": {
+    "build": "cross-env BABEL_ENV=rollup rollup -c",
+    "prepublishOnly": "npm run build",
+    "lint": "standard",
+    "test": "npm run test:electron && npm run test:node && npm run test:typings && standard",
+    "pretest:typings": "npm run build",
+    "test:typings": "ts-node test/test-typescript.ts",
+    "test:electron": "xvfb-maybe cross-env BABEL_ENV=test electron-mocha --require @babel/register test/test.js",
+    "test:node": "cross-env BABEL_ENV=test mocha --require @babel/register test/test.js",
+    "coverage": "xvfb-maybe cross-env BABEL_ENV=coverage electron-mocha --require @babel/register test/test.js --reporter test/coverage-reporter.js",
+    "report": "npm run coverage && codecov -f coverage/coverage-final.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arantes555/electron-fetch.git"
+  },
+  "keywords": [
+    "fetch",
+    "http",
+    "promise",
+    "electron"
+  ],
+  "author": "Mehdi Kouhen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/arantes555/electron-fetch/issues"
+  },
+  "homepage": "https://github.com/arantes555/electron-fetch",
+  "devDependencies": {
+    "@babel/core": "^7.19.3",
+    "@babel/preset-env": "^7.19.3",
+    "@babel/register": "^7.18.9",
+    "abortcontroller-polyfill": "^1.7.3",
+    "babel-eslint": "^10.1.0",
+    "babel-plugin-istanbul": "^6.1.1",
+    "basic-auth-parser": "0.0.2",
+    "chai": "^4.3.6",
+    "chai-as-promised": "^7.1.1",
+    "codecov": "^3.8.3",
+    "cross-env": "^7.0.3",
+    "electron": "^21.0.0",
+    "electron-mocha": "^11.0.2",
+    "form-data": "^4.0.0",
+    "is-builtin-module": "^3.2.0",
+    "istanbul-api": "^3.0.0",
+    "istanbul-lib-coverage": "^3.2.0",
+    "mocha": "^10.0.0",
+    "nyc": "^15.1.0",
+    "parted": "^0.1.1",
+    "promise": "^8.2.0",
+    "proxy": "^1.0.2",
+    "resumer": "0.0.0",
+    "rollup": "^2.79.1",
+    "rollup-plugin-babel": "^4.4.0",
+    "standard": "^17.0.0",
+    "stoppable": "^1.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4",
+    "whatwg-url": "^11.0.0",
+    "xvfb-maybe": "^0.2.1"
+  },
+  "dependencies": {
+    "encoding": "^0.1.13"
+  }
+}

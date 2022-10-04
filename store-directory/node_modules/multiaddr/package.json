@@ -1,0 +1,92 @@
+{
+  "name": "multiaddr",
+  "version": "10.0.1",
+  "description": "multiaddr implementation (binary + string representation of network addresses)",
+  "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
+  "main": "src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "lint": "aegir lint",
+    "test": "npm run test:node && npm run test:browser",
+    "test:node": "aegir test --ts -t node",
+    "test:browser": "aegir test -t browser",
+    "prepare": "aegir build",
+    "release": "aegir release",
+    "release-minor": "aegir release --type minor",
+    "release-major": "aegir release --type major",
+    "docs": "aegir docs",
+    "size": "aegir build -b"
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "repository": "github:multiformats/js-multiaddr",
+  "keywords": [
+    "multiaddr",
+    "binary",
+    "string"
+  ],
+  "license": "MIT",
+  "bugs": "https://github.com/multiformats/js-multiaddr/issues",
+  "homepage": "https://github.com/multiformats/js-multiaddr",
+  "browser": {
+    "./src/resolvers/dns.js": "./src/resolvers/dns.browser.js"
+  },
+  "dependencies": {
+    "dns-over-http-resolver": "^1.2.3",
+    "err-code": "^3.0.1",
+    "is-ip": "^3.1.0",
+    "multiformats": "^9.4.5",
+    "uint8arrays": "^3.0.0",
+    "varint": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/varint": "^6.0.0",
+    "aegir": "^35.0.1",
+    "sinon": "^11.1.1",
+    "util": "^0.12.3"
+  },
+  "aegir": {
+    "build": {
+      "bundlesizeMax": "22kB"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs"
+  },
+  "contributors": [
+    "David Dias <daviddias.p@gmail.com>",
+    "Jacob Heun <jacobheun@gmail.com>",
+    "Vasco Santos <vasco.santos@moxy.studio>",
+    "victorbjelkholm <victorbjelkholm@gmail.com>",
+    "Juan Batiz-Benet <juan@benet.ai>",
+    "Hugo Dias <hugomrdias@gmail.com>",
+    "Volker Mische <volker.mische@gmail.com>",
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Alex Potsides <alex@achingbrain.net>",
+    "Richard Littauer <richard.littauer@gmail.com>",
+    "Marcin Rataj <lidel@lidel.org>",
+    "Dmitriy Ryajov <dryajov@gmail.com>",
+    "Steven Allen <steven@stebalien.com>",
+    "Alan Shaw <alan@tableflip.io>",
+    "Robert Kiel <robert.kiel@validitylabs.org>",
+    "Maciej Krüger <mkg20001@gmail.com>",
+    "Oli Evans <oli@tableflip.io>",
+    "Tony Jin <nijynot@gmail.com>",
+    "Alessandro Ricottone <ricott2@gmail.com>",
+    "Cayman <caymannava@gmail.com>",
+    "Chris Anderson <jchris@gmail.com>",
+    "Diogo Silva <fsdiogo@gmail.com>",
+    "Irakli Gozalishvili <contact@gozala.io>",
+    "KuhnChris <kuhnchris@kuhnchris.eu>",
+    "Lars Gierth <lgierth@users.noreply.github.com>",
+    "Linus Unnebäck <linus@folkdatorn.se>",
+    "Sid Harder <sideharder@gmail.com>",
+    "Stephen Whitmore <stephen.whitmore@gmail.com>",
+    "Trond Arne Bråthen <tabrath@gmail.com>",
+    "Yahya <ya7yaz@gmail.com>",
+    "Zane Starr <zcstarr@gmail.com>",
+    "Ze Bateira <jlageb@gmail.com>"
+  ]
+}
