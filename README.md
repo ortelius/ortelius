@@ -261,6 +261,7 @@ Contributors,
 - Joseph Akayesi
 - Rakesh Arumalla
 - Arnab Maity
+- <pls. add subhajit chakraborty to contributors list>
 
 ## Installation
 
