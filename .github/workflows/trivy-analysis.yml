@@ -3,11 +3,7 @@ name: "Code Scanning"
 on:
   push:
   pull_request:
-  schedule:
-    - cron: '0 0 * * 1'
-  watch:
-    types: [started]
-
+  
 jobs:
   Trivy-Scan:
     runs-on: ubuntu-20.04
