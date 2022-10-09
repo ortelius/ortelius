@@ -19,13 +19,17 @@ jobs:
       - name: Build an image from Dockerfile
         run: |
           docker build . --file docker/Dockerfile --tag localbuild/testimage:${{ github.sha }}
+          
       - name: Run Trivy vulnerability scanner
-        run: |
-          export VERSION=$(curl --silent "https://api.github.com/repos/aquasecurity/trivy/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
-          wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-64bit.tar.gz
-          tar zxvf trivy_${VERSION}_Linux-64bit.tar.gz
-          ./trivy image --timeout "600s" --exit-code 0 --security-checks vuln --cache-dir .trivycache/ --no-progress --format template --template "@contrib/sarif.tpl" -o trivy-results.sarif "localbuild/testimage:${{ github.sha }}"
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: aquasecurity/trivy-action@master
         with:
-          sarif_file: 'trivy-results.sarif'
+         image-ref: localbuild/testimage:${{ github.sha }}
+         format: 'sarif'
+         output: 'trivy-results.sarif'
+         security-checks: 'vuln'
+         timeout: '10m0s'
+         exit-code: '0'
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+         sarif_file: 'trivy-results.sarif'
