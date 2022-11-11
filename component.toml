@@ -1,0 +1,11 @@
+Domain = "GLOBAL.ortelius.saas"
+Application = "${Domain}.ortelius"
+Application_Version = "10.0.0"
+
+Name = "${Domain}.${COMPNAME}"
+Variant = "${GIT_BRANCH}"
+Version = "${IMAGE_VERSION}"
+
+[Attributes]
+     ServiceOwner = "${Domain}.ortelius"
+     DiscordChannel = "https://discord.com/channels/722468819091849316/736611613485826150"
