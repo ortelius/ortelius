@@ -71,9 +71,9 @@ jobs:
         run: |
           pip install ortelius-cli
           export COMPNAME=ms-ui
-          dh envscript --envvars component-ui.toml --envvars_sh env.sh
+          dh envscript --envvars component.toml --envvars_sh env.sh
           source env.sh
-          dh updatecomp --rsp component-ui.toml --deppkg cyclonedx@cyclonedx.json
+          dh updatecomp --rsp component.toml --deppkg cyclonedx@cyclonedx.json
 
       - name: General Build and Push Docker Image
         id: build_gen
@@ -106,9 +106,9 @@ jobs:
         run: |
           pip install ortelius-cli
           export COMPNAME=ms-general
-          dh envscript --envvars component-general.toml --envvars_sh env.sh
+          dh envscript --envvars component.toml --envvars_sh env.sh
           source env.sh
-          dh updatecomp --rsp component-general.toml --deppkg cyclonedx@cyclonedx.json
+          dh updatecomp --rsp component.toml --deppkg cyclonedx@cyclonedx.json
 
       - name: Nginx Build and Push Docker Image
         id: build_nginx
@@ -141,9 +141,9 @@ jobs:
         run: |
           pip install ortelius-cli
           export COMPNAME=ms-nginx
-          dh envscript --envvars component-nginx.toml --envvars_sh env.sh
+          dh envscript --envvars component.toml --envvars_sh env.sh
           source env.sh
-          dh updatecomp --rsp component-nginx.toml --deppkg cyclonedx@cyclonedx.json
+          dh updatecomp --rsp component.toml --deppkg cyclonedx@cyclonedx.json
 
       - name: Install Helm
         uses: azure/setup-helm@v3
