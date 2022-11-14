@@ -147,3 +147,10 @@ jobs:
           charts_dir: chart
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          
+      - name: Trigger Rebuild of Main Chart
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: generate-main-chart.yml
+          repo: ortelius/ortelius-charts
+          token: ${{ secrets.HELM_INDEXER_TOKEN }}
