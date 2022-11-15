@@ -129,6 +129,7 @@ Contributors:
 - Ashutosh Srivastava
 - Poovaraj Thangamariappan
 - Yasaman Khazaie
+- Nik Poputko
 
 ### Documentation
 
