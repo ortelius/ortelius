@@ -3,8 +3,8 @@ fullnameOverride: ''
 image:
   pullPolicy: Always
   repository: quay.io/ortelius/ms-general
-  tag: svc_cat-v10.0.4-gaed809
-  sha: sha256:8fb96de2af42345fd3666265a0db40ab50df553c0f04f864c74cc49a40ca3180
+  tag: svc_cat-v10.0.5-g38e514
+  sha: sha256:b7ae0d04f7f8cae56b79a9bbbd6eaf3a743170a62bb1a07c7e1760e6ff08c5c0
 ingress:
   annotations: {}
   enabled: false
