@@ -3,12 +3,13 @@ fullnameOverride: ''
 image:
   pullPolicy: Always
   repository: quay.io/ortelius/ms-general
-  tag: svc_cat-v10.0.0.608-g00e75bb
+  tag: svc_cat-v10.0.4-gaed809
+  sha: sha256:8fb96de2af42345fd3666265a0db40ab50df553c0f04f864c74cc49a40ca3180
 ingress:
   annotations: {}
   enabled: false
   hosts:
-  - chart-example.local
+    - chart-example.local
   paths: []
   tls: []
 nameOverride: ''
