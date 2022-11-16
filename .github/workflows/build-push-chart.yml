@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - svc_cat
+    paths-ignore:
+      - "chart/**"
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -135,6 +137,12 @@ jobs:
           dh envscript --envvars component.toml --envvars_sh env.sh
           source env.sh
           dh updatecomp --rsp component.toml --deppkg cyclonedx@cyclonedx.json
+          rm env.sh cyclonedx.json syft
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Update chart and values
 
       - name: Install Helm
         uses: azure/setup-helm@v3
