@@ -48,4 +48,3 @@ WORKDIR /opt/deployhub/
 USER omreleng
 ENV PATH="${PATH}:/usr/pgsql-10/bin:/usr/local/google-cloud-sdk/bin"
 ENTRYPOINT /opt/deployhub/entrypoint.sh
-

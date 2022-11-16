@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -39,11 +40,12 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+{{ if .Values.pglocal }}            
           volumeMounts:
-            - name: jwt-volume
-              mountPath: /opt/deployhub/keys
+          - mountPath: /var/lib/pgsql/data
+            name: pglocal
       volumes:
-        - name: jwt-volume
-          secret:
-            secretName: jwtkeys  
----
+      - name: pglocal
+        persistentVolumeClaim:
+          claimName: pglocal-pvc     
+{{ end }}
