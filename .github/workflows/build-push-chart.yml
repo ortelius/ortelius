@@ -84,7 +84,7 @@ jobs:
           file: docker/DockerfileGeneral
           tags: ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }}
 
-      - name: GeneralGenerate SBOM
+      - name: General Generate SBOM
         id: sbom_gen
         run: |
             ./syft packages ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }} --scope all-layers -o cyclonedx-json > cyclonedx.json

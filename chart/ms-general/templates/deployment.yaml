@@ -40,12 +40,3 @@ spec:
           ports:
             - name: http
               containerPort: 8080
-{{ if .Values.pglocal }}            
-          volumeMounts:
-          - mountPath: /var/lib/pgsql/data
-            name: pglocal
-      volumes:
-      - name: pglocal
-        persistentVolumeClaim:
-          claimName: pglocal-pvc     
-{{ end }}
