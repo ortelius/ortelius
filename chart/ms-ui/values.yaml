@@ -1,39 +1,5 @@
-Chart: chart/ms-ui
-ChartNamespace: ortelius
-DockerRepo: quay.io/ortelius/ms-ui
-DockerSha: 4d7ea19fb074
-DockerTag: svc_cat-v10.0.0.569-g7d8e797
-EXT: sh
-GitBranch: svc_cat
-GitCommit: 7d8e797
-GitRepo: ortelius/ortelius
-GitTag: svc_cat
-GitUrl: https://github.com/ortelius/ortelius.git
-RE_PHYSICAL_HOSTNAME: localhost
-RE_PHYSICAL_SERVER: localhost
-aks:
-  admin: true
-  cluster: cluster2-aks
-  resourcegroup: cluster1-rg
-application: ortelius;10_0_0
-builddate: Tue Apr  5 19:45:49 2022
-buildid: d3d42b95-b301-44df-b371-34bcec18ea51
-buildurl: https://console.cloud.google.com/cloud-build/builds/d3d42b95-b301-44df-b371-34bcec18ea51?project=eighth-physics-169321
-chart: chart/ms-ui
-chartnamespace: ortelius
-component: ms-ui;svc_cat;v10_0_0_569_g7d8e797
-dockerrepo: quay.io/ortelius/ms-ui
-dockersha: 4d7ea19fb074
-dockertag: svc_cat-v10.0.0.569-g7d8e797
-dropzone: /tmp/tdm.1651.2
-environment: aks-cluster
-gitcommit: 7d8e797
-gitrepo: ortelius/ortelius
-gittag: svc_cat
-giturl: https://github.com/ortelius/ortelius.git
-kubectl_context: cluster2-aks-admin
-server_hostname: localhost
-server_name: localhost
+replicaCount: 1
+
 image:
   repository: quay.io/ortelius/ms-ui
   tag: svc_cat-v10.0.4-gaed809
