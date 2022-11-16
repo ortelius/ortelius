@@ -18,7 +18,7 @@ set -x
 
 DBLOCAL="$DBConnectionString$DBUserName$DBPassword"
 
-if [[ "$DBLOCAL" == "" || "$DBLOCAL" == "jdbc:pgsql://localhost:5432/postgrespostgrespostgres" ]]; then
+if [[ "$DBLOCAL" == "" ]]; then
   sudo chown -R postgres:postgres /var/lib/pgsql
   sudo chmod -R 777 /opt/deployhub
 
