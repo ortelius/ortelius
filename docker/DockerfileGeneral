@@ -3,7 +3,7 @@ FROM quay.io/openmake/meister:v7_5_1 AS builder
 WORKDIR /build/
 
 COPY . /workspace
-RUN /workspace/tgt/build.sh
+RUN /workspace/tgt/build-gen.sh
 
 FROM quay.io/ortelius/ortelius-base:fedora-34-v1_0_1
 
