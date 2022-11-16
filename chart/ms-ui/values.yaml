@@ -34,3 +34,7 @@ giturl: https://github.com/ortelius/ortelius.git
 kubectl_context: cluster2-aks-admin
 server_hostname: localhost
 server_name: localhost
+image:
+  repository: quay.io/ortelius/ms-ui
+  tag: svc_cat-v10.0.4-gaed809
+  sha: sha256:166369ade7a5499567c8b80c41d0a5b1338607caa5930a80818951c2fad5aa29

@@ -3,12 +3,13 @@ fullnameOverride: ''
 image:
   pullPolicy: Always
   repository: quay.io/ortelius/ms-nginx
-  tag: svc_cat-v10.0.0.569-g7d8e797
+  tag: svc_cat-v10.0.4-gaed809
+  sha: sha256:f1ae08f32d397f7c2c3a4cafac6dc35d849ccbc2966f04666d3c2a6e390dee65
 ingress:
   annotations: {}
   enabled: false
   hosts:
-  - chart-example.local
+    - chart-example.local
   paths: []
   tls: []
 nameOverride: ''
