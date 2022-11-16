@@ -153,4 +153,5 @@ jobs:
         with:
           workflow: generate-main-chart.yml
           repo: ortelius/ortelius-charts
+          ref: refs/heads/main
           token: ${{ secrets.HELM_INDEXER_TOKEN }}
