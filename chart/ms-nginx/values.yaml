@@ -1,22 +1,31 @@
-affinity: {}
-fullnameOverride: ''
-image:
-  pullPolicy: Always
-  repository: quay.io/ortelius/ms-nginx
-  tag: svc_cat-v10.0.5-g38e514
-  sha: sha256:68133aac6883eabe1ed35b3ae7745c33d244c7c412af5990d9ee6c21bc0b5723
-ingress:
-  annotations: {}
-  enabled: false
-  hosts:
-    - chart-example.local
-  paths: []
-  tls: []
-nameOverride: ''
-nodeSelector: {}
+# Default values for ms-nginx.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
 replicaCount: 1
-resources: {}
-service:
-  port: 80
-  type: ClusterIP
-tolerations: []
+
+image:
+  repository: quay.io/ortelius/ms-ui
+  tag: svc_cat-v10.0.5-g38e514
+  sha: sha256:aeb397b0cf9b4c7633b52d8f3bdb565561eb04068368af731f3a9c46ea8f67b4
+  pullPolicy: Always
+
+ingress:
+  enum:
+    alb: "OFF"
+    volumemnt: ""
+    sslcert: "ON"
+    ssloff: "OFF"
+
+  type: ssloff   # alb, volumemnt, sslcert, ssloff  
+  alb_certificate_arn: 
+  alb_subnets: 
+  dnsname:   
+  sslcert:
+    chainedcert : |
+      -----BEGIN CERTIFICATE-----
+      -----END CERTIFICATE-----
+    privatekkey: |
+      -----BEGIN PRIVATE KEY-----
+      -----END PRIVATE KEY-----
+  

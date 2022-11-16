@@ -38,12 +38,5 @@ spec:
                   key: DBConnectionString                         
           ports:
             - name: http
-              containerPort: 8080
-          volumeMounts:
-            - name: jwt-volume
-              mountPath: /opt/deployhub/keys
-      volumes:
-        - name: jwt-volume
-          secret:
-            secretName: jwtkeys              
+              containerPort: 8080        
 ---
