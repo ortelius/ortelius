@@ -3,8 +3,8 @@ fullnameOverride: ''
 image:
   pullPolicy: Always
   repository: quay.io/ortelius/ms-nginx
-  tag: svc_cat-v10.0.5-g38e514
-  sha: sha256:68133aac6883eabe1ed35b3ae7745c33d244c7c412af5990d9ee6c21bc0b5723
+  tag: svc_cat-v10.0.6-g78c39e
+  sha: sha256:d5dfc92ba4b4d34f1af7ac16f3d8370f755cfa91f93a786cec547389930fb86f
 ingress:
   annotations: {}
   enabled: false
