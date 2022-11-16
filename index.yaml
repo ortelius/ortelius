@@ -11,6 +11,15 @@ entries:
     - https://github.com/ortelius/ortelius/releases/download/ms-general-10.0.94/ms-general-10.0.94.tgz
     version: 10.0.94
   - apiVersion: v1
+    appVersion: 10.0.4
+    created: "2022-11-16T02:05:31.901700418Z"
+    description: A Helm chart for Kubernetes
+    digest: d345805d71e188b080b0a27be9548fcd18242ae73a66cd688680a9be637cde0e
+    name: ms-general
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-general-10.0.4/ms-general-10.0.4.tgz
+    version: 10.0.4
+  - apiVersion: v1
     appVersion: 10.0.2
     created: "2022-11-15T22:48:00.784410429Z"
     description: A Helm chart for Kubernetes
@@ -29,6 +38,15 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/ms-nginx-10.0.94/ms-nginx-10.0.94.tgz
     version: 10.0.94
+  - apiVersion: v1
+    appVersion: 10.0.4
+    created: "2022-11-16T02:05:32.020884737Z"
+    description: A Helm chart for Kubernetes
+    digest: dcb19263767d86df268435644e697ced10f1bd9673073aa0de9a50ec4814a326
+    name: ms-nginx
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-nginx-10.0.4/ms-nginx-10.0.4.tgz
+    version: 10.0.4
   - apiVersion: v1
     appVersion: 10.0.2
     created: "2022-11-15T22:48:00.946418365Z"
@@ -49,6 +67,15 @@ entries:
     - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.94/ms-ui-10.0.94.tgz
     version: 10.0.94
   - apiVersion: v1
+    appVersion: 10.0.4
+    created: "2022-11-16T02:05:32.169342229Z"
+    description: A Helm chart for Kubernetes
+    digest: b60439a2fd58b23f8aa33250bb73f86a2f28c33623af8e75c4a89388b7c6557f
+    name: ms-ui
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.4/ms-ui-10.0.4.tgz
+    version: 10.0.4
+  - apiVersion: v1
     appVersion: 10.0.2
     created: "2022-11-15T22:48:01.127897904Z"
     description: A Helm chart for Kubernetes
@@ -57,4 +84,4 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.2/ms-ui-10.0.2.tgz
     version: 10.0.2
-generated: "2022-11-15T22:48:01.127914005Z"
+generated: "2022-11-16T02:05:32.169501931Z"
