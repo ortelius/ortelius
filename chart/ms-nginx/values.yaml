@@ -1,31 +1,26 @@
 # Default values for ms-nginx.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-
 replicaCount: 1
-
 image:
-  repository: quay.io/ortelius/ms-ui
-  tag: svc_cat-v10.0.5-g38e514
-  sha: sha256:aeb397b0cf9b4c7633b52d8f3bdb565561eb04068368af731f3a9c46ea8f67b4
+  repository: quay.io/ortelius/ms-nginx
+  tag: svc_cat-v10.0.13-g54a339
+  sha: sha256:93260c0739132bb500eee978c9a3de387e4f1968da8be8019304f8a3297261bf
   pullPolicy: Always
-
 ingress:
   enum:
     alb: "OFF"
     volumemnt: ""
     sslcert: "ON"
     ssloff: "OFF"
-
-  type: ssloff   # alb, volumemnt, sslcert, ssloff  
-  alb_certificate_arn: 
-  alb_subnets: 
-  dnsname:   
+  type: ssloff # alb, volumemnt, sslcert, ssloff  
+  alb_certificate_arn:
+  alb_subnets:
+  dnsname:
   sslcert:
-    chainedcert : |
+    chainedcert: |
       -----BEGIN CERTIFICATE-----
       -----END CERTIFICATE-----
     privatekkey: |
       -----BEGIN PRIVATE KEY-----
       -----END PRIVATE KEY-----
-  
