@@ -183,7 +183,11 @@
                 } 
                 current_dom_data = p;
                 current_dom_path = this;
-                $("#right_panel_header > h1").html("Domain: " + p.data.name);
+                var header_html = '<button class="scorecard_button" onClick="javascript:ScorecardDomain(objid)">' +
+               						'<i class="fa-light fa-table-columns aria-hidden="true"  style="padding-right:5px"></i>Scorecard</button>' +
+               						'<h1 style="display:inline-block">Domain: ' + p.data.name + '</h1>';       
+           
+                $("#right_panel_header").html(header_html);
                 domnav_text.text(p.data.name);
                 
                 if (p.depth > 0)
@@ -538,4 +542,9 @@
    }
   }); 
  }
+ 
+function ScorecardDomain(objid)
+{
+ window.open("/reports/scorecard.html?domain=" + objid, '_blank');
+}
         

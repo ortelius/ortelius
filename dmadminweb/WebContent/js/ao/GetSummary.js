@@ -1797,7 +1797,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
           else if (notifiertype == "txtlocal")
             name = "SMS";
           else if (notifiertype == "hipchat")
-           name = "Hipchat";
+           name = "HipChat";
           else if (notifiertype == "slack")
            name = "Slack";
          } 
@@ -1833,7 +1833,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
           else if (val == "txtlocal")
             name = "SMS";
           else if (val == "hipchat")
-           name = "Hipchat";
+           name = "HipChat";
           else if (val == "slack")
            name = "Slack";
          } 
@@ -1886,6 +1886,8 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        var kind = val;
        var oldval;
        
+	   label = "Component Type";
+
        if (typeof kind.name != "undefined" && kind.name.includes("Container"))
         isDocker = true;
        
@@ -2102,7 +2104,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       {
 // Skip displaying Object - 10/28/21 SBT
 
-	   continue;
+//	   continue;
       
 //        td += "<tr id='kind_sumrow_desc'><td id=\"kind_summ_desc\" class=\"summlabel\">";
 //        td += "Object:";
@@ -2110,10 +2112,10 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //        td += objtypeName;
 //        td += "</td></tr>";
 //
-//       td += "<tr id='kind_sumrow'><td id=\"kind_summ\" class=\"summlabel\">";
-//       td += "Type";
-//       td += ":</td><td>";
-//       td += val;
+       td += "<tr id='kind_sumrow'><td id=\"kind_summ\" class=\"summlabel\">";
+       td += "Kind";
+       td += ":</td><td>";
+       td += val;
       }
       else if (label.toLowerCase() == "Filter Level".toLowerCase() && save_filter_val == "Items")
       {
@@ -2221,7 +2223,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
         else if (val == "txtlocal")
           name = "SMS";
         else if (val == "hipchat")
-         name = "Hipchat";
+         name = "HipChat";
         else if (val == "slack")
          name = "Slack";
        } 
@@ -3823,7 +3825,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
            else if (notifiertype == "txtlocal")
              name = "SMS";
            else if (notifiertype == "hipchat")
-            name = "Hipchat";
+            name = "HipChat";
            else if (notifiertype == "slack")
             name = "Slack";
           } 
@@ -3859,7 +3861,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
            else if (val == "txtlocal")
              name = "SMS";
            else if (val == "hipchat")
-            name = "Hipchat";
+            name = "HipChat";
            else if (val == "slack")
             name = "Slack";
           } 
@@ -4165,7 +4167,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
          else if (val == "txtlocal")
            name = "SMS";
          else if (val == "hipchat")
-          name = "Hipchat";
+          name = "HipChat";
          else if (val == "slack")
           name = "Slack";
         } 
@@ -4255,6 +4257,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   var href = window.location.href;
   href = href.replace("#dhmain","");
   href = href.replace("#dhnav", "");
+  $("#row-10-right-panel > #summ_title > h2").html("Component Details");
   
   window.history.pushState('dhnav', null, href + '#dhmain#dhnav');
  
@@ -4358,10 +4361,12 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   $("#licensemd-panel").hide();
   $("#cr-panel-20").hide();
   $("#tabs-General-row-15").hide();
+  $("#appcomp-data").hide();
   $("#tabs-General-row-20").hide();
   $("#tabs-General-row-25").hide();
   $("#tabs-General-row-28").hide();
   $("#tabs-General-row-30").hide();
+  $("#tabs-General-row-32").hide();
   $("#tabs-General-row-35").hide();
   $("#tabs-General-row-40").hide();
   $("#tabs-General-row-50").hide();
@@ -4376,6 +4381,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#attrs-panel").show();
    $("#tabs-General-right").show();
    $("#row-10-right-panel").show();
+   $("#tabs-General-row-12a").show(); 
    $("#tabs-General-row-15").show();
    $("#tabs-General-right-15").show();
    $("#tabs-General-row-20").show();
@@ -4388,7 +4394,11 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#defect-panel").show();
    AppMap();
    LoadAttributesData("attrib",objtypeAsInt, objtype, objid);
-   
+
+   $("#appcomp-data").show();
+   $("#row-10-right-panel > #summ_title > h2").html("Dependencies");
+   getAppCompList("list");   
+
    $("#tabs-General-right-20").show();
    $("#trends-panel").show();
    ReplotReports(objtype);
@@ -4396,7 +4406,9 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    LoadAppLogList("loghist",objtypeAsInt, objtype, objid);
    LoadDeployedEnv4AppData("deployedenv4app", objtypeAsInt, objtype, objid, addParams);
    LoadEnv4AppData("env4app", objtypeAsInt, objtype, objid, "");
-   
+   getLicenseList("list");
+   getCVEList("list");
+
    if (objtype == "av")
     $("#deployedenv4app-panel").show();
    else
@@ -4432,6 +4444,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
  //  $("#feedback-panel").show();      // SBT remove for components 11/4/21
  //  $("#tabs-General-row-28").show(); // SBT remove for components 11/4/21
    $("#tabs-General-row-30").show();
+   $("#tabs-General-row-32").show();
    $("#tabs-General-row-35").show();
    $("#tabs-General-row-40").show();
    $("#defect-panel").show();
@@ -4449,6 +4462,8 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    
    CreateCurrentEnv2Comps(objid);
    
+   getProvidesList("list");
+   getConsumesList("list");
    $("#row-35-access").show();
    LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
    
@@ -5239,16 +5254,31 @@ function EditSummaryButton(userDialog, prefix)
       var postaction = myform.find(":input[name=\"postaction_val\"]");
       var customaction = myform.find(":input[name=\"customaction_val\"]");
       var taskaction = myform.find(":input[name=\"taskaction_val\"]");
-      
-      preaction.empty();
-      postaction.empty();
-      customaction.empty();
-      taskaction.empty();
+
+	  var action_list = [];
+      var actionids = {};
 
       for (n = 0; n < res.length; n++)
       {
-    	  var action = res[n].action;
-    	  
+       var action = res[n].action;
+       
+       if (action.type == "ac" && !(action.id in actionids))
+       {
+        action_list.push(action);
+        actionids[action.id] = action;
+       }
+      }
+
+	  action_list = action_list.sort(function(a, b) {
+ 		 var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+  		 var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+         if (nameA < nameB) {return -1;}
+         if (nameA > nameB) {return 1;}
+         return 0;
+      });
+
+      for (action of action_list)
+      {   	  
     	  if (typeof preaction != "undefined")
     	  { 
         if (save_preaction_val == action.id)
@@ -5899,6 +5929,44 @@ function EditSummaryButton(userDialog, prefix)
     */
   }
 
+   myform=$("#compownerform");
+   if (myform.find(":input[name=\"owner_val\"]").length > 0)
+   {
+    $.ajax(
+    {
+     url : "GetUsers",
+     dataType : 'json',
+     type : 'GET',
+     success : function(res)
+     {
+
+      // res =
+      // $.parseJSON("[{\"type\":\"ac\",\"id\":310,\"name\":\"Action310\",\"showlink\":true},{\"type\":\"ac\",\"id\":311,\"name\":\"Action311\",\"showlink\":true}]");
+
+      var owner = myform.find(":input[name=\"owner_val\"]");
+
+      var userid = save_owner_val;
+      
+      if (userid == "")
+       userid = myuserid;
+    
+      for (n = 0; n < res.length; n++)
+      {
+       if (userid == res[n].name)
+        owner.append('<option id="owner' + n + '" selected value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
+       else
+        owner.append('<option id="owner' + n + '" value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
+      }
+     },
+     error : function(jqxhr, status, err)
+     {
+      console.log(status);
+      console.log(err);
+     }
+    });
+   }
+
+
    if (summSaveobjtype == "cr")
    {
     var myform = pwd.find("#" + prefix + "summform");
@@ -6239,8 +6307,22 @@ function GetSaveSummaryData(instance, data, prefix)
 
  var form = instance.find("#" + prefix + "summform");
  var viewArr = form.serializeArray();
- var view =
- {};
+
+ var viewArr2 = $("#compownerform").serializeArray();
+ 
+ viewArr = viewArr.concat(viewArr2);
+ 
+ var view = {};
+
+ for ( var i in viewArr)
+ {
+  if (prefix.length > 0 && viewArr[i].name.startsWith(prefix))
+   view[viewArr[i].name.substring(3)] = viewArr[i].value; 
+  else if (prefix.length == 0 && !viewArr[i].name.startsWith("rf_") && !viewArr[i].name.startsWith("rb_"))
+    view[viewArr[i].name] = viewArr[i].value;
+ }
+
+ var view = {};
 
  prefix = "";
  
@@ -6574,8 +6656,11 @@ function GetSaveSummaryData(instance, data, prefix)
  if (typeof view.comptype_val == "undefined") view.comptype_val="";
  if (save_comptype_id != view.comptype_val && view.comptype_field != "undefined")
  {
-  console.log(prefix + 'change_' + view.comptype_field + ' = ' + view.comptype_val.substring(2));
-  data[prefix + 'change_' + view.comptype_field] = view.comptype_val.substring(2);
+  var val = view.comptype_val;
+  val = val.replace(/N/g,'');
+  val = val.replace(/Y/g,'');
+  console.log(prefix + 'change_' + view.comptype_field + ' = ' + val);
+  data[prefix + 'change_' + view.comptype_field] = val;
   ret = true;
  }
 
@@ -7258,6 +7343,15 @@ function ChangeSummaryName(newname)
  var html = heading.html();
  var parts = html.split(':');
  html = parts[0] + ": " + newname;
+ 
+ if (parts[0] == 'Domain')
+ {
+    html = '<button class="scorecard_button" onClick="javascript:ScorecardDomain(objid)">' +
+					'<i class="fa-light fa-table-columns aria-hidden="true"  style="padding-right:5px"></i>Scorecard</button>' +
+					'<h1 style="display:inline-block">Domain: ' + newname + '</h1>';  
+	heading = parent.$("#right_panel_header");
+ }
+
  heading.html(html);
  RefreshName(currenttree, newname);
 }

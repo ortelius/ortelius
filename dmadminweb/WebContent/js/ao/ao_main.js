@@ -255,7 +255,7 @@ $(document).click(function (e) {
   else
   if (loggedin != "Y")
   {
-   var l = "<p class=\"logindialog\" style=\"font-size: 2.5em;margin-left: 40px;\">Ortelius</p>"
+   var l = "<img src=\"images/splash.png\" alt=\"\"  style=\"height:86px\" class=\"logindialog\" />"
    l += "<div id=\"loginset\">";
    l += "  <form id=\"loginform\">";
    l += "<table id=\"logintab\" style=\"width: 100%;\" border=\"0\">";
@@ -1177,7 +1177,15 @@ $(document).click(function (e) {
     else
     {
      parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-     parent.$("#right_panel_header").html("<h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
+     if (objtypeName == 'Domain')
+     {
+	    html = '<button class="scorecard_button" onClick="javascript:ScorecardDomain(objid)">' +
+						'<i class="fa-light fa-table-columns aria-hidden="true"  style="padding-right:5px"></i>Scorecard</button>' +
+						'<h1 style="display:inline-block">Domain: ' + objName + '</h1>';  
+		parent.$("#right_panel_header").html(html);
+     }
+     else
+      parent.$("#right_panel_header").html("<h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
     }   
     parent.$("#title_icon").html("");
 
@@ -1226,15 +1234,17 @@ $(document).click(function (e) {
      $("#tabs-General-row-15").hide();
      $("#tabs-General-row-20").hide();
      $("#tabs-General-row-30").hide();
+     $("#tabs-General-row-32").hide();
      $("#tabs-General-row-28").hide();
      $("#tabs-General-row-35").hide();
      $("#tabs-General-row-40").hide();
     }
     else
     {
-     $("#tabs-General-row-15").show();
+  //   $("#tabs-General-row-15").show();
      $("#tabs-General-row-20").show();
      $("#tabs-General-row-30").show();
+     $("#tabs-General-row-32").show();
      $("#tabs-General-row-35").show();
      $("#tabs-General-row-40").show();
     } 
@@ -2216,6 +2226,11 @@ $(document).click(function (e) {
   hookTaskMenu(currenttree);  
 }
 
+function AppS2S(objid)
+{
+ window.open('/dmadminweb/hier-bundle.html?appid=' + objid,'_blank');
+}
+
 function AddCompFile(file_data, filetype)
 {
  encoded_bytes = btoa(file_data)
@@ -2232,7 +2247,7 @@ function AddCompFile(file_data, filetype)
  $.ajax({
       type : "POST",
       dataType : 'json',
-      url : "/msapi/textfile/",
+      url : "/msapi/textfile",
 	  contentType: "application/json",
       data : payload
      }).done(function(data) { 
@@ -2244,4 +2259,38 @@ function AddCompFile(file_data, filetype)
         LoadLicense(objid);
       console.log(data.errtext);
      });
+}
+
+function openPkgSearch()
+{
+  var pwd = parent.$("#modal");
+   
+  var buttons = 
+    [
+          { text: "Ok",     click: function() { LaunchPkgSearch($(this)); } },
+          { text: "Cancel", click: function() { $( this ).dialog("close"); } }
+       ];
+
+   var tdedit = "<form><table border=0>" + 
+	"<tr><td style=\"width:150px\">Package Name</td><td><input text id=\"pkgname\" name=\"pkgname\" /></td></tr>" +
+	"<tr><td style=\"width:150px\">Package Version</td><td><input text id=\"pkgversion\" name=\"pkgversion\" /></td></tr>" +	
+	"</table></form>";
+
+   pwd.dialog({ resizable: false, modal: true, dialogClass: "aboutsDialog", open: null }); 
+   pwd.empty();
+   pwd.html(tdedit);
+   pwd.dialog("option", "title", "Package Search");
+   pwd.dialog("option", "height", "auto");
+   pwd.dialog("option", "width", "300px");
+   pwd.dialog("option", "buttons", buttons);
+   pwd.dialog('open');
+}
+
+function LaunchPkgSearch(dlg)
+{
+ dlg.dialog("close");
+ var pkgname = $("#pkgname").val();
+ var pkgversion = $("#pkgversion").val();
+ 
+ window.open("/dmadminweb/reports/PkgSearch.html?pkgname=" + pkgname + "&pkgversion=" + pkgversion, '_blank');
 }

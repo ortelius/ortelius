@@ -29,7 +29,7 @@ import javax.servlet.http.HttpSession;
 public abstract class HttpServletBase
 	extends HttpServlet
 {
- DMSession so = null;
+ protected DMSession so = null;
  HttpSession session = null;
  
 	public HttpServletBase()

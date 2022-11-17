@@ -18,6 +18,8 @@ function EditAttrRow(tablename)
 {
  $('#attrs_header_buttons > button.save_button').css("color","#3367d6");
  $('#attrs_header_buttons > button.cancel_button').css("color","#3367d6");
+ $('#attrs10_header_buttons > button.save_button').css("color","#3367d6");
+ $('#attrs10_header_buttons > button.cancel_button').css("color","#3367d6");
  $("#" + tablename).hide();
  $("#" + tablename + "-edit > tbody").html(attrs_tdedit);
  $("#" + tablename + "-edit").show();
@@ -50,7 +52,9 @@ function CancelAttrRow(tablename)
  
  $('#attrs_header_buttons > button.save_button').css("color","grey");
  $('#attrs_header_buttons > button.cancel_button').css("color","grey");
- 
+ $('#attrs10_header_buttons > button.save_button').css("color","grey");
+ $('#attrs10_header_buttons > button.cancel_button').css("color","grey"); 
+
  $("#" + tablename).show();
  $("#" + tablename + "-edit").hide();
  $("#" + tablename + "-edit > tbody").empty();
@@ -63,6 +67,8 @@ function SaveAttrRow(tablename)
  
  $('#attrs_header_buttons > button.save_button').css("color","grey");
  $('#attrs_header_buttons > button.cancel_button').css("color","grey");
+ $('#attrs10_header_buttons > button.save_button').css("color","grey");
+ $('#attrs10_header_buttons > button.cancel_button').css("color","grey");
  
  $("#" + tablename).show();
  $("#" + tablename + "-edit").hide();
@@ -110,9 +116,15 @@ function DeleteAttrRow(tablename)
 function toggleAttrDelete(e)
 {
   if (e.checked)
+  {
    $('#attrs_header_buttons > button.delete_button').css("color","#3367d6"); 
+   $('#attrs10_header_buttons > button.delete_button').css("color","#3367d6"); 
+  }
   else
+  {
    $('#attrs_header_buttons > button.delete_button').css("color","grey"); 
+   $('#attrs10_header_buttons > button.delete_button').css("color","grey"); 
+  }
 }
 
 
@@ -148,7 +160,7 @@ function LoadAttributesData(tablename,objtypeAsInt, objtype, objid)
    for (var r = 0; r < res.data.length; r++)
    {
     var row = res.data[r];
-    var key = row[3];
+    var key = row[3].trim().replaceAll('"',"'");
     var val = row[4];
     var arrid = "";
     

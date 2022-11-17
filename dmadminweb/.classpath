@@ -12,6 +12,7 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/json-20180130.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jackson-annotations-2.9.0.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jackson-core-2.9.6.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cvss-calculator-1.4.1.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/gson_lib"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gson-2.2.4-javadoc.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gson-2.2.4-sources.jar"/>

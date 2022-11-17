@@ -78,7 +78,7 @@
          myValue = searchterms[i]['Environment']
          regExSearch = '^' + escapeRegExp(myValue);
 
-         applist_table.column(3).search(regExSearch, true, false);
+         applist_table.column(4).search(regExSearch, true, false);
         }
         else if (searchterms[i]['Last Deployment'])
         {
@@ -86,7 +86,7 @@
          myValue = searchterms[i]['Last Deployment']
          regExSearch = '^' + escapeRegExp(myValue);
 
-         applist_table.column(4).search(regExSearch, true, false);
+         applist_table.column(5).search(regExSearch, true, false);
         }
         else if (searchterms[i]['Result'])
         {
@@ -94,7 +94,7 @@
          myValue = searchterms[i]['Result']
          regExSearch = '^' + escapeRegExp(myValue);
 
-         applist_table.column(6).search(regExSearch, true, false);
+         applist_table.column(7).search(regExSearch, true, false);
         }
        }
        applist_table.draw();
@@ -172,6 +172,7 @@
   $("#rellist_pane").hide();
   $("#applist_buttons > button:nth-child(3)").css("color", "lightgrey");
   $("#applist_buttons > button:nth-child(4)").css("color", "lightgrey");
+  $("#applist_buttons > button:nth-child(8)").css("color", "lightgrey");
   $(".taskMenuButton").css("color", "lightgrey");
   
   if (displaytype == "list")
@@ -314,6 +315,11 @@
     $("#applist_buttons > button:nth-child(3)").css("color", "#3367d6");
     $("#applist_buttons > button:nth-child(4)").css("color", "#3367d6");
     $(".taskMenuButton").css("color", "#3367d6");
+    
+    if (data != null && data.length == 2)
+    {
+     $("#applist_buttons > button:nth-child(8)").css("color", "#3367d6");
+    }
    }
   });
   
@@ -322,6 +328,9 @@
     $("#applist_buttons > button:nth-child(3)").css("color", "lightgrey");
     $("#applist_buttons > button:nth-child(4)").css("color", "lightgrey");
     $(".taskMenuButton").css("color", "lightgrey");
+ 
+    $("#applist_buttons > button:nth-child(8)").css("color", "lightgrey");
+
 	if (dt.rows({selected: true}).count() === 0) {
 	  $('#applist_checkall i').attr('class', 'far fa-square');
     }
@@ -448,14 +457,6 @@
 
          complist_table.column(2).search(regExSearch, true, false);
         }
-        else if (searchterms[i]['Environment'])
-        {
-         complist_filter_keywords["Environment"] = false;
-         myValue = searchterms[i]['Environment']
-         regExSearch = '^' + escapeRegExp(myValue);
-
-         complist_table.column(3).search(regExSearch, true, false);
-        }
         else if (searchterms[i]['Parent'])
         {
          complist_filter_keywords["Parent"] = false;
@@ -464,13 +465,21 @@
 
          complist_table.column(3).search(regExSearch, true, false);
         }
+        else if (searchterms[i]['Environment'])
+        {
+         complist_filter_keywords["Environment"] = false;
+         myValue = searchterms[i]['Environment']
+         regExSearch = '^' + escapeRegExp(myValue);
+
+         complist_table.column(4).search(regExSearch, true, false);
+        }
         else if (searchterms[i]['Last Deployment'])
         {
          complist_filter_keywords["Last Deployment"] = false;
          myValue = searchterms[i]['Last Deployment']
          regExSearch = '^' + escapeRegExp(myValue);
 
-         complist_table.column(4).search(regExSearch, true, false);
+         complist_table.column(5).search(regExSearch, true, false);
         }
         else if (searchterms[i]['Result'])
         {
@@ -478,7 +487,7 @@
          myValue = searchterms[i]['Result']
          regExSearch = '^' + escapeRegExp(myValue);
 
-         complist_table.column(6).search(regExSearch, true, false);
+         complist_table.column(7).search(regExSearch, true, false);
         }
        }
        complist_table.draw();
@@ -554,6 +563,7 @@
   $("#rellist_pane").hide();
   $("#complist_buttons > button:nth-child(3)").css("color", "lightgrey");
   $("#complist_buttons > button:nth-child(4)").css("color", "lightgrey");
+  $("#complist_buttons > button:nth-child(7)").css("color", "lightgrey");
   
   if (displaytype == "list")
   {
@@ -693,6 +703,11 @@
     } 
     $("#complist_buttons > button:nth-child(3)").css("color", "#3367d6");
     $("#complist_buttons > button:nth-child(4)").css("color", "#3367d6");
+    
+    if (data != null && data.length == 2)
+    {
+     $("#complist_buttons > button:nth-child(7)").css("color", "#3367d6");
+    }
    }
   });
   
@@ -700,6 +715,10 @@
    if ( type === 'row' ) {
     $("#complist_buttons > button:nth-child(3)").css("color", "lightgrey");
     $("#complist_buttons > button:nth-child(4)").css("color", "lightgrey");
+    
+    $("#complist_buttons > button:nth-child(7)").css("color", "lightgrey");
+   }
+
 	if (dt.rows({selected: true}).count() === 0) {
 	  $('#complist_checkall i').attr('class', 'far fa-square');
     }
@@ -707,7 +726,7 @@
     {
 	 $('#complist_checkall i').attr('class', 'far fa-minus-square');
     }
-  }});
+  });
  }
   else // map
   {
@@ -892,6 +911,7 @@
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
   $("#envlist_buttons > button:nth-child(3)").css("color", "lightgrey");
+  $("#envlist_buttons > button:nth-child(5)").css("color", "lightgrey");
   
   if (displaytype == "list")
   {
@@ -1017,6 +1037,11 @@
       objid = objid.substr(0,objid.indexOf("-"));
      }
      $("#envlist_buttons > button:nth-child(3)").css("color", "#3367d6");
+     
+     if (data != null && data.length == 2)
+     {
+      $("#envlist_buttons > button:nth-child(5)").css("color", "#3367d6");
+     }
     } 
    }
   });
@@ -1024,6 +1049,9 @@
   envlist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
     $("#envlist_buttons > button:nth-child(3)").css("color", "lightgrey");
+    $("#envlist_buttons > button:nth-child(5)").css("color", "lightgrey");
+   }
+
 	if (dt.rows({selected: true}).count() === 0) {
 	  $('#envlist_checkall i').attr('class', 'far fa-square');
     }
@@ -1031,7 +1059,7 @@
     {
 	 $('#envlist_checkall i').attr('class', 'far fa-minus-square');
     }
-  }});
+  });
  }
 
  envlist_table_resize();
@@ -4490,14 +4518,121 @@ datasourcelist_table_resize();
  } 
  buildjoblist_table_resize();
 } 
-/***** End Build Job List  *****/
+ /***** End Build Job List  *****/
+
+/***** Start Provides List *****/ 
  
+ function getProvidesList(displaytype)
+ {
+  if (displaytype == "list")
+  {
+   if (typeof provideslist_table != "undefined" && provideslist_table != null)
+   {
+    provideslist_table.clear();
+    provideslist_table.destroy();
+    provideslist_table = null;
+   }
+   var h = $(document).height();
+   $("#provideslist_list").height(h-160);
+   
+   $("#provideslist_list").show();
+   
+  provideslist_table =$('#provideslist').DataTable( {
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   scrollCollapse: true,
+   scroller: true,
+   pageLength: 25,
+   destroy: true,
+   sDom: 't<"bottom"lip>',
+   "ajax": {
+    "url": "/dmadminweb/API2/provides/" + objid,
+    "type": "GET"
+  },
+  "columnDefs": [
+    {
+        targets: 0,
+        className: 'dt-body-left'
+    },
+    {
+        targets: 1,
+        className: 'dt-body-left'
+    }
+  ],
+  "columns": [
+       { "data": "verb" },
+       { "data": "path" },
+   ]
+   });
+  }
+ }
+
+/***** End Provides List  *****/
+/***** Start Consumes List *****/ 
+ 
+ function getConsumesList(displaytype)
+ {
+  if (displaytype == "list")
+  {
+   if (typeof consumeslist_table != "undefined" && consumeslist_table != null)
+   {
+    consumeslist_table.clear();
+    consumeslist_table.destroy();
+    consumeslist_table = null;
+   }
+   var h = $(document).height();
+   $("#consumeslist_list").height(h-160);
+   
+   $("#consumeslist_list").show();
+   
+  consumeslist_table =$('#consumeslist').DataTable( {
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   scrollCollapse: true,
+   scroller: true,
+   pageLength: 25,
+   destroy: true,
+   sDom: 't<"bottom"lip>',
+   "ajax": {
+    "url": "/dmadminweb/API2/consumes/" + objid,
+    "type": "GET"
+  },
+  "columnDefs": [
+    {
+        targets: 0,
+        className: 'dt-body-left'
+    },
+    {
+        targets: 1,
+        className: 'dt-body-left'
+    },
+    {
+        targets: 2,
+        className: 'dt-body-left'
+    }
+  ],
+  "columns": [
+       { "data": "verb" },
+       { "data": "path" },
+       { "data": "comp" },
+   ]
+   });
+  }
+ }
+
+/***** End Consumes List  *****/
+
 /***** Start License List *****/ 
  
  function getLicenseList(displaytype)
  {
   if (displaytype == "list")
   {
+   var url = "";
+
+   if (objtype == "ap" || objtype == "av")
+     url = "/msapi/deppkg?deptype=license&appid=" + objid;
+   else
+     url = "/msapi/deppkg?deptype=license&compid=" + objid;
+
    if (typeof licenselist_table != "undefined" && licenselist_table != null)
    {
     licenselist_table.clear();
@@ -4511,58 +4646,57 @@ datasourcelist_table_resize();
    
   licenselist_table =$('#licenselist').DataTable( {
    lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
    scrollCollapse: true,
+   scrollY: "30vh",
    scroller: true,
-   pageLength: 25,
+   pageLength: -1,
    destroy: true,
-   sDom: 't<"bottom"lip>',
+   sDom: 't',
    "ajax": {
-    "url": "/msapi/deppkg?deptype=license&compid=" + objid,
+    "url": url,
     "type": "GET"
   },
-  "order": [[ 1, "asc" ], [2, "asc"]],
-  "rowGroup": {
-            "dataSrc": 1,
-            "emptyDataGroup": "No License" 
-  },
-  "drawCallback": function ( settings ) {
-    var api = this.api();
-    var rows = api.rows( {page:'current'} ).nodes();
-    var last=null;
- 
-    api.column(1, {page:'current'} ).data().each( function ( group, i ) {
-       if ( last !== group)  {
-         row = $(rows).eq(i);
-         data = licenselist_table.row(row).data();
-         
-         urllink = "<a href='"+data.url+"' target=_blank>"+data.name+"</a>";
-         if (group.length > 0)
-             $(rows).eq( i ).before('<tr class="dtrg-group"><td colspan="5">'+urllink+'</td></tr>');
-         last = group;
-        }
-     });
-   },         
+  "order": [[ 1, "asc" ], [2, "asc"]],    
   "columns": [
-       { "data": "url" },
-       { "data": "name" },
        { "data": "packagename" },
-       { "data": "packageversion" }     ],
+       { "data": "packageversion"},
+       { "data": "name" },
+       { "data": "url" },
+	   { "data": "fullcompname"}],
    "columnDefs": [
                  {
                   "targets": [ 0 ],
-                  "visible": false
                  },
                  {
                   "targets": [ 1 ],
-                  "visible": false
                  },
                  {
                   "targets": [ 2 ],
-                  "width": 150
+				  "className": "dt-nowrap",
+		          "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
+						if (oData.name.length > 0)
+            	     	   $(nTd).html("<a href='"+oData.url+"' target=_blank >"+oData.name +"</a>");
+                        else
+                           $(nTd).html("No License");
+                   }
+                 },
+                 {
+                  "targets": [ 3 ],
+				  "visible": false
+                 },
+                 {
+                  "targets": [ 4 ],
                  }
                 ]
    });
   }
+
+  if (objtype == "cv" || objtype == "co")
+   licenselist_table.column(4).visible(false);
+  else
+   licenselist_table.column(4).visible(true);
  }
  
 /***** End License List  *****/
@@ -4572,6 +4706,13 @@ datasourcelist_table_resize();
  {
   if (displaytype == "list")
   {
+   var url = "";
+
+   if (objtype == "ap" || objtype == "av")
+     url = "/msapi/deppkg?deptype=cve&appid=" + objid;
+   else
+     url = "/msapi/deppkg?deptype=cve&compid=" + objid;
+	
    if (typeof cvelist_table != "undefined" && cvelist_table != null)
    {
     cvelist_table.clear();
@@ -4583,63 +4724,106 @@ datasourcelist_table_resize();
    
    $("#cvelist_list").show();
    
+   $.fn.dataTable.ext.type.order['risklevel-pre'] = function ( d ) {
+     switch ( d ) {
+        case 'Low':    return 1;
+        case 'Medium': return 2;
+        case 'High':   return 3;
+        case 'Critical':   return 4;
+    }
+    return 0;
+  };
+
   cvelist_table =$('#cvelist').DataTable( {
    lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
    scrollCollapse: true,
+   scrollY: "30vh",
    scroller: true,
-   pageLength: 25,
+   pageLength: -1,
    destroy: true,
-   sDom: 't<"bottom"lip>',
+   sDom: 't',
    "ajax": {
-    "url": "/msapi/deppkg?deptype=cve&compid=" + objid,
+    "url": url,
     "type": "GET"
   },
+  "language": {
+      "emptyTable": "Congratulations, no CVE issues found."
+    },
   "order": [[ 1, "asc" ], [2, "asc"]],
-  "rowGroup": {
-            "dataSrc": "name"
-  },
   "initComplete": function(settings, json) {
         $("#cvelist tr.dtrg-start").hide();
-  },
-  "drawCallback": function ( settings ) {
-    var api = this.api();
-    var rows = api.rows( {page:'current'} ).nodes();
-    var last=null;
- 
-    api.column(1, {page:'current'} ).data().each( function ( group, i ) {
-       if ( last !== group)  {
-         row = $(rows).eq(i);
-         data = cvelist_table.row(row).data();
-         
-         urllink = "<a href='"+data.url+"' target=_blank>"+data.name+"</a>";
-         if (group.length > 0)
-             $(rows).eq( i ).before('<tr class="dtrg-group"><td colspan="5">'+urllink+'</td></tr>');
-         last = group;
-        }
-     });
-   },         
+  },      
   "columns": [
-       { "data": "url" },
-       { "data": "name" },
+	   { "data": "risklevel"},
        { "data": "packagename" },
        { "data": "packageversion" },
+       { "data": "name" },
+       { "data": "url" },
        { "data": "summary" },
+	   { "data": "fullcompname" }
    ],
    "columnDefs": [
                  {
                   "targets": [ 0 ],
-                  "visible": false
+				  "width": "5px",
+				  "type": "risklevel"
                  },
                  {
                   "targets": [ 1 ],
-                  "visible": false
                  },
                  {
                   "targets": [ 2 ],
-                  "width": 150
+                 },
+                 {
+                  "targets": [ 3 ],
+				  "className": "dt-nowrap",
+		          "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
+            	     	$(nTd).html("<a href='"+oData.url+"' target=_blank >"+oData.name +"</a>");
+                   }
+                 },
+                 {
+                  "targets": [ 4 ],
+				  "visible": false
+                 },
+                 {
+                  "targets": [ 5 ],
+                 },
+                 {
+                  "targets": [ 6 ],
                  }
-                ]
+                ],
+            'rowCallback': function(row, data, index){
+	             if (data.risklevel == "Critical" )        
+                 {
+	              $(row).find('td:nth-child(1)').html("");
+	         	  $(row).find('td:nth-child(1)').addClass('cvss_critical');
+                 }
+	             else if (data.risklevel == "High") 
+                 {    
+		          $(row).find('td:nth-child(1)').html("");   
+	         	  $(row).find('td:nth-child(1)').addClass('cvss_high');
+                 }
+	             else if (data.risklevel == "Medium")  
+                 {      
+		          $(row).find('td:nth-child(1)').html("");   	
+	         	  $(row).find('td:nth-child(1)').addClass('cvss_medium');
+                 }
+	             else if (data.risklevel  == "Low")  
+                 {   
+		          $(row).find('td:nth-child(1)').html("");   	   
+	         	  $(row).find('td:nth-child(1)').addClass('cvss_low');
+                 }
+				 else
+			        $(row).find('td:nth-child(1)').html("")
+            }
    });
+
+  if (objtype == "cv" || objtype == "co")
+   cvelist_table.column(6).visible(false);
+  else
+   cvelist_table.column(6).visible(true);
   }
  }
  
@@ -4647,7 +4831,54 @@ datasourcelist_table_resize();
  
 /***** End CVE List  *****/
 
-
+/***** Start AppComp List *****/ 
+ 
+ function getAppCompList(displaytype)
+ {
+  if (displaytype == "list")
+  {
+   if (typeof appcomplist_table != "undefined" && appcomplist_table != null)
+   {
+    appcomplist_table.clear();
+    appcomplist_table.destroy();
+    appcomplist_table = null;
+   }
+   var h = $(document).height();
+   $("#appcomplist_list").height(h-160);
+   
+   $("#appcomplist_list").show();
+   
+  appcomplist_table =$('#appcomplist').DataTable( {
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "40vh",
+   scroller: true,
+   pageLength: -1,
+   paging: false,
+   destroy: true,
+   sDom: 't',
+   "ajax": {
+    "url": "/dmadminweb/ReportsData?type=appcompList&appid=" + objid,
+    "type": "GET"
+  },
+  "columns": [
+       { "data": "name" },
+       { "data": "domain" }],
+   "columnDefs": [
+                 {
+                  "targets": [ 0 ]
+                 },
+                 {
+                  "targets": [ 1 ]
+                 }
+                ]
+   });
+  }
+ }
+ 
+/***** End AppComp List  *****/
  
  function HideSetup()
  {

@@ -16,6 +16,7 @@
 
 package dmadmin.model;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -118,24 +119,51 @@ public class TaskDeploy
 	}
 	
 	
-	private int startDeployment(Application app, Environment env, String userName, String sessionid, boolean waitFor, Map<String,String> cmdline_params)
-	{
-		Domain domain = env.getDomain();
-		System.out.println("domain is " + ((domain != null) ? domain.getName() : "null"));
-		Engine engine = (domain != null) ? domain.findNearestEngine() : null;
-		
-		if(engine == null) {
-			System.err.println("Engine was null");
-			return -1;
-		}
-		System.out.println("Calling startDeployment - waitFor is "+(waitFor?"true":"false"));
-		
-		 m_cmd = engine.startDeployment(this, app, env, userName, sessionid, cmdline_params);
-		 
-		 System.out.println("Calling runWithTrilogy");
-		 
-		 return m_cmd.runWithTrilogyNoCapture(waitFor, null);
-	}
+ private int startDeployment(Application app, Environment env, String userName, String sessionid, boolean waitFor, Map<String, String> cmdline_params)
+ {
+  Domain domain = env.getDomain();
+  System.out.println("domain is " + ((domain != null) ? domain.getName() : "null"));
+  Engine engine = (domain != null) ? domain.findNearestEngine() : null;
+
+  if (engine == null)
+  {
+   System.err.println("Engine was null");
+   return -1;
+  }
+  System.out.println("Calling startDeployment - waitFor is " + (waitFor ? "true" : "false"));
+
+  List<Server> server_list = m_so.getServersInEnvironment(env.getId());
+
+  // add base components to compsallowedonserv
+
+  List<Component> complist = m_so.getComponents(ObjectType.APPLICATION, app.getId(), false);
+
+  for (int i = 0; i < complist.size(); i++)
+  {
+   Component comp = m_so.getComponent(complist.get(i).getId(), true);
+   Component base_comp = m_so.getBaseCompVersion(comp);
+
+   for (int k = 0; k < server_list.size(); k++)
+   {
+    Server s = m_so.getServer(server_list.get(k).getId(), true);
+    ArrayList<CompType> ctlist = s.getServerCompType();
+
+    for (int j = 0; j < ctlist.size(); j++)
+    {
+     CompType ct = ctlist.get(j);
+
+     if (ct.getId() == comp.getComptypeId())
+      m_so.addComponentToServer(s.getId(), base_comp.getId());
+    }
+   }
+  }
+
+  m_cmd = engine.startDeployment(this, app, env, userName, sessionid, cmdline_params);
+
+  System.out.println("Calling runWithTrilogy");
+
+  return m_cmd.runWithTrilogyNoCapture(waitFor, null);
+ }
 	
 	public int getDeploymentID()
 	{

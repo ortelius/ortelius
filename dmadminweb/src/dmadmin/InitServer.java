@@ -51,6 +51,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.binary.Base64;
+
 import dmadmin.json.JSONObject;
 
 public class InitServer extends HttpServletBase
@@ -232,6 +234,9 @@ public class InitServer extends HttpServletBase
  
  public void init()
  {
+  if (System.getenv("LOAD_DB") == null)
+   return;
+  
   try (DMSession session = new DMSession(getServletContext()))
   {
   String absoluteDiskPath = getServletContext().getRealPath("/WEB-INF") + "/localdeploy.reg";
@@ -534,6 +539,7 @@ public class InitServer extends HttpServletBase
      }
      
      st.close();
+     
      m_conn.commit();
 
     } 
@@ -545,16 +551,72 @@ public class InitServer extends HttpServletBase
     e.printStackTrace();
    }
   }
-  if (isLinux()) {
-	  // Only Sync Ansible on Linux platforms
-	  ( new Thread() { public void run() { 
-		  @SuppressWarnings("unused")
-		SyncAnsible sa = new SyncAnsible(getServletContext());
-	  } } ).start(); 
-  } 
+  }
+  
+  try
+  {
+   // read id_rsa.pub
+   String rsaPublicKey = "";
+   
+   String pubkey = "/opt/deployhub/keys/id_rsa.pub";
+   
+   if (System.getenv("JwtPublicKey") != null)
+    pubkey = System.getenv("JwtPublicKey");
+   
+   if (new File(pubkey).isFile())
+    rsaPublicKey = readFileAsString(pubkey);
+   
+   // base64 enc
+   
+   String data = Base64.encodeBase64String(rsaPublicKey.getBytes());
+   // add to dm_tableinfo
+   
+   String dsql = "UPDATE dm.dm_tableinfo set bootstrap = ?";
+   PreparedStatement stmt = m_conn.prepareStatement(dsql);
+   stmt.setString(1, data);
+   stmt.execute();
+   m_conn.commit();
+  }
+  catch (SQLException e)
+  {
+   rollback();
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  }
+  
+  // Exit everything 
+  if (System.getenv("INIT_ONLY") != null)
+  {
+   System.out.println("INIT_ONLY - Exiting");
+   Runtime.getRuntime().halt(0);
   }
  }
- 
+
+ public static String readFileAsString(String filename)
+ {
+  String newString = "";
+  try
+  {
+   String nextLine = "";
+   BufferedReader br;
+   br = new BufferedReader(new FileReader(filename));
+   StringBuffer sb = new StringBuffer();
+   while ((nextLine = br.readLine()) != null)
+   {
+      sb.append(nextLine + "\n");
+   }
+   br.close();
+   newString = sb.toString();
+  }
+  catch (IOException e)
+  {
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  }
+
+  return newString;
+ }
+
  public void cleanAttrs() 
  {
   ArrayList<String> kw = new ArrayList<>(Arrays.asList("buildid", "buildurl", "chart", "operator", "builddate",

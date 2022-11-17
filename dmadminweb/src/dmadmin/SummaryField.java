@@ -166,15 +166,16 @@ public enum SummaryField
  DOCKER_CHARTREPO  (1615, "Helm Chart Repo", null),
  DOCKER_CHARTREPOURL  (1616, "Helm Chart Repo Url", null),
  COMP_README (1617, "Readme", null),
- SERVICE_OWNER (1618, "Service Owner", null),
+ SERVICE_OWNER (3, "Service Owner", ObjectType.OWNER),
  SERVICE_OWNER_EMAIL (1619, "Service Owner Email", null),
  SERVICE_OWNER_PHONE (1620, "Service Owner Phone", null),
  SLACK_CHANNEL (1621, "Slack Channel", null),
  DISCORD_CHANNEL (1622, "Discord Channel", null),	
- HIPCHAT_CHANNEL (1623, "Hipchat Channel", null),
+ HIPCHAT_CHANNEL (1623, "HipChat Channel", null),
  PAGERDUTY_SERVICE_URL (1624, "PagerDuty Service Url", null),
  PAGERDUTY_BUSINESS_URL (1625, "PagerDuty Business Service Url", null),
- COMP_SWAGGER (1626, "Swagger", null);
+ COMP_SWAGGER (1626, "Swagger", null),
+ SERVICE_OWNER_ID (1627, "Service Owner Id", null);
  
 	private final int m_value;
 	private final ObjectType m_type;
