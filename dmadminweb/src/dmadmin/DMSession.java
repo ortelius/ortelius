@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
@@ -8632,7 +8633,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 			  m_apphashCreationTime = System.currentTimeMillis();
 		}
 		Application cached = m_apphash.get(appid);
-		if (cached != null) {
+		if (cached != null && !detailed) {
 			return cached;	// already found this app previously
 		}
 		
@@ -8709,6 +8710,31 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 			}
 			rs.close();
 			stmt.close();
+			
+			if (ret.getParentId() > 0)
+			{ 
+			 // check to make sure parent exists in db
+    PreparedStatement stmt3 = m_conn.prepareStatement("select id from dm.dm_application where id = ?");
+    stmt3.setInt(1, ret.getParentId());
+    ResultSet rs3 = stmt3.executeQuery();
+
+    boolean noparent = true;
+    if(rs3.next()) {
+     noparent = false;
+    }
+    rs3.close();
+    stmt3.close();
+   
+    if (noparent)
+    {
+     stmt3 = m_conn.prepareStatement("update dm.dm_application set status = 'D' where id = ?");
+     stmt3.setInt(1, ret.getId());
+     stmt3.execute();
+     m_conn.commit();
+     throw new RuntimeException("Unable to retrieve application " + appid + " from database"); 
+    }
+			} 
+   
 			if(ret != null) {
 				m_apphash.put(appid,ret);
 				return ret;
@@ -9150,6 +9176,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				return true;
 			}}
 			break;
+
 		case ENGINE_HOSTNAME:
 		{
    if (obj instanceof Domain)
@@ -9973,7 +10000,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
     case ITEM_REPOSITORY:
     {
      DMObject repo = (DMObject) changes.get(field);
-     update.add(", repositoryid = ?", (repo != null) ? repo.getId() : Null.INT);
+     update.add(", repositoryid = ?", (repo != null && repo.getId() > 0) ? repo.getId() : Null.INT);
     }
     break;
     case ITEM_TARGETDIR:
@@ -10078,28 +10105,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
      update.add(", giturl = ?", (str != null) ? str : Null.STRING);
     }
     break;
-    
-    case SERVICE_OWNER:
-    {
-     String str = (String) changes.get(field);
-     update.add(", serviceowner = ?", (str != null) ? str : Null.STRING);
-    }
-    break;
-    
-    case SERVICE_OWNER_PHONE:
-    {
-     String str = (String) changes.get(field);
-     update.add(", serviceownerphone = ?", (str != null) ? str : Null.STRING);
-    }
-    break; 
-    
-    case SERVICE_OWNER_EMAIL:
-    {
-     String str = (String) changes.get(field);
-     update.add(", serviceowneremail = ?", (str != null) ? str : Null.STRING);
-    }
-    break;
-   
+      
     case SLACK_CHANNEL:
     {
      String str = (String) changes.get(field);
@@ -15431,7 +15437,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
         else if (a.getName().equalsIgnoreCase("hipchatchannel"))
         {
          PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set hipchatchannel=? where id = ?");
-         stmt.setInt(1, ci.getId());
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
          stmt.execute();
          stmt.close();
          found.add(a);
@@ -15662,7 +15669,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
         else if (a.getName().equalsIgnoreCase("hipchatchannel"))
         {
          PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set hipchatchannel=? where id = ?");
-         stmt.setInt(1, ci.getId());
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
          stmt.execute();
          stmt.close();
          found.add(a);
@@ -19426,6 +19434,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 			long t = timeNow();
 			System.out.println("new version");
 			Application app  = getApplication(appid,true);
+   NotifyTemplate template = app.getSuccessTemplate();		
 			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT count(*) FROM dm.dm_application WHERE parentid="+app.getParentId()+" AND status='N'");
 			rs.next();
@@ -19500,7 +19509,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
    if (act != null)
     st.execute("UPDATE dm.dm_application SET actionid="+act.getId()+" WHERE id="+newid);
    
-   NotifyTemplate template = app.getSuccessTemplate();
+   template = app.getSuccessTemplate();
    if (template != null)
      st.execute("UPDATE dm.dm_application SET successtemplateid="+template.getId()+" WHERE id="+newid);
    
@@ -20101,7 +20110,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
       int domainid = comp.getDomainId();
       CreateNewObject("componentitem",NewName,domainid,compid,itemid,"");
       st = m_conn.createStatement();
-      st.execute("UPDATE dm.dm_componentitem SET rollup=1, xpos=" + xpos + ", ypos=" + ypos + ", kind='database' WHERE compid="+compid+" AND id="+itemid);
+      st.execute("UPDATE dm.dm_componentitem SET rollback=0, rollup=1, xpos=" + xpos + ", ypos=" + ypos + ", kind='database' WHERE compid="+compid+" AND id="+itemid);
       st.execute("UPDATE dm.dm_component SET modified="+timeNow()+",modifierid="+m_userID+" WHERE id="+compid);
       st.close();
       m_conn.commit();
@@ -20124,7 +20133,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
       ypos += 200;
       CreateNewObject("componentitem",NewName,domainid,compid,itemid,"");
       Statement st4 = m_conn.createStatement();
-      st4.execute("UPDATE dm.dm_componentitem SET rollback=1, predecessorid=" + pred + ", xpos=" + xpos + ", ypos=" + ypos + ", kind='database' WHERE compid="+compid+" AND id="+itemid);
+      st4.execute("UPDATE dm.dm_componentitem SET rollback=1, rollup=0, predecessorid=" + pred + ", xpos=" + xpos + ", ypos=" + ypos + ", kind='database' WHERE compid="+compid+" AND id="+itemid);
       st4.execute("UPDATE dm.dm_component SET modified="+timeNow()+",modifierid="+m_userID+" WHERE id="+compid);
       st4.close();
       m_conn.commit();
@@ -21174,14 +21183,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   try
   {
    List <Server> ret = new ArrayList<Server>();
-   PreparedStatement stmt = m_conn.prepareStatement("SELECT a.id,a.name,a.summary FROM dm.dm_server a," +
-               "dm.dm_compsonserv b, " +
-               "dm.dm_serversinenv c " +
-               "WHERE a.id = b.serverid " +
-               "AND b.compid=? " +
-               "AND b.serverid=c.serverid " +
-               "AND c.envid=?"
-               );
+   PreparedStatement stmt = m_conn.prepareStatement("select distinct a.serverid, a.deploymentid from dm.dm_compsonserv a, dm.dm_server b, dm.dm_deploymentcomps c, dm.dm_serversinenv d, dm.dm_environment e"
+     + " where a.serverid = b.id and b.status = 'N' and a.deploymentid = c.deploymentid and c.compid = ?" 
+     + " and a.serverid = d.serverid and e.status = 'N'"
+     + " and d.envid=?");
+   
    stmt.setInt(1,compid);
    stmt.setInt(2,envid);
    ResultSet rs = stmt.executeQuery();
@@ -21190,7 +21196,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
     Server s = new Server();
     s.setId(rs.getInt(1));
     s.setName(rs.getString(2));
-    s.setSummary(rs.getString(3));
+
     ret.add(s);
    }
    rs.close();
@@ -28836,8 +28842,8 @@ public ArrayList<Component> getEnv2Comps(int envid)
 
 public JSONArray getComp2Endpoints(int compid)
 {
- String sql = "select distinct serverid, deploymentid from dm.dm_compsonserv a, dm.dm_server b where a.serverid = b.id and b.status = 'N' and a.compid = ?";
-
+ // String sql = "select distinct serverid, deploymentid from dm.dm_compsonserv a, dm.dm_server b where a.serverid = b.id and b.status = 'N' and a.compid = ?";
+ String sql = "select distinct a.serverid, a.deploymentid from dm.dm_compsonserv a, dm.dm_server b, dm.dm_deploymentcomps c where a.serverid = b.id and b.status = 'N' and a.deploymentid = c.deploymentid and c.compid = ?";
  JSONArray ret = new JSONArray();
 
  try {
@@ -30351,7 +30357,8 @@ public JSONArray getComp2Endpoints(int compid)
     
     int envid = rs.getInt(4);
     Environment env = this.getEnvironment(envid, false);
-    obj.add("env", env.getDomain().getFullDomain() + "." + env.getName());
+    if (env != null)
+     obj.add("env", env.getDomain().getFullDomain() + "." + env.getName());
     ret.add(obj);
    }
    rs.close();
@@ -31247,6 +31254,8 @@ public JSONArray getComp2Endpoints(int compid)
    kind = "database";
   else if (cik == ComponentItemKind.DOCKER)
    kind = "docker";
+  else
+   kind = "file";
   
   String sql = "update dm.dm_componentitem set kind = ? where id = ?";
   
@@ -31573,8 +31582,8 @@ public JSONArray getComp2Endpoints(int compid)
    e.printStackTrace();
   }
   
-  String isql = "INSERT INTO dm.dm_user_auth (id, jti, lastseen) VALUES(?,?, CURRENT_TIMESTAMP)";
-  String csql = "DELETE from dm.dm_user_auth where lastseen < current_timestamp - interval '1 hours'";
+  String isql = "INSERT INTO dm.dm_user_auth (id, jti, lastseen) VALUES(?,?, current_timestamp at time zone 'UTC')";
+  String csql = "DELETE from dm.dm_user_auth where lastseen < current_timestamp at time zone 'UTC' - interval '1 hours'";
   
   try {
      PreparedStatement istmt = m_conn.prepareStatement(isql);
@@ -31598,7 +31607,7 @@ public JSONArray getComp2Endpoints(int compid)
  {
   boolean authorized = false;
 
-  String csql = "DELETE from dm.dm_user_auth where lastseen < current_timestamp - interval '1 hours'";
+  String csql = "DELETE from dm.dm_user_auth where lastseen < current_timestamp at time zone 'UTC' - interval '1 hours'";
   String sql = "select count(*) from dm.dm_user_auth where id = ? and jti = ?";
   
   try
@@ -31618,7 +31627,7 @@ public JSONArray getComp2Endpoints(int compid)
     if (cnt > 0)
     {
      authorized = true;
-     String usql = "update dm.dm_user_auth set lastseen = current_timestamp where id = ? and jti = ?";
+     String usql = "update dm.dm_user_auth set lastseen = current_timestamp at time zone 'UTC' where id = ? and jti = ?";
      PreparedStatement ustmt = m_conn.prepareStatement(usql);
      ustmt.setInt(1,uid);
      ustmt.setString(2, uuid);
@@ -31676,4 +31685,75 @@ public JSONArray getComp2Endpoints(int compid)
  {
   return m_domains;
  }
+
+ public String getComponentGitCommit(int id)
+ {
+  String sql = "select distinct gitcommit from dm.dm_componentitem where gitcommit is not null and compid = ?";
+  String gitcommit = "";
+  
+  try
+  {
+   PreparedStatement estmt = m_conn.prepareStatement(sql);
+   estmt.setInt(1, id);
+   ResultSet rs = estmt.executeQuery();
+   if (rs.next()) 
+   {
+    gitcommit = rs.getString(1);
+   }
+   rs.close();
+   estmt.close();
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+  }
+  return gitcommit;
+ }
+
+ public JSONArray getApps4PackageList(String pkgname, String pkgver)
+ {
+  String sql = "select distinct c.id, c.domainid, fulldomain(c.domainid, c.name), fulldomain(a.domainid, a.name), b.packagename, b.packageversion "
+    + "from dm.dm_component a, dm.dm_componentdeps b, dm.dm_application c, dm.dm_applicationcomponent d "
+    + "where a.id = b.compid  "
+    + "and b.compid = d.compid "
+    + "and c.id = d.appid "
+    + "and b.packagename like '%" + pkgname + "%' ";
+
+  if (pkgver != null)
+   sql +=  "and b.packageversion like '%" + pkgver + "%'";
+    
+  JSONArray ret = new JSONArray();
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+   
+   String domlist = "," + this.getDomainList() + ",";
+   
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject(); 
+
+    String id = "ap" + rs.getInt(1);
+    int appDom = rs.getInt(2);
+    
+    if (!domlist.contains("," + appDom + ","))
+     continue;
+     
+    obj.add("id", id);
+    obj.add("appname", rs.getString(3));
+    obj.add("compname", rs.getString(4));
+    obj.add("packagename", rs.getString(5));
+    obj.add("packageversion", rs.getString(6));    
+
+    ret.add(obj);     
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  } 
+  return ret;
+ } 
 }

@@ -18,6 +18,7 @@ package dmadmin;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -25,6 +26,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import dmadmin.json.JSONArray;
+import dmadmin.json.JSONObject;
+import dmadmin.model.Application;
+import dmadmin.model.Component;
 
 public class ReportsData extends HttpServletBase
 {
@@ -206,6 +210,42 @@ public class ReportsData extends HttpServletBase
     out.println(arr.getJSON());
     out.println("}");
     return;
+  } 
+  else if (type.equalsIgnoreCase("Apps4Package"))
+  {
+   String pkgname = request.getParameter("pkgname");
+   String pkgver = request.getParameter("pkgversion");
+   
+   if (pkgname != null)
+   {
+    JSONArray arr = session.getApps4PackageList(pkgname, pkgver);
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+   } 
+  } 
+  else if (type.equalsIgnoreCase("appcompList"))
+  {
+   String appid = request.getParameter("appid");
+   
+   if (appid != null)
+   {
+    JSONArray arr = new JSONArray();
+    List<Component> comps = session.getComponents(ObjectType.APPLICATION, Integer.parseInt(appid), false);
+
+    for (int i=0;i< comps.size(); i++)
+    {
+     Component c = comps.get(i);
+     JSONObject obj = new JSONObject(); 
+     obj.add("name", c.getName());
+     obj.add("domain", c.getDomain().getFullDomain());
+     arr.add(obj);
+    }
+    
+    out.println(arr.getJSON());
+    out.println("}");
+    return;
+   } 
   } 
   out.println("}");
  }

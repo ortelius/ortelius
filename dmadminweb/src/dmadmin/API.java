@@ -71,6 +71,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 // import oracle.net.aso.i;
 import dmadmin.json.JSONArray;
@@ -118,6 +119,7 @@ import dmadmin.model.UserGroup;
 import dmadmin.model.UserGroupList;
 import dmadmin.model.UserList;
 import dmadmin.util.CommandLine;
+import dmadmin.util.SendMail;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 
@@ -387,6 +389,7 @@ public class API extends HttpServlet
   }
   je.add("summary", comp.getSummary());
   je.add("lastbuild", comp.getLastBuildNumber());
+  je.add("gitcommit", so.getComponentGitCommit(comp.getId()));
   //
   // If this is a base version list the versions
   //
@@ -1842,16 +1845,22 @@ public class API extends HttpServlet
    throw new ApiException("No Create Application Permission");
   }
   
-  createDomains4Obj(so, appname);
-  
   System.out.println("DOING newappver");
-  String newname = request.getParameter("name"); // if specified, name of new application version
-  if (newname != null)
-   appname = newname;
+  
+  String name = request.getParameter("name");
+  String domain = request.getParameter("domain");
+  String fullname = "";
+  
+  if (name != null)
+   appname = name; 
   
   if (appname == null || appname.length() == 0)
    throw new ApiException("application name must be specified");
-  String domain = request.getParameter("domain");
+  
+  if (domain != null)
+   fullname = domain + "." + appname;
+   createDomains4Obj(so, fullname);
+   
   Domain tgtdomain = null;
   // If domain is specified, use that, otherwise create environment in user's home domain
   if (domain != null)
@@ -2152,6 +2161,18 @@ public class API extends HttpServlet
 
  private Application newAppVersion(DMSession so, String appname, HttpServletRequest request) throws ApiException
  {
+  String name = request.getParameter("name");
+  String domain = request.getParameter("domain");
+  String fullname = "";
+  
+  if (name != null)
+   fullname = name; 
+  
+  if (domain != null)
+   fullname = domain + "." + fullname;
+  
+  createDomains4Obj(so, fullname);
+  
   Application app = this.getApplicationFromNameOrID(so, appname);
   boolean isRelease = false;
   
@@ -2160,8 +2181,6 @@ public class API extends HttpServlet
   
   int verid = so.applicationNewVersion(app.getId(), 100, 100, isRelease);
   app = so.getApplication(verid, false);
-  
-  String name = request.getParameter("name");
   
   if (name != null)
   {
@@ -2177,8 +2196,13 @@ public class API extends HttpServlet
  {
   System.out.println("DOING newappver");
   String newname = request.getParameter("name"); // if specified, name of new application version
+  String domain = request.getParameter("domain");
+  
   if (newname != null)
   {
+   if (domain != null)
+    newname = domain + "." + newname;
+   
    System.out.println("Looking up " + newname);
    try
    {
@@ -2191,6 +2215,9 @@ public class API extends HttpServlet
     // Application not found exception - ok to proceed
    }
   }
+  
+  if (domain != null)
+   appname = domain + "." + appname;
   
   createDomains4Obj(so, appname);
 
@@ -2632,6 +2659,28 @@ public class API extends HttpServlet
       throw new ApiException("Path contains too many elements");
      }
     }
+    else if (elements[0].equals("compassigned2app"))
+    {
+     if (elements.length == 3)
+     {
+      int appid = Integer.parseInt(elements[1]);
+      int compid = Integer.parseInt(elements[2]);
+      boolean iscompAssigned2App = false;
+      List<Component> complist = so.getComponents(ObjectType.APPLICATION, appid, false);
+      
+      for (int i=0; i < complist.size(); i++)
+      {
+       Component comp = complist.get(i);
+       if (compid == comp.getId())
+       {
+        iscompAssigned2App = true;
+        break;
+       }
+      }
+      
+      obj.add("result", iscompAssigned2App);
+     }
+    } 
     else if (elements[0].equals("components"))
     {
      if (elements.length == 1)
@@ -5158,6 +5207,8 @@ public class API extends HttpServlet
    JsonObject obj  = new JsonParser().parse(requestData).getAsJsonObject();
    String envname  = (obj.get("environment") != null) ? obj.get("environment").getAsString() : "";
    String appname  = (obj.get("application") != null) ? obj.get("application").getAsString() : "";
+   String imagetag  = (obj.get("imagetag") != null) ? obj.get("imagetag").getAsString() : "";
+   String digest  = (obj.get("digest") != null) ? obj.get("digest").getAsString() : "";
    JsonArray compnames = (obj.get("compversion") != null) ? obj.get("compversion").getAsJsonArray() : new JsonArray();
    String rc = (obj.get("rc") != null) ? obj.get("rc").getAsString() : "-1";
    String log = (obj.get("log") != null) ? obj.get("log").getAsString() : "";
@@ -5168,14 +5219,14 @@ public class API extends HttpServlet
    if (rc != null)
     exitcode = new Integer(rc).intValue();
    
-   if (envname == null)
+   if (envname.length() == 0)
    {
     ret.add("errormsg", "Environment Name required");
     out.println(ret.getJSON());
     return;
    }
    
-   if (appname == null && compnames == null)
+   if (appname.length() == 0 && compnames.size() == 0  && imagetag.length() == 0 && digest.length() == 0)
    {
     ret.add("errormsg", "Application or Component Names required");
     out.println(ret.getJSON());
@@ -5262,6 +5313,43 @@ public class API extends HttpServlet
     return;
    }  
 
+   // find component image tag or digest
+   
+   if (compnames.size() == 0)
+   {
+    int compid = -1;
+    if (digest != null)
+     compid = so.getComp4Digest(so, digest);
+    
+    if (compid < 0 && imagetag != null)
+     compid = so.getComp4Tag(so, imagetag);
+    
+    if (compid > 0)
+    {
+     Component comp = so.getComponent(compid, true);
+     compnames.add(new JsonPrimitive(comp.getFullName()));
+    }
+   }
+
+   // find app names base on component
+   if (appname.length() == 0 && compnames.size() > 0)
+   {
+    String compname = compnames.get(0).getAsString();
+    Component comp = so.getComponentByName(compname);
+    List<Application> applist = so.getAppsForComponent(comp);
+    
+    for (int i=0;i<applist.size();i++)
+    {
+     Application app = applist.get(i);
+     
+     // get current list of appvers in env
+     
+     // see if latest appver in env has component
+     //  if so then log deployment
+     //  else create new appver base on latest in env with component and log deployment
+    }
+   }
+   
    // add app domains
    shortname = "";
    parts = new ArrayList<String>(Arrays.asList(appname.split("\\.")));

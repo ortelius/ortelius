@@ -74,7 +74,7 @@ function ciClickElement(id, comptype)
  console.log("GetSummaryData?objtype=14&id=" + id + addParams);
  $.ajax(
  {
-  url : "/msapi/compitem?compitemid=" + id,
+  url : "/msapi/compitem?compitemid=" + id + addParams,
   crossDomain: true,
   dataType: 'json',
   async: false,
@@ -129,21 +129,22 @@ function ciClickElement(id, comptype)
      var label = row[3];
      var val = row[4];
      
-     if (label.indexOf("Roll Forward") >= 0)
-      findprefix = "rf_";
-     else  if (label.indexOf("Roll Back") >= 0)
-      findprefix = "rb_";
-    
      if (label == "Kind")
      {
-      if (val == "DATABASE")
+      if (val.toLowerCase() == "DATABASE".toLowerCase())
         comptype = "database";
-      else if (val == "DOCKER")
+      else if (val.toLowerCase() == "DOCKER".toLowerCase())
         comptype = "docker";
       else
         comptype = "file";
      } 
+
+     if (comptype.includes('database') && label.indexOf("Roll Forward") >= 0 && val == '1')
+      findprefix = "rf_";
+     else  if (comptype.includes('database') && label.indexOf("Roll Back") >= 0 && val == '1')
+      findprefix = "rb_";
     }
+
     comptype = findprefix + comptype;
    }
    
@@ -172,11 +173,54 @@ function ciClickElement(id, comptype)
    if (label.toLowerCase() != "Predecessor".toLowerCase() && label.toLowerCase() != "XPos".toLowerCase() &&
        label.toLowerCase() != "YPos".toLowerCase() && label.toLowerCase() != "Summary".toLowerCase() &&
        label.toLowerCase() != "Name".toLowerCase() && label.toLowerCase() != "Kind".toLowerCase() && 
-       label.toLowerCase() != "Roll Forward".toLowerCase() && label.toLowerCase() != "Rollback".toLowerCase() &&
-       label.toLowerCase() != "Rollup flag".toLowerCase() && label.toLowerCase() != "Rollback flag".toLowerCase())
+	   label.toLowerCase() != "Service Owner Id".toLowerCase())
    {
-    if (label == "Service Owner" || label == "Service Owner Email" || label == "Service Owner Phone" ||
-        label == "Slack Channel" || label == "Discord Channel" || label == "Hipchat Channel" ||
+	if (comptype == 'docker')
+	{
+	 if (label.toLowerCase() == "Target Directory".toLowerCase() ||
+	     label.toLowerCase() == "Roll Back".toLowerCase() ||
+	     label.toLowerCase() == "Roll Forward".toLowerCase() ||
+		 label.toLowerCase() == "Repository".toLowerCase())
+	  continue;
+	}
+	else if (comptype == 'file')
+	{
+	 if (label.toLowerCase() == "Container Registry".toLowerCase() ||
+	     label.toLowerCase() == "Container Digest".toLowerCase() ||
+	     label.toLowerCase() == "Container Tag".toLowerCase() ||
+	     label.toLowerCase() == "Helm Chart".toLowerCase() ||
+	     label.toLowerCase() == "Helm Chart Namespace".toLowerCase() ||
+	     label.toLowerCase() == "Helm Chart Repo".toLowerCase() ||
+	     label.toLowerCase() == "Helm Chart Repo Url".toLowerCase() ||
+	     label.toLowerCase() == "Helm Chart Version".toLowerCase() ||
+	     label.toLowerCase() == "Roll Back".toLowerCase() ||
+	     label.toLowerCase() == "Roll Forward".toLowerCase())
+	  continue;
+	}		
+	else if (comptype.includes('database'))
+	{
+	 if (label.toLowerCase() == "Container Registry".toLowerCase() ||
+	     label.toLowerCase() == "Container Digest".toLowerCase() ||
+	     label.toLowerCase() == "Container Tag".toLowerCase() ||
+	     label.toLowerCase() == "Helm Chart".toLowerCase() ||
+	     label.toLowerCase() == "Helm Chart Namespace".toLowerCase() ||
+	     label.toLowerCase() == "Helm Chart Repo".toLowerCase() ||
+	     label.toLowerCase() == "Helm Chart Repo Url".toLowerCase() ||
+	     label.toLowerCase() == "Helm Chart Version".toLowerCase() ||
+		 label.toLowerCase() == "Build Date".toLowerCase() ||
+		 label.toLowerCase() == "Build Id".toLowerCase() ||
+		 label.toLowerCase() == "Build URL".toLowerCase() ||
+		 label.toLowerCase() == "Git Commit".toLowerCase() ||
+		 label.toLowerCase() == "Git Repo".toLowerCase() ||
+		 label.toLowerCase() == "Git Tag".toLowerCase() ||
+		 label.toLowerCase() == "Git URL".toLowerCase()	||
+	     label.toLowerCase() == "Roll Back".toLowerCase() ||
+	     label.toLowerCase() == "Roll Forward".toLowerCase())
+	  continue;
+	}	
+	
+    if (label == "Service Owner" || label == "Service Owner Email" || label == "Service Owner Phone" || label == "Service Owner Id" ||
+        label == "Slack Channel" || label == "Discord Channel" || label == "HipChat Channel" ||
         label == "PagerDuty Service Url" || label == "PagerDuty Business Service Url")
     {
      var myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
@@ -192,16 +236,29 @@ function ciClickElement(id, comptype)
     }    
     else
     {
+	 if (label.toLowerCase() == "Repository".toLowerCase()  && comptype == "rf_database")
+       label = "Roll Forward Repository";
+     else if (label.toLowerCase() == "Repository".toLowerCase()  && comptype == "rb_database")
+	   label = "Roll Back Repository";
+	 else if (label.toLowerCase() == "Repository".toLowerCase()  && comptype == "file")
+	   label = "Repository";
+	 else if (label.toLowerCase() == "Target Directory".toLowerCase()  && comptype == "rf_database")
+       label = "Roll Forward Target Directory";
+     else if (label.toLowerCase() == "Target Directory".toLowerCase()  && comptype == "rb_database")
+	   label = "Roll Back Target Directory";
+     else if (label.toLowerCase() == "Target Directory".toLowerCase()  && comptype == "file")
+	   label = "Target Directory";
+			
      var myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
-     
+
      myid = myid.replace("rollforward","rf_");
      myid = myid.replace("rollback","rb_");
      
-     td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\">";
-     td += label;
-     td += ":</td><td>";
-     td += val;
-     td += "</tr>";
+      td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\">";
+      td += label;
+      td += ":</td><td>";
+      td += val;
+      td += "</tr>";
     }
    } 
      
@@ -242,7 +299,7 @@ function ciClickElement(id, comptype)
     else if (label == "Name")
     {
     }
-    else if (label == "Build Id")
+    else if (label == "Build Id" && !comptype.includes('database'))
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -259,7 +316,7 @@ function ciClickElement(id, comptype)
       $("#lastbuildnumber_sumrow > td:nth-child(2)").html(val);
      }
     }
-    else if (label == "Build URL")
+    else if (label == "Build URL" && !comptype.includes('database'))
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -269,7 +326,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"buildurl_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }
-    else if (label == "Helm Chart")
+    else if (label == "Helm Chart" && comptype == 'docker')
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -279,7 +336,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"chart_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }
-    else if (label == "Helm Chart Version")
+    else if (label == "Helm Chart Version" && comptype == 'docker')
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -289,7 +346,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"chartversion_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }
-    else if (label == "Helm Chart Namespace")
+    else if (label == "Helm Chart Namespace" && comptype == 'docker')
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -299,7 +356,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"chartnamespace_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }   
-    else if (label == "Helm Chart Repo")
+    else if (label == "Helm Chart Repo" && comptype == 'docker')
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -309,7 +366,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"chartrepo_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }  
-    else if (label == "Helm Chart Repo Url")
+    else if (label == "Helm Chart Repo Url" && comptype == 'docker')
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -321,32 +378,39 @@ function ciClickElement(id, comptype)
     }  
     else if (label == "Service Owner")
     {
-     tdedit4 += "<tr>";
-     tdedit4 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-     tdedit4 += "<td><input name=\"serviceowner_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
-     tdedit4 += "<td><input type=\"hidden\" name=\"serviceowner_field\" value=\"" + field + "\"/></td>";
-     tdedit4 += "<td><input type=\"hidden\" name=\"serviceowner_callback\" value=\"" + callback + "\"/></td>";
-     tdedit4 += "<td><input type=\"hidden\" name=\"serviceowner_oldval\" value=\"" + val + "\"/></td>";
-     tdedit4 += "</tr>";
+       save_owner_name = val;
+
+       tdedit4 += "<tr id=\"owner_row\">";
+       tdedit4 += "<td style=\"text-align:left; white-space: nowrap;\">Owner:</td>";
+       tdedit4 += "<td ><select name=\"owner_val\">";
+       tdedit4 += "</td>";
+       tdedit4 += "<td><input type=\"hidden\" name=\"owner_field\" value=\"" + field + "\"/></td>";
+       tdedit4 += "<td><input type=\"hidden\" name=\"owner_callback\" value=\"" + callback + "\"/></td>";
+       tdedit4 += "<td><input type=\"hidden\" name=\"owner_oldval\" value=\"us" + save_owner_id + "\"/></td>";
+       tdedit4 += "</tr>";      
+    }  
+    else if (label == "Service Owner Id")
+    {
+     save_owner_id = val;
     }  
     else if (label == "Service Owner Email")
     {
      tdedit4 += "<tr>";
      tdedit4 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-     tdedit4 += "<td><input name=\"serviceowneremail_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
-     tdedit4 += "<td><input type=\"hidden\" name=\"serviceowneremail_field\" value=\"" + field + "\"/></td>";
-     tdedit4 += "<td><input type=\"hidden\" name=\"serviceowneremail_callback\" value=\"" + callback + "\"/></td>";
-     tdedit4 += "<td><input type=\"hidden\" name=\"serviceowneremail_oldval\" value=\"" + val + "\"/></td>";
+     tdedit4 += "<td>" + val + "</td>";
+     tdedit4 += "<td></td>";
+     tdedit4 += "<td></td>";
+     tdedit4 += "<td></td>";
      tdedit4 += "</tr>";
     }  
     else if (label == "Service Owner Phone")
     {
      tdedit4 += "<tr>";
      tdedit4 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-     tdedit4 += "<td><input name=\"serviceownerphone_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
-     tdedit4 += "<td><input type=\"hidden\" name=\"serviceownerphone_field\" value=\"" + field + "\"/></td>";
-     tdedit4 += "<td><input type=\"hidden\" name=\"serviceownerphone_callback\" value=\"" + callback + "\"/></td>";
-     tdedit4 += "<td><input type=\"hidden\" name=\"serviceownerphone_oldval\" value=\"" + val + "\"/></td>";
+     tdedit4 += "<td>" + val + "</td>";
+     tdedit4 += "<td></td>";
+     tdedit4 += "<td></td>";
+     tdedit4 += "<td></td>";
      tdedit4 += "</tr>";
     } 
     else if (label == "Slack Channel")
@@ -369,7 +433,7 @@ function ciClickElement(id, comptype)
      tdedit4 += "<td><input type=\"hidden\" name=\"discordchannel_oldval\" value=\"" + val + "\"/></td>";
      tdedit4 += "</tr>";
     }  
-    else if (label == "Hipchat Channel")
+    else if (label == "HipChat Channel")
     {
      tdedit4 += "<tr>";
      tdedit4 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -409,7 +473,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"operator_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }
-    else if (label == "Build Date")
+    else if (label == "Build Date"  && !comptype.includes('database'))
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -419,7 +483,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"builddate_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }
-    else if (label == "Container Registry")
+    else if (label == "Container Registry" && comptype == 'docker')
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -429,7 +493,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"dockerrepo_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }
-    else if (label == "Container Digest")
+    else if (label == "Container Digest" && comptype == 'docker')
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -439,7 +503,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"dockersha_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }
-    else if (label == "Container Tag")
+    else if (label == "Container Tag" && comptype == 'docker')
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -449,7 +513,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"dockertag_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }
-    else if (label == "Git Commit")
+    else if (label == "Git Commit" && !comptype.includes('database'))
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -459,7 +523,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"gitcommit_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }
-    else if (label == "Git Repo")
+    else if (label == "Git Repo" && !comptype.includes('database'))
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -469,7 +533,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"gitrepo_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }
-    else if (label == "Git Tag")
+    else if (label == "Git Tag" && !comptype.includes('database'))
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -479,7 +543,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"gittag_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }
-    else if (label == "Git URL")
+    else if (label == "Git URL" && !comptype.includes('database'))
     {
      tdedit3 += "<tr>";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -489,64 +553,26 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"giturl_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }
-    else if (label == "Roll Forward")
+    else if (label == "Roll Forward"  && comptype.includes('database'))
     {
      tdedit3 += "<tr style=\"display:none\">";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
      tdedit3 += "<td style=\"padding-top:2px;padding-bottom:2px;\"><select name=\"" + prefix + "rollup_val\">";
-     if (val == "OFF")
-     {
-      val = "Off";
-      tdedit3 += "<option value=\"OFF\" selected>Off</option>";
-      tdedit3 += "<option value=\"ON\">On</option>";
-      tdedit3 += "<option value=\"ALL\">All</option>";
-     }
-     else if (val == "ON")
-     {
-      val = "On";
-      tdedit3 += "<option value=\"OFF\">Off</option>";
-      tdedit3 += "<option value=\"ON\" selected>On</option>";
-      tdedit3 += "<option value=\"ALL\">All</option>";
-     }
-     else
-     {
-      val = "All";
-      tdedit3 += "<option value=\"OFF\">Off</option>";
-      tdedit3 += "<option value=\"ON\">On</option>";
-      tdedit3 += "<option value=\"ALL\" selected>All</option>";
-     }
+     val = "On";
+     tdedit3 += "<option value=\"ON\" selected>On</option>";
      tdedit3 += "</td>";
      tdedit3 += "<td><input type=\"hidden\" name=\"" + prefix + "rollup_field\" value=\"" + field + "\"/></td>";
      tdedit3 += "<td><input type=\"hidden\" name=\"" + prefix + "rollup_callback\" value=\"" + callback + "\"/></td>";
      tdedit3 += "<td><input type=\"hidden\" name=\"" + prefix + "rollup_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
     }
-    else if (label == "Rollback")
+    else if (label == "Roll Back"  && comptype.includes('database'))
     {
      tdedit3 += "<tr style=\"display:none\">";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
      tdedit3 += "<td style=\"padding-top:2px;padding-bottom:2px;\"><select name=\"" + prefix + "rollback_val\">";
-     if (val == "OFF")
-     {
-      val = "Off";
-      tdedit3 += "<option value=\"OFF\" selected>Off</option>";
-      tdedit3 += "<option value=\"ON\">On</option>";
-      tdedit3 += "<option value=\"ALL\">All</option>";
-     }
-     else if (val == "ON")
-     {
-      val = "On";
-      tdedit3 += "<option value=\"OFF\">Off</option>";
-      tdedit3 += "<option value=\"ON\" selected>On</option>";
-      tdedit3 += "<option value=\"ALL\">All</option>";
-     }
-     else
-     {
-      val = "All";
-      tdedit3 += "<option value=\"OFF\">Off</option>";
-      tdedit3 += "<option value=\"ON\">On</option>";
-      tdedit3 += "<option value=\"ALL\" selected>All</option>";
-     }
+     val = "On";
+     tdedit3 += "<option value=\"ON\" selected>On</option>";
      tdedit3 += "</td>";
      tdedit3 += "<td><input type=\"hidden\" name=\"" + prefix + "rollback_field\" value=\"" + field + "\"/></td>";
      tdedit3 += "<td><input type=\"hidden\" name=\"" + prefix + "rollback_callback\" value=\"" + callback + "\"/></td>";
@@ -559,6 +585,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<tr id=\"repository_row\">";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
      tdedit3 += "<td><select name=\"repository_val\" id=\"repository_val\" onChange=\"ToggleRepoProps(" + id + ",'repository_row',false,true)\" /></td>";
+     save_repository_id = id;
      save_repository_val = val;
      current_repository_val = save_repository_val;
      tdedit3 += "<td><input type=\"hidden\" name=\"repository_field\" value=\"" + field + "\"/></td>";
@@ -572,6 +599,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<tr id=\"rf_repository_row\">";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
      tdedit3 += "<td><select name=\"rf_repository_val\" id=\"rf_repository_val\" onChange=\"ToggleRepoProps(" + id + ",'rf_repository_row',false,true)\" /></td>";
+     save_rf_repository_id = id;
      save_rf_repository_val = val;
      current_rf_repository_val = save_rf_repository_val;
      tdedit3 += "<td><input type=\"hidden\" name=\"rf_repository_field\" value=\"" + field + "\"/></td>";
@@ -585,6 +613,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<tr id=\"rb_repository_row\">";
      tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
      tdedit3 += "<td><select name=\"rb_repository_val\" id=\"rb_repository_val\" onChange=\"ToggleRepoProps(" + id + ",'rb_repository_row',false,true)\" /></td>";
+     save_rb_repository_id = id;
      save_rb_repository_val = val;
      current_rb_repository_val = save_rb_repository_val;
      tdedit3 += "<td><input type=\"hidden\" name=\"rb_repository_field\" value=\"" + field + "\"/></td>";
@@ -625,16 +654,19 @@ function ciClickElement(id, comptype)
    
    var prefix = "";
    var workid = save_repository_id;
+   var workval = save_repository_val;
    
    if (comptype == "rf_database")
    {
     prefix = "rf_";
     workid = save_rf_repository_id;
+    workval = save_rf_repository_val;
    }
    else if (comptype == "rb_database")
    {
     prefix = "rb_";
     workid = save_rb_repository_id;
+    workval = save_rb_repository_val;
    }
     
    if ($("#" + prefix + "repository_val").length > 0)
@@ -657,7 +689,7 @@ function ciClickElement(id, comptype)
       
       for (n = 0; n < res.length; n++)
       {
-       if (workid == res[n].id)
+       if (workval == res[n].name)
        {
         owner.append('<option id="' + prefix + 'repository' + n + '" selected value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
         select_val = res[n].type + res[n].id;
@@ -984,36 +1016,6 @@ function GetSaveSummaryItemData(instance, data, prefix)
    ret = true;
   }
  } 
- 
- if (typeof view.serviceowner_val !== 'undefined' && typeof view.serviceowner_oldval !== 'undefined')
- {
-  if (view.serviceowner_val != view.serviceowner_oldval)
-  {
-   console.log('change_' + view.serviceowner_field + ' = ' + view.serviceowner_val);
-   data['change_' + view.serviceowner_field] = view.serviceowner_val;
-   ret = true;
-  }
- } 
- 
- if (typeof view.serviceowneremail_val !== 'undefined' && typeof view.serviceowneremail_oldval !== 'undefined')
- {
-  if (view.serviceowneremail_val != view.serviceowneremail_oldval)
-  {
-   console.log('change_' + view.serviceowneremail_field + ' = ' + view.serviceowneremail_val);
-   data['change_' + view.serviceowneremail_field] = view.serviceowneremail_val;
-   ret = true;
-  }
- }
- 
- if (typeof view.serviceownerphone_val !== 'undefined' && typeof view.serviceownerphone_oldval !== 'undefined')
- {
-  if (view.serviceownerphone_val != view.serviceownerphone_oldval)
-  {
-   console.log('change_' + view.serviceownerphone_field + ' = ' + view.serviceownerphone_val);
-   data['change_' + view.serviceownerphone_field] = view.serviceownerphone_val;
-   ret = true;
-  }
- }
  
 if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_oldval !== 'undefined')
 {

@@ -117,9 +117,9 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 #panel_container_right_list {  /* container for all right panel stuff */
 	position: absolute;
 	top: 50px;
-	height: 80%;
 	left: 280px;
 	right: 18px; 
+	bottom: 55px;
 }
 
 /*********** END MAIN CONTAINERS  ***************/
@@ -144,7 +144,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	position: absolute;
 	width: 155px;
 	height: 29px; 
-	top: -2px;
+	top: 5px;
 	left: 13px;
 	display: inline;
 	}
@@ -203,9 +203,9 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 
 #right_panel_tabs, #home_right_panel_tabs {  /* container for tabs */
 	height: 23px; 
-	width:  calc(100% - 23px);
+	width:  calc(100% - 500px);
 	position: relative;
-	top: -27px;
+	top: 27px;
 	display: inline-block;	
 	white-space: nowrap;	
 	}
@@ -343,6 +343,12 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 #tabs-General-row-30 {
 	display: flex;
 	background-color: white;
+
+}
+
+#tabs-General-row-32 {
+	display: flex;
+	background-color: white;	
 }
 
 #tabs-General-row-35 {
@@ -522,7 +528,27 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	display:inline-block;
 	border: 1px solid lightgrey;
 	margin: 8px;
-}	
+}
+
+#consumes-panel {
+	width: 50%;
+    display: inline-block;
+    border: 1px solid lightgrey;
+    margin: 8px;
+    text-align: center;
+}
+
+#provides-panel {
+	width: 50%;
+    display: inline-block;
+    border: 1px solid lightgrey;
+    margin: 8px;
+    text-align: center;
+}
+
+#provides_list {
+	    margin-bottom: 8px;
+}
 
 #planning-panel {
 	width: 100%;
@@ -1137,6 +1163,38 @@ iframe.dialog_white {
 	bottom: 18px;
 	right: 18px;
 	left: 18px;
+}
+
+.footer {
+ position: fixed;
+ left: 0;
+ bottom: 0;
+ width: 100%;
+}
+
+.bottom {
+	display: flex;
+}
+
+.dataTables_length {
+ flex: 1;
+ display: flex;
+ align-items: center;
+ margin-top: 12px;
+}
+
+.dataTables_info {
+ flex: 1;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+}  
+
+.dataTables_paginate {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .status {
@@ -2011,6 +2069,11 @@ ul.subpanel li {
 	display: none;
 }
 
+#attrib10-edit {
+	display: none;
+}
+
+
 #srv4env-edit {
 	display: none;
 }
@@ -2179,8 +2242,7 @@ ul.subpanel li {
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-    overflow-y: auto;
-    max-height: 300px;
+    max-height: 400px;
 }	
 
 #cve_title {
@@ -2195,8 +2257,7 @@ ul.subpanel li {
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-    overflow-y: auto;
-    max-height: 300px;
+    max-height: 400px;
 }	
 
 #license_title {
@@ -2818,7 +2879,6 @@ button.edit_button_disabled {
 	background-color: grey;
 	}
 	
-
 button.delete_button {
   background-color: inherit;
   font-family: 'Open Sans', sans-serif;
@@ -3143,6 +3203,7 @@ button.save_button_sub_small img {
 	font-family: 'Open Sans', sans-serif;
 	font-size: 12px;
 	color: #676767;
+	height: 709px;
 	}
 
 .loginDialog  {
@@ -3159,7 +3220,18 @@ button.save_button_sub_small img {
 
 #login_container_dialog img {  /*positions the splash screen */
 	position: relative;
-    margin-left: 50px;
+	top: -6px;
+	left: -13px;
+	border-top: 1px solid #fff;
+	border-left: 1px solid #fff;
+	border-bottom: 2px inset #fff;
+	border-right: 1px solid #395670;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-bottom-right-radius:0;
+	border-bottom-left-radius:0;	
+	width: 500px;
+	height: 330px;
 	padding: 0;
 	}
 
@@ -3883,6 +3955,7 @@ div.dt-buttons {
     width: 30px;
 }
 
+
 #applist_pane, #complist_pane, #envlist_pane, #endpointlist_pane, #buildenglist_pane, #buildjoblist_pane, #actionlist_pane, #procdurelist_pane, #notifierlist_pane, #repositorylist_pane, #datasourcelist_pane, #credentiallist_pane, #userlist_pane, #grouplist_pane, #templatelist_pane {
     bottom: 20%;
     box-sizing: border-box;
@@ -4152,3 +4225,51 @@ input[type=text]:focus, textarea:focus {
 	white-space: nowrap;
 }
 
+#domnav-panel > svg:nth-child(1)
+{
+ width: 675px;
+ height: 675px;
+}
+
+.cvss_critical {
+  background-color: rgb(184, 37,43) !important;
+}
+
+.cvss_high {
+  background-color: rgb(245, 137, 46) !important;
+}
+
+.cvss_medium {
+  background-color: rgb(252, 235, 63) !important;
+}
+
+.cvss_low {
+  background-color: rgb(53, 172, 74) !important;
+}
+
+.dataTable th {
+    word-wrap: break-word;
+}
+
+th.rotate {
+	padding: 0px;
+	font-weight: normal;
+	border-right:1px solid black;
+}
+th.rotate > div {
+  	-webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+ 	width: 15px;
+ 	margin-left: 25px;
+}
+
+.textH {
+    overflow: visible;
+    height: 50px !important;
+    width: 150px !important;
+    text-align: left;
+    
+}

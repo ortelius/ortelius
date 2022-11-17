@@ -24,12 +24,7 @@
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 
-<link rel="apple-touch-icon" sizes="180x180" href="/dmadminweb/images/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/dmadminweb/images/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/dmadminweb/images/favicon-16x16.png">
-<link rel="manifest" href="/dmadminweb/images/site.webmanifest">
-<meta name="msapplication-TileColor" content="#da532c">
-<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="favicon.ico">
 <link rel='stylesheet' type="text/css" href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,600,400,700,800'>
 <link rel="stylesheet" type="text/css" href="css/cupertino/jquery-ui-min.css" />
 <link rel="stylesheet" type="text/css" href="css/jquery.dmcontextmenu.css" />
@@ -221,6 +216,9 @@
              </div>
              <button class="title_buttons" onclick="openList(event, 'application')"><i class="fal fa-list" aria-hidden="true" style="padding-right:5px;"></i>List</button>
           	 <button class="title_buttons" onclick="openMap(event, 'application')"><i class="fal fa-map-signs" aria-hidden="true" style="padding-right:5px;"></i>Map</button>
+          	 <button class="title_buttons" onclick="openDiff(event, 'application')"><i class="fal fa-equals" aria-hidden="true" style="padding-right:5px;"></i>Compare</button>
+          	 <button class="title_buttons" onclick="openPkgSearch()"><i class="fa-light fa-magnifying-glass" aria-hidden="true" style="padding-right:5px;"></i>Package Search</button>
+          	 
           </div>
           <div id="applist_filter_area" style="height:25px;">
                   <div id="app_search_box_container"></div>
@@ -265,6 +263,7 @@
              <button class="title_buttons" onclick="delRow(event, 'component')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
              <button class="title_buttons" onclick="openList(event, 'component')"><i class="fal fa-list" aria-hidden="true" style="padding-right:5px;"></i>List</button>
           	 <button class="title_buttons" onclick="openMap(event, 'component')"><i class="fal fa-map-signs" aria-hidden="true" style="padding-right:5px;"></i>Map</button>
+          	 <button class="title_buttons" onclick="openDiff(event, 'component')"><i class="fal fa-equals" aria-hidden="true" style="padding-right:5px;"></i>Compare</button>
           </div>
           <div id="complist_filter_area" style="height:25px;">
              <div id="comp_search_box_container"></div>
@@ -305,6 +304,7 @@
                    <a href="/dmadminweb/reports/EnvSuccessFail.html" target="_blank">Success/Failed Deployments per Environment Report</a>
                </div>
              </div>
+             <button class="title_buttons" onclick="openDiff(event, 'environment')"><i class="fal fa-equals" aria-hidden="true" style="padding-right:5px;"></i>Compare</button>
            </div>
            <div id="envlist_filter_area" style="height:25px;">
                   <div id="env_search_box_container"></div>
@@ -436,7 +436,7 @@
           	 <div class="dropdown_menu">
                <button class="title_buttons addMenuButton" onclick="notifierMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
                <div class="dropdown_menu-content" style="display: none;">
-                   <a onclick="addRow(event,'hipchat');">Hipchat</a>
+                   <a onclick="addRow(event,'hipchat');">HipChat</a>
                    <a onclick="addRow(event,'slack');">Slack</a>
                    <a onclick="addRow(event,'smtpemail');">Email</a>
                    <a onclick="addRow(event,'txtlocal');">SMS</a>
@@ -683,7 +683,7 @@
       </div>                           
      </div>           
 	<div id="dashboard_panel">
-	<div id="panel_container_right" class="right">
+	<div id="panel_container_right" class="right" style="display:none" >
 	 <div id="right_panel_header"></div>
 	 <div id="right_panel_tabs">
 	  <div class="tabrow_tabmenu">		
@@ -691,6 +691,7 @@
 	    <ul>	
 	      <li id="tabs-General" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">General</li>		
           <li id="tabs-PackageComponents" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Package Components</li>
+          <li id="tabs-apps2s" onclick="AppS2S(objid)" style="display:none">Application Service Hierarchy Bundle</li>
           <li id="tabs-DeliveryPipeline" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Delivery Pipeline</li>                        
         </ul>
 	   </div>
@@ -739,7 +740,7 @@
                             </button>
                             <button class="delete_button" onClick="javascript:DeleteDomain(objtypeAsInt,objid)">
                                 <i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete Domain
-                            </button>
+                            </button>                    
                         </div>
                     </div>
                     <div id="summ_data">
@@ -800,6 +801,18 @@
                 <div id="summ_title">
                     <h2>Component Details</h2>
                 </div> 
+                  <div id="appcomp-data">
+                     <div id="appcomplist_list" style="width:96%;height:100px;display:inline"></div>
+                        <table id="appcomplist" width="100%">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left">Component</th>
+                                    <th style="text-align:left">Domain</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                  </div>
                 <div id="compowner_summ_header_buttons">
                             <button class="edit_button" onClick="javascript:EditSummaryButton(false,'')">
                                 <i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit
@@ -900,7 +913,7 @@
                 </div>
                 <div id="usermembership-panel">
                   <div id="usermembership-panel-header">
-                    <div id="usermembership_title" style="text-align:left"">
+                    <div id="usermembership_title" style="text-align:left">
                             <h2>User Membership</h2>
                     </div>
                     <div id="usermembership_header_buttons">
@@ -1014,18 +1027,20 @@
             <div id="tabs-General-row-12a">
             	<div id="cve-panel">
             	  <div id="cve_title" style="text-align:left"">
-                      <h2>CVE Issues</h2>
+                      <h2>Vulnerabilities</h2>
                   </div>
                   <div id="cve-data">
-                     <div id="cvelist_list" style="width:96%;height:100px;display:inline""></div>
+                     <div id="cvelist_list" style="width:96%;height:100px;display:inline"></div>
                         <table id="cvelist" width="100%">
                             <thead>
                                 <tr>
+                                    <th style="padding:0;">&nbsp;</th>
                                     <th>Package</th>
                                     <th>Version</th>
-                                    <th style="text-align:left;">CVE</th>
-                                    <th style="text-align:left">Package/Version</th>
-                                    <th style="text-align:left">Summary</th>
+                                    <th>ID</th>
+                                    <th>Url</th>
+                                    <th>Summary</th>
+                                    <th>Component</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -1034,17 +1049,18 @@
                  </div>
             	<div id="license-panel">
             	  <div id="license_title" style="text-align:left"">
-                      <h2>License Consumption</h2>
+                      <h2>Software Bill of Materials (SBOM)</h2>
                   </div>
                   <div id="license-data">
-                     <div id="licenselist_list" style="width:96%;height:100px;display:inline""></div>
+                     <div id="licenselist_list" style="width:96%;height:100px;display:inline"></div>
                         <table id="licenselist" width="100%">
                             <thead>
                                 <tr>
                                     <th>Package</th>
                                     <th>Version</th>
-                                    <th style="text-align:left;">License</th>
-                                    <th style="text-align:left">Package/Version</th>
+                                    <th>License</th>
+                                    <th>Url</th>
+                                    <th>Component</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -1053,7 +1069,7 @@
                   </div>
             	</div>
             </div>	
-            <div id="tabs-General-row-15">
+            <div id="tabs-General-row-15"  >
                 <div id="logs-panel">
                         <div id="logs_title" style="text-align:left"">
                             <h2>Log History</h2>
@@ -1397,20 +1413,20 @@
                    <div id="dragtextdiv" style="margin:10px">Drag the arguments from here onto the command line below to assemble the command. Use the table above to add and configure the switches/arguments.</div> 
                    <div id="argsoutputpane"></div>    
                 </div>
-                <div id="cr-panel-20">
-                        <div id="crs_title">
+                <div id="defect-panel-20">
+                        <div id="defects_title">
                             <h2>Change Requests</h2>
                         </div>
-                         <div id="cr_header_buttons_20">
-                        	<button class="add_button" onClick="javascript:AddCRRow('defects')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
-                        	<button class="delete_button" onClick="javascript:DeleteCRRow('defects')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                         <div id="defect_header_buttons_20">
                         </div>
-                        <div id="cr-data-20">
-                        <table id="crtab-20" class="cb_dev_table">
+                        <div id="defect-20-data">
+                        <table id="defect-20" class="cb_dev_table">
                             <thead>
                                 <tr>
-                                    <th>Change Request</th>
+                                    <th>CR</th>
                                     <th>Summary</th>
+                                    <th>Component</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -1487,8 +1503,40 @@
                     <textarea id='editproc' cols='400' wrap='off' spellcheck='false' style='width:100%;height:600px;font-size:14px;font-family:courier;white-space: pre; overflow: auto;'></textarea>   
                  </div>
                 </div>
-            </div>
-
+            </div>             
+            <div id="tabs-General-row-32">
+                <div id="provides-panel">
+                   <div id="provides_title" style="text-align:left"">
+                        <h2>Providing API End Points</h2>
+                    </div>
+                     <div id="provides_list">  
+					  <table id="provideslist" class="hover row-border nowrap" height="100%" width="100%">
+			           <thead>
+			            <tr>
+							<th style="text-align: left;">Verb</th> 
+							<th style="text-align: left;">API End Point</th>   
+			            </tr>
+			          </thead>
+			         </table>
+			        </div>  
+          		</div>
+          		<div id="consumes-panel">
+                        <div id="consumes_title" style="text-align:left"">
+                            <h2>Consuming API End Points</h2>
+                        </div>
+                     <div id="consumes_list">  
+					  <table id="consumeslist" class="hover row-border nowrap" height="100%" width="100%">
+			           <thead>
+			            <tr>
+							<th style="text-align: left;">Verb</th> 
+							<th style="text-align: left;">API End Point</th>   
+							<th style="text-align: left;">Component</th>  
+			            </tr>
+			          </thead>
+			         </table>
+			        </div>      
+               </div> 
+             </div>               
                <div id="tabs-General-row-35">
                 <div id="row-35-audit">
                         <div id="audit35_title" style="text-align:left"">
@@ -1518,20 +1566,38 @@
                 </div>
                </div>
                 <div id="tabs-General-row-40">
-                    <div id="cr-panel">
-                        <div id="crs_title">
+                    <div id="defect-panel">
+                        <div id="defects_title">
                             <h2>Change Requests</h2>
                         </div>
-                         <div id="cr_header_buttons">
-                        	<button class="add_button" onClick="javascript:AddCRRow('defects')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
-                        	<button class="delete_button" onClick="javascript:DeleteCRRow('defects')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                         <div id="defect_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddDefectRow('defect')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditDefectRow('defect')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteDefectRow('defect')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveDefectRow('defect')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelDefectRow('defect')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
                         </div>
-                        <div id="cr-data">
-                        <table id="crtab" class="cb_dev_table">
+                        <div id="defect-data">
+                        <table id="defect" class="cb_dev_table">
                             <thead>
                                 <tr>
-                                    <th>Change Request</th>
+                                    <th>&nbsp;</th>
+                                    <th>CR</th>
                                     <th>Summary</th>
+                                    <th>Component</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="defect-edit" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>CR</th>
+                                    <th>Summary</th>
+                                    <th>Component</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -1681,7 +1747,8 @@
 	<div id="displaylog"></div>
 	<div id="buildlog"></div>
 	<div id="throbber" style="display:none;">
-    	<img src="css/images/cowandspaceship-animated.gif"  />
+    	<img src="css/images/dog.gif" style="height:80px;border-radius: 25px;" />
+    	<p style="position:relative;left:-7px;">Sit tight....</p>
 	</div>
  <footer class="footer">
 	<div id="footer_container">	 

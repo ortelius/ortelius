@@ -421,7 +421,7 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
    ds.addProperty(SummaryField.DOCKER_CHARTNAMESPACE, "Helm Chart Namespace", getChartNamespace());
    ds.addProperty(SummaryField.DOCKER_CHARTREPO, "Helm Chart Repo", getChartRepo());
    ds.addProperty(SummaryField.DOCKER_CHARTREPOURL, "Helm Chart Repo Url", getChartRepoUrl());
-   ds.addProperty(SummaryField.DOCKER_OPERATOR, "Operator", getOperator());
+//   ds.addProperty(SummaryField.DOCKER_OPERATOR, "Operator", getOperator());
    ds.addProperty(SummaryField.DOCKER_REPO, "Container Registry", getDockerRepo());
    ds.addProperty(SummaryField.DOCKER_SHA, "Container Digest", getDockerSha());
    ds.addProperty(SummaryField.DOCKER_TAG, "Container Tag", getDockerTag());
@@ -434,7 +434,7 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
    ds.addProperty(SummaryField.SERVICE_OWNER_PHONE, "Service Owner Phone", getServiceOwnerPhone());
    ds.addProperty(SummaryField.SLACK_CHANNEL, "Slack Channel", getSlackChannel());
    ds.addProperty(SummaryField.DISCORD_CHANNEL, "Slack Channel", getDiscordChannel());
-   ds.addProperty(SummaryField.HIPCHAT_CHANNEL, "Slack Channel", getHipChatChannel());
+   ds.addProperty(SummaryField.HIPCHAT_CHANNEL, "HipChat Channel", getHipChatChannel());
    ds.addProperty(SummaryField.PAGERDUTY_SERVICE_URL, "Pager Duty Service Url", getPagerDutyServiceUrl());
    ds.addProperty(SummaryField.PAGERDUTY_BUSINESS_URL, "Pager Duty Business Service Url", getPagerDutyBusinessServiceUrl());
   }
@@ -548,7 +548,7 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
    obj.add("Helm Chart Namespace", getChartNamespace());
    obj.add("Helm Chart Repo", getChartRepo());
    obj.add("Helm Chart Repo Url", getChartRepoUrl());
-   obj.add("Operator", getOperator());
+//   obj.add("Operator", getOperator());
    obj.add("Build Date", getBuildDate());
    obj.add("Container Registry", getDockerRepo());
    obj.add("Container Digest", getDockerSha());
@@ -561,8 +561,8 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
    obj.add("Service Owner Email", getServiceOwnerEmail());
    obj.add("Service Owner Phone", getServiceOwnerPhone());
    obj.add("Slack Channel", getSlackChannel());
-   obj.add("Slack Channel", getDiscordChannel());
-   obj.add("Slack Channel", getHipChatChannel());
+   obj.add("Discord Channel", getDiscordChannel());
+   obj.add("HipChat Channel", getHipChatChannel());
    obj.add("Pager Duty Service Url", getPagerDutyServiceUrl());
    obj.add("Pager Duty Business Service Url", getPagerDutyBusinessServiceUrl());
   }

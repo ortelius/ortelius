@@ -40,6 +40,7 @@ var buildenginetype = "";
 var addcomptype = "";
 var network;
 
+var defect_rowcnt = 0;
 var attr_rowcnt = 0;
 var app4env_rowcnt = 0;
 var env4app_rowcnt = 0;
@@ -83,6 +84,7 @@ var domlist = [];
 var userdom = "";
 var userdomid = "";
 var parenttype = "";
+var appcomplist_table = undefined;
 var applist_table = undefined;
 var rellist_table = undefined;
 var complist_table = undefined;
@@ -100,8 +102,11 @@ var credentiallist_table = undefined;
 var userlist_table = undefined;
 var grouplist_table = undefined;
 var servercomptypelist_table = undefined;
+var provideslist_table = undefined;
+var consumeslist_table = undefined;
 var licenselist_table = undefined;
 
+var defectdropdown = "";
 var envdropdown = "";
 var appdropdown = "";
 var srvdropdown = "";
@@ -109,6 +114,7 @@ var emailtodropdown = "";
 var groupmembershipdropdown = "";
 var usermembershipdropdown = "";
 var addParams="";
+var defectdict = {};
 
 var displaySubTabs = "N";
 var NodeType = "";
@@ -156,6 +162,7 @@ var tdedit2 = "";
 var tdedit3 = "";
 var attrs_tdedit = "";
 var env4app_tdedit = "";
+var defect_tdedit = "";
 var srv4comp_tdedit = "";
 var comp4srv_tdedit = "";
 var switchargs_tdedit = "";
@@ -189,6 +196,7 @@ var current_rf_repository_val = "";
 var current_rb_repository_val = "";
 var save_linkedtask_val = "";
 var save_owner_val = "";
+var save_owner_name = "";
 var save_logdlg_height = 0;
 var save_logdlg_width = 0;
 var save_groupowner_val = "";
@@ -769,7 +777,8 @@ var canView = {  "#applications_tree": true,
   "#groups_tree": true};
     
 var appTabs = { "#applications_tree":["#tabs-General",
-            "#tabs-PackageComponents"],
+            "#tabs-PackageComponents",
+			"#tabs-apps2s"],
     "#components_tree":["#tabs-General"],         
     "#releases_tree":["#tabs-General",
                       "#tabs-PackageApplications"],       
@@ -840,14 +849,15 @@ var menuForType = {
 
 var compitem_colmap =  new Map();
 
-compitem_colmap.set('serviceowner',["1618", false, "", "Service Owner"]);
+compitem_colmap.set('serviceownerid',["1627", false, "", "Service Owner Id"]);
+compitem_colmap.set('serviceowner',["3", false, "", "Service Owner"]);
 compitem_colmap.set('serviceowneremail', ["1619", false, "", "Service Owner Email"]);
 compitem_colmap.set('serviceownerphone', ["1620", false, "", "Service Owner Phone"]);
 compitem_colmap.set('pagerdutybusinessurl', ["1625", false, "", "PagerDuty Business Service Url"]);
 compitem_colmap.set('pagerdutyurl', ["1624", false, "", "PagerDuty Service Url"]);
 compitem_colmap.set('slackchannel', ["1621", false, "", "Slack Channel"]);
 compitem_colmap.set('discordchannel', ["1622", false, "", "Discord Channel"]);
-compitem_colmap.set('hipchatchannel', ["1623", false, "", "Hipchat Channel"]);
+compitem_colmap.set('hipchatchannel', ["1623", false, "", "HipChat Channel"]);
 compitem_colmap.set('builddate', ["1605", false, "", "Build Date"]);
 compitem_colmap.set('buildid', ["1601", false, "", "Build Id"]);
 compitem_colmap.set('buildurl', ["1602", false, "", "Build URL"]);
@@ -865,10 +875,10 @@ compitem_colmap.set('gittag', ["1610", false, "", "Git Tag"]);
 compitem_colmap.set('giturl', ["1611", false, "", "Git URL"]);
 compitem_colmap.set('kind', ["718", false,  "ik", "Kind"]);
 compitem_colmap.set('operator', ["1604", false, "", "Operator"]);
-compitem_colmap.set('respositoryid', ["704", false, "re", "Repository"]);
-compitem_colmap.set('rollback', ["703", false, "rr", "Rollback flag"]);
-compitem_colmap.set('rollup', ["702", false, "rr", "Rollup flag"]);
-compitem_colmap.set('target', ["705", false, "", "Target Directory"]);
+compitem_colmap.set('repository', ["704", false, "re", "Repository"]);
+compitem_colmap.set('rollback', ["703", false, "rr", "Roll Back"]);
+compitem_colmap.set('rollup', ["702", false, "rr", "Roll Forward"]);
+compitem_colmap.set('targetdirectory', ["705", false, "", "Target Directory"]);
 compitem_colmap.set('xpos', ["714", false, "", "xpos"]);
 compitem_colmap.set('ypos', ["715", false, "", "ypos"]);
         
