@@ -1,4 +1,4 @@
-FROM nginx
+FROM nginx:alpine
 EXPOSE 80
 EXPOSE 443
 
@@ -7,6 +7,9 @@ WORKDIR /etc/nginx/
 RUN mkdir /etc/nginx/location; \
     mkdir /var/www;
 COPY dmadminweb/microservice/nginx.conf  /etc/nginx/
+COPY dmadminweb/microservice/nginx-ssl.conf  /etc/nginx/
+COPY dmadminweb/microservice/nginx-nossl.conf  /etc/nginx/
 COPY dmadminweb/microservice/location/  /etc/nginx/location/
+COPY dmadminweb/microservice/entrypoint-nginx.sh /tmp/entrypoint.sh
 
-CMD nginx -g 'daemon off;'
+ENTRYPOINT [ "/tmp/entrypoint.sh" ]
