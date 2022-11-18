@@ -4,3 +4,4 @@ image:
   repository: quay.io/ortelius/ms-general
   tag: svc_cat-v10.0.15-gd727ee
   sha: sha256:ed79eb4f3d3ee49e0e7741f0995ba43390b3ebf1adaff340ae0e2231cd4eb042
+nginx: OFF
