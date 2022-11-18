@@ -85,6 +85,7 @@ chmod 755 "$HOME/.ssh"
 chmod 600 "$HOME/.ssh/known_hosts"
 
 if [ ! -e /opt/deployhub/keys/id_rsa ]; then
+  mkdir -p /opt/deployhub/keys
   openssl genpkey -out /opt/deployhub/keys/id_rsa -algorithm RSA -pkeyopt rsa_keygen_bits:2048
   openssl pkey -in /opt/deployhub/keys/id_rsa -pubout -out /opt/deployhub/keys/id_rsa.pub
 fi
