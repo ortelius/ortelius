@@ -63,7 +63,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
@@ -31579,6 +31578,56 @@ public JSONArray getComp2Endpoints(int compid)
   }
   catch (InvalidKeySpecException | NoSuchAlgorithmException e)
   {
+   e.printStackTrace();
+  }
+  
+  try
+  {
+   // read id_rsa.pub
+   String rsaPublicKey = "";
+   
+   String pubkey = "/opt/deployhub/keys/id_rsa.pub";
+   
+   if (System.getenv("JwtPublicKey") != null)
+    pubkey = System.getenv("JwtPublicKey");
+   
+   if (new File(pubkey).isFile())
+   {
+     File file = new File(pubkey);
+
+     FileInputStream fin = new FileInputStream(file);
+     byte fileContent[] = new byte[(int) file.length()];
+     fin.read(fileContent);
+     String strFileContent = new String(fileContent);
+     fin.close();
+     rsaPublicKey = strFileContent;
+   }
+   
+   // base64 enc
+   
+   String data = Base64.encodeBase64String(rsaPublicKey.getBytes());
+   // add to dm_tableinfo
+   
+   String dsql = "UPDATE dm.dm_tableinfo set bootstrap = ?";
+   PreparedStatement stmt = m_conn.prepareStatement(dsql);
+   stmt.setString(1, data);
+   stmt.execute();
+   m_conn.commit();
+  }
+  catch (SQLException e)
+  {
+   rollback();
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  }
+  catch (FileNotFoundException e)
+  {
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  }
+  catch (IOException e)
+  {
+   // TODO Auto-generated catch block
    e.printStackTrace();
   }
   
