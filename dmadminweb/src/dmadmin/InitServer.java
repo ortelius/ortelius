@@ -553,37 +553,6 @@ public class InitServer extends HttpServletBase
   }
   }
   
-  try
-  {
-   // read id_rsa.pub
-   String rsaPublicKey = "";
-   
-   String pubkey = "/opt/deployhub/keys/id_rsa.pub";
-   
-   if (System.getenv("JwtPublicKey") != null)
-    pubkey = System.getenv("JwtPublicKey");
-   
-   if (new File(pubkey).isFile())
-    rsaPublicKey = readFileAsString(pubkey);
-   
-   // base64 enc
-   
-   String data = Base64.encodeBase64String(rsaPublicKey.getBytes());
-   // add to dm_tableinfo
-   
-   String dsql = "UPDATE dm.dm_tableinfo set bootstrap = ?";
-   PreparedStatement stmt = m_conn.prepareStatement(dsql);
-   stmt.setString(1, data);
-   stmt.execute();
-   m_conn.commit();
-  }
-  catch (SQLException e)
-  {
-   rollback();
-   // TODO Auto-generated catch block
-   e.printStackTrace();
-  }
-  
   // Exit everything 
   if (System.getenv("INIT_ONLY") != null)
   {
