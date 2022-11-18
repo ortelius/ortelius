@@ -38,7 +38,7 @@ spec:
                   name: pgcred
                   key: DBConnectionString 
             - name: NGINX
-              value: {{ .Values.nginx }}
+              value: "{{ .Values.internal_nginx }}"
           ports:
             - name: http
               containerPort: 8080
