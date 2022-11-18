@@ -3,4 +3,4 @@ image:
   repository: quay.io/ortelius/ms-ui
   tag: svc_cat-v10.0.17-g957959
   sha: sha256:4590c85cc3c7459477e95f8093067730f650e844b28d8bd35a4ff77564fd583a
-internal_nginx: OFF
+internal_nginx: "OFF"
