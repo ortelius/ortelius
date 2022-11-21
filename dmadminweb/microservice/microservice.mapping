@@ -81,7 +81,9 @@ ms-general:8080:GetUsers
 ms-general:8080:getversummary
 ms-general:8080:Highlighter
 ms-general:8080:ImportProc
+ms-general:8080:InitServer
 ms-general:8080:KeepAlive
+ms-general:8080:Login
 ms-general:8080:Logout
 ms-general:8080:ModifyEvent
 ms-general:8080:MoveNode
@@ -103,7 +105,6 @@ ms-general:8080:UpdatePropertiesData
 ms-general:8080:UpdateSummaryData
 ms-general:8080:UserDetails
 ms-general:8080:ValidateTask
-ms-general:8080:InitServer
 ms-ui:8080:About
 ms-ui:8080:DomainDetails
 ms-ui:8080:GetAccess
@@ -112,6 +113,5 @@ ms-ui:8080:GetComponentItem
 ms-ui:8080:getTaskDetails
 ms-ui:8080:GroupDetails
 ms-ui:8080:Home
-ms-ui:8080:Login
 ms-ui:8080:Reports
 ms-ui:8080:RunTask
