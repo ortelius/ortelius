@@ -537,6 +537,12 @@
   </servlet>
   <servlet>
     <description></description>
+    <display-name>Login</display-name>
+    <servlet-class>dmadmin.Login</servlet-class>
+    <servlet-name>Login</servlet-name>
+  </servlet>
+  <servlet>
+    <description></description>
     <display-name>Logout</display-name>
     <servlet-class>dmadmin.Logout</servlet-class>
     <servlet-name>Logout</servlet-name>
@@ -1000,6 +1006,10 @@
     <servlet-name>KeepAlive</servlet-name>
     <url-pattern>/KeepAlive</url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>Login</servlet-name>
+    <url-pattern>/Login</url-pattern>
+  </servlet-mapping>  
   <servlet-mapping>
     <servlet-name>Logout</servlet-name>
     <url-pattern>/Logout</url-pattern>
