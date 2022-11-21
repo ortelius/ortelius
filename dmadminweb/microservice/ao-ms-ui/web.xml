@@ -88,12 +88,6 @@
     <servlet-name>Home</servlet-name>
   </servlet>
   <servlet>
-    <description></description>
-    <display-name>Login</display-name>
-    <servlet-class>dmadmin.Login</servlet-class>
-    <servlet-name>Login</servlet-name>
-  </servlet>
-  <servlet>
     <servlet-class>dmadmin.Reports</servlet-class>
     <servlet-name>Reports</servlet-name>
   </servlet>
@@ -134,10 +128,6 @@
   <servlet-mapping>
     <servlet-name>Home</servlet-name>
     <url-pattern>/Home</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>Login</servlet-name>
-    <url-pattern>/Login</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>Reports</servlet-name>
