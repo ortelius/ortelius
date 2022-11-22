@@ -15,7 +15,7 @@
  limitations under the License.
 -->
 
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:web="http://java.sun.com/xml/ns/javaee" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+<web-app>
   <display-name>dmadminweb</display-name>
   <session-config>
      <session-timeout>1</session-timeout>
@@ -59,6 +59,17 @@
     <servlet-name>InitServer</servlet-name>
     <url-pattern>/InitServer</url-pattern>
   </servlet-mapping>
+   <servlet>
+    <description></description>
+    <display-name>InitVulns</display-name>
+    <servlet-name>InitVulns</servlet-name>
+    <servlet-class>dmadmin.InitVulns</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>InitVulns</servlet-name>
+    <url-pattern>/InitVulns</url-pattern>
+  </servlet-mapping>
   <servlet>
     <description></description>
     <display-name>Engine</display-name>
@@ -97,7 +108,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>GetApps2Comps</servlet-name>
-    <url-pattern>/GetApps2Comps</url-pattern>s
+    <url-pattern>/GetApps2Comps</url-pattern>
   </servlet-mapping>
   <servlet>
     <description></description>
@@ -107,7 +118,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>TableFilter</servlet-name>
-    <url-pattern>/TableFilter</url-pattern>s
+    <url-pattern>/TableFilter</url-pattern>
   </servlet-mapping>
     <servlet>
     <description></description>
@@ -117,7 +128,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>GetComps2Apps</servlet-name>
-    <url-pattern>/GetComps2Apps</url-pattern>s
+    <url-pattern>/GetComps2Apps</url-pattern>
   </servlet-mapping>
   <servlet>
     <description></description>
@@ -1107,7 +1118,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>ValidateTask</servlet-name>
-    <url-pattern>/ValidateTask</url-pattern>s
+    <url-pattern>/ValidateTask</url-pattern>
   </servlet-mapping>
   <servlet>
     <description></description>

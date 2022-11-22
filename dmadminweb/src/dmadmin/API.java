@@ -2573,8 +2573,41 @@ public class API extends HttpServlet
       throw new ApiException("Login failed");
      }
     }
-    
-    if (elements[0].equals("deploy"))
+    if (elements[0].equals("provides"))
+    {
+      String[] parts = path.split("/");
+      String compstr = parts[parts.length-1];
+      int compid = new Integer(compstr).intValue();
+      
+      obj.add("data",so.getCompProvides(compid, request, response));
+    } 
+    else if (elements[0].equals("consumes"))
+    {
+      String[] parts = path.split("/");
+      String compstr = parts[parts.length-1];
+      int compid = new Integer(compstr).intValue();
+
+      obj.add("data",so.getCompConsumes(compid, request, response));
+    }
+    else if (elements[0].equals("apps2s"))
+    {
+      String[] parts = path.split("/");
+      String compstr = parts[parts.length-1];
+      int appid = new Integer(compstr).intValue();
+      
+      JSONArray arr = so.getAppService2Service(appid, request, response);
+      obj.add("data", arr);
+    } 
+    else if (elements[0].equals("appedge"))
+    {
+      String[] parts = path.split("/");
+      String compstr = parts[parts.length-1];
+      int appid = new Integer(compstr).intValue();
+      
+      JSONArray arr = so.getAppEdgeBundle(appid, request, response);
+      obj.add("data", arr);
+    }     
+    else if (elements[0].equals("deploy"))
     {
      // Go invoke a deployment
      System.out.println("API: deploy");
@@ -4637,8 +4670,44 @@ public class API extends HttpServlet
  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
  {
   String path = request.getPathInfo();
-   
-  if (path.contains("/signup"))
+ 
+  if (path.contains("/provides"))
+  {
+   try (DMSession so = new DMSession(request.getServletContext()))
+   {
+    String[] parts = path.split("/");
+    String compstr = parts[parts.length-1];
+    int compid = new Integer(compstr).intValue();
+    
+    so.setCompProvides(compid, request, response);
+    PrintWriter out = response.getWriter();
+    out.println("{}");
+   }
+   catch (Exception e)
+   {
+    System.out.println("Exception caught, e=" + e.getMessage());
+    e.printStackTrace();
+   }
+  } 
+  else if (path.contains("/consumes"))
+  {
+   try (DMSession so = new DMSession(request.getServletContext()))
+   {
+    String[] parts = path.split("/");
+    String compstr = parts[parts.length-1];
+    int compid = new Integer(compstr).intValue();
+
+    so.setCompConsumes(compid, request, response);
+    PrintWriter out = response.getWriter();
+    out.println("{}");
+   }
+   catch (Exception e)
+   {
+    System.out.println("Exception caught, e=" + e.getMessage());
+    e.printStackTrace();
+   }
+  }   
+  else if (path.contains("/signup"))
   {
    try (DMSession so = DMSession.getInstance(request))
    {

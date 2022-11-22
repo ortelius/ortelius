@@ -437,22 +437,29 @@ $(document).click(function (e) {
     clearTimeout(tid);
   }
   
-  let fileHandle;
-  document.getElementById('upload_readme').addEventListener('click', async () => {
+  document.getElementById('upload_readme').addEventListener('click', getReadme);
+  document.getElementById('upload_swagger').addEventListener('click', getSwagger);
+  
+ });
+
+  async function getReadme()
+  {
+	 let fileHandle;
      [fileHandle] = await window.showOpenFilePicker();
      const file = await fileHandle.getFile();
      const contents = await file.text();
      AddCompFile(contents, 'readme');
-  });
+  };
   
-  document.getElementById('upload_swagger').addEventListener('click', async () => {
+  async function getReadme()
+  {
+	let fileHandle;
      [fileHandle] = await window.showOpenFilePicker();
      const file = await fileHandle.getFile();
      const contents = await file.text();
-     AddCompFile(contents, 'swagger');
-  });
- });
-
+     AddCompFile(contents, 'readme');
+  };
+  
  function VerifyPW()
  {
   var pw1 = $("#newpassword").val();

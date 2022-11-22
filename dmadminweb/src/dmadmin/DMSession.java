@@ -66,6 +66,7 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -87,6 +88,7 @@ import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.parsers.DocumentBuilder;
 // For XML parsing (procedure/function import)
@@ -31804,5 +31806,281 @@ public JSONArray getComp2Endpoints(int compid)
    e.printStackTrace();
   } 
   return ret;
+ } 
+ 
+ public void setCompProvides(int compid, HttpServletRequest request, HttpServletResponse response)
+ {
+  try
+  {
+   String requestData = request.getReader().lines().collect(Collectors.joining());
+   JsonArray endpoints = new JsonParser().parse(requestData).getAsJsonArray();
+
+   try
+   {
+    // del old endpoints for compid
+    m_conn.setAutoCommit(false);
+    String sql = "DELETE FROM dm.dm_comp_provides WHERE id=?";
+    PreparedStatement stmt = m_conn.prepareStatement(sql);
+    stmt.setInt(1, compid);
+    stmt.execute();
+
+    // loop and insert
+    Iterator<JsonElement> it = endpoints.iterator();
+    while (it.hasNext())
+    {
+     JsonObject obj = it.next().getAsJsonObject();
+     String verb = (obj.get("verb") != null) ? obj.get("verb").getAsString() : "";
+     String path = (obj.get("path") != null) ? obj.get("path").getAsString() : "";
+     System.out.println("VERB=" + verb + " PATH=" + path);
+     PreparedStatement stmt2 = m_conn.prepareStatement("INSERT INTO dm.dm_comp_provides(id,verb, path) VALUES(?,?,?)");
+     stmt2.setInt(1, compid);
+     stmt2.setString(2, verb);
+     stmt2.setString(3, path);
+     stmt2.execute();
+     stmt2.close();
+    }
+    m_conn.commit(); 
+    m_conn.setAutoCommit(true);
+   }
+   catch (Exception e)
+   {
+    System.out.print(e.getMessage());
+   }
+  }
+  catch (IOException e)
+  {
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  }
+ }
+
+ public void setCompConsumes(int compid, HttpServletRequest request, HttpServletResponse response)
+ {
+  try
+  {
+   String requestData = request.getReader().lines().collect(Collectors.joining());
+   JsonArray endpoints = new JsonParser().parse(requestData).getAsJsonArray();
+
+   try
+   {
+    // del old endpoints for compid
+    m_conn.setAutoCommit(false);
+    String sql = "DELETE FROM dm.dm_comp_consumes WHERE id=?";
+    PreparedStatement stmt = m_conn.prepareStatement(sql);
+    stmt.setInt(1, compid);
+    stmt.execute();
+
+    // loop and insert
+    Iterator<JsonElement> it = endpoints.iterator();
+    while (it.hasNext())
+    {
+     JsonObject obj = it.next().getAsJsonObject();
+     String verb = (obj.get("verb") != null) ? obj.get("verb").getAsString() : "";
+     String path = (obj.get("path") != null) ? obj.get("path").getAsString() : "";
+     System.out.println("VERB=" + verb + " PATH=" + path);
+     PreparedStatement stmt2 = m_conn.prepareStatement("INSERT INTO dm.dm_comp_consumes(id,verb, path) VALUES(?,?,?)");
+     stmt2.setInt(1, compid);
+     stmt2.setString(2, verb);
+     stmt2.setString(3, path);
+     stmt2.execute();
+     stmt2.close();
+    }
+    m_conn.commit(); 
+    m_conn.setAutoCommit(true);
+   }
+   catch (Exception e)
+   {
+    System.out.print(e.getMessage());
+   }
+
+  }
+  catch (IOException e)
+  {
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  }
+  
+ }
+
+ public JSONArray getCompProvides(int compid, HttpServletRequest request, HttpServletResponse response)
+ {
+  JSONArray arr = new JSONArray();
+  String sql = "SELECT verb, path FROM dm.dm_comp_provides WHERE id=?";
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, compid);
+   ResultSet rs = stmt.executeQuery();
+   while (rs.next())
+   {
+    JSONObject j = new JSONObject();
+    j.add("verb", rs.getString(1));
+    j.add("path", rs.getString(2));
+    arr.add(j);
+   }
+   rs.close();
+  }
+  catch (SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+  return arr;
+ }
+
+ public JSONArray getCompConsumes(int compid, HttpServletRequest request, HttpServletResponse response)
+ {
+  JSONArray arr = new JSONArray();
+  String sql = "select b.id, a.verb, a.path from dm.dm_comp_consumes a, dm_comp_provides b where a.verb = b.verb and a.path = b.path and a.id = ?";
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, compid);
+   ResultSet rs = stmt.executeQuery();
+   while (rs.next())
+   {
+    JSONObject j = new JSONObject();
+    int id = rs.getInt(1);
+    Component comp = this.getComponent(id, false);
+    if (comp != null)
+    {
+     j.add("comp", comp.getFullName());
+     j.add("verb", rs.getString(2));
+     j.add("path", rs.getString(3));
+     arr.add(j);
+    }
+   }
+   rs.close();
+  }
+  catch (SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+  return arr;
+ }
+
+ 
+ public JSONArray getAppService2Service(int appid, HttpServletRequest request, HttpServletResponse response)
+ {
+  JSONArray arr = new JSONArray();
+  String sql = "select distinct a.compid, c.verb from dm.dm_applicationcomponent a, dm.dm_component b, dm.dm_comp_provides c where a.appid = ? and a.compid = b.id and a.compid = c.id and b.status = 'N'";
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, appid);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    int compid = rs.getInt(1);
+    String verb = rs.getString(2);
+
+    Component comp = this.getComponent(compid, false);
+    if (comp != null)
+    {
+     String compname = comp.getFullName();
+
+     JSONObject j = new JSONObject();
+     j.add("name", compname);
+
+     String sql2 = "select b.id, b.verb, b.path from dm.dm_comp_consumes a, dm_comp_provides b where a.verb = b.verb and a.path = b.path and a.id = ?";
+     PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
+     stmt2.setInt(1, compid);
+     ResultSet rs2 = stmt2.executeQuery();
+
+     JSONArray consumes = new JSONArray();
+
+     while (rs2.next())
+     {
+      int consumeid = rs2.getInt(1);
+      Component consumecomp = this.getComponent(consumeid, false);
+      if (consumecomp != null)
+      {
+       consumes.add(consumecomp.getFullName());
+      }
+     }
+     rs2.close();
+     stmt2.close();
+
+     j.add("imports", consumes);
+     arr.add(j);
+    }
+   }
+   rs.close();
+   stmt.close();
+  }
+  catch (SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+  return arr;
+ }
+
+ public JSONArray getAppEdgeBundle(int appid, HttpServletRequest request, HttpServletResponse response)
+ {
+  List<Component> complist = this.getComponents(ObjectType.APPLICATION, appid, false);
+  JSONArray arr = new JSONArray();
+
+  for (int i = 0; i < complist.size(); i++)
+  {
+   int compid = complist.get(i).getId();
+   JSONObject j = new JSONObject();
+
+   String sql = "select distinct c.verb, c.path from dm.dm_comp_provides c where c.id = ?";
+
+   try
+   {
+    PreparedStatement stmt = m_conn.prepareStatement(sql);
+    stmt.setInt(1, compid);
+    ResultSet rs = stmt.executeQuery();
+
+    String compname = complist.get(i).getFullName();
+
+    j.add("name", compname);
+
+    JSONArray provides = new JSONArray();
+
+    while (rs.next())
+    {
+     String verb = rs.getString(1);
+     String path = rs.getString(2);
+
+     provides.add(verb + " " + path);
+    }
+    rs.close();
+    stmt.close();
+    j.add("endpoints", provides);
+
+    String sql2 = "select b.id, b.verb, b.path from dm.dm_comp_consumes a, dm_comp_provides b where a.verb = b.verb and a.path = b.path and a.id = ?";
+    PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
+    stmt2.setInt(1, compid);
+    ResultSet rs2 = stmt2.executeQuery();
+
+    JSONArray consumes = new JSONArray();
+
+    while (rs2.next())
+    {
+     int consumeid = rs2.getInt(1);
+     Component consumecomp = this.getComponent(consumeid, false);
+     if (consumecomp != null)
+     {
+      consumes.add(consumecomp.getFullName());
+     }
+    }
+    rs2.close();
+    stmt2.close();
+
+    j.add("imports", consumes);
+   }
+   catch (SQLException ex)
+   {
+    ex.printStackTrace();
+    rollback();
+   }
+   arr.add(j);
+  }
+  return arr;
  } 
 }
