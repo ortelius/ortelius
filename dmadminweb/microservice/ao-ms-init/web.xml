@@ -38,13 +38,10 @@
     <param-name>TrilogyPort</param-name>
     <param-value>2305</param-value>
   </context-param>
-  <display-name>dmadminweb</display-name>
   <servlet>
-    <description></description>
-    <display-name>InitServer</display-name>
-    <load-on-startup>1</load-on-startup>
-    <servlet-class>dmadmin.InitServer</servlet-class>
     <servlet-name>InitServer</servlet-name>
+    <servlet-class>dmadmin.InitServer</servlet-class>
+    <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
     <servlet-name>InitServer</servlet-name>
