@@ -451,13 +451,13 @@ $(document).click(function (e) {
      AddCompFile(contents, 'readme');
   };
   
-  async function getReadme()
+  async function getSwagger()
   {
 	let fileHandle;
      [fileHandle] = await window.showOpenFilePicker();
      const file = await fileHandle.getFile();
      const contents = await file.text();
-     AddCompFile(contents, 'readme');
+     AddCompFile(contents, 'swagger');
   };
   
  function VerifyPW()
