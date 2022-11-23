@@ -44,7 +44,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: "console.ortelius.io"
+  - host: {{ .Values.ingress.dnsname | quote }}
     http:
       paths:
       - path: /

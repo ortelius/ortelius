@@ -16,7 +16,7 @@ ingress:
   type: ssloff # alb, volumemnt, sslcert, ssloff  
   alb_certificate_arn:
   alb_subnets:
-  dnsname:
+  dnsname: console.ortelius.io
   sslcert:
     chainedcert: |
       -----BEGIN CERTIFICATE-----
