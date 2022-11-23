@@ -42,8 +42,10 @@ metadata:
   labels:
     app: {{ include "ms-nginx.name" . }}
 spec:
+  ingressClassName: nginx
   rules:
-  - http:
+  - host: "console.ortelius.io"
+    http:
       paths:
       - path: /
         pathType: Prefix
