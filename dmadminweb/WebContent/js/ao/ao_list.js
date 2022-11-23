@@ -4545,7 +4545,7 @@ datasourcelist_table_resize();
    destroy: true,
    sDom: 't<"bottom"lip>',
    "ajax": {
-    "url": "/dmadminweb/API2/provides/" + objid,
+    "url": "/dmadminweb/API/provides/" + objid,
     "type": "GET"
   },
   "columnDefs": [
@@ -4592,7 +4592,7 @@ datasourcelist_table_resize();
    destroy: true,
    sDom: 't<"bottom"lip>',
    "ajax": {
-    "url": "/dmadminweb/API2/consumes/" + objid,
+    "url": "/dmadminweb/API/consumes/" + objid,
     "type": "GET"
   },
   "columnDefs": [
