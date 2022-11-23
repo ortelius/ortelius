@@ -14,8 +14,10 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:web="http://java.sun.com/xml/ns/javaee" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+<web-app
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:web="http://java.sun.com/xml/ns/javaee"
+    xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
     <id>WebApp_ID</id>
     <context-param>
         <param-name>BUILD_VERSION</param-name>
@@ -39,8 +41,6 @@
     </context-param>
     <display-name>dmadminweb</display-name>
     <servlet>
-        <description></description>
-        <display-name>InitServer</display-name>
         <load-on-startup>1</load-on-startup>
         <servlet-class>dmadmin.InitServer</servlet-class>
         <servlet-name>InitServer</servlet-name>
@@ -49,516 +49,340 @@
         <servlet-name>InitServer</servlet-name>
         <url-pattern>/InitServer</url-pattern>
     </servlet-mapping>
-   <servlet>
-    <description></description>
-    <display-name>InitVulns</display-name>
-    <servlet-name>InitVulns</servlet-name>
-    <servlet-class>dmadmin.InitVulns</servlet-class>
-    <load-on-startup>1</load-on-startup>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>InitVulns</servlet-name>
-    <url-pattern>/InitVulns</url-pattern>
-  </servlet-mapping>    
     <servlet>
-        <description></description>
-        <display-name>ActionDetails</display-name>
+        <servlet-name>InitVulns</servlet-name>
+        <servlet-class>dmadmin.InitVulns</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>InitVulns</servlet-name>
+        <url-pattern>/InitVulns</url-pattern>
+    </servlet-mapping>
+    <servlet>
         <servlet-class>dmadmin.ActionDetails</servlet-class>
         <servlet-name>ActionDetails</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>AddEvent</display-name>
         <servlet-class>dmadmin.pro.AddEvent</servlet-class>
         <servlet-name>AddEvent</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>API</display-name>
         <servlet-class>dmadmin.API</servlet-class>
         <servlet-name>API</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>API2</display-name>
-        <servlet-name>API2</servlet-name>
-        <servlet-class>dmadmin.pro.APIv2</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>API2</servlet-name>
-        <url-pattern>/API2/*</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <description></description>
-        <display-name>ChangePassword</display-name>
         <servlet-class>dmadmin.ChangePassword</servlet-class>
         <servlet-name>ChangePassword</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>CopyAndPaste</display-name>
         <servlet-class>dmadmin.CopyAndPaste</servlet-class>
         <servlet-name>CopyAndPaste</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>Engine</display-name>
         <servlet-class>dmadmin.Engine</servlet-class>
         <servlet-name>Engine</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>EngineEvent</display-name>
         <servlet-class>dmadmin.EngineEvent</servlet-class>
         <servlet-name>EngineEvent</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetActionArgsData</display-name>
         <servlet-class>dmadmin.GetActionArgsData</servlet-class>
         <servlet-name>GetActionArgsData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetActionContent</display-name>
         <servlet-class>dmadmin.GetActionContent</servlet-class>
         <servlet-name>GetActionContent</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetActionLayout</display-name>
         <servlet-class>dmadmin.GetActionLayout</servlet-class>
         <servlet-name>GetActionLayout</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetActions</display-name>
         <servlet-class>dmadmin.GetActions</servlet-class>
         <servlet-name>GetActions</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetAllDomains</display-name>
         <servlet-class>dmadmin.GetAllDomains</servlet-class>
         <servlet-name>GetAllDomains</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetApplicationContent</display-name>
         <servlet-class>dmadmin.GetApplicationContent</servlet-class>
         <servlet-name>GetApplicationContent</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetApplicationOptions</display-name>
         <servlet-class>dmadmin.GetApplicationOptions</servlet-class>
         <servlet-name>GetApplicationOptions</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>getApplicationsInDomain</display-name>
         <servlet-class>dmadmin.getApplicationsInDomain</servlet-class>
         <servlet-name>getApplicationsInDomain</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetApps2Comps</display-name>
         <servlet-class>dmadmin.GetApps2Comps</servlet-class>
         <servlet-name>GetApps2Comps</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetAppVersInEnvData</display-name>
         <servlet-class>dmadmin.GetAppVersInEnvData</servlet-class>
         <servlet-name>GetAppVersInEnvData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetAppVersionAccess</display-name>
         <servlet-class>dmadmin.GetAppVersionAccess</servlet-class>
         <servlet-name>GetAppVersionAccess</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetAppVersionLayout</display-name>
         <servlet-class>dmadmin.GetAppVersionLayout</servlet-class>
         <servlet-name>GetAppVersionLayout</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetAttachment</display-name>
         <servlet-class>dmadmin.GetAttachment</servlet-class>
         <servlet-name>GetAttachment</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetAttributeData</display-name>
         <servlet-class>dmadmin.GetAttributeData</servlet-class>
         <servlet-name>GetAttributeData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetAttributesForObject</display-name>
         <servlet-class>dmadmin.GetAttributesForObject</servlet-class>
         <servlet-name>GetAttributesForObject</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetCalendarData</display-name>
         <servlet-class>dmadmin.pro.GetCalendarData</servlet-class>
         <servlet-name>GetCalendarData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetCategories</display-name>
         <servlet-class>dmadmin.GetCategories</servlet-class>
         <servlet-name>GetCategories</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetCategoryContent</display-name>
         <servlet-class>dmadmin.GetCategoryContent</servlet-class>
         <servlet-name>GetCategoryContent</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetComponentContent</display-name>
         <servlet-class>dmadmin.GetComponentContent</servlet-class>
         <servlet-name>GetComponentContent</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetComponentData</display-name>
         <servlet-class>dmadmin.GetComponentData</servlet-class>
         <servlet-name>GetComponentData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetComponentItemLayout</display-name>
         <servlet-class>dmadmin.GetComponentItemLayout</servlet-class>
         <servlet-name>GetComponentItemLayout</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetComponentItemSourceData</display-name>
         <servlet-class>dmadmin.GetComponentItemSourceData</servlet-class>
         <servlet-name>GetComponentItemSourceData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetComponentLayout</display-name>
         <servlet-class>dmadmin.GetComponentLayout</servlet-class>
         <servlet-name>GetComponentLayout</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>getComponentsInDomain</display-name>
         <servlet-class>dmadmin.getComponentsInDomain</servlet-class>
         <servlet-name>getComponentsInDomain</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetComps2Apps</display-name>
         <servlet-class>dmadmin.GetComps2Apps</servlet-class>
         <servlet-name>GetComps2Apps</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetCompVersionLayout</display-name>
         <servlet-class>dmadmin.GetCompVersionLayout</servlet-class>
         <servlet-name>GetCompVersionLayout</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>getcompversum</display-name>
         <servlet-class>dmadmin.getcompversum</servlet-class>
         <servlet-name>getcompversum</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetCredentials</display-name>
         <servlet-class>dmadmin.GetCredentials</servlet-class>
         <servlet-name>GetCredentials</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetDefects</display-name>
         <servlet-class>dmadmin.pro.GetDefects</servlet-class>
         <servlet-name>GetDefects</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetDeployDeps</display-name>
         <servlet-class>dmadmin.GetDeployDeps</servlet-class>
         <servlet-name>GetDeployDeps</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetDeploymentFilesData</display-name>
         <servlet-class>dmadmin.GetDeploymentFilesData</servlet-class>
         <servlet-name>GetDeploymentFilesData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetDeploymentLog</display-name>
         <servlet-class>dmadmin.GetDeploymentLog</servlet-class>
         <servlet-name>GetDeploymentLog</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetDeploymentsPerApplicationForEnvironment</display-name>
         <servlet-class>dmadmin.GetDeploymentsPerApplicationForEnvironment</servlet-class>
         <servlet-name>GetDeploymentsPerApplicationForEnvironment</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetDeploymentsPerApplicationForServer</display-name>
         <servlet-class>dmadmin.GetDeploymentsPerApplicationForServer</servlet-class>
         <servlet-name>GetDeploymentsPerApplicationForServer</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetDeploymentsPerUserForEnvironment</display-name>
         <servlet-class>dmadmin.GetDeploymentsPerUserForEnvironment</servlet-class>
         <servlet-name>GetDeploymentsPerUserForEnvironment</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetDeploymentStepDetailsData</display-name>
         <servlet-class>dmadmin.GetDeploymentStepDetailsData</servlet-class>
         <servlet-name>GetDeploymentStepDetailsData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetDeploymentStepsGantt</display-name>
         <servlet-class>dmadmin.GetDeploymentStepsGantt</servlet-class>
         <servlet-name>GetDeploymentStepsGantt</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetDomainContent</display-name>
         <servlet-class>dmadmin.GetDomainContent</servlet-class>
         <servlet-name>GetDomainContent</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetEngineConfig</display-name>
         <servlet-class>dmadmin.GetEngineConfig</servlet-class>
         <servlet-name>GetEngineConfig</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetEnginePlugins</display-name>
         <servlet-class>dmadmin.GetEnginePlugins</servlet-class>
         <servlet-name>GetEnginePlugins</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetEngineProviders</display-name>
         <servlet-class>dmadmin.GetEngineProviders</servlet-class>
         <servlet-name>GetEngineProviders</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetEnvironmentContent</display-name>
         <servlet-class>dmadmin.GetEnvironmentContent</servlet-class>
         <servlet-name>GetEnvironmentContent</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetEnvOwner</display-name>
         <servlet-class>dmadmin.GetEnvOwner</servlet-class>
         <servlet-name>GetEnvOwner</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>getfragatt</display-name>
         <servlet-class>dmadmin.getfragatt</servlet-class>
         <servlet-name>getfragatt</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetFragmentContent</display-name>
         <servlet-class>dmadmin.GetFragmentContent</servlet-class>
         <servlet-name>GetFragmentContent</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetFullDomains</display-name>
         <servlet-class>dmadmin.GetFullDomains</servlet-class>
         <servlet-name>GetFullDomains</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetGroups</display-name>
         <servlet-class>dmadmin.GetGroups</servlet-class>
         <servlet-name>GetGroups</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetMenu</display-name>
         <servlet-class>dmadmin.GetMenu</servlet-class>
         <servlet-name>GetMenu</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetNewID</display-name>
         <servlet-class>dmadmin.GetNewID</servlet-class>
         <servlet-name>GetNewID</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetNotifierTemplates</display-name>
         <servlet-class>dmadmin.GetNotifierTemplates</servlet-class>
         <servlet-name>GetNotifierTemplates</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetNotifyRecipientList</display-name>
         <servlet-class>dmadmin.GetNotifyRecipientList</servlet-class>
         <servlet-name>GetNotifyRecipientList</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetPendingEnvData</display-name>
         <servlet-class>dmadmin.GetPendingEnvData</servlet-class>
         <servlet-name>GetPendingEnvData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetPrerequisitiesForAppData</display-name>
         <servlet-class>dmadmin.GetPrerequisitiesForAppData</servlet-class>
         <servlet-name>GetPrerequisitiesForAppData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetProjectsFromBuilder</display-name>
         <servlet-class>dmadmin.GetProjectsFromBuilder</servlet-class>
         <servlet-name>GetProjectsFromBuilder</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetPropertiesData</display-name>
         <servlet-class>dmadmin.GetPropertiesData</servlet-class>
         <servlet-name>GetPropertiesData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetProviderDefDetailsData</display-name>
         <servlet-class>dmadmin.GetProviderDefDetailsData</servlet-class>
         <servlet-name>GetProviderDefDetailsData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetProviderDefs</display-name>
         <servlet-class>dmadmin.GetProviderDefs</servlet-class>
         <servlet-name>GetProviderDefs</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetRepositories</display-name>
         <servlet-class>dmadmin.GetRepositories</servlet-class>
         <servlet-name>GetRepositories</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetRepoTextPatternsData</display-name>
         <servlet-class>dmadmin.GetRepoTextPatternsData</servlet-class>
         <servlet-name>GetRepoTextPatternsData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetServerContent</display-name>
         <servlet-class>dmadmin.GetServerContent</servlet-class>
         <servlet-name>GetServerContent</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetServerLayout</display-name>
         <servlet-class>dmadmin.GetServerLayout</servlet-class>
         <servlet-name>GetServerLayout</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetServerList</display-name>
         <servlet-class>dmadmin.GetServerList</servlet-class>
         <servlet-name>GetServerList</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>getserversum</display-name>
         <servlet-class>dmadmin.getserversum</servlet-class>
         <servlet-name>getserversum</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetServerTypes</display-name>
         <servlet-class>dmadmin.GetServerTypes</servlet-class>
         <servlet-name>GetServerTypes</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetSuccessFailure</display-name>
         <servlet-class>dmadmin.GetSuccessFailure</servlet-class>
         <servlet-name>GetSuccessFailure</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetSummaryData</display-name>
         <servlet-class>dmadmin.GetSummaryData</servlet-class>
         <servlet-name>GetSummaryData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetTasks</display-name>
         <servlet-class>dmadmin.GetTasks</servlet-class>
         <servlet-name>GetTasks</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetTemplates</display-name>
         <servlet-class>dmadmin.GetTemplates</servlet-class>
         <servlet-name>GetTemplates</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetTimeline</display-name>
         <servlet-class>dmadmin.GetTimeline</servlet-class>
         <servlet-name>GetTimeline</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetTimePerStepForDeployment</display-name>
         <servlet-class>dmadmin.GetTimePerStepForDeployment</servlet-class>
         <servlet-name>GetTimePerStepForDeployment</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetTimeToDeploy</display-name>
         <servlet-class>dmadmin.GetTimeToDeploy</servlet-class>
         <servlet-name>GetTimeToDeploy</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetTransfers</display-name>
         <servlet-class>dmadmin.GetTransfers</servlet-class>
         <servlet-name>GetTransfers</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>GetUsers</display-name>
         <servlet-class>dmadmin.GetUsers</servlet-class>
         <servlet-name>GetUsers</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>getversummary</display-name>
         <servlet-class>dmadmin.getversummary</servlet-class>
         <servlet-name>getversummary</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>Highlighter</display-name>
         <servlet-class>dmadmin.Highlighter</servlet-class>
         <servlet-name>Highlighter</servlet-name>
     </servlet>
@@ -567,50 +391,34 @@
         <servlet-name>ImportProc</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>KeepAlive</display-name>
         <servlet-class>dmadmin.KeepAlive</servlet-class>
         <servlet-name>KeepAlive</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>Logout</display-name>
         <servlet-class>dmadmin.Logout</servlet-class>
         <servlet-name>Logout</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>ModifyEvent</display-name>
         <servlet-class>dmadmin.pro.ModifyEvent</servlet-class>
         <servlet-name>ModifyEvent</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>MoveNode</display-name>
         <servlet-class>dmadmin.MoveNode</servlet-class>
         <servlet-name>MoveNode</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>NewsFeed</display-name>
         <servlet-class>dmadmin.NewsFeed</servlet-class>
         <servlet-name>NewsFeed</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>Profile</display-name>
         <servlet-class>dmadmin.Profile</servlet-class>
         <servlet-name>Profile</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>RemoveNode</display-name>
         <servlet-class>dmadmin.RemoveNode</servlet-class>
         <servlet-name>RemoveNode</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>RenameNode</display-name>
         <servlet-class>dmadmin.RenameNode</servlet-class>
         <servlet-name>RenameNode</servlet-name>
     </servlet>
@@ -619,32 +427,22 @@
         <servlet-name>ReportsData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>RunProviderTest</display-name>
         <servlet-class>dmadmin.RunProviderTest</servlet-class>
         <servlet-name>RunProviderTest</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>SubDomains</display-name>
         <servlet-class>dmadmin.SubDomains</servlet-class>
         <servlet-name>SubDomains</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>Subscribe</display-name>
         <servlet-class>dmadmin.Subscribe</servlet-class>
         <servlet-name>Subscribe</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>TableFilter</display-name>
         <servlet-class>dmadmin.TableFilter</servlet-class>
         <servlet-name>TableFilter</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>TemplateDetails</display-name>
         <servlet-class>dmadmin.TemplateDetails</servlet-class>
         <servlet-name>TemplateDetails</servlet-name>
     </servlet>
@@ -653,44 +451,30 @@
         <servlet-name>TestServerConnection</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>UpdateAttributesData</display-name>
         <servlet-class>dmadmin.UpdateAttributesData</servlet-class>
         <servlet-name>UpdateAttributesData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>UpdateAttrs</display-name>
         <servlet-class>dmadmin.UpdateAttrs</servlet-class>
         <servlet-name>UpdateAttrs</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>UpdateAvailability</display-name>
         <servlet-class>dmadmin.pro.UpdateAvailability</servlet-class>
         <servlet-name>UpdateAvailability</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>UpdatePropertiesData</display-name>
         <servlet-class>dmadmin.UpdatePropertiesData</servlet-class>
         <servlet-name>UpdatePropertiesData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>UpdateSummaryData</display-name>
         <servlet-class>dmadmin.UpdateSummaryData</servlet-class>
         <servlet-name>UpdateSummaryData</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>UserDetails</display-name>
         <servlet-class>dmadmin.UserDetails</servlet-class>
         <servlet-name>UserDetails</servlet-name>
     </servlet>
     <servlet>
-        <description></description>
-        <display-name>ValidateTask</display-name>
         <servlet-class>dmadmin.ValidateTask</servlet-class>
         <servlet-name>ValidateTask</servlet-name>
     </servlet>
@@ -819,8 +603,7 @@
         <url-pattern>/getComponentsInDomain</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <content>
-  </content>
+        <content></content>
         <servlet-name>GetComps2Apps</servlet-name>
         <url-pattern>/GetComps2Apps</url-pattern>
     </servlet-mapping>
@@ -1035,11 +818,11 @@
     <servlet>
         <servlet-class>dmadmin.Login</servlet-class>
         <servlet-name>Login</servlet-name>
-    </servlet>    
+    </servlet>
     <servlet-mapping>
         <servlet-name>Login</servlet-name>
         <url-pattern>/Login</url-pattern>
-    </servlet-mapping>    
+    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Logout</servlet-name>
         <url-pattern>/Logout</url-pattern>
@@ -1085,8 +868,7 @@
         <url-pattern>/Subscribe</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <content>
-  </content>
+        <content></content>
         <servlet-name>TableFilter</servlet-name>
         <url-pattern>/TableFilter</url-pattern>
     </servlet-mapping>
