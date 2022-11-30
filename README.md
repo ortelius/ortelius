@@ -1,5 +1,4 @@
 # Ortelius
-
 [![Code Scanning](https://github.com/ortelius/ortelius/actions/workflows/trivy-analysis.yml/badge.svg)](https://github.com/ortelius/ortelius/actions/workflows/trivy-analysis.yml)
 
 Welcome to Ortelius. Ortelius is a unified governance catalog designed to track and version the software supply chain. Ortelius builds relationships between service (package) and consuming 'logical' applications. With Ortelius, open-source and API developers can register their services and track their consumers. Enterprise developers register their 'logical' application's base version and are notified when a dependency change causes the creation of a new application version, new SBOM, CVE, and dependency map. By centralizing and tracking detailed supply chain data, Ortelius provides the enterprise open-source consumers and open-source developers a coordinated view of who is using a service, its version, and inventory across all end-points. We are creating a central store for development teams to define provenance, apply zero-trust policies, and eventually score risk factors of both internal common code and open-source packages. In other words, we answer the question, "who is using Log4j." For more information, see the comprehensive documentation at [Ortelius' documentation](http://docs.ortelius.io).
@@ -19,20 +18,20 @@ Our mission is to simplify the adoption of modern architecture through a world-c
 
 The benefits of the Ortelius Open Source Project are:
 
-1. Adds automated supply chain management of microservices and other shared components across application teams
-2. Tracks the 'blast radius' of a single shared component across all consuming applications that are using it.
-3. Tracks the logical applications and aggregates component SBOM and CVE data to the logical applicaiton level.
-4. Simplifies the path to adopting cloud native development practices without a major redesign of their CD pipeline.
-5. Performs container versioning and applicaiton pakcage versions.
-6. Serve as a central market place to share reusable components with their SBOM and CVE information.
+1) Adds automated supply chain management of microservices and other shared components across application teams
+2) Tracks the 'blast radius' of a single shared component across all consuming applications that are using it. 
+3) Tracks the logical applications and aggregates component SBOM and CVE data to the logical applicaiton level. 
+4) Simplifies the path to adopting cloud native development practices without a major redesign of their CD pipeline.
+5) Performs container versioning and applicaiton pakcage versions. 
+6) Serve as a central market place to share reusable components with their SBOM and CVE information. 
 
 ## Ortelius Development Goals for 2023
 
 Goals for Q1 and Q2 of 2023
 
-1. Implementation of XRP Ledger to create immutable SBOMs.
-2. Improve data graphs and maps.
-3. Increase adoption of the catalog.
+1) Implementation of XRP Ledger to create immutable SBOMs.
+2) Improve data graphs and maps.
+3) Increase adoption of the catalog.
 
 ## Code of Conduct
 
@@ -40,9 +39,9 @@ Goals for Q1 and Q2 of 2023
 
 ## Become a contributor
 
-1. Review the [Ortelius Contributor Guide](https://docs.ortelius.io/guides/contributorguide/)
-2. Add yourself to the [Ortelius Google Group](https://groups.google.com/g/ortelius-dev)
-3. Join the [Discord community channel](https://discord.gg/ZtXU74x)
+1) Review the [Ortelius Contributor Guide](https://docs.ortelius.io/guides/contributorguide/)
+2) Add yourself to the [Ortelius Google Group](https://groups.google.com/g/ortelius-dev)
+3) Join the [Discord community channel](https://discord.gg/ZtXU74x)
 
 ## Open Source Sub-Committees
 
@@ -52,7 +51,7 @@ Goals for Q1 and Q2 of 2023
 
 ### CD Environment - Development Infrastructure and Productivity
 
-Create a CD process for managing pull requests, builds, tests and releases.
+Create a CD process for managing pull requests, builds, tests and releases.  
 
 Contributors:
 
@@ -77,6 +76,7 @@ Contributors:
 - Kingsathurthi
 - Bassem Riahi
 - Arnab Maity
+  
 
 ### CD Integrations
 
@@ -108,7 +108,7 @@ Contributors:
 
 ### Market Place and Domains
 
-Enhance the current Domain structure to make it more like a Marketplace for sharing Microservices. Think API marketplace.
+Enhance the current Domain structure to make it more like a Marketplace for sharing Microservices.  Think API marketplace.
 
 Contributors:
 
