@@ -130,6 +130,7 @@ Contributors:
 - Poovaraj Thangamariappan
 - Yasaman Khazaie
 - Nik Poputko
+- Anirudh Sharma
 
 ### Documentation
 
