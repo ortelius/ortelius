@@ -76,6 +76,7 @@ Contributors:
 - Kingsathurthi
 - Bassem Riahi
 - Arnab Maity
+- Steven Carrato
   
 
 ### CD Integrations
