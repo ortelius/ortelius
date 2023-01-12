@@ -189,7 +189,7 @@ void StringHashtable::rehash()
 		for(n = 0; n < buckets; n++) {
 			temp[n] = NULL;
 		}
-		
+
 		for(n = 0; n < m_bucketCount; n++) {
 			StringBucket *next = NULL;
 			for(StringBucket *b = m_buckets[n]; b; b = next) {
@@ -207,7 +207,7 @@ void StringHashtable::rehash()
 				}
 			}
 		}
-		
+
 		free(m_buckets);
 		m_buckets = temp;
 		m_bucketCount = buckets;

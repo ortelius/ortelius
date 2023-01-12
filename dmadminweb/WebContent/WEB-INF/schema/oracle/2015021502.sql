@@ -11,4 +11,3 @@ insert into dm_type values (7,'DB2 DDL & SQL','Y','N');
 insert into dm_type values (8,'SQLServer DDL & SQL','Y','N');
 
 update dm.dm_component set comptypeid = 6 where comptypeid is null;
-

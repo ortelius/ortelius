@@ -18,7 +18,7 @@ nginx.tar : nginx.conf \
 	TARGET nginx.tar
 	TGTFILENAME nginx.tar.tgt
 	PROJECTDIRS location;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java Tar
 	BUILDTASK Ant Tar
 	SCRIPT Ant Tar Task.sc
@@ -66,7 +66,7 @@ deployhub-webadmin.javac : dmadminweb/src/dmadmin/*.java \
 	TARGET deployhub-webadmin.javac
 	TGTFILENAME deployhub-webadmin.war.tgt
 	PROJECTDIRS dmadminweb/src/dmadmin;dmadminweb/src/dmadmin/pro;dmadminweb/src/dmadmin/json;dmadminweb/src/dmadmin/jsp;dmadminweb/src/dmadmin/util;dmadminweb/src/dmadmin/model;dmadminweb/src/com/openmakesoftware/trilogy;dmadminweb/src/com/openmakesoftware/XDR;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Ant Javac
 	SCRIPT Ant Javac Task.sc
@@ -114,7 +114,7 @@ dh-ms-general.javac : dmadminweb/src/dmadmin/*.java \
 	TARGET dh-ms-general.javac
 	TGTFILENAME dh-ms-general.war.tgt
 	PROJECTDIRS dmadminweb/src/dmadmin;dmadminweb/src/dmadmin/pro;dmadminweb/src/dmadmin/json;dmadminweb/src/dmadmin/jsp;dmadminweb/src/dmadmin/util;dmadminweb/src/dmadmin/model;dmadminweb/src/com/openmakesoftware/trilogy;dmadminweb/src/com/openmakesoftware/XDR;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Ant Javac
 	SCRIPT Ant Javac Task.sc
@@ -162,7 +162,7 @@ dh-ms-init.javac : dmadminweb/src/dmadmin/*.java \
 	TARGET dh-ms-init.javac
 	TGTFILENAME dh-ms-init.war.tgt
 	PROJECTDIRS dmadminweb/src/dmadmin;dmadminweb/src/dmadmin/pro;dmadminweb/src/dmadmin/json;dmadminweb/src/dmadmin/jsp;dmadminweb/src/dmadmin/util;dmadminweb/src/dmadmin/model;dmadminweb/src/com/openmakesoftware/trilogy;dmadminweb/src/com/openmakesoftware/XDR;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Ant Javac
 	SCRIPT Ant Javac Task.sc
@@ -210,7 +210,7 @@ dh-ms-ui.javac : dmadminweb/src/dmadmin/*.java \
 	TARGET dh-ms-ui.javac
 	TGTFILENAME dh-ms-ui.war.tgt
 	PROJECTDIRS dmadminweb/src/dmadmin;dmadminweb/src/dmadmin/pro;dmadminweb/src/dmadmin/json;dmadminweb/src/dmadmin/jsp;dmadminweb/src/dmadmin/util;dmadminweb/src/dmadmin/model;dmadminweb/src/com/openmakesoftware/trilogy;dmadminweb/src/com/openmakesoftware/XDR;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Ant Javac
 	SCRIPT Ant Javac Task.sc
@@ -258,7 +258,7 @@ dmadminweb.javac : dmadminweb/src/dmadmin/*.java \
 	TARGET dmadminweb.javac
 	TGTFILENAME dmadminweb.war.tgt
 	PROJECTDIRS dmadminweb/src/dmadmin;dmadminweb/src/dmadmin/pro;dmadminweb/src/dmadmin/json;dmadminweb/src/dmadmin/jsp;dmadminweb/src/dmadmin/util;dmadminweb/src/dmadmin/model;dmadminweb/src/com/openmakesoftware/trilogy;dmadminweb/src/com/openmakesoftware/XDR;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Ant Javac
 	SCRIPT Ant Javac Task.sc
@@ -598,7 +598,7 @@ deployhub-webadmin.war : dmadminweb/WebContent/*.jsp \
 	TARGET deployhub-webadmin.war
 	TGTFILENAME deployhub-webadmin.war.tgt
 	PROJECTDIRS dmadminweb/WebContent;dmadminweb/WebContent/css/img/network;dmadminweb/WebContent/css/img/timeline;dmadminweb/WebContent/css;dmadminweb/WebContent/css/cupertino/images;dmadminweb/WebContent/css/cupertino;dmadminweb/WebContent/css/images;dmadminweb/WebContent/css/images/images;dmadminweb/WebContent/Rest/**;dmadminweb/WebContent/hot;dmadminweb/WebContent/images;dmadminweb/WebContent/images/filetypes;dmadminweb/WebContent/js/_demo;dmadminweb/WebContent/Home;dmadminweb/WebContent/js/_docs;dmadminweb/WebContent/js/_docs/syntax;dmadminweb/WebContent/js/_lib;dmadminweb/WebContent/js;dmadminweb/WebContent/js/edit_area/**;dmadminweb/WebContent/js/cultures;dmadminweb/WebContent/js/i18n;dmadminweb/WebContent/js/minified/i18n;dmadminweb/WebContent/js/minified;dmadminweb/WebContent/js/ao;dmadminweb/WebContent/js/plugins;dmadminweb/WebContent/js/themes/apple;dmadminweb/WebContent/js/themes/classic;dmadminweb/WebContent/js/themes/default;dmadminweb/WebContent/js/themes/default-rtl;dmadminweb/WebContent/themes/apple;dmadminweb/WebContent/themes/classic;dmadminweb/WebContent/themes/default;dmadminweb/WebContent/themes/default-rtl;dmadminweb/WebContent/userimages;dmadminweb/WebContent/js/jqwidgets/**;dmadminweb/WebContent/reports;dmadminweb/WebContent/META-INF;dmadminweb/WebContent/WEB-INF;dmadminweb/WebContent/WEB-INF/schema;dmadminweb/WebContent/WEB-INF/lib;NetHelp/**;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Ant War
 	SCRIPT Ant War Task.sc
@@ -938,7 +938,7 @@ dh-ms-general.war : dmadminweb/WebContent/*.jsp \
 	TARGET dh-ms-general.war
 	TGTFILENAME dh-ms-general.war.tgt
 	PROJECTDIRS dmadminweb/WebContent;dmadminweb/WebContent/css/img/network;dmadminweb/WebContent/css/img/timeline;dmadminweb/WebContent/css;dmadminweb/WebContent/css/cupertino/images;dmadminweb/WebContent/css/cupertino;dmadminweb/WebContent/css/images;dmadminweb/WebContent/css/images/images;dmadminweb/WebContent/Rest/**;dmadminweb/WebContent/hot;dmadminweb/WebContent/images;dmadminweb/WebContent/images/filetypes;dmadminweb/WebContent/js/_demo;dmadminweb/WebContent/Home;dmadminweb/WebContent/js/_docs;dmadminweb/WebContent/js/_docs/syntax;dmadminweb/WebContent/js/_lib;dmadminweb/WebContent/js;dmadminweb/WebContent/js/edit_area/**;dmadminweb/WebContent/js/cultures;dmadminweb/WebContent/js/i18n;dmadminweb/WebContent/js/minified/i18n;dmadminweb/WebContent/js/minified;dmadminweb/WebContent/js/ao;dmadminweb/WebContent/js/plugins;dmadminweb/WebContent/js/themes/apple;dmadminweb/WebContent/js/themes/classic;dmadminweb/WebContent/js/themes/default;dmadminweb/WebContent/js/themes/default-rtl;dmadminweb/WebContent/themes/apple;dmadminweb/WebContent/themes/classic;dmadminweb/WebContent/themes/default;dmadminweb/WebContent/themes/default-rtl;dmadminweb/WebContent/userimages;dmadminweb/WebContent/js/jqwidgets/**;dmadminweb/WebContent/reports;dmadminweb/WebContent/META-INF;dmadminweb/WebContent/WEB-INF;dmadminweb/microservice/ao-ms-general;dmadminweb/WebContent/WEB-INF/schema;dmadminweb/WebContent/WEB-INF/lib;NetHelp/**;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Ant War
 	SCRIPT Ant War Task.sc
@@ -1266,7 +1266,7 @@ dh-ms-init.war : dmadminweb/WebContent/*.jsp \
 	TARGET dh-ms-init.war
 	TGTFILENAME dh-ms-init.war.tgt
 	PROJECTDIRS dmadminweb/WebContent;dmadminweb/WebContent/css/img/network;dmadminweb/WebContent/css/img/timeline;dmadminweb/WebContent/css;dmadminweb/WebContent/css/cupertino/images;dmadminweb/WebContent/css/cupertino;dmadminweb/WebContent/css/images;dmadminweb/WebContent/css/images/images;dmadminweb/WebContent/Rest/**;dmadminweb/WebContent/hot;dmadminweb/WebContent/images;dmadminweb/WebContent/images/filetypes;dmadminweb/WebContent/js/_demo;dmadminweb/WebContent/js/_docs;dmadminweb/WebContent/js/_docs/syntax;dmadminweb/WebContent/js/_lib;dmadminweb/WebContent/js;dmadminweb/WebContent/js/edit_area/**;dmadminweb/WebContent/js/cultures;dmadminweb/WebContent/js/i18n;dmadminweb/WebContent/js/minified/i18n;dmadminweb/WebContent/js/minified;dmadminweb/WebContent/js/ao;dmadminweb/WebContent/js/plugins;dmadminweb/WebContent/js/themes/apple;dmadminweb/WebContent/js/themes/classic;dmadminweb/WebContent/js/themes/default;dmadminweb/WebContent/js/themes/default-rtl;dmadminweb/WebContent/themes/apple;dmadminweb/WebContent/themes/classic;dmadminweb/WebContent/themes/default;dmadminweb/WebContent/themes/default-rtl;dmadminweb/WebContent/userimages;dmadminweb/WebContent/js/jqwidgets/**;dmadminweb/WebContent/reports;dmadminweb/WebContent/META-INF;dmadminweb/WebContent/WEB-INF;dmadminweb/microservice/ao-ms-init;dmadminweb/WebContent/WEB-INF/schema;dmadminweb/WebContent/WEB-INF/lib;NetHelp/**;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Ant War
 	SCRIPT Ant War Task.sc
@@ -1598,7 +1598,7 @@ dh-ms-ui.war : dmadminweb/WebContent/*.jsp \
 	TARGET dh-ms-ui.war
 	TGTFILENAME dh-ms-ui.war.tgt
 	PROJECTDIRS dmadminweb/WebContent;dmadminweb/WebContent/css/img/network;dmadminweb/WebContent/css/img/timeline;dmadminweb/WebContent/css;dmadminweb/WebContent/css/cupertino/images;dmadminweb/WebContent/css/cupertino;dmadminweb/WebContent/css/images;dmadminweb/WebContent/css/images/images;dmadminweb/WebContent/Rest/**;dmadminweb/WebContent/hot;dmadminweb/WebContent/images;dmadminweb/WebContent/images/filetypes;dmadminweb/WebContent/js/_demo;dmadminweb/WebContent/Home;dmadminweb/WebContent/js/_docs;dmadminweb/WebContent/js/_docs/syntax;dmadminweb/WebContent/js/_lib;dmadminweb/WebContent/js;dmadminweb/WebContent/js/edit_area/**;dmadminweb/WebContent/js/cultures;dmadminweb/WebContent/js/i18n;dmadminweb/WebContent/js/minified/i18n;dmadminweb/WebContent/js/minified;dmadminweb/WebContent/js/ao;dmadminweb/WebContent/js/plugins;dmadminweb/WebContent/js/themes/apple;dmadminweb/WebContent/js/themes/classic;dmadminweb/WebContent/js/themes/default;dmadminweb/WebContent/js/themes/default-rtl;dmadminweb/WebContent/themes/apple;dmadminweb/WebContent/themes/classic;dmadminweb/WebContent/themes/default;dmadminweb/WebContent/themes/default-rtl;dmadminweb/WebContent/userimages;dmadminweb/WebContent/js/jqwidgets/**;dmadminweb/WebContent/reports;dmadminweb/WebContent/META-INF;dmadminweb/WebContent/WEB-INF;dmadminweb/microservice/ao-ms-ui;dmadminweb/WebContent/WEB-INF/schema;dmadminweb/WebContent/WEB-INF/lib;NetHelp/**;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Ant War
 	SCRIPT Ant War Task.sc
@@ -1938,7 +1938,7 @@ dmadminweb.war : dmadminweb/WebContent/*.jsp \
 	TARGET dmadminweb.war
 	TGTFILENAME dmadminweb.war.tgt
 	PROJECTDIRS dmadminweb/WebContent;dmadminweb/WebContent/css/img/network;dmadminweb/WebContent/css/img/timeline;dmadminweb/WebContent/css;dmadminweb/WebContent/css/cupertino/images;dmadminweb/WebContent/css/cupertino;dmadminweb/WebContent/css/images;dmadminweb/WebContent/css/images/images;dmadminweb/WebContent/Rest/**;dmadminweb/WebContent/hot;dmadminweb/WebContent/images;dmadminweb/WebContent/images/filetypes;dmadminweb/WebContent/js/_demo;dmadminweb/WebContent/Home;dmadminweb/WebContent/js/_docs;dmadminweb/WebContent/js/_docs/syntax;dmadminweb/WebContent/js/_lib;dmadminweb/WebContent/js;dmadminweb/WebContent/js/edit_area/**;dmadminweb/WebContent/js/cultures;dmadminweb/WebContent/js/i18n;dmadminweb/WebContent/js/minified/i18n;dmadminweb/WebContent/js/minified;dmadminweb/WebContent/js/ao;dmadminweb/WebContent/js/plugins;dmadminweb/WebContent/js/themes/apple;dmadminweb/WebContent/js/themes/classic;dmadminweb/WebContent/js/themes/default;dmadminweb/WebContent/js/themes/default-rtl;dmadminweb/WebContent/themes/apple;dmadminweb/WebContent/themes/classic;dmadminweb/WebContent/themes/default;dmadminweb/WebContent/themes/default-rtl;dmadminweb/WebContent/userimages;dmadminweb/WebContent/js/jqwidgets/**;dmadminweb/WebContent/reports;dmadminweb/WebContent/META-INF;dmadminweb/WebContent/WEB-INF;dmadminweb/WebContent/WEB-INF/schema;dmadminweb/WebContent/WEB-INF/lib;NetHelp/**;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Ant War
 	SCRIPT Ant War Task.sc
@@ -2046,7 +2046,7 @@ deployhub-webadmin.classpath : dmadminweb/WebContent/WEB-INF/lib/*.jar \
 	TARGET deployhub-webadmin.classpath
 	TGTFILENAME deployhub-webadmin.war.tgt
 	PROJECTDIRS dmadminweb/WebContent/WEB-INF/lib;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Set Classpath
 	SCRIPT Set Classpath.sc
@@ -2154,7 +2154,7 @@ dh-ms-general.classpath : dmadminweb/WebContent/WEB-INF/lib/*.jar \
 	TARGET dh-ms-general.classpath
 	TGTFILENAME dh-ms-general.war.tgt
 	PROJECTDIRS dmadminweb/WebContent/WEB-INF/lib;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Set Classpath
 	SCRIPT Set Classpath.sc
@@ -2262,7 +2262,7 @@ dh-ms-init.classpath : dmadminweb/WebContent/WEB-INF/lib/*.jar \
 	TARGET dh-ms-init.classpath
 	TGTFILENAME dh-ms-init.war.tgt
 	PROJECTDIRS dmadminweb/WebContent/WEB-INF/lib;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Set Classpath
 	SCRIPT Set Classpath.sc
@@ -2370,7 +2370,7 @@ dh-ms-ui.classpath : dmadminweb/WebContent/WEB-INF/lib/*.jar \
 	TARGET dh-ms-ui.classpath
 	TGTFILENAME dh-ms-ui.war.tgt
 	PROJECTDIRS dmadminweb/WebContent/WEB-INF/lib;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Set Classpath
 	SCRIPT Set Classpath.sc
@@ -2478,7 +2478,7 @@ dmadminweb.classpath : dmadminweb/WebContent/WEB-INF/lib/*.jar \
 	TARGET dmadminweb.classpath
 	TGTFILENAME dmadminweb.war.tgt
 	PROJECTDIRS dmadminweb/WebContent/WEB-INF/lib;
-	INTDIR 
+	INTDIR
 	BUILDTYPE Java War
 	BUILDTASK Set Classpath
 	SCRIPT Set Classpath.sc
@@ -2721,7 +2721,7 @@ foreach my $option_group ( @option_groups )
  #                  just files for this build)
  my ($file_ref, $opt_ref ) = $buildopt->getBuildTaskFiles( $build_task, $option_group );
  my @option_files = @{$file_ref};
- 
+
 
  #-- remove files that are keyed in %TaskOptionFiles
  my $i = 0;
@@ -2753,7 +2753,7 @@ foreach my $option_group ( @option_groups )
    push @subtask_deps, @ret_subtask_deps;
    #-- remove the sub task extension files from the @option_files
    @option_files = grep { $_ !~ /$sub_task_ext$/ } @option_files;
-   $dir_list .= ",$rel_dir"; 
+   $dir_list .= ",$rel_dir";
   }
  }
 
@@ -2762,15 +2762,15 @@ foreach my $option_group ( @option_groups )
   $LogOutputNL .= "\nIncluding from Sub-Task Dependencies:\n\n";
   foreach (@subtask_deps) { $LogOutputNL .= " $_\n" if $_ =~ /\w+/ ; } #Added to strip out empty strings from logging AG 081804
  }
- 
+
  #-- JAG - add package classes to TargetRelDeps so that we can use TargetRelDeps later
  #         in AntFilesetOrg
  foreach ( @subtask_deps ) { $TargetRelDeps->push($_); }
- 
+
  push @option_files, @subtask_deps; #join the found subtask deps with the exisiting option files
  foreach (@option_files) { $_ =~ s|\\|/|g; } #all slashes forward
  next unless ( @option_files );
- 
+
  #-- we pass in the prefix option, in case we need to split on that
  #
  my $prefix =  $buildopt->getBuildTaskOption( "prefix", $build_task, $option_group );
@@ -2779,7 +2779,7 @@ foreach my $option_group ( @option_groups )
  $prefix =~ s|"$||; #"
 
  #-- JAG - 02.11.05 - add intdir to list of possible dirs
- my $dir_list .= "$wanted_dir,$IntDirDL,$IntBaseDir"; 
+ my $dir_list .= "$wanted_dir,$IntDirDL,$IntBaseDir";
 
  $int_dir = $IntDir->getAbsolute;
 
@@ -3073,13 +3073,13 @@ if ($ScriptVersion =~ /^\s*\$Header:\s*(\S+),v\s+(\S+)\s+(\S+)\s+(\S+)/ )
  my $version = $2;
  my $date = $3;
  my $time = $4;
- 
+
  #-- massage path
  $path =~ s/\\040/ /g;
  my @t = split /\//, $path;
  my $file = pop @t;
  my $module = $t[2];
- 
+
  $ScriptVersion = "$module, v$version";
 }
 
@@ -3315,9 +3315,9 @@ else
 {
  # Default must be no -g flag for RELEASE builds (no '-g' flag is different than '-g:none')
  #  this broke backward compatibility - SAB
- 
+
  # The code above should handle  -g:none if someone wants it
- 
+
  # push(@CompilerArguments, "arg value=\"-g:none\" /\n");
 }
 
@@ -3447,7 +3447,7 @@ foreach $file (sort @Newer)
  #$Class   = $IntDir->get . $DL . $Class;
 
  next if ($file =~ /\*/);
- 
+
  # escape $ in $file for ANT compilation
  if ($file =~ m{\$})
  {
@@ -3508,7 +3508,7 @@ ENDXML
 #
 &omlogger("Begin",$StepDescription,"FAILED","$StepDescription succeeded.",$Compiler,$CompilerArgs,$LogOutputNL,$RC,@Output);
 
-#-- JAG - 08.02.05 - case 6145 : if there are no files to compile, don't run 
+#-- JAG - 08.02.05 - case 6145 : if there are no files to compile, don't run
 #   Ant. This isn't needed if we were to use the 'Ant Javac' task directly.
 if ( @FilesToCompile)
 {
@@ -3519,9 +3519,9 @@ else
 {
  @CompilerOut = ();
 }
- 
-foreach $l (@CompilerOut) 
-{ 
+
+foreach $l (@CompilerOut)
+{
 print $l;
  $l =~ s/\[java\]/\[javac\]/;
  $l =~ m/\[javac\][\s.](\d+)[\s.]error/;
@@ -3599,7 +3599,7 @@ my %package_hash = map { $_ =~ s/^$etarget_path//;
                          $_ =~ s/\/$//;
                          $_ = "." if ($_ eq "");
                          $_ => 1 } @tmp_packages;
-                         
+
 #-- now look for properties that match to this
 foreach my $properties_file ( @properties_files )
 {
@@ -3615,12 +3615,12 @@ foreach my $properties_file ( @properties_files )
    #-- copy the file
    my $local_file = $path . "/$file";
    copy ( $properties_file, $local_file);
- 
+
    #-- add to .javac
    if ( $path eq "." )
    {
     print FP $file, "\n";
-   }  
+   }
    else
    {
     print FP $path, "/", $file, "\n";
@@ -3672,13 +3672,13 @@ if ($ScriptVersion =~ /^\s*\$Header:\s*(\S+),v\s+(\S+)\s+(\S+)\s+(\S+)/ )
  my $version = $2;
  my $date = $3;
  my $time = $4;
- 
+
  #-- massage path
  $path =~ s/\\040/ /g;
  my @t = split /\//, $path;
  my $file = pop @t;
  my $module = $t[2];
- 
+
  $ScriptVersion = "$module, v$version";
 }
 
@@ -3726,7 +3726,7 @@ my $uses_zip = 1; #-- all tasks use zipfilesets
 if ($ENV{'ARCHIVA_URL'} ne "")
 {
  $RC = RuntimeDependencies($ENV{'ARCHIVA_URL'},$ENV{'ARCHIVA_USERID'},$ENV{'ARCHIVA_PASSWORD'},$ENV{'ARCHIVA_REPO'},$RelDeps->getExtList(qw(.jar .zip)));
- 
+
  push(@CompilerOut,"\n");
 
   omlogger("Final",$StepDescription,"ERROR:","$StepDescription failed.",$Compiler,$CompilerArgs,$ClassPathNL,$RC,@CompilerOut), ExitScript $RC if ($RC == 1);
@@ -3939,15 +3939,15 @@ foreach my $option_group ( @option_groups )
   $LogOutputNL .= "\nIncluding from Sub-Task Dependencies:\n\n";
   foreach (@subtask_deps) { $LogOutputNL .= " $_\n" if $_ =~ /\w+/ ; } #Added to strip out empty strings from logging AG 081804
  }
- 
+
  #-- JAG - add package classes to TargetRelDeps so that we can use TargetRelDeps later
  #         in AntFilesetOrg
  foreach ( @subtask_deps ) { $TargetRelDeps->push($_); }
- 
+
  push @option_files, @subtask_deps; #join the found subtask deps with the exisiting option files
  foreach (@option_files) { $_ =~ s|\\|/|g; } #all slashes forward
  next unless ( @option_files );
- 
+
  #-- we pass in the prefix option, in case we need to split on that
  #
  my $prefix =  $buildopt->getBuildTaskOption( "prefix", $build_task, $option_group );
@@ -3992,10 +3992,10 @@ foreach my $option_group ( @option_groups )
    # The following section allows for custom lines to be added into the MANIFEST.MF file.
    # The lines to be written in the manifest must be defined in the options for the Ant Jar task
    # The option must be entered with "MFName=" prepended to the value for Option Name and "MFValue=" prepended to the value for Parameter
- 
+
    #---grep out options that include MFName and assign them to an array separate from @options array.
    @MFOptions = (grep /MFName=/, @options);
-   #---if @MFOptions defined, and we have not iterated through this if statement yet, 
+   #---if @MFOptions defined, and we have not iterated through this if statement yet,
    # parse values for MFName and MFValue from @MFOptions and assign them
    if (@MFOptions && $UsesManifestParams !~ "1")
    {
@@ -4008,7 +4008,7 @@ foreach my $option_group ( @option_groups )
      $mfname  =~ s|^.*\=||;
      $mfvalue =~ s|\=||;
    #---format correctly for ANT
-     $mfline = "attribute name=" . "\"$mfname\"" . " value=" . "\"$mfvalue\" \/"; 
+     $mfline = "attribute name=" . "\"$mfname\"" . " value=" . "\"$mfvalue\" \/";
      push (@mflines, $mfline);
     }
    #---create @ManifestLines array separate from @IncludesLines array
@@ -4023,7 +4023,7 @@ foreach my $option_group ( @option_groups )
    }
    #---end of Create Custom Manifest section
 
-   
+
    #-- need to parse options for missing quotes
    foreach my $opt ( @options )
    {
@@ -4180,7 +4180,7 @@ foreach my $opt ( @options )
 $xml .= "\n";
 
 $xml .=<<ENDXML2;
-   
+
    @ManifestLines
    @IncludesLines
 
@@ -4205,7 +4205,7 @@ $RC = Check4Errors("FAILED",$?,@CompilerOut);
 if ( $RC != 0 ) {
  chmod 0777, $Target->get;
  push @dellist, $Target->get;
- 
+
 }
 
 &omlogger("Final",$StepDescription,"ERROR:","ERROR: $StepDescription failed!",$Compiler,$CompilerArguments,"",$RC,@CompilerOut), $RC = 1 if ($RC != 0);
@@ -4289,43 +4289,43 @@ sub RuntimeDependencies
 	$use_readkey = eval { require LWP::Simple; };
 
 	my $coder = Frontier::RPC2->new;
- 
+
  	my $server = Frontier::Client->new('url' => $server_url . "/xmlrpc" );
 
 	my $retcode = 0;
-	
+
 	$server->{rq}->authorization_basic($userid, $password);
 
 	foreach my $jar (@jars)
 	{
 	 next if ($jar !~ /-/);
-	 
+
 	 my $artifactId = substr($jar,0,rindex($jar,"-"));
-	 
+
 	 my @args = ($artifactId);
 	 my $result = $server->call('SearchService.quickSearch',@args);
 
 	 my @res = @{$result};
-	 
+
 	 for ($j=0;$j< scalar @res;$j++)
 	 {
 	  my %info = %{$res[$j]};
-	  
+
 	  next if ($info{repositoryId} !~ /$repo/i);
-	  
+
 	  my $foundjar = $info{artifactId} . "-" . $info{version} . "." . $info{type};
-	  
+
 	  if ($jar =~ /$foundjar/i)
 	  {
 	   my @args = ( $info{groupId}, $info{artifactId}, $coder->string($info{version}));
 	   my $result = $server->call('SearchService.getDependencies',@args);
-	  
+
 	   @res = @{$result};
-	 
+
 	   for ($i=0;$i < scalar @res;$i++)
 	   {
 	    %info = %{$res[$i]};
-	    push @deptree, $res[$i] if ($info{scope} !~ /test|provide/i);  
+	    push @deptree, $res[$i] if ($info{scope} !~ /test|provide/i);
 	   }
 	  }
 	 }
@@ -4333,26 +4333,26 @@ sub RuntimeDependencies
 
 	my @SP = $VPath->getList();
 	push (@SP,$IntDir->get) if ($IntDir->get ne "." && $IntDir->get ne "");
-	
+
 	foreach my $artifact (@deptree)
 	{
 	 my @args = ($artifact->{artifactId});
 	 my $artver = $artifact->{version};
-	 
+
 	 my $propErr = 0;
 	 if ($artver =~ /\$\{/)
 	 {
 	  $artver =~ s/\$\{//g;
 	  $artver =~ s/\}//g;
-	  
+
 	  $retcode = 1, $propErr=1, push(@CompilerOut,"ERROR 210: $artver property definition is not defined\n") if ($ENV{$artver} eq "");
 	  $artver = $ENV{$artver};
 	 }
-	 
-	  my $reldepfile = $artifact->{groupId} . "/" . $artifact->{artifactId} . "/" . $artver . "/" . $artifact->{artifactId} . "-" . $artver . "." . $artifact->{type};	  
+
+	  my $reldepfile = $artifact->{groupId} . "/" . $artifact->{artifactId} . "/" . $artver . "/" . $artifact->{artifactId} . "-" . $artver . "." . $artifact->{type};
 
 	  my $foundjaronFS = 0;
-	  
+
 	 foreach my $dir (@SP)
 	 {
 	  my $lookfor = $dir;
@@ -4381,7 +4381,7 @@ sub RuntimeDependencies
 	   last;
       }
 	 }
-	 
+
 	 if ($foundjaronFS == 0 && $propErr == 0)
 	 {
 	  my $localjar = Openmake::File->new(File::Spec->catfile($cwd, $IntDir->get, $reldepfile));
@@ -4389,9 +4389,9 @@ sub RuntimeDependencies
 	  $localjar->mkdir();
 
 	  push(@CompilerOut,"Caching $server_url/repository/$repo/$reldepfile -> " . $localjar->get . "\n");
-	  
+
 	  getstore( "$server_url/repository/$repo/$reldepfile", $localjar->get );
-      
+
        $ReleaseFlags->{$tarfile}->{'Ant War'}->{'Web-Inf Lib'}->{$localjar->get} = 'BTOG(Ant War|Web-Inf Lib)[95]{ prefix=WEB-INF/lib} DT[5]';
 	   $DebugFlags->{$tarfile}->{'Ant War'}->{'Web-Inf Lib'}->{$localjar->get} = 'BTOG(Ant War|Web-Inf Lib)[95]{ prefix=WEB-INF/lib} DT[5]';
 
@@ -4400,52 +4400,52 @@ sub RuntimeDependencies
 	   $TargetRelDeps->push($localjar->getFE);
 	 }
 
-	 
+
 	 my $result = $server->call('SearchService.quickSearch',@args);
 
 	 my @res = @{$result};
-	 
+
 	 my $found = 0;
-	 
+
 	 for ($j=0;$j < scalar @res;$j++)
 	 {
 	  my %info = %{$res[$j]};
 
 	  next if ($info{repositoryId} !~ /$repo/i);
 	  my $iver = $info{version};
-	 
+
 	  if ($iver =~ /\$\{/)
 	  {
 	   $iver =~ s/\$\{//g;
 	   $iver =~ s/\}//g;
-	   $RC = 1, print "ERROR 210: $iver property definition is not defined\n" if ($ENV{$iver} eq "");   
+	   $RC = 1, print "ERROR 210: $iver property definition is not defined\n" if ($ENV{$iver} eq "");
 	   $iver = $ENV{$iver};
 	  }
-	  
+
 	  $artifact->{type} = "jar" if ($artifact->{type} eq "pom");
 	  $info{type} = "jar" if ($info{type} eq "pom");
-	  
+
 	  my $foundjar = $info{artifactId} . "-" . $iver . "." . $info{type};
 	  my $jar = $artifact->{artifactId} . "-" . $artver . "." . $artifact->{type};
-	  
+
 	  if ($jar =~ /$foundjar/i)
 	  {
 	   my @args = ( $info{groupId}, $info{artifactId}, $coder->string($iver));
 	   my $result = $server->call('SearchService.getDependencies',@args);
 	   $found = 1;
 	   @res = @{$result};
-	 
+
 	   for ($i=0;$i < scalar @res;$i++)
 	   {
 	    %info = %{$res[$i]};
-	    push @deptree, $res[$i] if ($info{scope} !~ /test|provide/i);  
+	    push @deptree, $res[$i] if ($info{scope} !~ /test|provide/i);
 	   }
 	  }
 	 }
-	 
+
 	 $retcode=1, push(@CompilerOut,"ERROR 211: GroupId=" . $artifact->{groupId} . " ArtifactId=" . $artifact->{artifactId} . " Version=" . $artver . " is not found in the Archiva Repository Index.  Please add the component to the Repository and Re-index.\n") if ($found eq 0 && $propErr eq 0);
 	}
-  return $retcode;	
+  return $retcode;
 }
 
 --End:Ant War Task.sc
@@ -4468,7 +4468,7 @@ if ($ScriptVersion =~ /^\s*\$Header:\s*(\S+),v\s+(\S+)\s+(\S+)\s+(\S+)/ )
  my @t = split /\//, $path;
  my $file = pop @t;
  my $module = $t[2];
- 
+
  $ScriptVersion = "$module, v$version";
 }
 
@@ -4507,7 +4507,7 @@ $ClassPath->push( unique($TargetDeps->getExtList(qw(.jar .zip .properties .class
 @DepList = unique($TargetDeps->getExtList(qw(.jar .zip .properties .class )));
 foreach $dep (@DepList)
 {
- if (-f $dep) 
+ if (-f $dep)
  {
   push(@DepSearchFound, "  $dep\n");
  }
@@ -4518,7 +4518,7 @@ foreach $dep (@DepList)
 }
 
 #-- JAG - 03.09.04 - Case 4450. This line doubles up all jars in the classpath
-#                    (see line 
+#                    (see line
 #$ClassPath->push( @DepList );
 
 #-- JAG - 03.09.04 - need to see if add.dirs was passed as an option
@@ -4531,7 +4531,7 @@ my $build_option = Openmake::BuildOption->new($optionref);
 
 #-- get the options
 my $options_str = $build_option->getBuildTaskOptions( $BuildTask);
-$ClassPath->push( $ProjectVPath->getList, $VPath->getList ) 
+$ClassPath->push( $ProjectVPath->getList, $VPath->getList )
   if ( $options_str =~ /add.dirs/ );
 
 # Construct formatted classpath for logging
@@ -4574,23 +4574,23 @@ sub OrderClasspath {
 
  my @unorderedJars = @_;
  my $jar, $mJar, @theJarOrder, @orderedJars;
- 
+
  #-- Open up java-order file
  #unless( open(JOR,"<" . $JOR->get ) ) {
  # $StepError = "classpath.sc: 02:  Couldn't open Java Order file, " . $JOR->get . ".\n";
  # write_text_output( 'abort' );
  # omlogger();
  #}
- 
+
  #@theJarOrder = <JOR>;
  #close JOR;
  chomp @theJarOrder;
- 
+
  # make an exception for '.' and the intermediate directory
  @temp = grep(/^\.$/,@unorderedJars);
  $eIntdir = $IntDir->getEscaped;
  @temp2 = grep(/^$eIntdir$/,@unorderedJars);
- 
+
  $dot = shift @temp;
  @unorderedJars = grep(!/^\.$/,@unorderedJars);
  @unorderedJars = grep(!/^$eIntdir$/,@unorderedJars);
@@ -4599,22 +4599,22 @@ sub OrderClasspath {
   next if $jar =~ /^\#|^\s*$/;
   $mJar = $jar;
   $mJar =~ s|(\W)|\\$1|g;
-  
+
   # match from the end since the jar from the
   # unordered list is stuck to a fully qualified path
   # determined by the vpath
-  
+
   push(@orderedJars, grep( /$mJar$/,@unorderedJars ) );
   @unorderedJars = grep( !/$mJar$/,@unorderedJars );
  }
 
  # put the intermediate output directory back
  unshift(@orderedJars, $eIntdir) if $IntDir->get ne '';
- 
+
  # put the dot back
  unshift @orderedJars, $dot;
 
- print "end sub OrderJars\n" if $debug =~ /sub/; 
+ print "end sub OrderJars\n" if $debug =~ /sub/;
  return (@orderedJars, @unorderedJars);
 }
 

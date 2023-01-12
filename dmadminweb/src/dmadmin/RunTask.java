@@ -72,7 +72,7 @@ extends HttpServletBase
 			if(unsubscribe) {
 				session.newsUnsubscribeObject(otid);
 			} else {
-				session.newsSubscribeObject(otid);    
+				session.newsSubscribeObject(otid);
 			}
 			obj.add("result", true);
 		} catch(Exception e) {
@@ -82,7 +82,7 @@ extends HttpServletBase
 		}
 		return obj;
 	}
- 
+
 	@Override
 	public void handleRequest(DMSession session, boolean isPost,
 			HttpServletRequest request, HttpServletResponse response)
@@ -90,8 +90,8 @@ extends HttpServletBase
 	{
 		int id = ServletUtils.getIntParameter(request,"id");
 		String isAudit = request.getParameter("tid");
-		
-	 session.setPassword(request); 
+
+	 session.setPassword(request);
 
 		if (isAudit != null && isAudit.equalsIgnoreCase("Audit"))
 		{
@@ -117,7 +117,7 @@ extends HttpServletBase
 		{
 			String sotid = request.getParameter("otid");
 			ObjectTypeAndId otid = ((sotid != null) && (sotid.length() > 0)) ? new ObjectTypeAndId(sotid) : null;
-  
+
 			String ret = doSubscribe(session, otid, false).toString();
 			PrintWriter out = response.getWriter();
 			out.println(ret);
@@ -128,7 +128,7 @@ extends HttpServletBase
 		{
 			String sotid = request.getParameter("otid");
 			ObjectTypeAndId otid = ((sotid != null) && (sotid.length() > 0)) ? new ObjectTypeAndId(sotid) : null;
-  
+
 			String ret = doSubscribe(session, otid, true).toString();
 			PrintWriter out = response.getWriter();
 			out.println(ret);
@@ -146,7 +146,7 @@ extends HttpServletBase
 			otype = otype.substring(0, 2);
 		else
 			otype = "";
-		
+
 		System.out.println("in RunTask - tt="+tt+" tid="+tid+" id="+id+" f="+f+" otype=" + otype);
 
 		if (f.equalsIgnoreCase("def") || f.equalsIgnoreCase("def2"))
@@ -177,9 +177,9 @@ extends HttpServletBase
 			JSONObject obj = new JSONObject();
 			obj.add("tasktype", tt.toString());
 	  ObjectType ot = ObjectType.fromTypeString(otype);
-	  
+
 	  DMObject dmobj = session.getObject(ot, id);
-	  
+
 	  int pid = dmobj.getDomain().getId();
 			Domain dom = session.getDomain(pid);
 			String domain_name = "";
@@ -194,22 +194,22 @@ extends HttpServletBase
    if (tt == TaskType.DEPLOY && otype != null && (otype.equalsIgnoreCase("ap") || otype.equalsIgnoreCase("av"))) {
     Application app = session.getApplication(id, false);
     Domain mydomain = app.getDomain();
-    
+
     ArrayList<Domain> domlist = new ArrayList<Domain>();
     domlist.add(mydomain);
-    
+
     HashMap<Integer, Integer> hmap = new HashMap<Integer, Integer>();
     session.getAllChildDomains(mydomain.getId(), hmap);
-    
-    for (Integer key : hmap.keySet()) 
+
+    for (Integer key : hmap.keySet())
     {
      Domain dom2 = session.getDomain(key);
-     domlist.add(dom2);       
+     domlist.add(dom2);
     }
 
     String parentdoms = session.getDomainHeirarchy(mydomain.getId());
     String parts[] = parentdoms.split(",");
-    
+
     if (parts != null)
     {
      for (int i=0;i<parts.length;i++)
@@ -218,10 +218,10 @@ extends HttpServletBase
       domlist.add(dom2);
      }
     }
-    
+
     JSONArray arr3 = new JSONArray();
     int envlen = 0;
-    
+
     for (int i=0;i<domlist.size();i++)
     {
      Domain dom3 = domlist.get(i);
@@ -229,7 +229,7 @@ extends HttpServletBase
      List<Environment> envs = session.getEnvironmentsInDomain(dom3);
      envlen += envs.size();
      System.out.println("Domain=" + dom3.getName() + " cnt=" + envs.size());
-     
+
      for (Environment c: envs) {
       JSONObject cobj = new JSONObject();
       cobj.add("id", c.getId());
@@ -336,7 +336,7 @@ extends HttpServletBase
 				{
 					domain_name = to.getFullDomain();
 				}
-			}			
+			}
 			else if (tt == TaskType.APPROVE)
 			{
 				TaskApprove tm = session.getTaskApprove(tid);
@@ -357,12 +357,12 @@ extends HttpServletBase
 			}
 			else if (tt == TaskType.RUN_ACTION)
 			{
-				
+
 			}
 
 			if (domain_name != null && !domain_name.isEmpty()) obj.add("domain", domain_name);
 
-			obj.add("domainid", t.getDomainId());	  
+			obj.add("domainid", t.getDomainId());
 			obj.add("showoutput", t.getShowOutput());
 			//
 			// Add any additional parameters required
@@ -439,7 +439,7 @@ extends HttpServletBase
 			request.setAttribute("domain",domain);
 			request.getRequestDispatcher("/WEB-INF/TaskApprove.jsp").forward(request, response);
 		}
-		break;				
+		break;
 		case REMOVE: {
 			TaskRemove taskRemove = so.getTaskRemove(tid);
 			request.setAttribute("task",taskRemove);
@@ -495,7 +495,7 @@ extends HttpServletBase
 				titleText="Request Deploy of Application "+app.getName();
 				break;
 			default:
-				break;	
+				break;
 			}
 			request.setAttribute("task",taskReq);
 			request.setAttribute("domain",tgtdom);
@@ -635,12 +635,12 @@ extends HttpServletBase
 			taskDeploy.setEnvironment(depenv);
 			taskDeploy.setDeploymentSessionId(so.GetSessionId() + "_" + System.currentTimeMillis());
 			taskDeploy.setAdditionalParameters(additionalParameters);
-			
+
 			Application baseApp = so.getBaseAppVersion(app);
-			
+
 			if (baseApp != null)
 			  so.addToAppsAllowedInEnv(depenv, baseApp);
-			
+
 			if(taskDeploy.run()) {
 				Deployment dep = so.getDeploymentBySessionId(taskDeploy, 30);
 				if(dep != null && dep.getId() > 0) {
@@ -655,7 +655,7 @@ extends HttpServletBase
 				}
 			} else {
 				String msg = taskDeploy.getLastOutputLine();
-				obj.add("error", "Failed to start deployment" + ((msg != null) ? ("\n" + msg) : ""));			
+				obj.add("error", "Failed to start deployment" + ((msg != null) ? ("\n" + msg) : ""));
     obj.add("deploymentid", -1);
 				obj.add("success", "false");
 			}}
@@ -704,7 +704,7 @@ extends HttpServletBase
 			taskUserDef.setAdditionalParameters(additionalParameters);
 			result = taskUserDef.run();
 			obj.add("result", result);
-			obj.add("output", taskUserDef.getFormattedOutput());			
+			obj.add("output", taskUserDef.getFormattedOutput());
 		}
 		break;
 		case UNKNOWN:
@@ -716,5 +716,5 @@ extends HttpServletBase
 		out.println(ret);
 		System.out.println(ret);
 	}
-	
+
 }

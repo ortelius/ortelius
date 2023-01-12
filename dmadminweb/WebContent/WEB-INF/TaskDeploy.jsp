@@ -23,7 +23,7 @@ var err2="</i></b></td></tr></table>";
 function TgtChg()
 {
 	// Need to validate app and target with some "pre-flight checks"
-	var envs = document.getElementById("envid"); 
+	var envs = document.getElementById("envid");
 	var envid = envs.options[envs.selectedIndex].value;
 	console.log("ValidateTask?tt=Deploy&appid=${app.id}&envid="+envid);
 	$.ajax({
@@ -34,7 +34,7 @@ function TgtChg()
 			success: function(data) {
 				if (data.success) {
 					parent.$("#modok").attr('disabled', false ).removeClass( 'ui-state-disabled' );
-					
+
 				} else {
 					$("#errarea").html(err1+data.errtext+err2);
 				}

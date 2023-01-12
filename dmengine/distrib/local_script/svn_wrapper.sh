@@ -31,7 +31,7 @@ do
   *)     val="$1"
          ;;
   esac
-  
+
   cmd="${cmd} \"${val}\""
   shift
 done

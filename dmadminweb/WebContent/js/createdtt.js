@@ -60,11 +60,11 @@ function dtCreateTree(nodename,currentdomain)
           // Those two checks may slow jstree a lot, so use only when needed
           "max_depth" : -2,
           "max_children" : -2,
-          // I want only `domain` nodes to be root nodes 
+          // I want only `domain` nodes to be root nodes
           // This will prevent moving or creating any other type as a root node
           "valid_children" : [ "Domain" ],
           "types" : {
-              // The `domain` node 
+              // The `domain` node
               "Domain" : {
                   "icon" : {
                       "image" : "css/images/domains_sm.png"
@@ -81,7 +81,6 @@ function dtCreateTree(nodename,currentdomain)
       "plugins" : [ "themes", "json_data", "ui", "crrm", "types" ],
       "ui": {"select_limit" : 1}
       });
- 
+
     var $jstree = $.jstree;
 }
-	

@@ -69,14 +69,14 @@
  *
  ******************************************************************/
 
-/* Period parameters */  
+/* Period parameters */
 #define N 624
 #define M 397
 #define MATRIX_A 0x9908b0df   /* constant vector a */
 #define UPPER_MASK 0x80000000 /* most significant w-r bits */
 #define LOWER_MASK 0x7fffffff /* least significant r bits */
 
-/* Tempering parameters */   
+/* Tempering parameters */
 #define TEMPERING_MASK_B 0x9d2c5680
 #define TEMPERING_MASK_C 0xefc60000
 #define TEMPERING_SHIFT_U(y)  (y >> 11)
@@ -127,14 +127,14 @@ unsigned long genrand()
 
         mti = 0;
     }
-  
+
     y = mt[mti++];
     y ^= TEMPERING_SHIFT_U(y);
     y ^= TEMPERING_SHIFT_S(y) & TEMPERING_MASK_B;
     y ^= TEMPERING_SHIFT_T(y) & TEMPERING_MASK_C;
     y ^= TEMPERING_SHIFT_L(y);
 
-    return y; 
+    return y;
 }
 
 /*******************************************************************
@@ -199,7 +199,7 @@ static char *url_encode(char *str)
 	char *buf = (char *)malloc(strlen(str) * 3 + 1);
 	char *pbuf = buf;
 	while (*pstr) {
-		if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~') 
+		if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~')
 			*pbuf++ = *pstr;
 		else if (*pstr == '/')
 			*pbuf++ = '/';
@@ -578,7 +578,7 @@ long triODBC::ConnectToDataSource(DM *dm,char *FileName)
 			perror("");
 			exit(1);
 		}
-		
+
 		DecryptBuffer(Buffer,buf.st_size);
 
 		DSN=strdup(Buffer);
@@ -848,7 +848,7 @@ SQLRETURN triSQL::BindParameter(	SQLUSMALLINT	ColumnNumber,
 	if (TargetType == SQL_BINARY || TargetType == SQL_C_BINARY)
 	{
 		// printf("Setting pcbValue to SQL_DATA_AT_EXEC\n");
-		
+
 		SourceType = SQL_C_DEFAULT;
 		TargetType = SQL_LONGVARBINARY;
 		if (TargetValuePtr == (SQLPOINTER)0)
@@ -869,7 +869,7 @@ SQLRETURN triSQL::BindParameter(	SQLUSMALLINT	ColumnNumber,
 
 	 // printf("Calling SQLBindParameter(m_StatHandle,%d,SQL_PARAM_INPUT,%d,%d,%d,%d,0x%lx,%d,0x%lx)\n",
 		// ColumnNumber,SourceType,TargetType,Precision,Scale,TargetValuePtr,BufferLength,&(pcbValue[ColumnNumber]));
-	
+
 	SQLRETURN res;
 
 	if (!m_odbc->getUseWebService()) {
@@ -939,7 +939,7 @@ long triSQL::BindColumn(	SQLUSMALLINT 	ColumnNumber,
 	{
 		// Character data - we will do an automatic right trim on
 		// all character data.
-		
+
 		if (CharCols==(CHARCOLS *)0)
 		{
 			CharCols=(CHARCOLS *)malloc(sizeof(CHARCOLS));
@@ -1331,7 +1331,7 @@ SQLRETURN triSQL::PrepareStatement(const char *SQLformat, ...)
 		}
 		free(p);
 		free(ustmt);
-		
+
 #endif
 	}
 
@@ -1627,7 +1627,7 @@ COLDATA *triSQL::GetColumnInfo(unsigned char *TableName)
 	retcode = SQLColumnsA(m_StatHandle,
 	NULL, 0,			/* All catalogs */
 	NULL, 0,			/* All schemas */
-	UpperCaseTableName, SQL_NTS,   
+	UpperCaseTableName, SQL_NTS,
 	NULL, 0);			/* All columns */
 
 	if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
@@ -1726,7 +1726,7 @@ COLDATA *triSQL::GetColumnInfoForStatement()
 	SQLLEN DataType;	// RHT 07/08/2012 - was SQLINTEGER
 	SQLLEN colsize;		// RHT 07/08/2012 - was SQLINTEGER
 
-	
+
 	SQLRETURN retCode = SQLNumResultCols(m_StatHandle, &numColumns);
 	SQLCHAR szColumnName[BUF_LEN];
 
@@ -1749,7 +1749,7 @@ COLDATA *triSQL::GetColumnInfoForStatement()
 			}
 
 			retCode = SQLColAttribute(m_StatHandle, (SQLUSMALLINT)i + 1, SQL_DESC_TYPE, NULL, (SQLSMALLINT)0, &bufferLenUsed, &DataType);
-			
+
 			switch(DataType)
 			{
 			case SQL_VARCHAR:
@@ -1799,7 +1799,7 @@ COLDATA *triSQL::GetColumnInfoForStatement()
 				CurrPointer->BindType = (SQLINTEGER)DataType;
 				break;
 			}
-			
+
 			retCode = SQLColAttribute(m_StatHandle, (SQLUSMALLINT)i + 1, SQL_DESC_TYPE, NULL, (SQLSMALLINT)0, &bufferLenUsed, &Nullable);
 			if (Nullable == SQL_NULLABLE)
 			{

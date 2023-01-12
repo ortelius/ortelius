@@ -24,22 +24,22 @@ public class JSONArray
 {
 	private List<Object> m_items = new ArrayList<Object>();
 	private boolean m_allString;
-	
+
 	public JSONArray()
 	{
 		this(false);
 	}
-	
+
 	public int length()
 	{
 		return m_items.size();
 	}
-	
+
 	public JSONArray(boolean allString)
 	{
 		m_allString = allString;
 	}
-	
+
 	public JSONArray add(Object obj)
 	{
 		m_items.add(obj);
@@ -55,7 +55,7 @@ public class JSONArray
 		for(Object obj : m_items) {
 			if(!first) { sb.append(","); }
 			if(obj == null) {
-				sb.append("\"\"");				
+				sb.append("\"\"");
 			} else if(obj instanceof IJSONSerializable) {
 				sb.append(((IJSONSerializable) obj).getJSON());
 			} else if(m_allString || (obj instanceof String)) {
@@ -68,7 +68,7 @@ public class JSONArray
 		sb.append("]");
 		return sb.toString();
 	}
-	
+
 	@Override
 	public String toString()
 	{

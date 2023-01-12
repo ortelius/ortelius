@@ -160,7 +160,7 @@ public class API extends HttpServlet
   je.add("name", compitem.getName());
   return je;
  }
- 
+
  private JSONObject exportJSONForApplication(DMSession so, Application app)
  {
   JSONObject je = assembleJSONForAppApprovals(so, app);
@@ -171,7 +171,7 @@ public class API extends HttpServlet
    je.add("domain", "");
   je.add("branch", app.getLabel(true));
   je.add("lastcompver", so.getLastComp4App(app.getId()));
-  
+
   DMObject owner = app.getOwner();
   if (owner != null)
   {
@@ -234,24 +234,24 @@ public class API extends HttpServlet
    complist.add(co);
   }
   je.add("components", complist);
-  
+
   List<DMAttribute> attrs = app.getAttributes();
   JSONArray arr = new JSONArray();
-  
+
   if (attrs != null)
   {
    for (int i=0;i<attrs.size();i++)
     arr.add(attrs.get(i).toJSON());
-  } 
+  }
   je.add("attrs", arr);
   return je;
  }
- 
+
  private JSONObject exportJSONForAction(DMSession so, Action act)
  {
   JSONObject je = new JSONObject();
   je.add("name", act.getFullName());
-  
+
   DMObject owner = act.getOwner();
   if (owner != null)
   {
@@ -269,10 +269,10 @@ public class API extends HttpServlet
   }
   je.add("summary", act.getSummary());
   je.add("category", act.getCategory().getDomain().getFullDomain() + "." +  act.getCategory().getName());
- 
+
   return je;
  }
- 
+
  private JSONObject exportJSONForComponent(DMSession so, Component comp)
  {
   JSONObject je = new JSONObject();
@@ -282,7 +282,7 @@ public class API extends HttpServlet
   else
    je.add("domain", "");
   je.add("branch", comp.getLabel(true));
-  
+
   DMObject owner = comp.getOwner();
   if (owner != null)
   {
@@ -334,32 +334,32 @@ public class API extends HttpServlet
    pred.add("summary", p.getSummary());
    je.add("predecessor", pred);
   }
-  
+
   List<DMAttribute> attrs = comp.getAttributes();
   JSONArray arr = new JSONArray();
-  
+
   if (attrs != null)
   {
    for (int i=0;i<attrs.size();i++)
     arr.add(attrs.get(i).toJSON());
-  } 
+  }
   je.add("attrs", arr);
-  
+
   List<ComponentItem> compitemlist = so.getComponentItems(comp.getId());
   arr = new JSONArray();
-  
+
   if (compitemlist  != null)
   {
    for (int i=0;i<compitemlist.size();i++)
    {
     arr.add(compitemlist.get(i).toJSON());
-   } 
-  } 
+   }
+  }
   je.add("componentitems", arr);
-  
+
   return je;
  }
- 
+
  private JSONObject assembleJSONForComponent(DMSession so, Component comp, boolean idonly)
  {
   JSONObject je = new JSONObject();
@@ -371,7 +371,7 @@ public class API extends HttpServlet
   {
    je.add("domain", dom.getFullDomain());
   }
-   
+
   DMObject owner = comp.getOwner();
   if (owner != null)
   {
@@ -426,7 +426,7 @@ public class API extends HttpServlet
    pred.add("summary", p.getSummary());
    je.add("predecessor", pred);
   }
-  
+
   if (idonly)
    return je;
   //
@@ -438,12 +438,12 @@ public class API extends HttpServlet
   {
    if (!so.ValidDomain(a.getDomainId()))
     continue;
-   
+
    JSONObject ao = assembleJSONForApplication(so, a, false);
    applist.add(ao);
   }
   je.add("applications", applist);
-  
+
   return je;
  }
 
@@ -468,33 +468,33 @@ public class API extends HttpServlet
    }
   }
   res.add("category", act.getCategory().getName());
-  
+
   int actionid = act.getId();
   JSONArray nodes = new JSONArray();
   res.add("nodes", nodes);
 
-  int startx = so.getStartXPosition(actionid,0); 
-  
+  int startx = so.getStartXPosition(actionid,0);
+
   List <DMActionNode> ans = so.GetActionNodes(actionid,0);
   List <DMActionLink> als = so.GetActionLinks(actionid,0);
-  
+
   for (DMActionNode a: ans)
   {
    String Title = a.getTitle();
    if (Title.length()==0) Title = a.getDescriptor();
    int style=0;
    if (a.getTypeID()==60) style=1; // Fragment ID of "if" is 60, change style for IF
-   
+
    JSONObject node = new JSONObject();
-   
+
    Action fp;
-   
+
    if (a.getProcedureID() > 0)
-    fp = so.getAction(a.getProcedureID(), true, ObjectType.PROCEDURE); 
+    fp = so.getAction(a.getProcedureID(), true, ObjectType.PROCEDURE);
    else
     fp = so.getAction(a.getFunctionID(), true, ObjectType.FUNCTION);
-      
-   node.add("name", fp.getDomain().getFullDomain() + "." + fp.getName()); 
+
+   node.add("name", fp.getDomain().getFullDomain() + "." + fp.getName());
    node.add("descriptor", a.getDescriptor());
    node.add("xpos",a.getXpos());
    node.add("ypos", a.getYpos());
@@ -506,24 +506,24 @@ public class API extends HttpServlet
    node.add("style", style);
    JSONArray args = new JSONArray();
    node.add("args", args);
-   
+
    List<FragmentAttributes> fa = so.getFragmentAttributes(actionid,a.getNodeID(),0);
-   
+
    for (FragmentAttributes attr: fa)
    {
     JSONObject obj = new JSONObject();
     obj.add("field", attr.getAttrName());
     obj.add("type", attr.getAttrType());
     obj.add("value", attr.getAttrVal());
-    
+
     args.add(obj);
    }
    nodes.add(node);
-  } 
-  
+  }
+
   JSONArray links = new JSONArray();
   res.add("links", links);
-  
+
   for (DMActionLink al: als)
   {
    JSONObject link = new JSONObject();
@@ -535,7 +535,7 @@ public class API extends HttpServlet
   }
   return res;
  }
- 
+
  private JSONObject assembleJSONForCredential(DMSession so, Credential cred)
  {
   JSONObject res = new JSONObject();
@@ -556,10 +556,10 @@ public class API extends HttpServlet
   je.add("name", app.getName());
   je.add("branch", app.getLabel(true));
   je.add("lastcompver", so.getLastComp4App(app.getId()));
-  
+
   if (idonly)
    return je;
-  
+
   Domain dom = app.getDomain();
   if (dom != null)
   {
@@ -621,7 +621,7 @@ public class API extends HttpServlet
   {
    if (!so.ValidDomain(c.getDomainId()))
     continue;
-   
+
    JSONObject co = new JSONObject();
    co.add("id", c.getId());
    co.add("name", c.getName());
@@ -642,9 +642,9 @@ public class API extends HttpServlet
   JSONObject je = new JSONObject();
   je.add("id", env.getId());
   je.add("name", env.getName());
-  
+
   Domain dom = env.getDomain();
-  
+
   je.add("domain", dom.getFullDomain());
   DMObject owner = env.getOwner();
   System.out.println("owner is " + owner);
@@ -874,7 +874,7 @@ public class API extends HttpServlet
    throw new ApiException(e.getMessage());
   }
  }
- 
+
  private Server getServerFromNameOrID(DMSession so, String idOrName) throws ApiException
  {
   try
@@ -982,7 +982,7 @@ public class API extends HttpServlet
    throw new ApiException(e.getMessage());
   }
  }
- 
+
  private CompType getCompTypeFromNameOrID(DMSession so, String idOrName) throws ApiException
  {
   try
@@ -994,7 +994,7 @@ public class API extends HttpServlet
    throw new ApiException(e.getMessage());
   }
  }
- 
+
  private void internalModUser(DMSession so, User moduser, HttpServletRequest request) throws ApiException
  {
   Datasource ldap = null;
@@ -1597,7 +1597,7 @@ public class API extends HttpServlet
  private void AddUser(DMSession so, String username, HttpServletRequest request) throws ApiException
  {
   // API/new/user?name=<loginname>[&domain=<domain>&realname=<real name>&ldap=<ldap datasource>&tel=<tel no>&email=<email>&cpw=Y|N&locked=Y|N&pw=<password>]
-  // Do we have create user permission?  
+  // Do we have create user permission?
   if (!so.getCreatePermission(ObjectType.USER))
    throw new ApiException("No Create User Permission");
   if (username == null || username.length() == 0)
@@ -1703,9 +1703,9 @@ public class API extends HttpServlet
  {
   if (!objname.contains("."))
    return;
-   
+
   ArrayList<String> parts = new ArrayList<String>(Arrays.asList(objname.split("\\.")));
-  if (parts != null && !parts.isEmpty()) 
+  if (parts != null && !parts.isEmpty())
    parts.remove(parts.size()-1);
 
   Domain tgtdomain;
@@ -1743,15 +1743,15 @@ public class API extends HttpServlet
 
     tgtdomain = so.getDomain(newid);
    }
-  }   
+  }
  }
- 
+
  private void AddEnvironment(DMSession so, String envname, HttpServletRequest request) throws ApiException
  {
   // API/new/environment/name[?domain=<domain>&summary=<summary>]
   // Do we have create environment permission?
   createDomains4Obj(so, envname);
-  
+
   if (!so.getCreatePermission(ObjectType.ENVIRONMENT))
   {
    // No!
@@ -1834,7 +1834,7 @@ public class API extends HttpServlet
    throw new ApiException(e.getMessage());
   }
  }
- 
+
  private void AddAppBaseVersion(DMSession so, String appname, HttpServletRequest request) throws ApiException
  {
   // API/new/environment/name[?domain=<domain>&summary=<summary>]
@@ -1844,23 +1844,23 @@ public class API extends HttpServlet
    // No!
    throw new ApiException("No Create Application Permission");
   }
-  
+
   System.out.println("DOING newappver");
-  
+
   String name = request.getParameter("name");
   String domain = request.getParameter("domain");
   String fullname = "";
-  
+
   if (name != null)
-   appname = name; 
-  
+   appname = name;
+
   if (appname == null || appname.length() == 0)
    throw new ApiException("application name must be specified");
-  
+
   if (domain != null)
    fullname = domain + "." + appname;
    createDomains4Obj(so, fullname);
-   
+
   Domain tgtdomain = null;
   // If domain is specified, use that, otherwise create environment in user's home domain
   if (domain != null)
@@ -1935,16 +1935,16 @@ public class API extends HttpServlet
     Repository r = getRepositoryFromNameOrID(so, repo);
     so.processField(so, field, "re" + r.getId(), schanges);
    }
-   
+
    schanges.add(SummaryField.ITEM_TARGETDIR, targetdir);
-   
+
    ACDChangeSet<DMProperty> pchanges = new ACDChangeSet<DMProperty>();
 
    pchanges.addAdded(new DMProperty("pattern", pattern, false, false, false));
    pchanges.addAdded(new DMProperty("URI", uri, false, false, false));
    pchanges.addAdded(new DMProperty("version", version, false, false, false));
    pchanges.addAdded(new DMProperty("XXX", uri, false, false, false));
-   
+
    ComponentItem ci = so.getComponentItem(compi.getId(), true);
    if (ci.isUpdatable())
    {
@@ -1975,9 +1975,9 @@ public class API extends HttpServlet
    // No!
    throw new ApiException("No Create Server Permission");
   }
-  
+
   createDomains4Obj(so, servername);
-  
+
   if (servername == null || servername.length() == 0)
    throw new ApiException("servername must be specified");
   String domain = request.getParameter("domain");
@@ -2112,16 +2112,16 @@ public class API extends HttpServlet
   String newname = request.getParameter("name"); // if specified, name of new application version
   if (newname != null)
    appname = newname;
-  
+
   String newenv = request.getParameter("env"); // if specified, name of new application version
   if (newenv != null)
    envname = newenv;
-  
+
   Environment env = getEnvironmentFromNameOrID(so, envname);
   Application app = getApplicationFromNameOrID(so, appname);
   if (!env.isUpdatable())
    throw new ApiException("Permission Denied");
-  if (app.getParentId() > 0) 
+  if (app.getParentId() > 0)
    so.setAppInEnv(env, app, "", -1);
   else
    so.addToAppsAllowedInEnv(env, app);
@@ -2164,31 +2164,31 @@ public class API extends HttpServlet
   String name = request.getParameter("name");
   String domain = request.getParameter("domain");
   String fullname = "";
-  
+
   if (name != null)
-   fullname = name; 
-  
+   fullname = name;
+
   if (domain != null)
    fullname = domain + "." + fullname;
-  
+
   createDomains4Obj(so, fullname);
-  
+
   Application app = this.getApplicationFromNameOrID(so, appname);
   boolean isRelease = false;
-  
+
   if (app.getIsRelease().equalsIgnoreCase("Y"))
    isRelease = true;
-  
+
   int verid = so.applicationNewVersion(app.getId(), 100, 100, isRelease);
   app = so.getApplication(verid, false);
-  
+
   if (name != null)
   {
    SummaryChangeSet changes = new SummaryChangeSet();
    changes.add(SummaryField.NAME, name);
    so.updateApplication(app, changes);
   }
-  
+
   return app;
  }
 
@@ -2197,12 +2197,12 @@ public class API extends HttpServlet
   System.out.println("DOING newappver");
   String newname = request.getParameter("name"); // if specified, name of new application version
   String domain = request.getParameter("domain");
-  
+
   if (newname != null)
   {
    if (domain != null)
     newname = domain + "." + newname;
-   
+
    System.out.println("Looking up " + newname);
    try
    {
@@ -2215,10 +2215,10 @@ public class API extends HttpServlet
     // Application not found exception - ok to proceed
    }
   }
-  
+
   if (domain != null)
    appname = domain + "." + appname;
-  
+
   createDomains4Obj(so, appname);
 
   Application app = getApplicationFromNameOrID(so, appname);
@@ -2312,11 +2312,11 @@ public class API extends HttpServlet
   String newname = request.getParameter("name"); // if specified, name of new application version
   if (newname != null)
    compname = newname;
-  
+
   try
   {
    comp = getComponentFromNameOrID(so, compname);
-  } 
+  }
   catch (ApiException e)
   {
    ObjectTypeAndId otid = null;
@@ -2326,15 +2326,15 @@ public class API extends HttpServlet
    compname = domparts.get(domparts.size()-1);
    domparts.remove(domparts.size() - 1);
    String domname = StringUtils.join(domparts,".");
-   
+
    createDomains4Obj(so, domname + "." + compname);
-   
+
    Domain dom = so.getDomainByName(domname);
-   
+
    if (parts == null || parts.length == 1)
     throw new ApiException("Component name needs to include full domain path");
-   
-   
+
+
    otid = so.CreateNewObject("component",compname,dom.getId(),0,newid,0,0,"");
    ArrayList<DMObject> cats = (ArrayList<DMObject>) so.GetCategories();
    int catid = 10;
@@ -2344,7 +2344,7 @@ public class API extends HttpServlet
     {
      catid = cats.get(i).getId();
      break;
-    } 
+    }
    }
    so.addToCategory(catid,otid,true);
    String id = otid.toString().substring(2);
@@ -2359,9 +2359,9 @@ public class API extends HttpServlet
      so.updateComponentCompType(comp);
     }
    }
-   return comp; 
+   return comp;
   }
-  
+
   if (comp.getPredecessorId() == 0)
   {
    // This is a BASE version
@@ -2480,11 +2480,11 @@ public class API extends HttpServlet
 
     if (provider == null)
      provider = "";
-    
+
     boolean authorized = false;
     if (user == null)
      user = ServletUtils.GetCookie(request,"p1");
-    
+
     String jwt = ServletUtils.GetCookie(request, "token");
     if (jwt != null && jwt.trim().length() > 0)
     {
@@ -2493,10 +2493,10 @@ public class API extends HttpServlet
      String userid = token.getBody().getSubject();
      authorized = so.validateAuth(Integer.parseInt(userid), uuid);
     }
-    
+
     if (pass == null)
      pass=ServletUtils.GetCookie(request,"p2");
-    
+
     response.setContentType("application/json");
 
     if (!authorized)
@@ -2511,18 +2511,18 @@ public class API extends HttpServlet
       {
        throw new ApiException("password must be specified");
       }
- 
+
       if (provider != null && provider.length() > 0)
       {
        String j = so.jsonGetRequest(pass, provider);
        if (j == null)
         throw new ApiException("Login failed");
- 
+
        if (provider.equals("github"))
        {
         JsonObject json = new JsonParser().parse(j).getAsJsonObject();
         String u = json.getAsJsonObject("data").get("alias").getAsString();
- 
+
         if (!user.equals(u))
          throw new ApiException("Login failed");
        }
@@ -2538,26 +2538,26 @@ public class API extends HttpServlet
       jwt = so.authUser();
       obj.add("success", true);
       obj.add("token", jwt);
- 
+
       HttpSession session = request.getSession();
       session.setAttribute("session", so);
       Cookie loggedinUser = new Cookie("p1", user);
       Cookie loggedinPw = new Cookie("p2", "");
       Cookie loggedinTime = new Cookie("p3", new Long(new Date().getTime()).toString());
       Cookie jwt_token = new Cookie("token", jwt);
-      
+
       loggedinUser.setPath("/");
       loggedinPw.setPath("/");
       loggedinTime.setPath("/");
       jwt_token.setPath("/");
- 
+
       response.addCookie(loggedinUser);
       response.addCookie(loggedinPw);
       response.addCookie(loggedinTime);
       response.addCookie(jwt_token);
       return; // finally will send result
      }
- 
+
      if (user != null)
      {
       if (pass == null)
@@ -2578,9 +2578,9 @@ public class API extends HttpServlet
       String[] parts = path.split("/");
       String compstr = parts[parts.length-1];
       int compid = new Integer(compstr).intValue();
-      
+
       obj.add("data",so.getCompProvides(compid, request, response));
-    } 
+    }
     else if (elements[0].equals("consumes"))
     {
       String[] parts = path.split("/");
@@ -2594,19 +2594,19 @@ public class API extends HttpServlet
       String[] parts = path.split("/");
       String compstr = parts[parts.length-1];
       int appid = new Integer(compstr).intValue();
-      
+
       JSONArray arr = so.getAppService2Service(appid, request, response);
       obj.add("data", arr);
-    } 
+    }
     else if (elements[0].equals("appedge"))
     {
       String[] parts = path.split("/");
       String compstr = parts[parts.length-1];
       int appid = new Integer(compstr).intValue();
-      
+
       JSONArray arr = so.getAppEdgeBundle(appid, request, response);
       obj.add("data", arr);
-    }     
+    }
     else if (elements[0].equals("deploy"))
     {
      // Go invoke a deployment
@@ -2629,7 +2629,7 @@ public class API extends HttpServlet
      if (elements.length == 1)
      {
       String newname = request.getParameter("name"); // if specified, name of new application version
-           
+
       if (newname != null)
       {
        String[] newparms = new String[elements.length + 1];
@@ -2637,9 +2637,9 @@ public class API extends HttpServlet
          newparms[x] = elements[x];
        newparms[elements.length] = newname;
        elements = newparms;
-      } 
+      }
      }
-          
+
      if (elements.length == 2)
      {
       Environment env = getEnvironmentFromNameOrID(so, elements[1]);
@@ -2700,7 +2700,7 @@ public class API extends HttpServlet
       int compid = Integer.parseInt(elements[2]);
       boolean iscompAssigned2App = false;
       List<Component> complist = so.getComponents(ObjectType.APPLICATION, appid, false);
-      
+
       for (int i=0; i < complist.size(); i++)
       {
        Component comp = complist.get(i);
@@ -2710,10 +2710,10 @@ public class API extends HttpServlet
         break;
        }
       }
-      
+
       obj.add("result", iscompAssigned2App);
      }
-    } 
+    }
     else if (elements[0].equals("components"))
     {
      if (elements.length == 1)
@@ -2763,30 +2763,30 @@ public class API extends HttpServlet
          newparms[x] = elements[x];
        newparms[elements.length] = newname;
        elements = newparms;
-      } 
+      }
      }
-     
+
      if (elements.length == 2)
      {
       String compvariant = request.getParameter("compvariant");
       String compversion = request.getParameter("compversion");
       String compname = elements[1];
-      
+
       if (compvariant != null)
        compname += ";" + compvariant;
-      
+
       if (compversion != null)
        compname += ";" + compversion;
-      
+
       elements[1] = compname;
 
-      Component comp = getComponentFromNameOrID(so, elements[1]);   
-      
+      Component comp = getComponentFromNameOrID(so, elements[1]);
+
       while (comp.getPredecessorId() > 0)
        comp = getComponentFromNameOrID(so, new Integer(comp.getPredecessorId()).toString());
-      
+
       obj.add("result", assembleJSONForComponent(so, comp, true));
-     } 
+     }
     }
     else if (elements[0].equals("helmchart"))
     {
@@ -2834,11 +2834,11 @@ public class API extends HttpServlet
 
          zipdata.remove("files");
          Gson gson = new GsonBuilder().setPrettyPrinting().create();
-         
+
          FileWriter chartfile = new FileWriter(tempdir + "charts.json");
          chartfile.write(gson.toJson(zipdata));
          chartfile.close();
-         
+
          File directoryToCompress = new File(tempdir);
          File outputDirectory = new File(tempdir);
          byte[] zip = zipDirectory(directoryToCompress, outputDirectory);
@@ -2874,15 +2874,15 @@ public class API extends HttpServlet
      {
       String image = request.getParameter("image"); // if specified, name of new application version
       String digest = request.getParameter("digest");
-      
+
       int compid = -1;
-      
+
       if (image != null)
        compid = so.getComp4Tag(so, image);
 
       if (digest != null)
        compid = so.getComp4Digest(so, digest);
-      
+
       obj.add("id", compid);
      }
      else
@@ -2895,7 +2895,7 @@ public class API extends HttpServlet
      boolean idonly  = false;
      if (request.getParameter("idonly") != null && request.getParameter("idonly").equalsIgnoreCase("Y"))
         idonly = true;
-     
+
      System.out.println("API: component");
      if (elements.length == 1)
      {
@@ -2907,23 +2907,23 @@ public class API extends HttpServlet
          newparms[x] = elements[x];
        newparms[elements.length] = newname;
        elements = newparms;
-      } 
+      }
      }
-     
+
      if (elements.length == 2)
      {
       String compvariant = request.getParameter("compvariant");
       String compversion = request.getParameter("compversion");
       String compname = elements[1];
-      
+
       if (compvariant != null)
        compname += ";" + compvariant;
-      
+
       if (compversion != null)
        compname += ";" + compversion;
-      
+
       elements[1] = compname;
-      
+
       Component comp = getComponentFromNameOrID(so, elements[1]);
       System.out.println(comp.getName());
       // Check for "latest" and "branch" options
@@ -2956,24 +2956,24 @@ public class API extends HttpServlet
     {
      boolean idonly  = false;
      boolean lastsuccess = false;
-     
+
      if (request.getParameter("idonly") != null && request.getParameter("idonly").equalsIgnoreCase("Y"))
         idonly = true;
-     
+
      if (request.getParameter("lastsuccess") != null && request.getParameter("lastsuccess").equalsIgnoreCase("Y"))
       lastsuccess = true;
-     
+
      int envid = -1;
      if (request.getParameter("envid") != null)
      {
       envid =  Integer.parseInt(request.getParameter("envid"));
-     } 
-     
+     }
+
      System.out.println("API: Application");
      if (elements.length == 1)
      {
       String newname = request.getParameter("name"); // if specified, name of new application version
-           
+
       if (newname != null)
       {
        String[] newparms = new String[elements.length + 1];
@@ -2981,9 +2981,9 @@ public class API extends HttpServlet
          newparms[x] = elements[x];
        newparms[elements.length] = newname;
        elements = newparms;
-      } 
+      }
      }
-     
+
      if (elements.length == 2)
      {
       Application app = getApplicationFromNameOrID(so, elements[1]);
@@ -3115,7 +3115,7 @@ public class API extends HttpServlet
      {
       throw new ApiException("Path contains too many elements");
      }
-    } 
+    }
     else if (elements[0].equals("applications"))
     {
      System.out.println("DOING applications");
@@ -3368,7 +3368,7 @@ public class API extends HttpServlet
       String varname = request.getParameter("name");
       String varval = request.getParameter("value");
       String delattrs = request.getParameter("delattrs");
-      
+
       if (varname == null)
        throw new ApiException("name not specified");
       AttributeChangeSet acs = new AttributeChangeSet();
@@ -3411,10 +3411,10 @@ public class API extends HttpServlet
        else if (objtype.equalsIgnoreCase("component"))
        {
         Component comp = getComponentFromNameOrID(so, objname);
-        
+
         if (delattrs != null && delattrs.equalsIgnoreCase("y"))
            so.DeleteComponentAttribs(comp.getId());
-        
+
         so.updateAttributesForObject(comp, acs);
        }
        else
@@ -3553,9 +3553,9 @@ public class API extends HttpServlet
         obj.add("started", dep.getStarted());
         obj.add("finished", dep.getFinished());
         obj.add("complete", dep.isComplete());
-        
+
         String filelist = request.getParameter("filelist");
-        
+
         if (filelist == null || filelist.equalsIgnoreCase("N"))
         {
          List<DeploymentLogEntry> dl = dep.getLog();
@@ -3622,15 +3622,15 @@ public class API extends HttpServlet
        if (dmobj instanceof Category)
          ret = exportJSONForCategory(so, (Category)dmobj);
        else if (dmobj instanceof CompType)
-        ret = exportJSONForCompType(so, (CompType)dmobj); 
+        ret = exportJSONForCompType(so, (CompType)dmobj);
        else if (dmobj instanceof Credential)
-        ret = exportJSONForCredential(so, (Credential)dmobj);    
+        ret = exportJSONForCredential(so, (Credential)dmobj);
        else if (dmobj instanceof Environment)
         ret = exportJSONForEnvironment(so, (Environment)dmobj);
        else if (dmobj instanceof UserGroup)
-        ret = exportJSONForGroup(so, (UserGroup)dmobj);  
+        ret = exportJSONForGroup(so, (UserGroup)dmobj);
        else if (dmobj instanceof Repository)
-        ret = exportJSONForRepository(so, (Repository)dmobj);  
+        ret = exportJSONForRepository(so, (Repository)dmobj);
        else if (dmobj instanceof Server)
         ret = exportJSONForServer(so, (Server)dmobj);
        else if (dmobj instanceof User)
@@ -3646,8 +3646,8 @@ public class API extends HttpServlet
        result.add(ret);
       }
       obj.add(elements[1], result);
-     } 
-    } 
+     }
+    }
     else if (elements[0].equals("export"))
     {
      if (elements.length == 2)
@@ -3685,11 +3685,11 @@ public class API extends HttpServlet
        objs = so.getDMObjects(ObjectType.APPLICATION, true);
       else if (elements[1].equals("releases"))
        objs = so.getDMObjects(ObjectType.RELEASE, true);
-     
+
       JSONArray result = new JSONArray();
       if (objs != null)
       {
-      
+
       for (DMObject dmobj : objs)
       {
        JSONObject je = new JSONObject();
@@ -3713,10 +3713,10 @@ public class API extends HttpServlet
         }
         else
          je.add("objname", dmobj.getDomain().getFullDomain() + "." + dmobj.getName());
-        
+
         if (dmobj instanceof Task)
          je.add("tasktype", ((Task)dmobj).getTaskTypeAsString());
-         
+
         je.add("summary", dmobj.getSummaryJSON());
 
         if (dmobj instanceof Environment)
@@ -3738,7 +3738,7 @@ public class API extends HttpServlet
           je.add("endpoints", arr);
          }
         }
-        
+
         if (dmobj instanceof UserGroup)
         {
          UserGroup ug = (UserGroup) dmobj;
@@ -3843,7 +3843,7 @@ public class API extends HttpServlet
 
           je.add("appvers", arr);
          }
-         
+
          List<Component> complist = so.getComponents(ObjectType.APPLICATION, app.getId(), false);
          List<ComponentLink> complinks = so.getComponentLinks(app.getId());
 
@@ -3871,7 +3871,7 @@ public class API extends HttpServlet
                ret.add("from", "");
               else
                ret.add("from", c.getDomain().getFullDomain() + "." + c.getName());
-              
+
               c = so.getComponent(cl.getCompTo(), false);
               if (c == null)
                ret.add("to", "");
@@ -3885,19 +3885,19 @@ public class API extends HttpServlet
 
           je.add("comps", arr);
          }
-         
+
          if (app.getObjectType() == ObjectType.RELEASE)
          {
           List<Component> comps = so.getComponents(ObjectType.APPLICATION,app.getId(),true);
           complinks = so.getComponentLinks(app.getId());
-          
+
           JSONArray arr = new JSONArray();
           for(Component ci: comps) {
            JSONObject vobj = new JSONObject();
            vobj.add("version", ci.getDomain().getFullDomain() + "." + ci.getName());
            vobj.add("xpos", ci.getXpos());
            vobj.add("ypos", ci.getYpos());
-           
+
            if (complinks != null)
            {
             for (int k = 0; k < complinks.size(); k++)
@@ -3910,21 +3910,21 @@ public class API extends HttpServlet
               {
                c = so.getApplication(cl.getCompFrom(), false);
               }
-              catch (RuntimeException e) 
+              catch (RuntimeException e)
               {
               }
-              
+
               if (c == null)
                vobj.add("from", "");
               else
                vobj.add("from", c.getDomain().getFullDomain() + "." + c.getName());
-              
+
               c = null;
               try
               {
                c = so.getApplication(cl.getCompTo(), false);
               }
-              catch (RuntimeException e) 
+              catch (RuntimeException e)
               {
               }
 
@@ -3939,10 +3939,10 @@ public class API extends HttpServlet
          }
          je.add("apps", arr);
         }
-         
+
          if (app.getObjectType() == ObjectType.APPLICATION)
          {
-          ArrayList<String> envs = so.getAppVersInEnv(app); 
+          ArrayList<String> envs = so.getAppVersInEnv(app);
 
           if (envs != null && envs.size() > 0)
           {
@@ -3954,8 +3954,8 @@ public class API extends HttpServlet
            je.add("envs", arr);
           }
          }
-        } 
-         
+        }
+
         List<DMAttribute> attrs = dmobj.getAttributes();
 
         if (attrs != null && attrs.size() > 0)
@@ -3988,7 +3988,7 @@ public class API extends HttpServlet
      }
       obj.add(elements[1], result);
      }
-    }   
+    }
     else if (elements[0].equals("new"))
     {
      // Adding a new object
@@ -4002,9 +4002,9 @@ public class API extends HttpServlet
        new_elements[1] = elements[1];
        new_elements[2] = newname;
        elements = new_elements;
-      } 
+      }
      }
-     
+
      if (elements.length == 3)
      {
       if (elements[1].equals("user"))
@@ -4017,7 +4017,7 @@ public class API extends HttpServlet
       {
        Component newComp = newCompVersion(so, elements[2], request);
        obj.add("result", assembleJSONForComponent(so, newComp, false));
-      } 
+      }
       else if (elements[1].equals("environment"))
        AddEnvironment(so, elements[2], request);
       else if (elements[1].equals("domain"))
@@ -4050,16 +4050,16 @@ public class API extends HttpServlet
 
        if (version == null)
         version = "";
-       
+
        if (kind == null)
         kind = "file";
-       
+
        if (uri == null)
         uri = "";
 
        if (targetdir == null)
         targetdir = "";
-       
+
        if (xStr == null || xStr.length() == 0)
         xpos = 0;
        else
@@ -4159,13 +4159,13 @@ public class API extends HttpServlet
       else if (elements[1].equals("action") || elements[1].equals("procedure"))
       {
        String name = elements[2];
-       
+
        if (elements[1].equals("procedure") && name.contains("-"))
        {
         String[] parts = name.split("-");
         name = parts[0];
        }
-        
+
        Action todel = getActionFromNameOrID(so, name);
        if (!todel .isUpdatable())
         throw new ApiException("Permission Denied");
@@ -4321,7 +4321,7 @@ public class API extends HttpServlet
     }
 
     obj.add("success", true);
-    
+
     if (deploymentid != 0)
     {
      obj.add("deploymentid", deploymentid);
@@ -4382,16 +4382,16 @@ public class API extends HttpServlet
  private JSONObject exportJSONForRepository(DMSession so, Repository r)
  {
   JSONObject je = new JSONObject();
-  
+
   ProviderObject x = (ProviderObject)so.getDetailedObject(ObjectType.REPOSITORY, r.getId());
-  
+
   je.add("name", x.getFullName());
   if (x.getDomain() != null)
    je.add("domain", x.getDomain().getFullDomain());
   else
    je.add("domain", "");
   je.add("summary", x.getSummary());
-  
+
   DMObject owner = x.getOwner();
   if (owner != null)
   {
@@ -4399,38 +4399,38 @@ public class API extends HttpServlet
    {
     User user = so.getUser(owner.getId());
     je.add("owneruser",user.getDomain().getFullDomain() + "." + user.getName());
-   } 
+   }
    if (owner.getObjectType() == ObjectType.USERGROUP)
    {
     UserGroup grp = so.getGroup(owner.getId());
     je.add("ownergroup",grp.getDomain().getFullDomain() + "." + grp.getName());
-   } 
+   }
   }
   Credential cred = x.getCredential();
   String credname = "";
-  
+
   if (cred != null)
    credname = cred.getFullName();
   je.add("credential", credname);
-  
+
   ProviderDefinition t = x.getDef();
-  
+
   je.add("kind", (t.getKind() != null) ? t.getKind().getTypeString() : "");
-  
-  
+
+
   List<DMAttribute> attrs = x.getAttributes();
   JSONArray arr = new JSONArray();
-  
+
   if (attrs != null)
   {
    for (int i=0;i<attrs.size();i++)
     arr.add(attrs.get(i).toJSON());
-  } 
+  }
   je.add("attrs", arr);
-  
+
   arr = new JSONArray();
   List<DMProperty> props = x.getProperties();
-  
+
   if (props != null)
   {
    for (int i=0;i<props.size();i++)
@@ -4440,7 +4440,7 @@ public class API extends HttpServlet
    }
   }
   je.add("props", arr);
-  
+
   return je;
  }
 
@@ -4454,7 +4454,7 @@ public class API extends HttpServlet
    je.add("domain", "");
   je.add("summary", x.getSummary());
   je.add("availability",x.getCalUsage());
-  
+
   DMObject owner = x.getOwner();
   if (owner != null)
   {
@@ -4462,27 +4462,27 @@ public class API extends HttpServlet
    {
     User user = so.getUser(owner.getId());
     je.add("owneruser",user.getDomain().getFullDomain() + "." + user.getName());
-   } 
+   }
    if (owner.getObjectType() == ObjectType.USERGROUP)
    {
     UserGroup grp = so.getGroup(owner.getId());
     je.add("ownergroup",grp.getDomain().getFullDomain() + "." + grp.getName());
-   } 
+   }
   }
-  
+
   List<DMAttribute> attrs = x.getAttributes();
   JSONArray arr = new JSONArray();
-  
+
   if (attrs != null)
   {
    for (int i=0;i<attrs.size();i++)
     arr.add(attrs.get(i).toJSON());
-  } 
+  }
   je.add("attrs", arr);
-  
+
   arr = new JSONArray();
   List<Server> srvs = so.getServersInEnvironment(x.getId());
-  
+
   if (srvs != null)
   {
    for (int i=0;i<srvs.size();i++)
@@ -4494,7 +4494,7 @@ public class API extends HttpServlet
    }
   }
   je.add("endpoints", arr);
-  
+
   return je;
  }
 
@@ -4508,7 +4508,7 @@ public class API extends HttpServlet
   else
    je.add("domain", "");
   je.add("summary", x.getSummary());
-  
+
   ServerType t = x.getServerType();
   je.add("type", t.getName());
   je.add("hostname", x.getHostName());
@@ -4517,24 +4517,24 @@ public class API extends HttpServlet
   je.add("basedir", x.getBaseDir());
   je.add("autoping", x.getAutoPing());
   je.add("automd5", x.getAutoMD5());
-  
+
   List<DMAttribute> attrs = x.getAttributes();
   JSONArray arr = new JSONArray();
-  
+
   if (attrs != null)
   {
    for (int i=0;i<attrs.size();i++)
     arr.add(attrs.get(i).toJSON());
-  } 
+  }
   je.add("attrs", arr);
-  
+
   Credential cred = x.getCredential();
   String credname = "";
-  
+
   if (cred != null)
    credname = cred.getFullName();
   je.add("credential", credname);
-  
+
   DMObject owner = x.getOwner();
   if (owner != null)
   {
@@ -4542,17 +4542,17 @@ public class API extends HttpServlet
    {
     User user = so.getUser(owner.getId());
     je.add("owneruser",user.getFullName());
-   } 
+   }
    if (owner.getObjectType() == ObjectType.USERGROUP)
    {
     UserGroup grp = so.getGroup(owner.getId());
     je.add("ownergroup",grp.getFullName());
-   } 
+   }
   }
-  
+
   arr = new JSONArray();
   ArrayList<CompType> comptypes = x.getServerCompType();
-  
+
   if (comptypes != null)
   {
    for (int i=0;i<comptypes.size();i++)
@@ -4584,16 +4584,16 @@ public class API extends HttpServlet
    {
     User user = so.getUser(owner.getId());
     je.add("owneruser",user.getDomain().getFullDomain() + "." + user.getName());
-   } 
+   }
    if (owner.getObjectType() == ObjectType.USERGROUP)
    {
     UserGroup grp = so.getGroup(owner.getId());
     je.add("ownergroup",grp.getDomain().getFullDomain() + "." + grp.getName());
-   } 
+   }
   }
   return je;
  }
- 
+
 
  private JSONObject exportJSONForCompType(DMSession so, CompType x)
  {
@@ -4637,7 +4637,7 @@ public class API extends HttpServlet
    }
   }
   je.add("groups", arr);
-  
+
   return je;
  }
 
@@ -4653,7 +4653,7 @@ public class API extends HttpServlet
    je.add("email", x.getEmail());
    return je;
  }
- 
+
  private JSONObject exportJSONForDomain(DMSession so, Domain x)
  {
    JSONObject je = new JSONObject();
@@ -4670,7 +4670,7 @@ public class API extends HttpServlet
  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
  {
   String path = request.getPathInfo();
- 
+
   if (path.contains("/provides"))
   {
    try (DMSession so = new DMSession(request.getServletContext()))
@@ -4678,7 +4678,7 @@ public class API extends HttpServlet
     String[] parts = path.split("/");
     String compstr = parts[parts.length-1];
     int compid = new Integer(compstr).intValue();
-    
+
     so.setCompProvides(compid, request, response);
     PrintWriter out = response.getWriter();
     out.println("{}");
@@ -4688,7 +4688,7 @@ public class API extends HttpServlet
     System.out.println("Exception caught, e=" + e.getMessage());
     e.printStackTrace();
    }
-  } 
+  }
   else if (path.contains("/consumes"))
   {
    try (DMSession so = new DMSession(request.getServletContext()))
@@ -4706,23 +4706,23 @@ public class API extends HttpServlet
     System.out.println("Exception caught, e=" + e.getMessage());
     e.printStackTrace();
    }
-  }   
+  }
   else if (path.contains("/signup"))
   {
    try (DMSession so = DMSession.getInstance(request))
    {
     so.internalLogin(request.getServletContext());
 
-    String userid = request.getParameter("userid"); 
+    String userid = request.getParameter("userid");
     String domname = request.getParameter("domname");
     String clientid = UUID.randomUUID().toString();
-    
+
     JSONObject obj = new JSONObject();
 
     String err = so.SignUp(domname, userid);
-    
+
     if (err.isEmpty())
-    {   
+    {
       AddClientId(domname, so, request, userid, clientid);
       obj.add("err", "");
     }
@@ -4740,28 +4740,28 @@ public class API extends HttpServlet
    {
     so.internalLogin(request.getServletContext());
 
-    String userid = request.getParameter("userid"); 
+    String userid = request.getParameter("userid");
     String domname = request.getParameter("domname");
     String clientid = UUID.randomUUID().toString();
     String provider = "DeployHub";
     String providerid = "";
     String lictype = "OSS";
     int liccnt = 9999;
-    
+
     JSONObject obj = new JSONObject();
     Domain engineDomain = so.getDomainByName(domname);
-   
+
     so.createSaaSClient(clientid, engineDomain, lictype, liccnt, provider, providerid, request);
     obj.add("err", "");
     PrintWriter out = response.getWriter();
     out.write(obj.getJSON());
     return;
    }
-  } 
+  }
   else if (path.contains("/setvar"))
   {
    try (DMSession so = DMSession.getInstance(request))
-   {   
+   {
     if (path.length() > 1 && (path.charAt(0) == '/'))
      path = path.substring(1);
 
@@ -4769,7 +4769,7 @@ public class API extends HttpServlet
 
     for (int i = 1; i < elements.length; i++)
      elements[i] = java.net.URLDecoder.decode(elements[i], "UTF-8");
-    
+
     System.out.println("DOING setvar");
     if (elements.length == 3)
     {
@@ -4778,17 +4778,17 @@ public class API extends HttpServlet
 
      String requestData = request.getReader().lines().collect(Collectors.joining());
      JsonObject obj = new JsonParser().parse(requestData).getAsJsonObject();
-     
+
      AttributeChangeSet acs = new AttributeChangeSet();
-     
-     for(Map.Entry<String, JsonElement> entry : obj.entrySet()) 
+
+     for(Map.Entry<String, JsonElement> entry : obj.entrySet())
      {
       DMAttribute attr = new DMAttribute();
       attr.setName(entry.getKey());
       attr.setValue(entry.getValue() != null ? entry.getValue().getAsString() : "");
       acs.addChanged(attr);
      }
-     
+
      try
      {
       if (objtype.equalsIgnoreCase("environment"))
@@ -4811,10 +4811,10 @@ public class API extends HttpServlet
       {
        Component comp = getComponentFromNameOrID(so, objname);
        String delattrs = request.getParameter("delattrs");
-       
+
        if (delattrs != null && delattrs.equalsIgnoreCase("y"))
           so.DeleteComponentAttribs(comp.getId());
-       
+
        so.updateAttributesForObject(comp, acs);
       }
       else
@@ -4836,14 +4836,14 @@ public class API extends HttpServlet
    {
     e.printStackTrace();
    }
-   
+
    PrintWriter out = response.getWriter();
    JSONObject obj = new JSONObject();
    out.write(obj.getJSON());
-   
+
    return;
   }
-  
+
   if (path.contains("/uploadhelm"))
   {
    try (DMSession so = DMSession.getInstance(request))
@@ -4860,11 +4860,11 @@ public class API extends HttpServlet
    }
    return;
   }
-  
+
   if (path.contains("/deploy"))
   {
    try (DMSession so = DMSession.getInstance(request))
-   {   
+   {
     logDeployment(so, request, response);
    }
    catch (Exception e)
@@ -4875,13 +4875,13 @@ public class API extends HttpServlet
    }
    return;
   }
-  
+
   if (!path.contains("/import"))
   {
    doGet(request, response);
    return;
   }
-  
+
   try (DMSession so = DMSession.getInstance(request))
   {
    PrintWriter out = response.getWriter();
@@ -5097,7 +5097,7 @@ public class API extends HttpServlet
   task.setWaitFor(wait);
   task.setAdditionalParameters(cmdline_params);
   task.setDeploymentSessionId(so.GetSessionId() + "_" + System.currentTimeMillis());
-  
+
   if(task.run()) {
    Deployment dep = so.getDeploymentBySessionId(task, 30);
    if(dep != null && dep.getId() > 0) {
@@ -5109,21 +5109,21 @@ public class API extends HttpServlet
    }
   } else {
    String msg = task.getLastOutputLine();
-   String error = "Failed to start deployment" + ((msg != null) ? ("\n" + msg) : "");   
+   String error = "Failed to start deployment" + ((msg != null) ? ("\n" + msg) : "");
    throw new ApiException(error);
   }
   return deploymentid;
  }
- 
+
  JSONObject uploadHelm(DMSession so, HttpServletRequest request, HttpServletResponse response)
  {
   JSONObject ret = new JSONObject();
-  
+
   try
-  {  
+  {
    response.setContentType("application/json");
    PrintWriter out = response.getWriter();
-   
+
    String requestData = request.getReader().lines().collect(Collectors.joining());
    JsonObject obj = new JsonParser().parse(requestData).getAsJsonObject();
 
@@ -5132,14 +5132,14 @@ public class API extends HttpServlet
    String chartdigest = (obj.get("chartdigest") != null) ? obj.get("chartdigest").getAsString() : "";
    String chartname = (obj.get("chartname") != null) ? obj.get("chartname").getAsString() : "";
    String chartversion = (obj.get("chartversion") != null) ? obj.get("chartversion").getAsString() : "";
-   String helmrepo = (obj.get("helmrepo") != null) ? obj.get("helmrepo").getAsString() : ""; 
-   String helmrepourl = (obj.get("helmrepourl") != null) ? obj.get("helmrepourl").getAsString() : ""; 
+   String helmrepo = (obj.get("helmrepo") != null) ? obj.get("helmrepo").getAsString() : "";
+   String helmrepourl = (obj.get("helmrepourl") != null) ? obj.get("helmrepourl").getAsString() : "";
    JsonArray files = (obj.get("files") != null) ? (JsonArray) obj.get("files") : null;
    JsonArray images = (obj.get("images") != null) ? (JsonArray) obj.get("images") : null;
-   
+
    if (deployment == null)
     throw new RuntimeException("Deployment number is required");
-      
+
    if (files == null)
     throw new RuntimeException("List of files and contents are required");
 
@@ -5148,23 +5148,23 @@ public class API extends HttpServlet
    int envid = so.getEnvironmentForDeployment(deployid);
    int appid = so.getApplicationForDeployment(deployid);
    int compid = -1;
-   
+
    Application app = null;
    Component comp = null;
-   
+
    try
    {
     app = this.getApplicationFromNameOrID(so, new Integer(appid).toString());
     boolean isRelease = false;
-    
+
     if (app.getIsRelease().equalsIgnoreCase("y"))
      isRelease = true;
-    
+
     List<Component> comps = so.getComponents(ObjectType.APPLICATION, app.getId(), isRelease);
-    
+
     for (int k=0;k<comps.size();k++)
     {
-     if (comps.get(k).getFullName().equals(compname)) 
+     if (comps.get(k).getFullName().equals(compname))
      {
       comp = comps.get(k);
       break;
@@ -5176,22 +5176,22 @@ public class API extends HttpServlet
    catch (ApiException e)
    {
    }
-   
+
    if (app == null)
     throw new RuntimeException("Deployment not found");
-      
+
  //  so.HelmUploadClean(app.getId(), deployid);
-   
+
    for (int i=0;i<files.size();i++)
    {
     JsonObject fileobj = files.get(i).getAsJsonObject();
     String filename = (fileobj.get("filename") != null) ? fileobj.get("filename").getAsString() : "";
     String data = (fileobj.get("data") != null) ? fileobj.get("data").getAsString() : "";
     ret.add("filename" + i, filename);
-       
+
     so.HelmUpload(app.getId(), app.getParentId(), compid, envid, deployid, chartname, chartversion, helmrepo, helmrepourl, chartdigest, filename, data);
    }
-   
+
    if (images != null)
    {
     for (int i=0;i<images.size();i++)
@@ -5202,18 +5202,18 @@ public class API extends HttpServlet
      String imagename = (imgobj.get("imagename") != null) ? imgobj.get("imagename").getAsString() : "";
      String imagetag = (imgobj.get("imagetag") != null) ? imgobj.get("imagetag").getAsString() : "";
      String imagedigest = (imgobj.get("imagedigest") != null) ? imgobj.get("imagedigest").getAsString() : "";
-     
+
      so.HelmImage(app.getId(), compid, envid, deployid, chartdigest, registry, organization, imagename, imagetag, imagedigest);
     }
    }
-  } 
+  }
   catch (IOException e)
   {
    e.printStackTrace();
-  }    
+  }
   return ret;
 }
- 
+
  /**
   * Compress a directory to ZIP file including subdirectories
   * @param directoryToCompress directory to zip
@@ -5232,7 +5232,7 @@ public class API extends HttpServlet
      }
      return null;
  }
-     
+
  private void zipDirectoryHelper(File rootDirectory, File currentDirectory, ZipOutputStream out) throws Exception {
      byte[] data = new byte[2048];
 
@@ -5262,16 +5262,16 @@ public class API extends HttpServlet
      }
 
  }
- 
+
  void logDeployment(DMSession so, HttpServletRequest request, HttpServletResponse response)
  {
   JSONObject ret = new JSONObject();
-  
+
   try
-  {   
+  {
    response.setContentType("application/json");
    PrintWriter out = response.getWriter();
-   
+
    String requestData = request.getReader().lines().collect(Collectors.joining());
    JsonObject obj  = new JsonParser().parse(requestData).getAsJsonObject();
    String envname  = (obj.get("environment") != null) ? obj.get("environment").getAsString() : "";
@@ -5282,29 +5282,29 @@ public class API extends HttpServlet
    String rc = (obj.get("rc") != null) ? obj.get("rc").getAsString() : "-1";
    String log = (obj.get("log") != null) ? obj.get("log").getAsString() : "";
    String skipdeploy = (!(obj.get("skipdeploy") instanceof JsonNull))  ? obj.get("skipdeploy").getAsString() : "N";
-   
+
    int exitcode = 0;
-     
+
    if (rc != null)
     exitcode = new Integer(rc).intValue();
-   
+
    if (envname.length() == 0)
    {
     ret.add("errormsg", "Environment Name required");
     out.println(ret.getJSON());
     return;
    }
-   
+
    if (appname.length() == 0 && compnames.size() == 0  && imagetag.length() == 0 && digest.length() == 0)
    {
     ret.add("errormsg", "Application or Component Names required");
     out.println(ret.getJSON());
     return;
    }
-   
+
    String shortname = "";
    ArrayList<String> parts = new ArrayList<String>(Arrays.asList(envname.split("\\.")));
-   if (parts != null && !parts.isEmpty()) 
+   if (parts != null && !parts.isEmpty())
    {
     shortname = parts.get(parts.size()-1);
     parts.remove(parts.size()-1);
@@ -5355,8 +5355,8 @@ public class API extends HttpServlet
       return;
      }
     }
-   } 
-   
+   }
+
    Environment env = null;
    try
    {
@@ -5373,26 +5373,26 @@ public class API extends HttpServlet
     catch (ApiException e1)
     {
     }
-   } 
-   
+   }
+
    if (env == null)
    {
     ret.add("errormsg", "Environment not found");
     out.println(ret.getJSON());
     return;
-   }  
+   }
 
    // find component image tag or digest
-   
+
    if (compnames.size() == 0)
    {
     int compid = -1;
     if (digest != null)
      compid = so.getComp4Digest(so, digest);
-    
+
     if (compid < 0 && imagetag != null)
      compid = so.getComp4Tag(so, imagetag);
-    
+
     if (compid > 0)
     {
      Component comp = so.getComponent(compid, true);
@@ -5406,23 +5406,23 @@ public class API extends HttpServlet
     String compname = compnames.get(0).getAsString();
     Component comp = so.getComponentByName(compname);
     List<Application> applist = so.getAppsForComponent(comp);
-    
+
     for (int i=0;i<applist.size();i++)
     {
      Application app = applist.get(i);
-     
+
      // get current list of appvers in env
-     
+
      // see if latest appver in env has component
      //  if so then log deployment
      //  else create new appver base on latest in env with component and log deployment
     }
    }
-   
+
    // add app domains
    shortname = "";
    parts = new ArrayList<String>(Arrays.asList(appname.split("\\.")));
-   if (parts != null && !parts.isEmpty()) 
+   if (parts != null && !parts.isEmpty())
    {
     shortname = parts.get(parts.size()-1);
     parts.remove(parts.size()-1);
@@ -5472,10 +5472,10 @@ public class API extends HttpServlet
       return;
      }
     }
-   } 
+   }
 
    Application app = null;
-   
+
    if (appname != null  && !appname.isEmpty())
    {
     try
@@ -5498,11 +5498,11 @@ public class API extends HttpServlet
       }
      }
     }
-   } 
-   
+   }
+
    Component comp = null;
    ArrayList<Component> comps = new ArrayList<Component>();
-   
+
    if (compnames != null)
    {
     for (int k=0; k < compnames.size(); k++)
@@ -5516,17 +5516,17 @@ public class API extends HttpServlet
      catch (ApiException e)
      {
      }
-   
+
      if (comp == null)
      {
       ret.add("errormsg", "Component not found");
       out.println(ret.getJSON());
       return;
      }
-    } 
-   }  
+    }
+   }
    ret = so.logDeployment(appname, app, comps, env, exitcode, log, skipdeploy);
-   String result = ret.getJSON(); 
+   String result = ret.getJSON();
    System.out.println(result);
    out.println(result);
   }
@@ -5535,31 +5535,31 @@ public class API extends HttpServlet
    e.printStackTrace();
   }
 
-} 
-   
- 
+}
+
+
  void importObject(DMSession so, HttpServletRequest request, HttpServletResponse response)
  {
   String errtext = "";
   int oid = 0;
-  
+
   try
-  {  
+  {
    response.setContentType("application/json");
    PrintWriter out = response.getWriter();
    JSONObject ret = new JSONObject();
-   
+
    String requestData = request.getReader().lines().collect(Collectors.joining());
    JsonObject obj = new JsonParser().parse(requestData).getAsJsonObject();
    String ot = obj.get("objtype").getAsString();
    String objname = obj.get("objname").getAsString();
-   
+
    ObjectType objtype = ObjectType.fromTypeString(ot);
    if (objtype == null)
    {
     throw new RuntimeException("Invalid object type " + ot);
    }
-   
+
    if (objtype == ObjectType.CATEGORY)
    {
     so.addCategory(objname);
@@ -5569,7 +5569,7 @@ public class API extends HttpServlet
     out.println(result);
     return;
    }
-   
+
    DMObject dmobj;
    try
    {
@@ -5580,7 +5580,7 @@ public class API extends HttpServlet
    {
     dmobj = null;
    }
-   
+
    if (dmobj == null)
    {
     if (!objname.contains("."))
@@ -5592,11 +5592,11 @@ public class API extends HttpServlet
      out.println(result);
      return;
     }
-    
+
     String shortname = "";
-    
+
     ArrayList<String> parts = new ArrayList<String>(Arrays.asList(objname.split("\\.")));
-    if (parts != null && !parts.isEmpty()) 
+    if (parts != null && !parts.isEmpty())
     {
      shortname = parts.get(parts.size()-1);
      parts.remove(parts.size()-1);
@@ -5647,8 +5647,8 @@ public class API extends HttpServlet
        return;
       }
      }
-    } 
-     
+    }
+
     if (tgtdomain == null)
     {
      ret.add("saved", false);
@@ -5658,12 +5658,12 @@ public class API extends HttpServlet
      out.println(result);
      return;
     }
-    
+
     so.GetDomains(so.GetUserID());
-    
+
     if (objtype.getTableName() == "engine")
      System.out.println(objname);
-    
+
     oid = so.getID(objtype.getTableName());
     if (objtype == ObjectType.SERVER)
      so.CreateNewObject(objtype.getTableName(), shortname, tgtdomain.getId(), -1, oid, -1, -1, "", false);
@@ -5672,16 +5672,16 @@ public class API extends HttpServlet
      if (obj.has("tasktype"))
       so.CreateNewTask(shortname,obj.get("tasktype").getAsString(),tgtdomain.getId(), oid);
     }
-    else 
+    else
      so.CreateNewObject(objtype.getTableName(), shortname, tgtdomain.getId(), tgtdomain.getId(), oid, -1, -1, "", false);
    }
 
    dmobj = so.getDetailedObject(objtype, oid);
-   
+
    SummaryChangeSet changes = new SummaryChangeSet();
-   
+
    JsonArray det = obj.get("summary").getAsJsonArray();
-   
+
    CredentialKind credkind = null;
    if (det != null)
    {
@@ -5689,11 +5689,11 @@ public class API extends HttpServlet
     {
      JsonArray fielddet = det.get(i).getAsJsonArray();
      int fieldid = fielddet.get(0).getAsInt();
-     SummaryField field = SummaryField.fromInt(fieldid);    
+     SummaryField field = SummaryField.fromInt(fieldid);
      if (field != null && field == SummaryField.CRED_KIND)
      {
       String value = "";
-      
+
       if (!fielddet.get(4).isJsonObject())
        value = fielddet.get(4).getAsString();
       else
@@ -5707,23 +5707,23 @@ public class API extends HttpServlet
       }
      }
     }
-   } 
-   
+   }
+
    if (det != null)
    {
     for (int i=0;i<det.size();i++)
     {
      JsonArray fielddet = det.get(i).getAsJsonArray();
      int fieldid = fielddet.get(0).getAsInt();
-     SummaryField field = SummaryField.fromInt(fieldid);    
+     SummaryField field = SummaryField.fromInt(fieldid);
      String value = "";
-     
+
      if (!fielddet.get(4).isJsonObject())
       value = fielddet.get(4).getAsString();
      else
      {
       JsonObject linked = fielddet.get(4).getAsJsonObject();
-      
+
       if (field != null && (field == SummaryField.PRE_ACTION || field == SummaryField.POST_ACTION || field == SummaryField.CUSTOM_ACTION))
       {
        value = linked.get("name").getAsString();
@@ -5734,18 +5734,18 @@ public class API extends HttpServlet
         value = "ac" + action.getId();
        }
        catch (ApiException e)
-       { 
+       {
        }
-       
+
        if (action == null)
        {
         createDomains4Obj(so, value);
         ObjectType atype = field.type();
-        
+
         String shortname = "";
-        
+
         ArrayList<String> parts = new ArrayList<String>(Arrays.asList(value.split("\\.")));
-        if (parts != null && !parts.isEmpty()) 
+        if (parts != null && !parts.isEmpty())
         {
          shortname = parts.get(parts.size()-1);
          parts.remove(parts.size()-1);
@@ -5756,7 +5756,7 @@ public class API extends HttpServlet
         {
          Domain actdom = this.getDomainFromNameOrID(so, actdomname);
          int newid = so.getID("action");
-         
+
          ObjectTypeAndId otypeid = so.CreateNewAction("G", shortname, actdom.getId(), actdom.getId(), newid);
          value = "ac" + otypeid.getId();
         }
@@ -5775,17 +5775,17 @@ public class API extends HttpServlet
         if (value.equalsIgnoreCase("bb"))
           value = linked.get("value").getAsString();
        }
-      } 
+      }
      }
-     
+
      if (field != null && (field == SummaryField.READ_ONLY || field == SummaryField.SERVER_PINGSTART || field == SummaryField.SERVER_PINGEND || field == SummaryField.DOMAIN_FULLNAME))
       continue;
-     
-     if(field != null) 
-     {    
+
+     if(field != null)
+     {
       if (field == SummaryField.OWNER)
        value = "us" + new Integer(so.GetUserID()).toString();
-      
+
       if (field == SummaryField.SERVER_COMPTYPE)
       {
        if (value.contains(";"))
@@ -5803,7 +5803,7 @@ public class API extends HttpServlet
         }
        }
       }
-      
+
       if (credkind == null)
          errtext = so.processField(dmobj, field, value, changes);
       else
@@ -5835,9 +5835,9 @@ public class API extends HttpServlet
      }
     }
    }
-   
+
    System.out.println("errtext=["+errtext+"]");
-   
+
    if (errtext != null) {
     ret.add("saved",false);
     ret.add("error",errtext);
@@ -5855,7 +5855,7 @@ public class API extends HttpServlet
       ret.add("saved", res);
      } else {
       ret.add("saved", false);
-      ret.add("error", "You do not have permission to update this object");    
+      ret.add("error", "You do not have permission to update this object");
      }
     } catch(Exception e) {
      System.out.println("exception thrown: "+e.getMessage());
@@ -5864,7 +5864,7 @@ public class API extends HttpServlet
      ret.add("error", e.getMessage());
     }
    }
-   
+
    if (obj.has("members"))
    {
     JsonArray members = obj.get("members").getAsJsonArray();
@@ -5873,28 +5873,28 @@ public class API extends HttpServlet
     {
      String member = members.get(i).getAsString();
      User user = so.getUserByName(member);
-     
+
      if (user != null)
        so.AddUserToGroup(dmobj.getId(),user.getId());
     }
    }
-   
+
    if (obj.has("compitems"))
    {
     JsonArray compitems = obj.get("compitems").getAsJsonArray();
-    
+
     for (int i=0;i<compitems.size();i++)
     {
      JsonArray itemfields = compitems.get(i).getAsJsonArray();
      changes = new SummaryChangeSet();
-     
+
      for (int k=0;k<itemfields.size();k++)
      {
       JsonArray fielddet = itemfields.get(k).getAsJsonArray();
       int fieldid = fielddet.get(0).getAsInt();
-      SummaryField field = SummaryField.fromInt(fieldid);    
+      SummaryField field = SummaryField.fromInt(fieldid);
       String value = "";
-     
+
       if (!fielddet.get(4).isJsonObject())
        value = fielddet.get(4).getAsString();
       else
@@ -5905,9 +5905,9 @@ public class API extends HttpServlet
        else
         value = linked.get("type").getAsString();
       }
-     
-      if(field != null) 
-      {          
+
+      if(field != null)
+      {
        errtext = so.processField(dmobj, field, value, changes);
       }
     }
@@ -5915,18 +5915,18 @@ public class API extends HttpServlet
     comp.updateCompItems(changes);
     }
    }
-   
+
    if (obj.has("compvers"))
    {
     JsonArray compvers = obj.get("compvers").getAsJsonArray();
-    
+
     for (int i=0;i<compvers.size();i++)
     {
      JsonObject verobj = compvers.get(i).getAsJsonObject();
      String version = "";
      String pred = "";
      String par = "";
-      
+
       version = verobj.get("version").getAsString();
       pred = verobj.get("predecessor").getAsString();
       par = verobj.get("parent").getAsString();
@@ -5948,8 +5948,8 @@ public class API extends HttpServlet
         // TODO Auto-generated catch block
         e1.printStackTrace();
        }
-      } 
-       
+      }
+
       try
       {
        predecessor  = so.getComponentByName(pred);
@@ -5965,8 +5965,8 @@ public class API extends HttpServlet
          // TODO Auto-generated catch block
          e1.printStackTrace();
        }
-      } 
-        
+      }
+
       try
       {
        child  = so.getComponentByName(version);
@@ -5983,16 +5983,16 @@ public class API extends HttpServlet
         e1.printStackTrace();
        }
       }
-      
+
       if (parent != null && child != null && predecessor != null)
        so.assignComponentVersion(parent, predecessor, child);
     }
    }
-   
+
    if (obj.has("appvers"))
    {
     JsonArray appvers = obj.get("appvers").getAsJsonArray();
-    
+
     for (int i=0;i<appvers.size();i++)
     {
      JsonObject verobj = appvers.get(i).getAsJsonObject();
@@ -6001,7 +6001,7 @@ public class API extends HttpServlet
      String par = "";
      Application child = null;
      Application predecessor = null;
-      
+
       version = verobj.get("version").getAsString();
       pred = verobj.get("predecessor").getAsString();
       par = verobj.get("parent").getAsString();
@@ -6014,7 +6014,7 @@ public class API extends HttpServlet
       {
         predecessor = newAppVer(so, pred);
       }
-      
+
       try
       {
        child  = so.getApplicationByName(version);
@@ -6023,16 +6023,16 @@ public class API extends HttpServlet
       {
         child = newAppVer(so, version);
       }
-      
+
       if (parent != null && child != null && predecessor != null)
        so.assignApplicationVersion(parent, predecessor, child);
     }
    }
-   
+
    if (obj.has("comps"))
    {
     JsonArray comps = obj.get("comps").getAsJsonArray();
-    
+
     for (int i=0;i<comps.size();i++)
     {
      JsonObject comp = comps.get(i).getAsJsonObject();
@@ -6041,21 +6041,21 @@ public class API extends HttpServlet
      int ypos = 0;
      String fromname = "";
      String toname   = "";
-      
+
      version = comp.get("version").getAsString();
      xpos = new Integer(comp.get("xpos").getAsString()).intValue();
      ypos = new Integer(comp.get("ypos").getAsString()).intValue();
-     
+
      if (comp.has("from"))
         fromname = comp.get("from").getAsString();
-     
+
      if (comp.has("to"))
         toname   = comp.get("to").getAsString();
 
      Component ver = so.getComponentByName(version);
      ver.setXpos(xpos);
      ver.setYpos(ypos);
-     
+
      Component from = new Component();
      try
      {
@@ -6063,9 +6063,9 @@ public class API extends HttpServlet
      }
      catch (RuntimeException e)
      {
-      
+
      }
-     
+
      Component to = null;
      try
      {
@@ -6073,17 +6073,17 @@ public class API extends HttpServlet
      }
      catch (RuntimeException e)
      {
-      
+
      }
      if (from != null && to != null)
        so.assignComp2App((Application)dmobj, ver, from, to);
     }
    }
-   
+
    if (obj.has("apps"))
    {
     JsonArray apps = obj.get("apps").getAsJsonArray();
-    
+
     for (int i=0;i<apps.size();i++)
     {
      JsonObject app = apps.get(i).getAsJsonObject();
@@ -6092,7 +6092,7 @@ public class API extends HttpServlet
      int ypos = 0;
      String fromname = "";
      String toname   = "";
-      
+
      version = app.get("version").getAsString();
      xpos = new Integer(app.get("xpos").getAsString()).intValue();
      ypos = new Integer(app.get("ypos").getAsString()).intValue();
@@ -6102,7 +6102,7 @@ public class API extends HttpServlet
      Application ver = so.getApplicationByName(version);
      ver.setXpos(xpos);
      ver.setYpos(ypos);
-     
+
      Application from = new Application();
      try
      {
@@ -6110,37 +6110,37 @@ public class API extends HttpServlet
      }
      catch (RuntimeException e)
      {
-      
+
      }
      Application to = so.getApplicationByName(toname);
      so.assignApp2Rel((Application)dmobj, ver, from, to);
     }
    }
-   
+
    if (obj.has("envs"))
    {
     JsonArray envs= obj.get("envs").getAsJsonArray();
-    
+
     for (int i=0;i<envs.size();i++)
     {
      String envname = envs.get(i).getAsString();
      Environment env = null;
-     
+
      try
      {
       env = so.getEnvironmentByName(envname);
      }
      catch (RuntimeException e)
      {}
-     
+
      if (env == null)
      {
       createDomains4Obj(so, envname);
-      
+
       String shortname = "";
-      
+
       ArrayList<String> parts = new ArrayList<String>(Arrays.asList(envname.split("\\.")));
-      if (parts != null && !parts.isEmpty()) 
+      if (parts != null && !parts.isEmpty())
       {
        shortname = parts.get(parts.size()-1);
        parts.remove(parts.size()-1);
@@ -6151,7 +6151,7 @@ public class API extends HttpServlet
       {
        Domain actdom = this.getDomainFromNameOrID(so, actdomname);
        int newid = so.getID("environment");
-       
+
        ObjectTypeAndId otypeid = so.CreateNewObject("environment", shortname, actdom.getId(), actdom.getId(), newid, 0, 0, "environments", true);
        env = so.getEnvironment(otypeid.getId(), true);
       }
@@ -6162,16 +6162,16 @@ public class API extends HttpServlet
      so.addToAppsAllowedInEnv(env, (Application)dmobj);
     }
    }
-   
+
    if (obj.has("endpoints"))
    {
     JsonArray srvs= obj.get("endpoints").getAsJsonArray();
-    
+
     for (int i=0;i<srvs.size();i++)
     {
      String srvname = srvs.get(i).getAsString();
      Server srv = so.getServerByName(srvname);
-     
+
      try
      {
       assignServer(so, new Integer(srv.getId()).toString(), new Integer(dmobj.getId()).toString());
@@ -6182,7 +6182,7 @@ public class API extends HttpServlet
      }
     }
    }
-   
+
    if (obj.has("attrs"))
    {
     JsonArray attrs = obj.get("attrs").getAsJsonArray();
@@ -6190,8 +6190,8 @@ public class API extends HttpServlet
     for (int i=0;i<attrs.size();i++)
     {
      JsonObject jo = attrs.get(i).getAsJsonObject();
-  
-     for (Entry<String, JsonElement> e: jo.entrySet()) 
+
+     for (Entry<String, JsonElement> e: jo.entrySet())
      {
       DMAttribute attr = new DMAttribute();
       attr.setName(e.getKey());
@@ -6201,7 +6201,7 @@ public class API extends HttpServlet
     }
     so.updateAttributesForObject(dmobj, acs);
    }
-   
+
    if (obj.has("props"))
    {
     JsonArray props = obj.get("props").getAsJsonArray();
@@ -6214,29 +6214,29 @@ public class API extends HttpServlet
      boolean encrypted = false;
      boolean overridable = false;
      boolean appendable = false;
-     
+
      if (jo.has("name"))
       name = jo.get("name").getAsString();
-     
+
      if (jo.has("value"))
       value = jo.get("value").getAsString();
-     
+
      if (jo.has("appendable"))
       appendable = jo.get("appendable").getAsBoolean();
-     
+
      if (jo.has("overridable"))
       overridable = jo.get("overridable").getAsBoolean();
-     
+
      if (jo.has("encrypted"))
       encrypted = jo.get("encrypted").getAsBoolean();
-     
+
      DMProperty prop = new DMProperty(name, value, encrypted, overridable, appendable);
      acs.addAdded(prop);
     }
-    
+
     ((ProviderObject)dmobj).updateProperties(acs,true);
    }
-   
+
    String result = ret.getJSON();
    System.out.println(result);
    out.println(result);
@@ -6247,13 +6247,13 @@ public class API extends HttpServlet
    e.printStackTrace();
   }
  }
- 
+
  private Application newAppVer(DMSession so, String objname)
  {
   DMObject dmobj;
   int oid = 0;
   ObjectType objtype = ObjectType.APPVERSION;
-  
+
   try
   {
     dmobj = so.getObjectFromNameOrID(objtype, objname);
@@ -6263,16 +6263,16 @@ public class API extends HttpServlet
   {
    dmobj = null;
   }
-  
+
   if (dmobj == null)
   {
    if (!objname.contains("."))
     return null;
-   
+
    String shortname = "";
-   
+
    ArrayList<String> parts = new ArrayList<String>(Arrays.asList(objname.split("\\.")));
-   if (parts != null && !parts.isEmpty()) 
+   if (parts != null && !parts.isEmpty())
    {
     shortname = parts.get(parts.size()-1);
     parts.remove(parts.size()-1);
@@ -6316,11 +6316,11 @@ public class API extends HttpServlet
      if (tgtdomain == null)
       return null;
     }
-   } 
-    
+   }
+
    if (tgtdomain == null)
     return null;
-   
+
    so.GetDomains(so.GetUserID());
    oid = so.getID(objtype.getTableName());
    so.CreateNewObject(objtype.getTableName(), shortname, tgtdomain.getId(), tgtdomain.getId(), oid, -1, -1, "", false);

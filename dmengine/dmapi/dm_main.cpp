@@ -80,7 +80,7 @@
 #include "lexer.h"
 #include "expr.h"
 
-#ifdef WIN32 
+#ifdef WIN32
 #include "compat.h"
 #endif
 
@@ -273,7 +273,7 @@ int outputEnvironmentList(DM &dm, Model& model)
 			}
 		}
 	}
-	
+
 	return 0;
 }
 
@@ -322,7 +322,7 @@ int outputApplicationList(DM& dm, Model& model)
 		//exit(1);
 		return 1;
 	}
-	
+
 	return 0;
 }
 
@@ -370,7 +370,7 @@ int handleUserName(DM &dm, Model &model)
 			}
 		}
 	}
-	
+
 	return 0;
 }
 
@@ -431,7 +431,7 @@ int handlePassword(DM& dm, Model& model)
 			}
 		}
 	}
-	
+
 	return 0;
 }
 
@@ -439,7 +439,7 @@ int handlePassword(DM& dm, Model& model)
 int outputDropDownContent(DM &dm, Model& model, const char *type)
 {
 	int ret = 0;
-	
+
 	if(STRCASECMP(type, "environments") == 0) {
 		ret = outputEnvironmentList(dm, model);
 	} else if(STRCASECMP(type, "applications") == 0) {
@@ -457,7 +457,7 @@ int outputDropDownContent(DM &dm, Model& model, const char *type)
 			dm.writeToStdErr("Unknown content type \"%s\"", type);
 		}
 	}
-	
+
 	return ret;
 }
 
@@ -506,7 +506,7 @@ void getCredentialsForServers(List<Server> *servers)
 
 int testThings(triODBC &odbc)
 {
-	
+
 	AutoPtr<triSQL> sql = odbc.GetSQL();
 	char schemaver[1024];
 	int res;
@@ -656,7 +656,7 @@ int runScript(DM &dm, const char *baseDir, char **argv, char **envp)
 	}
 	int res = dm.doDeployment(*(dm.getTargetApplication()));
 	// PAG MOD 11/04/2017 - do not call cleanup if on timer (since there may be another deployment coming)
-	if (!onTimer) dm.cleanup();	// PAG MOD 30/05/2015 - move cleanup to here. 
+	if (!onTimer) dm.cleanup();	// PAG MOD 30/05/2015 - move cleanup to here.
 	return res;
 }
 
@@ -738,7 +738,7 @@ static char *url_encode(const char *str)
 	char *buf = (char *)malloc(strlen(str) * 3 + 1);
 	char *pbuf = buf;
 	while (*pstr) {
-		if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~') 
+		if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~')
 			*pbuf++ = *pstr;
 		else if (*pstr == '/')
 			*pbuf++ = '/';
@@ -772,13 +772,13 @@ void setCurrentUser(DM &dm)
 	if (!password) password = getenv("TRIFIELD1");
 	if(password) {
 		// Get WebUI to authenticate
-		// 
+		//
 		char *eu = url_encode(username);
 		char *ep = url_encode(password);
 		char *fmt = "/dmadminweb/API/login?user=%s&pass=%s";
 		char *p = (char *)malloc(strlen(fmt)+strlen(eu)+strlen(ep)+10);
 		sprintf(p,fmt,eu,ep);
-	
+
 		Expr *content;
 		List<Server> servers = new List<Server>();
 		ScopeStack *stack = new ScopeStack(dm);
@@ -798,13 +798,13 @@ void setCurrentUser(DM &dm)
         char *p2 = (char *)malloc(strlen(fmt)+strlen(eu)+strlen(ep)+10);
 		sprintf(p2,fmt2,eu,ep);
 
-		if (dm.API(*ctx,p2,NULL,&content)) 
+		if (dm.API(*ctx,p2,NULL,&content))
 		{
 			Expr *e = content;
 			if (e) {
 				// *ret = e->toArray();
 				Variable *V = e->toArray()->get("result");
-				if (V) 
+				if (V)
 				{
 					const char *domainlist = V->getString();
 					if(!dm.setCurrentUser(username, domainlist, password))
@@ -834,7 +834,7 @@ void setTargetAppAndEnvFromParams(DM &dm, bool required)
 	const char *appname = getenv("triappname");
 	const char *appidstr = getenv("triappid");
 	const char *szRemoveApp = getenv("triremoveapp");
-	
+
 
 	if(required) {
 		if(!((envname != NULL) ^ (envidstr != NULL))) {
@@ -1014,7 +1014,7 @@ triODBC *connectToDatabase(DM &dm, const char *homeDir)
 		{
 		 details = malloc(5);
 		 memset(details,'\0',5);
-		 strcpy(details,"dm");	
+		 strcpy(details,"dm");
 
 		 user = DBUserName;
 		 pass = DBPassword;
@@ -1188,7 +1188,7 @@ char *readLine(FILE *in)
 
 
 int getCredentialID(Model &model,char *credname)
-{ 
+{
 	static StringHashtable *cht = (StringHashtable *)0;
 	if (!cht) cht = new StringHashtable();
 	const char *v = cht->get(credname);
@@ -1269,7 +1269,7 @@ int getServerID(Model &model,char *servername)
 
 int getTypeID(triODBC &odbc,char *name)
 {
-	
+
 	static StringHashtable *tht = (StringHashtable *)0;
 	if (!tht) tht = new StringHashtable();
 	const char *v = tht->get(name);
@@ -1540,7 +1540,7 @@ void loadServersAndExit(Model &model,triODBC &odbc,char *filename)
 					printf("Error at line %d: Ambiguous Domain \"%s\" specified. Please use Fully Qualified Domain\n",lineno,dn);
 					continue;
 			}
-			//                ?   ?     ?         ?       ?       ?       ?         ?        ?          ?        ?   
+			//                ?   ?     ?         ?       ?       ?       ?         ?        ?          ?        ?
 			sprintf(collist,"id,name,hostname,domainid,typeid,protocol,basedir,creatorid,created,modifierid,modified,status");
 			sprintf(sellist,"?,?,?,?,?,?,?,?,?,?,?,'N'");
 			if (cr) {
@@ -1633,7 +1633,7 @@ void loadServersAndExit(Model &model,triODBC &odbc,char *filename)
 			int res = sql->ExecuteSQL("INSERT INTO dm.dm_server(%s)	VALUES(%s)",collist,sellist);
 			if ((res == SQL_SUCCESS || res == SQL_SUCCESS_WITH_INFO) && sql->GetRowCount() > 0) {
 				bool commit=true;
-	
+
 				// Go through environment list (if specified)
 				char *env = strtok(NULL,",|");
 				while (env) {
@@ -1708,7 +1708,7 @@ void loadUsersAndExit(Model &model,triODBC &odbc,char *filename)
 					printf("Error at line %d: Ambiguous Domain \"%s\" specified. Please use Fully Qualified Domain\n",lineno,dn);
 					continue;
 			}
-			//                ?   ?     ?        ?         ?        ?       ?          ?        
+			//                ?   ?     ?        ?         ?        ?       ?          ?
 			sprintf(collist,"id,name,realname,domainid,creatorid,created,modifierid,modified,locked,forcechange,status");
 			sprintf(sellist,"?,?,?,?,?,?,?,?,'N','N','N'");
 			if (pw) {
@@ -1757,7 +1757,7 @@ void loadUsersAndExit(Model &model,triODBC &odbc,char *filename)
 			int res = sql->ExecuteSQL("INSERT INTO dm.dm_user(%s) VALUES (%s)",collist,sellist);
 			if ((res == SQL_SUCCESS || res == SQL_SUCCESS_WITH_INFO) && sql->GetRowCount() >0) {
 				bool commit=true;
-				if (pn) {	
+				if (pn) {
 					// We got a phone number - go through the group list
 					char *gp = strtok(NULL,",|");
 					while (gp) {
@@ -1765,7 +1765,7 @@ void loadUsersAndExit(Model &model,triODBC &odbc,char *filename)
 						char *sp = gp;
 						while (*sp==' ' || *sp=='\t') sp++;
 						int gid = getUserGroupID(model,sp);
-						
+
 						switch (gid) {
 						case DOMAIN_NOT_FOUND:
 						case DOMAIN_SYNTAX_ERROR:
@@ -1911,7 +1911,7 @@ void UpdateDB(triODBC &odbc,Context &ctx,int serverid,int status,char *ipaddr,un
 				Server *server = model->getServer(serverid);
 				if (server) {
 					NotifyTemplate *tmpl = server->getPingTemplate(ctx);
-					ctx.dm().setCurrentUser("admin",NULL, NULL);	// Mmmmm .... 
+					ctx.dm().setCurrentUser("admin",NULL, NULL);	// Mmmmm ....
 					if (tmpl) ctx.dm().internalNotify(ctx,tmpl);
 				}
 			}
@@ -1964,10 +1964,10 @@ int CheckServerConnectivity(Model &model,DM &dm,triODBC &odbc,int serverid)
 {
 	Server *s = model.getServerById(serverid);
 	ServerType *st = s->serverType();
-	
+
 	List<Server> serverSet;
 	ScopeStack stack(dm);
-	
+
 	stack.setGlobal("DMHOME", dm.getBaseDir());
 	stack.setGlobal("TRIDM_PLATFORM", DM_PLATFORM);
 
@@ -2007,7 +2007,7 @@ int CheckServerConnectivity(Model &model,DM &dm,triODBC &odbc,int serverid)
 	Environment *env = (Environment *)0;
 	int envid = getFirstEnvironmentForServer(odbc,serverid);
 	if (envid > 0) env = model.getEnvironment(envid);
-	
+
 	Credentials *creds = s->getCredentials();
 	if(!creds && env) {
 		creds = env->getCredentials();
@@ -2051,7 +2051,7 @@ int CheckServerConnectivity(Model &model,DM &dm,triODBC &odbc,int serverid)
 	}
 	char *uname = (char *)0;
 	char *ErrorText = (char *)0;
-	
+
 	if (!(status & CHECK_BASEDIR_OKAY)) {
 		// Base Directory invalid
 		ErrorText=strdup(output.buffer());
@@ -2079,7 +2079,7 @@ int CheckServerConnectivity(Model &model,DM &dm,triODBC &odbc,int serverid)
 		} else if (strcmp(st->hosttype(),"as400")==0) {
 			uname = strdup("as400");
 		}
-		
+
 	} else {
 		ErrorText=strdup(output.buffer());
 		int n=strlen(ErrorText)-1;
@@ -2101,7 +2101,7 @@ void ScanServer(Model &model,DM &dm,triODBC &odbc,int serverid)
 
 	List<Server> serverSet;
 	ScopeStack stack(dm);
-	
+
 	stack.setGlobal("DMHOME", dm.getBaseDir());
 	stack.setGlobal("TRIDM_PLATFORM", DM_PLATFORM);
 
@@ -2137,8 +2137,8 @@ void ScanServer(Model &model,DM &dm,triODBC &odbc,int serverid)
 	// Get list of all the files that have been deployed to this server
 	int res1,res2;
 	sql1->BindColumn(1,SQL_C_CHAR,targetpath,sizeof(targetpath));
-	
-	
+
+
 	res1 = sql1->ExecuteSQL("SELECT DISTINCT targetfilename FROM dm_deploymentxfer WHERE serverid=%d",serverid);
 	for(res1 = sql1->FetchRow(); (res1 == SQL_SUCCESS) || (res1 == SQL_SUCCESS_WITH_INFO); res1 = sql1->FetchRow()) {
 		sql2->BindColumn(1,SQL_C_CHAR,origmd5,sizeof(origmd5));
@@ -2159,7 +2159,7 @@ void ScanServer(Model &model,DM &dm,triODBC &odbc,int serverid)
 		if (res2 == SQL_SUCCESS || res2 == SQL_SUCCESS_WITH_INFO) {
 			// Got an MD5 sum for this path
 			printf("File:     %s\nOrig MD5: %s\n",targetpath,origmd5);
-				
+
 
 			TransferProviderImplFactory *factory = TransferProviderImplRegistry::instance().getFactory(s->protocol());
 			if(!factory) {
@@ -2295,7 +2295,7 @@ void ScanServer(Model &model,DM &dm,triODBC &odbc,int serverid)
 						strcat(discrepancyList,"\n");
 					}
 				}
-				
+
 				// Try updating the row based on serverid and targetfilename. If no rows, insert it
 				time_t now = time(NULL);
 				sql4->PrepareStatement("UPDATE dm_discovery SET deployedmd5=?, detectedmd5=?, discovery_time=? WHERE serverid=? AND targetfilename=?");
@@ -2337,7 +2337,7 @@ void ScanServer(Model &model,DM &dm,triODBC &odbc,int serverid)
 
 			// printf("exitcode=%d\n",exitcode);
 		}
-		
+
 	}
 	sql1->CloseSQL();
 	if (discrepancyList) {
@@ -2357,7 +2357,7 @@ void ScanServer(Model &model,DM &dm,triODBC &odbc,int serverid)
 			ctx.stack().setGlobal("SERVER_STATUS","OK");
 			Model *model = ctx.dm().getModel();
 			if (model) {
-				ctx.dm().setCurrentUser("admin",NULL, NULL);	// Mmmmm .... 
+				ctx.dm().setCurrentUser("admin",NULL, NULL);	// Mmmmm ....
 				ctx.dm().internalNotify(ctx,md5template);
 			}
 		}
@@ -2430,11 +2430,11 @@ int DoDeployment(Model &model,DM &dm,const char *homeDir,char **envp,char **nvar
 	dm.setDialogCredentials(dialogCreds);
 	int ret = 0;
 
-	
-	
+
+
 	try {
 		dm.startAudit();	// Startup auditing system
-		
+
 		dm.writeToStdOut("INFO: Starting deployment #%d", dm.deployId());
 		clock_t start = clock();
 		if (dm.getRemoveApp()) {
@@ -2448,11 +2448,11 @@ int DoDeployment(Model &model,DM &dm,const char *homeDir,char **envp,char **nvar
 		if (dm.getRemoveApp()) {
 			targetApp.recordDeployedToEnv(dm,targetEnv,false);
 		}
-		
+
 		clock_t finish = clock();
 		clock_t elapsed = finish - start;
 		dm.writeToStdOut("INFO: Time taken %f seconds", ((float) elapsed)/CLOCKS_PER_SEC);
-		
+
 	} catch(DMException &e) {
 		debug1("Unhandled DMException in main - exit code -1");
 		e.print(dm);
@@ -2536,7 +2536,7 @@ int DM_main(int argc, char **argv, char **envp)
 //		"; sizeof(short) = %d; sizeof(int) = %d; sizeof(long) = %d; sizeof(DMINT32) = %d\n",
 //		sizeof(short), sizeof(int), sizeof(long), sizeof(DMINT32));
 //	exit(0);
- 
+
 	try {
 	int n = ScanOptions(options, sizeof(options)/sizeof(options[0]), argc, argv);
 
@@ -2547,7 +2547,7 @@ int DM_main(int argc, char **argv, char **envp)
 	if(getenv("trihelp")) {
 		printHelpAndExit();
 	}
-	
+
 	// Start of name/value and positional args
 	char **nvargv = &argv[n];
 
@@ -2606,7 +2606,7 @@ int DM_main(int argc, char **argv, char **envp)
 
 	SetEngineHostName(dm,*odbc);	// Default installation has engine host set to "localhost"
 
-	
+
 
 	if (getenv("triloadusers")) {
 		Model model(*odbc, dm.getHostname());
@@ -2727,7 +2727,7 @@ int DM_main(int argc, char **argv, char **envp)
 		}
 
 		//dumpbuffer(line, strlen(line));
-		
+
 		try {
 			ConstCharPtr encLine = encryptValue(line, strlen(line));
 			printf("%s\n", (const char*) encLine);
@@ -2984,7 +2984,7 @@ int DM_main(int argc, char **argv, char **envp)
 				int actionid = atol(getenv("tridumpscript"));
 				dm.initialize(homeDir,nvargv,envp);
 				dm.DumpScript(actionid);
-			} else 
+			} else
 			if (getenv("triimpscript")) {
 				dm.initialize(homeDir,nvargv,envp);
 				dm.importScript();
@@ -3069,8 +3069,8 @@ int DM_main(int argc, char **argv, char **envp)
 
 
 #ifdef WIN32
-BOOL APIENTRY DllMain( HANDLE hModule, 
-                       DWORD  ul_reason_for_call, 
+BOOL APIENTRY DllMain( HANDLE hModule,
+                       DWORD  ul_reason_for_call,
                        LPVOID lpReserved
 					 )
 {

@@ -30,15 +30,15 @@ public class PropertyDataSet
 	private List<String> m_names = new ArrayList<String>();
 	private List<Object> m_values = new ArrayList<Object>();
 	private ObjectTypeAndId m_newObject;
-	
+
 	public PropertyDataSet()
 	{}
-	
+
 	public void addProperty(String name, String value)
 	{
 		addProperty(SummaryField.READ_ONLY, name, value);
 	}
-	
+
 	public void copyOnlyDeploy(PropertyDataSet ds)
 	{
 		for (int i=0;i<m_names.size();i++) {
@@ -57,16 +57,16 @@ public class PropertyDataSet
 			}
 		}
 	}
-	
+
  public void removeDupDeploy(PropertyDataSet ds)
  {
   boolean addedDeploy = false;
   for (int i=0;i<m_names.size();i++) {
    String v = (String)m_values.get(i);
-   if (v.startsWith("Deploy")) 
+   if (v.startsWith("Deploy"))
    {
     if (!addedDeploy)
-    { 
+    {
      ds.addProperty(m_fields.get(i), m_names.get(i),(String)m_values.get(i));
      addedDeploy = true;
     }
@@ -75,45 +75,45 @@ public class PropertyDataSet
     ds.addProperty(m_fields.get(i), m_names.get(i),(String)m_values.get(i));
   }
  }
-	
+
 	public void addProperty(SummaryField field, String name, String value)
 	{
 
 //	 if (m_names.contains(name))
 //	  return;
-	 
+
 		m_fields.add(field);
 		m_names.add(name);
 		m_values.add(value);
 	}
-	
+
 	public void addProperty(String name, int value)
-	{	
+	{
 		addProperty(SummaryField.READ_ONLY, name, value);
 	}
-	
+
 	public void addProperty(SummaryField field, String name, int value)
-	{	
+	{
 		m_fields.add(field);
 		m_names.add(name);
 		m_values.add(value);
 	}
-	
+
 	public void addProperty(String name, IJSONSerializable value)
 	{
 		addProperty(SummaryField.READ_ONLY, name, value);
 	}
-	
+
 	public void addProperty(SummaryField field, String name, IJSONSerializable value)
-	{	
+	{
 		m_fields.add(field);
 		m_names.add(name);
 		m_values.add(value);
 	}
-	
+
 	public ObjectTypeAndId getNewObject()  { return m_newObject; }
 	public void setNewObject(ObjectTypeAndId obj)  { m_newObject = obj; }
-	
+
 	public IJSONSerializable getJSON()
 	{
 		JSONArray ret = new JSONArray();
@@ -133,7 +133,7 @@ public class PropertyDataSet
 		}
 		return ret;
 	}
-	
+
 	public IJSONSerializable getStepJSON()
 	{
 		JSONArray ret = new JSONArray();
@@ -149,7 +149,7 @@ public class PropertyDataSet
 		}
 		return ret;
 	}
-	
+
 	public IJSONSerializable getNewsJSON()
 	{
 		JSONObject ret = new JSONObject(true);
@@ -158,7 +158,7 @@ public class PropertyDataSet
 		}
 		return ret;
 	}
-	
+
 	public IJSONSerializable getMenuJSON()
 	{
 		JSONArray ret = new JSONArray();

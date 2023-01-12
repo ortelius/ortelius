@@ -78,7 +78,7 @@ public:
 	// Run a RemoteScript
 	virtual int runScriptOnServer(
 		const char *shell, const char *script, class StringList *params,
-		bool copy, bool useTTY, class Context &ctx) = 0; 
+		bool copy, bool useTTY, class Context &ctx) = 0;
 
 	// Check server is reachable and base directory is okay
 	virtual int checkServer(

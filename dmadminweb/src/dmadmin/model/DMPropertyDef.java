@@ -25,7 +25,7 @@ public class DMPropertyDef
 	implements Serializable, IJSONSerializable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 7703233628885066640L;
 
@@ -35,7 +35,7 @@ public class DMPropertyDef
 
 	public DMPropertyDef()
 	{}
-	
+
 	public DMPropertyDef(String name, boolean required, boolean appendable)
 	{
 //System.out.println("new DMPropertyDef(\"" + name + "\"," + required + "," + appendable + ")");
@@ -43,37 +43,37 @@ public class DMPropertyDef
 		m_required = required;
 		m_appendable = appendable;
 	}
-	
+
 	public String getName() {
 		return m_name;
 	}
-	
+
 	public void setName(String name) {
 		m_name = name;
 	}
-	
+
 	public boolean isRequired() {
 		return m_required;
 	}
-	
+
 	public void setRequired(boolean required) {
 		m_required = required;
 	}
-	
+
 	public boolean isAppendable() {
 		return m_appendable;
 	}
-	
+
 	public void setAppendable(boolean appendable) {
 		m_appendable = appendable;
 	}
-	
+
 	private JSONObject toJSONObject() {
 		JSONObject obj = new JSONObject();
 		obj.add("name", m_name).add("reqd", m_required).add("append", m_appendable);
 		return obj;
 	}
-	
+
 	@Override
 	public String getJSON() {
 		return toJSONObject().getJSON();

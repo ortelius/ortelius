@@ -98,7 +98,7 @@ function LoadDeploymentSummaryData(objid)
 						val = "";
 					}
 				}
-				
+
 				if (label == "Deployed By") {
 					td += "<tr><td class=\"summlabel\" style=\"width:30%\">";
 					td += label;
@@ -114,7 +114,7 @@ function LoadDeploymentSummaryData(objid)
 					td += label;
 					td += ":</td><td>";
 					td += val;
-				}  
+				}
 				td += "</td></tr>";
 			}
 
@@ -139,11 +139,11 @@ function GetNewsDetails(objid)
  summSaveobjtype = "";
  summSaveobjid = objid;
  depComplete = false;
- 
+
  LoadDeploymentSummaryData(objid);
 
- 
-  
+
+
   $.getJSON("GetDeploymentFilesData?f=d&id=" + objid, function(res) {
 	   console.log(res);
 	   var td = "<table id=\"deploymentdefects\" cellspacing=\"0\" width=\"100%\" >";
@@ -161,12 +161,12 @@ function GetNewsDetails(objid)
 	   td += "</tbody></table></div>";
 	   $("#displaylogtabs-defects-data").html(td);
   });
-  
+
   oldsubtabmenu[1]="displaylogtabs-files";
   RefreshLogDetail(objid);
- 
-  
-  // ReplotDeployReports(objid);  
+
+
+  // ReplotDeployReports(objid);
 }
 
 
@@ -179,9 +179,9 @@ function getBuildLogDetails(compid,buildid)
 	 summSaveobjtypeAsInt = objtypeAsInt;
 	 summSaveobjtype = "";
 	 summSaveobjid = buildid;
-	 
+
 	 var url=(compid < 0)?"&jobid="+Math.abs(compid):"&compid="+compid;
-	 
+
 	 console.log("GetBuildLog?buildid=" + buildid +url);
 
 	  $.getJSON("GetBuildLog?buildid=" + buildid +url, function(data) {
@@ -233,31 +233,31 @@ function getBuildLogDetails(compid,buildid)
 	     td+="<tr><td class=\"summlabel\" style=\"width:30%\">Build Job:</td>";
 	     td+="<td><img src=\"images/buildjobs_sm.png\"\ style=\"vertical-align:middle;\">&nbsp";
 	     td+="<a onClick=\"javascript:SwitchDisplay('bj"+buildjob.id+"');\">"+buildjob.name+"</a></td>";
-	     td+="</tr>" 
+	     td+="</tr>"
 	     $("#buildsum > tbody").html(td);
-	  });  
+	  });
 }
 
 function MaxLogDetail(objid)
 {
  save_logdlg_height = $('.ui-dialog').height();
  save_logdlg_width  = $('.ui-dialog').width();
- 
+
  if ($('#container').height()-90 > 100)
   $('.ui-dialog').height($('#container').height()-90);
- 
+
  if ($('#container').width()-90 > 100)
   $('.ui-dialog').width($('#container').width()-90);
- 
+
  $('.ui-dialog').top(50);
-}  
+}
 
 function MinLogDetail(objid)
 {
   $('.ui-dialog').height(save_logdlg_height);
   $('.ui-dialog').width(save_logdlg_width);
-} 
- 
+}
+
 function TogglePlayPause(objid)
 {
 	if ($("#autorefresh").is(':checked')) RefreshLogDetail(objid);
@@ -307,7 +307,7 @@ function RefreshLogDetail(objid)
 	if (oldsubtabmenu[1]=="displaylogtabs-files") {
 		$.getJSON("GetDeploymentFilesData?f=f&id=" + objid, function(res) {
 			console.log("Refreshing deployment files");
-			console.log(res);  
+			console.log(res);
 			var td = "<table id=\"deploymentfiles\" cellspacing=\"0\" width=\"100%\" >";
 			td += "<thead class=\"ui-widget-header\"><tr><th>Step</th><th>Repository</th><th>Repository Path</th><th>Version</th><th>Component</th><th>Build</th><th>Target</th><th>Target Path</th><th>MD5</th></tr></thead><tbody>";
 			var rowcnt = 0;
@@ -334,9 +334,9 @@ function RefreshLogDetail(objid)
 				var md5 = row[7];
 				var buildno = (row[8]==0)?"":"#"+row[8];
 				td += "<tr><td style=\"border: 1px solid #ddd;\">" + step + "</td><td style=\"border: 1px solid #ddd;\">" + repo + "</td><td style=\"border: 1px solid #ddd;\">" + repopath + "</td><td style=\"border: 1px solid #ddd;\">" + version + "</td><td style=\"border: 1px solid #ddd;\">" + component + "</td><td style=\"border: 1px solid #ddd;\">" + buildno + "</td><td style=\"border: 1px solid #ddd;\">" + target + "</td><td style=\"border: 1px solid #ddd;\">" + targetpath + "</td><td style=\"border: 1px solid #ddd;\">"+md5+"</td></tr>";
-			} 
+			}
 			for (rowcnt; rowcnt < 5; rowcnt++) {
-				td += "<tr><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td></tr>";   
+				td += "<tr><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td><td style=\"border: 1px solid #ddd;\">&nbsp;</td></tr>";
 			}
 			td += "</tbody></table></div>";
 			$("#displaylogtabs-files-data").html(td);
@@ -352,7 +352,7 @@ function RefreshLogDetail(objid)
 			}
 		});
 	}
-	
+
 	if (oldsubtabmenu[1]=="displaylogtabs-general") {
 		LoadDeploymentSummaryData(objid);
 		if (logRefresh && !depComplete) {
@@ -360,15 +360,15 @@ function RefreshLogDetail(objid)
 			arTimerID = setTimeout(function() {
 				RefreshLogDetail(objid);
 			},8000);
-		} 
+		}
 	}
-	
+
 	if (oldsubtabmenu[1]=="displaylogtabs-scripts") {
 		$.getJSON("GetDeploymentFilesData?f=s&id=" + objid, function(res) {
 			console.log(res);
-			var td = "<table id=\"deploymentscripts\" cellspacing=\"0\" width=\"100%\" >";	   
+			var td = "<table id=\"deploymentscripts\" cellspacing=\"0\" width=\"100%\" >";
 			td += "<thead class=\"ui-widget-header\"><tr><th>Step</th><th>Action/Procedure/Function</th></tr></thead><tbody>";
-			var rowcnt = 0;   
+			var rowcnt = 0;
 			for (i=0;i<res.data.length;i++) {
 				var row = res.data[i];
 				var step = row.step;
@@ -388,6 +388,6 @@ function RefreshLogDetail(objid)
 					RefreshLogDetail(objid);
 				},8000);
 			}
-		});	
+		});
 	}
 }

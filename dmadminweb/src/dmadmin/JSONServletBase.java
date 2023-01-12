@@ -35,13 +35,13 @@ public abstract class JSONServletBase
 {
  DMSession so = null;
  HttpSession session = null;
- 
+
 	public JSONServletBase()
 	{
 		super();
 	}
-	
-	
+
+
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
@@ -49,18 +49,18 @@ public abstract class JSONServletBase
 		internalHandleRequest(false, request, response);
 	}
 
-	
+
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
 	{
 		internalHandleRequest(true, request, response);
 	}
-	
-	
+
+
 	private void internalHandleRequest(boolean isPost, HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException
-	{		
+	{
 		response.setContentType("application/json");
 
   try (DMSession so = DMSession.getInstance(request)) {
@@ -75,29 +75,29 @@ public abstract class JSONServletBase
 
 		try {
 			IJSONSerializable json = null;
-			
+
 			try {
 				json = handleRequest(so, isPost, request, response);
 			} catch(PermissionDeniedException e) {
-				json = new JSONObject().add("result", false).add("error", e.getMessage()); 
+				json = new JSONObject().add("result", false).add("error", e.getMessage());
 			} catch(Exception e) {
 				// Report any exceptions raised by the request
 				e.printStackTrace();
-				json = new JSONObject().add("result", false).add("error", e.toString()); 
+				json = new JSONObject().add("result", false).add("error", e.toString());
 			}
-			
+
 			if(json == null) {
-				json = new JSONObject().add("result", false).add("error", "Request returned no result"); 
+				json = new JSONObject().add("result", false).add("error", "Request returned no result");
 			}
 
 			// Serialize as JSON
 			String ret = json.getJSON();
-			
+
 			// Set the content length for http keep-alive
 			response.setContentLength(ret.length());
-			
+
 			PrintWriter out = response.getWriter();
-			
+
 			out.println(ret);
 			System.out.println(ret);
 		} catch(Exception e) {
@@ -107,12 +107,12 @@ public abstract class JSONServletBase
   }
 	}
 
-	
+
 	public abstract IJSONSerializable handleRequest(DMSession session, boolean isPost,
 			HttpServletRequest request, HttpServletResponse response)
 		throws PermissionDeniedException, ServletException, IOException;
-	
-	
+
+
 	public static int getIntParameter(HttpServletRequest request, String name) {
 		String value = request.getParameter(name);
 		if(value != null) {
@@ -122,8 +122,8 @@ public abstract class JSONServletBase
 		}
 		throw new RuntimeException("Parameter '" + name + "' not specified or invalid value");
 	}
-	
-	
+
+
 	public static int getIntParameter(HttpServletRequest request, String name, int defaultValue) {
 		String value = request.getParameter(name);
 		if(value != null) {
@@ -133,8 +133,8 @@ public abstract class JSONServletBase
 		}
 		return defaultValue;
 	}
-	
-	
+
+
 	public static String urlDecode(String value)
 	{
 		try {

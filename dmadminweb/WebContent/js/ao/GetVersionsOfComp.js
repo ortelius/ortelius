@@ -26,14 +26,14 @@ function getComponentVersionsMarkup(id,name,summ,xpos,ypos,suffix)
 /* if (xpos > 480)
  {
   xpos = 480 - xpos;
-  
+
   if (xpos < 0)
    xpos = xpos * -1;
  }
- 
+
  if (ypos < 50)
   ypos += 50;
-*/ 
+*/
  return '<div class="drawcomponent componentbox" id="window'+id+'" '
   + 'style="position: absolute; top: '+ypos+'px; left: '+xpos+'px ">'
   + getComponentVersionsBody(id,name,summ,suffix) + '</div>';
@@ -43,14 +43,14 @@ function SaveComponentVersionsDetails(id)
 {
  if (DontSave)
   return;
- 
+
  var url="f=csv&c="+id;
  parent.$("#homeatts :input").each(function() {
   url=url+"&"+$(this).attr("id")+"="+$(this).val();
  });
  $.getJSON('UpdateAttrs',url,
      function(data){
-   // Update the fragment window 
+   // Update the fragment window
    console.log("Updating the window for #window"+id);
    $( ".componentbox" ).each(function( index ) {
       console.log(index + ": "+$(this).attr("id"));
@@ -77,7 +77,7 @@ function cvClickElement(id)
  att.html("Loading...").load("getcompversum?verid="+id,cFrameEnabled(att));
  */
  CurrentlySelectedID=id;
-  
+
 }
 
 function cvOpenDetails(x)
@@ -87,10 +87,10 @@ function cvOpenDetails(x)
 
 
 function cvNewComponentVersions(node)
-{ 
+{
  if (DontSave)
   return;
- 
+
  var xpos = cCurrentMousePos.x - 480;
  var ypos = cCurrentMousePos.y - 120;
  var swd = {};
@@ -109,7 +109,7 @@ function cvNewComponentVersions(node)
    swd.id=id;
   }
  });
- 
+
  $.ajax(
    {
     url : "UpdateAttrs?f=cnv&c=" + swd.id + "&xpos="+xpos+"&ypos="+ypos,
@@ -172,17 +172,17 @@ function cvNewComponentVersions(node)
     console.log(err);
     alert(err);
     return;
-   } 
+   }
   });
 }
 
 function cvDeleteNode(node)
 {
  console.log("cvDelete");
- 
+
  if (DontSave)
   return;
- 
+
  // alert("Detaching all connections");
  cvPlumb.detachAllConnections(node.id);
  // alert("Removing all endpoints");
@@ -202,7 +202,7 @@ function cvWindowMoved(event,ui)
 {
  if (DontSave)
   return;
- 
+
  console.log("in WindowMoved, ui.position.top="+ui.position.top);
  var windowid=event.target.id;
  var id = windowid.replace("window","");
@@ -251,7 +251,7 @@ function cvChangeLabelOK(conn)
 	if (FromUUID.indexOf("out")>0) {
 		tn = conn.targetId.replace("window","");
 	} else {
-		tn = conn.sourceId.replace("window",""); 
+		tn = conn.sourceId.replace("window","");
 	}
 	console.log("tn="+tn);
 	cvUpdateBranchLabel(labeltext,tn);
@@ -269,7 +269,7 @@ function cvChangeLabel(conn)
 	}
 	console.log("Change Label");
 	var att = parent.$("#modal");
-	att.dialog({ resizable: false, modal: true, dialogClass: "aboutsDialog" }); 
+	att.dialog({ resizable: false, modal: true, dialogClass: "aboutsDialog" });
 	att.empty();
 	att.dialog("option","title","Branch Label");
 	att.dialog("option","buttons",
@@ -279,7 +279,7 @@ function cvChangeLabel(conn)
 	    ]
 	);
 	att.html(
-			"<html><body><table border=0><tr><td><img src='images/label-large.png'></td><td>Change Branch Label</td></tr></table><hr>" + 
+			"<html><body><table border=0><tr><td><img src='images/label-large.png'></td><td>Change Branch Label</td></tr></table><hr>" +
 			"Branch Label:&nbsp;<input type='text' id='labeltext' width='60' value='"+labelname+"'><br></body></html>");
 	att.css("overflow-y","hidden");
 	att.dialog("open");
@@ -302,7 +302,7 @@ function cvRemoveLabel(conn)
 	if (FromUUID.indexOf("out")>0) {
 		tn = conn.targetId.replace("window","");
 	} else {
-		tn = conn.sourceId.replace("window",""); 
+		tn = conn.sourceId.replace("window","");
 	}
 	cvUpdateBranchLabel("",tn);
 }
@@ -332,7 +332,7 @@ function cvFindWindowWithNoOutput(winid)
    }
   }
  });
- 
+
  return swd;
 }
 
@@ -340,13 +340,13 @@ function cvDeleteConnector(conn)
 {
  if (DontSave)
   return;
- 
+
  if (conn)
  {
   //
   // Update the DB
   //
-  var fn = conn.sourceId.replace("window",""); 
+  var fn = conn.sourceId.replace("window","");
   var tn = conn.targetId.replace("window","");
   if (fn.indexOf("start") > -1) fn=0;
   if (tn.indexOf("start") > -1) tn=0;
@@ -387,14 +387,14 @@ function initComponentVersions(connection)
 function LoadComponentVersionsData()
 {
  DontSave = 1;
- 
+
  cPlumb.reset();
- aPlumb.reset();   
+ aPlumb.reset();
  avPlumb.reset();
  cvPlumb.reset();
  cisplumb.reset();
- wfPlumb.reset();  
- 
+ wfPlumb.reset();
+
  $("#innerversions").html("");
  $("#innercomp").html("");
  $("#innerappver").html("");
@@ -403,7 +403,7 @@ function LoadComponentVersionsData()
  $("#innercompversions").html("");
 
  var InitialLoad = true;
- 
+
  cvPlumb.importDefaults({
   // default drag options
   DragOptions : {
@@ -411,22 +411,22 @@ function LoadComponentVersionsData()
    zIndex : 2000
   }
  });
- 
+
  cvPlumb.bind("contextmenu", function(component, originalEvent) {
         originalEvent.preventDefault();
         return false;
     });
-  
- var menu2 = function(m,t){ 
+
+ var menu2 = function(m,t){
   if (DontSave)
    return;
-  
+
   console.log("in menu2 (contextmenu activated)");
   if (!OverLink)
   {
    if (isRelease == "Y")
     return mainmenuRelComponentVersions;
-   else 
+   else
     return mainmenuComponentVersions;
   }
   // Construct a menu for this connector based on its content
@@ -470,16 +470,16 @@ function LoadComponentVersionsData()
   }
   return ma;
   };
- 
+
  console.log("Binding default context menu");
- 
+
  if (!readonly) {
 	 try {
 	 $("#innercompversions").dmContextMenu(menu2, {theme:'xp'});
 	 } catch(e) { console.log(e); }
  }
- 
- 
+
+
  cvPlumb.bind("jsPlumbConnection", function(connInfo, originalEvent) {
   console.log("jsPlumbConnection fired - about to call init");
   initComponentVersions(connInfo.connection);
@@ -493,18 +493,18 @@ function LoadComponentVersionsData()
   var fn;
   var tn;
   if (FromUUID.indexOf("out")>0) {
-   fn = connInfo.connection.sourceId.replace("window",""); 
-   tn = connInfo.connection.targetId.replace("window",""); 
+   fn = connInfo.connection.sourceId.replace("window","");
+   tn = connInfo.connection.targetId.replace("window","");
   } else {
-   tn = connInfo.connection.sourceId.replace("window",""); 
-   fn = connInfo.connection.targetId.replace("window",""); 
+   tn = connInfo.connection.sourceId.replace("window","");
+   fn = connInfo.connection.targetId.replace("window","");
   }
-  
+
   if (fn.indexOf("start") > -1) fn=0;
   if (tn.indexOf("start") > -1) tn=0;
-  
+
   console.log("fn="+fn+" tn="+tn);
-  
+
   if (InitialLoad == false)
   {
    console.log("Updating DB with compid=" + objid + " fn="+fn+" tn="+tn);
@@ -516,21 +516,21 @@ function LoadComponentVersionsData()
   }
 
  });
- 
+
  cvPlumb.bind("connectionDetached", function(connInfo, originalEvent) {
   console.log("DETACHED! connInfo.connection.id = " + connInfo.connection.id);
   cvDeleteConnector(connInfo.connection);
  });
 
- 
+
  $.getJSON('GetCompVersionLayout',"compid=" + objid,function(data){
-	 
+
   readonly = data.readOnly;
-  
+
   // Start Window
   yo = 140;
   var w = Math.floor($("#innercompversions").width()/2)-63;
-  
+
   $("#innercompversions").append( "<div class=\"startcomponent\" id=\"window" + objid + "\" " +
     "style=\"position: relative; top: 100px; left: " + w + "px \">" +
     "<span style=\"position:relative; top:5px\"><img src=\"css/images/go_16x.png\" style=\"padding-right:5px\">" + objName + "</div>");
@@ -539,7 +539,7 @@ function LoadComponentVersionsData()
    anchor : "BottomCenter",
    uuid : "window" + objid + "out"
   });
-  
+
   var MaxWinID=0;
   //
   // insert the components
@@ -549,12 +549,12 @@ function LoadComponentVersionsData()
   {
    WindowID = parseInt(data.Nodes[a].nodeid);
    if (WindowID > MaxWinID) MaxWinID = WindowID;
-   
+
    $("#innercompversions").append(getComponentVersionsMarkup(WindowID, data.Nodes[a].name, data.Nodes[a].summary, data.Nodes[a].xpos, data.Nodes[a].ypos, data.Nodes[a].suffix));
    $("#window"+WindowID).dblclick(function() {
      cvDrillDown($(this));
    });
-   
+
    cvPlumb.addEndpoint("window"+WindowID, compEndpoint, {
     anchor : "TopCenter",
     uuid : "window"+WindowID+"in"
@@ -563,14 +563,14 @@ function LoadComponentVersionsData()
     anchor : "BottomCenter",
     uuid : "window"+WindowID+"out"
    });
- 
+
    if (!readonly) {
 	   console.log("Binding context menu menu1 to window #window"+WindowID);
 	   if (isRelease == "Y")
 	    $("#window"+WindowID).dmContextMenu(menuRelComponentVersions, {theme:'xp'});
 	   else
 	    $("#window"+WindowID).dmContextMenu(menuComponentVersions, {theme:'xp'});
-	
+
 	   $("#window"+WindowID).resize(function(){
 	      cvPlumb.repaintEverything();
 	   });
@@ -587,15 +587,15 @@ function LoadComponentVersionsData()
    console.log("data.Links["+a+"].nodeto="+data.Links[a].nodeto);
    var srcconn;
    if (data.Links[a].nodefrom == 0) {
-    srcconn = "window" + objid + "out"; 
+    srcconn = "window" + objid + "out";
    } else {
     srcconn = "window" + data.Links[a].nodefrom + "out";
    }
    var tgtconn = "window" + data.Links[a].nodeto + "in";
-   
+
    console.log("Connect srcconn="+srcconn+" tgtconn="+tgtconn);
    console.log(data.Links[a]);
-   
+
    if (cvPlumb.getEndpoint(srcconn) != null && cvPlumb.getEndpoint(tgtconn) != null)
    {
     var connection = cvPlumb.connect({uuids:[srcconn,tgtconn], detachable:true, editable:true});
@@ -614,7 +614,7 @@ function LoadComponentVersionsData()
    cursor: "-webkit-grab",
    stop: cvWindowMoved
   });
-  
+
   InitialLoad = false;
 
  }).fail(function(fdata){
@@ -624,12 +624,12 @@ function LoadComponentVersionsData()
   });
   });
  $("#innercompversions").resizable({ handles: "s" });
- 
+
  if (readonly)
   $("#innercompversions").block({ message: null });
  else
   $("#innercompversions").unblock();
- 
+
  DontSave = 0;
 }
 
@@ -643,12 +643,10 @@ function cvStartMoved(event,ui)
 {
  if (DontSave)
   return;
- 
+
  console.log("Start Moved ypos="+Math.round(ui.offset.left));
  $.getJSON("UpdateAttrs","f=cvm&c=" + objid + "&v="+id+ "&xpos="+Math.round(ui.offset.left),
  function(data){
   console.log("WindowMoved) in success");
  });
 }
-
-

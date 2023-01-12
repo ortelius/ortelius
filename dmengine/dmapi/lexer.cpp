@@ -237,7 +237,7 @@ int LexerBuffer::parseStringLiteral(char quote, bool noEscape)
    	int n = 0;
 	int cap = sizeof(buf);
 	int c;
- 
+
 	do {
    		for(c = this->getc(); (c != quote) && (c != EOF); c = this->getc()) {
 			// If we fill buffer switch to dynamic mode and increase size
@@ -326,7 +326,7 @@ int LexerBuffer::parseStringLiteral(char quote, bool noEscape)
 		}
 	} while(c == quote);
 
-   
+
 	yylval.str = dynamic ? ptr : strdup(buf);
 	lexdebug((noEscape ? "@%c%s%c " : "%c%s%c "), quote, yylval.str, quote);
 	return (quote == '\'') ? STR : STR2;
@@ -414,7 +414,7 @@ void LexerBuffer::parsePreprocessingDirective(int c)
 int LexerBuffer::yylex()
 {
 	int c;
-	
+
 	// Inject a first token to start the parser down the right subset of the grammar
 	if(m_firstToken) {
 		m_firstToken = false;
@@ -468,7 +468,7 @@ next_token:
 		case '{':
 			this->munch();
 			lexdebug("${ ");
-			return DOLBR;	
+			return DOLBR;
 		case '?':
 		case '$':
 		case '!': {
@@ -476,13 +476,13 @@ next_token:
 			char buf[2];
 			buf[0] = c;
 			buf[1] = '\0';
-			yylval.str = strdup(buf);	   
+			yylval.str = strdup(buf);
 			lexdebug("$%s ", buf);
 			return DOLIDENT;
 			}
 		}
 		lexdebug("$ ");
-		return '$';	
+		return '$';
 
 	case ':':
 		c = this->peekc();
@@ -490,70 +490,70 @@ next_token:
 		case '+':
 			this->munch();
 			lexdebug(":+ ");
-			return CLPL;	
+			return CLPL;
 		case '-':
 			this->munch();
 			lexdebug(":- ");
-			return CLMI;	
+			return CLMI;
 		}
 		lexdebug(": ");
-		return ':';	
+		return ':';
 
 	case '!':
 		c = this->peekc();
 		if(c == '=') {
 			this->munch();
 			lexdebug("!= ");
-			return NE;	
+			return NE;
 		}
 		lexdebug("! ");
-		return '!';	
-	
+		return '!';
+
 	case '>':
 		c = this->peekc();
 		switch(c) {
 		case '=':
 			this->munch();
 			lexdebug(">= ");
-			return GE;	
+			return GE;
 		case '>':
 			this->munch();
 			lexdebug(">> ");
-			return REDIR;	
+			return REDIR;
 		}
 		lexdebug("> ");
-		return '>';	
-	
+		return '>';
+
 	case '<':
 		c = this->peekc();
 		if(c == '=') {
 			this->munch();
 			lexdebug("<= ");
-			return LE;	
+			return LE;
 		}
 		lexdebug("< ");
-		return '<';	
-	
+		return '<';
+
 	case '=':
 		c = this->peekc();
 		if(c == '>') {
 			this->munch();
 			lexdebug("=> ");
-			return MAP;	
+			return MAP;
 		}
 		lexdebug("= ");
-		return '=';	
+		return '=';
 
 	case '+':
 		c = this->peekc();
 		if(c == '=') {
 			this->munch();
 			lexdebug("+= ");
-			return PE;	
+			return PE;
 		}
 		lexdebug("+ ");
-		return '+';	
-		
+		return '+';
+
 	case '-':
 		// We don't do special conversion when handling 'set' options
 		if(!m_wasSet) {
@@ -562,7 +562,7 @@ next_token:
 			case 'a':
 				this->munch();
 				lexdebug("-a ");
-				return '&';	
+				return '&';
 			case 'o':
 				this->munch();
 				lexdebug("-o ");
@@ -588,22 +588,22 @@ next_token:
 			case '=':
 				this->munch();
 				lexdebug("-= ");
-				return ME;	
+				return ME;
 			}
 		}
 		lexdebug("- ");
-		return '-';	
+		return '-';
 
 	case '*':
 		c = this->peekc();
 		if(c == '=') {
 			this->munch();
 			lexdebug("*= ");
-			return TE;	
+			return TE;
 		}
 		lexdebug("* ");
-		return '*';	
-	
+		return '*';
+
 	case '}':
 		c = this->peekc();
 	   	if((c == '$') || (c == '_') || isalnum(c)) {
@@ -659,7 +659,7 @@ next_token:
 		lexdebug("/ ");
 		return '/';
 	}
-		
+
 	// Numbers
 	if(isdigit(c))
 	 {
@@ -668,7 +668,7 @@ next_token:
 	   lexdebug("%d ", yylval.ival);
 	   return NUM;
 	 }
-	 
+
 	// Identifiers
 	if((c == '_') || isalpha(c)) {
 	   char buf[256];
@@ -713,17 +713,17 @@ next_token:
 		   }
 	   }
 
-	   yylval.str = strdup(buf);	   
+	   yylval.str = strdup(buf);
 	   lexdebug("%s ", buf);
 	   return IDENT;
 	}
-	
+
 	/* Return end-of-input.  */
 	if (c == EOF) {
 		//fprintf(stderr, "End of input\n");
 	 	return 0;
 	}
-	
+
 	/* Return a single char.  */
 	if(c != '\n') {	lexdebug("%c ", c); }
 	return c;
@@ -748,7 +748,7 @@ char *LexerBuffer::getErrorLine(int lineno)
 	for(end = pos+1; m_buf[end] && (m_buf[end] != '\n'); end++);
 
 //printf("DEBUG: end = %d\n", end);
-	
+
 	char *ret = (char*) malloc((end - pos) + 2);
 	if (ret) {
 		strncpy(ret, &m_buf[pos], (end - pos) + 1);

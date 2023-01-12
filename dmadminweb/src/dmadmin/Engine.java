@@ -36,7 +36,7 @@ public class Engine extends HttpServlet
  private static final long serialVersionUID = 1L;
  DMSession so = null;
  HttpSession session = null;
- 
+
  public Engine()
  {
   super();
@@ -46,7 +46,7 @@ public class Engine extends HttpServlet
  {
   PrintWriter out = response.getWriter();
   response.setContentType("application/json");
-  
+
   try (DMSession so = DMSession.getInstance(request)) {
   session = request.getSession();
   session.setAttribute("session", so);

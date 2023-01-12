@@ -36,7 +36,7 @@ import dmadmin.model.Component;
  */
 public class getComponentsInDomain extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -50,16 +50,16 @@ public class getComponentsInDomain extends HttpServletBase {
    		throws ServletException, IOException
    	{
     	response.setContentType("application/json;charset=UTF-8");
-		
+
 		PrintWriter out = response.getWriter();
-		
+
 		boolean IncludeVersions = false;
 		if (request.getParameter("cvs").equalsIgnoreCase("Y"))
 		{
 			IncludeVersions=true;
 		}
 		List <Component> components = session.getComponentsInDomain(IncludeVersions);
-		
+
 		JSONArray arr1 = new JSONArray();
 		for(Component c: components) {
 			JSONObject cobj = new JSONObject();
@@ -83,7 +83,7 @@ public class getComponentsInDomain extends HttpServletBase {
 			cobj.add("versions",arr2);
 			arr1.add(cobj);
 		}
-		
+
 		JSONObject obj = new JSONObject();
 		obj.add("Components", arr1);
 		obj.add("ComponentCount", components.size());

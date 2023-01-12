@@ -22,4 +22,3 @@ CREATE TABLE IF NOT EXISTS dm_componentdeps
     license varchar(256),
     license_url varchar(1024)
 );
-

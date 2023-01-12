@@ -31,7 +31,7 @@ import javax.servlet.http.HttpSession;
 public class Subscribe extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
- HttpSession session = null;      
+ HttpSession session = null;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -45,14 +45,14 @@ public class Subscribe extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("application/json;charset=UTF-8");
-		
+
 		PrintWriter out = response.getWriter();
-  
+
 		try (DMSession so = DMSession.getInstance(request)) {
   session = request.getSession();
   session.setAttribute("session", so);
   so.checkConnection(request.getServletContext());
-  
+
 		String mode = request.getParameter("f");
 		String otid = request.getParameter("id");
 		ObjectTypeAndId o = new ObjectTypeAndId(otid);
@@ -77,4 +77,3 @@ public class Subscribe extends HttpServlet {
 	}
 
 }
-

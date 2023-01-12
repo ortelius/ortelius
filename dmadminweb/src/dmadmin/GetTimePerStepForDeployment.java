@@ -32,14 +32,14 @@ import dmadmin.json.JSONObject;
  */
 public class GetTimePerStepForDeployment extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public GetTimePerStepForDeployment() {
         super();
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
@@ -47,15 +47,15 @@ public class GetTimePerStepForDeployment extends HttpServletBase {
    	{
     	response.setContentType("application/json");
 		int deployid = ServletUtils.getIntParameter(request, "deployid");
-		
-		// Get the printwriter object from response to write the required json object to the output stream      
+
+		// Get the printwriter object from response to write the required json object to the output stream
 		PrintWriter out = response.getWriter();
-		
+
 		ReportDataSet data = session.getTimePerStepForDeployment(deployid);
 		JSONObject obj = new JSONObject();
 		obj.add("data", data.getLineDataSeriesJSON());
 		String ret = obj.toString();
-		
+
 		out.println(ret);
    	}
 }

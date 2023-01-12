@@ -6,13 +6,13 @@
  * Revision: 1250
  *
  * Copyright (c) 2009-2013 Chris Leonello
- * jqPlot is currently available for use in all personal or commercial projects 
- * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL 
- * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can 
- * choose the license that best suits your project and use it accordingly. 
+ * jqPlot is currently available for use in all personal or commercial projects
+ * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL
+ * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can
+ * choose the license that best suits your project and use it accordingly.
  *
- * Although not required, the author would appreciate an email letting him 
- * know of any substantial use of jqPlot.  You can reach the author at: 
+ * Although not required, the author would appreciate an email letting him
+ * know of any substantial use of jqPlot.  You can reach the author at:
  * chris at jqplot dot com or see http://www.jqplot.com/info.php .
  *
  * If you are feeling kind and generous, consider supporting the project by
@@ -26,16 +26,16 @@
  *     http://hexmen.com/js/sprintf.js
  *     The author (Ash Searle) has placed this code in the public domain:
  *     "This code is unrestricted: you are free to use it however you like."
- * 
+ *
  */
 (function($) {
     $.jqplot.PyramidAxisRenderer = function() {
         $.jqplot.LinearAxisRenderer.call(this);
     };
-    
+
     $.jqplot.PyramidAxisRenderer.prototype = new $.jqplot.LinearAxisRenderer();
     $.jqplot.PyramidAxisRenderer.prototype.constructor = $.jqplot.PyramidAxisRenderer;
-        
+
     // called with scope of axis
     $.jqplot.PyramidAxisRenderer.prototype.init = function(options){
         // Group: Properties
@@ -60,7 +60,7 @@
         this.category = false;
         this._autoFormatString = '';
         this._overrideFormatString = false;
-        
+
         $.extend(true, this, options);
         this.renderer.options = options;
 
@@ -79,8 +79,8 @@
         for (var i=0; i<this._series.length; i++) {
             var s = this._series[i];
             var d = s._plotData;
-            
-            for (var j=0, l=d.length; j<l; j++) { 
+
+            for (var j=0, l=d.length; j<l; j++) {
                 if (this.name.charAt(0) === 'x') {
                     temp = d[j][1];
                     if ((temp !== null && temp < db.min) || db.min === null) {
@@ -89,7 +89,7 @@
                     if ((temp !== null && temp > db.max) || db.max === null) {
                         db.max = temp;
                     }
-                }              
+                }
                 else {
                     temp = d[j][0];
                     if ((temp !== null && temp < db.min) || db.min === null) {
@@ -98,11 +98,11 @@
                     if ((temp !== null && temp > db.max) || db.max === null) {
                         db.max = temp;
                     }
-                }              
+                }
             }
         }
     };
-    
+
     // called with scope of axis
     $.jqplot.PyramidAxisRenderer.prototype.draw = function(ctx, plot) {
         if (this.show) {
@@ -122,19 +122,19 @@
                 this._elem.emptyForce();
                 this._elem = null;
             }
-            
+
             this._elem = $(document.createElement('div'));
             this._elem.addClass('jqplot-axis jqplot-'+this.name);
             this._elem.css('position', 'absolute');
 
-            
+
             if (this.name == 'xaxis' || this.name == 'x2axis') {
                 this._elem.width(this._plotDimensions.width);
             }
             else {
                 this._elem.height(this._plotDimensions.height);
             }
-            
+
             // create a _label object.
             this.labelOptions.axis = this.name;
             this._label = new this.labelRenderer(this.labelOptions);
@@ -143,7 +143,7 @@
                 elem.appendTo(this._elem);
                 elem = null;
             }
-    
+
             var t = this._ticks;
             var tick;
             for (var i=0; i<t.length; i++) {
@@ -156,7 +156,7 @@
             t = null;
         }
         return this._elem;
-    };   
+    };
 
     // Note, primes can be found on http://primes.utm.edu/
     var _primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911, 919, 929, 937, 941, 947, 953, 967, 971, 977, 983, 991, 997];
@@ -200,7 +200,7 @@
         var val;
         var skip = null;
         var temp;
-        
+
         // if we already have ticks, use them.
         // ticks must be in order of increasing value.
 
@@ -221,7 +221,7 @@
                     t.axis = this.name;
                     this._ticks.push(t);
                 }
-                
+
                 else {
                     if (typeof ut === 'string') {
                         val = i + plot.defaultAxisStart;
@@ -348,10 +348,10 @@
                 threshold = 30;
                 tdim = Math.max(dim, threshold+1);
                 scalefact =  (tdim-threshold)/300.0;
-                ret = $.jqplot.LinearTickGenerator(min, max, scalefact); 
+                ret = $.jqplot.LinearTickGenerator(min, max, scalefact);
                 // calculate a padded max and min, points should be less than these
                 // so that they aren't too close to the edges of the plot.
-                // User can adjust how much padding is allowed with pad, padMin and PadMax options. 
+                // User can adjust how much padding is allowed with pad, padMin and PadMax options.
                 tumin = min + range*(this.padMin - 1);
                 tumax = max - range*(this.padMax - 1);
 
@@ -386,7 +386,7 @@
 
                 this.max = max;
                 this.min = min;
-                
+
                 maxVisibleTicks = Math.round(2.0 + dim/this.tickSpacingFactor);
 
                 if (range + 1 <= maxVisibleTicks) {
@@ -404,11 +404,11 @@
                             this.tickInterval = range/(i - 1);
                             break;
                         }
-                        
+
                     }
                 }
             }
-            
+
             if (this._overrideFormatString && this._autoFormatString != '') {
                 this.tickOptions = this.tickOptions || {};
                 this.tickOptions.formatString = this._autoFormatString;
@@ -441,9 +441,9 @@
             t = null;
         }
     };
-    
+
     // called with scope of axis
-    $.jqplot.PyramidAxisRenderer.prototype.set = function() { 
+    $.jqplot.PyramidAxisRenderer.prototype.set = function() {
         var dim = 0;
         var temp;
         var w = 0;
@@ -481,10 +481,10 @@
             }
             tick = null;
             t = null;
-            
+
             if (lshow) {
                 w = this._label._elem.outerWidth(true);
-                h = this._label._elem.outerHeight(true); 
+                h = this._label._elem.outerHeight(true);
             }
             if (this.name === 'xaxis') {
                 dim = dim + h;
@@ -517,40 +517,40 @@
                     this._label._elem.css('width', w+'px');
                 }
             }
-        }  
+        }
     };
-    
-    $.jqplot.PyramidAxisRenderer.prototype.pack = function(pos, offsets) { 
+
+    $.jqplot.PyramidAxisRenderer.prototype.pack = function(pos, offsets) {
         // Add defaults for repacking from resetTickValues function.
         pos = pos || {};
         offsets = offsets || this._offsets;
-        
+
         var ticks = this._ticks;
         var max = this.max;
         var min = this.min;
         var offmax = offsets.max;
         var offmin = offsets.min;
         var lshow = (this._label == null) ? false : this._label.show;
-        
+
         for (var p in pos) {
             this._elem.css(p, pos[p]);
         }
-        
+
         this._offsets = offsets;
         // pixellength will be + for x axes and - for y axes becasue pixels always measured from top left.
         var pixellength = offmax - offmin;
         var unitlength = max - min;
         var sl = this._splitLength;
-        
+
         // point to unit and unit to point conversions references to Plot DOM element top left corner.
         if (this._splitAxis) {
             pixellength -= this._splitLength;
-            
+
             // don't know that this one is correct.
             this.p2u = function(p){
                 return (p - offmin) * unitlength / pixellength + min;
             };
-        
+
             this.u2p = function(u){
                 if (u <= 0) {
                     return (u - min) * pixellength / unitlength + offmin;
@@ -559,7 +559,7 @@
                     return (u - min) * pixellength / unitlength + offmin + sl;
                 }
             };
-                
+
             this.series_u2p = function(u){
                 if (u <= 0) {
                     return (u - min) * pixellength / unitlength;
@@ -578,11 +578,11 @@
             this.p2u = function(p){
                 return (p - offmin) * unitlength / pixellength + min;
             };
-        
+
             this.u2p = function(u){
                 return (u - min) * pixellength / unitlength + offmin;
             };
-                
+
             if (this.name.charAt(0) === 'x'){
                 this.series_u2p = function(u){
                     return (u - min) * pixellength / unitlength;
@@ -591,7 +591,7 @@
                     return p * unitlength / pixellength + min;
                 };
             }
-        
+
             else {
                 this.series_u2p = function(u){
                     return (u - max) * pixellength / unitlength;
@@ -601,14 +601,14 @@
                 };
             }
         }
-        
+
         if (this.show) {
             if (this.name.charAt(0) === 'x') {
                 for (var i=0; i<ticks.length; i++) {
                     var t = ticks[i];
                     if (t.show && t.showLabel) {
                         var shim;
-                        
+
                         if (t.constructor == $.jqplot.CanvasAxisTickRenderer && t.angle) {
                             // will need to adjust auto positioning based on which axis this is.
                             var temp = (this.name == 'xaxis') ? 1 : -1;
@@ -660,7 +660,7 @@
             else {
                 for (var i=0; i<ticks.length; i++) {
                     var t = ticks[i];
-                    if (t.show && t.showLabel && !t.isMinorTick) {                        
+                    if (t.show && t.showLabel && !t.isMinorTick) {
                         var shim;
                         if (t.constructor == $.jqplot.CanvasAxisTickRenderer && t.angle) {
                             // will need to adjust auto positioning based on which axis this is.
@@ -701,7 +701,7 @@
                         else {
                             shim = -t.getHeight()/2;
                         }
-                        
+
                         var val = this.u2p(t.value) + shim + 'px';
                         t._elem.css('top', val);
                         t.pack();
@@ -717,7 +717,7 @@
                     }
                     else if (this.name !== 'yMidAxis') {
                         this._label._elem.css('right', '0px');
-                    }   
+                    }
                     this._label.pack();
                 }
             }

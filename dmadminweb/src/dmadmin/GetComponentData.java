@@ -39,7 +39,7 @@ import dmadmin.model.DMObject;
 public class GetComponentData extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
- HttpSession session = null;      
+ HttpSession session = null;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -71,14 +71,14 @@ public class GetComponentData extends HttpServlet {
   {
    int compid = new Integer(compidStr).intValue();
    JSONArray ret = so.getComp2Endpoints(compid);
-   
+
    out.println(ret);
    System.out.println(ret);
   }
   else if (comptype != null)
   {
    List<DMObject> ct = so.getCompTypes();
-   
+
    JSONArray arr = new JSONArray();
    for (DMObject x : ct)
    {
@@ -88,7 +88,7 @@ public class GetComponentData extends HttpServlet {
     obj.add("name",ctype.getFullName());
     obj.add("database",ctype.getDatabase());
     obj.add("deletedir",ctype.getDeletedir());
-    
+
     arr.add(obj);
    }
    JSONObject obj = new JSONObject();

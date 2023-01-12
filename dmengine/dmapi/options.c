@@ -64,7 +64,7 @@ void AddEnv(OPTIONS *options,int p,int argc,char **argv)
 			malloc(strlen(options->envname)+3);
 		sprintf(EnvString,"%s=Y",options->envname);
 	}
-	putenv(EnvString);	
+	putenv(EnvString);
 }
 
 void SetEnvironmentVariablesFromFile(OPTIONS *options,int NumOptions,char *FileName)
@@ -282,4 +282,3 @@ int ScanOptions(OPTIONS *options,int NumOptions,int argc, char **argv)
 	}
 	return p;
 }
-

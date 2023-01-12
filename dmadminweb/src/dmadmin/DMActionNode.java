@@ -30,7 +30,7 @@ public class DMActionNode implements java.io.Serializable {
 	private String m_title;
 	private String m_summary;
 	private boolean m_drilldown;
-	
+
 	public DMActionNode() {
 		m_nodeid=0;
 		m_descriptor="";
@@ -81,7 +81,7 @@ public class DMActionNode implements java.io.Serializable {
 	public void setKind(int kind) {
 		m_kind = kind;
 	}
-	
+
 	public int getNodeID() {
 		return m_nodeid;
 	}

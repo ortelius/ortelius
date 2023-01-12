@@ -33,7 +33,7 @@
         <Type>5</Type>
         <ParentBuildTask>Compile</ParentBuildTask>
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
-    </Dependency>	
+    </Dependency>
     <Dependency>
         <Name>Compile results</Name>
         <Type>6</Type>

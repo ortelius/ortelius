@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class KeepAlive extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */

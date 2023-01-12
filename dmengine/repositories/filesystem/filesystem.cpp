@@ -74,8 +74,8 @@ FilesystemRepositoryImpl::FilesystemRepositoryImpl(
 				{
 					if (m_filepath[i] == '\\')
 						m_filepath[i] = '/';
-				}				
-			#endif		
+				}
+			#endif
 		}
 		debug1("FilesystemRepositoryImpl('%s', '%s')",
 			NULL_CHECK(m_filepath), NULL_CHECK(m_version));
@@ -265,7 +265,7 @@ void FilesystemRepositoryImpl::checkoutFolder(
 							ConstCharPtr fnfolder = dirname(fn);
 							ConstCharPtr dzfolder = Dropzone::dirname(pn);
 							callback.checked_out_folder(
-								(fnfolder ? (const char*) fnfolder : DIR_SEP_STR), 
+								(fnfolder ? (const char*) fnfolder : DIR_SEP_STR),
 								(dzfolder ? (const char*) dzfolder : DIR_SEP_STR), false);
 						} else {
 							++failed;
@@ -341,18 +341,18 @@ int local_mkdir(const char *dirname)
 	int ret = mkdir(dirname);
 #else
 		int ret = mkdir(dirname,0777);
-#endif			
+#endif
 
 	if(ret != 0) {
 		// mkdir failed - check to see if parent directory exists
 		ConstCharPtr parentdir = local_dirname(dirname);
 		if((strlen(parentdir) > 0) && (strcmp(parentdir, DIR_SEP_STR) != 0) && !local_dirExists(parentdir)) {
 			if (local_mkdir(parentdir)) {
-#ifdef WIN32				
+#ifdef WIN32
 				ret = mkdir(dirname);
 #else
 				ret = mkdir(dirname,0777);
-#endif								
+#endif
 			}
 		}
 	}
@@ -410,8 +410,8 @@ void FilesystemRepositoryImpl::checkout(
 				{
 					if (repobase[r] == '\\')
 						repobase[r] = '/';
-				}				
-			#endif		
+				}
+			#endif
 		}
 	debug1("repobase = '%s'", (const char*) repobase);
 

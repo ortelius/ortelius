@@ -43,14 +43,14 @@ public class RunProviderTest
 	extends HttpServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public RunProviderTest() {
         super();
     }
-    
+
     @Override
    	public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
@@ -69,18 +69,18 @@ public class RunProviderTest
 		if (po.getObjectType() == ObjectType.NOTIFY && rcpt != null) {
 			((Notify)po).setTestRecipient(rcpt);
 		}
-	
+
 		Domain domain = po.getDomain();
 		Engine engine = (domain != null) ? domain.findNearestEngine() : null;
-		
+
 		if(engine == null) {
 			System.err.println("Engine was null");
 			out.println("Unable to find suitable engine to conduct test");
 			return;
 		}
-		
 
-		
+
+
 	 CommandLine cmd = engine.doProviderTest(po);
 	 cmd.runWithTrilogy(true, null);
 	 out.println(cmd.getOutput());

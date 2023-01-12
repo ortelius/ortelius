@@ -45,7 +45,7 @@ public class SendMail extends Thread
   this.msg = msg;
   this.details = details;
  }
- 
+
  public void run()
  {
   Properties props = new Properties();
@@ -77,8 +77,8 @@ public class SendMail extends Thread
    message.setContent(msg, "text/html");
 
    Transport.send(message);
-   System.out.println("Yo it has been sent.."); 
-   
+   System.out.println("Yo it has been sent..");
+
    message = new MimeMessage(session);
    message.setFrom(new InternetAddress(from, "DeployHub Signup"));
    message.setRecipients(Message.RecipientType.TO, InternetAddress.parse("steve@deployhub.com,baca@deployhub.com,tracy@deployhub.com"));

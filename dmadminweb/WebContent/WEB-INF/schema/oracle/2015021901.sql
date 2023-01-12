@@ -1,5 +1,5 @@
 -- add the new serverstatus table and add uname to server table
--- 
+--
 create table dm_serverstatus(
 serverid	integer not null,
 nameresolution	char(1),
@@ -18,4 +18,3 @@ checkinterval	integer
 );
 
 alter table dm_server add uname varchar2(256);
-

@@ -34,7 +34,7 @@ import dmadmin.model.Action;
 public class GetActionLayout extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
- HttpSession session = null;     
+ HttpSession session = null;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -42,35 +42,35 @@ public class GetActionLayout extends HttpServlet {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     private void processActionLayout(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	response.setContentType("application/json;charset=UTF-8");
 		String actionid = request.getParameter("actionid");
 		String windowid = request.getParameter("windowid");
-		
+
 		if (actionid.indexOf("-") > -1) {
 			actionid = actionid.substring(0,actionid.indexOf("-"));
 			System.out.println("actionid now "+actionid);
 		}
-		
+
 		PrintWriter out = response.getWriter();
-		
+
   try (DMSession so = DMSession.getInstance(request)) {
   session = request.getSession();
   session.setAttribute("session", so);
   so.checkConnection(request.getServletContext());
-  
+
 		Action action = so.getAction(Integer.parseInt(actionid), false);
 		boolean readonly = !(action.isUpdatable());
 		if (action.getParentId()>0) readonly=true;	// archived actions are always readonly
 
 		out.print("{");
 
-		int startx = windowid!=null?so.getStartXPosition(Integer.parseInt(actionid),Integer.parseInt(windowid)):so.getStartXPosition(Integer.parseInt(actionid),0);	
-		
+		int startx = windowid!=null?so.getStartXPosition(Integer.parseInt(actionid),Integer.parseInt(windowid)):so.getStartXPosition(Integer.parseInt(actionid),0);
+
 		List <DMActionNode> ans = windowid!=null?so.GetActionNodes(Integer.parseInt(actionid),Integer.parseInt(windowid)):so.GetActionNodes(Integer.parseInt(actionid),0);
 		List <DMActionLink> als = windowid!=null?so.GetActionLinks(Integer.parseInt(actionid),Integer.parseInt(windowid)):so.GetActionLinks(Integer.parseInt(actionid),0);
-		
+
 		out.println("\"Nodes\": [");
 		boolean sep=false;
 		for (DMActionNode a: ans)
@@ -100,7 +100,7 @@ public class GetActionLayout extends HttpServlet {
 		}
 		out.println("],");
 		out.println("\"Links\": [");
-		sep=false;	
+		sep=false;
 		for (DMActionLink al: als)
 		{
 			if (sep) out.println(",");
@@ -122,27 +122,27 @@ public class GetActionLayout extends HttpServlet {
 		System.out.println("MaxWinID="+so.getMaxWindowID(Integer.parseInt(actionid)));
   }
     }
-    
+
     private void processExport(HttpServletRequest request, HttpServletResponse response,boolean convert) throws ServletException, IOException {
-    	
-    	
+
+
 		String actionid = request.getParameter("actionid");
-		
+
 		if (actionid.indexOf("-") > -1) {
 			actionid = actionid.substring(0,actionid.indexOf("-"));
 			System.out.println("actionid now "+actionid);
 		}
-		
+
 		PrintWriter out = response.getWriter();
-		
+
   try (DMSession so = DMSession.getInstance(request)) {
   session = request.getSession();
   session.setAttribute("session", so);
   so.checkConnection(request.getServletContext());
-  
+
 		int id = Integer.parseInt(actionid);
 		Action action = so.getAction(id, false);
-		
+
 		// response.reset();
     	response.setHeader("Expires", "0");
     	response.setHeader("Cache-Control","must-revalidate, post-check=0, pre-check=0");
@@ -173,7 +173,7 @@ public class GetActionLayout extends HttpServlet {
 		} else {
 			processActionLayout(request,response);
 		}
-		
+
 	}
 
 	/**

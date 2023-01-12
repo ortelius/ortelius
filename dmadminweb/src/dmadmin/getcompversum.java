@@ -33,7 +33,7 @@ import dmadmin.model.Component;
  */
 public class getcompversum extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -41,7 +41,7 @@ public class getcompversum extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
@@ -71,10 +71,10 @@ public class getcompversum extends HttpServletBase {
     	out.println(" </tr>");
     	out.println("</table>");
     	out.println("<hr>");
-    		
+
     	out.println("<table border=0 class=\"atttable\" >");
     	out.print("<tr><td>Name</td><td><input id=\"title\" type=\"text\" value=\""+comp.getName()+"\"</td></tr>");
-    	out.print("<tr><td>Summary</td><td><input id=\"summary\" type=\"text\" style=\"width:200px\" value=\""+comp.getSummary()+"\"</td></tr>");  	
+    	out.print("<tr><td>Summary</td><td><input id=\"summary\" type=\"text\" style=\"width:200px\" value=\""+comp.getSummary()+"\"</td></tr>");
     	out.println("</table><br><br><br>");
     	out.println("<a href=\"#\" onClick='redir();'>More Details...</a>");
     	// out.println("<a href='compdetails?a=N&compid="+comp.getId()+"' target='mainframe3'>More Details...</a>");

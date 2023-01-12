@@ -456,7 +456,7 @@ bool Object::hasWriteAccess(User *user)
 	return false;
 }
 
-/* temp commented out - will add this later 
+/* temp commented out - will add this later
 bool Object::hasViewAccess(User *user)
 {
 	// If user is not supplied, then we check the current user
@@ -762,7 +762,7 @@ ObjectKindAndId::ObjectKindAndId(const char *otid)
 	if(m_objkind == OBJ_KIND_NONE) {
 		throw RuntimeError("Invalid Object Type: '%s'", ot);
 	}
-	
+
 	m_id = atoi(oid);
 	if(m_id == 0) {
 		throw RuntimeError("Invalid Object Id: '%s'", oid);
@@ -779,7 +779,7 @@ ObjectKindAndId::ObjectKindAndId(Object &obj)
 	: m_objkind(obj.kind()), m_id(obj.id())
 {}
 
-	
+
 char *ObjectKindAndId::toString()
 {
 	const char *ot = ObjectKindToTypeString(m_objkind);
@@ -1066,7 +1066,7 @@ Credentials::Credentials(
 		const char *username, const char *filename
 	)
 	: Object(model, id, name), m_credkind(CREDENTIALS_PRIVATE_KEY), m_encusername(DUP_NULL(username)),
-	  m_encpassword(NULL), m_filename(DUP_NULL(filename)), m_impls(NULL)		
+	  m_encpassword(NULL), m_filename(DUP_NULL(filename)), m_impls(NULL)
 {}
 
 Credentials::Credentials(Model &model,Property *username, Property *password)
@@ -1108,9 +1108,9 @@ Expr *Credentials::getAttribute(const char *name, class Context &ctx)
 	} else if (strcmp(name,"kindname") == 0) {
 		return new Expr(kindname(ctx));
 	} else if (strcmp(name,"kind") == 0) {
-		return new Expr(kind());		
+		return new Expr(kind());
 	} else if (strcmp(name,"filename") == 0) {
-		return new Expr(filename(ctx));	
+		return new Expr(filename(ctx));
 	} else if (strcmp(name,"b64auth") == 0) {
 		char *username = getDecryptedUsername(ctx);
 		char *password = getDecryptedPassword(ctx);
@@ -1154,12 +1154,12 @@ char *Credentials::internalDecryptValue(const char *value, Context &ctx)
 	   strcat(ret,decrypt);
 	   memset(parts,'\0', 4096);
 	   c=0;
-	  } 
+	  }
 	  else
 	  {
-	   parts[c] = *(value+i);  
+	   parts[c] = *(value+i);
 	   c++;
-	  } 
+	  }
 	 }
 	 return ret;
 	}
@@ -1341,7 +1341,7 @@ Environment::Environment(
 	)
 	: Object(model, id, name), m_basedir(DUP_NULL(basedir)), m_servers(NULL),
 	  m_apps(NULL), /*m_domain(NULL), m_domainSet(false),*/
-	  m_serversArrayCache(NULL), m_credentials(NULL)	  
+	  m_serversArrayCache(NULL), m_credentials(NULL)
 {}
 
 
@@ -2106,8 +2106,8 @@ class ApplicationVersion *Application::toApplicationVersion()
 			return new Expr(res);
 		} else return new Expr((DMArray *)0);
 	}
-	
-	
+
+
 	return Object::getAttribute(name, ctx);
 }
 
@@ -2817,7 +2817,7 @@ Expr *Defect::getAttribute(const char *name, class Context &ctx)
 Component::Component(
 		Model &model, int id, const char *name, const char *basedir,
 		ComponentFilter rollup, ComponentFilter rollback,
-		bool filterItems, bool deployAlways, bool deploySequentially, 
+		bool filterItems, bool deployAlways, bool deploySequentially,
 		int parentid, int predecessorid, int datasourceid, int buildid
 	)
 	: Object(model, id, name), m_basedir(DUP_NULL(basedir)),
@@ -4570,7 +4570,7 @@ List<TimedJob> *Model::getTimedJobs()
 	sql->BindColumn(3,SQL_INTEGER,&appid,sizeof(appid));
 	sql->BindColumn(4,SQL_INTEGER,&envid,sizeof(envid));
 	sql->BindColumn(5,SQL_INTEGER,&domainid,sizeof(domainid));
-	
+
 	res = sql->Execute();
 	if(res != SQL_SUCCESS) {
 		sql->CloseSQL();
@@ -4630,7 +4630,7 @@ NotifyTemplate *Model::internalGetTemplate(const char *query,Context &ctx,long i
 	char szName[129];
 	char szSubject[257];
 	char szBody[2049];
-	
+
 	szSubject[0]='\0';
 	szBody[0]='\0';
 	szName[0]='\0';
@@ -5270,15 +5270,15 @@ void ActionArg::process(const char *val, StringList &params, Context &ctx)
 				ConstCharPtr theswitch = getExpandedSwitch(ctx);
 				params.add(theswitch);
 			}
-			if(val) 
+			if(val)
 			{
 			 char *stext1;
 		     char *v = (char *)strdup(val);
 		     Node expandedText1(NODE_STR, v, true);
 		     ExprPtr etext1 = expandedText1.evaluate(ctx);
 		     stext1 = etext1->stringify();
-			 params.add(stext1); 
-			 return; 
+			 params.add(stext1);
+			 return;
 			}
 			// fall thru for pad
 		} else if(m_negswitch) {
@@ -5382,7 +5382,7 @@ char *ActionArg::getExpandedSwitch(Context &ctx)
 	if(!m_switch) {
 		return NULL;
 	}
-	
+
 	// Expand any embedded variables in m_switch
 	Node expandedText(NODE_STR, strdup(m_switch), true);	// will free text on delete
 	ExprPtr etext = expandedText.evaluate(ctx);
@@ -5394,7 +5394,7 @@ char *ActionArg::getExpandedNegSwitch(Context &ctx)
 	if(!m_negswitch) {
 		return NULL;
 	}
-	
+
 	// Expand any embedded variables in m_switch
 	Node expandedText(NODE_STR, strdup(m_negswitch), true);	// will free text on delete
 	ExprPtr etext = expandedText.evaluate(ctx);
@@ -5530,11 +5530,11 @@ StringList *Action::mapArgsForFunction(class FunctionNode &func, ExprList *args,
 		}
 		if(argCount < requiredCount) {
 			throw RuntimeError(func, ctx.stack(),
-				"Function '%s' requires at least %d arguments", m_name, requiredCount);			
+				"Function '%s' requires at least %d arguments", m_name, requiredCount);
 		}
 	} else if(args) {
 		throw RuntimeError(func, ctx.stack(),
-			"Function '%s' does not accept arguments", m_name);			
+			"Function '%s' does not accept arguments", m_name);
 	}
 
 	// Go through provided args and make sure that they are all expected
@@ -5542,7 +5542,7 @@ StringList *Action::mapArgsForFunction(class FunctionNode &func, ExprList *args,
 		ActionArg *arg = argmap ? argmap->get(n) : NULL;
 		if(!arg) {
 			throw RuntimeError(func, ctx.stack(),
-				"Argument %d to function '%s' is unexpected", n, m_name);			
+				"Argument %d to function '%s' is unexpected", n, m_name);
 		}
 	}
 
@@ -5588,7 +5588,7 @@ StringList *Action::mapArgsForFunction(class FunctionNode &func, ExprList *args,
 			} else {
 				lsca->process(NULL,*params,ctx);
 			}
-			
+
 		}
 	}
 
@@ -5693,7 +5693,7 @@ StringList *Action::mapArgsForAction(ExtendedStmt &stmt, Context &ctx, Envp *env
 			} else {
 				lsca->process(NULL, *params, ctx);
 			}
-			
+
 		}
 	}
 
@@ -5818,7 +5818,7 @@ class ActionNode *Action::getActionNode(Context &ctx)
 	debug3("Getting action Name(%s)",m_name);
 	ActionNode *ret = m_model.getActionNode(m_name);
 	if(!ret) {
-		throw RuntimeError(ctx.stack(), "Failed to find action '%s'", m_name);	
+		throw RuntimeError(ctx.stack(), "Failed to find action '%s'", m_name);
 	}
 	return ret;
 }
@@ -6007,7 +6007,7 @@ List<Environment> *Model::internalGetEnvironments(const char *whereClause, bool 
 	sql->BindColumn(1, SQL_INTEGER, &id, sizeof(id));
 	sql->BindColumn(2, SQL_CHAR, envName, sizeof(envName));
 	sql->BindColumn(3, SQL_CHAR, envBasedir, sizeof(envBasedir), &ni_envBasedir);
-	
+
 
 	// If checkDomain is set, limit the domain of the environment to those the user can see
 	CharPtr domainClause;
@@ -6135,7 +6135,7 @@ char *Model::ProcessQualifiedName(const char *QualifiedName,int *domain)
 		}
 		p--;
 	}
-	
+
 	if (dot)
 	{
 		//
@@ -6344,7 +6344,7 @@ List<Server> *Model::internalGetServers(const char *fromClause, const char *wher
 		return ret;	// empty list
 	}
 
-	
+
 
 	for(res = sql->FetchRow(); IS_SQL_SUCCESS(res); res = sql->FetchRow()) {
 		ServerType *st = findOrCreateServerType(
@@ -6537,7 +6537,7 @@ List<Component> *Model::internalGetComponents(const char *fromClause, const char
 		Component *comp = findOrCreateComponent(
 			id, compName, STR_NULL_IND(baseDir, NULL), (ComponentFilter) NULL_IND(rollup, false),
 			(ComponentFilter) NULL_IND(rollback, false),
-			BOOL_NULL_IND(filterItems, false), BOOL_NULL_IND(deployAlways, false), 
+			BOOL_NULL_IND(filterItems, false), BOOL_NULL_IND(deployAlways, false),
 			BOOL_NULL_IND(deploySequentially, false), NULL_IND(parentid,0),
 			NULL_IND(predecessorid,0),NULL_IND(datasourceid,0),NULL_IND(buildid,0));
 		ret->add(comp);
@@ -6870,7 +6870,7 @@ Repository *Model::getRepository(const char *name,bool throwRTE)
 }
 
 Credentials *Model::getCredential(const char *name,bool throwRTE)
-{	
+{
 	Credentials *cred = internalGetCredentialsByName(name,throwRTE);
 	if (cred) {
 		if (cred->hasReadAccess(getCurrentUser())) {
@@ -6990,7 +6990,7 @@ DateTime *Model::getDeployTime(Component *comp,Server *serv)
 
 	sql->BindColumn(1, SQL_INTEGER, &deploymentid, sizeof(deploymentid),&ni_deploymentid);
 	sql->BindColumn(2, SQL_INTEGER, &modified, sizeof(modified),&ni_modified);
-	
+
 	int res = sql->ExecuteSQL(
 		"select deploymentid,modified from dm.dm_compsonserv where compid=%d and serverid=%d",
 		comp->id(),serv->id());
@@ -7487,7 +7487,7 @@ void Model::getArgsForAction(Action &action)
 			"select aa.name, aa.inpos, aa.required, aa.pad, "
 			"  aa.switchmode, aa.switch, aa.negswitch, aa.type "
 			"from dm_actionarg aa "
-			"where aa.actionid = %d order by %s", 
+			"where aa.actionid = %d order by %s",
 			action.id(),
 			action.isFunction()?"aa.inpos":"aa.outpos");
 	if(IS_NOT_SQL_SUCCESS(res)) {
@@ -7499,7 +7499,7 @@ void Model::getArgsForAction(Action &action)
 			((argPad[0] == 'Y') ? true : false), decodeSwitchMode(NULL_IND(argMode, NULL)),
 			NULL_IND(argSwitch, NULL), NULL_IND(argNegSwitch, NULL),NULL_IND(argType,"")));
 	}
-	sql->CloseSQL();		
+	sql->CloseSQL();
 }
 
 
@@ -7715,7 +7715,7 @@ User *Model::waitForTask(Task &task,Application &app,int deploymentid)
 	// Get the starting time for this deployment. When waiting for a task, ensure it's been
 	// requested since this deployment started.
 	//
-	
+
 	int completedby;
 	int res;
 	do {
@@ -7790,7 +7790,7 @@ List<Defect> *Model::getDefectsForApp(Application &app,bool onlyAppDefects /* = 
 	sql->BindColumn(6, SQL_INTEGER, &compid,sizeof(compid), &ni_compid);
 	if (app.isRelease()) {
 		sql->ExecuteSQL(
-			"select distinct b.bugid,b.title,b.status,b.apiurl,b.htmlurl,b.compid "   
+			"select distinct b.bugid,b.title,b.status,b.apiurl,b.htmlurl,b.compid "
 			"from            dm.dm_application       a       "
 			"left outer join dm.dm_applicationcomponent c on c.appid=a.id "
 			"left outer join dm.dm_defects b on (b.compid=c.compid or b.appid=a.id) "
@@ -7815,7 +7815,7 @@ List<Defect> *Model::getDefectsForApp(Application &app,bool onlyAppDefects /* = 
 				app.id(),app.id());
 		}
 	}
-	
+
 	List<Defect> *ret = new List<Defect>();
 	SQLRETURN res;
 
@@ -7846,7 +7846,7 @@ List<Defect> *Model::getDefectsForComp(Component &comp)
 	sql->ExecuteSQL(
 		"SELECT bugid,title,status,apiurl,htmlurl,compid FROM dm.dm_defects WHERE compid=%d",
 		comp.id(),comp.id());
-	
+
 	List<Defect> *ret = new List<Defect>();
 	SQLRETURN res;
 
@@ -8007,7 +8007,7 @@ bool Model::approveApplication(
 	sql->BindParameter(6, SQL_CHAR, 1, (char*) approved, 1);
 	sql->BindParameter(7, SQL_CHAR, notelen, (char*) note, notelen);
 	res = sql->Execute();
-	
+
 	debug1("p4");
 
 	if(IS_NOT_SQL_SUCCESS(res)) {
@@ -8359,7 +8359,7 @@ ApplicationVersion* Model::newVersionOfApplication(
 	sql->BindColumn(1, SQL_INTEGER, &xpos, sizeof(xpos), &ni_xpos);
 	sql->BindColumn(2, SQL_INTEGER, &ypos, sizeof(ypos), &ni_ypos);
 
-	
+
 
 	res = sql->Execute();
 	if(IS_SQL_SUCCESS(res)) {
@@ -8524,7 +8524,7 @@ ApplicationVersion* Model::newVersionOfApplication(
 ApplicationVersion* Model::getLatestVersionOfApplication(Application &app, char *branch /* = (char *)0 */)
 {
 	char whereClause[256];
-	
+
 	if (branch) {
 		// Find the application with the branch id
 		int id;
@@ -8562,7 +8562,7 @@ ApplicationVersion* Model::getLatestVersionOfApplication(Application &app, char 
 			id = NULL_IND(cid,0);
 		}
 		sql->CloseSQL();
-	} else {	
+	} else {
 		sprintf(whereClause,
 			"a.id = (select max(a2.id) from dm_application a2 "
 			"where a2.parentid = %d and a2.status='N')", app.id());
@@ -8596,7 +8596,7 @@ void Model::recordAppInEnv(class DM &dm, Application &app, Environment &env, boo
 		if(IS_NOT_SQL_SUCCESS(res)) {
 			throw RuntimeError("Failed to update app in env");
 		}
-		
+
 		sql->BindParameter(1, SQL_INTEGER, sizeof(appid), &appid, sizeof(appid));
 		sql->BindParameter(2, SQL_INTEGER, sizeof(deployid), &deployid, sizeof(deployid));
 		sql->BindParameter(3, SQL_INTEGER, sizeof(envid), &envid, sizeof(envid));
@@ -8666,7 +8666,7 @@ void Model::recordCompOnServ(class DM &dm, Component &comp, Server &server, bool
 		int n=2;
 		if (buildid) {
 			sql->PrepareStatement(
-		    "delete from dm.dm_compsonserv where compid != ? and compid in " 
+		    "delete from dm.dm_compsonserv where compid != ? and compid in "
 			" (SELECT a.id FROM dm_component a, dm_component b "
             " WHERE (a.parentid = b.parentid OR a.id = b.parentid OR a.parentid = b.id OR a.id = b.id) AND b.id = ?)");
             sql->BindParameter(1, SQL_INTEGER, sizeof(compid), &compid, sizeof(compid));
@@ -8683,7 +8683,7 @@ void Model::recordCompOnServ(class DM &dm, Component &comp, Server &server, bool
 	//		"WHERE (a.parentid = b.parentid OR a.id = b.parentid OR a.parentid = b.id OR a.id = b.id) AND b.id = ?)");
 		} else {
 			sql->PrepareStatement(
-		    "delete from dm.dm_compsonserv where compid != ? and compid in " 
+		    "delete from dm.dm_compsonserv where compid != ? and compid in "
 			" (SELECT a.id FROM dm_component a, dm_component b "
             " WHERE (a.parentid = b.parentid OR a.id = b.parentid OR a.parentid = b.id OR a.id = b.id) AND b.id = ?)");
             sql->BindParameter(1, SQL_INTEGER, sizeof(compid), &compid, sizeof(compid));
@@ -8692,7 +8692,7 @@ void Model::recordCompOnServ(class DM &dm, Component &comp, Server &server, bool
 			debug2("res = %d", res);
 			sql->CloseSQL();
 			sql = m_odbc.GetSQL();
-			
+
 			res = sql->PrepareStatement(
 			"UPDATE dm_compsonserv SET deploymentid = ? "
 			"WHERE serverid = ? AND compid = ?");
@@ -8707,7 +8707,7 @@ void Model::recordCompOnServ(class DM &dm, Component &comp, Server &server, bool
 		if (buildid) {
 			sql->BindParameter(n++, SQL_INTEGER, sizeof(buildid), &buildid, sizeof(buildid));
 		}
-		
+
 		sql->BindParameter(n++, SQL_INTEGER, sizeof(serverid), &serverid, sizeof(serverid));
 		sql->BindParameter(n++, SQL_INTEGER, sizeof(compid), &compid, sizeof(compid));
 		debug1("Updating compsonserv (%d, %d, %d)", compid, serverid, deployid);
@@ -8757,7 +8757,7 @@ void Model::recordCompOnServ(class DM &dm, Component &comp, Server &server, bool
 			"select a.id from dm_component a where a.parentid=?	"
 			"union	"
 			"select coalesce(b.parentid,b.id) from dm_component b where b.id=?)");
-			
+
 
 		if(IS_NOT_SQL_SUCCESS(res)) {
 			throw RuntimeError("Failed to update comp on serv (3)");
@@ -8988,7 +8988,7 @@ int Model::getNextObjectId(const char *objectType)
 			}
 		}
 	}
-	
+
 	sql->SetAutoCommitMode(true);
 	sql->CloseSQL();
 	throw RuntimeError("Select for update failed");
@@ -9116,7 +9116,7 @@ char *Model::internalGetAccessibleParentDomains(int domainid)
 	}
 
 	char *ret = NULL;
-	
+
 
 	if(rows > 0) {
 		int *domains = (int*) malloc(rows * sizeof(int));
@@ -10153,7 +10153,7 @@ List<Server> *Model::getAllServersForComponent(Component &comp, Environment *env
 			comp.id());
 		return internalGetServers("dm_component c, dm_compsonserv cos", whereClause);
 	}
-	
+
 }
 
 
@@ -10270,7 +10270,7 @@ void Model::getItemsForComponent(Component &comp)
 			roots.add(ci);
 		}
 		getPropertiesForComponentItem(*ci);
-	}	
+	}
 
 	// Go through the roots one at a time and add them to the list followed
 	// immediatedly by any items that hang from them
@@ -10470,7 +10470,7 @@ void Model::getMetaDataForObject(Object &obj)
 	char modifierUserEmail[DB_EMAIL_LEN];
 	char modifierUserReal[DB_NAME_LEN];
 	char modifierUserPhone[DB_PHONE_LEN];
-	
+
 	SQLLEN ni_creatorid = 0, ni_modifierid = 0, ni_created = 0, ni_modified = 0,
 		ni_creatorUserName = 0, ni_creatorUserEmail = 0, ni_creatorUserReal = 0, ni_creatorUserPhone = 0,
 		ni_modifierUserName = 0, ni_modifierUserEmail = 0, ni_modifierUserReal = 0, ni_modifierUserPhone = 0;
@@ -10487,7 +10487,7 @@ void Model::getMetaDataForObject(Object &obj)
 	sql->BindColumn(10,  SQL_CHAR, modifierUserEmail, sizeof(modifierUserEmail), &ni_modifierUserEmail);
 	sql->BindColumn(11,  SQL_CHAR, modifierUserReal, sizeof(modifierUserReal), &ni_modifierUserReal);
 	sql->BindColumn(12, SQL_CHAR, modifierUserPhone, sizeof(modifierUserPhone), &ni_modifierUserPhone);
-	
+
 
 	int res = sql->ExecuteSQL(
 			"select o.creatorid, o.modifierid, o.created, o.modified, "
@@ -10551,7 +10551,7 @@ void Model::getVariablesForObject(Object &obj, Scope &vars)
 		return;
 	}
 
-	
+
 	int deferred_arrayid[1000];
 	DMArray *deferred_array[1000];
 	int deferred_arrays = 0;
@@ -10630,20 +10630,20 @@ void Model::getVariablesForObject(Object &obj, Scope &vars)
 	 sql->BindColumn(7, SQL_CHAR, gitcommit, sizeof(gitcommit), &ni_gitcommit);
 	 sql->BindColumn(8, SQL_CHAR, gitrepo, sizeof(gitrepo), &ni_gitrepo);
 	 sql->BindColumn(9, SQL_CHAR, gittag, sizeof(gittag), &ni_gittag);
-	 sql->BindColumn(10, SQL_CHAR, giturl, sizeof(giturl), &ni_giturl);	 
+	 sql->BindColumn(10, SQL_CHAR, giturl, sizeof(giturl), &ni_giturl);
 	 sql->BindColumn(11, SQL_CHAR, chartversion, sizeof(chartversion), &ni_chartversion);
-	 sql->BindColumn(12, SQL_CHAR, chartnamespace, sizeof(chartnamespace), &ni_chartnamespace);	 
-     sql->BindColumn(13, SQL_CHAR, chartrepo, sizeof(chartrepo), &ni_chartrepo);	 
-	 sql->BindColumn(14, SQL_CHAR, chartrepourl, sizeof(chartrepourl), &ni_chartrepourl);	 
-	 sql->BindColumn(15, SQL_CHAR, dockertag, sizeof(dockertag), &ni_dockertag);	
-	 sql->BindColumn(16, SQL_CHAR, dockerrepo, sizeof(dockerrepo), &ni_dockerrepo);	 
+	 sql->BindColumn(12, SQL_CHAR, chartnamespace, sizeof(chartnamespace), &ni_chartnamespace);
+     sql->BindColumn(13, SQL_CHAR, chartrepo, sizeof(chartrepo), &ni_chartrepo);
+	 sql->BindColumn(14, SQL_CHAR, chartrepourl, sizeof(chartrepourl), &ni_chartrepourl);
+	 sql->BindColumn(15, SQL_CHAR, dockertag, sizeof(dockertag), &ni_dockertag);
+	 sql->BindColumn(16, SQL_CHAR, dockerrepo, sizeof(dockerrepo), &ni_dockerrepo);
 
 	 int res = sql->ExecuteSQL("select buildid, buildurl, chart, operator, builddate, dockersha, gitcommit, gitrepo, gittag, giturl, chartversion, chartnamespace, chartrepo, chartrepourl, dockertag, dockerrepo from dm_componentitem where compid = %d and kind = 'docker'",obj.id());
 	 res = sql->FetchRow();
 	 if (IS_SQL_SUCCESS(res))
 	 {
 	  char *value;
-	  bool nc = BOOL_NULL_IND(nocase, false); 
+	  bool nc = BOOL_NULL_IND(nocase, false);
 
       value = NULL_IND(buildid, NULL);
 	  if (value != NULL  && strlen(value) > 0)
@@ -10657,7 +10657,7 @@ void Model::getVariablesForObject(Object &obj, Scope &vars)
       value = NULL_IND(chart, NULL);
 	  if (value != NULL  && strlen(value) > 0)
         vars.set("chart", value, nc);
-	  
+
 	  value = NULL_IND(chartversion, NULL);
 	  if (value != NULL  && strlen(value) > 0)
         vars.set("chartversion", value, nc);
@@ -10693,11 +10693,11 @@ void Model::getVariablesForObject(Object &obj, Scope &vars)
       value = NULL_IND(dockerrepo, NULL);
 	  if (value != NULL  && strlen(value) > 0)
         vars.set("dockerrepo", value, nc);
-	  
+
       value = NULL_IND(gitcommit, NULL);
 	  if (value != NULL  && strlen(value) > 0)
         vars.set("gitcommit", value, nc);
-	  
+
       value = NULL_IND(gitrepo, NULL);
 	  if (value != NULL  && strlen(value) > 0)
         vars.set("gitrepo", value, nc);
@@ -10705,7 +10705,7 @@ void Model::getVariablesForObject(Object &obj, Scope &vars)
       value = NULL_IND(gittag, NULL);
 	  if (value != NULL  && strlen(value) > 0)
         vars.set("gittag", value, nc);
-	  
+
       value = NULL_IND(giturl, NULL);
 	  if (value != NULL  && strlen(value) > 0)
         vars.set("giturl", value, nc);
@@ -10742,14 +10742,14 @@ void Model::getVariablesForObject(Object &obj, Scope &vars)
 	  value = NULL_IND(chart, NULL);
 	  if (value != NULL  && strlen(value) > 0)
         vars.set("Chart", value, nc);
-	  
+
 	  value = NULL_IND(chartversion, NULL);
 	  if (value != NULL  && strlen(value) > 0)
         vars.set("ChartVersion", value, nc);
 
 	  value = NULL_IND(chartnamespace, NULL);
 	  if (value != NULL  && strlen(value) > 0)
-        vars.set("ChartNamespace", value, nc);			
+        vars.set("ChartNamespace", value, nc);
 	 }
 	}
 	sql->CloseSQL();
@@ -10880,7 +10880,7 @@ HashtableById<ObjectAccess> *Model::getAccessForObject(Object &obj)
 	return ret;
 }
 
-		
+
 void Model::getDomainForObject(Object &obj)
 {
 	char fromClause[256], whereClause[256];
@@ -11260,7 +11260,7 @@ void Model::addProvider(int kind,const char *name,List<class PropertyDef> *propd
 	AutoPtr<triSQL> sql4 = m_odbc.GetSQL();
 	sql4->BindParameter(1, SQL_INTEGER, sizeof(pid),  &pid,         sizeof(pid));
 	sql4->BindParameter(2, SQL_CHAR,    namelen,      (char *)name, namelen);
-	sql4->BindParameter(3, SQL_INTEGER, sizeof(kind), &kind,        sizeof(kind));   
+	sql4->BindParameter(3, SQL_INTEGER, sizeof(kind), &kind,        sizeof(kind));
 	sql4->BindParameter(4, SQL_CHAR,    kindstrlen,   kindstr,      kindstrlen);
 	if (pluginid > 0) {
 		sql4->BindParameter(5, SQL_INTEGER, sizeof(pluginid), &pluginid, sizeof(pluginid));

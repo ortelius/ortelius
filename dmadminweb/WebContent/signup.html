@@ -17,10 +17,10 @@
 function VerifyPW()
 {
  var err = $("#login_err").text();
- 
+
  if (err != "")
   return;
- 
+
  var pw1 = $("#newpassword").val();
  var pw2 = $("#newpasswordagain").val();
 
@@ -41,10 +41,10 @@ function VerifyPW()
 function VerifyEmail(field)
 {
  var err = $("#login_err").text();
- 
+
  if (err != "")
   return;
- 
+
  var val = $("#" + field).val();
  var label = $("#" + field).closest('td').prev('td').text().replace(":","");
  var filter = /^[a-z0-9][a-z0-9-_\.]+@([a-z]|[a-z0-9]?[a-z0-9-]+[a-z0-9])\.[a-z0-9]{2,10}(?:\.[a-z]{2,10})?$/
@@ -55,13 +55,13 @@ function VerifyEmail(field)
 function VerifyRequired(field)
 {
  var err = $("#login_err").text();
- 
+
  if (err != "")
   return;
- 
+
  var val = $("#" + field).val();
  var label = $("#" + field).closest('td').prev('td').text().replace(":","");
- 
+
  if (val.replace(/ /g,"") == "")
   $("#login_err").html(label + " is required");
 }
@@ -69,16 +69,16 @@ function VerifyRequired(field)
 function VerifyPassword(field)
 {
  var err = $("#login_err").text();
- 
+
  if (err != "")
   return;
- 
+
  var val = $("#" + field).val();
  var label = $("#" + field).closest('td').prev('td').text().replace(":","");
- 
+
  if (val.replace(/ /g,"") == "")
   $("#login_err").html(label + " is required");
- 
+
  if (val.replace(/ /g, "") != val)
   $("#login_err").html(label + " must cannot contain spaces");
 }
@@ -86,19 +86,19 @@ function VerifyPassword(field)
 function VerifyField(field)
 {
  var err = $("#login_err").text();
- 
+
  if (err != "")
   return;
- 
+
  var val = $("#" + field).val();
  var label = $("#" + field).closest('td').prev('td').text().replace(":","");
- 
+
  if (val.replace(/ /g,"") == "")
  {
   $("#login_err").html(label + " is required");
   return;
  }
- 
+
  if (val.replace(/([a-zA-Z0-9 ])/g, "") != "")
   $("#login_err").html(label + " must contain only spaces, letters and numbers");
 
@@ -107,19 +107,19 @@ function VerifyField(field)
 function VerifyUserName(field)
 {
  var err = $("#login_err").text();
- 
+
  if (err != "")
   return;
- 
+
  var val = $("#" + field).val();
  var label = $("#" + field).closest('td').prev('td').text().replace(":","");
- 
+
  if (val.replace(/ /g,"") == "")
  {
   $("#login_err").html(label + " is required");
   return;
  }
- 
+
  if (val.replace(/([a-z0-9])/g, "") != "")
   $("#login_err").html(label + " must be lower case and contain only letters and numbers");
 }
@@ -127,7 +127,7 @@ function VerifyUserName(field)
 function DoOKSignUp(event)
 {
  event.preventDefault(); // cancel default behavior
- 
+
  $("#login_err").html("");
  VerifyField("companyname");
  VerifyField("projectname");
@@ -138,9 +138,9 @@ function DoOKSignUp(event)
  VerifyPassword("newpassword");
  VerifyPassword("newpasswordagain");
  VerifyPW();
- 
+
  var err = $("#login_err").text();
- 
+
  if (err == "")
  {
   data = {};
@@ -153,32 +153,32 @@ function DoOKSignUp(event)
   data['email'] = $("#email").val();
   data['userid'] = $("#username").val();
   data['pw'] = $("#newpassword").val();
-    
+
   $.ajax({
      type : "POST",
      dataType : 'json',
      data: data,
      url : "API/signup"
-    }).done(function(res) { 
+    }).done(function(res) {
      if (res['err'] != "")
      {
       $("#login_err").html(res.err);
       return;
-     }  
+     }
      var login_page = location.protocol + '//' + location.host + location.pathname.replace('signup.html', 'Login');
      $("#login_container_dialog").html("<H3>Sign-up Complete</H3><p>Please <a href=\"" + login_page + "\" target=\"_blank\" >login</a> with your new userid and password.<br><br>The Hipster Store Sample application will take a few minutes to provision into your domain.</p>");
-     
-     console.log(res); 
+
+     console.log(res);
      $.ajax({
       type : "POST",
       dataType : 'json',
       data: data,
       url : "API/adddemo"
-     }).done(function(data) { 
-      console.log(data); 
+     }).done(function(data) {
+      console.log(data);
      });
     });
- } 
+ }
 }
 </script>
 <style type="text/css" id="wp-custom-css">
@@ -203,7 +203,7 @@ body[data-button-style="rounded"].ascend .container-wrap input[type="submit"] {
 
 #loginform > p.login-password > div > label > span {
 	margin-top: 0px;
-}		
+}
 
 .minimal-form-input {
  padding-top: 0px !important;
@@ -232,23 +232,23 @@ td.login_label {
 			<div class="container main-content" style="width:100%; max-width: unset !important;">
 				<div id="login_container_dialog" class="ui-dialog-content ui-widget-content">
 					<form id="loginform">
-					<table id="logintab" style="width: 100%;" border="0">  
+					<table id="logintab" style="width: 100%;" border="0">
 					<tbody>
 					<tr id="companyname_row">   <td class="login_label" align="right">Company Name:</td>   <td align="left"><input class="inputbox" type="text" id="companyname" name="companyname"></td>  </tr>
-					<tr id="projectname_row">   <td class="login_label" align="right">Project Name:</td>   <td align="left"><input class="inputbox" type="text" id="projectname" name="projectname"></td>  </tr>  
-					<tr id="firstname_row">   <td class="login_label" align="right">First Name:</td>   <td align="left"><input class="inputbox" type="text" id="firstname" name="firstname"></td>  </tr>  
-					<tr id="lastname_row">   <td class="login_label" align="right">Last Name:</td>   <td align="left"><input class="inputbox" type="text" id="lastname" name="lastname"></td>  </tr>  
-					<tr id="email_row">   <td class="login_label" align="right">Email:</td>   <td align="left"><input class="inputbox" type="text" id="email" name="email"></td>  </tr>  
-					<tr id="logindlg_user" style="">   <td class="login_label" align="right">Username:</td>   <td align="left"><input class="inputbox" type="text" name="username" id="username" autocomplete="off"></td>  </tr>  
-					<tr id="logindlg_newpw" class="newpw">   <td class="login_label" align="right">New Password:</td>   <td align="left"><input class="inputbox" type="password" id="newpassword" name="newpassword" autocomplete="off"></td>  </tr>  
-					<tr id="logindlg_newpwagain" class="newpw">   <td class="login_label" align="right">Verify New Password:</td>   <td align="left"><input class="inputbox" type="password" id="newpasswordagain" name="newpasswordagain" autocomplete="off"></td>  </tr>  
+					<tr id="projectname_row">   <td class="login_label" align="right">Project Name:</td>   <td align="left"><input class="inputbox" type="text" id="projectname" name="projectname"></td>  </tr>
+					<tr id="firstname_row">   <td class="login_label" align="right">First Name:</td>   <td align="left"><input class="inputbox" type="text" id="firstname" name="firstname"></td>  </tr>
+					<tr id="lastname_row">   <td class="login_label" align="right">Last Name:</td>   <td align="left"><input class="inputbox" type="text" id="lastname" name="lastname"></td>  </tr>
+					<tr id="email_row">   <td class="login_label" align="right">Email:</td>   <td align="left"><input class="inputbox" type="text" id="email" name="email"></td>  </tr>
+					<tr id="logindlg_user" style="">   <td class="login_label" align="right">Username:</td>   <td align="left"><input class="inputbox" type="text" name="username" id="username" autocomplete="off"></td>  </tr>
+					<tr id="logindlg_newpw" class="newpw">   <td class="login_label" align="right">New Password:</td>   <td align="left"><input class="inputbox" type="password" id="newpassword" name="newpassword" autocomplete="off"></td>  </tr>
+					<tr id="logindlg_newpwagain" class="newpw">   <td class="login_label" align="right">Verify New Password:</td>   <td align="left"><input class="inputbox" type="password" id="newpasswordagain" name="newpasswordagain" autocomplete="off"></td>  </tr>
 					<tr><td id="login_err" colspan="2" style="background-color: #72df04"></td></tr>
 					</tbody>
 					</table>
 					<input type="submit" value="Signup" onclick="DoOKSignUp(event);" style="margin-left: 40%;"/>
 					</form>
 				</div>
-				<div class="error"><p class="error_txt" id="login_err"></p></div>		
+				<div class="error"><p class="error_txt" id="login_err"></p></div>
 			</div><!--/container-->
 		</div><!--/container-wrap-->
 	</div> <!--/ajax-content-wrap-->

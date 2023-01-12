@@ -25,17 +25,17 @@ public class SaasClient
 	private String licensetype;
 	private int licensecnt;
 	private long lastseen;
-	
+
 	private DMSession m_session;
-	
+
 	public SaasClient() {
 	}
-	
+
 	public SaasClient(DMSession sess, String name) {
   clientid = name;
 		m_session = sess;
 	}
-	
+
 	public DMSession getSession() {
 		return m_session;
 	}
@@ -79,6 +79,6 @@ public class SaasClient
  {
   this.lastseen = lastseen;
  }
-	
-	
+
+
 	}

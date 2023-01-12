@@ -40,7 +40,7 @@ FileFind::FileFind(const char *path, const char *pattern)
 {
 	int i=0;
 	int len=0;
-	
+
 	if (m_filepath != NULL)
 	{
 	 #ifdef WIN32
@@ -56,9 +56,9 @@ FileFind::FileFind(const char *path, const char *pattern)
 			{
 				if (m_filepath[i] == '\\')
 					m_filepath[i] = '/';
-			}				
-		#endif		
-	}	
+			}
+		#endif
+	}
 #ifndef WIN32
 	if(m_pattern && (strcmp(m_pattern, "*") != 0)) {
 		// may raise and exception

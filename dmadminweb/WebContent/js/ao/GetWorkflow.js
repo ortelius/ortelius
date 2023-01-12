@@ -45,7 +45,7 @@ function wfDrillDown(x)
 		 );
 	}
 
-	ddwinid = windowid; 
+	ddwinid = windowid;
 	console.log("LoadWorkflowsData("+windowid+")");
 	LoadWorkflowsData(windowid);
 }
@@ -96,7 +96,7 @@ function wfOpenDetails(x,nf,useDefault)
    pwd.dialog("close");
   }
  } ];
- 
+
  var buttons2 = [
  {
   text : "Ok",
@@ -114,7 +114,7 @@ function wfOpenDetails(x,nf,useDefault)
    wfDeleteNode(x);
   }
  } ];
- 
+
  var buttons3 = [
  {
   text : "Cancel",
@@ -123,12 +123,12 @@ function wfOpenDetails(x,nf,useDefault)
 	  pwd.dialog("close");
   }
   }];
- 
+
  pwd.dialog(
    {
     modal : true,
     open : function(event, ui) {
-    	pwd.css('overflow', 'hidden'); 
+    	pwd.css('overflow', 'hidden');
     }
    });
 
@@ -183,13 +183,13 @@ function wfDeleteConnector(conn)
 {
  if (DontSave)
   return;
- 
+
  if (conn)
  {
   //
   // Update the DB
   //
-  var fn = conn.sourceId.replace("window",""); 
+  var fn = conn.sourceId.replace("window","");
   var tn = conn.targetId.replace("window","");
   if (fn=="start") fn="0";
   $.getJSON("UpdateAttrs","f=df&a=" + objid + "&fn="+fn+"&tn="+tn,
@@ -228,8 +228,8 @@ function wfDeleteNode(node)
 	 Fragments[n]=null;
 	 $(currenttree).jstree("delete_node", "#ac" + n);
  });
- 
- 
+
+
 }
 
 
@@ -239,13 +239,13 @@ var workflowDropOptions = {
   {
    if (DontSave)
     return;
-   
+
    oldid = $(this).attr("id").substr(6);
    newid = ui.draggable.attr("id");
    var newtitle = ui.draggable.text();
    var newsummary = ui.draggable.attr("summary");
-   // Update the fragment window 
-   
+   // Update the fragment window
+
    console.log("Updating old id "+oldid+" with new id "+newid);
 
    $("#window"+oldid).html(getWorkflowBody(newid, "", newtitle, newsummary, ''));
@@ -261,7 +261,7 @@ var workflowDropOptions = {
 
   }
  };
- 
+
 
 function wfMouseOverLink(val)
 {
@@ -304,7 +304,7 @@ function wfStopDrag()
  // Get the old end points and connections
  var fromlist = [];
  var tolist = [];
- 
+
  if (oldid>0 && newid>0) {
   // replacing existing component
   var p = wfPlumb.getConnections({source: "startwindow"},true);
@@ -330,7 +330,7 @@ function wfStopDrag()
     }
    }
   });
-  
+
   var p = wfPlumb.getConnections({source: "window"+oldid},true);
   for (var i=0;i<p.length;i++) {
    console.log("TO: #"+p[i].targetId);
@@ -391,18 +391,18 @@ function CreateScriptDiagram()
 {
  var InitialLoad = true;
  MaxWinID = 0;
- 
+
  var $main = $("#innerworkflow");
- 
- var menu2 = function(m,t){ 
+
+ var menu2 = function(m,t){
   if (OverLink)
    return [{'Delete this Connection': {icon:"images/delete.png",onclick:function(menuItem,menu){wfMenuDeleteConnector(LastLink);} }} ];
  };
 
  $("#innerworkflow").dmContextMenu(menu2, {theme:'xp'});
- 
+
  windowid=1;
- 
+
  jsPlumb.importDefaults({
   // default drag options
   DragOptions : {
@@ -442,17 +442,17 @@ function CreateScriptDiagram()
    if (typeof console != "undefined")
     console.log("connection edited. path is now ", o.path);
   });
- }; 
- 
+ };
+
  jsPlumb.bind("contextmenu", function(component, originalEvent) {
            originalEvent.preventDefault();
            return false;
        });
- 
+
  jsPlumb.bind("jsPlumbConnection", function(connInfo, originalEvent)
  {
   console.log("connInfo.connection.id = " + connInfo.connection.id);
-  
+
   init(connInfo.connection);
 
   connInfo.connection.bind("mouseenter",function(c) {wfMouseOverLink(connInfo.connection);});
@@ -464,9 +464,9 @@ function CreateScriptDiagram()
   console.log("b) to id ="+connInfo.targetId);
 
   var FromUUID = connInfo.connection.endpoints[0].getUuid();
-  var fn = connInfo.connection.sourceId.replace("window",""); 
-  var tn = connInfo.connection.targetId.replace("window",""); 
-  
+  var fn = connInfo.connection.sourceId.replace("window","");
+  var tn = connInfo.connection.targetId.replace("window","");
+
   console.log("fn="+fn+" tn="+tn+"FromUUID="+FromUUID);
   //
   // If the source uuid is part of an "if" or "parallel" then set the pos accordingly.
@@ -474,7 +474,7 @@ function CreateScriptDiagram()
   var pos=1;
   if (FromUUID.indexOf("leftout")>=0) pos=2;
   if (FromUUID.indexOf("rightout")>=0) pos=3;
-  
+
   if (InitialLoad == false)
   {
    $.getJSON("UpdateAttrs","f=af&a=" + objid + "&fn="+fn+"&tn="+tn+"&pos="+pos,
@@ -484,62 +484,62 @@ function CreateScriptDiagram()
    });
   }
  });
- 
+
  jsPlumb.bind("connectionDetached", function(connInfo, originalEvent)
  {
   console.log("DETACHED! connInfo.connection.id = " + connInfo.connection.id);
   wfDeleteConnector(connInfo.connection);
  });
- 
+
  //
  // Now get the current configuration for this action from the DB
  //
  console.log("actionid=" + objid);
- 
+
  var url = "actionid=" + objid;
- 
+
  if (ddwinid != "")
   url += "&windowid=" + ddwinid;
- 
+
  console.log("GetActionLayout url="+url);
  $.getJSON('GetActionLayout',url,function(data){
   //
   // insert the windows
   //
   summSaveobjid = objid;
-  
+
   yo = 140;
   var w = Math.round(Math.floor($("#innerworkflow").width()/2)-63);
-  
+
   EditMode="Y";
   MaxWinID = data.MaxWinID;
   console.log("MaxWinID="+MaxWinID+" data.NodeCount="+data.NodeCount);
   console.log(data);
   if (data.startx >0) w = data.startx;
   readonly = data.readonly;
-  
+
   if (readonly) {
 	  $("#innerworkflow").block({ message: null });
   } else {
 	  $("#innerworkflow").unblock();
   }
-  
+
   // load fragment list in here so we know if we're readonly or not....
   CreateTree_Selection("#fragmentlist","fragments",readonly,"mainframe3");
-  
+
   console.log("w="+w);
-  
+
   // Start Window
   console.log("Adding start window");
   $('#innerworkflow').append( "<div class=\"startfragment\" id=\"startwindow\" " +
     "style=\"position: relative; top: 5px; left: " + w + "px \">" +
   "<span style=\"position:relative; top:5px\"><img src=\"css/images/go_16x.png\" style=\"padding-right:5px\">Start</div>");
-  
+
   waitForElement("#innerworkflow",function(){
   var offset = $("#innerworkflow > div.startfragment").offset();
   var start_ypos = Math.round(offset.top - $(window).scrollTop());
-  var start_xpos = Math.round(offset.left - $(window).scrollLeft()); 
-  
+  var start_xpos = Math.round(offset.left - $(window).scrollLeft());
+
   console.log("readonly="+readonly);
   if (!readonly) {
 	  jsPlumb.draggable(jsPlumb.getSelector(".fragment, .ddfragment"), {
@@ -560,7 +560,7 @@ function CreateScriptDiagram()
    anchor : "BottomCenter",
    uuid : "startwindowout"
   });
- 
+
   for (a=0;a<data.NodeCount;a++)
   {
    WindowID = parseInt(data.Nodes[a].nodeid);
@@ -573,12 +573,12 @@ function CreateScriptDiagram()
    }
    var xpos = Math.round(data.Nodes[a].xpos);
    var ypos = Math.round(data.Nodes[a].ypos);
-   
+
  //  if (ypos < start_ypos)
  //   ypos = start_ypos - ypos;
    console.log("WindowID="+WindowID+" MaxWinID="+MaxWinID+" xpos="+xpos+" ypos="+ypos+" drilldown="+data.Nodes[a].drilldown);
    console.log("title="+data.Nodes[a].title);
-   
+
    var procid = data.Nodes[a].procid;
    var funcid = data.Nodes[a].functionid;
    var img="script.png";
@@ -587,11 +587,11 @@ function CreateScriptDiagram()
    if (funcid>0) img="func.png";
    console.log("procid="+procid+" funcid="+funcid+" img="+img);
    console.log(data.Nodes[a].title+" xpos="+xpos+" ypos="+ypos);
-   
+
    $('#innerworkflow').append( "<div  class=\""+Class+"\" id=\"window" + WindowID + "\" " +
      "style=\"position: relative; top: " + ypos + "px; left: " + xpos + "px \">" +
      "<span style=\"position:relative; top:5px;\"><img src=\"css/images/"+img+"\" style=\"padding-right:5px\">" +data.Nodes[a].title+ "</span>" +
-     "</div>"); 
+     "</div>");
    if (data.Nodes[a].drilldown == "Y") {
     $("#window"+WindowID).dblclick(function() {
       wfDrillDown($(this));
@@ -606,9 +606,9 @@ function CreateScriptDiagram()
 	     stop: wfWindowMoved
 	    });
    }
-    
+
     console.log("Adding endpoint window"+WindowID+"in");
-   
+
    jsPlumb.addEndpoint("window"+WindowID, targetEndpoint, {
     anchor : "TopCenter",
     uuid : "window"+WindowID+"in"
@@ -649,7 +649,7 @@ function CreateScriptDiagram()
 				uuid : "window"+WindowID+"rightout"
 			});
 	   }
-	   
+
    }
    else
    if (data.Nodes[a].exitpoints == 3)
@@ -678,7 +678,7 @@ function CreateScriptDiagram()
    else
    if (data.Nodes[a].procid>0) otid="pr"+data.Nodes[a].procid+"-"+data.Nodes[a].kind;
    Fragments[WindowID]={outputs:0,otid:otid,type:data.Nodes[a].typeid,attributes:{"ExitPoints":data.Nodes[a].exitpoints}};
-   
+
    console.log("functionid="+data.Nodes[a].functionid);
    console.log("procid="+data.Nodes[a].procid);
    var contextMenu=[];
@@ -709,7 +709,7 @@ function CreateScriptDiagram()
    {
     nf="#window"+nf;
    }
-   
+
    var srcconn=nf.substr(1)+"out";
    var tgtconn=nt.substr(1)+"in";
    if (data.Links[a].pos==1) srcconn=nf.substr(1)+"out";
@@ -721,7 +721,7 @@ function CreateScriptDiagram()
    if (jsPlumb.getEndpoint(srcconn) != null && jsPlumb.getEndpoint(tgtconn) != null)
    {
     console.log("nodefrom="+data.Links[a].nodefrom);
-   
+
     var connection = jsPlumb.connect({uuids:[srcconn,tgtconn], detachable:true,editable:true});
     console.log("Connection made");
 
@@ -732,7 +732,7 @@ function CreateScriptDiagram()
    }
    else
    {
-    console.log("Failed to connect - end points do not exist"); 
+    console.log("Failed to connect - end points do not exist");
    }
   }
   windowid=parseInt(MaxWinID)+1;
@@ -750,8 +750,8 @@ function CreateScriptDiagram()
 function SetUpFragments()
 {
  var $main = $("#innerworkflow");
- 
- var menu2 = function(m,t){ 
+
+ var menu2 = function(m,t){
   if (OverLink)
    return [
     {'Delete this Connection': {icon:"images/delete.png",onclick:function(menuItem,menu){wfMenuDeleteConnector(LastLink);} }} ];
@@ -774,7 +774,7 @@ function SetUpFragments()
   accept : AcceptList,
  // activeClass : "ui-state-highlight",
   drop : function(event, ui)
-  { 
+  {
    var tx = (event.pageX) % 20;
    var ty = (event.pageY) % 20;
    if (tx>10) tx=-(20-tx);
@@ -791,15 +791,15 @@ function SetUpFragments()
    $('#innerworkflow').append( "<div  class=\"workflowbox "+ct+"\" id=\"window" + windowid + "\" " +
      "style=\"position: relative; top: " + ypos + "px; left: " + xpos + "px \">" +
      "<span style=\"position:relative; top:5px;\"><img src=\"css/images/file.png\" style=\"padding-right:5px\">" +ui.draggable.text()+ "</span>" +
-     "</div>"); 
-   
+     "</div>");
+
    if (ui.draggable.attr("drilldown") == "Y") {
     $("#window"+windowid).dblclick(function() {
      wfDrillDown($(this));
     });
    }
-   
-   
+
+
    jsPlumb.draggable(jsPlumb.getSelector(".fragment, .ddfragment"), {
     grid : [ 20, 20 ],
     containment: '#innerworkflow',
@@ -852,11 +852,11 @@ function SetUpFragments()
      uuid : "window"+windowid+"out"
     });
    }
-   
+
    return;
 
     var swd = wfGetNearestWindow(windowid);
-    
+
     if (jsPlumb.getEndpoint(swd.fuuid) != null)
     {
      console.log("Connecting to "+swd.fuuid);
@@ -885,14 +885,14 @@ function SetUpFragments()
    // Update this in the DB
    //
   // ypos+=120; // adjust for tabs at top of screen
-   
+
    $.ajax({
 	   dataType: "json",
 	   url: "UpdateAttrs",
 	   async: false,
 	   data: "f=an&a=" + objid + "&w="+windowid+"&pw=" + parentwindowid + "&xpos="+xpos+"&ypos="+ypos+"&typeid="+ui.draggable.attr("typeid"),
 	   });
-   
+
    /*
    $.getJSON("UpdateAttrs","f=an&a=" + objid + "&w="+windowid+"&pw=" + parentwindowid + "&xpos="+xpos+"&ypos="+ypos+"&typeid="+ui.draggable.attr("typeid"),
       function(data){
@@ -904,7 +904,7 @@ function SetUpFragments()
    // $('#window'+windowid).trigger('click');
    var x = {id: "window"+windowid};
    wfOpenDetails(x,true,"N");
-   
+
    windowid++;
   }
  });
@@ -913,7 +913,7 @@ function SetUpFragments()
 function getWorkflowBody(id,otid,name,summ,suffix)
 {
  console.log("getWorkflowBody otid="+otid);
- 
+
  var img = "css/images/script.png";
  if (otid.substr(0,2)=="pr") img="css/images/functions_procedures_sm.png";
  else
@@ -948,7 +948,7 @@ function wfGetNearestWindow(winid)
     if (id != winid)
     {
      console.log("id = "+id+" ExitPoints = "+Fragments[id].attributes.ExitPoints+" outputs="+Fragments[id].outputs);
-     var f = Fragments[id].attributes.ExitPoints - Fragments[id].outputs; 
+     var f = Fragments[id].attributes.ExitPoints - Fragments[id].outputs;
      if (f>0)
      {
        console.log("id = "+id);
@@ -996,7 +996,7 @@ function wfGetNearestWindow(winid)
      }
     }
   });
- 
+
  return swd;
 }
 
@@ -1027,14 +1027,14 @@ function MouseExitLink()
 
 function wfWindowMoved(event,ui)
 {
- event.stopPropagation();  
+ event.stopPropagation();
  var windowid=event.target.id;
  var id = windowid.replace("window","");
  var tid = Fragments[id].type;
  console.log("xpos="+ui.position.left+" ypos="+ui.position.top);
 
  // $.getJSON("UpdateAttrs","f=wm&a=" + objid + "&w="+id+"&pw=" + parentwindowid + "&xpos="+Math.round(ui.position.left)+"&ypos="+(Math.round(ui.position.top) + 20) +"&typeid="+tid,
- 
+
  $.getJSON("UpdateAttrs","f=wm&a=" + objid + "&w="+id+"&pw=" + parentwindowid + "&xpos="+Math.round(ui.position.left)+"&ypos="+(Math.round(ui.position.top)) +"&typeid="+tid,
  function(data){
   console.log("WindowMoved) in success");
@@ -1046,7 +1046,7 @@ function wfStartMoved(event,ui)
 	console.log("wfStartMoved, parentwindowid="+parentwindowid);
  //var xpos = ui.position.left;
 // $.getJSON("UpdateAttrs","f=wm&a=" + objid + "&w=0&pw=" + parentwindowid + "&xpos="+xpos+"&ypos="+ui.offset.top+"&typeid=0",
-	
+
  var xpos = ui.offset.left;
  $.getJSON("UpdateAttrs","f=wm&a=" + objid + "&w=0&pw=" + parentwindowid + "&xpos="+Math.round(ui.position.left)+"&ypos="+(Math.round(ui.position.top))+"&typeid=0",
  function(data){
@@ -1058,19 +1058,19 @@ function wfStartMoved(event,ui)
 function LoadWorkflowsData(ddwindow)
 {
  ddwinid = ddwindow;
- 
+
  DontSave = 1;
  usedWorkflows = new Array();
  Fragments = new Array();
- 
+
  cPlumb.reset();
- aPlumb.reset();   
+ aPlumb.reset();
  avPlumb.reset();
  cvPlumb.reset();
  cisplumb.reset();
- wfPlumb.reset(); 
+ wfPlumb.reset();
  jsPlumb.reset();
- 
+
  $("#innerversions").html("");
  $("#innercomp").html("");
  $("#innerappver").html("");
@@ -1078,7 +1078,7 @@ function LoadWorkflowsData(ddwindow)
  $("#innerworkflow").html("");
  $("#innercompversions").html("");
  console.log("LoadWorkflows");
- 
+
  if ($("#fragmentlist").hasClass("ui-accordion"))
  {
    $("#fragmentlist").accordion('destroy');
@@ -1111,7 +1111,7 @@ function OpenStartParameters(x)
    pwd.dialog("close");
   }
  } ];
- 
+
  pwd.dialog(
    {
     modal : true
@@ -1170,7 +1170,7 @@ function SaveWFDetails(id)
  if (!mmf) {
 	 $.getJSON('UpdateAttrs',url,
 	     function(data) {
-		 	if (title != "") $("#window"+id).find("span").html("<span style=\"position:relative; top:5px;\"><img src=\"css/images/proc.png\" style=\"padding-right:5px\">" + title + "</span>"); 
+		 	if (title != "") $("#window"+id).find("span").html("<span style=\"position:relative; top:5px;\"><img src=\"css/images/proc.png\" style=\"padding-right:5px\">" + title + "</span>");
 	 	 });
  }
  return !mmf;

@@ -35,7 +35,7 @@ public class ValidateTask
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -61,7 +61,7 @@ public class ValidateTask
 			// Validate Move task
 			int appid = getIntParameter(request,"appid");
 			int tgtid = getIntParameter(request,"tgt");
-			int srcid = getIntParameter(request,"d"); 
+			int srcid = getIntParameter(request,"d");
 			IssueText = session.ValidateMove(appid,tgtid,srcid);
 		}
 		JSONObject ret = new JSONObject();
@@ -70,4 +70,3 @@ public class ValidateTask
 		return ret;
 	}
 }
-

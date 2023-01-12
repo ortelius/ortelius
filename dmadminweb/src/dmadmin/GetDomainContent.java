@@ -38,22 +38,22 @@ public class GetDomainContent extends HttpServletBase
     Domain pd = domainid > 0 ? so.getDomain(domainid) : null;
     String rel = pd != null ? (pd.getLifecycle() ? "Lifecycle" : "Domain") : "Domain";
     boolean subenv = false;
-    
+
     if (catid < 0)
     {
       List<TreeObject> d = so.getDomains(Integer.valueOf(domainid));
- 
+
       System.out.print("[");
       out.print("[");
 
       for (TreeObject xd : d)
       {
        rel = Character.toUpperCase(rel.charAt(0)) + rel.substring(1).toLowerCase();
-       
+
        if ((typestr.equalsIgnoreCase("components") || typestr.equalsIgnoreCase("actions") ||
             typestr.equalsIgnoreCase("functions") || typestr.equalsIgnoreCase("procedures") || typestr.equalsIgnoreCase("notifiers")) && rel.equals("Lifecycle"))
         continue;
-       
+
         if (subenv)
         {
           System.out.println(",");
@@ -182,9 +182,9 @@ public class GetDomainContent extends HttpServletBase
       {
     	  System.out.println("** reltype="+reltype);
         List<TreeObject> dmo = so.getTreeObjects(reltype, domainid, catid, nobuiltins);
-        
+
         String uct = Character.toUpperCase(reltype.toString().charAt(0)) + reltype.toString().substring(1).toLowerCase();
-        
+
         long startTime = System.nanoTime();
         for (TreeObject dm : dmo)
         {
@@ -201,7 +201,7 @@ public class GetDomainContent extends HttpServletBase
            * and the version are in the same domain.
            * This logic is encoded in getApplicationContent.java which is called when
            * expanding an application BASE in the tree-view.
-           * 
+           *
           if (dm.GetObjectType() == ObjectType.APPLICATION)
           {
             int appid = dm.getId();
@@ -213,7 +213,7 @@ public class GetDomainContent extends HttpServletBase
 
           if (((dm.GetObjectType() == ObjectType.ENVIRONMENT)
         	|| (dm.GetObjectType() == ObjectType.NOTIFY)
-        	|| ((dm.GetObjectType() == ObjectType.APPLICATION) && (!parentisLifecycle)) 
+        	|| ((dm.GetObjectType() == ObjectType.APPLICATION) && (!parentisLifecycle))
         	|| (dm.GetObjectType() == ObjectType.RELEASE)
         	|| (dm.GetObjectType() == ObjectType.COMPONENT))
         	&& (so.objHasChildren(dm, typestr)))
@@ -224,7 +224,7 @@ public class GetDomainContent extends HttpServletBase
           else
           {
             ObjectType ot = dm.GetOTID().getObjectType();
-            
+
             System.out.println("xx) ot="+ot+" dm.GetObjectType="+dm.GetObjectType());
             System.out.println("typestr="+typestr);
 
@@ -336,16 +336,16 @@ public class GetDomainContent extends HttpServletBase
     } else {
      uct = Character.toUpperCase(typestr.charAt(0)) + typestr.substring(1).toLowerCase();
     }
-    
+
     System.out.print("[");
     out.print("[");
-   
+
     System.out.print("{\"data\" : \"Global " + uct + "\", \"state\" : \"closed\", \"attr\" : { \"id\" : \"do-1\", \"rel\" : \"domain\" }, \"children\": [");
     out.print("{\"data\" : \"Global " + uct + "\", \"state\" : \"closed\", \"attr\" : { \"id\" : \"do-1\", \"rel\" : \"domain\" }, \"children\": [");
     boolean nv = false;
-    
+
     List<TreeObject> dmo =  so.getTreeObjects(ObjectType.PROCFUNC_CATEGORY,1,-1,nobuiltins);
-    
+
     try
     {
      Domain infra = so.getDomainByName("GLOBAL.Infrastructure");
@@ -354,17 +354,17 @@ public class GetDomainContent extends HttpServletBase
     }
     catch (Exception e)
     {}
-    
+
   //  List<TreeObject> dmc =  so.getTreeObjects(ObjectType.PROCFUNC_CATEGORY,infra.getId(),-1);
-  //  dmo.addAll(dmc);    
+  //  dmo.addAll(dmc);
 
     if (dmo != null) for (TreeObject xd : dmo) {
       String rt = "";
       if (nv) System.out.println(",");
       if (nv) out.println(",");
-      
+
       String domstr = "";
-      
+
       if (xd.GetObjectType() == ObjectType.DOMAIN)
        rt = "Domain";
       else if (xd.GetObjectType() == ObjectType.COMPONENT)
@@ -376,8 +376,8 @@ public class GetDomainContent extends HttpServletBase
        rt = "Category";
        domstr = "-" + xd.GetDomainId();
       }
-      
-      if (so.objHasChildren(xd, "domain") || so.objHasChildren(xd, "procedures")) {         
+
+      if (so.objHasChildren(xd, "domain") || so.objHasChildren(xd, "procedures")) {
        String state = "closed"; // typestr.equalsIgnoreCase("category")?"closed":"open";
         System.out.print("{\"data\" : \"" + xd.getName() + "\", \"state\" : \""+state+"\", \"attr\" : { \"id\" : \"" + xd.GetOTID() + domstr + "\", \"rel\" : \"" + rt + "\" }}");
         out.print("{\"data\" : \"" + xd.getName() + "\", \"state\" : \""+state+"\", \"attr\" : { \"id\" : \"" + xd.GetOTID() + domstr + "\", \"rel\" : \"" + rt + "\" }, \"children\": []}");
@@ -389,9 +389,9 @@ public class GetDomainContent extends HttpServletBase
     }
     System.out.print("]}");
     out.print("]}");
-    
+
     String state;
-    
+
     System.out.println(",");
     out.println(",");
     nv = false;
@@ -401,14 +401,14 @@ public class GetDomainContent extends HttpServletBase
     treeObject.SetObjectType(ObjectType.DOMAIN);
     dmo.clear();
     dmo.add(treeObject);
-    
+
     if (dmo != null) for (TreeObject xd : dmo) {
       String rt = "";
       if (nv) System.out.println(",");
       if (nv) out.println(",");
-      
+
       String domstr = "";
-      
+
       if (xd.GetObjectType() == ObjectType.DOMAIN)
        rt = "Domain";
       else if (xd.GetObjectType() == ObjectType.COMPONENT)
@@ -420,8 +420,8 @@ public class GetDomainContent extends HttpServletBase
        rt = "Category";
        domstr = "-" + xd.GetDomainId();
       }
-      
-      if (so.objHasChildren(xd, "domain") || so.objHasChildren(xd, "procedures")) {         
+
+      if (so.objHasChildren(xd, "domain") || so.objHasChildren(xd, "procedures")) {
         state = typestr.equalsIgnoreCase("category")?"closed":"open";
         System.out.print("{\"data\" : \"" + xd.getName() + "\", \"state\" : \""+state+"\", \"attr\" : { \"id\" : \"" + xd.GetOTID() + domstr + "\", \"rel\" : \"" + rt + "\" }}");
         out.print("{\"data\" : \"" + xd.getName() + "\", \"state\" : \""+state+"\", \"attr\" : { \"id\" : \"" + xd.GetOTID() + domstr + "\", \"rel\" : \"" + rt + "\" }, \"children\": []}");
@@ -433,10 +433,10 @@ public class GetDomainContent extends HttpServletBase
     }
 //    System.out.print("]}");
 //    out.print("]}");
-    
+
     System.out.print("]");
     out.println("]");
-    
+
   }
 
   void ProcessDomainContentHierarchy(PrintWriter out, DMSession so, String typestr, int domainid, HashMap<Integer, Integer> hmap, String nobuiltins)
@@ -446,7 +446,7 @@ public class GetDomainContent extends HttpServletBase
     String rel = pd != null ? (pd.getLifecycle() ? "Lifecycle" : "Domain") : "Domain";
 
     List<TreeObject> d = so.getDomains(Integer.valueOf(domainid));
-    
+
     System.out.print("[");
     out.print("[");
 
@@ -460,7 +460,7 @@ public class GetDomainContent extends HttpServletBase
       {
         // dmo = so.getInheritedTreeObjects(ObjectType.COMPONENT, so.UserBaseDomain());
     	  dmo = so.getInheritedTreeObjects(ObjectType.COMP_CATEGORY,so.UserBaseDomain());
-       
+
        System.out.println("done, dmo.size()="+dmo.size());
        rt = "Category";
       }
@@ -470,11 +470,11 @@ public class GetDomainContent extends HttpServletBase
       } else {
        uct = Character.toUpperCase(typestr.charAt(0)) + typestr.substring(1).toLowerCase();
       }
-      
+
       Domain infra = so.getDomainByName("GLOBAL.Infrastructure");
       List<TreeObject> ilist = so.getDomains(infra.getId());
       dmo.addAll(ilist);
-      
+
       System.out.print("{\"data\" : \"Global " + uct + "\", \"state\" : \"closed\", \"attr\" : { \"id\" : \"do-1\", \"rel\" : \"domain\" }, \"children\": [");
       out.print("{\"data\" : \"Global " + uct + "\", \"state\" : \"closed\", \"attr\" : { \"id\" : \"do-1\", \"rel\" : \"domain\" }, \"children\": [");
       boolean nv = false;
@@ -482,9 +482,9 @@ public class GetDomainContent extends HttpServletBase
       if (dmo != null) for (TreeObject xd : dmo) {
         if (nv) System.out.println(",");
         if (nv) out.println(",");
-        
+
         String domstr = "";
-        
+
         if (xd.GetObjectType() == ObjectType.DOMAIN)
          rt = "Domain";
         else if (xd.GetObjectType() == ObjectType.COMPONENT)
@@ -496,14 +496,14 @@ public class GetDomainContent extends HttpServletBase
          rt = "Category";
          domstr = "-" + xd.GetDomainId();
         }
-        
+
         if (typestr.equalsIgnoreCase("category")) {
          uct = "Components";
         } else {
          uct = Character.toUpperCase(typestr.charAt(0)) + typestr.substring(1).toLowerCase();
         }
-        
-        if (so.objHasChildren(xd, typestr)) {         
+
+        if (so.objHasChildren(xd, typestr)) {
         	String state = typestr.equalsIgnoreCase("category")?"closed":"open";
           System.out.print("{\"data\" : \"" + xd.getName() + "\", \"state\" : \""+state+"\", \"attr\" : { \"id\" : \"" + xd.GetOTID() + domstr + "\", \"rel\" : \"" + rt + "\" }}");
           out.print("{\"data\" : \"" + xd.getName() + "\", \"state\" : \""+state+"\", \"attr\" : { \"id\" : \"" + xd.GetOTID() + domstr + "\", \"rel\" : \"" + rt + "\" }, \"children\": []}");
@@ -524,13 +524,13 @@ public class GetDomainContent extends HttpServletBase
         continue;
       }
       rel = Character.toUpperCase(rel.charAt(0)) + rel.substring(1).toLowerCase();
-      
+
       if (subenv) {
         System.out.println(",");
         out.println(",");
       }
       state = domainid == 0 ? "open" : "open";
-      
+
       System.out.println("GetDomainContent xd="+xd.getName());
       String uct;
       if (typestr.equalsIgnoreCase("category")) {
@@ -538,7 +538,7 @@ public class GetDomainContent extends HttpServletBase
       } else {
        uct = Character.toUpperCase(typestr.charAt(0)) + typestr.substring(1).toLowerCase();
       }
-      
+
       if (so.objHasChildren(xd, uct)) {
         System.out.print("{\"data\" : \"" + xd.getName() + "\", \"state\" : \"" + state + "\", \"attr\" : { \"id\" : \"" + xd.GetOTID() + "\", \"rel\" : \"" + rel + "\" }");
         out.print("{\"data\" : \"" + xd.getName() + "\", \"state\" : \"" + state + "\", \"attr\" : { \"id\" : \"" + xd.GetOTID() + "\", \"rel\" : \"" + rel + "\" }");
@@ -615,12 +615,12 @@ public class GetDomainContent extends HttpServletBase
           if ((!hmap.containsKey(Integer.valueOf(dm.getId()))) && (!hmap.containsValue(Integer.valueOf(dm.getId()))) && (dm.GetObjectType() == ObjectType.DOMAIN)) {
             continue;
           }
-          
+
           String uct = Character.toUpperCase(reltype.toString().charAt(0)) + reltype.toString().substring(1).toLowerCase();
-          
+
           if (subenv) out.println(",");
           if (subenv) System.out.println(",");
-          
+
           System.out.println("*** here ***");
 
           if (((dm.GetObjectType() == ObjectType.NOTIFY) || (dm.GetObjectType() == ObjectType.APPLICATION) || (dm.GetObjectType() == ObjectType.RELEASE) || (dm.GetObjectType() == ObjectType.COMPONENT)) && (so.objHasChildren(dm, typestr))) {
@@ -635,7 +635,7 @@ public class GetDomainContent extends HttpServletBase
 	    	  		if (so.objHasChildren(dm, typestr)) {
 	    	  			System.out.println("PROCEDURE ");
 	    	  			System.out.println("{\"data\" : \"" + dm.getName() + "\", \"state\": \"closed\", \"attr\" : { \"id\" : \"pr" + dm.getId() + "-" + dm.GetObjectKind() +  "\", \"rel\" : \""+uct+"\" }, \"children\": {}}");
-	
+
 	    	  			out.println("{\"data\" : \"" + dm.getName() + "\", \"state\": \"closed\", \"attr\" : { \"id\" : \"pr" + dm.getId() + "-" + dm.GetObjectKind() +  "\", \"rel\" : \""+uct+"\" }, \"children\": {}}");
 	    	  		} else {
 	    	  			out.println("{\"data\" : \"" + dm.getName() + "\", \"attr\" : { \"id\" : \"pr" + dm.getId() + "-" + dm.GetObjectKind() +  "\", \"rel\" : \""+uct+"\" }}");
@@ -653,7 +653,7 @@ public class GetDomainContent extends HttpServletBase
 				}
 			}
 			else if (typestr.equalsIgnoreCase("actions")) {
-				if (ot == ObjectType.ACTION) {	
+				if (ot == ObjectType.ACTION) {
 					System.out.println("ACTION ["+dm.getName()+"] children="+so.objHasChildren(dm, typestr));
 					if (so.objHasChildren(dm, typestr)) {
 						out.println("{\"data\" : \"" + dm.getName() + "\", \"state\": \"closed\", \"attr\" : { \"id\" : \"" + dm.GetOTID() +  "\", \"rel\" : \""+uct+"\" },  \"children\": {}}");
@@ -738,7 +738,7 @@ public class GetDomainContent extends HttpServletBase
       } else {
         if (typestr.equalsIgnoreCase("fragments"))
          typestr = "procedures";
-        
+
         if (SelectedDomain > 0)
         {
           Domain sd = session.getDomain(SelectedDomain);

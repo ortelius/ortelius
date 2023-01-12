@@ -388,7 +388,7 @@ bool SetAttributeByPath(TiXmlDocument &doc, const char *path, const char *value)
 	} else {
 		throw RuntimeError("parent element not found");
 	}
-	
+
 	free(parsedPath);
 	return ret;
 }
@@ -417,7 +417,7 @@ bool SetTextByPath(TiXmlDocument &doc, const char *path, const char *value)
 	} else {
 		throw RuntimeError("element %s not found", path);
 	}
-	
+
 	free(parsedPath);
 	return ret;
 }
@@ -447,7 +447,7 @@ bool RemoveElementByPath(TiXmlDocument &doc, const char *path)
 	} else {
 		throw RuntimeError("element %s not found", path);
 	}
-	
+
 	free(parsedPath);
 	return ret;
 }
@@ -477,7 +477,7 @@ bool AddElementBeforeByPath(TiXmlDocument &doc, const char *path, TiXmlNode &nod
 	} else {
 		throw RuntimeError("element %s not found", path);
 	}
-	
+
 	free(parsedPath);
 	return ret;
 }
@@ -507,7 +507,7 @@ bool AddElementAfterByPath(TiXmlDocument &doc, const char *path, TiXmlNode &node
 	} else {
 		throw RuntimeError("element %s not found", path);
 	}
-	
+
 	free(parsedPath);
 	return ret;
 }
@@ -537,7 +537,7 @@ bool AddElementInsideByPath(TiXmlDocument &doc, const char *path, TiXmlNode &nod
 	} else {
 		throw RuntimeError("element %s not found", path);
 	}
-	
+
 	free(parsedPath);
 	return ret;
 }
@@ -771,7 +771,7 @@ ModifyProviderImpl *XmlModifyProviderImplFactory::create(ExtendedStmt &parent)
 extern "C" XMLMODIFY_EXPORT int xmlmodify_PluginStart(DM &dm)
 {
 	dm.writeToLogFile("Xml Modify plugin V" XMLMODIFY_PLUGIN_VERSION);
-	
+
 	ModifyProviderImplRegistry::instance().registerFactory(
 		XMLMODIFY_MODIFY_NAME, new XmlModifyProviderImplFactory());
 

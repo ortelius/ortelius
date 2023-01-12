@@ -6,13 +6,13 @@
  * Revision: 1250
  *
  * Copyright (c) 2009-2013 Chris Leonello
- * jqPlot is currently available for use in all personal or commercial projects 
- * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL 
- * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can 
- * choose the license that best suits your project and use it accordingly. 
+ * jqPlot is currently available for use in all personal or commercial projects
+ * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL
+ * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can
+ * choose the license that best suits your project and use it accordingly.
  *
- * Although not required, the author would appreciate an email letting him 
- * know of any substantial use of jqPlot.  You can reach the author at: 
+ * Although not required, the author would appreciate an email letting him
+ * know of any substantial use of jqPlot.  You can reach the author at:
  * chris at jqplot dot com or see http://www.jqplot.com/info.php .
  *
  * If you are feeling kind and generous, consider supporting the project by
@@ -26,7 +26,7 @@
  *     http://hexmen.com/js/sprintf.js
  *     The author (Ash Searle) has placed this code in the public domain:
  *     "This code is unrestricted: you are free to use it however you like."
- * 
+ *
  */
 (function($) {
     /**
@@ -36,16 +36,16 @@
     * to draw the text on the canvas.  Two modes of rendering the text are available.
     * If the browser has native font support for canvas fonts (currently Mozila 3.5
     * and Safari 4), you can enable text rendering with the canvas fillText method.
-    * You do so by setting the "enableFontSupport" option to true. 
-    * 
+    * You do so by setting the "enableFontSupport" option to true.
+    *
     * Browsers lacking native font support will have the text drawn on the canvas
     * using the Hershey font metrics.  Even if the "enableFontSupport" option is true
     * non-supporting browsers will still render with the Hershey font.
-    * 
+    *
     */
     $.jqplot.CanvasAxisLabelRenderer = function(options) {
         // Group: Properties
-        
+
         // prop: angle
         // angle of text, measured clockwise from x axis.
         this.angle = 0;
@@ -72,7 +72,7 @@
         // CSS spec for fontWeight:  normal, bold, bolder, lighter or a number 100 - 900
         this.fontWeight = 'normal';
         // prop: fontStretch
-        // Multiplier to condense or expand font width.  
+        // Multiplier to condense or expand font width.
         // Applies only to browsers which don't support canvas native font rendering.
         this.fontStretch = 1.0;
         // prop: textColor
@@ -85,49 +85,49 @@
         this.enableFontSupport = true;
         // prop: pt2px
         // Point to pixel scaling factor, used for computing height of bounding box
-        // around a label.  The labels text renderer has a default setting of 1.4, which 
+        // around a label.  The labels text renderer has a default setting of 1.4, which
         // should be suitable for most fonts.  Leave as null to use default.  If tops of
         // letters appear clipped, increase this.  If bounding box seems too big, decrease.
         // This is an issue only with the native font renderering capabilities of Mozilla
         // 3.5 and Safari 4 since they do not provide a method to determine the font height.
         this.pt2px = null;
-        
+
         this._elem;
         this._ctx;
         this._plotWidth;
         this._plotHeight;
         this._plotDimensions = {height:null, width:null};
-        
+
         $.extend(true, this, options);
-        
+
         if (options.angle == null && this.axis != 'xaxis' && this.axis != 'x2axis') {
             this.angle = -90;
         }
-        
+
         var ropts = {fontSize:this.fontSize, fontWeight:this.fontWeight, fontStretch:this.fontStretch, fillStyle:this.textColor, angle:this.getAngleRad(), fontFamily:this.fontFamily};
         if (this.pt2px) {
             ropts.pt2px = this.pt2px;
         }
-        
+
         if (this.enableFontSupport) {
             if ($.jqplot.support_canvas_text()) {
                 this._textRenderer = new $.jqplot.CanvasFontRenderer(ropts);
             }
-            
+
             else {
-                this._textRenderer = new $.jqplot.CanvasTextRenderer(ropts); 
+                this._textRenderer = new $.jqplot.CanvasTextRenderer(ropts);
             }
         }
         else {
-            this._textRenderer = new $.jqplot.CanvasTextRenderer(ropts); 
+            this._textRenderer = new $.jqplot.CanvasTextRenderer(ropts);
         }
     };
-    
+
     $.jqplot.CanvasAxisLabelRenderer.prototype.init = function(options) {
         $.extend(true, this, options);
         this._textRenderer.init({fontSize:this.fontSize, fontWeight:this.fontWeight, fontStretch:this.fontStretch, fillStyle:this.textColor, angle:this.getAngleRad(), fontFamily:this.fontFamily});
     };
-    
+
     // return width along the x axis
     // will check first to see if an element exists.
     // if not, will return the computed text box width.
@@ -143,7 +143,7 @@
             return w;
         }
     };
-    
+
     // return height along the y axis.
     $.jqplot.CanvasAxisLabelRenderer.prototype.getHeight = function(ctx) {
         if (this._elem) {
@@ -157,19 +157,19 @@
             return w;
         }
     };
-    
+
     $.jqplot.CanvasAxisLabelRenderer.prototype.getAngleRad = function() {
         var a = this.angle * Math.PI/180;
         return a;
     };
-    
+
     $.jqplot.CanvasAxisLabelRenderer.prototype.draw = function(ctx, plot) {
           // Memory Leaks patch
           if (this._elem) {
               if ($.jqplot.use_excanvas && window.G_vmlCanvasManager.uninitElement !== undefined) {
                   window.G_vmlCanvasManager.uninitElement(this._elem.get(0));
               }
-            
+
               this._elem.emptyForce();
               this._elem = null;
           }
@@ -185,19 +185,19 @@
         elem.height = h;
         elem.style.width = w;
         elem.style.height = h;
-        
+
         elem = plot.canvasManager.initCanvas(elem);
 
         this._elem = $(elem);
         this._elem.css({ position: 'absolute'});
         this._elem.addClass('jqplot-'+this.axis+'-label');
-        
+
         elem = null;
         return this._elem;
     };
-    
+
     $.jqplot.CanvasAxisLabelRenderer.prototype.pack = function() {
         this._textRenderer.draw(this._elem.get(0).getContext("2d"), this.label);
     };
-    
+
 })(jQuery);

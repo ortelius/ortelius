@@ -29,7 +29,7 @@ public class FragmentAttributes
 	private boolean m_required;
 	private String DefaultValue;
 	private List<FragmentListValues> m_flv;
-	
+
 	public FragmentAttributes() {
 		m_attrid=0;
 		m_attname="";
@@ -39,7 +39,7 @@ public class FragmentAttributes
 		m_inherit=false;
 		m_required=false;
 	}
-	
+
 	public int getAttrId() { return m_attrid; }
 	public String getAttrName() { return m_attname; }
 	public String getAttrVal() { return m_attval.replace("'", "&#146;"); }
@@ -48,7 +48,7 @@ public class FragmentAttributes
 	public boolean getInherit() { return m_inherit; }
 	public boolean isRequired() { return m_required; }
 	public List<FragmentListValues> getFragmentListValues() { return m_flv; }
-	
+
 	public void setAttrId(int attrid) { m_attrid = attrid; }
 	public void setAttrName(String attname) { m_attname = attname; }
 	public void setAttrVal(String attval) { m_attval = attval; }
@@ -66,6 +66,6 @@ public class FragmentAttributes
  public void setDefaultValue(String defaultValue)
  {
   DefaultValue = defaultValue;
- } 
-	
+ }
+
 }

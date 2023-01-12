@@ -25,7 +25,7 @@ public class ServerLink implements java.io.Serializable {
 	private String m_label;
 	private String m_style;
 
-	
+
 	public ServerLink() {
 		m_sidefrom=1;
 		m_sideto=1;
@@ -34,7 +34,7 @@ public class ServerLink implements java.io.Serializable {
 		m_label="";
 		m_style="";
     }
-	
+
 	public ServerLink(int fn,int tn,int fs,int ts)
 	{
 		m_nodefrom = fn;

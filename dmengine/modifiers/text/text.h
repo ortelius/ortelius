@@ -32,7 +32,7 @@ public:
 	TextModifyProviderImpl(ExtendedStmt &parent);
 	~TextModifyProviderImpl();
 
-	void loadFile(const char *infile, class Context &ctx); 
+	void loadFile(const char *infile, class Context &ctx);
 	void saveFile(const char *outfile, class Context &ctx);
 
 	void replace(class ExtendedStmt &stmt, class Context &ctx);

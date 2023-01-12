@@ -11,5 +11,3 @@ CREATE TABLE dm_componentdeps
     summary character varying(8096),
     CONSTRAINT dm_componentdeps_pkey PRIMARY KEY (compid, packagename, packageversion)
 );
-
-

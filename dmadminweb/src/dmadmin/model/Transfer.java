@@ -28,12 +28,12 @@ public class Transfer
 	{
 		super(sess, id, name);
 	}
-	
+
 	@Override
 	public ObjectType getObjectType() {
 		return ObjectType.TRANSFER;
 	}
-	
+
 	@Override
 	public String getDatabaseTable() {
 		return null;

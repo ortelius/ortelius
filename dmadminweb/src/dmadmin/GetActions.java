@@ -36,7 +36,7 @@ import dmadmin.model.ActionKind;
  */
 public class GetActions extends JSONServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -50,7 +50,7 @@ public class GetActions extends JSONServletBase {
 		throws ServletException, IOException
 	{
 	 ArrayList<Integer> dups = new ArrayList<Integer>();
-	 
+
 		String reason = request.getParameter("reason");
 		JSONArray ret = new JSONArray();
 		if (reason.equalsIgnoreCase("getrefs")) {
@@ -78,7 +78,7 @@ public class GetActions extends JSONServletBase {
 						t.add("uselink",session.ValidDomain(a.getDomainId()));
 						ret.add(t);
 					}
-					
+
 				} else {
 					ret.add(a.getLinkJSON());
 				}

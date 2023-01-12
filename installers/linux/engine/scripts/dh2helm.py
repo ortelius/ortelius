@@ -111,7 +111,7 @@ def upload_helm(override, chartvalues, newvals, helmtemplate):
     my_env['helmopts'] = newvals.get('helmopts', '')
     my_env['helmtemplate'] = helmtemplate
     my_env['environment'] = newvals.get('environment', 'ci')
-    my_env['component'] = newvals.get('component','') 
+    my_env['component'] = newvals.get('component','')
 
     if (newvals.get('chartpublish', None) is not None):
         pid = subprocess.Popen(get_script_path() + "/git-chartpublish.sh", env=my_env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

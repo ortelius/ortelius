@@ -40,7 +40,7 @@ public class ImportProc
 {
 	private static final long serialVersionUID = 8314171259294636898L;
 
-	
+
     public ImportProc() {
         super();
     }
@@ -50,10 +50,10 @@ public class ImportProc
 			HttpServletRequest request, HttpServletResponse response,
 			HttpParameters params, List<FileItem> files)
 		throws ServletException, IOException
-	{				
+	{
 		// Either result or data go in here
 		JSONObject obj = new JSONObject();
-		
+
 		String textDomain = request.getParameter("domain");
 		System.out.println("textDomain (2)="+textDomain);
 		if (textDomain == null) {
@@ -62,7 +62,7 @@ public class ImportProc
 			return obj;
 		}
 		int domainid = Integer.parseInt(textDomain);
-		
+
 		System.out.println("domainid="+domainid);
 
 		if (files != null) {

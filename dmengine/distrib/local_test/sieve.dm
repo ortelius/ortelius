@@ -6,12 +6,12 @@ function sieve()
     for(i = 0; $i <= 8190; i = $i + 1) {
       set flags[$i] = true;
     }
-    
+
     for(i = 0; $i <= 8190; i = $i + 1)  {
       if($flags[$i]) {
         set prime = $i + $i + 3;
         set k = $i + $prime;
-    
+
         while($k <= 8190) {
           set flags[$k] = false;
           set k = $k + $prime;
@@ -30,10 +30,10 @@ action doSieve
 {
   echo "sieve -  Sieve benchmark, \$Revision: 1.1 \$";
 
-  psloop {  
+  psloop {
     set -g ans = sieve();
   }
-  
+
   if($ans != 1899) {
     echo "Sieve result wrong, ans = $ans, expected 1899";
     return;

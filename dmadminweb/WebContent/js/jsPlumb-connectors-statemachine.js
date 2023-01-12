@@ -25,25 +25,25 @@
 
 		this.m = (y2 - y1) / (x2 - x1);
 		this.b = -1 * ((this.m * x1) - y1);
-	
+
 		this.rectIntersect = function(x,y,w,h) {
 			var results = [];
-		
+
 			// 	try top face
 			// 	the equation of the top face is y = (0 * x) + b; y = b.
 			var xInt = (y - this.b) / this.m;
 			// test that the X value is in the line's range.
 			if (xInt >= x && xInt <= (x + w)) results.push([ xInt, (this.m * xInt) + this.b ]);
-		
+
 			// try right face
 			var yInt = (this.m * (x + w)) + this.b;
 			if (yInt >= y && yInt <= (y + h)) results.push([ (yInt - this.b) / this.m, yInt ]);
-		
+
 			// 	bottom face
 			var xInt = ((y + h) - this.b) / this.m;
 			// test that the X value is in the line's range.
 			if (xInt >= x && xInt <= (x + w)) results.push([ xInt, (this.m * xInt) + this.b ]);
-		
+
 			// try left face
 			var yInt = (this.m * x) + this.b;
 			if (yInt >= y && yInt <= (y + h)) results.push([ (yInt - this.b) / this.m, yInt ]);
@@ -57,7 +57,7 @@
 				results.push([xseg, yseg]);
 				return results;
 			}
-		
+
 			return null;
 
 		};
@@ -68,7 +68,7 @@
 		else if (x2 <= x1 && y2 >= y1) return 3;
 		return 4;
 	},
-		
+
 		// the control point we will use depends on the faces to which each end of the connection is assigned, specifically whether or not the
 		// two faces are parallel or perpendicular.  if they are parallel then the control point lies on the midpoint of the axis in which they
 		// are parellel and varies only in the other axis; this variation is proportional to the distance that the anchor points lie from the
@@ -82,7 +82,7 @@
 		// 1 - absolute y
 		// 2 - proportional x in element (0 is left edge, 1 is right edge)
 		// 3 - proportional y in element (0 is top edge, 1 is bottom edge)
-		// 	
+		//
 	_findControlPoint = function(midx, midy, segment, sourceEdge, targetEdge, dx, dy, distance, proximityLimit) {
         // TODO (maybe)
         // - if anchor pos is 0.5, make the control point take into account the relative position of the elements.
@@ -109,15 +109,15 @@
             else return [ midx + (1 * dx) , midy + (-1 * dy) ];
         }
 
-	};	
-	
+	};
+
 	/**
      * Class: Connectors.StateMachine
      * Provides 'state machine' connectors.
      */
 	/*
 	 * Function: Constructor
-	 * 
+	 *
 	 * Parameters:
 	 * curviness -	measure of how "curvy" the connectors will be.  this is translated as the distance that the
      *                Bezier curve's control point is from the midpoint of the straight line connecting the two
@@ -141,19 +141,19 @@
 			clockwise = params.orientation && params.orientation === "clockwise",
 			loopbackRadius = params.loopbackRadius || 25,
 			showLoopback = params.showLoopback !== false;
-		
+
 		this._compute = function(paintInfo, params) {
 			var w = Math.abs(params.sourcePos[0] - params.targetPos[0]),
 				h = Math.abs(params.sourcePos[1] - params.targetPos[1]),
 				x = Math.min(params.sourcePos[0], params.targetPos[0]),
-				y = Math.min(params.sourcePos[1], params.targetPos[1]);				
-		
-			if (!showLoopback || (params.sourceEndpoint.elementId !== params.targetEndpoint.elementId)) {                            
+				y = Math.min(params.sourcePos[1], params.targetPos[1]);
+
+			if (!showLoopback || (params.sourceEndpoint.elementId !== params.targetEndpoint.elementId)) {
 				var _sx = params.sourcePos[0] < params.targetPos[0] ? 0  : w,
 					_sy = params.sourcePos[1] < params.targetPos[1] ? 0:h,
 					_tx = params.sourcePos[0] < params.targetPos[0] ? w : 0,
 					_ty = params.sourcePos[1] < params.targetPos[1] ? h : 0;
-            
+
 				// now adjust for the margin
 				if (params.sourcePos[2] === 0) _sx -= margin;
             	if (params.sourcePos[2] === 1) _sx += margin;
@@ -165,12 +165,12 @@
             	if (params.targetPos[3] === 1) _ty += margin;
 
             	//
-	            // these connectors are quadratic bezier curves, having a single control point. if both anchors 
+	            // these connectors are quadratic bezier curves, having a single control point. if both anchors
     	        // are located at 0.5 on their respective faces, the control point is set to the midpoint and you
         	    // get a straight line.  this is also the case if the two anchors are within 'proximityLimit', since
-           	 	// it seems to make good aesthetic sense to do that. outside of that, the control point is positioned 
+           	 	// it seems to make good aesthetic sense to do that. outside of that, the control point is positioned
            	 	// at 'curviness' pixels away along the normal to the straight line connecting the two anchors.
-	            // 
+	            //
    	        	// there may be two improvements to this.  firstly, we might actually support the notion of avoiding nodes
             	// in the UI, or at least making a good effort at doing so.  if a connection would pass underneath some node,
             	// for example, we might increase the distance the control point is away from the midpoint in a bid to
@@ -184,12 +184,12 @@
             	// or stupid, and may indeed work only in a way that is so subtle as to have been a waste of time.
             	//
 
-				var _midx = (_sx + _tx) / 2, _midy = (_sy + _ty) / 2, 
+				var _midx = (_sx + _tx) / 2, _midy = (_sy + _ty) / 2,
             	    m2 = (-1 * _midx) / _midy, theta2 = Math.atan(m2),
             	    dy =  (m2 == Infinity || m2 == -Infinity) ? 0 : Math.abs(curviness / 2 * Math.sin(theta2)),
 				    dx =  (m2 == Infinity || m2 == -Infinity) ? 0 : Math.abs(curviness / 2 * Math.cos(theta2)),
 				    segment = _segment(_sx, _sy, _tx, _ty),
-				    distance = Math.sqrt(Math.pow(_tx - _sx, 2) + Math.pow(_ty - _sy, 2)),			
+				    distance = Math.sqrt(Math.pow(_tx - _sx, 2) + Math.pow(_ty - _sy, 2)),
 	            	// calculate the control point.  this code will be where we'll put in a rudimentary element avoidance scheme; it
 	            	// will work by extending the control point to force the curve to be, um, curvier.
 					_controlPoint = _findControlPoint(_midx,
@@ -205,24 +205,24 @@
 					x1:_tx, y1:_ty, x2:_sx, y2:_sy,
 					cp1x:_controlPoint[0], cp1y:_controlPoint[1],
 					cp2x:_controlPoint[0], cp2y:_controlPoint[1]
-				});				
+				});
             }
             else {
-            	// a loopback connector.  draw an arc from one anchor to the other.            	
-        		var x1 = params.sourcePos[0], x2 = params.sourcePos[0], y1 = params.sourcePos[1] - margin, y2 = params.sourcePos[1] - margin, 				
+            	// a loopback connector.  draw an arc from one anchor to the other.
+        		var x1 = params.sourcePos[0], x2 = params.sourcePos[0], y1 = params.sourcePos[1] - margin, y2 = params.sourcePos[1] - margin,
 					cx = x1, cy = y1 - loopbackRadius;
-				
+
 					// canvas sizing stuff, to ensure the whole painted area is visible.
-					w = 2 * loopbackRadius, 
+					w = 2 * loopbackRadius,
 					h = 2 * loopbackRadius,
-					x = cx - loopbackRadius, 
+					x = cx - loopbackRadius,
 					y = cy - loopbackRadius;
 
 				paintInfo.points[0] = x;
 				paintInfo.points[1] = y;
 				paintInfo.points[2] = w;
 				paintInfo.points[3] = h;
-				
+
 				// ADD AN ARC SEGMENT.
 				_super.addSegment("Arc", {
 					x1:(x1-x) + 4,
@@ -236,8 +236,8 @@
 					cx:cx-x,
 					cy:cy-y
 				});
-            }                           
-        };                        
+            }
+        };
 	};
 })();
 

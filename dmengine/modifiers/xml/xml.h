@@ -31,8 +31,8 @@ public:
 	XmlModifyProviderImpl(ExtendedStmt &parent);
 	~XmlModifyProviderImpl();
 
-	void loadFile(const char *infile, class Context &ctx); 
-	void saveFile(const char *outfile, class Context &ctx); 
+	void loadFile(const char *infile, class Context &ctx);
+	void saveFile(const char *outfile, class Context &ctx);
 
 	void set_attribute(class ExtendedStmt &stmt, class Context &ctx);
 	void set_text(class ExtendedStmt &stmt, class Context &ctx);

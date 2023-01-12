@@ -44,20 +44,20 @@ function LoadApp4EnvData(tablename, objtypeAsInt, objtype, objid, addParams)
      console.log(err);
     }
    });
- } 
- 
+ }
+
  console.log("LoadApp4EnvData appid="+objid);
- 
+
  $.getJSON('GetAppVersInEnvData', "envid=" + objid, function(res)
  {
   var td = "";
   var rowcnt = 0;
   console.log("res");
   console.log(res);
-  
+
   if (!("data" in res))
    return;
-  
+
   for (a = 0; a < res['data'].length; a++)
   {
    var data = res['data'][a][1];
@@ -68,19 +68,19 @@ function LoadApp4EnvData(tablename, objtypeAsInt, objtype, objid, addParams)
 
    if (typeof data.id == "undefined")
     continue;
-   
+
    var linkval2="";
    if (lastapp != "") {
     lastappStr = lastapp.name;
     linkval2="<a href='javascript:SwitchDisplay(\""+lastapp.type+lastapp.id+"\");'>"+lastapp.name+"</a>";
    }
-   
+
    console.log("details="+details);
 
    if (details != "")
    {
     var type = details.type;
-    
+
     console.log("type="+type);
 
     if (type == "cm")
@@ -94,14 +94,14 @@ function LoadApp4EnvData(tablename, objtypeAsInt, objtype, objid, addParams)
      if (typeof details.tooltip == "undefined")
      {
       detailsStr = "Deployment " + details.name;
-     } 
+     }
      else
      {
       var d = convertDate(details.tooltip);
       detailsStr = "<a onClick=\"DisplayDeploy(" + details.name.substr(1) + ");\">"+details.name+"</a>  deployed at " + d.toLocaleDateString() + " " + d.toLocaleTimeString();
-     } 
+     }
    }
-   } 
+   }
 
    rowcnt++;
 
@@ -123,10 +123,10 @@ function AddApp2EnvRow()
 
  td += '<tr id="app4env_row_' + app4env_rowcnt + '"><td><input type="text" id="app4env_keytext_' + app4env_rowcnt + '" value=""><select id="app4env_key_' + app4env_rowcnt + '" value="">' + appdropdown + '</select></td><td>' + button_col + '</td>';
  td += '<td style="display:none"><input type="hidden" id="app4env_oldkey_' + app4env_rowcnt + '" value="en0"></td></tr>';
- 
+
  $("#app4env > tbody").append(td);
  $("#app4env_keytext_" + app4env_rowcnt).focus();
- 
+
  $("#app4env_row_" + app4env_rowcnt).mouseenter(function() {
   app4env_rowid = $(this).attr("id");
   parts = app4env_rowid.split('_');
@@ -139,7 +139,7 @@ function AddApp2EnvRow()
     $("#" + app4env_rowid + " > td:nth-child(2) > button").hide();
     parts = app4env_rowid.split('_');
     rowid = parts.pop();
-    
+
     $("#app4env_keytext_" + rowid).show();
     $("#app4env_key_" + rowid).hide();
     SaveApp4EnvData(rowid);
@@ -151,16 +151,16 @@ function SaveApp4EnvData(rowid)
 {
  id = $("#app4env_key_" + rowid).val();
  oldid = $("#app4env_oldkey_" + rowid).val();
- 
+
  if (id == null || oldid == null || id == oldid)
   return;
- 
+
  $("#app4env_key_" + rowid).val(id);
  $("#app4env_oldkey_" + rowid).val(id);
- 
+
  srvid = id.substring(2);
  key = oldid.substring(2);
- 
+
  $.ajax(
    {
     url : "GetAppVersInEnvData",
@@ -183,12 +183,12 @@ function SaveApp4EnvData(rowid)
      console.log(err);
     }
    });
- 
+
  if (objtype == "av")
   isVersion = "true";
  else
   isVersion = "false";
- 
+
  $.ajax(
    {
     url : "GetAppVersInEnvData",
@@ -243,4 +243,3 @@ function DeleteApp4Env(rowid)
    }
   });
 }
-

@@ -71,7 +71,7 @@ template<class T> void List<T>::remove(T *obj)
 		m_count--;
 		return;
 	}
-	
+
 	while(e) {
 		ListEntry<T> *n = e->m_next;
 		if(n && (n->m_obj == obj)) {

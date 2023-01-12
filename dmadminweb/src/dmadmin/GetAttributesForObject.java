@@ -38,7 +38,7 @@ public class GetAttributesForObject extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
  HttpSession session = null;
- 
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -53,35 +53,35 @@ public class GetAttributesForObject extends HttpServlet {
 			throws ServletException, IOException
 	{
 		response.setContentType("application/json");
-		
+
 		System.out.println("In GetAttributesForObject");
 		System.out.println("id"+request.getParameter("id"));
-		
+
 		String objtype = request.getParameter("objtype");
 		int id = Integer.parseInt(request.getParameter("id"));
-		
 
-		// Get the printwriter object from response to write the required json object to the output stream      
+
+		// Get the printwriter object from response to write the required json object to the output stream
 		PrintWriter out = response.getWriter();
-		
+
   try (DMSession so = DMSession.getInstance(request)) {
   session = request.getSession();
   session.setAttribute("session", so);
   so.checkConnection(request.getServletContext());
-		
+
 		List<DMAttribute> atts = so.getAttributes(objtype, id);
-				
+
 		JSONObject obj = new JSONObject();
 		JSONArray data = new JSONArray();
 		obj.add("data", data);
-		
+
 		for(DMAttribute a: atts) {
 			data.add(new JSONArray().add(a.getName()).add(a.getValue()));
 		}
-		
+
 		String ret = obj.getJSON();
 		out.println(ret);
-		System.out.println(ret);		
+		System.out.println(ret);
 		out.flush();
   }
 	}

@@ -57,13 +57,13 @@
         <Type>37</Type>
         <ParentBuildTask>Link</ParentBuildTask>
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
-    </Dependency>		
+    </Dependency>
     <Dependency>
         <Name>libz.so</Name>
         <Type>37</Type>
         <ParentBuildTask>Link</ParentBuildTask>
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
-    </Dependency>								
+    </Dependency>
     <Dependency>
         <Name>$(CFG)\bin\libdmapi.so</Name>
         <Type>37</Type>

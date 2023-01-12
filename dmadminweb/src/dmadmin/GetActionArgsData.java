@@ -38,7 +38,7 @@ public class GetActionArgsData
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     public GetActionArgsData() {
         super();
     }
@@ -50,22 +50,22 @@ public class GetActionArgsData
 	{
 		int actionid = getIntParameter(request, "id");
 		Action action = session.getAction(actionid, true, ObjectType.ACTION );
-		
+
 		boolean readOnly = !action.isUpdatable();
 		if (action.getParentId()>0) readOnly = true;	// archived actions are not editable
-		
+
 		if(!isPost) {
 			// Gets the arg data
 			List<ActionArg> args = action.getInputArgs();
-			
+
 			JSONObject ret = new JSONObject().add("result", true);
 			ret.add("readonly", readOnly);
 			ret.add("filepath", action.getFilepath());
 			ret.add("interpreter", action.getInterpreter());
-   
+
 			JSONArray data = new JSONArray();
 			ret.add("data", data);
-			
+
 			for(ActionArg arg : args) {
 				data.add(new JSONArray()
 					.add(arg.getName())		// id - use the original name
@@ -83,18 +83,18 @@ public class GetActionArgsData
 					.add(arg.getNegSwitch()));
 			}
 			return ret;
-		} 
-		else 
+		}
+		else
 		{
 	  String updateOrder = request.getParameter("updateOrder");
    String updateInputOrder = request.getParameter("updateInputOrder");
    String switchAction = request.getParameter("switchAction");
    String removeArg = request.getParameter("removeArg");
-   
+
    if (updateInputOrder != null && updateInputOrder.equalsIgnoreCase("Y"))
    {
     HashMap<String,String> updates = new HashMap<String,String>();
-    
+
     for (Object oparam : request.getParameterMap().keySet())
     {
      String key = (String)oparam;
@@ -102,35 +102,35 @@ public class GetActionArgsData
      {
       String val = request.getParameter(key);
       updates.put(key, val);
-     } 
+     }
     }
-    
+
     session.updateInputOrder(action,updates);
     JSONObject ret = new JSONObject().add("result", true);
     return ret;
    }
    else if (updateOrder != null && updateOrder.equalsIgnoreCase("Y"))
    {
-    ArrayList<String> updates = new ArrayList<String>();    
+    ArrayList<String> updates = new ArrayList<String>();
     int poskeyscnt = 0;
-    
+
     Object[] keys = request.getParameterMap().keySet().toArray();
-    
+
     for (int j=0;j<keys.length;j++)
     {
      String key = (String)keys[j];
      if (!key.equalsIgnoreCase("updateOrder") && !key.equalsIgnoreCase("id"))
      {
       poskeyscnt++;
-     } 
+     }
     }
-    
+
     for (int j=1;j<(poskeyscnt+1);j++)
     {
      String val = request.getParameter("pos_" + j);
      updates.add(val);
     }
-    
+
     session.updateOrder(action,updates);
     JSONObject ret = new JSONObject().add("result", true);
     return ret;
@@ -155,7 +155,7 @@ public class GetActionArgsData
     {
      String name = request.getParameter("name");
      String flag = request.getParameter("flag");
-     session.updateSwitch(actionid,name,flag);     
+     session.updateSwitch(actionid,name,flag);
     }
     JSONObject ret = new JSONObject().add("result", true);
     return ret;
@@ -216,7 +216,7 @@ public class GetActionArgsData
    }
 		}
 	}
-	
+
 	/**
 	 * Decodes a value of the form "<reqd><pad><swmode><outpos>&<name>&<sw1>&<sw2>"
 	 */
@@ -227,7 +227,7 @@ public class GetActionArgsData
 		if(val.length() < 6) {
 			throw new RuntimeException("Invalid action arg value: too short");
 		}
-		
+
 		String[] parts = val.split("&", 6);
 		if(parts.length != 6) {
 			System.out.println("parts[0]="+parts[0]);
@@ -243,7 +243,7 @@ public class GetActionArgsData
 		String sw1 = urlDecode(parts[3]);
 		String sw2 = urlDecode(parts[4]);
 		String type = urlDecode(parts[5]);
-		
+
 		boolean reqd = parts[0].charAt(0) == 'Y';
 		boolean pad = parts[0].charAt(1) == 'Y';
 		Action.SwitchMode mode = Action.SwitchMode.fromString(parts[0].substring(2,3));
@@ -254,7 +254,7 @@ public class GetActionArgsData
 			e.printStackTrace();
 			throw new RuntimeException("Invalid action arg value: invalid outpos");
 		}
-		
+
 		// TODO: need to pass inpos for functions
 		Action.ActionArg ret = action.new ActionArg(key, name, type, reqd, pad, inpos, outpos, mode, sw1, sw2);
 		System.out.println("arg " + key + " = " + ret.getTextWithMarkup());

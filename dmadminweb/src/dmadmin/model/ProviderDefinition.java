@@ -30,19 +30,19 @@ public class ProviderDefinition
 	private static final long serialVersionUID = 2148695895455356563L;
 
 	public static final int UNCONFIGURED_ID = 0;
-	
+
 	private ObjectType m_kind;
-	
+
 	public ProviderDefinition() {
 	}
-	
+
 	public ProviderDefinition(DMSession sess, int id, String name) {
 		super(sess, id, name);
 	}
-	
+
 	public ObjectType getKind()  { return m_kind; }
 	public void setKind(ObjectType kind)  { m_kind = kind; }
-	
+
 	@Override
 	public ObjectType getObjectType() {
 		return ObjectType.PROVIDERDEF;
@@ -57,7 +57,7 @@ public class ProviderDefinition
 	public String getForeignKey() {
 		return "defid";
 	}
-	
+
 	@Override
 	public IJSONSerializable getLinkJSON() {
 		JSONObject obj = new LinkField(getObjectType(), m_id, m_name).getJSONObject();
@@ -75,7 +75,7 @@ public class ProviderDefinition
 		// TODO Auto-generated method stub
 		return false;
 	}
-	
+
 	public PropertyDataSet getDetailsForEngine(Engine engine) {
 		return m_session.getProviderDefDetails(this, engine);
 	}

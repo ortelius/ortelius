@@ -23,14 +23,14 @@ function ShowHome(hbc,nocallback)
   $("#panel_container_historyandpending").css('left', '288px');
  else
   $("#panel_container_historyandpending").css('left', '396px');
- 
+
   $("#panel_container_right").hide();
   $("#panel_container_historyandpending").show();
- 
+
   $("#homependingtab").html("<table id=\"homependingtab\"><tbody></tbody></table>");
   $("#homehisttab").html("<table id=\"homehisttab\"><tbody></tbody></table>");
-  
-  createNewsFeed("homependingtab","","",true); 
+
+  createNewsFeed("homependingtab","","",true);
   createNewsFeed("homehisttab","","",false);
   console.log("hbc="+hbc);
 
@@ -43,15 +43,15 @@ function ShowHome(hbc,nocallback)
   else
   {
    $("#panel_container_historyandpending").hide();
-   $("#panel_container_right").show(); 
-  } 
+   $("#panel_container_right").show();
+  }
 }
 
 
 function ActivateHomeSubTabs(tabId)
 {
  var menuList = ["#tabs-HomePending", "#tabs-HomeHistory", "#tabs-DomainSummary", "#tabs-HomeDashboard"];
- 
+
  for (i=0;i<menuList.length;i++)
  {
    var key = menuList[i];
@@ -70,5 +70,5 @@ function ActivateHomeSubTabs(tabId)
   var tmp = "#" + tabId + "-data";
   $(tmp).show();
  }
- 
+
 }

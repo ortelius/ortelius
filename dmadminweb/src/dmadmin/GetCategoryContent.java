@@ -57,7 +57,7 @@ public class GetCategoryContent extends HttpServlet
   Integer catid = ServletUtils.getIntParameter(request, "catid");
   String objtype = request.getParameter("objtype");
   String nobuiltins = null;
-  
+
   System.out.println("catid="+request.getParameter("catid")+" objtype="+objtype+" domainid="+domainid);
   PrintWriter out = response.getWriter();
 
@@ -67,11 +67,11 @@ public class GetCategoryContent extends HttpServlet
   so.checkConnection(request.getServletContext());
 
   // HashMap<Integer, Integer> hmap = new HashMap<Integer, Integer>();
-  
+
   out.print("[");
   System.out.print("[");
   List<ObjectType> reltypes = new ArrayList<ObjectType>();
-  
+
   if (objtype.equalsIgnoreCase("cy"))
   {
    reltypes.add(ObjectType.ACTION);
@@ -80,16 +80,16 @@ public class GetCategoryContent extends HttpServlet
   {
    reltypes.add(ObjectType.PROCEDURE);
    reltypes.add(ObjectType.FUNCTION);
-  } 
+  }
   else if (objtype.equalsIgnoreCase("cf"))
   {
    reltypes.add(ObjectType.FRAGMENT);
-  }    
+  }
   else if (objtype.equalsIgnoreCase("cc"))
   {
    reltypes.add(ObjectType.COMPONENT);
-  }    
-  
+  }
+
   boolean subv = false;
   for (ObjectType reltype : reltypes)
   {
@@ -97,7 +97,7 @@ public class GetCategoryContent extends HttpServlet
 
    for (TreeObject dm : dmo)
    {
-	   
+
     ObjectType ot = dm.GetOTID().getObjectType();
     System.out.println("GetCategoryContent ot="+ot+" dm.GetObjectType="+dm.GetObjectType());
 
@@ -105,7 +105,7 @@ public class GetCategoryContent extends HttpServlet
     {
      out.println(",");
      System.out.println(",");
-    } 
+    }
 
     if (ot == ObjectType.ACTION)
     {

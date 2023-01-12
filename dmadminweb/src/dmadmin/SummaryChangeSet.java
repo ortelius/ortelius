@@ -26,10 +26,10 @@ public class SummaryChangeSet
 {
 	private List<SummaryField> m_fields = new ArrayList<SummaryField>();
 	private Hashtable<SummaryField,Object> m_values = new Hashtable<SummaryField,Object>();
-	
+
 	public SummaryChangeSet()
 	{}
-	
+
 	public void add(SummaryField field, Object value)
 	{
 		m_fields.add(field);
@@ -37,7 +37,7 @@ public class SummaryChangeSet
 			m_values.put(field, value);
 		}
 	}
-	
+
 	public Object get(SummaryField field)
 	{
 		return m_values.get(field);
@@ -49,14 +49,14 @@ public class SummaryChangeSet
 		Object obj = m_values.get(field);
 		if((obj != null) && (obj instanceof String)) {
 			System.out.println("getBoolean - String - " + obj);
-			ret = ((String) obj).equalsIgnoreCase("true"); 
+			ret = ((String) obj).equalsIgnoreCase("true");
 		} else if(obj instanceof Boolean) {
 			System.out.println("getBoolean - Boolean - " + obj);
-			ret = ((Boolean) obj).booleanValue(); 
+			ret = ((Boolean) obj).booleanValue();
 		}
 		return (ret ? "Y" : "N");
 	}
-	
+
 	public boolean isEmpty()
 	{
 		return m_fields.isEmpty();

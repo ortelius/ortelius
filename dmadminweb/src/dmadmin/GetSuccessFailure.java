@@ -32,14 +32,14 @@ import dmadmin.json.JSONObject;
  */
 public class GetSuccessFailure extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public GetSuccessFailure() {
         super();
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
@@ -49,7 +49,7 @@ public class GetSuccessFailure extends HttpServletBase {
     	int appid = ServletUtils.getIntParameter(request, "appid",-1);
 		int servid = ServletUtils.getIntParameter(request, "servid", -1);
 		int envid = ServletUtils.getIntParameter(request, "envid", -1);
-		// Get the printwriter object from response to write the required json object to the output stream      
+		// Get the printwriter object from response to write the required json object to the output stream
 		PrintWriter out = response.getWriter();
 		JSONObject obj = new JSONObject();
 		if (appid >=0) {
@@ -64,7 +64,7 @@ public class GetSuccessFailure extends HttpServletBase {
 			obj.add("data", data.getLineDataSeriesJSON());
 		}
 		String ret = obj.toString();
-		
+
 		out.println(ret);
    	}
 }

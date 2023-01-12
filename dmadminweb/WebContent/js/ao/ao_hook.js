@@ -15,7 +15,7 @@
  */
 
 var ioc=0;
- 
+
 
 $(document).ready(function()
 {
@@ -46,7 +46,7 @@ function hookTabId(tabId, classname)
 
 function hookHide()
 {
- 
+
 }
 
 function hookAddRow(type)
@@ -56,7 +56,7 @@ function hookAddRow(type)
 function hookEventOpenRow(frameid)
 {
  var tree = "#" + frameid + "_tree";
- 
+
  return tree;
 }
 
@@ -67,6 +67,6 @@ function hookTaskMenu(currenttree)
 function hookDelRow(type)
 {
  var data = null;
- 
+
  return data;
 }

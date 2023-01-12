@@ -73,7 +73,7 @@ $.ajax({
 			var label = row[3];
 			var val = row[4];
 			td=td+"<tr><td>"+label+"</td><td>"+val+"</td></tr>";
-		}     
+		}
 		$("#" + tablename + " > tbody").html(td);
 	}
 });
@@ -82,7 +82,7 @@ $.ajax({
 function LoadAppLogList(tablename,objtypeAsInt,objtype, objid)
 {
  deployedenvs = {};
- 
+
 $.ajax({
  url : "NewsFeed?otid=" + objtype + objid + "&reason=applogs",
  dataType : 'json',
@@ -93,12 +93,12 @@ $.ajax({
   var td = "";
   for (var r = 0; r < res.data.length; r++) {
    var row = res.data[r];
-   
+
    var label = "<a id=\"deployment" + row.id + "\" onclick=\"DisplayDeploy(" + row.id + ");\">#" + row.id + "</a>";
    var sf = row.rc;
    var val = row.finished;
    var env = row.env;
-   
+
    if (env in deployedenvs)
    {
     var deployid = deployedenvs[env];
@@ -107,15 +107,15 @@ $.ajax({
    }
    else
     deployedenvs[env] = row.id;
-   
+
    td=td+"<tr><td>"+label+"</td><td>"+sf+"</td><td>"+val+"</td><td>" + env + "</tr>";
   }
   $("#" + tablename + " > tbody").html(td);
-  
+
   if (res.data.length >= 1)
   {
    CreateDeployReports4();
-   ReplotDeployReports4(res.data[0].id);  
+   ReplotDeployReports4(res.data[0].id);
   }
  }
 });
@@ -138,7 +138,7 @@ function LoadBuildData(tablename, objtypeAsInt, objtype, objid, addParams)
 		    		 var icon;
 		    		 var success = false;
 		    		 var successmsg = "Failed";
-		    		 if (res.builds[i].result == "SUCCESS") 
+		    		 if (res.builds[i].result == "SUCCESS")
 		    		 {
 		    		  successmsg = "Success";
 		    			 success=true;
@@ -184,7 +184,7 @@ function ToggleLifeCycle()
 function AppMap()
 {
  $("#tabs-General-map").html("");
- 
+
  $.ajax({
   url: "GetApps2Comps?appids=" + objid,
   type: 'POST',
@@ -194,12 +194,12 @@ function AppMap()
   // create a network
   var nodes = new vis.DataSet(x.nodes);
   var edges = new vis.DataSet(x.edges);
-  
+
    var data = {
      nodes: nodes,
      edges: edges
    };
-   
+
    var options = {autoResize: false,
      height: '100%',
      width: '100%',
@@ -222,7 +222,7 @@ function AppMap()
                    nodes:{shape:'box'},
                    interaction:{navigationButtons: true}
   };
-   
+
    var container = document.getElementById('tabs-General-map');
 //   waitForElement("#tabs-General-map",function(){
    network = new vis.Network(container, data, options);
@@ -239,7 +239,7 @@ function AppMap()
 function CompMap()
 {
  $("#tabs-General-map").html("");
- 
+
  $.ajax({
   url: "GetComps2Apps?compids=" + objid,
   type: 'POST',
@@ -249,16 +249,16 @@ function CompMap()
   // create a network
   var nodes = new vis.DataSet(x.nodes);
   var edges = new vis.DataSet(x.edges);
-  
+
    var data = {
      nodes: nodes,
      edges: edges
    };
-   
+
    var options = {autoResize: false,
      height: '100%',
      width: '100%',
-                  
+
                   physics:{
                    enabled: true,
                    minVelocity: 5,
@@ -278,7 +278,7 @@ function CompMap()
                    nodes:{shape:'box'},
                    interaction:{navigationButtons: true}
   };
-   
+
    var container = document.getElementById('tabs-General-map');
    waitForElement("#tabs-General-map",function(){
    network = new vis.Network(container, data, options);
@@ -300,12 +300,12 @@ function clickFit()
 function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 {
  var isDocker = false;
- 
+
  if (typeof addParams == "undefined")
   addParams = "";
- 
+
  console.log("GetSummaryData?objtype=" + objtypeAsInt + "&id=" + objid + addParams);
- 
+
  $.ajax(
    {
     url : "GetSummaryData?objtype=" + objtypeAsInt + "&id=" + objid + addParams,
@@ -319,12 +319,12 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
      if (typeof domain != "undefined") {
       summSavedomid = domain.id;
      }
-     
+
      if (readonly)
       $("#title_icon").hide();
      else
-      $("#title_icon").show();    
-      
+      $("#title_icon").show();
+
      saveRes = res;
      var td = "";
      tdedit = "<form id=\"summform\"><table id=\"summtab\" class=\"dev_table\">";
@@ -334,8 +334,8 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
      summSaveVDS = "";
      summSaveBTDS = "";
      var allocate_terminal_shown=false;
-     
-    
+
+
      for (var r = 0; r < res.data.length; r++)
      {
       var row = res.data[r];
@@ -364,7 +364,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "<td><input type=\"hidden\" name=\"fulldomain_callback\" value=\"" + callback + "\"/></td>";
        tdedit += "<td><input type=\"hidden\" name=\"fulldomain_oldval\" value=\"" + val + "\"/></td>";
        tdedit += "</tr>";
-       
+
        // td += "<tr id='fulldomain_sumrow_desc'><td id=\"fulldomain_summ_desc\" class=\"summlabel\">";
        // td += "Domain:";
        // td += "</td><td>";
@@ -383,7 +383,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "<td><input type=\"hidden\" name=\"notifier_callback\" value=\"" + callback + "\"/></td>";
        tdedit += "<td><input type=\"hidden\" name=\"notifier_oldval\" value=\"" + val + "\"/></td>";
        tdedit += "</tr>";
-      }   
+      }
       else if (label == "CD Engine")
       {
        tdedit += "<tr>";
@@ -396,7 +396,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "<td><input type=\"hidden\" name=\"builder_callback\" value=\"" + callback + "\"/></td>";
        tdedit += "<td><input type=\"hidden\" name=\"builder_oldval\" value=\"" + val + "\"/></td>";
        tdedit += "</tr>";
-      }   
+      }
       else if (label == "Summary")
       {
        label = "Description";
@@ -451,7 +451,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "<td><input type=\"hidden\" name=\"filename_callback\" value=\"" + callback + "\"/></td>";
        tdedit += "<td><input type=\"hidden\" name=\"filename_oldval\" value=\"" + val + "\"/></td>";
        tdedit += "</tr>";
-      }    
+      }
       else if (label == "Username" || label == "User Name")
       {
        console.log("username seen, field="+field+" val="+val);
@@ -503,14 +503,14 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Command Line Interpreter")
       {
-       tdedit += "<tr id=\"interpreter_row\" style=\"display:none\">";       
+       tdedit += "<tr id=\"interpreter_row\" style=\"display:none\">";
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
        tdedit += "<td><input name=\"interpreter_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
        tdedit += "<td><input type=\"hidden\" name=\"interpreter_field\" value=\"" + field + "\"/></td>";
        tdedit += "<td><input type=\"hidden\" name=\"interpreter_callback\" value=\"" + callback + "\"/></td>";
        tdedit += "<td><input type=\"hidden\" name=\"interpreter_oldval\" value=\"" + val + "\"/></td>";
        tdedit += "</tr>";
-      }  
+      }
       else if (label == "Real Name")
       {
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -666,7 +666,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
         tdedit += "<td style=\"text-align:left;vertical-align:top;padding-right: 5px;white-space: nowrap;\">" + label + ":</td>";
         tdedit += "<td ><select multiple name=\"servercomptype_val\">";
         var parts = val.split(";");
-        
+
         save_servercomptype_val = parts[0];
         val = parts[1];
         comptypedone = true;
@@ -734,7 +734,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       {
        if (isDocker)
         continue;
-       
+
        tdedit += "<tr>";
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
        tdedit += "<td><input name=\"basedirectory_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
@@ -768,7 +768,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //       console.log(repo);
 //       var otid="re"+repo.id;
 //       linkval=repo.showlink?"<a href='javascript:SwitchDisplay(\""+otid+"\");'>"+val+"</a>":val;
-//       
+//
 //       tdedit += "<tr id=\"repository_row\">";
 //       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
 //       tdedit += "<td><select name=\"repository_val\"/></td>";
@@ -795,8 +795,8 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 // Skip displaying Owner - 10/28/21 SBT
 
 	   continue;
-      
-//      
+
+//
 //       var owner = val;
 //       if (typeof owner.name != "undefined")
 //       {
@@ -817,21 +817,21 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Owner Type:</td>";
 //       tdedit += "<td ><select id=\"ownertype_val\" name=\"ownertype_val\">";
 //       if (isuser)
-//       { 
+//       {
 //        tdedit += "<option value=\"User\" selected>User</option>";
 //        tdedit += "<option value=\"Group\">Group</option>";
 //       }
 //       else
-//       { 
+//       {
 //        tdedit += "<option value=\"User\">User</option>";
 //        tdedit += "<option value=\"Group\" selected>Group</option>";
-//       } 
+//       }
 //       tdedit += "</select></td>";
 //       tdedit += "<td><input type=\"hidden\" name=\"ownertype_field\" value=\"" + field + "\"/></td>";
 //       tdedit += "<td><input type=\"hidden\" name=\"ownertype_callback\" value=\"" + callback + "\"/></td>";
 //       tdedit += "<td><input type=\"hidden\" name=\"ownertype_oldval\" value=\"" + owner.type + "\"/></td>";
 //       tdedit += "</tr>";
-//       
+//
 //       tdedit += "<tr id=\"owner_row\">";
 //       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Owner:</td>";
 //       tdedit += "<td ><select name=\"owner_val\">";
@@ -841,7 +841,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //       tdedit += "<td><input type=\"hidden\" name=\"owner_callback\" value=\"" + callback + "\"/></td>";
 //       tdedit += "<td><input type=\"hidden\" name=\"owner_oldval\" value=\"" + owner.type + owner.id + "\"/></td>";
 //       tdedit += "</tr>";
-//       
+//
 //       tdedit += "<tr id=\"group_row\">";
 //       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Groups:</td>";
 //       tdedit += "<td ><select name=\"groupowner_val\">";
@@ -851,7 +851,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //       tdedit += "<td><input type=\"hidden\" name=\"groupowner_callback\" value=\"" + callback + "\"/></td>";
 //       tdedit += "<td><input type=\"hidden\" name=\"groupowner_oldval\" value=\"" + owner.type + owner.id + "\"/></td>";
 //       tdedit += "</tr>";
-//       
+//
 //       td += "<tr id=\"ownertype\" ><td class=\"summlabel\">";
 //       td += "Owner Type";
 //       td += ":</td><td>";
@@ -924,12 +924,12 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "<td><input type=\"hidden\" name=\"database_callback\" value=\"" + callback + "\"/></td>";
        tdedit += "<td><input type=\"hidden\" name=\"database_oldval\" value=\"" + val + "\"/></td>";
        tdedit += "</tr>";
-       
+
        val=val?"Yes":"No";
       }
       else if (label == "Delete Corresponding Directory")
       {
-      }      
+      }
       else if (label == "Auto Ping")
       {
 //       var always = val;
@@ -982,7 +982,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //           tdedit += "<option value=\""+i+"\" "+sel+">"+i+"</option>";
 //          }
 //          if (!pif) val="15"; // default value
-//          tdedit += "</select>"   
+//          tdedit += "</select>"
 //          tdedit += " (minutes)</td>";
 //          tdedit += "<td><input type=\"hidden\" name=\"pinginterval_field\" value=\"" + field + "\"/></td>";
 //          tdedit += "<td><input type=\"hidden\" name=\"pinginterval_oldval\" value=\""+val+"\"/></td>";
@@ -1002,7 +1002,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //           sel=(secs == valsecs)?"selected":"";
 //           tdedit += "<option value=\""+secs+"\" "+sel+">"+(h<10?"0"+h:h)+":"+(m<10?"0"+m:m)+"</option>";
 //          }
-//          tdedit += "</select>"   
+//          tdedit += "</select>"
 //          tdedit += "</td>";
 //          tdedit += "<td><input type=\"hidden\" name=\"pingstart_field\" value=\"" + field + "\"/></td>";
 //          tdedit += "<td><input type=\"hidden\" name=\"pingstart_oldval\" value=\""+val+"\"/></td>";
@@ -1022,7 +1022,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //           sel=(secs == valsecs)?"selected":"";
 //           tdedit += "<option value=\""+secs+"\" "+sel+">"+(h<10?"0"+h:h)+":"+(m<10?"0"+m:m)+"</option>";
 //          }
-//          tdedit += "</select>"   
+//          tdedit += "</select>"
 //          tdedit += "</td>";
 //          tdedit += "<td><input type=\"hidden\" name=\"pingend_field\" value=\"" + field + "\"/></td>";
 //          tdedit += "<td><input type=\"hidden\" name=\"pingend_oldval\" value=\""+val+"\"/></td>";
@@ -1167,7 +1167,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       else if (label == "Filter Level")
       {
        if (objid > 0 && val == "Components")
-       { 
+       {
         tdedit += "<tr>";
         tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
         tdedit += "<td ><select name=\"filterlevel_val\" id=\"filterlevel_val\" onChange=\"FilterLevelChanged()\">";
@@ -1183,20 +1183,20 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
         }
        }
        else
-       { 
+       {
         tdedit += "<tr style=\"display:none\">";
         tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
         tdedit += "<td ><select name=\"filterlevel_val\" id=\"filterlevel_val\" onChange=\"FilterLevelChanged()\">";
         tdedit += "<option value=\"Components\">Components</option>";
         tdedit += "<option value=\"Items\" selected>Items</option>";
-       } 
- 
+       }
+
        tdedit += "</td>";
        tdedit += "<td><input type=\"hidden\" name=\"filterlevel_field\" value=\"" + field + "\"/></td>";
        tdedit += "<td><input type=\"hidden\" name=\"filterlevel_callback\" value=\"" + callback + "\"/></td>";
        tdedit += "<td><input type=\"hidden\" name=\"filterlevel_oldval\" value=\"" + val + "\"/></td>";
        tdedit += "</tr>";
-       
+
        save_filter_val = val;
       }
       else if (label == "Endpoint Type" && summSaveobjtype != "se")
@@ -1213,7 +1213,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "</tr>";
 
        save_comptype_val = val;
-      } 
+      }
 //      else if (label == "Endpoint Type"  && summSaveobjtype == "se")
 //      {
 //       tdedit += "<tr>";
@@ -1226,7 +1226,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //       tdedit += "</tr>";
 //
 //       save_comptype_val = val;
-//      }   
+//      }
       else if (label == "Change Request Data Source") {
        console.log("Change Request Data Source seen");
        console.log(val);
@@ -1286,7 +1286,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       else if (label == "Last Build Number") {
 //       if (val==0) val="";
 //       else val="<a onClick=\"javascript:DisplayBuild("+objid+","+val+");\">#"+val+"</a>";
-//       
+//
 //       tdedit += "<tr>";
 //       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
 //       tdedit += "<td name=\"lastlogin_val\" >" + val + "</td>";
@@ -1298,7 +1298,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       else if (label == "Project Name" || label == "Plan Name") {
        var project = val;
        var oldval=val;
-       
+
           tdedit += "<tr>";
           tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
           tdedit += "<td ><select name=\"projectname_val\">";
@@ -1316,7 +1316,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
         tdedit += "<tr id=\"rollforward_row\" style=\"display:none\" >";
        else
         tdedit += "<tr id=\"rollforward_row\">";
-       
+
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
        tdedit += "<td ><select name=\"rollup_val\">";
        if (val == "OFF")
@@ -1408,7 +1408,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
         tdedit += "<option value=\"st2\">windows</option>";
         tdedit += "<option value=\"st5\">Tandem</option>";
         tdedit += "<option value=\"st6\">Stratus</option>";
-        tdedit += "<option value=\"st7\">OpenVMS</option>";        
+        tdedit += "<option value=\"st7\">OpenVMS</option>";
        }
        else if (val == "st1")
        {
@@ -1418,7 +1418,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
         tdedit += "<option value=\"st2\">Windows</option>";
         tdedit += "<option value=\"st5\">Tandem</option>";
         tdedit += "<option value=\"st6\">Stratus</option>";
-        tdedit += "<option value=\"st7\">OpenVMS</option>";        
+        tdedit += "<option value=\"st7\">OpenVMS</option>";
        }
        else if (val == "st5")
        {
@@ -1428,7 +1428,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
         tdedit += "<option value=\"st2\">Windows</option>";
         tdedit += "<option value=\"st5\" selected>Tandem</option>";
         tdedit += "<option value=\"st6\">Stratus</option>";
-        tdedit += "<option value=\"st7\">OpenVMS</option>";        
+        tdedit += "<option value=\"st7\">OpenVMS</option>";
        }
        else if (val == "st6")
        {
@@ -1438,7 +1438,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
         tdedit += "<option value=\"st2\">Windows</option>";
         tdedit += "<option value=\"st5\">Tandem</option>";
         tdedit += "<option value=\"st6\" selected>Stratus</option>";
-        tdedit += "<option value=\"st7\">OpenVMS</option>";        
+        tdedit += "<option value=\"st7\">OpenVMS</option>";
        }
        else if (val == "st7")
        {
@@ -1448,7 +1448,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
         tdedit += "<option value=\"st2\">Windows</option>";
         tdedit += "<option value=\"st5\">Tandem</option>";
         tdedit += "<option value=\"st6\">Stratus</option>";
-        tdedit += "<option value=\"st7\" selected>OpenVMS</option>";        
+        tdedit += "<option value=\"st7\" selected>OpenVMS</option>";
        }
        else
        {
@@ -1471,7 +1471,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       {
        if (isDocker)
         continue;
-       
+
        var action = val;
        console.log("Pre-Action seen");
        console.log(val);
@@ -1504,7 +1504,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       {
        if (isDocker)
         continue;
-       
+
        var action = val;
        var oldval;
        if (typeof action.name == "undefined")
@@ -1640,7 +1640,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
           tdedit += "<td><input type=\"hidden\" name=\"datasource_oldval\" value=\"" + oldval + "\"/></td>";
           tdedit += "</tr>";
       }
-      else if (label == "Successful Deployment Template" || 
+      else if (label == "Successful Deployment Template" ||
          label == "Approved Notify Template" ||
          label == "Success Notification Template" ||
          label == "Request Notification Template" ||
@@ -1676,7 +1676,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "<td><input type=\"hidden\" name=\"template_oldval\" value=\"" + oldval + "\"/></td>";
        tdedit += "</tr>";
       }
-      else if (label == "Failed Deployment Template" || 
+      else if (label == "Failed Deployment Template" ||
          label == "Rejected Notify Template" ||
          label == "Failure Notification Template")
       {
@@ -1745,7 +1745,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
         {
          var name = notifiertype;
          val = notifiertype;
-         
+
          if (objtype == "ds")
          {
           val = dstype;
@@ -1754,16 +1754,16 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
           else if (dstype == "bugzilla")
            name = "Bugzilla"
           else if (dstype == "github")
-           name = "GitHub"           
+           name = "GitHub"
           else if (dstype == "jira")
            name = "Jira"
           else if (dstype == "odbc")
            name = "ODBC"
-         }         
+         }
          else if (objtype == "re")
          {
           val = repotype;
-         
+
           if (repotype == "filesystem")
             name = "File System";
           else if (repotype == "http")
@@ -1776,22 +1776,22 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
            name = "Perforce";
           else if (repotype == "svn")
            name = "SVN";
-         } 
+         }
          else if (objtype == "co")
          {
           val = addcomptype;
-         
+
           if (addcomptype == "docker")
             name = "Docker";
           else if (addcomptypepotype == "file")
             name = "File";
           else if (addcomptype == "database")
            name = "Database";
-         } 
+         }
          else if (objtype == "no")
          {
           val = notifiertype;
-         
+
           if (notifiertype == "smtpemail")
             name = "Email";
           else if (notifiertype == "txtlocal")
@@ -1800,19 +1800,19 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
            name = "HipChat";
           else if (notifiertype == "slack")
            name = "Slack";
-         } 
+         }
          else if (objtype == "be")
          {
           val = buildenginetype;
-         
+
           if (buildenginetype == "jenkins")
             name = "Jenkins";
-         } 
+         }
         }
         else
         {
          var name = "";
-       
+
          if (objtype == "ds")
          {
           if (val == "ldap")
@@ -1820,14 +1820,14 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
           else if (val == "bugzilla")
            name = "Bugzilla"
           else if (val == "github")
-           name = "GitHub"           
+           name = "GitHub"
           else if (val == "jira")
            name = "Jira"
           else if (val == "odbc")
            name = "ODBC"
-         } 
+         }
          else if (objtype == "no")
-         {       
+         {
           if (val == "smtpemail")
             name = "Email";
           else if (val == "txtlocal")
@@ -1836,9 +1836,9 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
            name = "HipChat";
           else if (val == "slack")
            name = "Slack";
-         } 
+         }
          else if (objtype == "re")
-         {       
+         {
           if (val == "filesystem")
             name = "File System";
           else if (val == "http")
@@ -1851,7 +1851,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
            name = "Perforce";
           else if (val == "svn")
            name = "SVN";
-         } 
+         }
          else if (objtype == "co")
          {
           if (val== "docker")
@@ -1860,14 +1860,14 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
             name = "File";
           else if (val == "database")
            name = "Database";
-         } 
+         }
          else if (objtype == "be")
          {
           if (val == "jenkins")
             name = "Jenkins";
-         } 
+         }
         }
-        
+
         tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
         tdedit += "<td>" + name + "</td>";
         tdedit += "<td ><select name=\"type_val\" style=\"display:none\">";
@@ -1885,16 +1885,16 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       {
        var kind = val;
        var oldval;
-       
+
 	   label = "Component Type";
 
        if (typeof kind.name != "undefined" && kind.name.includes("Container"))
         isDocker = true;
-       
+
        if (objid < 0 && kind.type == "ck")
        {
         kind.id = credtype.substring(2);
-        
+
         if (kind.id == 10)
          kind.name = "Harvest DFO in Filesystem";
         else if (kind.id == 4)
@@ -1902,9 +1902,9 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
         else if (kind.id == 2)
          kind.name = "Encrypted in Database";
         else if (kind.id == 5)
-         kind.name = "Private Key";  
+         kind.name = "Private Key";
        }
-       
+
        if (typeof kind.name == "undefined")
        {
         kind = new Object();
@@ -1918,7 +1918,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        val = kind.name;
        if (val == "From Vars")
         val = "From Variables";
-       
+
        if (kind.id != "6")
        {
        tdedit += "<tr>";
@@ -1932,20 +1932,20 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "<td><input type=\"hidden\" id=\"kind_oldval\" name=\"kind_oldval\" value=\"\"/></td>";
        tdedit += "</tr>";
        }
-       
+
        console.log("save_kind_id="+save_kind_id+" objid="+objid);
-       
+
        save_kind_id = kind.id;
-       
+
        console.log("kind.id="+kind.id);
        objkind = kind.id;
       }
       else if (label == "Created")
       {
-// Skip Display - 10/28/21 SBT   
+// Skip Display - 10/28/21 SBT
 
 	   continue;
-      
+
 //       var created = val;
 //       if (typeof created.when != "undefined")
 //       {
@@ -1955,7 +1955,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //       }
 //       else
 //        val = "";
-//       
+//
 //       tdedit += "<tr>";
 //       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
 //       tdedit += "<td>" + val + "</td>";
@@ -1966,10 +1966,10 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Modified")
       {
-// Skip Display - 10/28/21 SBT    
+// Skip Display - 10/28/21 SBT
 
 	   continue;
-          
+
 //       var modified = val;
 //       console.log("modified (Modified)");
 //       console.log(modified);
@@ -1981,7 +1981,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //       }
 //       else
 //        val = "";
-//       
+//
 //       tdedit += "<tr>";
 //       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
 //       tdedit += "<td>" + val + "</td>";
@@ -2010,14 +2010,14 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "<td><input type=\"hidden\" name=\"lastlogin_oldval\" value=\"" + val + "\"/></td>";
        tdedit += "</tr>";
       }
-      
+
       if (label == "Protocol")
       {
        if (val == "win")
         val = "WinRM";
        else
         val = "ssh";
-       
+
        td += "<tr><td class=\"summlabel\">";
        td += label;
        td += ":</td><td>";
@@ -2033,12 +2033,12 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        else
         td += val;
       }
-      else if ( label == "LifeCycle Domain" || 
-         label == "Copy to Remote" || 
-         label == "Always Deploy" || 
+      else if ( label == "LifeCycle Domain" ||
+         label == "Copy to Remote" ||
+         label == "Always Deploy" ||
          label == "Deploy Sequentially" ||
-         label == "Result Is Expr" || 
-         label == "Account Locked" || 
+         label == "Result Is Expr" ||
+         label == "Account Locked" ||
          label == "Force Change Password" ||
          label == "Available in SubDomains")
       {
@@ -2076,7 +2076,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        else
         td += "*********";
        }
-       
+
       }
       else if (label == "Username")
       {
@@ -2105,7 +2105,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 // Skip displaying Object - 10/28/21 SBT
 
 //	   continue;
-      
+
 //        td += "<tr id='kind_sumrow_desc'><td id=\"kind_summ_desc\" class=\"summlabel\">";
 //        td += "Object:";
 //        td += "</td><td>";
@@ -2119,67 +2119,67 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label.toLowerCase() == "Filter Level".toLowerCase() && save_filter_val == "Items")
       {
-       
+
       }
       else if (label.toLowerCase() == "Pre-Action".toLowerCase() && summSaveobjtype == "rl")
       {
-       
+
       }
       else if (label.toLowerCase() == "Post-Action".toLowerCase() && summSaveobjtype == "rl")
       {
-       
+
       }
       else if (label.toLowerCase() == "Custom Action".toLowerCase() && summSaveobjtype == "rl")
       {
-       
+
       }
       else if ((label == "Roll Forward" || label == "Rollback") && save_filter_val == "Items")
       {
-       
+
       }
       else if (label.toLowerCase() == "Show Output".toLowerCase())
       {
-       
+
       }
       else if (label.toLowerCase() == "XPos".toLowerCase())
       {
-       
+
       }
       else if (label.toLowerCase() == "YPos".toLowerCase())
       {
-       
+
       }
       else if (label.toLowerCase() == "recursive".toLowerCase())
       {
-       
+
       }
       else if (label.toLowerCase() == "Auto Ping".toLowerCase())
       {
-       
+
       }
       else if (label.toLowerCase() == "Auto MD5 Check".toLowerCase())
       {
-       
+
       }
       else if (label.toLowerCase() == "Ping Start".toLowerCase())
       {
-       
+
       }
       else if (label.toLowerCase() == "Ping End".toLowerCase())
       {
-       
+
       }
       else if (label.toLowerCase() == "Ping Interval".toLowerCase())
       {
-       
+
       }
       else if (label.toLowerCase() == "MD5 Mismatch Template".toLowerCase())
       {
-       
+
       }
       else if (label.toLowerCase() == "Last Build Number".toLowerCase())
       {
-       
+
       }
       else if (label == "Endpoint Types" )
       {
@@ -2197,7 +2197,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
          td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\">";
          td += "";
          td += "</td><td>";
-         td += (linkval!=null)?linkval:val;       
+         td += (linkval!=null)?linkval:val;
         }
         comptypelabeldone = true;
       }
@@ -2210,14 +2210,14 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
         else if (val == "bugzilla")
          name = "Bugzilla"
         else if (val == "github")
-         name = "GitHub"           
+         name = "GitHub"
         else if (val == "jira")
          name = "Jira"
         else if (val == "odbc")
          name = "ODBC"
-       } 
+       }
        else if (objtype == "no")
-       {       
+       {
         if (val == "smtpemail")
           name = "Email";
         else if (val == "txtlocal")
@@ -2226,9 +2226,9 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
          name = "HipChat";
         else if (val == "slack")
          name = "Slack";
-       } 
+       }
        else if (objtype == "re")
-       {       
+       {
         if (val == "filesystem")
           name = "File System";
         else if (val == "http")
@@ -2241,7 +2241,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
          name = "Perforce";
         else if (val == "svn")
          name = "SVN";
-       } 
+       }
        else if (objtype == "co")
        {
         if (val== "docker")
@@ -2250,12 +2250,12 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
           name = "File";
         else if (val == "database")
          name = "Database";
-       } 
+       }
        else if (objtype == "be")
        {
         if (val == "jenkins")
           name = "Jenkins";
-       } 
+       }
        var myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
        console.log("3) <tr id=\"" + myid + "\" ><td class=\"summlabel\">");
        td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\">";
@@ -2290,7 +2290,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //      tdedit += "<td><input type=\"hidden\" name=\"repository_callback\" value=\"" + callback + "\"/></td>";
 //      tdedit += "<td><input type=\"hidden\" name=\"repository_oldval\" value=\"\"/></td>";
 //      tdedit += "</tr>";
-//      
+//
 //      label = "Roll Foward Repository";
 //      tdedit += "<tr id=\"rf_repository_row\" style=\"display:none\">";
 //      tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -2301,7 +2301,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //      tdedit += "<td><input type=\"hidden\" name=\"rf_repository_callback\" value=\"" + callback + "\"/></td>";
 //      tdedit += "<td><input type=\"hidden\" name=\"rf_repository_oldval\" value=\"\"/></td>";
 //      tdedit += "</tr>";
-//      
+//
 //      label = "Rollback Repository";
 //      tdedit += "<tr id=\"rb_repository_row\"  style=\"display:none\">";
 //      tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -2312,7 +2312,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 //      tdedit += "<td><input type=\"hidden\" name=\"rb_repository_callback\" value=\"" + callback + "\"/></td>";
 //      tdedit += "<td><input type=\"hidden\" name=\"rb_repository_oldval\" value=\"\"/></td>";
 //      tdedit += "</tr>";
-//     } 
+//     }
 
      if (objtype == "do") {
       var sdl="";
@@ -2354,7 +2354,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
         }
         $("#" + tablename + " > tbody").html(td);
         tdedit += sdl;
-        
+
         HideFields();
 
         if (objid < 0) {
@@ -2369,13 +2369,13 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
      } else {
       tdedit += "</table></form>";
       $("#" + tablename + " > tbody").html(td);
-      
+
       HideFields();
 
       if (objid < 0) {
        console.log("objid="+objid+" opening editing dialog (creation?)");
        EditSummaryButton(false,"");
-      } 
+      }
      }
     },
     error : function(jqxhr, status, err)
@@ -2392,13 +2392,13 @@ function LoadDomNav()
  for (i = 0; i < tablinks.length; i++) {
    tablinks[i].className = tablinks[i].className.replace(" active", "");
  }
- 
+
  // Show the current tab, and add an "active" class to the link that opened the tab
  var vb = $("#verttab_domain");
  vb.addClass("active");
- 
+
  $("#right_panel_header").html("<h1 class=\"domain\">Domains</h1>");
- 
+
  objid = userdomid;
  objtypeAsInt = 3;
  objtype = "do";
@@ -2414,10 +2414,10 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
  task_summSaveobjtype = objtype;
  task_summSaveobjid = objid;
  task_summSaveaddParams = addParams;
- 
+
  $("#task_summ_data_edit").hide();
  $("#task_summ_data").show();
- 
+
   $.ajax(
     {
      url : "GetSummaryData?objtype=" + objtypeAsInt + "&id=" + objid + addParams,
@@ -2431,12 +2431,12 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
       if (typeof domain != "undefined") {
        summSavedomid = domain.id;
       }
-      
+
       if (readonly)
        $("#title_icon").hide();
       else
-       $("#title_icon").show();    
-       
+       $("#title_icon").show();
+
       saveRes = res;
       var td = "";
       task_tdedit = "<form id=\"task_summform\"><table id=\"task_summtab\" class=\"dev_table\">";
@@ -2446,8 +2446,8 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
       summSaveVDS = "";
       summSaveBTDS = "";
       var allocate_terminal_shown=false;
-      
-     
+
+
       for (var r = 0; r < res.data.length; r++)
       {
        var row = res.data[r];
@@ -2476,7 +2476,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         task_tdedit += "<td><input type=\"hidden\" name=\"notifier_callback\" value=\"" + callback + "\"/></td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"notifier_oldval\" value=\"" + val + "\"/></td>";
         task_tdedit += "</tr>";
-       }   
+       }
        else if (label == "CD Engine")
        {
         task_tdedit += "<tr>";
@@ -2489,7 +2489,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         task_tdedit += "<td><input type=\"hidden\" name=\"builder_callback\" value=\"" + callback + "\"/></td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"builder_oldval\" value=\"" + val + "\"/></td>";
         task_tdedit += "</tr>";
-       }   
+       }
        else if (label == "Summary")
        {
         label = "Description";
@@ -2542,7 +2542,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         task_tdedit += "<td><input type=\"hidden\" name=\"filename_callback\" value=\"" + callback + "\"/></td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"filename_oldval\" value=\"" + val + "\"/></td>";
         task_tdedit += "</tr>";
-       }    
+       }
        else if (label == "Username" || label == "User Name")
        {
         console.log("username seen, field="+field+" val="+val);
@@ -2594,14 +2594,14 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        }
        else if (label == "Command Line Interpreter")
        {
-        task_tdedit += "<tr id=\"interpreter_row\" style=\"display:none\">";       
+        task_tdedit += "<tr id=\"interpreter_row\" style=\"display:none\">";
         task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
         task_tdedit += "<td><input name=\"interpreter_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"interpreter_field\" value=\"" + field + "\"/></td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"interpreter_callback\" value=\"" + callback + "\"/></td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"interpreter_oldval\" value=\"" + val + "\"/></td>";
         task_tdedit += "</tr>";
-       }  
+       }
        else if (label == "Real Name")
        {
         task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -2757,7 +2757,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
          task_tdedit += "<td style=\"text-align:left;vertical-align:top;padding-right: 5px;white-space: nowrap;\">" + label + ":</td>";
          task_tdedit += "<td ><select multiple name=\"servercomptype_val\">";
          var parts = val.split(";");
-         
+
          save_servercomptype_val = parts[0];
          val = parts[1];
          comptypedone = true;
@@ -2822,7 +2822,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         task_tdedit += "</tr>";
        }
        else if (label == "Base Directory")
-       {       
+       {
         task_tdedit += "<tr>";
         task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
         task_tdedit += "<td><input name=\"basedirectory_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
@@ -2873,21 +2873,21 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Owner Type:</td>";
         task_tdedit += "<td ><select id=\"ownertype_val\" name=\"ownertype_val\">";
         if (isuser)
-        { 
+        {
          task_tdedit += "<option value=\"User\" selected>User</option>";
          task_tdedit += "<option value=\"Group\">Group</option>";
         }
         else
-        { 
+        {
          task_tdedit += "<option value=\"User\">User</option>";
          task_tdedit += "<option value=\"Group\" selected>Group</option>";
-        } 
+        }
         task_tdedit += "</select></td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"ownertype_field\" value=\"" + field + "\"/></td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"ownertype_callback\" value=\"" + callback + "\"/></td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"ownertype_oldval\" value=\"" + owner.type + "\"/></td>";
         task_tdedit += "</tr>";
-        
+
         task_tdedit += "<tr id=\"owner_row\">";
         task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Owner:</td>";
         task_tdedit += "<td ><select name=\"owner_val\">";
@@ -2897,7 +2897,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         task_tdedit += "<td><input type=\"hidden\" name=\"owner_callback\" value=\"" + callback + "\"/></td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"owner_oldval\" value=\"" + owner.type + owner.id + "\"/></td>";
         task_tdedit += "</tr>";
-        
+
         task_tdedit += "<tr id=\"group_row\">";
         task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Groups:</td>";
         task_tdedit += "<td ><select name=\"groupowner_val\">";
@@ -2907,7 +2907,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         task_tdedit += "<td><input type=\"hidden\" name=\"groupowner_callback\" value=\"" + callback + "\"/></td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"groupowner_oldval\" value=\"" + owner.type + owner.id + "\"/></td>";
         task_tdedit += "</tr>";
-        
+
         td += "<tr id=\"ownertype\" ><td class=\"summlabel\">";
         td += "Owner Type";
         td += ":</td><td>";
@@ -2980,12 +2980,12 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         task_tdedit += "<td><input type=\"hidden\" name=\"database_callback\" value=\"" + callback + "\"/></td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"database_oldval\" value=\"" + val + "\"/></td>";
         task_tdedit += "</tr>";
-        
+
         val=val?"Yes":"No";
        }
        else if (label == "Delete Corresponding Directory")
        {
-       }      
+       }
        else if (label == "Auto Ping")
        {
 //        var always = val;
@@ -3038,7 +3038,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
 //            task_tdedit += "<option value=\""+i+"\" "+sel+">"+i+"</option>";
 //           }
 //           if (!pif) val="15"; // default value
-//           task_tdedit += "</select>"   
+//           task_tdedit += "</select>"
 //           task_tdedit += " (minutes)</td>";
 //           task_tdedit += "<td><input type=\"hidden\" name=\"pinginterval_field\" value=\"" + field + "\"/></td>";
 //           task_tdedit += "<td><input type=\"hidden\" name=\"pinginterval_oldval\" value=\""+val+"\"/></td>";
@@ -3058,7 +3058,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
 //            sel=(secs == valsecs)?"selected":"";
 //            task_tdedit += "<option value=\""+secs+"\" "+sel+">"+(h<10?"0"+h:h)+":"+(m<10?"0"+m:m)+"</option>";
 //           }
-//           task_tdedit += "</select>"   
+//           task_tdedit += "</select>"
 //           task_tdedit += "</td>";
 //           task_tdedit += "<td><input type=\"hidden\" name=\"pingstart_field\" value=\"" + field + "\"/></td>";
 //           task_tdedit += "<td><input type=\"hidden\" name=\"pingstart_oldval\" value=\""+val+"\"/></td>";
@@ -3078,7 +3078,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
 //            sel=(secs == valsecs)?"selected":"";
 //            task_tdedit += "<option value=\""+secs+"\" "+sel+">"+(h<10?"0"+h:h)+":"+(m<10?"0"+m:m)+"</option>";
 //           }
-//           task_tdedit += "</select>"   
+//           task_tdedit += "</select>"
 //           task_tdedit += "</td>";
 //           task_tdedit += "<td><input type=\"hidden\" name=\"pingend_field\" value=\"" + field + "\"/></td>";
 //           task_tdedit += "<td><input type=\"hidden\" name=\"pingend_oldval\" value=\""+val+"\"/></td>";
@@ -3223,7 +3223,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        else if (label == "Filter Level")
        {
         if (objid > 0 && val == "Components")
-        { 
+        {
          task_tdedit += "<tr>";
          task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
          task_tdedit += "<td ><select name=\"filterlevel_val\" id=\"filterlevel_val\" onChange=\"FilterLevelChanged()\">";
@@ -3239,20 +3239,20 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
          }
         }
         else
-        { 
+        {
          task_tdedit += "<tr style=\"display:none\">";
          task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
          task_tdedit += "<td ><select name=\"filterlevel_val\" id=\"filterlevel_val\" onChange=\"FilterLevelChanged()\">";
          task_tdedit += "<option value=\"Components\">Components</option>";
          task_tdedit += "<option value=\"Items\" selected>Items</option>";
-        } 
-  
+        }
+
         task_tdedit += "</td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"filterlevel_field\" value=\"" + field + "\"/></td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"filterlevel_callback\" value=\"" + callback + "\"/></td>";
         task_tdedit += "<td><input type=\"hidden\" name=\"filterlevel_oldval\" value=\"" + val + "\"/></td>";
         task_tdedit += "</tr>";
-        
+
         save_filter_val = val;
        }
        else if (label == "Endpoint Type" && summSaveobjtype != "se")
@@ -3269,7 +3269,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         task_tdedit += "</tr>";
 
         save_comptype_val = val;
-       } 
+       }
        else if (label == "Change Request Data Source") {
         console.log("Change Request Data Source seen");
         console.log(val);
@@ -3329,7 +3329,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        else if (label == "Last Build Number") {
         if (val==0) val="";
         else val="<a onClick=\"javascript:DisplayBuild("+objid+","+val+");\">#"+val+"</a>";
-        
+
         task_tdedit += "<tr>";
         task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
         task_tdedit += "<td name=\"lastlogin_val\" >" + val + "</td>";
@@ -3341,7 +3341,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        else if (label == "Project Name" || label == "Plan Name") {
         var project = val;
         var oldval=val;
-        
+
            task_tdedit += "<tr>";
            task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
            task_tdedit += "<td ><select name=\"projectname_val\">";
@@ -3359,7 +3359,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
          task_tdedit += "<tr id=\"rollforward_row\" style=\"display:none\" >";
         else
          task_tdedit += "<tr id=\"rollforward_row\">";
-        
+
         task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
         task_tdedit += "<td ><select name=\"rollup_val\">";
         if (val == "OFF")
@@ -3452,7 +3452,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
          task_tdedit += "<option value=\"st2\">windows</option>";
          task_tdedit += "<option value=\"st5\">Tandem</option>";
          task_tdedit += "<option value=\"st6\">Stratus</option>";
-         task_tdedit += "<option value=\"st7\">OpenVMS</option>";        
+         task_tdedit += "<option value=\"st7\">OpenVMS</option>";
         }
         else if (val == "st1")
         {
@@ -3463,7 +3463,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
          task_tdedit += "<option value=\"st2\">Windows</option>";
          task_tdedit += "<option value=\"st5\">Tandem</option>";
          task_tdedit += "<option value=\"st6\">Stratus</option>";
-         task_tdedit += "<option value=\"st7\">OpenVMS</option>";        
+         task_tdedit += "<option value=\"st7\">OpenVMS</option>";
         }
         else if (val == "st5")
         {
@@ -3474,7 +3474,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
          task_tdedit += "<option value=\"st2\">Windows</option>";
          task_tdedit += "<option value=\"st5\" selected>Tandem</option>";
          task_tdedit += "<option value=\"st6\">Stratus</option>";
-         task_tdedit += "<option value=\"st7\">OpenVMS</option>";        
+         task_tdedit += "<option value=\"st7\">OpenVMS</option>";
         }
         else if (val == "st6")
         {
@@ -3485,7 +3485,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
          task_tdedit += "<option value=\"st2\">Windows</option>";
          task_tdedit += "<option value=\"st5\">Tandem</option>";
          task_tdedit += "<option value=\"st6\" selected>Stratus</option>";
-         task_tdedit += "<option value=\"st7\">OpenVMS</option>";        
+         task_tdedit += "<option value=\"st7\">OpenVMS</option>";
         }
         else if (val == "st7")
         {
@@ -3496,7 +3496,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
          task_tdedit += "<option value=\"st2\">Windows</option>";
          task_tdedit += "<option value=\"st5\">Tandem</option>";
          task_tdedit += "<option value=\"st6\">Stratus</option>";
-         task_tdedit += "<option value=\"st7\" selected>OpenVMS</option>";        
+         task_tdedit += "<option value=\"st7\" selected>OpenVMS</option>";
         }
         else
         {
@@ -3517,7 +3517,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         task_tdedit += "</tr>";
        }
        else if (label.toLowerCase() == "Pre-Action".toLowerCase() && summSaveobjtype != "rl")
-       {       
+       {
         var action = val;
         console.log("Pre-Action seen");
         console.log(val);
@@ -3683,7 +3683,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
            task_tdedit += "<td><input type=\"hidden\" name=\"datasource_oldval\" value=\"" + oldval + "\"/></td>";
            task_tdedit += "</tr>";
        }
-       else if (label == "Successful Deployment Template" || 
+       else if (label == "Successful Deployment Template" ||
           label == "Approved Notify Template" ||
           label == "Success Notification Template" ||
           label == "Request Notification Template" ||
@@ -3719,7 +3719,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         task_tdedit += "<td><input type=\"hidden\" name=\"template_oldval\" value=\"" + oldval + "\"/></td>";
         task_tdedit += "</tr>";
        }
-       else if (label == "Failed Deployment Template" || 
+       else if (label == "Failed Deployment Template" ||
           label == "Rejected Notify Template" ||
           label == "Failure Notification Template")
        {
@@ -3773,7 +3773,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
          {
           var name = notifiertype;
           val = notifiertype;
-          
+
           if (objtype == "ds")
           {
            val = dstype;
@@ -3782,16 +3782,16 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
            else if (dstype == "bugzilla")
             name = "Bugzilla"
            else if (dstype == "github")
-            name = "GitHub"           
+            name = "GitHub"
            else if (dstype == "jira")
             name = "Jira"
            else if (dstype == "odbc")
             name = "ODBC"
-          }         
+          }
           else if (objtype == "re")
           {
            val = repotype;
-          
+
            if (repotype == "filesystem")
              name = "File System";
            else if (repotype == "http")
@@ -3804,22 +3804,22 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
             name = "Perforce";
            else if (repotype == "svn")
             name = "SVN";
-          } 
+          }
           else if (objtype == "co")
           {
            val = addcomptype;
-          
+
            if (addcomptype == "docker")
              name = "Docker";
            else if (addcomptypepotype == "file")
              name = "File";
            else if (addcomptype == "database")
             name = "Database";
-          } 
+          }
           else if (objtype == "no")
           {
            val = notifiertype;
-          
+
            if (notifiertype == "smtpemail")
              name = "Email";
            else if (notifiertype == "txtlocal")
@@ -3828,19 +3828,19 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
             name = "HipChat";
            else if (notifiertype == "slack")
             name = "Slack";
-          } 
+          }
           else if (objtype == "be")
           {
            val = buildenginetype;
-          
+
            if (buildenginetype == "jenkins")
              name = "Jenkins";
-          } 
+          }
          }
          else
          {
           var name = "";
-        
+
           if (objtype == "ds")
           {
            if (val == "ldap")
@@ -3848,14 +3848,14 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
            else if (val == "bugzilla")
             name = "Bugzilla"
            else if (val == "github")
-            name = "GitHub"           
+            name = "GitHub"
            else if (val == "jira")
             name = "Jira"
            else if (val == "odbc")
             name = "ODBC"
-          } 
+          }
           else if (objtype == "no")
-          {       
+          {
            if (val == "smtpemail")
              name = "Email";
            else if (val == "txtlocal")
@@ -3864,9 +3864,9 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
             name = "HipChat";
            else if (val == "slack")
             name = "Slack";
-          } 
+          }
           else if (objtype == "re")
-          {       
+          {
            if (val == "filesystem")
              name = "File System";
            else if (val == "http")
@@ -3879,7 +3879,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
             name = "Perforce";
            else if (val == "svn")
             name = "SVN";
-          } 
+          }
           else if (objtype == "co")
           {
            if (val== "docker")
@@ -3888,14 +3888,14 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
              name = "File";
            else if (val == "database")
             name = "Database";
-          } 
+          }
           else if (objtype == "be")
           {
            if (val == "jenkins")
              name = "Jenkins";
-          } 
+          }
          }
-         
+
          task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
          task_tdedit += "<td>" + name + "</td>";
          task_tdedit += "<td ><select name=\"type_val\" style=\"display:none\">";
@@ -3920,7 +3920,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         }
         else
          val = "";
-        
+
         task_tdedit += "<tr>";
         task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
         task_tdedit += "<td>" + val + "</td>";
@@ -3942,7 +3942,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         }
         else
          val = "";
-        
+
         task_tdedit += "<tr>";
         task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
         task_tdedit += "<td>" + val + "</td>";
@@ -3971,7 +3971,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         task_tdedit += "<td><input type=\"hidden\" name=\"lastlogin_oldval\" value=\"" + val + "\"/></td>";
         task_tdedit += "</tr>";
        }
-       
+
        if (label == "Owner")
        {
         td += "<tr><td class=\"summlabel\">";
@@ -3982,12 +3982,12 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         else
          td += val;
        }
-       else if ( label == "LifeCycle Domain" || 
-          label == "Copy to Remote" || 
-          label == "Always Deploy" || 
+       else if ( label == "LifeCycle Domain" ||
+          label == "Copy to Remote" ||
+          label == "Always Deploy" ||
           label == "Deploy Sequentially" ||
-          label == "Result Is Expr" || 
-          label == "Account Locked" || 
+          label == "Result Is Expr" ||
+          label == "Account Locked" ||
           label == "Force Change Password" ||
           label == "Available in SubDomains")
        {
@@ -4025,7 +4025,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         else
          td += "*********";
         }
-        
+
        }
        else if (label == "Username")
        {
@@ -4055,7 +4055,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
          td += "Object:";
          td += "</td><td>";
          td += objtypeName;
-         td += "</td></tr>"; 
+         td += "</td></tr>";
         td += "<tr id='kind_sumrow'><td id=\"kind_summ\" class=\"summlabel\">";
         td += "Type";
         td += ":</td><td>";
@@ -4063,67 +4063,67 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        }
        else if (label.toLowerCase() == "Filter Level".toLowerCase() && save_filter_val == "Items")
        {
-        
+
        }
        else if (label.toLowerCase() == "Pre-Action".toLowerCase() && summSaveobjtype == "rl")
        {
-        
+
        }
        else if (label.toLowerCase() == "Post-Action".toLowerCase() && summSaveobjtype == "rl")
        {
-        
+
        }
        else if (label.toLowerCase() == "Custom Action".toLowerCase() && summSaveobjtype == "rl")
        {
-        
+
        }
        else if ((label == "Roll Forward" || label == "Rollback") && save_filter_val == "Items")
        {
-        
+
        }
        else if (label.toLowerCase() == "Full Domain".toLowerCase())
        {
-        
+
        }
        else if (label.toLowerCase() == "XPos".toLowerCase())
        {
-        
+
        }
        else if (label.toLowerCase() == "Show Output".toLowerCase())
        {
-        
+
        }
        else if (label.toLowerCase() == "YPos".toLowerCase())
        {
-        
+
        }
        else if (label.toLowerCase() == "recursive".toLowerCase())
        {
-        
+
        }
        else if (label.toLowerCase() == "Auto Ping".toLowerCase())
        {
-        
+
        }
        else if (label.toLowerCase() == "Auto MD5 Check".toLowerCase())
        {
-        
+
        }
        else if (label.toLowerCase() == "Ping Start".toLowerCase())
        {
-        
+
        }
        else if (label.toLowerCase() == "Ping End".toLowerCase())
        {
-        
+
        }
        else if (label.toLowerCase() == "Ping Interval".toLowerCase())
        {
-        
+
        }
        else if (label.toLowerCase() == "MD5 Mismatch Template".toLowerCase())
        {
-        
+
        }
        else if (label == "Endpoint Types" )
        {
@@ -4141,7 +4141,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
           td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\">";
           td += "";
           td += "</td><td>";
-          td += (linkval!=null)?linkval:val;       
+          td += (linkval!=null)?linkval:val;
          }
          comptypelabeldone = true;
        }
@@ -4154,14 +4154,14 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
          else if (val == "bugzilla")
           name = "Bugzilla"
          else if (val == "github")
-          name = "GitHub"           
+          name = "GitHub"
          else if (val == "jira")
           name = "Jira"
          else if (val == "odbc")
           name = "ODBC"
-        } 
+        }
         else if (objtype == "no")
-        {       
+        {
          if (val == "smtpemail")
            name = "Email";
          else if (val == "txtlocal")
@@ -4170,9 +4170,9 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
           name = "HipChat";
          else if (val == "slack")
           name = "Slack";
-        } 
+        }
         else if (objtype == "re")
-        {       
+        {
          if (val == "filesystem")
            name = "File System";
          else if (val == "http")
@@ -4185,7 +4185,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
           name = "Perforce";
          else if (val == "svn")
           name = "SVN";
-        } 
+        }
         else if (objtype == "co")
         {
          if (val== "docker")
@@ -4194,12 +4194,12 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
            name = "File";
          else if (val == "database")
           name = "Database";
-        } 
+        }
         else if (objtype == "be")
         {
          if (val == "jenkins")
            name = "Jenkins";
-        } 
+        }
         var myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
         console.log("3) <tr id=\"" + myid + "\" ><td class=\"summlabel\">");
         td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\">";
@@ -4228,7 +4228,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         EditTaskSummaryButton(false);
       }
       else
-        $("#" + prevcb).prop("checked", true);  
+        $("#" + prevcb).prop("checked", true);
      },
      error : function(jqxhr, status, err)
      {
@@ -4253,24 +4253,24 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
  summSaveobjid = objid;
  summSaveaddParams = addParams;
  repolabeladded = false;
- 
+
   var href = window.location.href;
   href = href.replace("#dhmain","");
   href = href.replace("#dhnav", "");
   $("#row-10-right-panel > #summ_title > h2").html("Component Details");
-  
+
   window.history.pushState('dhnav', null, href + '#dhmain#dhnav');
- 
+
  $("#summ_data_edit").hide();
  $("#summ_data").show();
  $('.save_button').css("color","grey");
- $('.cancel_button').css("color","grey"); 
- 
+ $('.cancel_button').css("color","grey");
+
  if (objid < 0 && (objtype == "co" || objtype == "cv"))
   addParams += "&comptype=" + addcomptype
- 
+
  console.log("LoadSummaryData, tablename="+tablename);
- 
+
  if (objtype == "co" || objtype == "cv")
  {
   $("#summ_header_buttons").hide();
@@ -4290,7 +4290,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   $("#tabs-General-left").css("border-right-width","1px");
   $("#row-10-right-panel").css("border-left-width","1px");
  }
- 
+
  if (objtype != "do")
  {
   $("#summ_header_buttons > button.add_button").hide();
@@ -4303,8 +4303,8 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
  {
   $("#summ_header_buttons > button.add_button").show();
   $("#summ_header_buttons > button.delete_button").show();
- } 
- 
+ }
+
  if (!$("#domnav-panel").is(":visible"))
  {
   $("#summ_data").show();
@@ -4331,7 +4331,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   $("#emailto-panel").hide();
   $("#emailhelp-panel").hide();
   $("#adminrights_data").hide();
-  $("#adminrights_data_edit").hide(); 
+  $("#adminrights_data_edit").hide();
   $("#groupmembership-panel").hide();
   $("#usermembership-panel").hide();
   $("#outerworkflow").hide();
@@ -4371,7 +4371,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   $("#tabs-General-row-40").hide();
   $("#tabs-General-row-50").hide();
  }
- 
+
   FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams);
 
   if (objtype == "ap" || objtype == "av")
@@ -4381,7 +4381,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#attrs-panel").show();
    $("#tabs-General-right").show();
    $("#row-10-right-panel").show();
-   $("#tabs-General-row-12a").show(); 
+   $("#tabs-General-row-12a").show();
    $("#tabs-General-row-15").show();
    $("#tabs-General-right-15").show();
    $("#tabs-General-row-20").show();
@@ -4397,12 +4397,12 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
 
    $("#appcomp-data").show();
    $("#row-10-right-panel > #summ_title > h2").html("Dependencies");
-   getAppCompList("list");   
+   getAppCompList("list");
 
    $("#tabs-General-right-20").show();
    $("#trends-panel").show();
    ReplotReports(objtype);
-   
+
    LoadAppLogList("loghist",objtypeAsInt, objtype, objid);
    LoadDeployedEnv4AppData("deployedenv4app", objtypeAsInt, objtype, objid, addParams);
    LoadEnv4AppData("env4app", objtypeAsInt, objtype, objid, "");
@@ -4416,13 +4416,13 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
     $("#deployedenv4app-panel").show();
     $("#env4app-panel").show();
    }
-   
+
    $("#row-35-access").show();
    LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
-   
+
    $("#audit35-panel").show();
    createNewsFeed("audit35", objtype, objid, false);
-   
+
    hookSummary(tablename, objtypeAsInt, objtype, objid, addParams);
   }
   else if (objtype == "co" || objtype == "cv")
@@ -4436,9 +4436,9 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#compitem_data").show();
    $("#row-10-right-panel").show();
    $("#tabs-General-row-12").show();
-   $("#tabs-General-row-12a").show(); 
-   $("#licensemd-panel").show(); 
-   $("#cr-panel-20").show(); 
+   $("#tabs-General-row-12a").show();
+   $("#licensemd-panel").show();
+   $("#cr-panel-20").show();
    $("#tabs-General-row-15").show();
    $("#tabs-General-right-15").show();
  //  $("#feedback-panel").show();      // SBT remove for components 11/4/21
@@ -4448,7 +4448,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#tabs-General-row-35").show();
    $("#tabs-General-row-40").show();
    $("#defect-panel").show();
-   
+
    LoadReadme(objid);
    LoadSwagger(objid);
    LoadLicense(objid);
@@ -4459,17 +4459,17 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    LoadSrv4CompData("srv4comp", objtypeAsInt, objtype, objid, "");
    getLicenseList("list");
    getCVEList("list");
-   
+
    CreateCurrentEnv2Comps(objid);
-   
+
    getProvidesList("list");
    getConsumesList("list");
    $("#row-35-access").show();
    LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
-   
+
    $("#audit35-panel").show();
    createNewsFeed("audit35", objtype, objid, false);
-   
+
    hookSummary(tablename, objtypeAsInt, objtype, objid, addParams);
 
   }
@@ -4479,17 +4479,17 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#emailto-panel").show();
    $("#emailhelp-panel").show();
    LoadBodyData("emailbody", objtypeAsInt, objtype, objid, addParams);
-   LoadEmailToData("emailto", objtypeAsInt, objtype, objid, ""); 
+   LoadEmailToData("emailto", objtypeAsInt, objtype, objid, "");
   }
   else if (objtype == "no")
   {
    $("#row-10-right-panel").show();
    $("#row-10-access").show();
    LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
-     
+
    $("#props_data").show();
-   $("#props_data_edit").hide(); 
-   LoadPropertiesData("propstab", objtypeAsInt, objtype, objid, ""); 
+   $("#props_data_edit").hide();
+   LoadPropertiesData("propstab", objtypeAsInt, objtype, objid, "");
   }
   else if (objtype == "ct")
   {
@@ -4507,10 +4507,10 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#row-10-right-panel").show();
    $("#row-10-access").show();
    LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
-   
+
    $("#row-10-audit").show();
    createNewsFeed("audit10", objtype, objid, false);
-   
+
    $("#tabs-General-row-15").show();
    $("#outerworkflow").show();
    $("#pickproc").show();
@@ -4520,8 +4520,8 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   else if (objtype == "us")
   {
    $("#groupmembership-panel").show();
-   LoadGroupMembershipData("groupmembership", objtypeAsInt, objtype, objid, ""); 
-   
+   LoadGroupMembershipData("groupmembership", objtypeAsInt, objtype, objid, "");
+
    $("#row-10-right-panel").show();
    $("#row-10-audit").show();
    createNewsFeed("audit10", objtype, objid, false);
@@ -4529,9 +4529,9 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   else if (objtype == "gr")
   {
    $("#usermembership-panel").show();
-   LoadUserMembershipData("usermembership", objtypeAsInt, objtype, objid, ""); 
+   LoadUserMembershipData("usermembership", objtypeAsInt, objtype, objid, "");
    LoadAdminRightsData(objtypeAsInt, objtype, objid);
-   
+
    $("#row-10-right-panel").show();
    $("#row-10-audit").show();
    createNewsFeed("audit10", objtype, objid, false);
@@ -4539,9 +4539,9 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   else if (objtype == "ds")
   {
    $("#props_data").show();
-   $("#props_data_edit").hide(); 
-   LoadPropertiesData("propstab", objtypeAsInt, objtype, objid, ""); 
-   
+   $("#props_data_edit").hide();
+   LoadPropertiesData("propstab", objtypeAsInt, objtype, objid, "");
+
    $("#row-10-right-panel").show();
    $("#row-10-access").show();
    LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
@@ -4549,75 +4549,75 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   else if (objtype == "re")
   {
    $("#props_data").show();
-   $("#props_data_edit").hide(); 
-   LoadPropertiesData("propstab", objtypeAsInt, objtype, objid, ""); 
-   
+   $("#props_data_edit").hide();
+   LoadPropertiesData("propstab", objtypeAsInt, objtype, objid, "");
+
    $("#tabs-General-right-15").show();
-  
+
    $("#row-10-right-panel").show();
    $("#row-10-access").show();
    LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
-   
+
    $("#row-10-audit").show();
    createNewsFeed("audit10", objtype, objid, false);
   }
   else if (objtype == "rl" || objtype == "rv")
-  { 
+  {
    $("#trends-panel").show();
    $("#logs-panel").show();
    $("#row-10-right-panel").show();
    $("#tabs-General-row-20").show();
-   
+
    $("#attrs10-panel").show();
-   LoadAttributesData("attrib10",objtypeAsInt, objtype, objid);   
-   
+   LoadAttributesData("attrib10",objtypeAsInt, objtype, objid);
+
    $("#row-10-access").show();
    LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
-   
+
    $("#row-10-audit").show();
    createNewsFeed("audit10", objtype, objid, false);
-   
+
    $("#tabs-General-right-20").show();
    $("#trends-panel").show();
    ReplotReports(objtype);
-   
+
    hookSummary(tablename, objtypeAsInt, objtype, objid, addParams);
-   
+
    $("#planning-panel").show();
    $("#planningtimeline").show();
    $("#tabs-General-row-30").show();
    LoadTimeline4App("planningtimeline", objtypeAsInt, objtype, objid);
   }
   else if (objtype == "en")
-  { 
+  {
    $("#row-10-access").show();
    LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
-   
+
    $("#row-10-audit").show();
    createNewsFeed("audit10", objtype, objid, false);
-   
+
    $("#app4env-panel").show();
    LoadApp4EnvData("app4env", objtypeAsInt, objtype, objid, addParams);
    $("#row-10-right-panel").show();
-   
+
    $("#tabs-General-row-15").show();
    $("#attrs-panel").show();
-   LoadAttributesData("attrib",objtypeAsInt, objtype, objid);   
-   
+   LoadAttributesData("attrib",objtypeAsInt, objtype, objid);
+
    $("#srv4env-panel").show();
-   LoadSrv4EnvData("srv4env",objtypeAsInt, objtype, objid); 
-   
+   LoadSrv4EnvData("srv4env",objtypeAsInt, objtype, objid);
+
    $("#tabs-General-row-20").show();
    $("#tabs-General-right-20").show();
    $("#trends-panel").show();
    ReplotReports(objtype);
-   
+
    $("#tabs-General-row-28").show();
    $("#feedback-panel").show();
    CreateCurrentComp2Envs(objid);
-   
+
    hookSummary(tablename, objtypeAsInt, objtype, objid, addParams);
-  
+
   // $("#tabs-General-row-30").show();
   // $("#comp4srv-panel").show();
   // LoadComp4SrvData("comp4srv", objtypeAsInt, objtype, objid, "");
@@ -4627,14 +4627,14 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#tabs-General-row-15").show();
    $("#inputparams-panel").show();
    $("#tabs-General-row-20").show();
-   
+
    $("#row-10-right-panel").show();
    $("#row-10-access").show();
    LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
-   
+
    $("#row-10-audit").show();
    createNewsFeed("audit10", objtype, objid, false);
-   
+
    $("#switchargs-panel").show();
    $("#inputparams-panel").show();
    $("#cmdline-panel").show();
@@ -4645,23 +4645,23 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("button.test_button").show();
    $("#servstat_data").show();
    LoadServerStatusData("servstat", objtypeAsInt,objid);
-   
+
    $("#attrs10-panel").show();
-   LoadAttributesData("attrib10",objtypeAsInt, objtype, objid);   
-   
+   LoadAttributesData("attrib10",objtypeAsInt, objtype, objid);
+
    $("#row-10-access").show();
    LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
-      
+
    $("#row-10-audit").show();
    createNewsFeed("audit10", objtype, objid, false);
-   
+
    $("#row-10-right-panel").show();
-   
+
    $("#tabs-General-row-20").show();
    $("#tabs-General-right-20").show();
    $("#trends-panel").show();
    ReplotReports(objtype);
-   
+
    $("#tabs-General-row-30").show();
    $("#comp4srv-panel").show();
    LoadComp4SrvData("comp4srv", objtypeAsInt, objtype, objid, "");
@@ -4671,17 +4671,17 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    if (!$("#domnav-panel").is(":visible"))
    {
     $("#tabs-General-row-10").show();
-    $("#domnav-panel").show();   
+    $("#domnav-panel").show();
     DomNav();
-   } 
-   
+   }
+
    $("#row-10b-access").show();
    LoadAccess("row-10b-access-data", objtypeAsInt, objtype, objid, "");
-   
+
    $("#tabs-General-row-50").show();
-   $("#task-panel").show(); 
+   $("#task-panel").show();
    LoadTasks("taskstab", objtypeAsInt, objtype, objid, "");
-  
+
   }
 }
 
@@ -4691,10 +4691,10 @@ function LoadAccess(parentdiv, objtypeAsInt, objtype, objid, addParams)
  if (objtype == "do")
   $("#" + parentdiv).load("GetAccess?objtype=" + objtypeAsInt + "&id=" + objid + "&din=Y");
  else
-  $("#" + parentdiv).load("GetAccess?objtype=" + objtypeAsInt + "&id=" + objid + "&din="); 
+  $("#" + parentdiv).load("GetAccess?objtype=" + objtypeAsInt + "&id=" + objid + "&din=");
 }
 
-function LoadComponentItems(objid) 
+function LoadComponentItems(objid)
 {
  if (objid < 0)
  {
@@ -4702,12 +4702,12 @@ function LoadComponentItems(objid)
   {
    ciClickElement(objid,"rf_database");
    ciClickElement(objid,"rb_database");
-  } 
+  }
   else
    ciClickElement(objid,addcomptype);
   return;
  }
- 
+
  $.getJSON('GetComponentItemLayout', "compid=" + objid, function(data)
    {
     for (var i=0;i<data.Nodes.length;i++)
@@ -4729,7 +4729,7 @@ function LoadLicense(objid)
       html      = converter.makeHtml(res);
       $("#licensemd-data").html(html);
      }
-   }); 
+   });
 }
 
 function LoadReadme(objid)
@@ -4746,7 +4746,7 @@ function LoadReadme(objid)
       html      = converter.makeHtml(res);
       $("#readme-data").html(html);
      }
-   }); 
+   });
 }
 
 
@@ -4806,9 +4806,9 @@ function HideFields()
 	if (summSaveobjtype != "ac" && summSaveobjtype != "pr" && summSaveobjtype != "fn") {
 		return;
 	}
- 
+
 	console.log("save_kind_id="+save_kind_id);
-	
+
  switch (save_kind_id)
  {
  case 1: // DMScript Function in repository
@@ -4877,7 +4877,7 @@ function HideFields()
  default:
   break;
  }
- 
+
 }
 
 function endsWith(str, suffix) {
@@ -4888,58 +4888,58 @@ function endsWith(str, suffix) {
 function summOK(isProfile, prefix)
 {
  $('.edit_button').css("color","#3367d6");
- 
+
  var dom_summSavetablename = summSavetablename;
  var dom_summSaveobjtypeAsInt = summSaveobjtypeAsInt;
  var dom_summSaveobjtype = summSaveobjtype;
  var dom_summSaveobjid = summSaveobjid;
  var dom_summSaveaddParams = summSaveaddParams;
- 
+
  if (prefix != "")
  {
   summSavetablename = task_summSavetablename;
   summSaveobjtypeAsInt = task_summSaveobjtypeAsInt;
   summSaveobjtype = task_summSaveobjtype;
   summSaveobjid = task_summSaveobjid;
-  summSaveaddParams = task_summSaveaddParams; 
+  summSaveaddParams = task_summSaveaddParams;
  }
- 
+
  var pwd = parent.$("#" + prefix + "summ_data_edit");
  var form = pwd.find("#" + prefix + "summform");
- 
- if (typeof summSavedomid == "undefined") 
+
+ if (typeof summSavedomid == "undefined")
   summSavedomid = domlist[0];
- 
- if (typeof parentid == "undefined" || parentid == "") 
+
+ if (typeof parentid == "undefined" || parentid == "")
   parentid = domlist[0];
- 
- if (typeof parenttype == "undefined" || parenttype == "") 
+
+ if (typeof parenttype == "undefined" || parenttype == "")
   parenttype = "Domain";
- 
+
  console.log("EditSummaryButton isProfile="+isProfile);
 
   console.log("OK Clicked: summSaveobjtype="+summSaveobjtype+" summSaveobjid="+summSaveobjid);
   var name = "";
-  
+
   if (form.find(":input[name=\"password_again_val\"]").length > 0)
   {
    var pw1 = form.find(":input[name=\"password_val\"]").val();
    var pw2 = form.find(":input[name=\"password_again_val\"]").val();
-   
+
    if (pw1 != pw2)
    {
     alert("Passwords don't match.");
     return;
-   } 
+   }
   }
-  
+
   if (form.find(":input[name=\"fulldomain_val\"]").length > 0)
     parentid = form.find(":input[name=\"fulldomain_val\"]").val();
-   
+
   if (summSaveobjid < 0)
   {
    var namefld;
-   
+
    if (summSaveobjtype == "us")
     namefld = pwd.find(":input[name=\"username_val\"]");
    else if (summSaveobjtype == "gr")
@@ -4949,10 +4949,10 @@ function summOK(isProfile, prefix)
 
     if (typeof namefld !== undefined)
      name = namefld.val();
-   
+
     if (name == null)
      return;
-   
+
     if (name.trim() == "")
      return;
 
@@ -4966,7 +4966,7 @@ function summOK(isProfile, prefix)
     kindid=kind.val();
     // Deliberate drop-through
    case "ac":
-   case "co":  
+   case "co":
        var cat = f.find(":input[name=\"category_val\"]");
        catid = cat2id[cat.val()];
        console.log("catid="+catid);
@@ -4995,7 +4995,7 @@ function summOK(isProfile, prefix)
    case "no":
     NewID("Notify", "NOTIFY", currenttree, "", name);
     break;
-    
+
    case "te":
     {
      notifierfld = pwd.find(":input[name=\"notifier_val\"]");
@@ -5007,7 +5007,7 @@ function summOK(isProfile, prefix)
        parentid = notifierfld.val().substring(2);
        parenttype = "NOTIFY";
       }
-     } 
+     }
      if (notifierfld.val() != null)
         NewID("Template","TEMPLATE", currenttree, "", name);
     }
@@ -5063,13 +5063,13 @@ function summOK(isProfile, prefix)
     if (typeof namefld !== undefined)
      name = namefld.val();
     NewID("Usergroup", "USERGROUP", currenttree, "", name);
-   } 
+   }
    break;
-   
+
    case "be":
     NewID("buildengine", "BUILDENGINE", currenttree, "", name);
     break;
-    
+
    case "bj":
     {
      builderfld = pwd.find(":input[name=\"builder_val\"]");
@@ -5078,7 +5078,7 @@ function summOK(isProfile, prefix)
      {
       parentid = builderfld.val().substring(2);
       parenttype = "BUILDER";
-     } 
+     }
      NewID("buildjob", "BUILDJOB", currenttree, "", name);
     }
     break;
@@ -5093,7 +5093,7 @@ function summOK(isProfile, prefix)
    if (summSaveobjid != -1)
     SaveSummaryData(parent.$("#" + prefix + "summ_data_edit"), prefix + "summ", summSaveobjtypeAsInt, summSaveobjtype, summSaveobjid, summSaveaddParams,false);
   }
-  
+
   summSavetablename = dom_summSavetablename;
   summSaveobjtypeAsInt = dom_summSaveobjtypeAsInt;
   summSaveobjtype = dom_summSaveobjtype;
@@ -5104,21 +5104,21 @@ function summOK(isProfile, prefix)
 function summCancel(prefix)
 {
  var pwd = parent.$("#" + prefix + "summ_data_edit");
- 
+
  if (summSaveobjid < 0)
    $("#panel_container.right").hide();
- 
+
  $('.edit_button').css("color","#3367d6");
  $('.save_button').css("color","grey");
  $('.cancel_button').css("color","grey");
  pwd.hide();
  parent.$("#" + prefix + "summ_data").show();
- 
+
  if (objtype == "cv" || objtype == "co")
  {
   parent.$("#compowner_summ_data_edit").hide();
   parent.$("#compowner_summ_data").show();
-  
+
   parent.$("#compitem_data_edit").hide();
   parent.$("#compitem_data").show();
  }
@@ -5129,25 +5129,25 @@ function summCancel(prefix)
  }
  else if (objtype == "no")
  {
-  $("#props_data_edit").hide(); 
+  $("#props_data_edit").hide();
   $("#props_data").show();
  }
  else if (objtype == "gr")
  {
-  $("#adminrights_data_edit").hide(); 
+  $("#adminrights_data_edit").hide();
   $("#adminrights_data").show();
  }
  else if (objtype == "re")
  {
-  $("#props_data_edit").hide(); 
+  $("#props_data_edit").hide();
   $("#props_data").show();
  }
  else if (objtype == "be")
  {
-  $("#props_data_edit").hide(); 
+  $("#props_data_edit").hide();
   $("#props_data").show();
  }
- 
+
  if (objid < 0)
  {
   var listName = tree2menu[currenttree];
@@ -5159,36 +5159,36 @@ function EditSummaryButton(userDialog, prefix)
 {
 
  console.log($('.edit_button').css("color"));
- 
+
  if ($('.edit_button').css("color") == "rgb(128, 128, 128)")
    return;
-   
+
  $('.edit_button').css("color","grey");
  $('.save_button').css("color","#3367d6");
  $('.cancel_button').css("color","#3367d6");
- 
+
  isProfile = userDialog;
- 
- if (typeof summSavedomid == "undefined") 
+
+ if (typeof summSavedomid == "undefined")
   summSavedomid = domlist[0];
- 
- if (typeof parentid == "undefined" || parentid == "") 
+
+ if (typeof parentid == "undefined" || parentid == "")
   parentid = domlist[0];
- 
- if (typeof parenttype == "undefined" || parenttype == "") 
+
+ if (typeof parenttype == "undefined" || parenttype == "")
   parenttype = "Domain";
- 
+
 	console.log("EditSummaryButton isProfile="+isProfile);
 	var pwd = parent.$("#" + prefix + "summ_data_edit");
-	
+
 	if (prefix != "")
 	 pwd.html(task_tdedit);
 	else
   pwd.html(isProfile?tdedit2:tdedit);
-	
+
  $("#" + prefix + "summ tr").each(function( index ) {
 	   console.log($(this).attr("id"));
-	   if (typeof $(this).attr("id") != "undefined" && $(this).attr("id").indexOf("/") < 0) 
+	   if (typeof $(this).attr("id") != "undefined" && $(this).attr("id").indexOf("/") < 0)
 		   if (endsWith($(this).attr("id"),"_sumrow")) {
 			   if($(this).is(":visible")) {
 			   } else {
@@ -5261,7 +5261,7 @@ function EditSummaryButton(userDialog, prefix)
       for (n = 0; n < res.length; n++)
       {
        var action = res[n].action;
-       
+
        if (action.type == "ac" && !(action.id in actionids))
        {
         action_list.push(action);
@@ -5278,23 +5278,23 @@ function EditSummaryButton(userDialog, prefix)
       });
 
       for (action of action_list)
-      {   	  
+      {
     	  if (typeof preaction != "undefined")
-    	  { 
+    	  {
         if (save_preaction_val == action.id)
         preaction.append('<option id="preact' + n + '" selected value=\"' + action.type + action.id + "\">" + action.name + '</option>');
        else
         preaction.append('<option id="preact' + n + '" value=\"' + action.type + action.id + "\">" + action.name + '</option>');
-    	  }  
+    	  }
 
     	  if (typeof postaction != "undefined")
-    	  { 
+    	  {
         if (save_postaction_val == action.id)
          postaction.append('<option id="postact' + n + '" selected value=\"' + action.type + action.id + "\">" + action.name + '</option>');
         else
          postaction.append('<option id="postact' + n + '" value=\"' + action.type + action.id + "\">" + action.name + '</option>');
     	  }
-    	  
+
     	  if (typeof customaction != "undefined")
     	  {
         if (save_customaction_val == action.id)
@@ -5302,9 +5302,9 @@ function EditSummaryButton(userDialog, prefix)
         else
          customaction.append('<option id="customact' + n + '" value=\"' + action.type + action.id + "\">" + action.name + '</option>');
     	  }
-    	  
+
     	  if (typeof taskaction != "undefined")
-    	  { 
+    	  {
         if (save_taskaction_val == action.id)
           taskaction.append('<option id="customact' + n + '" selected value=\"' + action.type + action.id + "\">" + action.name + '</option>');
         else
@@ -5337,23 +5337,23 @@ function EditSummaryButton(userDialog, prefix)
       var myform = pwd.find("#" + prefix + "summform");
       var domain = myform.find(":input[name=\"fulldomain_val\"]");
       var cnt = 0;
-      
+
       for (n = 0; n < res.length; n++)
       {
        if (!res[n].name.startsWith(userdom))
         continue;
-       
+
        if (save_fulldomain_val == res[n].name)
        {
         save_fulldomain_id = res[n].id;
         domain.append('<option id="domain' + n + '" selected value=\"' + save_fulldomain_id + "\">" + res[n].name + '</option>');
-        
+
         cnt++;
-       } 
+       }
        else
         domain.append('<option id="domain' + n + '" value=\"' + res[n].id + "\">" + res[n].name + '</option>');
       }
-      
+
       if (cnt == 0)
        domain.prop('selectedIndex', 0);
      },
@@ -5363,8 +5363,8 @@ function EditSummaryButton(userDialog, prefix)
       console.log(err);
      }
     });
-   }  
-   
+   }
+
    if (myform.find(":input[name=\"comptype_val\"]").length > 0)
    {
     $.ajax(
@@ -5377,20 +5377,20 @@ function EditSummaryButton(userDialog, prefix)
       var myform = pwd.find("#" + prefix + "summform");
       var comptype = myform.find(":input[name=\"comptype_val\"]");
       var cnt = 0;
-      
+
       for (n = 0; n < res.data.length; n++)
       {
        if (save_comptype_val == res.data[n].name)
        {
     	save_comptype_id = res.data[n].database + res.data[n].deletedir + res.data[n].id;
         comptype.append('<option id="comptype' + n + '" selected value=\"' + save_comptype_id + "\">" + res.data[n].name + '</option>');
-        
+
         cnt++;
-       } 
+       }
        else
         comptype.append('<option id="comptype' + n + '" value=\"' + res.data[n].database + res.data[n].deletedir  + res.data[n].id + "\">" + res.data[n].name + '</option>');
       }
-      
+
       if (cnt == 0)
       {
        if (save_kind_val == "Database")
@@ -5399,7 +5399,7 @@ function EditSummaryButton(userDialog, prefix)
         $("#comptype_val option:contains(Kubernetes)").attr('selected', true);
        else
         $("#comptype_val option:contains(Application Server)").attr('selected', true);
-      } 
+      }
      },
      error : function(jqxhr, status, err)
      {
@@ -5408,7 +5408,7 @@ function EditSummaryButton(userDialog, prefix)
      }
     });
    }
-   
+
    if (myform.find(":input[name=\"servercomptype_val\"]").length > 0)
    {
     $.ajax(
@@ -5432,11 +5432,11 @@ function EditSummaryButton(userDialog, prefix)
     	save_comptype_id = save_comptype_id + res.data[n].id + ";";
         comptype.append('<option id="servercomptype' + n + '" selected value=\"' + res.data[n].id + "\">" + res.data[n].name + '</option>');
         cnt++;
-       } 
+       }
        else
         comptype.append('<option id="servercomptype' + n + '" value=\"' + res.data[n].id + "\">" + res.data[n].name + '</option>');
       }
-      
+
       if (cnt == 0)
        comptype.prop('selectedIndex', 0);
      },
@@ -5447,13 +5447,13 @@ function EditSummaryButton(userDialog, prefix)
      }
     });
    }
-   
+
    if (myform.find(":input[name=\"autoping_val\"]").length > 0)
    {
      $("#autoping_val").change(ToggleAutoPing);
      ToggleAutoPing();
    }
-   
+
    if (myform.find(":input[name=\"datasource_val\"]").length > 0)
    {
 	   $.ajax({
@@ -5472,7 +5472,7 @@ function EditSummaryButton(userDialog, prefix)
 				   {
 					   datasource.append('<option id="datasource' + n + '" selected value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
 					   cnt++;
-				   } 
+				   }
 				   else
 					   datasource.append('<option id="datasource' + n + '" value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
 			   }
@@ -5486,7 +5486,7 @@ function EditSummaryButton(userDialog, prefix)
 		   }
 		});
    }
-   
+
    if (myform.find(":input[name=\"notifier_val\"]").length > 0)
    {
     $.ajax({
@@ -5501,16 +5501,16 @@ function EditSummaryButton(userDialog, prefix)
        var myform = pwd.find("#" + prefix + "summform");
        var notifier = myform.find(":input[name=\"notifier_val\"]");
        var cnt = 0;
- 
+
        for (n = 0; n < res.length; n++)
        {
         fullname = res[n].domain + "." + res[n].name;
-        
+
         if (save_notifier_val == fullname)
         {
          notifier.append('<option id="notifier' + n + '" selected value="' + res[n].id + "\">" + fullname + '</option>');
          cnt++;
-        } 
+        }
         else
          notifier.append('<option id="notifier' + n + '" value="' + res[n].id + "\">" + fullname + '</option>');
        }
@@ -5524,7 +5524,7 @@ function EditSummaryButton(userDialog, prefix)
      }
   });
    }
-   
+
    if (myform.find(":input[name=\"builder_val\"]").length > 0)
    {
     $.ajax({
@@ -5539,16 +5539,16 @@ function EditSummaryButton(userDialog, prefix)
        var myform = pwd.find("#" + prefix + "summform");
        var builder = myform.find(":input[name=\"builder_val\"]");
        var cnt = 0;
- 
+
        for (n = 0; n < res.length; n++)
        {
         fullname = res[n].domain + "." + res[n].name;
-        
+
         if (save_builder_val == fullname)
         {
          builder.append('<option id="builder' + n + '" selected value="' + res[n].id + "\">" + fullname + '</option>');
          cnt++;
-        } 
+        }
         else
          builder.append('<option id="builder' + n + '" value="' + res[n].id + "\">" + fullname + '</option>');
        }
@@ -5562,7 +5562,7 @@ function EditSummaryButton(userDialog, prefix)
      }
   });
    }
-   
+
    BuilderChanged();
 
    if (myform.find(":input[name=\"bt_datasource_val\"]").length > 0)
@@ -5583,7 +5583,7 @@ function EditSummaryButton(userDialog, prefix)
 				   {
 					   datasource.append('<option id="datasource' + n + '" selected value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
 					   cnt++;
-				   } 
+				   }
 				   else
 					   datasource.append('<option id="datasource' + n + '" value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
 			   }
@@ -5618,7 +5618,7 @@ function EditSummaryButton(userDialog, prefix)
 				   {
 					   datasource.append('<option id="buildjob' + n + '" selected value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
 					   cnt++;
-				   } 
+				   }
 				   else
 					   datasource.append('<option id="buildjob' + n + '" value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
 			   }
@@ -5644,14 +5644,14 @@ function EditSummaryButton(userDialog, prefix)
       var template = myform.find(":input[name=\"template_val\"]");
       var fail_template = myform.find(":input[name=\"fail_template_val\"]");
       var cnt = 0;
-      
+
       for (n = 0; n < res.length; n++)
       {
        if (save_template_val == res[n].name)
        {
         template.append('<option id="template' + n + '" selected value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
         cnt++;
-       } 
+       }
        else
         template.append('<option id="template' + n + '" value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
 
@@ -5661,7 +5661,7 @@ function EditSummaryButton(userDialog, prefix)
         fail_template.append('<option id="fail_template' + n + '" value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
 
       }
-      
+
       //if (cnt == 0)
       // template.prop('selectedIndex', 1);
      },
@@ -5689,10 +5689,10 @@ function EditSummaryButton(userDialog, prefix)
       var owner = myform.find(":input[name=\"owner_val\"]");
 
       var userid = save_owner_val;
-      
+
       if (userid == "")
        userid = myuserid;
-    
+
       for (n = 0; n < res.length; n++)
       {
        if (userid == res[n].name)
@@ -5700,7 +5700,7 @@ function EditSummaryButton(userDialog, prefix)
        else
         owner.append('<option id="owner' + n + '" value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
       }
-      
+
       $.ajax(
         {
          url : "GetGroups",
@@ -5715,7 +5715,7 @@ function EditSummaryButton(userDialog, prefix)
           var owner = myform.find(":input[name=\"groupowner_val\"]");
 
           var group = save_groupowner_val;
-       
+
           for (n = 0; n < res.length; n++)
           {
            if (group == res[n].name)
@@ -5724,7 +5724,7 @@ function EditSummaryButton(userDialog, prefix)
             owner.append('<option id="groupowner' + n + '" value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
           }
           $("#ownertype_val").change(ToggleOwner);
-          
+
           ToggleOwner();
          },
          error : function(jqxhr, status, err)
@@ -5741,7 +5741,7 @@ function EditSummaryButton(userDialog, prefix)
      }
     });
    }
-      
+
    if (myform.find(":input[name=\"credential_val\"]").length > 0)
    {
     $.ajax(
@@ -5792,7 +5792,7 @@ function EditSummaryButton(userDialog, prefix)
       }
       cat.attr('selectBoxOptions', selections);
       createEditableSelect(cat[0]);
-      window.addEventListener("selectBox", ToggleDisplayName, false); 
+      window.addEventListener("selectBox", ToggleDisplayName, false);
       cat.val(save_category_val);
 //      if (save_category_val == "No category" || save_category_val == "Do not display")
 //       $("#fragmentname_row").hide();
@@ -5879,7 +5879,7 @@ function EditSummaryButton(userDialog, prefix)
 		var myform = pwd.find("#" + prefix + "summform");
 		var typeobj = myform.find(":input[name=\"linkedtask_val\"]");
 		var myTask = myform.find(":input[name=\"name_val\"]");
-		
+
 		for (n = 0; n < TaskList.length; n++) {
 			if (TaskList[n].name == myTask.val()) continue;
 			if (save_linkedtask_val == TaskList[n].name) {
@@ -5946,10 +5946,10 @@ function EditSummaryButton(userDialog, prefix)
       var owner = myform.find(":input[name=\"owner_val\"]");
 
       var userid = save_owner_val;
-      
+
       if (userid == "")
        userid = myuserid;
-    
+
       for (n = 0; n < res.length; n++)
       {
        if (userid == res[n].name)
@@ -6074,8 +6074,8 @@ function EditSummaryButton(userDialog, prefix)
       id : 4,
       name : 'Endpoint Script'
      } ];
-     
-     
+
+
      desc += "<tr id='kind_sumrow_desc' ><td id=\"kind_summ_desc\" class=\"summlabel\" style=\"text-align:left; white-space: nowrap;\">";
      desc += "Object:";
      desc += "</td><td>";
@@ -6117,7 +6117,7 @@ function EditSummaryButton(userDialog, prefix)
     {
      $("#group_row").after(desc);
     }
-    
+
     for (n = 0; n < res.length; n++)
     {
      if (save_kind_val == res[n].name || (save_kind_val == "unconfigured" && n == 2))
@@ -6201,21 +6201,21 @@ function EditSummaryButton(userDialog, prefix)
     $("#usernameenc_row").hide();
     $("#passwordenc_row").hide();
     $("#username_row").show();
-    $("#password_row").show();    
+    $("#password_row").show();
    }
- 
+
  if (summSaveobjid < 0)
  {
   var objstr = obj2Int[summSaveobjtype][1];
   if (objstr == "Notify")
    objstr = "Notifier";
-  
+
   if (objstr == "Application")
    objstr = "Application Base Version";
-  
+
   if (objstr == "Component")
    objstr = "Component Base Version";
-  
+
   if (objstr == "Server")
    objstr = "Endpoint";
 
@@ -6234,9 +6234,9 @@ function EditSummaryButton(userDialog, prefix)
  parent.$("#adminrights_data_edit").hide();
  parent.$("#" + prefix + "summ_data").hide();
  parent.$("#" + prefix + "summ_data_edit").show();
- 
+
  if (objtype == "co" || objtype == "cv")
- { 
+ {
    parent.$("#compitem_data_edit").show();
    parent.$("#compowner_summ_data_edit").show();
  }
@@ -6246,25 +6246,25 @@ function EditSummaryButton(userDialog, prefix)
  }
  else if (objtype == "no")
  {
-  parent.$("#props_data_edit").show(); 
+  parent.$("#props_data_edit").show();
  }
  else if (objtype == "gr")
  {
-  parent.$("#adminrights_data_edit").show(); 
+  parent.$("#adminrights_data_edit").show();
  }
  else if (objtype == "ds")
  {
-  parent.$("#props_data_edit").show(); 
+  parent.$("#props_data_edit").show();
  }
  else if (objtype == "re")
  {
-  parent.$("#props_data_edit").show(); 
+  parent.$("#props_data_edit").show();
  }
  else if (objtype == "be")
  {
-  parent.$("#props_data_edit").show(); 
+  parent.$("#props_data_edit").show();
  }
-} 
+}
 
 function convertDate(in_date)
 {
@@ -6309,15 +6309,15 @@ function GetSaveSummaryData(instance, data, prefix)
  var viewArr = form.serializeArray();
 
  var viewArr2 = $("#compownerform").serializeArray();
- 
+
  viewArr = viewArr.concat(viewArr2);
- 
+
  var view = {};
 
  for ( var i in viewArr)
  {
   if (prefix.length > 0 && viewArr[i].name.startsWith(prefix))
-   view[viewArr[i].name.substring(3)] = viewArr[i].value; 
+   view[viewArr[i].name.substring(3)] = viewArr[i].value;
   else if (prefix.length == 0 && !viewArr[i].name.startsWith("rf_") && !viewArr[i].name.startsWith("rb_"))
     view[viewArr[i].name] = viewArr[i].value;
  }
@@ -6325,9 +6325,9 @@ function GetSaveSummaryData(instance, data, prefix)
  var view = {};
 
  prefix = "";
- 
+
  view["servercomptype_val"] = "";
- 
+
  for ( var i in viewArr)
  {
   if (viewArr[i].name == "servercomptype_val")
@@ -6361,7 +6361,7 @@ function GetSaveSummaryData(instance, data, prefix)
   view.alwaysdeploy_oldval = true;
  else
   view.alwaysdeploy_oldval = false;
- 
+
  if (typeof view.deployseq_val == "undefined")
   view.deployseq_val = false;
 
@@ -6387,10 +6387,10 @@ function GetSaveSummaryData(instance, data, prefix)
   view.resultisexpr_oldval = true;
  else
   view.resultisexpr_oldval = false;
- 
+
  if (typeof view.allocateterminal_val == "undefined")
   view.allocateterminal_val = false;
- 
+
  if (view.allocateterminal_val == "on" || view.allocateterminal_val == "true")
   view.allocateterminal_val = true;
  else
@@ -6403,7 +6403,7 @@ function GetSaveSummaryData(instance, data, prefix)
 
  if (typeof view.copytoremote_val == "undefined")
   view.copytoremote_val = false;
- 
+
  if (view.copytoremote_val == "on" || view.copytoremote_val == "true")
   view.copytoremote_val = true;
  else
@@ -6426,7 +6426,7 @@ function GetSaveSummaryData(instance, data, prefix)
   view.showoutput_oldval = true;
  else
   view.showoutput_oldval = false;
- 
+
  if (typeof view.subdomains_val == "undefined")
   view.subdomains_val = false;
 
@@ -6459,39 +6459,39 @@ function GetSaveSummaryData(instance, data, prefix)
   view.forcechangepassword_oldval = true;
  else
   view.forcechangepassword_oldval = false;
- 
+
  if (view.automd5check_val == "on" || view.automd5check_val == "true")
 	 view.automd5check_val = true;
  else
 	 view.automd5check_val = false;
- 
+
  if (view.automd5check_oldval == "on" || view.automd5check_oldval == "true")
 	 view.automd5check_oldval = true;
  else
 	 view.automd5check_oldval = false;
- 
- 
+
+
  if (view.autoping_val == "on" || view.autoping_val == "true")
 	 view.autoping_val = true;
  else
 	 view.autoping_val = false;
- 
+
  if (view.autoping_oldval == "on" || view.autoping_oldval == "true")
 	 view.autoping_oldval = true;
  else
 	 view.autoping_oldval = false;
 
- 
+
  if (view.deletedir_val == "on" || view.deletedir_val == "true")
   view.deletedir_val = true;
  else
   view.deletedir_val = false;
- 
+
  if (view.database_val == "on" || view.database_val == "true")
   view.database_val = true;
  else
   view.database_val = false;
- 
+
  console.log(view);
 
  if (view.name_val != view.name_oldval)
@@ -6527,7 +6527,7 @@ function GetSaveSummaryData(instance, data, prefix)
   data[prefix + 'change_' + view.interpreter_field] = view.interpreter_val;
   ret = true;
  }
- 
+
  if (view.username_val != view.username_oldval && typeof view.username_val != "undefined")
  {
   if (summSaveobjtype != "cr")
@@ -6585,7 +6585,7 @@ function GetSaveSummaryData(instance, data, prefix)
  if (view.category_val != "" && typeof view.category_val != "undefined")
  {
   var id = cat2id[view.category_val];
-  
+
   console.log("id="+id);
 
   if (typeof id == 'undefined')
@@ -6634,7 +6634,7 @@ function GetSaveSummaryData(instance, data, prefix)
   data[prefix + 'change_' + view.protocol_field] = view.protocol_val;
   ret = true;
  }
- 
+
  if (view.availability_val != view.availability_oldval)
  {
   console.log(prefix + 'change_' + view.availability_field + ' = ' + view.availability_val);
@@ -6691,7 +6691,7 @@ function GetSaveSummaryData(instance, data, prefix)
   data[prefix + 'change_' + view.hostname_field] = view.hostname_val;
   ret = true;
  }
- 
+
  if (view.sshport_val != view.sshport_oldval)
  {
   console.log(prefix + 'change_' + view.sshport_field + ' = ' + view.sshport_val);
@@ -6705,7 +6705,7 @@ function GetSaveSummaryData(instance, data, prefix)
   data[prefix + 'change_' + view.alwaysdeploy_field] = view.alwaysdeploy_val;
   ret = true;
  }
- 
+
  if (view.deployseq_val != view.deployseq_oldval)
  {
   console.log(prefix + 'change_' + view.deployseq_field + ' = ' + view.deployseq_val);
@@ -6719,7 +6719,7 @@ function GetSaveSummaryData(instance, data, prefix)
   data[prefix + 'change_' + view.showoutput_field] = view.showoutput_val;
   ret = true;
  }
- 
+
  if (view.subdomains_val != view.subdomains_oldval)
  {
   console.log(prefix + 'change_' + view.subdomains_field + ' = ' + view.subdomains_val);
@@ -6767,7 +6767,7 @@ function GetSaveSummaryData(instance, data, prefix)
 
  if (typeof view.rollback_val == "undefined") view.rollback_val="";
  if (typeof view.rollback_oldval == "undefined") view.rollback_oldval="";
- 
+
  if (view.rollback_val.toLowerCase() != view.rollback_oldval.toLowerCase())
  {
   console.log(prefix + 'change_' + view.rollback_field + ' = ' + view.rollback_val);
@@ -6780,7 +6780,7 @@ function GetSaveSummaryData(instance, data, prefix)
  {
   if (view.preaction_val == "NULL")
    view.preaction_val = null;
-  
+
   if (view.preaction_val != null) {
 	  console.log(prefix + 'change_' + view.preaction_field + ' = ' + view.preaction_val);
 	  data[prefix + 'change_' + view.preaction_field] = view.preaction_val;
@@ -6821,7 +6821,7 @@ function GetSaveSummaryData(instance, data, prefix)
   data[prefix + 'change_' + view.notifier_field] = view.notifier_val;
   ret = true;
  }
- 
+
  console.log("view.builder_val=["+view.builder_val+"]");
  console.log("view.builder_oldval=["+view.builder_oldval+"]");
  if (view.builder_val != view.builder_oldval)
@@ -6833,7 +6833,7 @@ function GetSaveSummaryData(instance, data, prefix)
   data[prefix + 'change_' + view.builder_field] = view.builder_val;
   ret = true;
  }
- 
+
  console.log("view.customaction_val=["+view.customaction_val+"]");
  console.log("view.customaction_oldval=["+view.customaction_oldval+"]");
  if (view.customaction_val != view.customaction_oldval)
@@ -6885,7 +6885,7 @@ function GetSaveSummaryData(instance, data, prefix)
   data[prefix + 'change_' + view.kind_field] = view.kind_val;
   ret = true;
  }
- 
+
  if (view.datefmt_val != view.datefmt_oldval)
  {
 	 console.log(prefix + 'change_' + view.datefmt_field + ' = ' + view.datefmt_val);
@@ -6893,7 +6893,7 @@ function GetSaveSummaryData(instance, data, prefix)
 	 data[prefix + 'change_' + view.datefmt_field] = view.datefmt_val;
 	 ret = true;
  }
- 
+
  if (view.timefmt_val != view.timefmt_oldval)
  {
 	 console.log(prefix + 'change_' + view.timefmt_field + ' = ' + view.timefmt_val);
@@ -6904,12 +6904,12 @@ function GetSaveSummaryData(instance, data, prefix)
 
  var ownertype = $("#ownertype_val");
  var owt = "User";
- 
+
  if (ownertype.length > 0)
    owt = ownertype.val();
 
  if (owt == "User")
- { 
+ {
   if (view.owner_val != view.owner_oldval)
   {
    console.log(prefix + 'change_' + view.owner_field + ' = ' + view.owner_val);
@@ -6925,7 +6925,7 @@ function GetSaveSummaryData(instance, data, prefix)
    data[prefix + 'change_' + view.groupowner_field] = view.groupowner_val;
    ret = true;
   }
- } 
+ }
 
  if (view.fragmentname_val != view.fragmentname_oldval)
  {
@@ -6944,7 +6944,7 @@ function GetSaveSummaryData(instance, data, prefix)
    ret = true;
   }
  }
-  
+
  if (view.filepath_val != view.filepath_oldval)
  {
   console.log(prefix + 'change_' + view.filepath_field + ' = ' + view.filepath_val);
@@ -6965,7 +6965,7 @@ function GetSaveSummaryData(instance, data, prefix)
   data[prefix + 'change_' + view.copytoremote_field] = view.copytoremote_val;
   ret = true;
  }
- 
+
  if (view.allocateterminal_val != view.allocateterminal_oldval)
  {
   console.log(prefix + 'change_' + view.allocateterminal_field + ' = ' + view.allocateterminal_val);
@@ -6981,78 +6981,78 @@ function GetSaveSummaryData(instance, data, prefix)
   data[prefix + 'change_' + view.credential_field] = view.credential_val;
   ret = true;
  }
- 
+
  if (view.resultisexpr_val != view.resultisexpr_oldval)
  {
   console.log(prefix + 'change_' + view.resultisexpr_field + ' = ' + view.resultisexpr_val);
   data[prefix + 'change_' + view.resultisexpr_field] = view.resultisexpr_val;
   ret = true;
  }
- 
+
  console.log("view.datasource_val="+view.datasource_val);
  console.log("view.bt_datasource_val="+view.bt_datasource_val);
  console.log("view.datasource_oldval="+view.datasource_oldval);
- 
+
  if (view.datasource_val != view.datasource_oldval && typeof view.datasource_val != "undefined")
  {
 	  console.log(prefix + 'change_' + view.datasource_field + ' = ' + view.datasource_val);
 	  data[prefix + 'change_' + view.datasource_field] = view.datasource_val;
-	  ret = true; 
+	  ret = true;
  }
- 
+
  if (view.bt_datasource_val != view.datasource_oldval && typeof view.bt_datasource_val != "undefined")
  {
 	  console.log(prefix + 'change_' + view.datasource_field + ' = ' + view.bt_datasource_val);
 	  data[prefix + 'change_' + view.datasource_field] = view.bt_datasource_val;
-	  ret = true; 
+	  ret = true;
  }
- 
+
  console.log("view.projectname_val="+view.projectname_val);
  console.log("view.projectname_oldval="+view.projectname_oldval);
- 
+
  if (view.projectname_val != view.projectname_oldval && typeof view.projectname_val != "undefined")
  {
 	 console.log(prefix + 'change_' + view.projectname_field + ' = ' + view.projectname_val);
 	 data[prefix + 'change_' + view.projectname_field] = view.projectname_val;
-	 ret = true; 
+	 ret = true;
  }
- 
- 
+
+
  if (view.automd5check_val != view.automd5check_oldval)
  {
   console.log(prefix + 'change_' + view.automd5check_field + "=" + view.automd5check_val);
   data[prefix + 'change_' + view.automd5check_field] = view.automd5check_val;
   ret = true;
  }
- 
+
  if (view.buildjob_val != view.buildjob_oldval)
  {
   console.log(prefix + 'change_' + view.buildjob_field + "=" + view.buildjob_val);
   data[prefix + 'change_' + view.buildjob_field] = view.buildjob_val;
   ret = true;
  }
- 
+
  if (view.autoping_val != view.autoping_oldval)
  {
   console.log(prefix + 'change_' + view.autoping_field + "=" + view.autoping_val);
   data[prefix + 'change_' + view.autoping_field] = view.autoping_val;
   ret = true;
  }
-		 
+
  if (view.database_val != view.database_oldval && typeof view.database_oldval != "undefined")
  {
   console.log(prefix + 'change_' + view.database_field + "=" + view.database_val);
   data[prefix + 'change_' + view.database_field] = view.database_val;
   ret = true;
- } 
- 
+ }
+
  if (view.deletedir_val != view.deletedir_oldval && typeof view.deletedir_oldval != "undefined")
  {
   console.log(prefix + 'change_' + view.deletedir_field + "=" + view.deletedir_val);
   data[prefix + 'change_' + view.deletedir_field] = view.deletedir_val;
   ret = true;
- } 
- 
+ }
+
  console.log("view.servercomptype_val=["+view.servercomptype_val+"]");
  console.log("view.servercomptype_oldval=["+view.servercomptype_oldval+"]");
  console.log("save_comptype_id=["+save_comptype_id+"]");
@@ -7065,40 +7065,40 @@ function GetSaveSummaryData(instance, data, prefix)
 	  ret = true;
 	 }
  }
- 
+
  console.log("pinginterval_val="+view.pinginterval_val);
  console.log("pinginterval_oldval="+view.pinginterval_oldval);
- 
+
  if (view.pinginterval_val != view.pinginterval_oldval)
  {
 	 console.log(prefix + 'change_' + view.pinginterval_field + "=" + view.pinginterval_val);
 	 data[prefix + 'change_' + view.pinginterval_field] = view.pinginterval_val;
-	 ret = true; 
+	 ret = true;
  }
- 
+
  var osv = "";
  var oev = "";
- 
+
  if (typeof view.pingstart_oldval != "undefined")
   osv = (parseInt(view.pingstart_oldval.substr(0,2)) * 3600) + (parseInt(view.pingstart_oldval.substr(3,2)) * 60);
- 
+
  if (typeof view.pingend_oldval != "undefined")
   oev = (parseInt(view.pingend_oldval.substr(0,2)) * 3600) + (parseInt(view.pingend_oldval.substr(3,2)) * 60);
- 
+
  if (view.pingstart_val != osv && typeof view.pingstart_val != "undefined")
  {
 	 console.log(prefix + 'change_' + view.pingstart_field + "=" + view.pingstart_val);
 	 data[prefix + 'change_' + view.pingstart_field] = view.pingstart_val;
-	 ret = true; 
+	 ret = true;
  }
- 
+
  if (view.pingend_val != oev  && typeof view.pingend_val != "undefined")
  {
 	 console.log(prefix + 'change_' + view.pingend_field + "=" + view.pingend_val);
 	 data[prefix + 'change_' + view.pingend_field] = view.pingend_val;
-	 ret = true; 
+	 ret = true;
  }
- 
+
  return ret;
 }
 
@@ -7144,27 +7144,27 @@ function CompTypeChanged()
 //  $("#alwaysdeploy_val").prop( "checked", false );
 //  ToggleRepoProps(-1,"rf_repository_row",true);
 //  ToggleRepoProps(-1,"rb_repository_row",false);
-// } 
+// }
 // else
 // {
 //  $("#repository_row").show();
 //  $("#rf_repository_row").hide();
 //  $("#rb_repository_row").hide();
-//  $("#alwaysdeploy_val").prop( "checked", true ); 
+//  $("#alwaysdeploy_val").prop( "checked", true );
 //  ToggleRepoProps(-1,"repository_row",true);
-// } 
+// }
 }
 
 function BuilderChanged()
 {
  var pwd = parent.$("#summ_data_edit");
  var myform = pwd.find("#summform");
- 
+
  if (myform.find(":input[name=\"projectname_val\"]").length > 0)
  {
-  
+
   myform.find(":input[name=\"projectname_val\"]").empty();
-  
+
   $.ajax({
    url : "GetProjectsFromBuilder?id="+summSaveobjid+"&be="+lastSelectedNode.substr(2),
    dataType : 'json',
@@ -7177,7 +7177,7 @@ function BuilderChanged()
      var myform = pwd.find("#summform");
      var builder = myform.find(":input[name=\"projectname_val\"]");
      var cnt = 0;
-     
+
      if ("jobs" in res)
      {
       for (n = 0; n < res.jobs.length; n++)
@@ -7186,7 +7186,7 @@ function BuilderChanged()
        {
         builder.append('<option id="project' + n + '" selected value=\"' + res.jobs[n].name + "\">" + res.jobs[n].name + '</option>');
         cnt++;
-       } 
+       }
        else
         builder.append('<option id="project' + n + '" value=\"' + res.jobs[n].name + "\">" + res.jobs[n].name + '</option>');
       }
@@ -7247,7 +7247,7 @@ function KindChanged()
  else if (summSaveobjtype == "ac" || summSaveobjtype == "fn" || summSaveobjtype == "pr")
  {
   id = Number(id);
-  
+
   console.log("summSaveobjtype="+summSaveobjtype+" id="+id);
 
   switch (id)
@@ -7343,12 +7343,12 @@ function ChangeSummaryName(newname)
  var html = heading.html();
  var parts = html.split(':');
  html = parts[0] + ": " + newname;
- 
+
  if (parts[0] == 'Domain')
  {
     html = '<button class="scorecard_button" onClick="javascript:ScorecardDomain(objid)">' +
 					'<i class="fa-light fa-table-columns aria-hidden="true"  style="padding-right:5px"></i>Scorecard</button>' +
-					'<h1 style="display:inline-block">Domain: ' + newname + '</h1>';  
+					'<h1 style="display:inline-block">Domain: ' + newname + '</h1>';
 	heading = parent.$("#right_panel_header");
  }
 
@@ -7407,9 +7407,9 @@ function SaveRepo4Item(objid,repo)
  };
 
  savedata['change_704'] = repo;
- 
+
  console.log("id=" + objid + " change_704 = " + repo);
- 
+
  $.ajax(
    {
     url : "UpdateSummaryData",
@@ -7420,7 +7420,7 @@ function SaveRepo4Item(objid,repo)
     {
      console.log(data);
     }
-   }); 
+   });
 }
 
 function SaveSummaryData(instance, tablename, objtypeAsInt, objtype, objid, addParams,isProfile)
@@ -7432,16 +7432,16 @@ function SaveSummaryData(instance, tablename, objtypeAsInt, objtype, objid, addP
  };
 
  var sumret = "";
- 
+
  if (tablename == "task_summ")
   sumret = GetSaveSummaryData(instance, savedata, "task_");
- else 
+ else
   sumret = GetSaveSummaryData(instance, savedata, '');
 
  console.log(savedata);
 
  if (sumret)
- { 
+ {
   $.ajax(
   {
    url : "UpdateSummaryData",
@@ -7461,7 +7461,7 @@ function SaveSummaryData(instance, tablename, objtypeAsInt, objtype, objid, addP
       LoadTaskSummary(cb);
      }
      else
-     {    
+     {
       objid = data.id;
       console.log("Saved data");
       SaveTargetDomain(instance);
@@ -7477,7 +7477,7 @@ function SaveSummaryData(instance, tablename, objtypeAsInt, objtype, objid, addP
       {
        lookupDom = savedata.newname;
        LoadDomNav();
-      } 
+      }
      }
     }
     else
@@ -7513,7 +7513,7 @@ function SaveSummaryData(instance, tablename, objtypeAsInt, objtype, objid, addP
    LoadTaskSummary(cb);
   }
   else
-  { 
+  {
    SaveTargetDomain(instance);
    SaveLinkedTask(instance,objid);
    SaveActionTask(instance,objid);
@@ -7523,7 +7523,7 @@ function SaveSummaryData(instance, tablename, objtypeAsInt, objtype, objid, addP
    SaveAdminRightsData();
    SaveSummaryItemData(instance, tablename, objtypeAsInt, objtype, objid, addParams);
    LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams);
-  } 
+  }
  }
  return;
 }
@@ -7536,7 +7536,7 @@ function SaveRbRfValues(myform)
   objtype : 14,
   id : objid
  };
- 
+
  data.nameCallbackReqd = false;
  data.typeCallbackReqd = false;
  data.iconCallbackReqd = false;
@@ -7552,11 +7552,11 @@ function SaveRbRfValues(myform)
     {
      console.log("######");
      console.log(res);
-     
+
      var comptype = myform.find(":input[name=\"comptype_val\"]").val();
-  
+
      var viewArr = myform.serializeArray();
-     
+
      for (var k=0;k < res.data.length;k++)
      {
       var ci = res.data[k];
@@ -7568,13 +7568,13 @@ function SaveRbRfValues(myform)
        {
         if (viewArr[i].name.indexOf("rb_prop_") >= 0)
          view[viewArr[i].name.substring(3)] = viewArr[i].value;
-        
-       }   
-       
+
+       }
+
        SaveRepo4Item(ci.id,myform.find(":input[name=\"rb_repository_val\"]").val());
        SavePropertyData(ci.id, view)
       }
-      
+
       if (ci.rollforward == "ON")
       {
        var view = {};
@@ -7583,11 +7583,11 @@ function SaveRbRfValues(myform)
        {
         if (viewArr[i].name.indexOf("rf_prop_") >= 0)
          view[viewArr[i].name.substring(3)] = viewArr[i].value;
-       }      
+       }
        SaveRepo4Item(ci.id,myform.find(":input[name=\"rf_repository_val\"]").val());
        SavePropertyData(ci.id, view)
       }
-      
+
       if (ci.rollback == "OFF" && ci.rollforward == "OFF")
       {
        var view = {};
@@ -7596,7 +7596,7 @@ function SaveRbRfValues(myform)
        {
         if (viewArr[i].name.indexOf("prop_") >= 0)
          view[viewArr[i].name] = viewArr[i].value;
-       }      
+       }
        SaveRepo4Item(ci.id,myform.find(":input[name=\"repository_val\"]").val());
        SavePropertyData(ci.id, view)
       }
@@ -7611,7 +7611,7 @@ function SaveRbRfValues(myform)
     return;
    }
    });
- 
+
 }
 
 function SaveDomainOrder()
@@ -7755,12 +7755,12 @@ function ToggleDisplayName(ev) {
 //  var pwd = parent.$("#summ_data_edit");
 //  var myform = pwd.find("#summform");
 //  var f = myform.find(":input[name=\"fragmentname_val\"]");
-//  
+//
 //  if (f.length > 0)
 //   f.val("");
-//   
+//
 //  $("#fragmentname_row").hide();
-// } 
+// }
 // else
   $("#fragmentname_row").show();
 }
@@ -7812,7 +7812,7 @@ function ToggleOwner()
  var myform = pwd.find("#summform");
  var f = myform.find(":input[name=\"ownertype_val\"]");
  var val = f.val();
- 
+
  if (val == "User")
  {
   $("#owner_row").show();
@@ -7842,16 +7842,16 @@ function LoadUserProfile()
     eventOpenRow("users",admin,data);
    }
   });
- 
+
  return;
- 
+
  console.log("GetSummaryData?objtype=6&id=" + myuid);
- 
+
  profSaveobjtypeAsInt = 6;
  profSaveobjid = myuid;
  profSaveobjtype = "us";
  profSavetablename = "summtab";
- 
+
  $.ajax(
    {
     url : "GetSummaryData?objtype=6&id=" + myuid,
@@ -7861,12 +7861,12 @@ function LoadUserProfile()
     {
      console.log(res);
      readonly = res.readOnly;
-     
+
      if (readonly)
       $("#title_icon").hide();
      else
-      $("#title_icon").show();    
-      
+      $("#title_icon").show();
+
      saveRes = res;
      var td = "";
      tdedit2 = "<form id=\"summform\"><table id=\"summtab\" class=\"dev_table\">";
@@ -7977,4 +7977,3 @@ function LoadUserProfile()
     }
    });
 }
-

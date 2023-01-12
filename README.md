@@ -1,6 +1,6 @@
 # Ortelius
 
-Welcome to Ortelius. Ortelius is an open source project that aims to simplify the implementation of microservices. By providing a central catalog of services with their deployment specs, application teams can easily consume and deploy services across cluster. Ortelius tracks application versions based on service updates and maps their service dependencies eliminating confusion and guess work.  Unique to Ortelius is the ability to track your microservice inventory across clusters mapping the differences.  Ortelius serves Site Reliability Engineers and Cloud Architects in their migration to and ongoing management of a microservice implementation. For more information, see the comprehensive documentation at http://docs.ortelius.io 
+Welcome to Ortelius. Ortelius is an open source project that aims to simplify the implementation of microservices. By providing a central catalog of services with their deployment specs, application teams can easily consume and deploy services across cluster. Ortelius tracks application versions based on service updates and maps their service dependencies eliminating confusion and guess work.  Unique to Ortelius is the ability to track your microservice inventory across clusters mapping the differences.  Ortelius serves Site Reliability Engineers and Cloud Architects in their migration to and ongoing management of a microservice implementation. For more information, see the comprehensive documentation at http://docs.ortelius.io
 
 ## Ortelius Mission
 
@@ -8,9 +8,9 @@ Our mission is to simplify the adoption of modern architecture through a world-c
 
 ## Ortelius Value Statements
 
-- We want Members to learn and understand solutions around microservice use and their challenges through a diverse contributor base. 
-- We want our members to develop their careers, skills and gain community recognition for their work and expertise. 
-- We want our members to have the opportunity to share and reuse open source microservices to further the adoption of a cloud native development. 
+- We want Members to learn and understand solutions around microservice use and their challenges through a diverse contributor base.
+- We want our members to develop their careers, skills and gain community recognition for their work and expertise.
+- We want our members to have the opportunity to share and reuse open source microservices to further the adoption of a cloud native development.
 - We want members to learn how to contribute to an open source community and become part of the broader conversation around cloud native architecture.
 
 ## Ortelius Benefits
@@ -33,7 +33,7 @@ Goals for Q1 and Q2 of 2021
 
 Goals for the Q3 and Q4 months of 2021
 
-1) Publish our first global marketplace 
+1) Publish our first global marketplace
 2) Convert DMScript to Python
 
 
@@ -55,7 +55,7 @@ Goals for the Q3 and Q4 months of 2021
 
 ### CD Environment - Development Infrastructure and Productivity
 
-Create a CD process for managing pull requests, builds, tests and releases.  
+Create a CD process for managing pull requests, builds, tests and releases.
 
 Contributors:
 
@@ -75,7 +75,7 @@ Contributors:
 - Arvind Singharpuria
 - Interas LLC - Corporate Contributer
    - Ujwal Yelmareddy
-  
+
 ### Data Science and Visualization
 
 Determine what reports and maps can currently be created and/or enhanced.  Begin looking at what data can be passed back to the CD pipelines for predictive reporting, risk assessment. (Think truth tables).
@@ -191,9 +191,9 @@ Contributors:
 
 ### Product Management
 
-- Website, branding, outreach 
-- Review messaging, update logo, work on blogs. 
-- Personas, Journey Maps, service maps, roadmaps, Value Canvas, Go-to-Market strategies, product metrics. 
+- Website, branding, outreach
+- Review messaging, update logo, work on blogs.
+- Personas, Journey Maps, service maps, roadmaps, Value Canvas, Go-to-Market strategies, product metrics.
 - What problem or opportunity is being explored?
 - How is the solution being framed to tackle this?
 - What is being measured to determine if this is successful?
@@ -244,4 +244,3 @@ Browse through the [Installation and Support Guide](http://docs.ortelius.io/guid
 ## Support
 
 https://github.com/ortelius/ortelius/issues
-

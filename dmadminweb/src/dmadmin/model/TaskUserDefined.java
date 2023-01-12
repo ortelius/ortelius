@@ -25,32 +25,32 @@ public class TaskUserDefined
 	extends Task
 {
 	private static final long serialVersionUID = -4022657842094840716L;
-	
+
 	private CommandLine m_cmd;
 	private Application m_app;
 	private Component m_comp;
 	private Environment m_env;
-	
-	
+
+
 	public TaskUserDefined() {
 	}
-	
+
 	public TaskUserDefined(DMSession sess, int id, String name) {
 		super(sess, id, name);
 	}
-	
+
 	public void setApplication(Application app) {
 		m_app = app;
 	}
-	
+
 	public void setComponent(Component comp) {
 		m_comp = comp;
 	}
-	
+
 	public void setEnvironment(Environment env) {
 		m_env = env;
 	}
-	
+
 	@Override
 	public boolean run() {
 		Domain domain = getDomain();
@@ -74,7 +74,7 @@ public class TaskUserDefined
 	public String getOutput() {
 		return m_cmd.getOutput();
 	}
-	
+
 	public boolean updateTask(Hashtable<String, String> changes) {
 		// TODO Auto-generated method stub
 		return false;

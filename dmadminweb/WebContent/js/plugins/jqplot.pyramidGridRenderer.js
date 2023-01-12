@@ -6,13 +6,13 @@
  * Revision: 1250
  *
  * Copyright (c) 2009-2013 Chris Leonello
- * jqPlot is currently available for use in all personal or commercial projects 
- * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL 
- * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can 
- * choose the license that best suits your project and use it accordingly. 
+ * jqPlot is currently available for use in all personal or commercial projects
+ * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL
+ * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can
+ * choose the license that best suits your project and use it accordingly.
  *
- * Although not required, the author would appreciate an email letting him 
- * know of any substantial use of jqPlot.  You can reach the author at: 
+ * Although not required, the author would appreciate an email letting him
+ * know of any substantial use of jqPlot.  You can reach the author at:
  * chris at jqplot dot com or see http://www.jqplot.com/info.php .
  *
  * If you are feeling kind and generous, consider supporting the project by
@@ -26,9 +26,9 @@
  *     http://hexmen.com/js/sprintf.js
  *     The author (Ash Searle) has placed this code in the public domain:
  *     "This code is unrestricted: you are free to use it however you like."
- * 
+ *
  */
-(function($) {     
+(function($) {
     // Class: $.jqplot.CanvasGridRenderer
     // The default jqPlot grid renderer, creating a grid on a canvas element.
     // The renderer has no additional options beyond the <Grid> class.
@@ -38,7 +38,7 @@
 
     $.jqplot.PyramidGridRenderer.prototype = new $.jqplot.CanvasGridRenderer();
     $.jqplot.PyramidGridRenderer.prototype.constructor = $.jqplot.PyramidGridRenderer;
-    
+
     // called with context of Grid object
     $.jqplot.CanvasGridRenderer.prototype.init = function(options) {
         this._ctx;
@@ -54,7 +54,7 @@
         var sopts = {lineJoin:'miter', lineCap:'round', fill:false, isarc:false, angle:this.shadowAngle, offset:this.shadowOffset, alpha:this.shadowAlpha, depth:this.shadowDepth, lineWidth:this.shadowWidth, closePath:false, strokeStyle:this.shadowColor};
         this.renderer.shadowRenderer.init(sopts);
     };
-    
+
     $.jqplot.PyramidGridRenderer.prototype.draw = function() {
         this._ctx = this._elem.get(0).getContext("2d");
         var ctx = this._ctx;
@@ -126,7 +126,7 @@
             }
             ctx.restore();
         }
-        
+
         ctx.save();
         ctx.lineJoin = 'miter';
         ctx.lineCap = 'butt';
@@ -160,7 +160,7 @@
                         case 'yaxis':
                             drawLine (this._left, this._bottom, this._left, this._top, bopts);
                             break;
-                        case 'yMidAxis':               
+                        case 'yMidAxis':
                             drawLine(xp0, this._bottom, xp0, this._top, bopts);
                             drawLine(xpn, this._bottom, xpn, this._top, bopts);
                             break;
@@ -189,7 +189,7 @@
                                 if (t.showGridline && this.drawGridlines && (!t.isMinorTick || axis.showMinorTicks)) {
                                     drawLine(pos, this._top, pos, this._bottom);
                                 }
-                                
+
                                 // draw the mark
                                 if (t.showMark && t.mark && (!t.isMinorTick || axis.showMinorTicks)) {
                                     s = t.markSize;
@@ -368,9 +368,9 @@
             axis = null;
             ticks = null;
         }
-        
+
         ctx.restore();
-        
+
         function drawLine(bx, by, ex, ey, opts) {
             ctx.save();
             opts = opts || {};
@@ -383,7 +383,7 @@
             }
             ctx.restore();
         }
-        
+
         if (this.shadow) {
             if (axes.yMidAxis.show) {
                 var points = [[this._left, this._bottom], [xp0, this._bottom]];
@@ -421,9 +421,9 @@
         // ctx.lineWidth = this.borderWidth;
         // ctx.strokeStyle = this.borderColor;
         // ctx.strokeRect(this._left, this._top, this._width, this._height);
-        
+
         ctx.restore();
         ctx =  null;
         axes = null;
     };
-})(jQuery); 
+})(jQuery);

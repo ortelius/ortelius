@@ -80,7 +80,7 @@ void handleRecipients(ExtendedStmt &stmt, Expr *recip, StringList &list, Context
 		return;
 	}
 	// recip->print();
-	
+
 	switch(recip->kind()) {
 	case KIND_OBJECT: {
 		ObjectReference *obj = recip->toObjectReference();
@@ -135,7 +135,7 @@ void handleRecipients(ExtendedStmt &stmt, Expr *recip, StringList &list, Context
 		ConstCharPtr email = recip->toString();
 		if(email) { list.add(email); }
 		}
-		break;	
+		break;
 	}
 }
 
@@ -168,7 +168,7 @@ void SmtpEmailNotifyImpl::notify(
 	StringList lto;
 	StringList lcc;
 	bool bError = false;
-	
+
 	ExprPtr eto = stmt.getArg("to", ctx);
 	handleRecipients(stmt, eto, lto, ctx);
 
@@ -206,9 +206,9 @@ void SmtpEmailNotifyImpl::notify(
 
 try
 {
-	
+
 	CSmtp mail;
-	
+
 	mail.SetLogfile(m_logfile);
 	mail.SetSMTPServer(m_mailserver,m_mailport);
 	mail.SetSecurityType(USE_TLS);
@@ -229,7 +229,7 @@ try
 		fprintf(fp,"SetReplyTo(%s)\n",(const char *)from);
 		fprintf(fp,"SetSubject(%s)\n",(const char *)subject);
 		fprintf(fp,"AddMsgLine(%s)\n",body.buffer());
-		fclose(fp);	
+		fclose(fp);
 	}
 
 	//if(email) {
@@ -303,7 +303,7 @@ try
 		{
 		 FILE *fp = fopen(m_logfile, "a");
 		 fprintf(fp,"Error: %s\n", e.GetErrorText().c_str());
-		 fclose(fp);	
+		 fclose(fp);
 		}
 	}
 	if(bError)
@@ -313,7 +313,7 @@ try
 		{
 		 FILE *fp = fopen(m_logfile, "a");
 		 fprintf(fp,"Message not okay - no recipients?\n");
-		 fclose(fp);	
+		 fclose(fp);
 		}
 	}
 	else
@@ -322,7 +322,7 @@ try
 		{
 		 FILE *fp = fopen(m_logfile, "a");
 		 fprintf(fp,"Message sent\n");
-		 fclose(fp);	
+		 fclose(fp);
 		}
 	}
 }
@@ -386,7 +386,7 @@ NotifyProviderImpl *SmtpEmailNotifyImplFactory::create(
 extern "C" SMTPEMAIL_EXPORT int smtpemail_PluginStart(DM &dm)
 {
 	dm.writeToLogFile("SMTP Email plugin V" SMTPEMAIL_PLUGIN_VERSION);
-	
+
 	NotifyProviderImplRegistry::instance().registerFactory("smtpemail", new SmtpEmailNotifyImplFactory());
 	return 0;
 }

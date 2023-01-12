@@ -44,7 +44,7 @@ HipChatNotifyImpl::HipChatNotifyImpl(
 		NotifyProviderImplFactory &factory, DMINT32 implId, Notify &notify,
 		const char *servername, int port, bool secure, const char *url, const char *logfile, bool useHTML)
 	: NotifyProviderImpl(factory, implId, notify),
-	  m_servername(DUP_NULL(servername)), m_port(port), m_secure(secure), 
+	  m_servername(DUP_NULL(servername)), m_port(port), m_secure(secure),
 	  m_url(DUP_NULL(url)), m_logfile(DUP_NULL(logfile)), m_useHTML(useHTML)
 {}
 
@@ -184,7 +184,7 @@ NotifyProviderImpl *HipChatNotifyImplFactory::create(
 extern "C" HIPCHAT_EXPORT int hipchat_PluginStart(DM &dm)
 {
 	dm.writeToLogFile("HipChat plugin V%s", HIPCHAT_PLUGIN_VERSION);
-	
+
 	NotifyProviderImplRegistry::instance().registerFactory("hipchat", new HipChatNotifyImplFactory());
 	return 0;
 }

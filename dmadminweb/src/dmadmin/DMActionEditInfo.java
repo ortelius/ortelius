@@ -30,7 +30,7 @@ public class DMActionEditInfo implements java.io.Serializable {
 	public void setEditID(int id) {
 		m_editid = id;
 	}
-	
+
 	public int getUserID() {
 		return m_userid;
 	}

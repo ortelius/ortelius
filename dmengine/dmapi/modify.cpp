@@ -111,7 +111,7 @@ void ModifyProviderStmtImpl::execute(class Context &ctx)
 {
 	Scope *scope = ctx.stack().getScope(MODIFY_SCOPE);
 	if(!scope) {
-		throw SyntaxError(m_parent, ctx.stack(), 
+		throw SyntaxError(m_parent, ctx.stack(),
 			"modify statement '%s' is not valid outside modify", m_parent.ident());
 	}
 

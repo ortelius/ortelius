@@ -38,7 +38,7 @@ function LoadPropertiesData(tablename, objtypeAsInt, objtype, objid, addParams)
   else
    deftype = "&deftype=" + dstype + "&defonly=Y";
  }
- 
+
  console.log("GetPropertiesData?objtype=" + objtypeAsInt + "&id=" + objid + deftype);
 
  $.ajax(
@@ -53,9 +53,9 @@ function LoadPropertiesData(tablename, objtypeAsInt, objtype, objid, addParams)
      var title = "";
      var tdedit = "<form id=\"propsform\"><table id=\"propstab\" class=\"dev_table\"><tbody>";
      var td = "";
-     
+
      propslist = [];
-     
+
      for (var r = 0; r < res.defs.length; r++)
      {
       var row = res.defs[r];
@@ -87,52 +87,52 @@ function LoadPropertiesData(tablename, objtypeAsInt, objtype, objid, addParams)
         break;
        }
       }
-      
+
       if (!found)
       {
        data_name = def_name;
        data_required = def_required;
        data_append   = def_append;
       }
-      
+
       if (data_required)
        data_required = "Yes";
       else
        data_required = "No";
-      
+
       if (data_encrypt)
        data_encrypt = "Yes";
       else
        data_encrypt = "No";
-      
+
       if (data_over)
        data_over = "Yes";
       else
        data_over = "No";
-           
-      if (data_name == "recursive" || data_name == "SSL" || data_name == "HTML" || data_name == "UseSSL") 
+
+      if (data_name == "recursive" || data_name == "SSL" || data_name == "HTML" || data_name == "UseSSL")
       {
        if (data_val == "1")
         data_val = "Yes";
        else
         data_val = "No";
       }
-      
+
       var field = data_name.toLowerCase().replace(/ /g, "");
       var callback = "";
       var rtype = "";
       var label = data_name.charAt(0).toUpperCase() + data_name.slice(1);
       var cleanid = label.toLocaleLowerCase().replace(/ /g, "");
-      
+
       if (label.toLowerCase() == "uri")
        label = "URL";
       else if (label.toLowerCase() == "buildno")
-       label = "Build Number"; 
+       label = "Build Number";
  //     else if (label.toLowerCase() == "product")
- //      label = "Organization"; 
-      
+ //      label = "Organization";
+
       if (data_name == "recursive" || data_name == "SSL" || data_name == "HTML" || data_name == "UseSSL")
-      { 
+      {
        myid = cleanid + "_sumrow";
        td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\">";
        td += label;
@@ -147,8 +147,8 @@ function LoadPropertiesData(tablename, objtypeAsInt, objtype, objid, addParams)
        td += label;
        td += ":</td><td>";
        td += data_val;
-       td += "</tr>";      
-      
+       td += "</tr>";
+
         myid = cleanid + "_encrypt_sumrow";
         td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\">";
         td += label + " Encrypted";
@@ -156,14 +156,14 @@ function LoadPropertiesData(tablename, objtypeAsInt, objtype, objid, addParams)
         td += data_encrypt;
         td += "</tr>";
        }
-       
+
        myid = cleanid + "_override_sumrow";
        td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\">";
        td += label + " Override";
        td += ":</td><td>";
        td += data_over;
        td += "</tr>";
-       
+
        if (def_append == "true")
        {
         myid = cleanid + "_append_sumrow";
@@ -173,7 +173,7 @@ function LoadPropertiesData(tablename, objtypeAsInt, objtype, objid, addParams)
         td += data_append;
         td += "</tr>";
        }
-       
+
        tdedit += "<tr>";
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
        if (data_name == "recursive" || data_name == "SSL" || data_name == "HTML" || data_name == "UseSSL")
@@ -196,7 +196,7 @@ function LoadPropertiesData(tablename, objtypeAsInt, objtype, objid, addParams)
         else
           tdedit += "<td><input name=\"" + field + "_encrypt_val\" type=\"checkbox\"/></td>";
         tdedit += "</tr>";
-       } 
+       }
        tdedit += "<tr>";
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + " Override:</td>";
        if (data_over == "Yes")
@@ -204,7 +204,7 @@ function LoadPropertiesData(tablename, objtypeAsInt, objtype, objid, addParams)
        else
          tdedit += "<td><input name=\"" + field + "_over_val\" type=\"checkbox\"/></td>";
        tdedit += "</tr>";
-       
+
        if (def_append == "true")
        {
         tdedit += "<tr>";
@@ -214,14 +214,14 @@ function LoadPropertiesData(tablename, objtypeAsInt, objtype, objid, addParams)
         else
           tdedit += "<td><input name=\"" + field + "_over_val\" type=\"checkbox\"/></td>";
         tdedit += "</tr>";
-       } 
+       }
      }
-     
+
      tdedit += "</tbody></table></form>";
-     
+
      var pwd = parent.$("#props > tbody");
      pwd.empty().append(td);
-     
+
      pwd = parent.$("#props_data_edit");
      pwd.empty().append(tdedit);
     }
@@ -247,7 +247,7 @@ function ToggleAppend()
 
  if (typeof propdefs[key] == "undefined")
   return;
- 
+
  console.log("key="+key);
  console.log(propdefs);
 
@@ -272,7 +272,7 @@ function EditPropertiesButton()
 
   if (name == "dsn")
    name = "data source name";
-  
+
   var pwd = parent.$("#modal");
   var buttons = [
   {
@@ -392,7 +392,7 @@ function DeletePropertiesButton()
 
   if (key == "data source name")
    key = "dsn";
-  
+
   var savedata =
   {
    objtype : objtypeAsInt,
@@ -421,10 +421,10 @@ function DeletePropertiesButton()
 function SavePropertiesData()
 {
  var pwd = parent.$("#props_data_edit");
- 
+
  if (!pwd.is(":visible"))
   return;
- 
+
  var form = parent.$("#propsform");
 
  var data =
@@ -432,7 +432,7 @@ function SavePropertiesData()
   objtype : summSaveobjtypeAsInt,
   id : summSaveobjid
  };
- 
+
  for (i=0;i<propslist.length;i++)
  {
   var data_required = "";
@@ -452,62 +452,62 @@ function SavePropertiesData()
   data_over_val = ":input[name=\"" + field + "_over_val\"]";
   data_append_val = ":input[name=\"" + field + "_append_val\"]";
 
-  if (data_name == "recursive" || data_name == "SSL" || data_name == "HTML" || data_name == "UseSSL") 
+  if (data_name == "recursive" || data_name == "SSL" || data_name == "HTML" || data_name == "UseSSL")
   {
    if (form.find(data_val).length > 0)
     data_val = form.find(data_val).prop('checked');
    else
-    data_val = false;  
+    data_val = false;
   }
   else
   {
    if (form.find(data_val).length > 0)
-    data_val = form.find(data_val).val(); 
+    data_val = form.find(data_val).val();
    else
     data_val = "";
   }
-  
+
   if (form.find(data_oldval).length > 0)
-   data_oldval = form.find(data_oldval).val(); 
+   data_oldval = form.find(data_oldval).val();
   else
    data_oldval = "";
-   
+
   if (form.find(data_encrypt_val).length > 0)
    data_encrypt_val = form.find(data_encrypt_val).prop('checked');
   else
    data_encrypt_val = false;
-  
+
   data_encrypt_val = (data_encrypt_val) ? "Y" : "N";
-  
+
   if (form.find(data_over_val).length > 0)
    data_over_val = form.find(data_over_val).prop('checked');
   else
    data_over_val = false;
-  
+
   data_over_val = (data_over_val) ? "Y" : "N";
-  
+
   if (form.find(data_append_val).length > 0)
-   data_append_val = form.find(data_append_val).prop('checked'); 
+   data_append_val = form.find(data_append_val).prop('checked');
   else
    data_append_val = false;
-  
+
   data_append_val = (data_append_val) ? "Y" : "N";
- 
-  if (data_name == "recursive" || data_name == "SSL" || data_name == "HTML" || data_name == "UseSSL") 
+
+  if (data_name == "recursive" || data_name == "SSL" || data_name == "HTML" || data_name == "UseSSL")
   {
 	   data_val = (data_val) ? "1" : "0";
 	   data_oldval = (data_oldval == "Yes") ? "1" : "0";
-  }  
- 
+  }
+
   if (data_name == "data source name")
     data_name = 'dsn';
- 
+
   var outpos = "0";
 
   var val = data_encrypt_val + data_over_val + data_append_val + data_val;
   var key = "";
 
-  if (data_name == "recursive" || data_name == "SSL" || data_name == "HTML" || data_name == "UseSSL") 
+  if (data_name == "recursive" || data_name == "SSL" || data_name == "HTML" || data_name == "UseSSL")
   {
     if (data_oldval == "0" && data_val == "1")
      key = "add_" + data_name;
@@ -522,14 +522,14 @@ function SavePropertiesData()
     key = "add_" + data_name;
    else if (data_val == "")
     key = "delete_" + data_name;
-   else 
+   else
     key = "chg_" + data_name;
   }
-  
+
   data[key] = val;
- } 
+ }
  console.log(data);
- 
+
  $.ajax(
  {
    url : "UpdatePropertiesData",
@@ -539,8 +539,8 @@ function SavePropertiesData()
    success : function(data)
    {
     $("#props_data").show();
-    $("#props_data_edit").hide(); 
-    LoadPropertiesData("propstab", objtypeAsInt, objtype, objid, ""); 
+    $("#props_data_edit").hide();
+    LoadPropertiesData("propstab", objtypeAsInt, objtype, objid, "");
    }
  });
 }

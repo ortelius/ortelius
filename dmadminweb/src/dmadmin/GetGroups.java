@@ -32,7 +32,7 @@ import dmadmin.model.UserGroup;
  */
 public class GetGroups extends JSONServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -46,11 +46,11 @@ public class GetGroups extends JSONServletBase {
 		throws ServletException, IOException
 	{
 		System.out.println("GetGroups");
-		
+
 		JSONArray ret = new JSONArray();
 		for(UserGroup g : session.getGroupsNotForUser(0)) {
 			ret.add(g.getLinkJSON());
-		}		
+		}
 		return ret;
 	}
 

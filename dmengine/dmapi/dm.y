@@ -305,7 +305,7 @@ namelist: name			  { $$= $1; }
      | namelist NOWS name	  { $$ = new Node(NODE_CONC, $1, $3); }
      | namelist '[' exp ']'	  { $$ = new Node(NODE_ARRAY, new Node(NODE_NLVAR, $1), $3); }
      | namelist '.' name	  { $$ = new Node(NODE_OBJECT, new Node(NODE_NLVAR, $1), $3); }
-     | namelist '.' IDENT 
+     | namelist '.' IDENT
        '(' opt_explist ')'        { $$ = new Node(NODE_OBJFUNC, $1, $3, $5); }
 ;
 

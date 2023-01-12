@@ -317,7 +317,7 @@ int TaskImpl::notify(Context &ctx,bool useFailureTemplate /* = false */)
 			ExprPtr etext1 = expandedText1.evaluate(ctx);
 			ConstCharPtr stext1 = etext1->stringify();
 			args->add(new Stmt(strdup("subject"), new Node(NODE_STR,strdup(stext1)))); //expsubject is freed when Node is deleted
-			
+
 			ExtendedStmt stmt(strdup("notify"), args);
 			Audit &audit = ctx.dm().getDummyAudit();
 			AuditEntry *ae = audit.newAuditEntry("notify");
@@ -607,7 +607,7 @@ int MoveTaskImpl::run(ExtendedStmt &stmt, Context &ctx)
 	debug3("Calling notify");
 	notify(ctx,!ok);
 	debug3("notify called");
-	
+
 	return (ok ? 0 : 1);
 }
 
@@ -677,11 +677,11 @@ int RequestTaskImpl::run(ExtendedStmt &stmt, Context &ctx)
 	}
 
 	ctx.stack().setGlobal("NOTES",m_note);	// Set the notes field for expansion in notification bod
-	
+
 	ctx.stack().setGlobal("TASKNAME",m_linkedTask.name());
-	
+
 	bool ok = app->request(m_linkedTask,m_note);
-	
+
 	if (ok) {
 		debug3("Calling notify");
 		notify(ctx,false);
@@ -764,7 +764,7 @@ int CreateVersionTaskImpl::run(ExtendedStmt &stmt, Context &ctx)
 		debug1("m_predecessor is null");
 	}
 	m_newav = app->newVersion(m_tgtDomain, m_predecessor);
-	
+
 	return (m_newav ? 0 : 1);
 }
 

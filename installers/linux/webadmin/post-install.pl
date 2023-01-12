@@ -20,23 +20,23 @@ if (-f $redhat_os_file)
 {
   $linux = 'redhat';
   open my $fh, '<:encoding(UTF-8)', $redhat_os_file or die;
-  while (my $line = <$fh>) 
+  while (my $line = <$fh>)
   {
-    if ($line =~ /release\s+([0-9\.]*)\s+/) 
-    {     # Match "release" plus a series of numbers and dots 
+    if ($line =~ /release\s+([0-9\.]*)\s+/)
+    {     # Match "release" plus a series of numbers and dots
       $linux_version = $1;   # assign the numbers and dots to $linux_version
       my @version_numbers = split (/\./,$linux_version);
-      $systemd = 1 if ($version_numbers[0] >= 7);  
+      $systemd = 1 if ($version_numbers[0] >= 7);
     }
   }
 }
 elsif (-f $lsb_os_file)
 {
   open my $fh, '<:encoding(UTF-8)', $lsb_os_file or die;
-  while (my $line = <$fh>) 
+  while (my $line = <$fh>)
   {
-    if ($line =~ /DISTRIB_ID=(.*)$/) 
-    {     
+    if ($line =~ /DISTRIB_ID=(.*)$/)
+    {
 	   $linux = $1 if ($1 =~ /ubuntu|debian/i);
     }
 	elsif ($line =~ /DISTRIB_RELEASE=(.*)$/)

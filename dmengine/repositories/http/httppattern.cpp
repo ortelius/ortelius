@@ -39,7 +39,7 @@ HttpPattern::HttpPattern(char *pattern)
 	//
 	// printf("In HttpPattern constructor pattern=[%s]\n",pattern);
 	m_pattern = (char *)malloc(strlen(pattern)+1);
-	
+
 	m_curfv = (int *)0;
 	m_minfv = (int *)0;
 	m_maxfv = (int *)0;
@@ -170,7 +170,7 @@ void HttpPattern::chop(int field,bool tob)
 	if (tob) {
 		debug1("setting max to %d",m_curfv[field-1]);
 		m_maxfv[field-1] = m_curfv[field-1];
-		
+
 	} else {
 		debug1("setting min to %d",m_curfv[field-1]);
 		m_minfv[field-1] = m_curfv[field-1];

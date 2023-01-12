@@ -31,41 +31,41 @@ public class NotifyTemplate
 	private String m_subject;
 	private String m_body;
 	private int m_notifierid;
-	
+
 	private void init() {
 	}
-	
+
 	public NotifyTemplate() {
 		init();
 	}
-	
+
 	public NotifyTemplate(DMSession sess, int id, String name) {
 		super(sess, id, name);
 		init();
 	}
-	
+
 	public NotifyTemplate(DMSession sess, int id, String name, int domainid) {
 		super(sess, id, name);
 		setDomainId(domainid);
 		init();
 	}
-	
+
 	public void setSubject(String s) {
 		m_subject = s;
 	}
-	
+
 	public void setBody(String b) {
 		m_body = b;
 	}
-	
+
 	public void setNotifierId(int notifierid) {
 		m_notifierid = notifierid;
 	}
-	
+
 	public String getSubject() { return m_subject; }
 	public String getBody() { return m_body; }
 	public int getNotifierId() { return m_notifierid; }
-	
+
 	@Override
 	public ObjectType getObjectType() {
 		return ObjectType.TEMPLATE;
@@ -84,9 +84,9 @@ public class NotifyTemplate
 	@Override
 	public IJSONSerializable getSummaryJSON() {
 		PropertyDataSet ds = new PropertyDataSet();
-		
+
 		Notify notifier = null;
-		
+
 		try
 		{
    notifier = m_session.getNotify(getNotifierId(),true);
@@ -94,7 +94,7 @@ public class NotifyTemplate
 		catch (RuntimeException e)
 		{
 		}
-		
+
   if (notifier == null)
     ds.addProperty(SummaryField.NOTIFIER, "Notifier", "");
   else
@@ -109,12 +109,12 @@ public class NotifyTemplate
 	public boolean updateSummary(SummaryChangeSet changes) {
 		return m_session.updateTemplate(this, changes);
 	}
-	
+
 	@Override
 	public boolean hasReadWrite() {
 		return false;
 	}
-	
+
 	@Override
 	public IJSONSerializable getLinkJSON() {
 		System.out.println("in getLinkJSON for TEMPLATE object domainid="+getDomainId());

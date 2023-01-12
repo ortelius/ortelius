@@ -29,30 +29,30 @@ public class TaskRequest
 	extends Task
 {
 	private static final long serialVersionUID = 1327862378913381548L;
-	
+
 	private Application m_app;
 	private String m_text;
 	private Task m_linkedtask;
 	private CommandLine m_cmd;
-	
-	
+
+
 	public TaskRequest() {
 	}
-	
+
 	public TaskRequest(DMSession sess, int id, String name) {
 		super(sess, id, name);
 	}
-	
+
 	public Application getApplication()  { return m_app; }
 	public void setApplication(Application app)  { m_app = app; }
-	
+
 	public String getText()  { return m_text; }
 	public void setText(String text)  { m_text = text; }
-	
+
 	public Task getLinkedTask() { return m_linkedtask; }
 	public void setLinkedTask(Task ta) { m_linkedtask = ta; }
-	
-	
+
+
 	@Override
 	public boolean run() {
 		System.out.println("Running TaskMove");

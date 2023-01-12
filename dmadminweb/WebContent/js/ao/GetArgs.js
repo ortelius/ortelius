@@ -216,8 +216,8 @@ function LoadArgsData(tablename, objtypeAsInt, objtype, objid, objkind, addParam
    InitArgsDnD();
   }
  });
- 
- if (objkind == 1 || objkind == 2) 
+
+ if (objkind == 1 || objkind == 2)
  {
   LoadProcBody("editproc",objid,false,true);
  }
@@ -822,7 +822,7 @@ function LoadProcBody(divid, actionid, generate, editmode)
  $("#switchargs-panel").hide();
  $("#procbody-panel").show();
  $("#tabs-General-row-28").show();
- 
+
  console.log("LoadProcBody " + actionid + " into divid " + divid + " editmode=" + editmode);
  save_action_id = actionid;
  var mtb1 = "search, go_to_line, |, select_font,|, highlight, reset_highlight, word_wrap";

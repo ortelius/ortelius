@@ -36,30 +36,30 @@ public class AccessControlList
 		// from the session - we do not have an add() method
 		m_acl = session.getAccessForObject(object, forDisplay);
 	}
-	
+
 	public boolean isEmpty()
 	{
 		return (m_acl != null) ? m_acl.isEmpty() : true;
 	}
-	
+
 	public boolean hasViewAccess(UserGroup group)
 	{
 		ObjectAccess access = (m_acl != null) ? m_acl.get(group.getId()) : null;
 		return (access != null) ? access.isViewable() : false;
 	}
-	
+
 	public boolean hasUpdateAccess(UserGroup group)
 	{
 		ObjectAccess access = (m_acl != null) ? m_acl.get(group.getId()) : null;
 		return (access != null) ? access.isUpdatable() : false;
 	}
-	
+
 	public boolean hasReadAccess(UserGroup group)
 	{
 		ObjectAccess access = (m_acl != null) ? m_acl.get(group.getId()) : null;
 		return (access != null) ? access.isReadable() : false;
 	}
-	
+
 	public boolean hasWriteAccess(UserGroup group)
 	{
 		ObjectAccess access = (m_acl != null) ? m_acl.get(group.getId()) : null;

@@ -69,7 +69,7 @@ DMException::DMException(const DMException& copy)
 	  m_stacktrace(DUP_NULL(copy.m_stacktrace))
 {}
 
- 
+
 DMException::~DMException()
 {
 	SAFE_FREE(m_msg);

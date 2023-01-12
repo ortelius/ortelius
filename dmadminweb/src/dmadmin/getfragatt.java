@@ -34,7 +34,7 @@ import dmadmin.model.FragmentListValues;
  */
 public class getfragatt extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -50,9 +50,9 @@ public class getfragatt extends HttpServletBase {
    		throws ServletException, IOException
    	{
     	response.setContentType("text/html;charset=UTF-8");
- 
+
 		PrintWriter out = response.getWriter();
-		
+
     	//String typeid = request.getParameter("typeid");
     	String editmode = request.getParameter("editmode");
     	int actionid = ServletUtils.getIntParameter(request,"actionid");
@@ -72,15 +72,15 @@ public class getfragatt extends HttpServletBase {
     	FragmentDetails fd = session.getFragmentDetails(actionid,windowid);
     	// Action action = session.getAction(fd.getFragmentAction(),false);
     	// System.out.println("actionid="+actionid+" fd action="+action.getId());
-    	
+
     	out.println("<form id='fragattrs'>");
     	out.println("<div id=\"fragheader\"><h3>"+fd.getTypeName()+"</h3>");
-    	    	
+
     	out.println("<span class=\"summwrap\">" + fd.getTypeSummary()+"</span><br></div>");
     	out.println("<hr><div id=\"attdiv\">");
-    		
+
     	out.println("<table border=0 id=\"atttable\" class=\"atttable\" >");
-    	
+
     	out.print("<tr><td>Title</td><td><input id=\"title\" type=\"text\" value=\""+fd.getFragmentName()+"\"></td>");
     	out.print("<tr><td>Summary</td><td><input id=\"summary\" type=\"text\" value=\""+fd.getFragmentSummary()+"\"></td>");
     	//if (action != null && action.isFunction()) {

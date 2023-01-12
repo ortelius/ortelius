@@ -165,7 +165,7 @@ echo.Listbox:
 call :runit
 goto :EOF
 
-:runit    
+:runit
 .\%binary%\DeploymentManager.exe -nonotify ^
   -fields "environments,username,password,applications,combo1,combo2,combo3" ^
   -pw "harvest" %* cmdln_haruser=harvest cmdln_harpass=harvest %vars%

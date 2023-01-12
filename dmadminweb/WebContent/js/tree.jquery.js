@@ -240,13 +240,13 @@ limitations under the License.
 
   /*
   Copyright 2013 Marco Braak
-  
+
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
-  
+
       http://www.apache.org/licenses/LICENSE-2.0
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -446,7 +446,7 @@ limitations under the License.
 
     /*
     Create tree from data.
-    
+
     Structure of data is:
     [
         {
@@ -479,7 +479,7 @@ limitations under the License.
 
     /*
     Add child.
-    
+
     tree.addChild(
         new Node('child1')
     );
@@ -493,7 +493,7 @@ limitations under the License.
 
     /*
     Add child at position. Index starts at 0.
-    
+
     tree.addChildAtPosition(
         new Node('abc'),
         1
@@ -514,7 +514,7 @@ limitations under the License.
 
     /*
     Remove child. This also removes the children of the node.
-    
+
     tree.removeChild(tree.children[0]);
     */
 
@@ -531,7 +531,7 @@ limitations under the License.
 
     /*
     Get child index.
-    
+
     var index = getChildIndex(node);
     */
 
@@ -542,7 +542,7 @@ limitations under the License.
 
     /*
     Does the tree have children?
-    
+
     if (tree.hasChildren()) {
         //
     }
@@ -559,15 +559,15 @@ limitations under the License.
 
     /*
     Iterate over all the nodes in the tree.
-    
+
     Calls callback with (node, level).
-    
+
     The callback must return true to continue the iteration on current node.
-    
+
     tree.iterate(
         function(node, level) {
            console.log(node.name);
-    
+
            // stop iteration after level 2
            return (level <= 2);
         }
@@ -598,9 +598,9 @@ limitations under the License.
 
     /*
     Move node relative to another node.
-    
+
     Argument position: Position.BEFORE, Position.AFTER or Position.Inside
-    
+
     // move node1 after node2
     tree.moveNode(node1, node2, Position.AFTER);
     */

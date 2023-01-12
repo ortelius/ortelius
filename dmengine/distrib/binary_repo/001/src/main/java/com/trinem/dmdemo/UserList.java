@@ -31,23 +31,23 @@ public class UserList
 		throws Exception
 	{
 		ArrayList<User> users = new ArrayList<User>();
-		
+
 		try
 		{
 			Connection conn = getConnection(serverName);
-			
+
 			Statement stmt = conn.createStatement();
-			
+
 			ResultSet rset = stmt.executeQuery(
 				"SELECT firstname, surname FROM users" );
-			
+
 			while(rset.next())
 			{
 				String firstname = rset.getString("firstname");
 				String surname = rset.getString("surname");
 				users.add(new User(firstname, surname));
 			}
-			
+
 			rset.close();
 			stmt.close();
 			conn.close();
@@ -57,10 +57,10 @@ public class UserList
 			e.printStackTrace(System.err);
 			throw e;
 		}
-		
+
 		return users;
 	}
-	
+
 	public static java.sql.Connection getConnection(String serverName)
 		throws Exception
 	{
@@ -76,9 +76,9 @@ public class UserList
 		if(bundle == null) {
 			throw new Exception("Unable to find resource bundle for server " + serverName + ".");
 		}
-		
+
 		Class.forName(bundle.getString("dmdemo.driverClass"));
-		
+
 		return DriverManager.getConnection(
 				bundle.getString("dmdemo.connectString"),
 				bundle.getString("dmdemo.dbUser"),

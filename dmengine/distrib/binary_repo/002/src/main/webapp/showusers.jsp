@@ -26,9 +26,9 @@
  <div id="content">
   <img src="images/logo.gif" align="right">
   <h2>Deployment Manager Demo</h2>
-  
+
   <div id="padding"></div>
-  
+
   <table cellspacing="0" cellpadding="5" class="bordered">
    <tr>
     <th class="thead">Firstname</th>

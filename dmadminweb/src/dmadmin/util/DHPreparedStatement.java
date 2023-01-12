@@ -34,7 +34,7 @@ public class DHPreparedStatement
  ArrayList<String> parms;
  ResultSet rs;
  int pcnt=0;
- 
+
  public DHPreparedStatement(Connection m_conn,String sql)
  {
   this.m_conn = m_conn;
@@ -64,25 +64,25 @@ public class DHPreparedStatement
  {
   parms.set(parameterIndex-1, "'" + escapeSql(x) + "'");
  }
- 
+
  public void setNull(int parameterIndex,int x)
  {
   parms.set(parameterIndex-1, "null");
  }
- 
+
  public void setLong(int parameterIndex, long x) throws SQLException
  {
   parms.set(parameterIndex-1, x + "");
  }
- 
+
  public ResultSet executeQuery() throws SQLException
  {
   String sql="";
-  
+
   for (int i=0;i<parts.size();i++)
   {
    sql += parts.get(i);
-   
+
    if (i<parms.size())
     sql += parms.get(i);
   }
@@ -94,11 +94,11 @@ public class DHPreparedStatement
  public boolean execute()
  {
   String sql="";
-  
+
   for (int i=0;i<parts.size();i++)
   {
    sql += parts.get(i);
-   
+
    if (i<parms.size())
     sql += parms.get(i);
   }
@@ -112,18 +112,18 @@ public class DHPreparedStatement
   {
    if (e.getSQLState().equals("02000"))
     return false;
-   
+
    e.printStackTrace();
    return true;
   }
   return true;
  }
- 
+
  public int getUpdateCount() throws SQLException
  {
   return s.getUpdateCount();
  }
- 
+
  public ResultSet getResultSet() throws SQLException
  {
   return s.getResultSet();
@@ -133,17 +133,17 @@ public class DHPreparedStatement
   if (s != null)
    s.close();
  }
- 
+
  public int getParameterCount()
  {
   return pcnt;
  }
- 
+
  public Connection getConnection()
  {
   return m_conn;
  }
- 
+
  private String escapeSql(String s)
  {
      int length = s.length();

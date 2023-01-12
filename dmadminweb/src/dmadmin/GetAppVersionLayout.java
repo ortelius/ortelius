@@ -37,7 +37,7 @@ import dmadmin.model.Domain;
 public class GetAppVersionLayout extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
- HttpSession session = null;      
+ HttpSession session = null;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -45,7 +45,7 @@ public class GetAppVersionLayout extends HttpServlet {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
 
 
 	/**
@@ -55,7 +55,7 @@ public class GetAppVersionLayout extends HttpServlet {
 		// TODO Auto-generated method stub
 		response.setContentType("application/json;charset=UTF-8");
 		int appid = ServletUtils.getIntParameter(request, "appid");
-		
+
 		PrintWriter out = response.getWriter();
 
   try (DMSession so = DMSession.getInstance(request)) {
@@ -70,9 +70,9 @@ public class GetAppVersionLayout extends HttpServlet {
 			BaseDomain = domain.getName();
 		}
 		String BaseSummary = app.getSummary();
-		
+
 		List <Application> appvers = so.getApplicationVersions(app);
-		
+
 		JSONArray arr1 = new JSONArray();
 		for(Application a: appvers) {
 			JSONObject vobj = new JSONObject();
@@ -101,7 +101,7 @@ public class GetAppVersionLayout extends HttpServlet {
 		obj.add("NodeCount", appvers.size());
 		obj.add("BaseDomain",BaseDomain);
 		obj.add("BaseSummary",BaseSummary);
-		
+
 		String ret = obj.getJSON();
 		System.out.println(ret);
 		out.println(ret);
@@ -116,4 +116,3 @@ public class GetAppVersionLayout extends HttpServlet {
 	}
 
 }
-

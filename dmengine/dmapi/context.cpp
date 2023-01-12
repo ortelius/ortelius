@@ -163,7 +163,7 @@ long Context::threadId()
 
 void Context::writeVars2File()
 {
- m_stack.dump2File(*this);	
+ m_stack.dump2File(*this);
 }
 
 void Context::setThreadId(long threadId)
@@ -190,7 +190,7 @@ void Context::writeToStdOut(const char *fmt, ...)
 	va_start(args, fmt);
 	vasprintf(&temp,fmt,args);
 	va_end(args);
-	
+
 	writevToStdOut(m_threadId, temp);
 	free(temp);
 }
@@ -223,7 +223,7 @@ void Context::writeToStdErr(const char *fmt, ...)
 	va_start(args, fmt);
 	vasprintf(&temp,fmt,args);
 	va_end(args);
-	
+
 	if (temp) writevToStdErr(m_threadId, temp);
     free(temp);
 }

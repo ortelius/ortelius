@@ -1,5 +1,5 @@
 // Tencent is pleased to support the open source community by making RapidJSON available.
-// 
+//
 // Copyright (C) 2015 THL A29 Limited, a Tencent company, and Milo Yip. All rights reserved.
 //
 // Licensed under the MIT License (the "License"); you may not use this file except
@@ -7,9 +7,9 @@
 //
 // http://opensource.org/licenses/MIT
 //
-// Unless required by applicable law or agreed to in writing, software distributed 
-// under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
-// CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+// Unless required by applicable law or agreed to in writing, software distributed
+// under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
 #ifndef RAPIDJSON_DOCUMENT_H_
@@ -61,8 +61,8 @@ class GenericDocument;
     But a compiler (IBM XL C/C++ for AIX) have reported to have problem with that so it moved as a namespace scope struct.
     https://code.google.com/p/rapidjson/issues/detail?id=64
 */
-template <typename Encoding, typename Allocator> 
-struct GenericMember { 
+template <typename Encoding, typename Allocator>
+struct GenericMember {
     GenericValue<Encoding, Allocator> name;     //!< name of member (must be a string)
     GenericValue<Encoding, Allocator> value;    //!< value of member.
 };
@@ -406,7 +406,7 @@ template <typename T> struct IsGenericValue : IsGenericValueImpl<T>::Type {};
     \tparam Encoding    Encoding of the value. (Even non-string values need to have the same encoding in a document)
     \tparam Allocator   Allocator type for allocating memory of object, array and string.
 */
-template <typename Encoding, typename Allocator = MemoryPoolAllocator<> > 
+template <typename Encoding, typename Allocator = MemoryPoolAllocator<> >
 class GenericValue {
 public:
     //! Name-value pair in an object.
@@ -504,7 +504,7 @@ public:
 
     //! Constructor for unsigned value.
     explicit GenericValue(unsigned u) RAPIDJSON_NOEXCEPT : data_(), flags_(kNumberUintFlag) {
-        data_.n.u64 = u; 
+        data_.n.u64 = u;
         if (!(u & 0x80000000))
             flags_ |= kIntFlag | kInt64Flag;
     }
@@ -697,14 +697,14 @@ public:
         switch (GetType()) {
         case kObjectType: // Warning: O(n^2) inner-loop
             if (data_.o.size != rhs.data_.o.size)
-                return false;           
+                return false;
             for (ConstMemberIterator lhsMemberItr = MemberBegin(); lhsMemberItr != MemberEnd(); ++lhsMemberItr) {
                 typename RhsType::ConstMemberIterator rhsMemberItr = rhs.FindMember(lhsMemberItr->name);
                 if (rhsMemberItr == rhs.MemberEnd() || lhsMemberItr->value != rhsMemberItr->value)
                     return false;
             }
             return true;
-            
+
         case kArrayType:
             if (data_.a.size != rhs.data_.a.size)
                 return false;
@@ -1136,7 +1136,7 @@ public:
         \note Linear time complexity.
     */
     void RemoveAllMembers() {
-        RAPIDJSON_ASSERT(IsObject()); 
+        RAPIDJSON_ASSERT(IsObject());
         for (MemberIterator m = MemberBegin(); m != MemberEnd(); ++m)
             m->~Member();
         data_.o.size = 0;
@@ -1283,7 +1283,7 @@ public:
         \note Linear time complexity.
     */
     void Clear() {
-        RAPIDJSON_ASSERT(IsArray()); 
+        RAPIDJSON_ASSERT(IsArray());
         for (SizeType i = 0; i < data_.a.size; ++i)
             data_.a.elements[i].~GenericValue();
         data_.a.size = 0;
@@ -1429,7 +1429,7 @@ public:
         RAPIDJSON_ASSERT(last <= End());
         ValueIterator pos = Begin() + (first - Begin());
         for (ValueIterator itr = pos; itr != last; ++itr)
-            itr->~GenericValue();       
+            itr->~GenericValue();
         std::memmove(pos, last, static_cast<size_t>(End() - last) * sizeof(GenericValue));
         data_.a.size -= static_cast<SizeType>(last - first);
         return pos;
@@ -1474,7 +1474,7 @@ public:
 
     //! Set this value as a string without copying source string.
     /*! This version has better performance with supplied length, and also support string containing null character.
-        \param s source string pointer. 
+        \param s source string pointer.
         \param length The length of source string, excluding the trailing null terminator.
         \return The value itself for fluent API.
         \post IsString() == true && GetString() == s && GetStringLength() == length
@@ -1491,7 +1491,7 @@ public:
 
     //! Set this value as a string by copying from source string.
     /*! This version has better performance with supplied length, and also support string containing null character.
-        \param s source string. 
+        \param s source string.
         \param length The length of source string, excluding the trailing null terminator.
         \param allocator Allocator for allocating copied buffer. Commonly use GenericDocument::GetAllocator().
         \return The value itself for fluent API.
@@ -1500,7 +1500,7 @@ public:
     GenericValue& SetString(const Ch* s, SizeType length, Allocator& allocator) { this->~GenericValue(); SetStringRaw(StringRef(s, length), allocator); return *this; }
 
     //! Set this value as a string by copying from source string.
-    /*! \param s source string. 
+    /*! \param s source string.
         \param allocator Allocator for allocating copied buffer. Commonly use GenericDocument::GetAllocator().
         \return The value itself for fluent API.
         \post IsString() == true && GetString() != s && strcmp(GetString(),s) == 0 && GetStringLength() == length
@@ -1553,10 +1553,10 @@ public:
                 if (!v->Accept(handler))
                     return false;
             return handler.EndArray(data_.a.size);
-    
+
         case kStringType:
             return handler.String(GetString(), GetStringLength(), (flags_ & kCopyFlag) != 0);
-    
+
         default:
             RAPIDJSON_ASSERT(GetType() == kNumberType);
             if (IsInt())            return handler.Int(data_.n.i.i);
@@ -1753,7 +1753,7 @@ private:
 typedef GenericValue<UTF8<> > Value;
 
 ///////////////////////////////////////////////////////////////////////////////
-// GenericDocument 
+// GenericDocument
 
 //! A document for parsing JSON text as DOM.
 /*!
@@ -1785,12 +1785,12 @@ public:
     }
 
     //! Constructor
-    /*! Creates an empty document which type is Null. 
+    /*! Creates an empty document which type is Null.
         \param allocator        Optional allocator for allocating memory.
         \param stackCapacity    Optional initial capacity of stack in bytes.
         \param stackAllocator   Optional allocator for allocating memory for stack.
     */
-    GenericDocument(Allocator* allocator = 0, size_t stackCapacity = kDefaultStackCapacity, StackAllocator* stackAllocator = 0) : 
+    GenericDocument(Allocator* allocator = 0, size_t stackCapacity = kDefaultStackCapacity, StackAllocator* stackAllocator = 0) :
         allocator_(allocator), ownAllocator_(0), stack_(stackAllocator, stackCapacity), parseResult_()
     {
         if (!allocator_)
@@ -2029,8 +2029,8 @@ private:
     bool Uint64(uint64_t i) { new (stack_.template Push<ValueType>()) ValueType(i); return true; }
     bool Double(double d) { new (stack_.template Push<ValueType>()) ValueType(d); return true; }
 
-    bool String(const Ch* str, SizeType length, bool copy) { 
-        if (copy) 
+    bool String(const Ch* str, SizeType length, bool copy) {
+        if (copy)
             new (stack_.template Push<ValueType>()) ValueType(str, length, GetAllocator());
         else
             new (stack_.template Push<ValueType>()) ValueType(str, length);
@@ -2038,7 +2038,7 @@ private:
     }
 
     bool StartObject() { new (stack_.template Push<ValueType>()) ValueType(kObjectType); return true; }
-    
+
     bool Key(const Ch* str, SizeType length, bool copy) { return String(str, length, copy); }
 
     bool EndObject(SizeType memberCount) {
@@ -2048,7 +2048,7 @@ private:
     }
 
     bool StartArray() { new (stack_.template Push<ValueType>()) ValueType(kArrayType); return true; }
-    
+
     bool EndArray(SizeType elementCount) {
         ValueType* elements = stack_.template Pop<ValueType>(elementCount);
         stack_.template Top<ValueType>()->SetArrayRaw(elements, elementCount, GetAllocator());

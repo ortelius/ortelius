@@ -28,7 +28,7 @@ public class UserGroupList
 	public boolean add(UserGroup group) {
 		return super.add(group);
 	}
-	
+
  public void sort()
  {
   Collections.sort(this);

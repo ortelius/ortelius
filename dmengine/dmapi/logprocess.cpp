@@ -38,7 +38,7 @@ MessageMatcher::~MessageMatcher()
 
 
 StringHashtable *MessageMatcher::match(const char *logmsg)
-{ 
+{
 	if(!m_re) {
 		return NULL;
 	}

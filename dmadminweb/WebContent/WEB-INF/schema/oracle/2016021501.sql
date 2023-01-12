@@ -4,4 +4,3 @@ insert into dm.dm_propertydef(defid,name,required,appendable) values(17,'LDAP Se
 insert into dm.dm_propertydef(defid,name,required,appendable) values(17,'Port Number','N','N');
 insert into dm.dm_propertydef(defid,name,required,appendable) values(17,'Search Base','Y','N');
 insert into dm.dm_propertydef(defid,name,required,appendable) values(17,'Search Filter','Y','N');
-

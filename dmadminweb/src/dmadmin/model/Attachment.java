@@ -30,68 +30,68 @@ public class Attachment
 	extends DMObject
 {
 	private static final long serialVersionUID = 903806223335945203L;
-	
+
 	private static class MimeType
 	{
 		private String m_contentType;
 		private String m_icon;
-		
+
 		public MimeType(String ct, String icon) {
 			m_contentType = ct;
 			m_icon = icon;
 		}
-		
+
 		public String getContentType()  { return m_contentType; }
 		public String getIcon()  { return m_icon; }
 	}
 
 	private static Map<String, MimeType> s_mimeTypeMap;
-	
+
 	private long m_size;
 
 	public Attachment()
 	{}
-	
+
 	public Attachment(DMSession session, int attachid, String filename)
 	{
 		super(session, attachid, filename);
 	}
-	
+
 	public long getSize()  { return m_size; }
 	public void setSize(long size)  { m_size = size; }
-	
+
 	public String getExtension()
 	{
 		if(m_name == null) {
 			return "";
 		}
-		
+
 		int lastdot = m_name.lastIndexOf('.');
 		if(lastdot == -1) {
 			return "";
 		}
-		
+
 		return m_name.substring(lastdot+1);
 	}
-	
+
 	public String getIcon()
 	{
 		MimeType mt = getMimeTypeMap().get(getExtension().toLowerCase());
 		return (mt != null) ? mt.getIcon() : null;
 	}
-	
+
 	public String getMimeType()
-	{			
+	{
 		MimeType mt = getMimeTypeMap().get(getExtension().toLowerCase());
 		return (mt != null) ? mt.getContentType() : null;
 	}
-	
+
 	public String getAttachmentString()
 	{
 		return m_session.getAttachmentString(m_id);
 		// return new File(s_attachStore, m_id + "_" + m_name);
 	}
-	
+
 	public void streamOutput(Writer out)
 	{}
 
@@ -109,7 +109,7 @@ public class Attachment
 	public String getForeignKey() {
 		return null;
 	}
-	
+
 	public IJSONSerializable getJSONObject() {
 		JSONObject obj = new JSONObject();
 		obj.add("id", m_id);
@@ -128,7 +128,7 @@ public class Attachment
 	public boolean updateSummary(SummaryChangeSet changes) {
 		return false;
 	}
-	
+
 	private static Map<String, MimeType> getMimeTypeMap() {
 		if(s_mimeTypeMap == null) {
 			s_mimeTypeMap = new Hashtable<String, MimeType>();

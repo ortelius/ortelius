@@ -33,7 +33,7 @@ private:
 	bool m_secure;
 	bool  m_useHTML;
 	char *m_logfile;
-	
+
 public:
 	HipChatNotifyImpl(
 		NotifyProviderImplFactory &factory, DMINT32 implId, Notify &notify,

@@ -31,7 +31,7 @@
 *   2        PAG        08/06/04   Minor Bug Fix - Terminate Node String
 *   3        PAG        12/11/05   Change to Encryption Algorithm + Bug Fix
 *                                  to handle non-alpha characters in hostname
-* 
+*
 **************************************************************************/
 #include <stdio.h>
 #include <string.h> /* RHT */
@@ -59,14 +59,14 @@ extern bool globalRunningAsService;
 //
 #define PRODUCT_CODE 0x4445504c /* DEPL */
 
-/* Period parameters */  
+/* Period parameters */
 #define N 624
 #define M 397
 #define MATRIX_A 0x9908b0df   /* constant vector a */
 #define UPPER_MASK 0x80000000 /* most significant w-r bits */
 #define LOWER_MASK 0x7fffffff /* least significant r bits */
 
-/* Tempering parameters */   
+/* Tempering parameters */
 #define TEMPERING_MASK_B 0x9d2c5680
 #define TEMPERING_MASK_C 0xefc60000
 #define TEMPERING_SHIFT_U(y)  (y >> 11)
@@ -114,20 +114,20 @@ static unsigned long genrand()
 
         mti = 0;
     }
-  
+
     y = mt[mti++];
     y ^= TEMPERING_SHIFT_U(y);
     y ^= TEMPERING_SHIFT_S(y) & TEMPERING_MASK_B;
     y ^= TEMPERING_SHIFT_T(y) & TEMPERING_MASK_C;
     y ^= TEMPERING_SHIFT_L(y);
 
-    return y; 
+    return y;
 }
 
 bool License::CheckForInvalidHostName()
 {
 	char ThisHostName[128];
-	
+
 	int res = gethostname(ThisHostName,sizeof(ThisHostName));
 	ThisHostName[sizeof(ThisHostName)-1]='\0';
 	if (HostName)
@@ -423,7 +423,7 @@ int License::ValidateLicenseFile(FILE *in,int *Day,int *Month,int *Year,int *Nod
         // RHT+ END - re-added 25/08/2006
 
 		line++;
-		
+
 		if (strncmp(linebuf,"LICENSE KEY:",12)==0)
 		{
 			x=12;

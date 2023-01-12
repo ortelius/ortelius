@@ -33,14 +33,14 @@ public class Domain
 	private String m_parentDomain;
 	private Engine m_engine;
 	private boolean m_lifecycle;
-	
+
 	public Domain() {
 	}
-	
+
 	public Domain(DMSession sess, int id, String name) {
 		super(sess, id, name);
 	}
-	
+
 	public Engine getEngine()  { return m_engine; }
 	public void setEngine(Engine engine)  { m_engine = engine; }
 	public Engine findNearestEngine() {
@@ -53,13 +53,13 @@ public class Domain
 		}
 		return null;
 	}
-	
+
 	public String getFullDomain()
 	{
 	//	if (!m_session.ValidDomain(getId())) return "";
-		
+
 		return m_session.getFQDN(getId());
-		
+
 //		String fqdom = getName();
 //		Domain parent = getDomain();
 //		while (parent != null && m_session.ValidDomain(parent.getId())) {
@@ -69,10 +69,10 @@ public class Domain
 //		}
 //		return fqdom;
 	}
-	
+
 	public void setLifecycle(boolean x) { m_lifecycle = x; }
 	public boolean getLifecycle() { return m_lifecycle; }
-	
+
 	@Override
 	public ObjectType getObjectType() {
 		return ObjectType.DOMAIN;
@@ -110,7 +110,7 @@ public class Domain
 				: ((m_ownerGroup != null) ? m_ownerGroup.getLinkJSON() : null));
 		addCreatorModifier(ds);
 		ds.addProperty(SummaryField.ENGINE_HOSTNAME, "Engine", (m_engine != null) ? m_engine.getLinkJSON() : null);
-		
+
 		Domain parent = this.getDomain();
 		if (parent != null) {
 			if (!parent.m_lifecycle) {
@@ -126,7 +126,7 @@ public class Domain
 	public boolean updateSummary(SummaryChangeSet changes) {
 		return m_session.updateDomain(this, changes);
 	}
-	
+
 	@Override
  public IJSONSerializable getLinkJSON() {
   return new LinkField(getObjectType(), m_id, this.getFullDomain());

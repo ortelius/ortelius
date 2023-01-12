@@ -64,8 +64,8 @@ public class GetServerList extends HttpServletBase
    o.add("id", s.getId());
    o.add("name", s.getName());
    list.add(o);
-  } 
-  
+  }
+
   out.println(list.toString());
  }
 }

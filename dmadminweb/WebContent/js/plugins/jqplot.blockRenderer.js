@@ -6,13 +6,13 @@
  * Revision: 1250
  *
  * Copyright (c) 2009-2013 Chris Leonello
- * jqPlot is currently available for use in all personal or commercial projects 
- * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL 
- * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can 
- * choose the license that best suits your project and use it accordingly. 
+ * jqPlot is currently available for use in all personal or commercial projects
+ * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL
+ * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can
+ * choose the license that best suits your project and use it accordingly.
  *
- * Although not required, the author would appreciate an email letting him 
- * know of any substantial use of jqPlot.  You can reach the author at: 
+ * Although not required, the author would appreciate an email letting him
+ * know of any substantial use of jqPlot.  You can reach the author at:
  * chris at jqplot dot com or see http://www.jqplot.com/info.php .
  *
  * If you are feeling kind and generous, consider supporting the project by
@@ -26,35 +26,35 @@
  *     http://hexmen.com/js/sprintf.js
  *     The author (Ash Searle) has placed this code in the public domain:
  *     "This code is unrestricted: you are free to use it however you like."
- * 
+ *
  */
 (function($) {
     /**
      * Class: $.jqplot.BlockRenderer
      * Plugin renderer to draw a x-y block chart.  A Block chart has data points displayed as
      * colored squares with a text label inside.  Data must be supplied in the form:
-     * 
+     *
      * > [[x1, y1, "label 1", {css}], [x2, y2, "label 2", {css}], ...]
-     * 
+     *
      * The label and css object are optional.  If the label is ommitted, the
      * box will collapse unless a css height and/or width is specified.
-     * 
-     * The css object is an object specifying css properties 
+     *
+     * The css object is an object specifying css properties
      * such as:
-     * 
+     *
      * > {background:'#4f98a5', border:'3px solid gray', padding:'1px'}
-     * 
+     *
      * Note that css properties specified with the data point override defaults
      * specified with the series.
-     * 
+     *
      */
     $.jqplot.BlockRenderer = function(){
         $.jqplot.LineRenderer.call(this);
     };
-    
+
     $.jqplot.BlockRenderer.prototype = new $.jqplot.LineRenderer();
     $.jqplot.BlockRenderer.prototype.constructor = $.jqplot.BlockRenderer;
-    
+
     // called with scope of a series
     $.jqplot.BlockRenderer.prototype.init = function(options) {
         // Group: Properties
@@ -91,8 +91,8 @@
         this.canvas._plotDimensions = this._plotDimensions;
         this.shadowCanvas._plotDimensions = this._plotDimensions;
         this._type = 'block';
-        
-        // group: Methods 
+
+        // group: Methods
         //
         // Method: moveBlock
         // Moves an individual block.  More efficient than redrawing
@@ -132,7 +132,7 @@
             el = null;
         };
     };
-    
+
     // called with scope of series
     $.jqplot.BlockRenderer.prototype.draw = function (ctx, gd, options) {
         if (this.plugins.pointLabels) {
@@ -156,7 +156,7 @@
             if (typeof d[3] ==  'object') {
                 css = d[3];
             }
-            if (this.insertBreaks){ 
+            if (this.insertBreaks){
                 t = t.replace(/ /g, '<br />');
             }
             css = $.extend(true, {}, this.css, css);
@@ -170,7 +170,7 @@
             delete css.position;
             delete css.marginRight;
             delete css.marginLeft;
-            if (!css.background && !css.backgroundColor && !css.backgroundImage){ 
+            if (!css.background && !css.backgroundColor && !css.backgroundImage){
                 css.background = colorGenerator.next();
             }
             el.css(css);
@@ -182,15 +182,15 @@
             el = null;
         }
     };
-    
+
     $.jqplot.BlockCanvas = function() {
         $.jqplot.ElemContainer.call(this);
-        this._ctx;  
+        this._ctx;
     };
-    
+
     $.jqplot.BlockCanvas.prototype = new $.jqplot.ElemContainer();
     $.jqplot.BlockCanvas.prototype.constructor = $.jqplot.BlockCanvas;
-    
+
     $.jqplot.BlockCanvas.prototype.createElement = function(offsets, clss, plotDimensions) {
         this._offsets = offsets;
         var klass = 'jqplot-blockCanvas';
@@ -209,16 +209,16 @@
         if (plotDimensions != undefined) {
             this._plotDimensions = plotDimensions;
         }
-        
+
         var w = this._plotDimensions.width - this._offsets.left - this._offsets.right + 'px';
         var h = this._plotDimensions.height - this._offsets.top - this._offsets.bottom + 'px';
         this._elem = $(elem);
         this._elem.css({ position: 'absolute', width:w, height:h, left: this._offsets.left, top: this._offsets.top });
-        
+
         this._elem.addClass(klass);
         return this._elem;
     };
-    
+
     $.jqplot.BlockCanvas.prototype.setContext = function() {
         this._ctx = {
             canvas:{
@@ -229,7 +229,5 @@
         };
         return this._ctx;
     };
-    
+
 })(jQuery);
-    
-    

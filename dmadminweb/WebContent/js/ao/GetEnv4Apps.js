@@ -49,7 +49,7 @@ $.getJSON('GetPendingEnvData', "appid=" + objid, function(res) {
 	  console.log("***");
 	  console.log(res);
 	  console.log("***");
-	  
+
 	 var groups;
 	 var isRelease = (objtype=="rl" || objtype=="rv");
 
@@ -78,10 +78,10 @@ $.getJSON('GetPendingEnvData', "appid=" + objid, function(res) {
 	 } else {
 		 groups = new vis.DataSet(res.domains);
 	 }
-	 
+
 	  var items = [];
 	  var now=new Date();
-	  
+
 	  if (typeof res['data'] != "undefined")
 	  for (a = 0; a < res['data'].length; a++)
 	  {
@@ -99,17 +99,17 @@ $.getJSON('GetPendingEnvData', "appid=" + objid, function(res) {
 	   var appname   = res['data'][a][9]
 	   var domorder  = res['data'][a][10];
 	   var classname   = res['data'][a][11];
-	   
+
 	   console.log("isRelease="+isRelease+" starttime="+starttime+" endtime="+endtime+" domainid="+domainid+" domain="+domain+" calid="+calid);
 
 	   if (starttime === "")
 	    continue;
-	   
+
 	   if (starttime==endtime) {
 		   // Full Day Event
 		   endtime = starttime+86400;
 	   }
-	   
+
 	   var title=app.name+" on "+env.name;
 	   if (classname == "absent") title+=" (overdue)";
 	   if (isRelease) {
@@ -123,14 +123,14 @@ $.getJSON('GetPendingEnvData', "appid=" + objid, function(res) {
 		   items.push(item);
 	   }
 	  }
-	  
+
 	  var rangeStart=new Date(now.getTime()-864000000);		// 10 days in past
 	  var rangeEnd=new Date(now.getTime()+4320000000);		// 50 days in future
-	  
-	  
+
+
 	  console.log("rangeStart="+rangeStart.getTime()+" rangeEnd="+rangeEnd.getTime()+" now="+now.getTime());
-	 
-	  
+
+
 	  var container = document.getElementById(divname);
 	  container.innerHTML = "";
 	  var options = {
@@ -150,7 +150,7 @@ $.getJSON('GetPendingEnvData', "appid=" + objid, function(res) {
 	    start: rangeStart,
 	    end: rangeEnd
 	  };
-	  
+
 	  var timeline = new vis.Timeline(container);
 	  timeline.setOptions(options);
 	  timeline.setGroups(groups);
@@ -168,7 +168,7 @@ $.getJSON('GetPendingEnvData', "appid=" + objid, function(res) {
 		}
 	  }
 	 });
-	
+
 }
 
 /*** Load Deployment for Env ****/
@@ -176,21 +176,21 @@ $.getJSON('GetPendingEnvData', "appid=" + objid, function(res) {
 
 
 function LoadDeployedEnv4AppData(tablename, objtypeAsInt, objtype, objid, addParams)
-{ 
+{
  summSavetablename = tablename;
  summSaveobjtypeAsInt = objtypeAsInt;
  summSaveobjtype = objtype;
  summSaveobjid = objid;
  summSaveaddParams = addParams;
  td = "";
- 
+
  for (env in deployedenvs)
   {
    td += '<tr><td></td><td>' + env + '</td><td>#' + deployedenvs[env] + '</td></tr>';
   }
-  
+
   $("#" + tablename + " > tbody").empty().append(td);
- 
+
 }
 
 
@@ -199,9 +199,9 @@ function LoadDeployedEnv4AppData(tablename, objtypeAsInt, objtype, objid, addPar
 
 
 function LoadEnv4AppData(tablename, objtypeAsInt, objtype, objid, addParams)
-{ 
- 
- $('#env4app_header_buttons > button.delete_button').css("color","grey"); 
+{
+
+ $('#env4app_header_buttons > button.delete_button').css("color","grey");
  summSavetablename = tablename;
  summSaveobjtypeAsInt = objtypeAsInt;
  summSaveobjtype = objtype;
@@ -210,7 +210,7 @@ function LoadEnv4AppData(tablename, objtypeAsInt, objtype, objid, addParams)
  env4app_tdedit = "";
  env4app_rowcnt = 0;
  feedbackenv = {};
- 
+
  if (envdropdown == "")
  {
   $.ajax(
@@ -232,10 +232,10 @@ function LoadEnv4AppData(tablename, objtypeAsInt, objtype, objid, addParams)
      console.log(err);
     }
    });
- } 
- 
+ }
+
  console.log("LoadEnv4AppData appid="+objid);
- 
+
  $.getJSON('GetAppVersInEnvData', "appid=" + objid, function(res)
  {
   var td = "";
@@ -244,13 +244,13 @@ function LoadEnv4AppData(tablename, objtypeAsInt, objtype, objid, addParams)
   console.log(res);
   if (!('data' in res))
    return;
-  
+
   $("#feedback-env-sel").show();
   $("#feedback-label").show();
-  
- 
+
+
   var feedbackenv = {};
-  
+
   for (a = 0; a < res['data'].length; a++)
   {
    var data = res['data'][a][1];
@@ -261,21 +261,21 @@ function LoadEnv4AppData(tablename, objtypeAsInt, objtype, objid, addParams)
 
    if (typeof data.id == "undefined")
     continue;
-   
+
    feedbackenv[data.id] = data.name;
-   
+
    var linkval2="";
    if (lastapp != "") {
     lastappStr = lastapp.name;
     linkval2="<a href='javascript:SwitchDisplay(\""+lastapp.type+lastapp.id+"\");'>"+lastapp.name+"</a>";
    }
-   
+
    console.log("details="+details);
 
    if (details != "")
    {
     var type = details.type;
-    
+
     console.log("type="+type);
 
     if (type == "cm")
@@ -293,19 +293,19 @@ function LoadEnv4AppData(tablename, objtypeAsInt, objtype, objid, addParams)
      if (typeof details.tooltip == "undefined")
      {
       detailsStr = "Deployment " + details.name;
-     } 
+     }
      else
      {
       var d = convertDate(details.tooltip);
       detailsStr = "<a onClick=\"DisplayDeploy(" + details.name.substr(1) + ");\">"+details.name+"</a>  deployed at " + d.toLocaleDateString() + " " + d.toLocaleTimeString();
-     } 
+     }
     }
-   } 
+   }
    rowcnt++;
 
    var key = data.name;
    var val = data.type+data.id;
-   
+
    env4app_tdedit += '<tr id="env4app_row_' + rowcnt + '">';
    env4app_tdedit += '<td><input type="checkbox" id="env4app_edit_cb_' + rowcnt + '" onchange="toggleEnv4AppDelete(this);" />&nbsp;</td>';
    env4app_tdedit += '<td><select id="env4app_key_' + rowcnt + '" value="' + val + '">' + envdropdown + '</select></td>';
@@ -313,11 +313,11 @@ function LoadEnv4AppData(tablename, objtypeAsInt, objtype, objid, addParams)
    env4app_tdedit += "<td><input type=\"hidden\" id=\"env4app_oldval_" + rowcnt + "\" value=\"" + val + "\"\></td></tr>";
    td += '<tr><td><input type="checkbox" id="env4app_cb_' + rowcnt + '" onchange="toggleEnv4AppDelete(this);" />&nbsp;</td><td>' + key + '</td><td>' + detailsStr + '</td></tr>';
    env4app_rowcnt = rowcnt;
-   
+
   }
   $("#" + tablename + " > tbody").empty().append(td);
   $("#" + tablename + "-edit > tbody").html(env4app_tdedit);
-  
+
   if (objtype == "av")
   {
    $("#env4app > thead > tr > th:nth-child(1)").hide();
@@ -331,27 +331,27 @@ function LoadEnv4AppData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#env4app_header_buttons").show();
   }
 
- 
+
   rowcnt = 0;
   for (var r = 0; r < res.data.length; r++)
   {
    data = res['data'][r][1];
    id = data.type+data.id;
    rowcnt++;
-   
+
    id = $("#env4app_oldval_" + rowcnt).val();
    $("#env4app_key_" + rowcnt + " option[value=\"" + id + "\"]").attr('selected', true);
   }
-  
+
   var sel = "";
-  for (envid in feedbackenv) 
+  for (envid in feedbackenv)
   {
-   sel += "<option value=\"en" + envid + "\">" + feedbackenv[envid] + "</option>"; 
+   sel += "<option value=\"en" + envid + "\">" + feedbackenv[envid] + "</option>";
   }
   $("#feedback-env-sel").html(sel);
   $("#feedback-env-sel").prop('selectedIndex', 0);
   $("#feedback-env-sel").change();
-  
+
   if (objtype == "av")
   {
    $("#env4app_add").show();
@@ -368,28 +368,28 @@ function LoadEnv4AppData(tablename, objtypeAsInt, objtype, objid, addParams)
 
 function SaveEnv4AppData(tablename)
 {
- 
+
  $("#" + tablename + '-edit > tbody  > tr').each(function(rowid, tr)
    {
     rowid++;
-    
+
  id = $("#env4app_key_" + rowid).val();
  oldid = $("#env4app_oldval_" + rowid).val();
- 
+
  if (id == null || id == oldid)
   return;
- 
+
  $("#env4app_key_" + rowid).val(id);
  $("#env4app_oldval_" + rowid).val(id);
- 
+
  srvid = id.substring(2);
  oldid = oldid.substring(2);
- 
+
  if (objtype == "av")
   isVersion = "true";
  else
   isVersion = "false";
- 
+
  $.ajax(
    {
     url : "GetAppVersInEnvData",
@@ -451,17 +451,17 @@ function AddEnv4AppRow(tablename)
 {
  if ($("#" + tablename + "-edit").is(":visible") == false)
    EditEnv4AppRow(tablename);
- 
+
  key = "";
  val = "";
  env4app_rowcnt++;
- 
+
  var td = '<tr id="env4app_row_' + env4app_rowcnt + '">';
  td += '<td><input type="checkbox" id="env4app_edit_cb_' + env4app_rowcnt + '" onchange="toggleEnv4AppDelete(this);" />&nbsp;</td>';
  td += '<td><select id="env4app_key_' + env4app_rowcnt + '" value="' + val + '">' + envdropdown + '</select></td>';
  td += "<td><input type=\"hidden\" id=\"env4app_oldkey_" + env4app_rowcnt + "\" value=\"" + key + "\"\></td>";
  td += "<td><input type=\"hidden\" id=\"env4app_oldval_" + env4app_rowcnt + "\" value=\"" + val + "\"\></td></tr>";
- 
+
  $("#" + tablename + "-edit > tbody").append(td);
 }
 
@@ -469,10 +469,10 @@ function CancelEnv4AppRow(tablename)
 {
  if ($('#env4app_header_buttons > button.cancel_button').css("color") == "grey")
   return;
- 
+
  $('#env4app_header_buttons > button.save_button').css("color","grey");
  $('#env4app_header_buttons > button.cancel_button').css("color","grey");
- 
+
  $("#" + tablename).show();
  $("#" + tablename + "-edit").hide();
  $("#" + tablename + "-edit > tbody").empty();
@@ -484,50 +484,50 @@ function EditEnv4AppRow(tablename)
  $('#env4app_header_buttons > button.cancel_button').css("color","#3367d6");
  $("#" + tablename).hide();
  $("#" + tablename + "-edit > tbody").html(env4app_tdedit);
- 
+
  for (var r = 0; r < env4app_rowcnt; r++)
  {
   var rowcnt = r+1;
   id = $("#env4app_oldval_" + rowcnt).val();
   $("#env4app_key_" + rowcnt + " option[value=\"" + id + "\"]").attr('selected', true);
  }
- 
+
  $("#" + tablename + "-edit").show();
- 
+
 }
 
 function DeleteEnv4AppRow(tablename)
 {
  if ($('#env4app_header_buttons > button.delete_button').css("color") == "grey")
   return;
- 
+
  $("#" + tablename + '-edit > tbody  > tr').each(function(rowid, tr)
  {
   rowid++;
-  
+
   cb  = $("#env4app_edit_cb_" + rowid);
-  
-  if (cb.is( ":checked" ) == true) 
+
+  if (cb.is( ":checked" ) == true)
   {
    key = $("#env4app_oldkey_" + rowid).val();
    val = $("#env4app_oldval_" + rowid).val();
- 
+
    if (key != "")
      DeleteEnv4AppData(key,val, tablename);
   }
  });
- 
+
  $("#" + tablename + ' > tbody  > tr').each(function(rowid, tr)
    {
     rowid++;
-    
+
     cb  = $("#env4app_cb_" + rowid);
-    
-    if (cb.is( ":checked" ) == true) 
+
+    if (cb.is( ":checked" ) == true)
     {
      key = $("#env4app_oldkey_" + rowid).val();
      val = $("#env4app_oldval_" + rowid).val();
-   
+
      if (key != "")
        DeleteEnv4AppData(key,val, tablename);
     }
@@ -538,10 +538,10 @@ function SaveEnv4AppRow(tablename)
 {
  if ($('#env4app_header_buttons > button.save_button').css("color") == "grey")
   return;
- 
+
  $('#env4app_header_buttons > button.save_button').css("color","grey");
  $('#env4app_header_buttons > button.cancel_button').css("color","grey");
- 
+
  $("#" + tablename).show();
  $("#" + tablename + "-edit").hide();
  SaveEnv4AppData(tablename);
@@ -550,7 +550,7 @@ function SaveEnv4AppRow(tablename)
 function toggleEnv4AppDelete(e)
 {
   if (e.checked)
-   $('#env4app_header_buttons > button.delete_button').css("color","#3367d6"); 
+   $('#env4app_header_buttons > button.delete_button').css("color","#3367d6");
   else
-   $('#env4app_header_buttons > button.delete_button').css("color","grey"); 
+   $('#env4app_header_buttons > button.delete_button').css("color","grey");
 }

@@ -36,7 +36,7 @@ import dmadmin.model.ServerLink;
  */
 public class GetServerLayout extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -44,7 +44,7 @@ public class GetServerLayout extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
@@ -52,12 +52,12 @@ public class GetServerLayout extends HttpServletBase {
    	{
     	response.setContentType("application/json;charset=UTF-8");
 		String envid = request.getParameter("envid");
-		
+
 		PrintWriter out = response.getWriter();
-		
+
 		List <Server> servers = session.getServersInEnvironment(Integer.parseInt(envid));
 		List <ServerLink> sls = session.GetServerLinks(Integer.parseInt(envid));
-		
+
 		JSONArray arr1 = new JSONArray();
 		for(Server s: servers) {
 			JSONObject sobj = new JSONObject();
@@ -87,7 +87,7 @@ public class GetServerLayout extends HttpServletBase {
 		obj.add("Links", arr2);
 		obj.add("LinkCount", sls.size());
 		obj.add("NodeCount", servers.size());
-		
+
 		String ret = obj.getJSON();
 		System.out.println(ret);
 		out.println(ret);

@@ -27,7 +27,7 @@ public class DMProperty
 	implements Serializable, IJSONSerializable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 7703233628885066640L;
 
@@ -40,12 +40,12 @@ public class DMProperty
 
 	public DMProperty()
 	{}
-	
+
 	public DMProperty(String name, String value, boolean encrypted, boolean overridable, boolean appendable)
 	{
 		this(name, value, encrypted, overridable, appendable, false);
 	}
-	
+
 	public DMProperty(String name, String value, boolean encrypted, boolean overridable, boolean appendable, boolean addreqd)
 	{
 		m_name = name;
@@ -55,10 +55,10 @@ public class DMProperty
 		m_appendable = appendable;
 		m_addedRequired = addreqd;
 	}
-	
+
 	public String getName()  { return m_name; }
 	public void setName(String name)  { m_name = name; }
-	
+
 	public String getValue()  { return m_value; }
 	public void setValue(String value)  { m_value = value; }
 
@@ -67,9 +67,9 @@ public class DMProperty
 	public boolean isOverridable()  { return m_overridable; }
 
 	public boolean isAppendable()  { return m_appendable; }
-	
+
  public boolean isRequired()  { return m_addedRequired ; }
-	
+
 	private JSONArray toJSONArray() {
 		return new JSONArray()
 			.add(new JSONBoolean(false))			// dirty
@@ -78,7 +78,7 @@ public class DMProperty
 			.add(m_name).add(m_encrypted ? "********" : m_value)
 			.add(m_encrypted).add(m_overridable).add(m_appendable);
 	}
-	
+
 	@Override
 	public String getJSON() {
 		return toJSONArray().getJSON();
@@ -90,9 +90,9 @@ public class DMProperty
   obj.add("name", getName());
   obj.add("value", getValue());
   obj.add("encrypted", new JSONBoolean(isEncrypted()));
-  obj.add("overridable", new JSONBoolean(isOverridable())); 
-  obj.add("appendable", new JSONBoolean(isAppendable())); 
-  
+  obj.add("overridable", new JSONBoolean(isOverridable()));
+  obj.add("appendable", new JSONBoolean(isAppendable()));
+
   return obj;
  }
 }

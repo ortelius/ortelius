@@ -101,21 +101,21 @@ public class JWTGenerateValidateRSA {
 
     private static PublicKey getPublicKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
         String rsaPublicKey = "";
-        
+
         String pubkey = "/opt/deployhub/keys/id_rsa.pub";
-        
+
         if (System.getenv("JwtPublicKey") != null)
          pubkey = System.getenv("JwtPublicKey");
-        
+
         if (new File(pubkey).isFile())
          rsaPublicKey = readFileAsString(pubkey);
-          
+
         rsaPublicKey = rsaPublicKey.replace("-----BEGIN PUBLIC KEY-----", "");
         rsaPublicKey = rsaPublicKey.replace("-----END PUBLIC KEY-----", "");
-        
+
         System.out.println("PUB");
         System.out.println(rsaPublicKey);
-        
+
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(rsaPublicKey));
         KeyFactory kf = KeyFactory.getInstance("RSA");
         PublicKey publicKey = kf.generatePublic(keySpec);
@@ -126,19 +126,19 @@ public class JWTGenerateValidateRSA {
         String rsaPrivateKey = "";
 
         String prikey = "/opt/deployhub/keys/id_rsa";
-        
+
         if (System.getenv("JwtPrivateKey") != null)
          prikey = System.getenv("JwtPrivateKey");
-        
+
         if (new File(prikey).isFile())
          rsaPrivateKey = readFileAsString(prikey);
-        
+
         rsaPrivateKey = rsaPrivateKey.replace("-----BEGIN PRIVATE KEY-----", "");
         rsaPrivateKey = rsaPrivateKey.replace("-----END PRIVATE KEY-----", "");
 
         System.out.println("PRIV");
         System.out.println(rsaPrivateKey);
-        
+
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(rsaPrivateKey));
         KeyFactory kf = KeyFactory.getInstance("RSA");
         PrivateKey privKey = kf.generatePrivate(keySpec);

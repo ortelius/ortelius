@@ -21,19 +21,19 @@ public class ActionParameter
 	private String m_name;
 	private String m_type;
 	private boolean m_required;
-	
+
 	public ActionParameter(String name,String type) {
 		m_name = name;
 		m_type = type;
 		m_required = false;
 	}
-	
+
 	public ActionParameter(String name,String type,boolean required) {
 		m_name = name;
 		m_type = type;
 		m_required = required;
 	}
-	
+
 	public String getName() { return m_name; }
 	public String getType() { return m_type; }
 	public void setRequired(boolean required) { m_required = required; }

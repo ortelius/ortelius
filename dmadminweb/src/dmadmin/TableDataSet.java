@@ -32,7 +32,7 @@ public class TableDataSet
 	{
 		m_cols = cols;
 	}
-	
+
 	public TableDataSet put(int row, int col, Object value)
 	{
 		if((col < 0) || (col >= m_cols)) {
@@ -44,15 +44,15 @@ public class TableDataSet
 		}
 		return this;
 	}
-	
+
 	public int getCols() { return m_cols; }
 	public int getRows() { return m_maxrow; }
-	
+
 	public Object get(int row, int col) {
 		return m_values.get((row * m_cols) + col);
 	}
 
-	
+
 	public JSONArray getJSONArray()
 	{
 		JSONArray ret = new JSONArray();
@@ -67,7 +67,7 @@ public class TableDataSet
 		}
 		return ret;
 	}
-	
+
 	@Override
 	public String getJSON()
 	{

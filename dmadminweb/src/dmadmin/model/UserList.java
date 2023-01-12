@@ -28,7 +28,7 @@ public class UserList
 	public boolean add(User user) {
 		return super.add(user);
 	}
-	
+
  public void sort()
 	{
 	 Collections.sort(this);

@@ -198,7 +198,7 @@ int main(int argc,char **argv)
 		/*
 		* Now write it to the output file
 		*/
-		
+
 		opfile=open(PathName,O_WRONLY | O_CREAT | O_TRUNC,0600);
 		if (opfile == -1)
 		{

@@ -16,10 +16,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title id="Description">File Audit Trace</title> 
+    <title id="Description">File Audit Trace</title>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" type="text/css" />
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.6/css/buttons.dataTables.min.css" />
-    <link rel="stylesheet" type="text/css" href="css/devops_frydesign.css" />  
+    <link rel="stylesheet" type="text/css" href="css/devops_frydesign.css" />
 
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
@@ -31,7 +31,7 @@
     <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.html5.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.print.min.js"></script>
     <script type="text/javascript">
-    
+
         $(document).ready(function () {
               $('#reports').DataTable( {
                dom: 'lftiprB',
@@ -39,7 +39,7 @@
                 "url": "/dmadminweb/ReportsData?type=FileAudit&md5=${param.md5}",
                 "type": "GET"
               },
-             
+
              "columns": [
                          {"data": "deployment"},
                          {"data": "deployedat"},
@@ -52,7 +52,7 @@
                         ],
               buttons: [
                         'copy', 'csv', 'excel', 'pdf', 'print'
-                       ]           
+                       ]
          } );
         });
 
@@ -66,29 +66,29 @@
 		<table id="reports" class="display" style="width:100%">
         <thead>
             <tr>
-				<th>Deployment</th>     
-				<th>Deployed On</th>                          
+				<th>Deployment</th>
+				<th>Deployed On</th>
 				<th>User</th>
-				<th>Application</th> 
-				<th>Environment</th> 	
-				<th>Component</th> 
-				<th>Server</th> 	
-				<th>File</th> 																					
+				<th>Application</th>
+				<th>Environment</th>
+				<th>Component</th>
+				<th>Server</th>
+				<th>File</th>
             </tr>
         </thead>
         <tfoot>
             <tr>
-				<th>Deployment</th>     
-				<th>Deployed On</th>                          
+				<th>Deployment</th>
+				<th>Deployed On</th>
 				<th>User</th>
-				<th>Application</th> 
-				<th>Environment</th> 	
-				<th>Component</th> 
-				<th>Server</th> 	
-				<th>File</th> 												
+				<th>Application</th>
+				<th>Environment</th>
+				<th>Component</th>
+				<th>Server</th>
+				<th>File</th>
             </tr>
         </tfoot>
-        </table>         
+        </table>
         </div>
     </div>
 </body>

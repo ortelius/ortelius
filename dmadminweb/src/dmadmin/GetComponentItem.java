@@ -38,7 +38,7 @@ public class GetComponentItem
 {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
- HttpSession session = null;       
+ HttpSession session = null;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -64,7 +64,7 @@ public class GetComponentItem
 		request.setAttribute("eventcbfn", eventcbfn);
         request.getRequestDispatcher("/WEB-INF/getcomponentitem.jsp").forward(request, response);
 	}
-	
+
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
@@ -75,16 +75,16 @@ public class GetComponentItem
   session = request.getSession();
   session.setAttribute("session", so);
   so.checkConnection(request.getServletContext());
-		
+
 		response.setHeader("Content-Disposition", "inline");
 		response.setHeader("Cache-Control", "no-cache");
 
 		int ciid = ServletUtils.getIntParameter(request, "ciid");
   String deleteoldrows = getStringParameter(request, "oldrows", "");
-  
+
 		SummaryChangeSet schanges = new SummaryChangeSet();
 		ACDChangeSet<DMProperty> pchanges = new ACDChangeSet<DMProperty>();
-				
+
 		for(Object oparam : request.getParameterMap().keySet()) {
 			String param = (String) oparam;
 			if(param.startsWith("summ_change_")) {
@@ -124,14 +124,14 @@ public class GetComponentItem
 				pchanges.addDeleted(so.processProperty(prop, pval));
 			}
 		}
-		
-		
+
+
 		PrintWriter out = response.getWriter();
 		JSONObject obj = new JSONObject();
 
 		try {
 			ComponentItem ci = so.getComponentItem(ciid, true);
-			if(ci.isUpdatable()) {			 
+			if(ci.isUpdatable()) {
 				boolean res = true;
 				if(!schanges.isEmpty()) {
 					ci.updateSummary(schanges);
@@ -151,18 +151,17 @@ public class GetComponentItem
 				obj.add("suffix", uci.getIconSuffix());
 			} else {
 				obj.add("saved", false);
-				obj.add("error", "You do not have permission to update this object");				
+				obj.add("error", "You do not have permission to update this object");
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
 			obj.add("saved", false);
 			obj.add("error", e.getMessage());
 		}
-		
+
 		String ret = obj.getJSON();
 		System.out.println(ret);
 		out.println(ret);
 	}
 	}
 }
-

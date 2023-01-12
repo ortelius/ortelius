@@ -36,34 +36,34 @@ public class UpdatePropertiesData
 	extends HttpServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public UpdatePropertiesData() {
         super();
     }
-    
+
     @Override
    	public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
    		throws ServletException, IOException
    	{
     	int ot = ServletUtils.getIntParameter(request, "objtype");
-		int id = ServletUtils.getIntParameter(request, "id");		
+		int id = ServletUtils.getIntParameter(request, "id");
 		ObjectType objtype = ObjectType.fromInt(ot);
 		if(objtype == null) {
 			throw new RuntimeException("Invalid object type " + ot);
 		}
-		
+
 		response.setContentType("application/json");
 		PrintWriter out = response.getWriter();
 		JSONObject obj = new JSONObject();
-		
+
 
 		try {
 			ACDChangeSet<DMProperty> changes = new ACDChangeSet<DMProperty>();
-			
+
 			for(Object oparam : request.getParameterMap().keySet()) {
 				String param = (String) oparam;
 				if(param.startsWith("chg_")) {
@@ -83,21 +83,21 @@ public class UpdatePropertiesData
 					changes.addDeleted(processProperty(prop, pval));
 				}
 			}
-			
+
 			ProviderObject po = session.getProviderObject(objtype, id, false);
 			if(po.isUpdatable()) {
 				boolean res = po.updateProperties(changes);
 				obj.add("saved", res);
 			} else {
 				obj.add("saved", false);
-				obj.add("error", "You do not have permission to update this object");				
+				obj.add("error", "You do not have permission to update this object");
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
 			obj.add("saved", false);
 			obj.add("error", e.getMessage());
 		}
-		
+
 		String ret = obj.getJSON();
 		System.out.println(ret);
 		out.println(ret);

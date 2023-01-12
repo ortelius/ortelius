@@ -46,23 +46,23 @@ import dmadmin.model.UserGroup;
  */
 public class GetMenu extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-	
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public GetMenu() {
         super();
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
    		throws ServletException, IOException
    	{
     	response.setContentType("application/json;charset=UTF-8");
-		
+
 		PrintWriter out = response.getWriter();
-		
+
 		String objtype = request.getParameter("t");
 		String admin = request.getParameter("a");
 		// admin should be just set to Y to get access to the create functions
@@ -78,16 +78,16 @@ public class GetMenu extends HttpServletBase {
 		}
 		else
 		 id = new Integer(idStr).intValue();
-		
+
 		System.out.println("GetMenu) objtype="+objtype+" admin="+admin+" id="+id+" ct="+ct);
-		
+
 		PropertyDataSet ds = new PropertyDataSet();
-		
+
 		String PasteObjectType = session.getPasteObjectType();
 		if (PasteObjectType==null) PasteObjectType="";
-		
+
 		System.out.println("PasteObjectType="+PasteObjectType);
-		
+
 		if (objtype.equalsIgnoreCase("server"))
 		{
 			Server server = session.getServer(id,true);
@@ -111,10 +111,10 @@ public class GetMenu extends HttpServletBase {
 					if (session.getCreatePermission(ObjectType.SERVER)) ds.addProperty("New Endpoint in this Environment", "NewServ");
 					ds.addProperty("Delete this Environment","Delete");
 				}
-				
+
 			}
 			ds.addProperty("Gather Audit Data for this Environment","AuditEnv");
-   
+
 			session.GetWorkbenchTasks(domain, "environment", ds);
 			if (session.CheckSubscription("environment",id)) {
 				ds.addProperty("Unsubscribe from this Environment","Unsubscribe");
@@ -126,7 +126,7 @@ public class GetMenu extends HttpServletBase {
 		if (objtype.equalsIgnoreCase("application") || objtype.equalsIgnoreCase("appversion"))
 		{
 			Application app = session.getApplication(id,true);
-			
+
 			String subscript = (objtype.equalsIgnoreCase("application"))?"Base Version":"Version";
 //			if (app.isUpdatable()) {
 //				ds.addProperty("Delete this Application "+subscript, "Delete");
@@ -136,7 +136,7 @@ public class GetMenu extends HttpServletBase {
 				domain = app.getDomainId();
 			}
 			session.GetWorkbenchTasks(domain, objtype, ds);
-			
+
 			if (session.CheckSubscription(objtype,id)) {
 				ds.addProperty("Unsubscribe from this Application "+subscript,"Unsubscribe");
 			} else {
@@ -144,7 +144,7 @@ public class GetMenu extends HttpServletBase {
 			}
 			// COPY/PASTE
 			ds.addProperty("Copy this Application","Copy");
-			
+
 			PropertyDataSet clean = new PropertyDataSet();
 			ds.removeDupDeploy(clean);
 			ds = clean;
@@ -164,7 +164,7 @@ public class GetMenu extends HttpServletBase {
 				ds.addProperty("Subscribe to this Release "+subscript,"Subscribe");
 			}
 		}
-		else		 
+		else
 		if (objtype.equalsIgnoreCase("domain") || objtype.equalsIgnoreCase("lifecycle")) {
 			System.out.println("ct="+ct+" admin="+admin);
 			System.out.println("getPasteObjectType="+session.getPasteObjectType());
@@ -175,31 +175,31 @@ public class GetMenu extends HttpServletBase {
 					// ds.addProperty("Paste "+Character.toUpperCase(PasteObjectType.charAt(0))+PasteObjectType.substring(1).toLowerCase(),"Paste");
 					ds.addProperty("Paste Environment", "Paste");
 				}
-				
+
 				if (PasteObjectType.equalsIgnoreCase("component") || PasteObjectType.equalsIgnoreCase("compversion")) {
 					ds.addProperty("Paste Component","Paste");
 				}
-				
+
 				if (PasteObjectType.equalsIgnoreCase("server")) {
 					ds.addProperty("Paste Endpoint","Paste");
 				}
-				
+
 				if (PasteObjectType.equalsIgnoreCase("builder")) {
 					ds.addProperty("Paste Build Engine","Paste");
 				}
-				
+
 				if (PasteObjectType.equalsIgnoreCase("procedure")) {
 					ds.addProperty("Paste Procedure","Paste");
 				}
-				
+
 				if (PasteObjectType.equalsIgnoreCase("function")) {
 					ds.addProperty("Paste Function","Paste");
 				}
-				
+
 				if (PasteObjectType.equalsIgnoreCase("action")) {
 					ds.addProperty("Paste Action","Paste");
 				}
-				
+
 				if (ct.equalsIgnoreCase("domains"))
 				{
 					if (session.getCreatePermission(ObjectType.DOMAIN) && objtype.equalsIgnoreCase("domain")) {
@@ -207,7 +207,7 @@ public class GetMenu extends HttpServletBase {
 					}
 			 		ds.addProperty("Delete this Domain","Delete");
 				}
-				
+
 				if (ct.equalsIgnoreCase("users"))
 				{
 					if (session.getCreatePermission(ObjectType.USER)) ds.addProperty("New User in this Domain","NewUser");
@@ -242,7 +242,7 @@ public class GetMenu extends HttpServletBase {
 				{
 					if (session.getCreatePermission(ObjectType.APPLICATION)) ds.addProperty("New Release in this Domain","NewRelease");
 				}
-				else				 
+				else
 				if (ct.equalsIgnoreCase("applications"))
 				{
 					System.out.println("PasteObjectType="+PasteObjectType);
@@ -255,11 +255,11 @@ public class GetMenu extends HttpServletBase {
 						// ds.addProperty("Paste "+Character.toUpperCase(PasteObjectType.charAt(0))+PasteObjectType.substring(1).toLowerCase(),"Paste");
 					System.out.println("**** calling getCreatePermission for application");
 					if (session.getCreatePermission(ObjectType.APPLICATION)) ds.addProperty("New Application Base Version in this Domain","NewApp");
-					
+
 					PropertyDataSet deployds = new PropertyDataSet();
 					session.GetWorkbenchTasks(domain, "application", deployds);
-					session.GetWorkbenchTasks(domain, "appversion", deployds);	   
-		   
+					session.GetWorkbenchTasks(domain, "appversion", deployds);
+
 					deployds.copyOnlyDeploy(ds);
 				}
 				else
@@ -267,7 +267,7 @@ public class GetMenu extends HttpServletBase {
 				{
 					if (session.getCreatePermission(ObjectType.SERVERCOMPTYPE)) ds.addProperty("New Component & Endpoint Type in this Domain","NewCompType");
 				}
-				else				 
+				else
 				if (ct.equalsIgnoreCase("actions"))
 				{
 					if (session.getCreatePermission(ObjectType.ACTION)) {
@@ -404,7 +404,7 @@ public class GetMenu extends HttpServletBase {
 				if (action.isUpdatable()) {
 					ds.addProperty("Delete this Action", "Delete");
 				}
-		    } 
+		    }
 		}
 		else
 		if (objtype.equalsIgnoreCase("function"))
@@ -428,18 +428,18 @@ public class GetMenu extends HttpServletBase {
 			  ds.addProperty("Delete this Credential", "Delete");
 		  }
 	  }
-	  else		 
+	  else
 	   if (objtype.equalsIgnoreCase("ServerCompType"))
 	   {
 		   CompType ctype = session.getServerCompTypeDetail(id);
-		   
+
 //	    ds.addProperty("Copy Credential", "Copy");
 //	    ds.addProperty("Rename this Function", "Rename");
 		   if (ctype.isUpdatable()) {
 			   ds.addProperty("Delete this Endpoint Type", "Delete");
 		   }
 	   }
-	   else    
+	   else
 		if (objtype.equalsIgnoreCase("notify"))
 		{
 			Notify notify = session.getNotify(id,true);

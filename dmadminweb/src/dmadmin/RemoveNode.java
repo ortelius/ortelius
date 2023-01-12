@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class RemoveNode extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -38,9 +38,9 @@ public class RemoveNode extends HttpServletBase {
         // TODO Auto-generated constructor stub
     }
 
-	
-	
-	
+
+
+
 	@Override
 	public void handleRequest(DMSession session, boolean isPost,
 			HttpServletRequest request, HttpServletResponse response)
@@ -60,7 +60,7 @@ public class RemoveNode extends HttpServletBase {
 		PrintWriter out = response.getWriter();
 		// String errtext = "";
 		if (rel.equalsIgnoreCase("appversion") || rel.equalsIgnoreCase("release")) rel_param = "Application";
-		
+
 		session.RemoveObject(rel_param, id, out);
 	}
 }

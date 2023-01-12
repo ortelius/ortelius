@@ -56,7 +56,7 @@ private:
 	void *m_pSsl;
 	char *m_LastMessage;
 
-	void LogSMTPTraffic(const char* fmt, ...); 
+	void LogSMTPTraffic(const char* fmt, ...);
 	int sendDataToServer(const char *data, long len);
 	char *readLineFromServer();
 	void getWelcomeText();

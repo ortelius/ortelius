@@ -25,7 +25,7 @@ function LoadBodyData(tablename, objtypeAsInt, objtype, objid, addParams)
 {
 
  console.log("TemplateDetails?id=" + objid);
- 
+
  $.ajax(
    {
     url : "TemplateDetails?id=" + objid,
@@ -36,25 +36,25 @@ function LoadBodyData(tablename, objtypeAsInt, objtype, objid, addParams)
      summSaveobjid = objid;
      summSaveSubject = res.subject;
      summSaveBody = res.body;
-     
+
      var title = "";
      var tdedit = "<form id=\"emailbodyform\"><table id=\"emailbodytab\" class=\"dev_table\"><tbody>";
      var td = "";
-     
+
      // Subject
-     
+
      field = "";
      callback = "";
      label = "Subject";
      val   = convertForDisplay(summSaveSubject);
-     
+
      myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
      td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\">";
      td += label;
      td += ":</td><td>";
      td += val;
      td += "</tr>";
-     
+
      tdedit += "<tr>";
      tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
      tdedit += "<td><input name=\"subject_val\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
@@ -62,9 +62,9 @@ function LoadBodyData(tablename, objtypeAsInt, objtype, objid, addParams)
      tdedit += "<td><input type=\"hidden\" name=\"subject_callback\" value=\"" + callback + "\"/></td>";
      tdedit += "<td><input type=\"hidden\" name=\"subject_oldval\" value=\"" + val + "\"/></td>";
      tdedit += "</tr>";
-     
+
      // Body
-     
+
      label = "Body";
      val   = convertForDisplay(summSaveBody);
 
@@ -74,7 +74,7 @@ function LoadBodyData(tablename, objtypeAsInt, objtype, objid, addParams)
      td += ":</td><td>";
      td += val;
      td += "</tr>";
-     
+
      tdedit += "<tr>";
      tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
      tdedit += "<td><textarea name=\"body_val\" style='width:100%'>" + val + "</textarea></td>";
@@ -82,9 +82,9 @@ function LoadBodyData(tablename, objtypeAsInt, objtype, objid, addParams)
      tdedit += "<td><input type=\"hidden\" name=\"body_callback\" value=\"" + callback + "\"/></td>";
      tdedit += "<td><input type=\"hidden\" name=\"body_oldval\" value=\"" + val + "\"/></td>";
      tdedit += "</tr>";
-     
+
      $("#" + tablename + " > tbody").html(td);
-     
+
      pwd = parent.$("#emailbody_data_edit");
      pwd.empty().append(tdedit);
     }
@@ -96,14 +96,14 @@ function LoadBodyData(tablename, objtypeAsInt, objtype, objid, addParams)
 function SaveBodyData()
 {
  var pwd = parent.$("#emailbody_data_edit");
- 
+
  if (!pwd.is(":visible"))
   return;
- 
+
  var myform = pwd.find("#emailbodyform");
  var body = myform.find("textarea[name=\"body_val\"]").val();
  var subject = myform.find(":input[name=\"subject_val\"]").val();
- 
+
  $.ajax({
  url : "TemplateDetails?f=seb&id="+summSaveobjid+"&sub="+encodeURI(subject)+"&b="+encodeURI(body),
  dataType : 'json',

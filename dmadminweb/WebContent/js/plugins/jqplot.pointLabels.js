@@ -6,13 +6,13 @@
  * Revision: 1250
  *
  * Copyright (c) 2009-2013 Chris Leonello
- * jqPlot is currently available for use in all personal or commercial projects 
- * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL 
- * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can 
- * choose the license that best suits your project and use it accordingly. 
+ * jqPlot is currently available for use in all personal or commercial projects
+ * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL
+ * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can
+ * choose the license that best suits your project and use it accordingly.
  *
- * Although not required, the author would appreciate an email letting him 
- * know of any substantial use of jqPlot.  You can reach the author at: 
+ * Although not required, the author would appreciate an email letting him
+ * know of any substantial use of jqPlot.  You can reach the author at:
  * chris at jqplot dot com or see http://www.jqplot.com/info.php .
  *
  * If you are feeling kind and generous, consider supporting the project by
@@ -26,54 +26,54 @@
  *     http://hexmen.com/js/sprintf.js
  *     The author (Ash Searle) has placed this code in the public domain:
  *     "This code is unrestricted: you are free to use it however you like."
- * 
+ *
  */
 (function($) {
-    
+
     /**
      * Class: $.jqplot.PointLabels
      * Plugin for putting labels at the data points.
-     * 
+     *
      * To use this plugin, include the js
      * file in your source:
-     * 
+     *
      * > <script type="text/javascript" src="plugins/jqplot.pointLabels.js"></script>
-     * 
+     *
      * By default, the last value in the data ponit array in the data series is used
-     * for the label.  For most series renderers, extra data can be added to the 
+     * for the label.  For most series renderers, extra data can be added to the
      * data point arrays and the last value will be used as the label.
-     * 
-     * For instance, 
+     *
+     * For instance,
      * this series:
-     * 
+     *
      * > [[1,4], [3,5], [7,2]]
-     * 
+     *
      * Would, by default, use the y values in the labels.
      * Extra data can be added to the series like so:
-     * 
+     *
      * > [[1,4,'mid'], [3 5,'hi'], [7,2,'low']]
-     * 
+     *
      * And now the point labels would be 'mid', 'low', and 'hi'.
-     * 
+     *
      * Options to the point labels and a custom labels array can be passed into the
      * "pointLabels" option on the series option like so:
-     * 
+     *
      * > series:[{pointLabels:{
      * >    labels:['mid', 'hi', 'low'],
      * >    location:'se',
      * >    ypadding: 12
      * >    }
      * > }]
-     * 
+     *
      * A custom labels array in the options takes precendence over any labels
      * in the series data.  If you have a custom labels array in the options,
      * but still want to use values from the series array as labels, set the
      * "labelsFromSeries" option to true.
-     * 
-     * By default, html entities (<, >, etc.) are escaped in point labels.  
-     * If you want to include actual html markup in the labels, 
+     *
+     * By default, html entities (<, >, etc.) are escaped in point labels.
+     * If you want to include actual html markup in the labels,
      * set the "escapeHTML" option to false.
-     * 
+     *
      */
     $.jqplot.PointLabels = function(options) {
         // Group: Properties
@@ -127,14 +127,14 @@
         // true to not show a label for a value which is 0.
         this.hideZeros = false;
         this._elems = [];
-        
+
         $.extend(true, this, options);
     };
-    
+
     var locations = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
     var locationIndicies = {'nw':0, 'n':1, 'ne':2, 'e':3, 'se':4, 's':5, 'sw':6, 'w':7};
     var oppositeLocations = ['se', 's', 'sw', 'w', 'nw', 'n', 'ne', 'e'];
-    
+
     // called with scope of a series
     $.jqplot.PointLabels.init = function (target, data, seriesDefaults, opts, plot){
         var options = $.extend(true, {}, seriesDefaults, opts);
@@ -146,10 +146,10 @@
         this.plugins.pointLabels = new $.jqplot.PointLabels(options.pointLabels);
         this.plugins.pointLabels.setLabels.call(this);
     };
-    
+
     // called with scope of series
-    $.jqplot.PointLabels.prototype.setLabels = function() {   
-        var p = this.plugins.pointLabels; 
+    $.jqplot.PointLabels.prototype.setLabels = function() {
+        var p = this.plugins.pointLabels;
         var labelIdx;
         if (p.seriesLabelIndex != null) {
             labelIdx = p.seriesLabelIndex;
@@ -161,7 +161,7 @@
             labelIdx = (this._plotData.length === 0) ? 0 : this._plotData[0].length -1;
         }
         p._labels = [];
-        if (p.labels.length === 0 || p.labelsFromSeries) {    
+        if (p.labels.length === 0 || p.labelsFromSeries) {
             if (p.stackedValue) {
                 if (this._plotData.length && this._plotData[0].length){
                     // var idx = p.seriesLabelIndex || this._plotData[0].length -1;
@@ -189,12 +189,12 @@
             p._labels = p.labels;
         }
     };
-    
+
     $.jqplot.PointLabels.prototype.xOffset = function(elem, location, padding) {
         location = location || this.location;
         padding = padding || this.xpadding;
         var offset;
-        
+
         switch (location) {
             case 'nw':
                 offset = -elem.outerWidth(true) - this.xpadding;
@@ -224,14 +224,14 @@
                 offset = -elem.outerWidth(true) - this.xpadding;
                 break;
         }
-        return offset; 
+        return offset;
     };
-    
+
     $.jqplot.PointLabels.prototype.yOffset = function(elem, location, padding) {
         location = location || this.location;
         padding = padding || this.xpadding;
         var offset;
-        
+
         switch (location) {
             case 'nw':
                 offset = -elem.outerHeight(true) - this.ypadding;
@@ -261,9 +261,9 @@
                 offset = -elem.outerHeight(true) - this.ypadding;
                 break;
         }
-        return offset; 
+        return offset;
     };
-    
+
     // called with scope of series
     $.jqplot.PointLabels.draw = function (sctx, options, plot) {
         var p = this.plugins.pointLabels;
@@ -279,12 +279,12 @@
 
         if (p.show) {
             var ax = '_'+this._stackAxis+'axis';
-        
+
             if (!p.formatString) {
                 p.formatString = this[ax]._ticks[0].formatString;
                 p.formatter = this[ax]._ticks[0].formatter;
             }
-        
+
             var pd = this._plotData;
             var ppd = this._prevPlotData;
             var xax = this._xaxis;
@@ -293,11 +293,11 @@
 
             for (var i=0, l=p._labels.length; i < l; i++) {
                 var label = p._labels[i];
-                
+
                 if (label == null || (p.hideZeros && parseInt(label, 10) == 0)) {
                     continue;
                 }
-                
+
                 label = p.formatter(p.formatString, label);
 
                 helem = document.createElement('div');
@@ -371,7 +371,7 @@
 
         }
     };
-    
+
     $.jqplot.postSeriesInitHooks.push($.jqplot.PointLabels.init);
     $.jqplot.postDrawSeriesHooks.push($.jqplot.PointLabels.draw);
 })(jQuery);

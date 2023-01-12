@@ -23,7 +23,7 @@
 #if 0
 #define TRIDEBUG(x) printf ##x; printf("\n")
 #else
-#define TRIDEBUG(x) 
+#define TRIDEBUG(x)
 #endif
 #define TRIERROR(x) printf ##x; printf("\n")
 

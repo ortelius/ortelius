@@ -59,7 +59,7 @@ public:
 	int waitForWithTimeout();
 	void SuspendThread(void *arg);
 #endif /*Linux*/
-	
+
 	virtual void run();
 
 	static long currentThreadId();

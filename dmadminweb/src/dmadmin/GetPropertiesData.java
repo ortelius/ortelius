@@ -42,14 +42,14 @@ public class GetPropertiesData
 	extends HttpServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public GetPropertiesData() {
         super();
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
@@ -60,14 +60,14 @@ public class GetPropertiesData
 		PrintWriter out = response.getWriter();
 		int ot = ServletUtils.getIntParameter(request, "objtype");
 		int id = ServletUtils.getIntParameter(request, "id");
-		
+
 		String deftype = request.getParameter("deftype");
-		
+
 		if (deftype != null)
 		 id = session.getDefTypeId(deftype);
-		
+
 		String defonly =request.getParameter("defonly");
-		 
+
 		ObjectType objtype = ObjectType.fromInt(ot);
 		if(objtype == null) {
 			throw new RuntimeException("Invalid object type " + ot);
@@ -80,15 +80,15 @@ public class GetPropertiesData
 	  JSONArray arr = new JSONArray();
 	  obj.add("defs", arr);
 	  obj.add("data", new JSONArray());
-	  
+
 	  // Lookup table of defs
 	  Hashtable<String, DMPropertyDef> defs = new Hashtable<String, DMPropertyDef>();
 	  List<DMPropertyDef> deflist = session.getPropertyDefs(id);
-	  
+
 	  ArrayList<DMPropertyDef> ordered_deflist = new ArrayList<DMPropertyDef>();
 	  if (deftype.equalsIgnoreCase("ldap"))
 	  {
-	   for(DMPropertyDef d : deflist) 
+	   for(DMPropertyDef d : deflist)
 	   {
 	    if (d.getName().equalsIgnoreCase("LDAP Server"))
 	     ordered_deflist.add(0,d);
@@ -97,44 +97,44 @@ public class GetPropertiesData
 	   }
 	   deflist = ordered_deflist;
 	  }
-	  
+
 	  for(DMPropertyDef d : deflist) {
-	   
+
 	   if ((deftype.equalsIgnoreCase("odbc") || deftype.equalsIgnoreCase("smtpemail") || deftype.equalsIgnoreCase("txtlocal")) && (d.getName().equalsIgnoreCase("username") || d.getName().equalsIgnoreCase("password")))
 	    continue;
 
 	   defs.put(d.getName(), d);
 	   arr.add(d);
-	  }		 
+	  }
 		}
 		else
 		{
 		 ProviderObject po = session.getProviderObject(objtype, id, true);
 		 boolean readOnly = !po.isUpdatable();
 		 deftype = po.getDef().getName();
-		
+
 	 	obj.add("readOnly", readOnly);
-	
+
  		JSONArray arr = new JSONArray();
  		obj.add("defs", arr);
-		
+
  		// Lookup table of defs
  		Hashtable<String, DMPropertyDef> defs = new Hashtable<String, DMPropertyDef>();
  		List<DMPropertyDef> deflist = po.getPropertyDefs();
  		for(DMPropertyDef d : deflist) {
     if ((deftype.equalsIgnoreCase("odbc") || deftype.equalsIgnoreCase("smtpemail") || deftype.equalsIgnoreCase("txtlocal")) && (d.getName().equalsIgnoreCase("username") || d.getName().equalsIgnoreCase("password")))
      continue;
-    
+
   			defs.put(d.getName(), d);
  			arr.add(d);
  		}
-		
+
 	 	// Lookup table of required properties
 	 	Hashtable<String, Integer> reqdprops = new Hashtable<String, Integer>();
-			
+
 	 	JSONArray arr2 = new JSONArray();
  		obj.add("data", arr2);
-		
+
  		// Add the required properties first
  		for(DMProperty p: po.getProperties()) {
  			DMPropertyDef def = defs.get(p.getName());
@@ -143,14 +143,14 @@ public class GetPropertiesData
 	 			reqdprops.put(p.getName(), 1);
 	 		}
 	 	}
-		
+
 		// Add any missing required properties
 //		for(DMPropertyDef d : deflist) {
 //			if(d.isRequired() && (reqdprops.get(d.getName()) == null)) {
 //				arr2.add(new DMProperty(d.getName(), "", false, false, false, true));
 //			}
-//		}	
-		
+//		}
+
 		 // Add the optional properties
 		 for(DMProperty p: po.getProperties()) {
 		 	DMPropertyDef def = defs.get(p.getName());
@@ -158,10 +158,10 @@ public class GetPropertiesData
 		 		arr2.add(p);
 		 	}
 		 }
-		}	
+		}
 		String ret = obj.toString();
-		
+
 		out.println(ret);
-		System.out.println(ret);		
+		System.out.println(ret);
    	}
 }

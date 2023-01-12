@@ -25,15 +25,15 @@ import dmadmin.json.JSONArray;
 public class NewsFeedDataSet
 {
 	private List<PropertyDataSet> m_items = new ArrayList<PropertyDataSet>();
-	
+
 	public NewsFeedDataSet()
 	{}
-	
+
 	public void addItem(PropertyDataSet item)
-	{	
+	{
 		m_items.add(item);
 	}
-	
+
 	public IJSONSerializable getJSON() {
 		JSONArray ret = new JSONArray();
 		for(PropertyDataSet item : m_items) {

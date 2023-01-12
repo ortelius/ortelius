@@ -40,7 +40,7 @@ public class GetAttachment
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
  HttpSession session = null;
- 
+
     public GetAttachment() {
         super();
     }
@@ -49,7 +49,7 @@ public class GetAttachment
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
 	{
-     
+
      try (DMSession so = DMSession.getInstance(request)) {
      session = request.getSession();
      session.setAttribute("session", so);
@@ -58,25 +58,25 @@ public class GetAttachment
 
 		response.setHeader("Content-Disposition", "inline");
 		response.setHeader("Cache-Control", "no-cache");
-		
+
 		if (request.getParameter("attachid") != null) {
 			// Retrieving attachment
 			int attachid = ServletUtils.getIntParameter(request, "attachid");
 			Attachment attach = so.getAttachment(attachid);
-			
+
 			String contentType = attach.getMimeType();
 			if(contentType == null) {
 				contentType = "application/octet-stream";
 			}
 			response.setHeader("Content-Transfer-Disposition", "binary");
 			response.setContentType(contentType);
-			
+
 	//		response.setContentLength((int) attach.getSize());
 			response.setHeader("Content-Disposition", "attachment; filename=" + attach.getName());
-			
+
 			OutputStream out = response.getOutputStream();
    String encoded = attach.getAttachmentString();
-   
+
 			byte[] decodedBytes = Base64.getDecoder().decode(encoded);
    ServletOutputStream sos = response.getOutputStream();
    sos.write(decodedBytes);
@@ -87,7 +87,7 @@ public class GetAttachment
 			PrintWriter out = response.getWriter();
 			int actionid = ServletUtils.getIntParameter(request, "actionid");
 			Action action = so.getAction(actionid, false);
-			out.print(action.getText());	
+			out.print(action.getText());
 		}
      }
 	}
@@ -102,7 +102,7 @@ public class GetAttachment
      session.setAttribute("session", so);
      so.checkConnection(request.getServletContext());
 
-		
+
     	int actionid = ServletUtils.getIntParameter(request, "actionid");
     	System.out.println("Saving actionid "+actionid);
     	String procbody = request.getParameter("procbody");

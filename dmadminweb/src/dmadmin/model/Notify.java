@@ -23,9 +23,9 @@ public class Notify
 	extends ProviderObject
 {
 	private static final long serialVersionUID = -1569186922421732870L;
-	
+
 	private String m_testrecipient;
-	
+
 	public void setTestRecipient(String rcpt) {m_testrecipient = rcpt;}
 	public String getTestRecipient() { return m_testrecipient; }
 
@@ -33,12 +33,12 @@ public class Notify
 	{
 		super(sess, id, name);
 	}
-	
+
 	@Override
 	public ObjectType getObjectType() {
 		return ObjectType.NOTIFY;
 	}
-	
+
 	@Override
 	public String getDatabaseTable() {
 		return "dm_notify";

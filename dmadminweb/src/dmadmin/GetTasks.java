@@ -33,7 +33,7 @@ import dmadmin.model.TaskList;
  */
 public class GetTasks extends JSONServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -48,7 +48,7 @@ public class GetTasks extends JSONServletBase {
 	{
 		String domainid = request.getParameter("domainid");
 		TaskList tasks = (domainid != null)?session.getTasksInDomain(Integer.parseInt(domainid)):session.getAccessibleTasks();
-  
+
 		JSONArray ret = new JSONArray();
 		for (Task t : tasks) {
 			ret.add(t.getLinkJSON());

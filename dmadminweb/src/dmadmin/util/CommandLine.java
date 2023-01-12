@@ -37,10 +37,10 @@ public class CommandLine
 	private Engine m_engine;
 	private String m_password = "";
 
-	
+
 	public CommandLine()
 	{}
-	
+
 	public CommandLine(Engine engine)
 	{
 		m_engine = engine;
@@ -54,12 +54,12 @@ public class CommandLine
 		m_cmd.add(arg);
 		return this;
 	}
-	
+
 	public CommandLine add(int arg) {
 		m_cmd.add("" + arg);
 		return this;
 	}
-	
+
 	public CommandLine add(Map<String,String> map) {
 		if(map != null) {
 			for(String param : map.keySet()) {
@@ -68,13 +68,13 @@ public class CommandLine
 		}
 		return this;
 	}
-	
+
 	public CommandLine pw(String pw)
 	{
-	 m_password = pw;	
+	 m_password = pw;
 	 return this;
 	}
-	
+
 	public String getOutput() {
 		return (m_output != null) ? m_output.toString() : null;
 	}
@@ -92,7 +92,7 @@ public class CommandLine
 	public int run(boolean waitFor, String input) {
 		return run(waitFor, input, false);
 	}
-	
+
 	public int run(boolean waitFor, String input, boolean capture)
 	{
 		// Create an environment for the process copying all environment vars from the system
@@ -100,19 +100,19 @@ public class CommandLine
 		//Hashtable<String,String> env = new Hashtable<String,String>();
 		//for(String key: myenv.keySet()) {
 		//	env.put(key, myenv.get(key));
-		//}	
+		//}
 
 		////env.put("TRIREASON", "SCRIPT");
 		////env.put("TRIFIELD1", envName);
 		////env.put("TRIFIELD2", "Robert");
 		////env.put("TRIFIELD3", "password");
 		////env.put("TRIFIELD4", appName);
-		
+
 		//List<String> envl = new ArrayList<String>();
 		//for(String key: env.keySet()) {
 		//	envl.add(key + "=" + env.get(key));
 		//}
-		
+
 		// DEBUG
 		System.out.print("Running: ");
 		for(String s : m_cmd) {
@@ -120,7 +120,7 @@ public class CommandLine
 		}
 		System.out.println();
 		// END DEBUG
-		
+
 		String[] args = new String[m_cmd.size()];
 		//String[] envp = new String[env.size()];
 		try {
@@ -130,12 +130,12 @@ public class CommandLine
 			env.put("DMHOME","/opt/deployhub/engine");
 			pb.redirectErrorStream(true);
 			pb.directory(new File("/opt/deployhub/engine"));
-			
+
 			Process p = pb.start(); //Runtime.getRuntime().exec(m_cmd.toArray(args) /*, envl.toArray(envp)*/);
-			
+
 			// If input is given, send it to the process and close the stream
 			if(input != null) {
-				try {					
+				try {
 					OutputStreamWriter stdin = new OutputStreamWriter(p.getOutputStream());
 					stdin.write(input);
 					stdin.close();
@@ -143,9 +143,9 @@ public class CommandLine
 					e.printStackTrace();
 				}
 			}
-			
+
 			if(capture) {
-				try {					
+				try {
 					System.out.println("Capturing output");
 					m_output = new StringBuffer();
 					String line;
@@ -163,7 +163,7 @@ public class CommandLine
 			}
 
 			if(waitFor) {
-				try {					
+				try {
 					System.out.println("Waiting for command to complete");
 					int ec = p.waitFor();
 					System.out.println("Exit Code: " + ec);
@@ -181,7 +181,7 @@ public class CommandLine
 		}
 		return 0;
 	}
-	
+
 	public int runWithTrilogy(boolean waitFor, String input)
 	{
 		// DEBUG
@@ -191,10 +191,10 @@ public class CommandLine
 		}
 		System.out.println();
 		// END DEBUG
-		
+
         String server = (m_engine != null) ? m_engine.getHostname() : "localhost";
         String clientid = (m_engine != null) ? m_engine.getClientID() : null;
-        
+
         if (clientid != null) {
         	System.out.println("Inserting request into dm.dm_queue for client id "+clientid);
         	DMSession so = m_engine.getSession();
@@ -213,7 +213,7 @@ public class CommandLine
         	return run(waitFor, input, true);
        }
 	}
-	
+
  public int runWithTrilogyNoCapture(boolean waitFor, String input)
  {
   // DEBUG
@@ -223,10 +223,10 @@ public class CommandLine
   }
   System.out.println();
   // END DEBUG
-  
+
         String server = (m_engine != null) ? m_engine.getHostname() : "localhost";
         String clientid = (m_engine != null) ? m_engine.getClientID() : null;
-        
+
         if (clientid != null) {
          System.out.println("Inserting request into dm.dm_queue for client id "+clientid);
          DMSession so = m_engine.getSession();
@@ -245,8 +245,8 @@ public class CommandLine
          return run(waitFor, input, false);
        }
  }
- 
-	
+
+
 	/**
 	 * Sneaky little class that implements a reader thread for a process we
 	 * have started.  Rather than trying to buffer the entire output, it
@@ -258,13 +258,13 @@ public class CommandLine
 	{
 		private InputStream m_stream;
 		private String m_output;
-		
+
 		public InputMuncherThread(InputStream stream) {
 			m_stream = stream;
 		}
-		
+
 		public String getLastOutputLine()  { return m_output; }
-		
+
 		@Override
 		public void run() {
 			System.out.println("Munching output");
@@ -278,6 +278,6 @@ public class CommandLine
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}	
+		}
 	}
-}	
+}

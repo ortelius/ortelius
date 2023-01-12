@@ -20,15 +20,15 @@ public enum ComponentFilter {
 	OFF (0),
 	ON  (1),
 	ALL (2);
-	
+
 	private int m_value;
-	
+
 	private ComponentFilter(int value) {
 		m_value = value;
 	}
-	
+
 	public int value()  { return m_value; }
-	
+
 	public static ComponentFilter fromInt(int value) {
 		switch(value) {
 		case 1: return ON;

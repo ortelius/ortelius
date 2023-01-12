@@ -24,13 +24,13 @@ public enum ActionKind {
 	REMOTE_EXTERNAL(4),
 	PLUGIN(5),
 	GRAPHICAL(6);
-	
+
 	private int m_value;
-	
+
 	private ActionKind(int value)  { m_value = value; }
-	
+
 	public int value()  { return m_value; }
-	
+
 	public static ActionKind fromInt(int value) {
 		for(ActionKind k : values()) {
 			if(k.value() == value) {

@@ -76,8 +76,8 @@
 <script type="text/javascript" src="js/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
 <script type="text/javascript" src="js/plugins/jqplot.canvasOverlay.min.js"></script>
 <script type="text/javascript" src="js/plugins/jqplot.categoryAxisRenderer.min.js"></script>
-<script type="text/javascript" src="js/plugins/jqplot.highlighter.min.js"></script> 
-<script type="text/javascript" src="js/plugins/jqplot.cursor.min.js"></script> 
+<script type="text/javascript" src="js/plugins/jqplot.highlighter.min.js"></script>
+<script type="text/javascript" src="js/plugins/jqplot.cursor.min.js"></script>
 <script type="text/javascript" src="js/plugins/jqplot.json2.min.js"></script>
 <script src="https://kit.fontawesome.com/ba98665da8.js" crossorigin="anonymous"></script>
 
@@ -160,15 +160,15 @@
 
  <div id="header">
   <div class="omlogo"><img alt="Ortelius" src="images/logo.png" style="margin-top:4px"></div>
-   <div id="positiondevopsmenu">		
-	<div class="moduletable_menu">			
-      <ul class="menu_menu">    
+   <div id="positiondevopsmenu">
+	<div class="moduletable_menu">
+      <ul class="menu_menu">
       </ul>
 	</div>
-   </div>	
-   
-   <div id="positiondevopsmenu_right">		
-    <div class="moduletable_menu">					
+   </div>
+
+   <div id="positiondevopsmenu_right">
+    <div class="moduletable_menu">
       <ul class="menu_menu">
         <li id="rproxy_menu" onclick="ShowHome(true,false);">Warning: 0 of 1 Reverse Proxy Online !</li>
         <li id="about_menu" onclick="ShowAbout()"><i class="fal fa-info-circle fa-2x" aria-hidden="true"  style="padding-right:5px"></i></li>
@@ -178,8 +178,8 @@
       </ul>
 	 </div>
     </div>
-	
-	<div class="clear"></div>	
+
+	<div class="clear"></div>
 	</div> <!-- end header -->
 	<div id="panel_container_menu" class="left" style="display:none;">
 	 <div id="verttabs" class="verttab">
@@ -190,16 +190,16 @@
        <button id="verttab_endpoint" class="tablinks verttab_endpoint" onclick="openList(event, 'endpoint')">Endpoints</button>
        <button id="verttab_action" class="tablinks verttab_action" onclick="openList(event, 'action')">Actions</button>
        <button id="verttab_procedure" class="tablinks verttab_procedure" onclick="openList(event, 'procedure')">Func/Procs</button>
-       <button id="verttab_servercomptype" class="tablinks verttab_servercomptype" onclick="openList(event, 'servercomptype')">Customize Types</button>   
-       <button id="verttab_setup" class="tablinks verttab_setup" onclick="toggleSetup(event, 'setup')">Setup<i class="fad fa-chevron-double-down fa-lg" aria-hidden="true" style="padding-left:50%;"></i></button>   
+       <button id="verttab_servercomptype" class="tablinks verttab_servercomptype" onclick="openList(event, 'servercomptype')">Customize Types</button>
+       <button id="verttab_setup" class="tablinks verttab_setup" onclick="toggleSetup(event, 'setup')">Setup<i class="fad fa-chevron-double-down fa-lg" aria-hidden="true" style="padding-left:50%;"></i></button>
        <button id="verttab_credential" class="tablinks verttab_credential" onclick="openList(event, 'credential')">Credentials</button>
        <button id="verttab_repository" class="tablinks verttab_repository" onclick="openList(event, 'repository')">Repositories</button>
        <button id="verttab_datasource" class="tablinks verttab_datasource" onclick="openList(event, 'datasource')">Data Sources</button>
        <button id="verttab_notifier" class="tablinks verttab_notifier" onclick="openList(event, 'notifier')">Notifiers</button>
        <button id="verttab_template" class="tablinks verttab_template" onclick="openList(event, 'template')">Notifier Templates</button>
        <button id="verttab_user" class="tablinks verttab_user" onclick="openList(event, 'user')">Users</button>
-       <button id="verttab_group" class="tablinks verttab_group" onclick="openList(event, 'group')">Groups</button>   
-     </div>  
+       <button id="verttab_group" class="tablinks verttab_group" onclick="openList(event, 'group')">Groups</button>
+     </div>
 	</div>
 	<div id="panel_container_right_list" class="right" style="display:none;">
      <div id="applist_pane">
@@ -218,35 +218,35 @@
           	 <button class="title_buttons" onclick="openMap(event, 'application')"><i class="fal fa-map-signs" aria-hidden="true" style="padding-right:5px;"></i>Map</button>
           	 <button class="title_buttons" onclick="openDiff(event, 'application')"><i class="fal fa-equals" aria-hidden="true" style="padding-right:5px;"></i>Compare</button>
           	 <button class="title_buttons" onclick="openPkgSearch()"><i class="fa-light fa-magnifying-glass" aria-hidden="true" style="padding-right:5px;"></i>Package Search</button>
-          	 
+
           </div>
           <div id="applist_filter_area" style="height:25px;">
                   <div id="app_search_box_container"></div>
           </div>
-        <div id="applist_list">  
+        <div id="applist_list">
 		  <table id="applist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
                   <button style="border: none; background: transparent;" id="applist_checkall">
-                    <i class="far fa-square"></i>  
+                    <i class="far fa-square"></i>
                   </button>
                 </th>
-				<th style="text-align: left;">Version</th> 
+				<th style="text-align: left;">Version</th>
 				<th style="text-align: left;">Domain</th>
-				<th style="text-align: left;">Parent</th> 	
-				<th style="text-align: left;">Environment</th> 	
-				<th style="text-align: left;">Last Deployment to Environment</th> 
-				<th style="text-align: left;">Completed</th> 
-				<th style="text-align: left;">Result</th> 
-				<th style="text-align: left;">domainid</th> 	
-				<th style="text-align: left;">appid</th> 			    
+				<th style="text-align: left;">Parent</th>
+				<th style="text-align: left;">Environment</th>
+				<th style="text-align: left;">Last Deployment to Environment</th>
+				<th style="text-align: left;">Completed</th>
+				<th style="text-align: left;">Result</th>
+				<th style="text-align: left;">domainid</th>
+				<th style="text-align: left;">appid</th>
             </tr>
            </thead>
           </table>
         </div>
-        <div id="applist_map" height="100%" width="100%"></div>  
-      </div> 
+        <div id="applist_map" height="100%" width="100%"></div>
+      </div>
      <div id="complist_pane">
         <div id="complist_pane_title" style="display:inline-block;"><H2>Components</H2></div>
           <div id="complist_buttons" style="display:inline-block;">
@@ -268,31 +268,31 @@
           <div id="complist_filter_area" style="height:25px;">
              <div id="comp_search_box_container"></div>
           </div>
-         <div id="complist_list">   
+         <div id="complist_list">
 		  <table id="complist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
                   <button style="border: none; background: transparent;" id="complist_checkall">
-                    <i class="far fa-square"></i>  
+                    <i class="far fa-square"></i>
                   </button>
                 </th>
-				<th style="text-align: left;">Version</th> 
+				<th style="text-align: left;">Version</th>
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">Parent</th>
-				<th style="text-align: left;">Environment</th> 	
-				<th style="text-align: left;">Last Deployment</th> 
-				<th style="text-align: left;">Completed</th> 
+				<th style="text-align: left;">Environment</th>
+				<th style="text-align: left;">Last Deployment</th>
+				<th style="text-align: left;">Completed</th>
 				<th style="text-align: left;">Result</th>
-				<th style="text-align: left;">domainid</th>  
-				<th style="text-align: left;">compid</th>  	    
+				<th style="text-align: left;">domainid</th>
+				<th style="text-align: left;">compid</th>
             </tr>
            </thead>
           </table>
          </div>
-        <div id="complist_map" height="100%" width="100%"></div>   
-      </div> 
-      <div id="envlist_pane">        
+        <div id="complist_map" height="100%" width="100%"></div>
+      </div>
+      <div id="envlist_pane">
         <div id="envlist_pane_title" style="display:inline-block;"><H2>Environments</H2></div>
           <div id="envlist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'environmet')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
@@ -309,25 +309,25 @@
            <div id="envlist_filter_area" style="height:25px;">
                   <div id="env_search_box_container"></div>
           </div>
-         <div id="envlist_list">  
+         <div id="envlist_list">
 		  <table id="envlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
                   <button style="border: none; background: transparent;" id="envlist_checkall">
-                    <i class="far fa-square"></i>  
+                    <i class="far fa-square"></i>
                   </button>
                 </th>
-				<th style="text-align: left;">Environment</th> 
+				<th style="text-align: left;">Environment</th>
 				<th style="text-align: left;">Domain</th>
-				<th style="text-align: left;">domainid</th>  
-				<th style="text-align: left;">envid</th>  	    
+				<th style="text-align: left;">domainid</th>
+				<th style="text-align: left;">envid</th>
             </tr>
           </thead>
          </table>
         </div>
       </div>
-      <div id="endpointlist_pane">        
+      <div id="endpointlist_pane">
         <div id="endpointlist_pane_title" style="display:inline-block;"><H2>Endpoints</H2></div>
           <div id="endpointlist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'endpoint')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
@@ -337,25 +337,25 @@
            <div id="endpointlist_filter_area" style="height:25px;">
                   <div id="endpoint_search_box_container"></div>
           </div>
-         <div id="endpointlist_list">  
+         <div id="endpointlist_list">
 		  <table id="endpointlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
                   <button style="border: none; background: transparent;" id="endpointlist_checkall">
-                    <i class="far fa-square"></i>  
+                    <i class="far fa-square"></i>
                   </button>
                 </th>
-				<th style="text-align: left;">Endpoint</th> 
+				<th style="text-align: left;">Endpoint</th>
 				<th style="text-align: left;">Domain</th>
-				<th style="text-align: left;">domainid</th>  
-				<th style="text-align: left;">endpointid</th>  	    
+				<th style="text-align: left;">domainid</th>
+				<th style="text-align: left;">endpointid</th>
             </tr>
           </thead>
          </table>
-        </div>  
-      </div> 
-      <div id="actionlist_pane">        
+        </div>
+      </div>
+      <div id="actionlist_pane">
         <div id="actionlist_pane_title" style="display:inline-block;"><H2>Actions</H2></div>
           <div id="actionlist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'action')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
@@ -365,25 +365,25 @@
            <div id="actionlist_filter_area" style="height:25px;">
                   <div id="action_search_box_container"></div>
           </div>
-         <div id="actionlist_list">  
+         <div id="actionlist_list">
 		  <table id="actionlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
                   <button style="border: none; background: transparent;" id="actionlist_checkall">
-                    <i class="far fa-square"></i>  
+                    <i class="far fa-square"></i>
                   </button>
                 </th>
-				<th style="text-align: left;">Action</th> 
+				<th style="text-align: left;">Action</th>
 				<th style="text-align: left;">Domain</th>
-				<th style="text-align: left;">domainid</th>  
-				<th style="text-align: left;">actionid</th>  	    
+				<th style="text-align: left;">domainid</th>
+				<th style="text-align: left;">actionid</th>
             </tr>
           </thead>
          </table>
         </div>
-      </div> 
-      <div id="procedurelist_pane">        
+      </div>
+      <div id="procedurelist_pane">
         <div id="procedurelist_pane_title" style="display:inline-block;"><H2>Func/Procs</H2></div>
           <div id="procedurelist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'procedure')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
@@ -394,7 +394,7 @@
                    <a onclick="addRow(event,'procedure-ak3');">Local Script</a>
                    <a onclick="addRow(event,'procedure-ak4');">Endpoint Script</a>
                </div>
-              </div> 
+              </div>
              <div class="dropdown_menu">
                <button class="title_buttons addFuncButton" onclick="funcMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Function<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
                <div class="dropdown_menu-content" style="display: none;">
@@ -402,7 +402,7 @@
                    <a onclick="addRow(event,'function-ak3');">Local Script</a>
                    <a onclick="addRow(event,'function-ak4');">Endpoint Script</a>
                </div>
-              </div>  
+              </div>
              <button class="title_buttons" onclick="delRow(event, 'procedure')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
              <button class="title_buttons" onclick="exportFuncProc()"><i class="fal fa-download" aria-hidden="true" style="padding-right:5px;"></i>Export</button>
              <button class="title_buttons" onclick="importProc()"><i class="fal fa-upload" aria-hidden="true" style="padding-right:5px;"></i>Import</button>
@@ -410,26 +410,26 @@
            <div id="procedurelist_filter_area" style="height:25px;">
                   <div id="procedure_search_box_container"></div>
           </div>
-         <div id="procedurelist_list">  
+         <div id="procedurelist_list">
 		  <table id="procedurelist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
                   <button style="border: none; background: transparent;" id="procedurelist_checkall">
-                    <i class="far fa-square"></i>  
+                    <i class="far fa-square"></i>
                   </button>
                 </th>
-				<th style="text-align: left;">Name</th> 
+				<th style="text-align: left;">Name</th>
 				<th style="text-align: left;">Domain</th>
 				<th style="text-align: left;">Type</th>
-				<th style="text-align: left;">domainid</th>  
-				<th style="text-align: left;">procedureid</th>  	    
+				<th style="text-align: left;">domainid</th>
+				<th style="text-align: left;">procedureid</th>
             </tr>
           </thead>
          </table>
         </div>
-      </div> 
-      <div id="notifierlist_pane">        
+      </div>
+      <div id="notifierlist_pane">
         <div id="notifierlist_pane_title" style="display:inline-block;"><H2>Notifiers</H2></div>
           <div id="notifierlist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'notifier')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
@@ -447,25 +447,25 @@
            <div id="notifierlist_filter_area" style="height:25px;">
                   <div id="notifier_search_box_container"></div>
           </div>
-         <div id="notifierlist_list">  
+         <div id="notifierlist_list">
 		  <table id="notifierlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
                   <button style="border: none; background: transparent;" id="notifierlist_checkall">
-                    <i class="far fa-square"></i>  
+                    <i class="far fa-square"></i>
                   </button>
                 </th>
-				<th style="text-align: left;">Notifier</th> 
+				<th style="text-align: left;">Notifier</th>
 				<th style="text-align: left;">Domain</th>
-				<th style="text-align: left;">domainid</th>  
-				<th style="text-align: left;">notifierid</th>  	    
+				<th style="text-align: left;">domainid</th>
+				<th style="text-align: left;">notifierid</th>
             </tr>
           </thead>
          </table>
         </div>
       </div>
-      <div id="repositorylist_pane">        
+      <div id="repositorylist_pane">
         <div id="repositorylist_pane_title" style="display:inline-block;"><H2>Repositories</H2></div>
           <div id="repositorylist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'repository')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
@@ -477,31 +477,31 @@
                    <a onclick="addRow(event,'meister');">Meister</a>
                    <a onclick="addRow(event,'svn');">SVN</a>
                </div>
-              </div> 
+              </div>
              <button class="title_buttons" onclick="delRow(event, 'repository')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
            </div>
            <div id="repositorylist_filter_area" style="height:25px;">
                   <div id="repository_search_box_container"></div>
           </div>
-         <div id="repositorylist_list">  
+         <div id="repositorylist_list">
 		  <table id="repositorylist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
                   <button style="border: none; background: transparent;" id="repositorylist_checkall">
-                    <i class="far fa-square"></i>  
+                    <i class="far fa-square"></i>
                   </button>
                 </th>
-				<th style="text-align: left;">Repository</th> 
+				<th style="text-align: left;">Repository</th>
 				<th style="text-align: left;">Domain</th>
-				<th style="text-align: left;">domainid</th>  
-				<th style="text-align: left;">repositoryid</th>  	    
+				<th style="text-align: left;">domainid</th>
+				<th style="text-align: left;">repositoryid</th>
             </tr>
           </thead>
          </table>
         </div>
-      </div>  
-      <div id="datasourcelist_pane">        
+      </div>
+      <div id="datasourcelist_pane">
         <div id="datasourcelist_pane_title" style="display:inline-block;"><H2>Data Sources</H2></div>
           <div id="datasourcelist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'datasource')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
@@ -514,31 +514,31 @@
                    <a onclick="addRow(event,'ldap');">LDAP</a>
                    <a onclick="addRow(event,'odbc');">ODBC</a>
                </div>
-              </div> 
+              </div>
              <button class="title_buttons" onclick="delRow(event, 'datasource')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
            </div>
            <div id="datasourcelist_filter_area" style="height:25px;">
                   <div id="datasource_search_box_container"></div>
           </div>
-         <div id="datasourcelist_list">  
+         <div id="datasourcelist_list">
 		  <table id="datasourcelist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
                   <button style="border: none; background: transparent;" id="datasourcelist_checkall">
-                    <i class="far fa-square"></i>  
+                    <i class="far fa-square"></i>
                   </button>
                 </th>
-				<th style="text-align: left;">Data Source</th> 
+				<th style="text-align: left;">Data Source</th>
 				<th style="text-align: left;">Domain</th>
-				<th style="text-align: left;">domainid</th>  
-				<th style="text-align: left;">datasourceid</th>  	    
+				<th style="text-align: left;">domainid</th>
+				<th style="text-align: left;">datasourceid</th>
             </tr>
           </thead>
          </table>
         </div>
-      </div>   
-      <div id="credentiallist_pane">        
+      </div>
+      <div id="credentiallist_pane">
         <div id="credentiallist_pane_title" style="display:inline-block;"><H2>Credentials</H2></div>
           <div id="credentiallist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'credential')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
@@ -554,25 +554,25 @@
            <div id="credentiallist_filter_area" style="height:25px;">
                   <div id="credential_search_box_container"></div>
           </div>
-         <div id="credentiallist_list">  
+         <div id="credentiallist_list">
 		  <table id="credentiallist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
                   <button style="border: none; background: transparent;" id="credentiallist_checkall">
-                    <i class="far fa-square"></i>  
+                    <i class="far fa-square"></i>
                   </button>
                 </th>
-				<th style="text-align: left;">Credential</th> 
+				<th style="text-align: left;">Credential</th>
 				<th style="text-align: left;">Domain</th>
-				<th style="text-align: left;">domainid</th>  
-				<th style="text-align: left;">credentialid</th>  	    
+				<th style="text-align: left;">domainid</th>
+				<th style="text-align: left;">credentialid</th>
             </tr>
           </thead>
          </table>
         </div>
       </div>
-      <div id="userlist_pane">        
+      <div id="userlist_pane">
         <div id="userlist_pane_title" style="display:inline-block;"><H2>Users</H2></div>
           <div id="userlist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'user')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
@@ -582,25 +582,25 @@
            <div id="userlist_filter_area" style="height:25px;">
                   <div id="user_search_box_container"></div>
           </div>
-         <div id="userlist_list">  
+         <div id="userlist_list">
 		  <table id="userlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
                   <button style="border: none; background: transparent;" id="userlist_checkall">
-                    <i class="far fa-square"></i>  
+                    <i class="far fa-square"></i>
                   </button>
                 </th>
-				<th style="text-align: left;">User</th> 
+				<th style="text-align: left;">User</th>
 				<th style="text-align: left;">Domain</th>
-				<th style="text-align: left;">domainid</th>  
-				<th style="text-align: left;">userid</th>  	    
+				<th style="text-align: left;">domainid</th>
+				<th style="text-align: left;">userid</th>
             </tr>
           </thead>
          </table>
         </div>
       </div>
-      <div id="grouplist_pane">        
+      <div id="grouplist_pane">
         <div id="grouplist_pane_title" style="display:inline-block;"><H2>Groups</H2></div>
           <div id="grouplist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'group')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
@@ -608,25 +608,25 @@
            <div id="grouplist_filter_area" style="height:25px;">
                   <div id="group_search_box_container"></div>
           </div>
-         <div id="grouplist_list">  
+         <div id="grouplist_list">
 		  <table id="grouplist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
                   <button style="border: none; background: transparent;" id="grouplist_checkall">
-                    <i class="far fa-square"></i>  
+                    <i class="far fa-square"></i>
                   </button>
                 </th>
-				<th style="text-align: left;">Group</th> 
+				<th style="text-align: left;">Group</th>
 				<th style="text-align: left;">Domain</th>
-				<th style="text-align: left;">domainid</th>  
-				<th style="text-align: left;">groupid</th>  	    
+				<th style="text-align: left;">domainid</th>
+				<th style="text-align: left;">groupid</th>
             </tr>
           </thead>
          </table>
         </div>
       </div>
-      <div id="servercomptypelist_pane">        
+      <div id="servercomptypelist_pane">
         <div id="servercomptypelist_pane_title" style="display:inline-block;"><H2>Types</H2></div>
           <div id="servercomptypelist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'servercomptype')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
@@ -636,25 +636,25 @@
            <div id="servercomptypelist_filter_area" style="height:25px;">
                   <div id="servercomptype_search_box_container"></div>
           </div>
-         <div id="servercomptypelist_list">  
+         <div id="servercomptypelist_list">
 		  <table id="servercomptypelist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
                   <button style="border: none; background: transparent;" id="servercomptypelist_checkall">
-                    <i class="far fa-square"></i>  
+                    <i class="far fa-square"></i>
                   </button>
                 </th>
-				<th style="text-align: left;">Type</th> 
+				<th style="text-align: left;">Type</th>
 				<th style="text-align: left;">Domain</th>
-				<th style="text-align: left;">domainid</th>  
-				<th style="text-align: left;">servercomptypeid</th>  	    
+				<th style="text-align: left;">domainid</th>
+				<th style="text-align: left;">servercomptypeid</th>
             </tr>
           </thead>
          </table>
         </div>
       </div>
-      <div id="templatelist_pane">        
+      <div id="templatelist_pane">
         <div id="templatelist_pane_title" style="display:inline-block;"><H2>Notifiers Templates</H2></div>
           <div id="templatelist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'template')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
@@ -664,46 +664,46 @@
            <div id="templatelist_filter_area" style="height:25px;">
                   <div id="template_search_box_container"></div>
           </div>
-         <div id="templatelist_list">  
+         <div id="templatelist_list">
 		  <table id="templatelist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
                   <button style="border: none; background: transparent;" id="templatelist_checkall">
-                    <i class="far fa-square"></i>  
+                    <i class="far fa-square"></i>
                   </button>
                 </th>
-				<th style="text-align: left;">Template</th> 
+				<th style="text-align: left;">Template</th>
 				<th style="text-align: left;">Notifier</th>
-				<th style="text-align: left;">templateid</th>  	    
+				<th style="text-align: left;">templateid</th>
             </tr>
           </thead>
          </table>
         </div>
-      </div>                           
-     </div>           
+      </div>
+     </div>
 	<div id="dashboard_panel">
 	<div id="panel_container_right" class="right" style="display:none" >
 	 <div id="right_panel_header"></div>
 	 <div id="right_panel_tabs">
-	  <div class="tabrow_tabmenu">		
-	   <div class="moduletable_tabmenu">	
-	    <ul>	
-	      <li id="tabs-General" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">General</li>		
+	  <div class="tabrow_tabmenu">
+	   <div class="moduletable_tabmenu">
+	    <ul>
+	      <li id="tabs-General" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">General</li>
           <li id="tabs-PackageComponents" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Package Components</li>
           <li id="tabs-apps2s" onclick="AppS2S(objid)" style="display:none">Application Service Hierarchy Bundle</li>
-          <li id="tabs-DeliveryPipeline" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Delivery Pipeline</li>                        
+          <li id="tabs-DeliveryPipeline" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Delivery Pipeline</li>
         </ul>
 	   </div>
 	  </div>
 	 </div>
 	 <div id="right_panel_main">
 	  <div id="right_panel_title_area" class="right_panel_title_area"></div>
-	  <div id="title_icon" class="title_icon"></div> 
+	  <div id="title_icon" class="title_icon"></div>
         <div id="tabs-General-data" class="div_scroll" style="display:none">
             <div id="tabs-General-row-10">
             	 <div id="domnav-panel">
-     			</div> 
+     			</div>
                 <div id="tabs-General-left">
                     <div id="tabs-General-left-header">
                         <div id="compowner_summ_title">
@@ -740,7 +740,7 @@
                             </button>
                             <button class="delete_button" onClick="javascript:DeleteDomain(objtypeAsInt,objid)">
                                 <i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete Domain
-                            </button>                    
+                            </button>
                         </div>
                     </div>
                     <div id="summ_data">
@@ -795,12 +795,12 @@
                       </div>
                       <div id="row-10b-access-data">
                       </div>
-                   </div>                     
+                   </div>
                 </div>
-              <div id="row-10-right-panel"> 
+              <div id="row-10-right-panel">
                 <div id="summ_title">
                     <h2>Component Details</h2>
-                </div> 
+                </div>
                   <div id="appcomp-data">
                      <div id="appcomplist_list" style="width:96%;height:100px;display:inline"></div>
                         <table id="appcomplist" width="100%">
@@ -855,7 +855,7 @@
                         	<button class="save_button" onClick="javascript:SaveEmailToRow('emailto')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
                         	<button class="cancel_button" onClick="javascript:CancelEmailToRow('emailto')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
                     </div>
-                  </div>  
+                  </div>
                     <div>
                         <table id="emailto" class="cb_dev_table">
                             <thead>
@@ -869,13 +869,13 @@
                         <table id="emailto-edit" class="cb_dev_table">
                             <thead>
                                 <tr>
-                                    <th>&nbsp;</th>                               
+                                    <th>&nbsp;</th>
                                     <th>Recipients</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
                         </table>
-                    </div>	   
+                    </div>
                 </div>
                 <div id="groupmembership-panel">
                   <div id="groupmembership-panel-header">
@@ -889,7 +889,7 @@
                         	<button class="save_button" onClick="javascript:SaveGroupMembershipRow('groupmembership')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
                         	<button class="cancel_button" onClick="javascript:CancelGroupMembershipRow('groupmembership')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
                     </div>
-                  </div>  
+                  </div>
                     <div>
                         <table id="groupmembership" class="dev_table">
                             <thead>
@@ -909,7 +909,7 @@
                             </thead>
                             <tbody></tbody>
                         </table>
-                    </div>	   
+                    </div>
                 </div>
                 <div id="usermembership-panel">
                   <div id="usermembership-panel-header">
@@ -923,7 +923,7 @@
                         	<button class="save_button" onClick="javascript:SaveUserMembershipRow('usermembership')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
                         	<button class="cancel_button" onClick="javascript:CancelUserMembershipRow('usermembership')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
                     </div>
-                  </div>  
+                  </div>
                     <div>
                         <table id="usermembership" class="dev_table">
                             <thead>
@@ -943,7 +943,7 @@
                             </thead>
                             <tbody></tbody>
                         </table>
-                    </div>	   
+                    </div>
                 </div>
                  <div id="attrs10-panel">
                  	<div id="attrs10-header">
@@ -956,8 +956,8 @@
                         	<button class="delete_button" onClick="javascript:DeleteAttrRow('attrib10')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
                         	<button class="save_button" onClick="javascript:SaveAttrRow('attrib10')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
                         	<button class="cancel_button" onClick="javascript:CancelAttrRow('attrib10')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
-                    	</div>                 	
-                    </div>  
+                    	</div>
+                    </div>
                     <div id="attrib10-data">
                         <table id="attrib10" class="dev_table" width="100%" >
                             <thead>
@@ -995,9 +995,9 @@
                             <tbody></tbody>
                         </table>
                         </div>
-                </div>  
+                </div>
             </div>
-           </div> 
+           </div>
            <div id="tabs-General-row-12">
             	<div id="readme-panel">
             	  <div id="readme_header">
@@ -1023,7 +1023,7 @@
                   <div id="swagger-data">
                   </div>
             	</div>
-            </div>	
+            </div>
             <div id="tabs-General-row-12a">
             	<div id="cve-panel">
             	  <div id="cve_title" style="text-align:left"">
@@ -1068,7 +1068,7 @@
                   </div>
                   </div>
             	</div>
-            </div>	
+            </div>
             <div id="tabs-General-row-15"  >
                 <div id="logs-panel">
                         <div id="logs_title" style="text-align:left"">
@@ -1100,7 +1100,7 @@
                         	<button class="save_button" onClick="javascript:SaveAttrRow('attrib')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
                         	<button class="cancel_button" onClick="javascript:CancelAttrRow('attrib')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
                     	</div>
-                    </div>  
+                    </div>
                     <div id="attrib-data">
                         <table id="attrib" class="cb_dev_table" width="100%" >
                             <thead>
@@ -1140,12 +1140,12 @@
      	 			<div class="versions">
 	     				<div id="innerworkflow" style="height:600px;width:100%;">
 		 				</div>
-	    			</div> 	
+	    			</div>
        			</div>
     			<div id="pickproc" class="accordionpanel">
 	     			<h4>Function/Procedure</h4>
    	     			 <div id="fragmentlist" align="left"></div>
-        		</div> 
+        		</div>
                 <div id="inputparams-panel">
                   <div id="inputparams-panel-header">
                     <div id="inputparams_title">
@@ -1158,22 +1158,22 @@
                         	<button class="save_button" onClick="javascript:SaveInputParamsRow('inputparams')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
                         	<button class="cancel_button" onClick="javascript:CancelInputParamsRow('inputparams')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
                      </div>
-                   </div>  
+                   </div>
                   	<table id="inputparams" class="cb_dev_table" width="100%" >
            				<thead>
             				<tr><th>&nbsp;<th>Name</th><th>Type</th><th>Format</th><th>Missing</th><th>Padding</th><th>Required</th><th>Pos</th></tr>
-           				</thead>	   
+           				</thead>
            				<tbody>
-           				</tbody> 
+           				</tbody>
           			</table>
           			<table id="inputparams-edit" class="cb_dev_table" width="100%" >
            				<thead>
             				<tr><th>&nbsp;<th>Name</th><th>Type</th><th>Format</th><th>Missing</th><th>Padding</th><th>Required</th><th>Pos</th></tr>
-           				</thead>	   
+           				</thead>
            				<tbody>
-           				</tbody> 
+           				</tbody>
           			</table>
-                </div> 
+                </div>
                 <div id="switchargs-panel">
                   <div id="switchargs-panel-header">
                     <div id="switchargs_title">
@@ -1190,17 +1190,17 @@
                    <table id="switchargs" class="cb_dev_table" width="100%" >
            				<thead>
             				<tr><th>&nbsp;</th><th>Name</th></tr>
-           				</thead>	   
+           				</thead>
            				<tbody>
-           				</tbody> 
+           				</tbody>
           			</table>
           			<table id="switchargs-edit" class="cb_dev_table" width="100%" >
            				<thead>
             				<tr><th>&nbsp;</th><th>Name</th></tr>
-           				</thead>	   
+           				</thead>
            				<tbody>
-           				</tbody> 
-          			</table>  
+           				</tbody>
+          			</table>
                 </div>
                <div id="srv4env-panel">
                  	<div id="srv4env-header">
@@ -1213,8 +1213,8 @@
                         	<button class="delete_button" onClick="javascript:DeleteSrv4EnvRow('srv4env')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
                         	<button class="save_button" onClick="javascript:SaveSrv4EnvRow('srv4env')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
                         	<button class="cancel_button" onClick="javascript:CancelSrv4EnvRow('srv4env')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
-                    	</div>  
-                    </div>  
+                    	</div>
+                    </div>
                     <div id="srv4env-data">
                         <table id="srv4env" class="cb_dev_table" width="100%" >
                             <thead>
@@ -1235,9 +1235,9 @@
                                 </tr>
                             </thead>
                             <tbody></tbody>
-                        </table> 
+                        </table>
                     </div>
-                </div>  
+                </div>
               <div id="emailhelp-panel" style="display:none">
                 <div id="emailhelp_title">
                       	  <h2>Using Variables</h2>
@@ -1270,7 +1270,7 @@
           <tr ><td>\$PING</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the ping to the server. Use this variable in a Ping template.</td></tr>
           <tr><td>\$CONNECTION</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the connection attempt to the server using the associated credentials. Use this variable in a Ping template.</td></tr>
           <tr ><td>\$BASEDIR</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the attempt to switch to the server's base directory. Use this variable in a Ping template.</td></tr>
-          <tr><td>\$MD5_FILELIST</td><td>A list of files (one per line)</td><td>Set during an automatic periodic scan (AutoMD5). Lists all the files whose MD5 checksum differs from that calculated during the last deployment to the server. Use this variable in a MD5 template.</td></tr>      
+          <tr><td>\$MD5_FILELIST</td><td>A list of files (one per line)</td><td>Set during an automatic periodic scan (AutoMD5). Lists all the files whose MD5 checksum differs from that calculated during the last deployment to the server. Use this variable in a MD5 template.</td></tr>
           <tr ><td>\$SRCDOMAIN</td><td>The name of the Source Domain</td><td>Set during a <I>Move</I> or <I>Approve</I> task. The name of the Domain the application is being moved <I>from</I> (for a move) or its current domain (for an approve).</td></tr>
           <tr><td>\$TGTDOMAIN</td><td>The name of the Target Domain</td><td>Set during a <I>Move</I> or <I>Approve</I> task. The name of the Domain the application is being moved <I>to</I> or approved <I>for</I>.</td></tr>
           <tr ><td>\$NOTES</td><td>Free Text</td><td>Set during a <I>Move, Approve</I> or <I>Request</I> task. The notes that were entered (if any) by the user when the task was run.</td></tr>
@@ -1279,7 +1279,7 @@
           </tbody>
           </table>
                </div>
-              </div>     
+              </div>
             </div>
             <div id="tabs-General-row-20">
                 <div id="tabs-General-right-20">
@@ -1312,7 +1312,7 @@
                     <div id="comp4srv_title">
                         <h2>Deployed Components</h2>
                     </div>
-                  </div> 
+                  </div>
                     <div id="comp4srv-data">
                         <table id="comp4srv" class="cb_dev_table">
                             <thead>
@@ -1348,7 +1348,7 @@
                         	<button class="save_button" onClick="javascript:SaveEnv4AppRow('env4app')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
                         	<button class="cancel_button" onClick="javascript:CancelEnv4AppRow('env4app')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
                     </div>
-                  </div>  
+                  </div>
                     <div>
                         <table id="env4app" class="cb_dev_table">
                             <thead>
@@ -1371,14 +1371,14 @@
                             <tbody></tbody>
                         </table>
                     </div>
-                 </div>  
-                 
+                 </div>
+
                  <div id="deployedenv4app-panel">
                   <div id="deployedenv4app-panel-header">
                     <div id="deployed_envs_title">
                         <h2>Deployed Environments</h2>
                     </div>
-                  </div>  
+                  </div>
                     <div id="deployedenv4app-data">
                         <table id="deployedenv4app" class="cb_dev_table">
                             <thead>
@@ -1390,14 +1390,14 @@
                             <tbody></tbody>
                         </table>
                     </div>
-                 </div> 
-                 
+                 </div>
+
                  <div id="app4env-panel">
                   <div id="app4env-panel-header">
                     <div id="app4env_title">
                         <h2>Assigned Applications</h2>
                     </div>
-                  </div>  
+                  </div>
                     <div>
                         <table id="app4env" class="dev_table">
                             <thead>
@@ -1408,10 +1408,10 @@
                             <tbody></tbody>
                         </table>
                     </div>
-                 </div>   
+                 </div>
                 <div id="cmdline-panel">
-                   <div id="dragtextdiv" style="margin:10px">Drag the arguments from here onto the command line below to assemble the command. Use the table above to add and configure the switches/arguments.</div> 
-                   <div id="argsoutputpane"></div>    
+                   <div id="dragtextdiv" style="margin:10px">Drag the arguments from here onto the command line below to assemble the command. Use the table above to add and configure the switches/arguments.</div>
+                   <div id="argsoutputpane"></div>
                 </div>
                 <div id="defect-panel-20">
                         <div id="defects_title">
@@ -1431,8 +1431,8 @@
                             </thead>
                             <tbody></tbody>
                         </table>
-                    </div> 
-                 </div> 	
+                    </div>
+                 </div>
             </div>
             <div id="tabs-General-row-25">
             </div>
@@ -1443,9 +1443,9 @@
                         </div>
                       	<table id="app4comp" class="dev_table" width="100%">
            					<thead>
-           					</thead>	   
+           					</thead>
            					<tbody>
-           					</tbody> 
+           					</tbody>
           			  	</table>
           		</div>
                <div id="srv4comp-panel">
@@ -1461,31 +1461,31 @@
                         	<button class="cancel_button" onClick="javascript:CancelSrv4CompRow('srv4comp')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
                      </div>
                   </div>
-                  <div> 
+                  <div>
                    	<table id="srv4comp" class="cb_dev_table" width="100%" >
            				<thead>
             				<tr><th>&nbsp;</th><th>Endpoint</th><th>Deployment</th></tr>
-           				</thead>	   
+           				</thead>
            				<tbody>
-           				</tbody> 
+           				</tbody>
           			</table>
           			<table id="srv4comp-edit" class="cb_dev_table" width="100%" >
            				<thead>
             				<tr><th>&nbsp;</th><th>Endpoint</th><th>Deployment</th></tr>
-           				</thead>	   
+           				</thead>
            				<tbody>
-           				</tbody> 
+           				</tbody>
           			</table>
-          		 </div>	
-                </div> 
+          		 </div>
+                </div>
           		<div id="planning-panel">
                         <div id="planning_title" style="text-align:left"">
                             <h2>Applications scheduled for this Release</h2>
                         </div>
           		        <div id="planningtimeline">
-          		        </div>       
-               </div> 
-            </div>  
+          		        </div>
+               </div>
+            </div>
             <div id="tabs-General-row-28">
                  <div id="feedback-panel">
                     <div id="feedback-panel-header">
@@ -1494,49 +1494,49 @@
                         </div>
                         <div id="feedback-env"><select id="feedback-env-sel" onchange="updateDeployDiff(this);"></select></div>
                         <div id="feedback-label"></div>
-                    </div>    
+                    </div>
                     <div id="feedback-data">
                     </div>
                 </div>
                 <div id="procbody-panel">
                  <div id="ProcBodyMainFrame" style="height:100%;width:100%;">
-                    <textarea id='editproc' cols='400' wrap='off' spellcheck='false' style='width:100%;height:600px;font-size:14px;font-family:courier;white-space: pre; overflow: auto;'></textarea>   
+                    <textarea id='editproc' cols='400' wrap='off' spellcheck='false' style='width:100%;height:600px;font-size:14px;font-family:courier;white-space: pre; overflow: auto;'></textarea>
                  </div>
                 </div>
-            </div>             
+            </div>
             <div id="tabs-General-row-32">
                 <div id="provides-panel">
                    <div id="provides_title" style="text-align:left"">
                         <h2>Providing API End Points</h2>
                     </div>
-                     <div id="provides_list">  
+                     <div id="provides_list">
 					  <table id="provideslist" class="hover row-border nowrap" height="100%" width="100%">
 			           <thead>
 			            <tr>
-							<th style="text-align: left;">Verb</th> 
-							<th style="text-align: left;">API End Point</th>   
+							<th style="text-align: left;">Verb</th>
+							<th style="text-align: left;">API End Point</th>
 			            </tr>
 			          </thead>
 			         </table>
-			        </div>  
+			        </div>
           		</div>
           		<div id="consumes-panel">
                         <div id="consumes_title" style="text-align:left"">
                             <h2>Consuming API End Points</h2>
                         </div>
-                     <div id="consumes_list">  
+                     <div id="consumes_list">
 					  <table id="consumeslist" class="hover row-border nowrap" height="100%" width="100%">
 			           <thead>
 			            <tr>
-							<th style="text-align: left;">Verb</th> 
-							<th style="text-align: left;">API End Point</th>   
-							<th style="text-align: left;">Component</th>  
+							<th style="text-align: left;">Verb</th>
+							<th style="text-align: left;">API End Point</th>
+							<th style="text-align: left;">Component</th>
 			            </tr>
 			          </thead>
 			         </table>
-			        </div>      
-               </div> 
-             </div>               
+			        </div>
+               </div>
+             </div>
                <div id="tabs-General-row-35">
                 <div id="row-35-audit">
                         <div id="audit35_title" style="text-align:left"">
@@ -1602,15 +1602,15 @@
                             </thead>
                             <tbody></tbody>
                         </table>
-                    </div> 
-                    </div> 
+                    </div>
+                    </div>
                  <div id="tabs-General-right">
                     <div id="tabs-General-right-header">
                         <h2>Dependency Map</h2>
                     </div>
                     <div id="tabs-General-map"></div>
-                </div> 
-                </div>    
+                </div>
+                </div>
              <div id="tabs-General-row-50">
 		       <div id="panel_container_taskspaneltop">
 				<div id="tasks-panel">
@@ -1619,7 +1619,7 @@
                       	  <h2>Tasks</h2>
                     	</div>
                     	<div id="tasks_header_buttons">
-                        	<div class="dropdown_menu">                       	
+                        	<div class="dropdown_menu">
                               <button class="title_buttons addMenuButton" onclick="addTaskMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
                                 <div class="dropdown_menu-content" style="display: none;">
                                   <a onclick="AddTaskRow('taskstab','Approve');">Approve Verision for move to next pipeline stage</a>
@@ -1630,8 +1630,8 @@
                                </div>
                             </div>
                         	<button class="delete_button" onClick="javascript:DeleteTaskRow('taskstab')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
-                    	</div>                 	
-                    </div>  
+                    	</div>
+                    </div>
                     <div id="taskstab-data">
                         <table id="taskstab" class="cb_dev_table" width="100%" >
                             <thead>
@@ -1642,8 +1642,8 @@
                             </thead>
                             <tbody></tbody>
                         </table>
-                    </div>   
-				</div>	
+                    </div>
+				</div>
 				<div id="panel_deploy">
 				     <div id="task-right-header">
                         <div id="task_summ_title">
@@ -1679,14 +1679,14 @@
 			   <div class="deploy_sub_panel_container">
 			    <ul class="subpanel" id="tasks_assigned_groups">
  			    </ul>
- 			   </div> 
+ 			   </div>
 			</div>
 			<div id="sub_panel_bottommiddle">
 			 	<div class="panel_container_title_area"><h1 class="taskpanels">Available Groups for Task</h1></div>
 			 	<div class="deploy_sub_panel_container">
 			 		<ul class="subpanel" id="tasks_available_groups">
  					</ul>
- 				</div>	
+ 				</div>
  			</div>
  			<div id="sub_panel_bottomright">
  			    <div class="panel_container_title_area"><h1 class="taskpanels">Task Parameters</h1></div>
@@ -1695,34 +1695,34 @@
  			</div>
 		</div>
 		</div>
-                    </div>    
+                    </div>
                 </div>
-      
+
        <div id="tabs-PackageComponents-data" style="display:none">
         <div class="panel_container versionsandinformation">
      	 <div class="compversions">
 	     <div id="innercomp">
 		 </div>
-	    </div> 	
+	    </div>
 	    <div class="accordionpanel">
 	     <h4 class="ui-widget-header">Component Selector</h4>
    	     <div id=componentlist align="left" style="margin:0; overflow-x: auto; height: calc(100% - 52px); background-color: #f8f8f8;"></div>
         </div>
        </div>
       </div>
-		 </div> 	
+		 </div>
 		</div>
-       </div>		 
+       </div>
      </div>
 	</div> <!-- end panel container -->
-	<div id="panel_container_historyandpending" style="display:none"> 
+	<div id="panel_container_historyandpending" style="display:none">
 	 <div id="home_right_panel_tabs">
-	  <div class="tabrow_tabmenu">		
-	   <div class="moduletable_tabmenu">	
-	    <ul>	
-	      <li id="tabs-HomeDashboard" onclick="ActivateHomeSubTabs('tabs-HomeDashboard')" class="active current">Global Reports</li>      		
+	  <div class="tabrow_tabmenu">
+	   <div class="moduletable_tabmenu">
+	    <ul>
+	      <li id="tabs-HomeDashboard" onclick="ActivateHomeSubTabs('tabs-HomeDashboard')" class="active current">Global Reports</li>
           <li id="tabs-HomePending" onclick="ActivateHomeSubTabs('tabs-HomePending')">To Do List</li>
-          <li id="tabs-HomeHistory" onclick="ActivateHomeSubTabs('tabs-HomeHistory')">Audit Trail</li>       
+          <li id="tabs-HomeHistory" onclick="ActivateHomeSubTabs('tabs-HomeHistory')">Audit Trail</li>
         </ul>
 	   </div>
 	  </div>
@@ -1751,9 +1751,8 @@
     	<p style="position:relative;left:-7px;">Sit tight....</p>
 	</div>
  <footer class="footer">
-	<div id="footer_container">	 
+	<div id="footer_container">
 	</div>
  </footer>
 </body>
 </html>
-

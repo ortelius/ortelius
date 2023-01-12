@@ -7,9 +7,9 @@ action Preface
     echo "package '${package.name}' has creator email '${package.creator.email}' and assignee email '${package.assignee.email}'";
     foreach(contributor: ${package.contributors}) {
     	echo "  contributor ${package.contributors[$contributor].name}";
-    }	
+    }
   }
-  
+
   echo "\nTo the following servers:";
   psloop {
     echo "${server.name} (${server.hostname}) web=\"${web:-0}\" sql=\"${sql:-0}\" basedir=\"${server.basedir}\"";
@@ -44,9 +44,9 @@ action Percentages
 
 action UpdateWebConfig
 {
-  using dropzone $dz { 
+  using dropzone $dz {
     jar(options: 'xf', jarfile: ${file}, files: 'WEB-INF/web.xml');
-    
+
     modify(modifier: 'xml', file: 'WEB-INF/web.xml') {
       add_element(xpath: '/web-app', pos: 'inside',
                   value: "<context-param>"
@@ -55,9 +55,9 @@ action UpdateWebConfig
                          "<description>time the application was deployed</description>"
                          "</context-param>");
     }
-    
+
     jar(options: 'uf', jarfile: ${file}, files: 'WEB-INF/web.xml');
-    
+
     delete(dir: 'WEB-INF');
   }
 }
@@ -67,7 +67,7 @@ action Deploy
 {
   // , project: $cmdln_harproject
   harvest_setpackages(repository: 'dm_demo', packages: $ARGV /*$cmdln_harpackages*/);
-  
+
   Preface;
 
 //parallel {
@@ -78,7 +78,7 @@ action Deploy
       echo "\n-------------------------------------------------------------";
       echo "Checking out [*.war] to web servers in environment $TRIFIELD1";
       echo "-------------------------------------------------------------\n";
-      
+
       // Are we rolling back?
       if(${deploy_action} != 'ROLLBACK')
       {
@@ -111,13 +111,13 @@ action Deploy
           }
         }
       }
-      
+
       UpdateWebConfig(dz: ${dropzone.name}, file: 'dmdemo.war');
-      
+
       transfer;
     }
   }
-  
+
   // For database servers
   echo "\n-------------------------------------------------------------";
   echo "Checking out [*.sql] to database servers in environment $TRIFIELD1";
@@ -139,7 +139,7 @@ echo "sqllist = '${dropzone.find('*.sql')}'";
     }
   }
 //} // end parallel
-  
+
   Percentages;
 
   // Were there any failures?
@@ -150,7 +150,7 @@ echo "sqllist = '${dropzone.find('*.sql')}'";
   if(${global.dep.total} -eq 0) {
     abort(msg: "Nothing was deployed!");
   }
-        
+
   // Did we deploy the web component?
   if($webflag = true) {
     using component 'dmdemoweb' {
@@ -164,7 +164,7 @@ echo "sqllist = '${dropzone.find('*.sql')}'";
       }
     }
   }
-  
+
   // Were there any database changes?
   if($sqlflag = true) {
     if($scriptflag != true) {
@@ -183,4 +183,4 @@ echo "sqllist = '${dropzone.find('*.sql')}'";
       }
     }
   }
-}      
+}

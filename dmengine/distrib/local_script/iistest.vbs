@@ -34,7 +34,7 @@ Else
   Set colItems = wmi.ExecQuery("Select * from VirtualDirectory")
   For Each objItem In colItems
     WScript.Echo objItem.SiteName & " " & objItem.PhysicalPath
-  Next  
+  Next
 
 End If
 

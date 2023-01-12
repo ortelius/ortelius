@@ -32,28 +32,28 @@ import dmadmin.json.JSONObject;
  */
 public class GetDeploymentsPerUserForEnvironment extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public GetDeploymentsPerUserForEnvironment() {
         super();
     }
-    
+
     @Override
    	public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
    		throws ServletException, IOException
    	{
     	response.setContentType("application/json");
-		int envid = ServletUtils.getIntParameter(request, "envid");	
+		int envid = ServletUtils.getIntParameter(request, "envid");
 		PrintWriter out = response.getWriter();
 		ReportDataSet data = session.getDeploymentsPerUserForEnvironment(envid);
 		JSONObject obj = new JSONObject();
 		obj.add("ticks", data.getCatLabelsJSON());
 		obj.add("data", data.getBarDataSeriesJSON());
 		String ret = obj.toString();
-		
+
 		out.println(ret);
 		System.out.println(ret);
    	}

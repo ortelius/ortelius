@@ -40,7 +40,7 @@ import dmadmin.model.UserGroupList;
  */
 public class DomainDetails extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -48,8 +48,8 @@ public class DomainDetails extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
-    
+
+
     @Override
 	public void handleRequest(DMSession session, boolean isPost,
 			HttpServletRequest request, HttpServletResponse response)
@@ -87,7 +87,7 @@ public class DomainDetails extends HttpServletBase {
     				res.add(jo);
     			}
     			out.print(res.getJSON());
-    		} 
+    		}
     	} else {
     		// POST
     		response.setContentType("application/json;charset=UTF-8");
@@ -96,9 +96,9 @@ public class DomainDetails extends HttpServletBase {
     		if (f.equalsIgnoreCase("at")) {
     			// Add a task
     			int id = session.getID("task");
-    			
+
     			String taskname = tasktype;
-    	  
+
     			if (tasktype.equalsIgnoreCase("Approve"))
      			 taskname = "Approve Verision for move to next pipeline stage";
     			else if (tasktype.equalsIgnoreCase("Move"))
@@ -113,7 +113,7 @@ public class DomainDetails extends HttpServletBase {
     			 taskname = "Request Calendar entry for deployment to an Environment";
     			else if  (tasktype.equalsIgnoreCase("RunAction"))
     				taskname = "Mannually trigger Action to be executed";
-    			
+
     			session.CreateNewTask(taskname,tasktype,domainid,id);
     			out.print("{\"name\" : \"" + taskname + "\", \"id\" : \"" + id + "\"}");
     		}
@@ -155,7 +155,7 @@ public class DomainDetails extends HttpServletBase {
     			int tid = ServletUtils.getIntParameter(request, "tid");
     			session.AddGroupToTask(tid,gid);
     			out.print("{\"errtext\" : \"\", \"errcode\" : \"0\"}");
-    			
+
     		}
     		else
     		if (f.equalsIgnoreCase("rg")) {
@@ -168,7 +168,7 @@ public class DomainDetails extends HttpServletBase {
     		else
     		if (f.equalsIgnoreCase("gt")) {
     			// Get Task Details
-    			
+
     		}
     		else
     		if (f.equalsIgnoreCase("md")) {

@@ -44,14 +44,14 @@ function SaveVersionsDetails(id)
 {
  if (DontSave)
   return;
- 
+
  var url="f=sv&a="+id;
  parent.$("#homeatts :input").each(function() {
   url=url+"&"+$(this).attr("id")+"="+$(this).val();
  });
  $.getJSON('UpdateAttrs',url,
      function(data){
-   // Update the fragment window 
+   // Update the fragment window
    console.log("Updating the window for #window"+id);
    $( ".applicationverbox" ).each(function( index ) {
       console.log(index + ": "+$(this).attr("id"));
@@ -78,7 +78,7 @@ function aClickElement(id)
  att.html("Loading...").load("getcompversum?verid="+id,cFrameEnabled(att));
  */
  CurrentlySelectedID=id;
-  
+
 }
 
 function aOpenDetails(x)
@@ -89,15 +89,15 @@ function aOpenDetails(x)
 
 
 function aNewVersions(node)
-{ 
+{
  if (DontSave)
   return;
- 
+
  var tx = (cCurrentMousePos.x) % 20;
  var ty = (cCurrentMousePos.y) % 20;
  if (tx>10) tx=-(20-tx);
  if (ty>10) ty=-(20-ty);
- 
+
  var xpos = (cCurrentMousePos.x - tx) - 60;
  var ypos = (cCurrentMousePos.y - ty) - 90;
 
@@ -109,14 +109,14 @@ function aNewVersions(node)
   //$("#window"+data.verid).dblclick(function() {
   //  aDrillDown($(this));
   //});
-  
+
   aPlumb.draggable(aPlumb.getSelector(".applicationverbox"), {
    grid : [ 20, 20 ],
    containment: '#innerversions',
    cursor: "-webkit-grab",
    stop: aWindowMoved
   });
-  
+
   aPlumb.addEndpoint("window"+data.verid, targetEndpoint, {
    anchor : "TopCenter",
    uuid : "window"+data.verid+"in"
@@ -125,7 +125,7 @@ function aNewVersions(node)
    anchor : "BottomCenter",
    uuid : "window"+data.verid+"out"
   });
-  
+
   console.log("Binding context menu menu1 to window #window"+data.verid);
   if (isRelease == "Y")
     $("#window"+data.verid).dmContextMenu(menuRelVersions, {theme:'xp'});
@@ -137,7 +137,7 @@ function aNewVersions(node)
      aPlumb.repaintEverything();
   });
   // Need this configurable off user profile
-  
+
   var swd = aFindWindowWithNoOutput(data.verid);
   console.log("swd.fuuid="+swd.fuuid);
   if (aPlumb.getEndpoint(swd.fuuid) != null)
@@ -146,7 +146,7 @@ function aNewVersions(node)
    // The connect call will fire the new connection binding which will update the DB
    var connection = aPlumb.connect({uuids:[swd.fuuid, "window"+data.verid+"in"], editable:true});
   }
-  
+
   aClickElement(data.verid);
   Refresh(currenttree);
  });
@@ -163,7 +163,7 @@ function aDeleteNode(node)
 
  if (DontSave)
   return;
- 
+
  // alert("Detaching all connections");
  aPlumb.detachAllConnections(node.id);
  // alert("Removing all endpoints");
@@ -171,12 +171,12 @@ function aDeleteNode(node)
  // alert("Detaching the node");
  $("#"+node.id).detach();
  var n = node.id.substr(6);
- 
+
  if (isRelease)
   $(currenttree).jstree("delete_node", "#rv" + n);
  else
   $(currenttree).jstree("delete_node", "#av" + n);
- 
+
   $.getJSON("UpdateAttrs","f=dv&a=" + objid + "&v="+n,
    function(data){
    console.log("in success");
@@ -187,7 +187,7 @@ function aWindowMoved(event,ui)
 {
  if (DontSave)
   return;
- 
+
  console.log("in WindowMoved, ui.position.top="+ui.position.top);
  var windowid=event.target.id;
  var id = windowid.replace("window","");
@@ -236,7 +236,7 @@ function aChangeLabelOK(conn)
 	if (FromUUID.indexOf("out")>0) {
 		tn = conn.targetId.replace("window","");
 	} else {
-		tn = conn.sourceId.replace("window",""); 
+		tn = conn.sourceId.replace("window","");
 	}
 	console.log("tn="+tn);
 	UpdateBranchLabel(labeltext,tn);
@@ -254,7 +254,7 @@ function aChangeLabel(conn)
 	}
 	console.log("Change Label");
 	var att = parent.$("#modal");
-	att.dialog({ resizable: false, modal: true, dialogClass: "aboutsDialog" }); 
+	att.dialog({ resizable: false, modal: true, dialogClass: "aboutsDialog" });
 	att.empty();
 	att.dialog("option","title","Branch Label");
 	att.dialog("option","buttons",
@@ -264,7 +264,7 @@ function aChangeLabel(conn)
 	    ]
 	);
 	att.html(
-			"<html><body><table border=0><tr><td><img src='images/label-large.png'></td><td>Change Branch Label</td></tr></table><hr>" + 
+			"<html><body><table border=0><tr><td><img src='images/label-large.png'></td><td>Change Branch Label</td></tr></table><hr>" +
 			"Branch Label:&nbsp;<input type='text' id='labeltext' width='60' value='"+labelname+"'><br></body></html>");
 	att.css("overflow-y","hidden");
 	att.dialog("open");
@@ -287,7 +287,7 @@ function aRemoveLabel(conn)
 	if (FromUUID.indexOf("out")>0) {
 		tn = conn.targetId.replace("window","");
 	} else {
-		tn = conn.sourceId.replace("window",""); 
+		tn = conn.sourceId.replace("window","");
 	}
 	UpdateBranchLabel("",tn);
 }
@@ -317,7 +317,7 @@ function aFindWindowWithNoOutput(winid)
    }
   }
  });
- 
+
  return swd;
 }
 
@@ -325,13 +325,13 @@ function aDeleteConnector(conn)
 {
  if (DontSave)
   return;
- 
+
  if (conn)
  {
   //
   // Update the DB
   //
-  var fn = conn.sourceId.replace("window",""); 
+  var fn = conn.sourceId.replace("window","");
   var tn = conn.targetId.replace("window","");
   if (fn.indexOf("start") > -1) fn=0;
   if (tn.indexOf("start") > -1) tn=0;
@@ -372,14 +372,14 @@ function initVersions(connection)
 function LoadVersionsData()
 {
  DontSave = 1;
- 
+
  cPlumb.reset();
- aPlumb.reset();   
+ aPlumb.reset();
  avPlumb.reset();
  cvPlumb.reset();
  cisplumb.reset();
- wfPlumb.reset();  
- 
+ wfPlumb.reset();
+
  $("#innerversions").html("");
  $("#innercomp").html("");
  $("#innerappver").html("");
@@ -390,19 +390,19 @@ function LoadVersionsData()
  var InitialLoad = true;
  var hasAppVersionAccess = false;
  var hasCreateVersionTask = false;
- 
+
  console.log("appid="+objid);
- $.ajax({  
+ $.ajax({
   url: "GetAppVersionAccess?appid="+objid,
   async: false,
   dataType : 'json'
-}).done(function(data) 
+}).done(function(data)
   {
    console.log(data);
    hasAppVersionAccess = data.hasaccess;
    hasCreateVersionTask = data.createversion;
   });
- 
+
  aPlumb.importDefaults({
   // default drag options
   DragOptions : {
@@ -410,18 +410,18 @@ function LoadVersionsData()
    zIndex : 2000
   }
  });
- 
+
  aPlumb.bind("contextmenu", function(component, originalEvent) {
         originalEvent.preventDefault();
         return false;
     });
- 
- 
+
+
  function mainmenuversions(m,t)
  {
   var menudata = [];
   console.log("URL = GetMenu?t=APPLICATION&id="+objid+"&d=0&a=N&ct=applications");
-  $.ajax({  
+  $.ajax({
     url: "GetMenu?t=APPLICATION&id="+objid+"&d=0&a=N&ct=applications",
     async: false,
     cache: false,
@@ -441,15 +441,15 @@ function LoadVersionsData()
      menudata.push(tmo);
     });
    });
-  }); 
-  
+  });
+
   return menudata;
  };
- 
- var menu2 = function(m,t){ 
+
+ var menu2 = function(m,t){
   if (DontSave)
    return;
-  
+
   console.log("in menu2 (contextmenu activated)");
   console.log("OverLink="+OverLink+" hasAppVersionAccess="+hasAppVersionAccess+" hasCreateVersionTask="+hasCreateVersionTask);
   if (!OverLink)
@@ -510,14 +510,14 @@ function LoadVersionsData()
   }
   return ma;
   };
- 
+
  console.log("Binding default context menu");
- 
+
  try {
  $("#innerversions").dmContextMenu(menu2, {theme:'xp'});
  } catch(e) { console.log(e); }
- 
- 
+
+
  aPlumb.bind("jsPlumbConnection", function(connInfo, originalEvent) {
   console.log("jsPlumbConnection fired - about to call init");
   initVersions(connInfo.connection);
@@ -531,18 +531,18 @@ function LoadVersionsData()
   var fn;
   var tn;
   if (FromUUID.indexOf("out")>0) {
-   fn = connInfo.connection.sourceId.replace("window",""); 
-   tn = connInfo.connection.targetId.replace("window",""); 
+   fn = connInfo.connection.sourceId.replace("window","");
+   tn = connInfo.connection.targetId.replace("window","");
   } else {
-   tn = connInfo.connection.sourceId.replace("window",""); 
-   fn = connInfo.connection.targetId.replace("window",""); 
+   tn = connInfo.connection.sourceId.replace("window","");
+   fn = connInfo.connection.targetId.replace("window","");
   }
-  
+
   if (fn.indexOf("start") > -1) fn=0;
   if (tn.indexOf("start") > -1) tn=0;
-  
+
   console.log("fn="+fn+" tn="+tn);
-  
+
   if (InitialLoad == false)
   {
    console.log("Updating DB with appid=" + objid + " fn="+fn+" tn="+tn);
@@ -554,19 +554,19 @@ function LoadVersionsData()
   }
 
  });
- 
+
  aPlumb.bind("connectionDetached", function(connInfo, originalEvent) {
   console.log("DETACHED! connInfo.connection.id = " + connInfo.connection.id);
   aDeleteConnector(connInfo.connection);
  });
 
- 
+
  $.getJSON('GetAppVersionLayout',"appid=" + objid,function(data){
-  
+
   // Start Window
   yo = 140;
   var w = Math.floor($("#innerversions").width()/2)-63;
-  
+
   $("#innerversions").append( "<div class=\"applicationverbox\" id=\"window" + objid + "\" " +
     "style=\"position: relative; top: 100px; left: " + w + "px \">" +
     getVersionsBody(objid,objName,data.BaseSummary,data.BaseDomain));
@@ -589,7 +589,7 @@ function LoadVersionsData()
    //$("#window"+WindowID).dblclick(function() {
    //  aDrillDown($(this));
    //});
-   
+
    aPlumb.addEndpoint("window"+WindowID, targetEndpoint, {
     anchor : "TopCenter",
     uuid : "window"+WindowID+"in"
@@ -600,7 +600,7 @@ function LoadVersionsData()
     uuid : "window"+WindowID+"out",
     maxConnections: -1
    });
- 
+
    console.log("Binding context menu menu1 to window #window"+WindowID);
    if (isRelease == "Y")
     $("#window"+WindowID).dmContextMenu(menuRelVersions, {theme:'xp'});
@@ -626,14 +626,14 @@ function LoadVersionsData()
    console.log("data.Links["+a+"].branch="+data.Links[a].branch);
    var srcconn;
    if (data.Links[a].nodefrom == 0) {
-    srcconn = "window" + objid + "out"; 
+    srcconn = "window" + objid + "out";
    } else {
     srcconn = "window" + data.Links[a].nodefrom + "out";
    }
    var tgtconn = "window" + data.Links[a].nodeto + "in";
-   
+
    console.log("Connect srcconn="+srcconn+" tgtconn="+tgtconn);
-   
+
    if (aPlumb.getEndpoint(srcconn) != null && aPlumb.getEndpoint(tgtconn) != null)
    {
     var connection = aPlumb.connect({uuids:[srcconn,tgtconn], detachable:true, editable:true});
@@ -652,7 +652,7 @@ function LoadVersionsData()
    cursor: "-webkit-grab",
    stop: aWindowMoved
   });
-  
+
   InitialLoad = false;
 
  }).fail(function(fdata){
@@ -662,12 +662,12 @@ function LoadVersionsData()
   });
   });
  $("#innerversions").resizable({ handles: "s" });
- 
+
  if (readonly)
   $("#innerversions").block({ message: null });
  else
   $("#innerversions").unblock();
- 
+
  DontSave = 0;
 }
 
@@ -681,12 +681,10 @@ function aStartMoved(event,ui)
 {
  if (DontSave)
   return;
- 
+
  console.log("Start Moved ypos="+Math.round(ui.offset.left));
  $.getJSON("UpdateAttrs","f=vm&a=" + objid + "&v="+id+ "&xpos="+Math.round(ui.offset.left),
  function(data){
   console.log("WindowMoved) in success");
  });
 }
-
-

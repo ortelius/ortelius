@@ -33,14 +33,14 @@ public class ReportDataSet
 		private int m_col;
 		private String m_name;
 		private int m_type;
-		
+
 		public ReportColumn(int col, String name, int type)
 		{
 			m_col = col;
 			m_name = name;
 			m_type = type;
 		}
-		
+
 		public Object get(ResultSet rs)
 		{
 			try {
@@ -57,32 +57,32 @@ public class ReportDataSet
 			}
 			return null;
 		}
-		
+
 		public int col()  { return m_col; }
 		public String name()  { return m_name; }
 	}
-	
+
 	private class ReportRow
 	{
 		private Hashtable<Integer,Object> m_cols = new Hashtable<Integer,Object>();
-		
+
 		public ReportRow()
 		{}
-		
+
 		public void setColumnValue(int col, Object value)
 		{
 			m_cols.put(col, value);
 		}
-		
+
 		public Object getColumnValue(int col) {
 			return m_cols.get(col);
 		}
 	}
-	
+
 	private List<ReportColumn> m_cols = new ArrayList<ReportColumn>();
 	private Hashtable<String,ReportColumn> m_colNames = new Hashtable<String,ReportColumn>();
 	private List<ReportRow> m_rows = new ArrayList<ReportRow>();
-	
+
 	public ReportDataSet(ResultSet rs,int maxrows)
 	{
 		int rowcount=0;
@@ -97,12 +97,12 @@ public class ReportDataSet
 			throw new RuntimeException("Failed to handle ResultSet");
 		}
 	}
-	
+
 	public ReportDataSet(ResultSet rs)
 	{
 		this(rs,0);
 	}
-	
+
 	public void setMetaData(ResultSetMetaData meta)
 	{
 		try {
@@ -115,11 +115,11 @@ public class ReportDataSet
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void addRow(ResultSet rs)
 	{
 		ReportRow row = new ReportRow();
-		
+
 		for(ReportColumn c: m_cols) {
 			Object value = c.get(rs);
 			if(value != null) {
@@ -128,7 +128,7 @@ public class ReportDataSet
 		}
 		m_rows.add(0,row);
 	}
-	
+
 	public IJSONSerializable getColJSON(String colname)
 	{
 		JSONArray ret = new JSONArray();
@@ -143,13 +143,13 @@ public class ReportDataSet
 		}
 		return ret;
 	}
-	
+
 	public IJSONSerializable getCatLabelsJSON()
 	{
 		ReportColumn c = m_cols.get(0);
 		return (c != null) ? getColJSON(c.name()) : new JSONArray();
 	}
-	
+
 	public IJSONSerializable getBarDataSeriesJSON()
 	{
 		JSONArray ret = new JSONArray();
@@ -159,13 +159,13 @@ public class ReportDataSet
 		}
 		return ret;
 	}
-	
+
 	/**
 	 * Takes a set of rows and columns and make line data.
 	 * First column is always the x-axis value - all subsequent columns form data series.
 	 * Given columns a, b and c and rows 0, 1 and 2, the output is:
 	 * [[[a0, b0], [a1, b1], [a2, b2]], [[a0, c0], [a1, c1], [a2, c2]]]
-	 * 
+	 *
 	 */
 	public IJSONSerializable getLineDataSeriesJSON()
 	{
@@ -184,7 +184,7 @@ public class ReportDataSet
 		}
 		return ret;
 	}
-	
+
 	public IJSONSerializable getTableDataJSON()
 	{
 		JSONArray ret = new JSONArray();
@@ -199,7 +199,7 @@ public class ReportDataSet
 			ret.add(arr);
 		}
 		return ret;
-		
+
 //		StringBuffer ret = new StringBuffer();
 //		ret.append("[");
 //		boolean firstrow = true;

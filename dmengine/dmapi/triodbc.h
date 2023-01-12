@@ -221,13 +221,13 @@ public:
 	class DM		*getDM(){return m_dm;}
 	bool			getUseWebService() {return m_useWebService;};
 	class Context	*getCTX(){return m_ctx;}
-	
-	
+
+
 	triODBC();
 	triODBC(class Context *ctx,char *clientid);
 	~triODBC();
 
-	
+
 };
 
 void DecryptBuffer(char *Buffer,long BufferLen);

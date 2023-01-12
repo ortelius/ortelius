@@ -38,7 +38,7 @@ public class GetDeploymentLog
 {
 	private static final long serialVersionUID = 4402903956198244069L;
 
-	
+
     /**
      * @see JSONServletBase#JSONServletBase()
      */
@@ -46,7 +46,7 @@ public class GetDeploymentLog
         super();
     }
 
-    
+
 	@Override
 	public IJSONSerializable handleRequest(DMSession session, boolean isPost,
 			HttpServletRequest request, HttpServletResponse response)
@@ -54,15 +54,15 @@ public class GetDeploymentLog
 	{
 		int deployid = getIntParameter(request, "deployid");
 		int lineno = getIntParameter(request, "lineno", 0);
-		
+
 		System.out.println("deployid = " + deployid + "; lineno = " + lineno);
-		
+
 		Deployment dep = session.getDeployment(deployid, false);
-		List<DeploymentLogEntry> log = new ArrayList<DeploymentLogEntry>(); 
+		List<DeploymentLogEntry> log = new ArrayList<DeploymentLogEntry>();
   JSONObject ret = new JSONObject();
-  
+
 		if (dep != null)
-		{ 
+		{
 		 log = dep.getLogSinceLine(lineno);
 
 		 System.out.println("log.size() = " + log.size() + "; complete = " + dep.isComplete());
@@ -73,10 +73,10 @@ public class GetDeploymentLog
 		 	ret.add("exitcode", dep.getExitCode());
 		 }
 		}
-		
+
 		JSONArray arr = new JSONArray();
 		ret.add("log", arr);
-		
+
 		for(DeploymentLogEntry entry: log) {
 			arr.add(entry.getJSON());
 		}

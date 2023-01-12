@@ -1,9 +1,9 @@
 /*
  * Default Layout Theme
  *
- * Created for jquery.layout 
+ * Created for jquery.layout
  *
- * Copyright (c) 2010 
+ * Copyright (c) 2010
  *   Fabrizio Balliano (http://www.fabrizioballiano.net)
  *   Kevin Dalman (http://allpro.net)
  *
@@ -28,9 +28,9 @@ body {
  *	PANES & CONTENT-DIVs
  */
 .ui-layout-pane { /* all 'panes' */
-	background:	#FFF; 
+	background:	#FFF;
 	border:		1px solid #BBB;
-	padding:	10px; 
+	padding:	10px;
 	overflow:	auto;
 	/* DO NOT add scrolling (or padding) to 'panes' that have a content-div,
 	   otherwise you may get double-scrollbars - on the pane AND on the content-div
@@ -110,7 +110,7 @@ body {
 			opacity: 1.00; /* on-hover, show the resizer-bar normally */
 			filter:  alpha(opacity=100);
 		}
-		/* sliding resizer - add 'outside-border' to resizer on-hover 
+		/* sliding resizer - add 'outside-border' to resizer on-hover
 		 * this sample illustrates how to target specific panes and states */
 		.ui-layout-resizer-north-sliding-hover	{ border-bottom-width:	1px; }
 		.ui-layout-resizer-south-sliding-hover	{ border-top-width:		1px; }
@@ -159,7 +159,7 @@ body {
 
 /*
  *	PANE-MASKS
- *	these styles are hard-coded on mask elems, but are also 
+ *	these styles are hard-coded on mask elems, but are also
  *	included here as !important to ensure will overrides any generic styles
  */
 .ui-layout-mask {

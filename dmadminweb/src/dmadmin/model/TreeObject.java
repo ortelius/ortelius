@@ -27,17 +27,17 @@ public class TreeObject
 	extends DMObject
 {
 	private static final long serialVersionUID = 1327862378913381548L;
-	
+
 	private ObjectType m_objectType;
 	private int m_objectKind;
  private ArrayList<Category> m_categories;
  private int m_domainid;
-	
+
 	public TreeObject() {
 		m_objectKind=0;
 		m_domainid = 1;
 	}
-	
+
  public ArrayList<Category> GetCategories() {
   return this.m_categories;
 }
@@ -52,31 +52,31 @@ public void SetCategories(ArrayList<Category> categories) {
 		m_objectKind=0;
 		m_domainid = domainid;
 	}
-	
+
 	public void SetObjectType(ObjectType ot) {
 		m_objectType = ot;
 	}
-	
+
 	public ObjectType GetObjectType() {
 		return m_objectType;
 	}
-	
+
 	public void SetObjectKind(int kindid) {
 		m_objectKind = kindid;
 	}
-	
+
 	public int GetObjectKind() {
 		return m_objectKind;
 	}
-	
+
  public int GetDomainId() {
   return m_domainid;
  }
-	
+
 	public ObjectTypeAndId GetOTID() {
 		return new ObjectTypeAndId(m_objectType,super.getId());
 	}
-	
+
 	@Override
 	public ObjectType getObjectType() {
 		return ObjectType.DOMAIN;

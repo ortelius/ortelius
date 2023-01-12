@@ -20,11 +20,11 @@
 
 /*------------------------------ RESET + DEFAULT STYLES ---------------------------------*/
 
-/* 
+/*
 Eric Meyer's final reset.css
-Source: http://meyerweb.com/eric/thoughts/2007/05/01/reset-reloaded/ 
+Source: http://meyerweb.com/eric/thoughts/2007/05/01/reset-reloaded/
 */
-.VS-search div, .VS-search span, .VS-search a, .VS-search img, 
+.VS-search div, .VS-search span, .VS-search a, .VS-search img,
 .VS-search ul, .VS-search li, .VS-search form, .VS-search label,
 .VS-interface ul, .VS-interface li, .VS-interface {
   margin: 0;

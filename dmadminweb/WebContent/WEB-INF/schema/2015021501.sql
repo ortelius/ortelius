@@ -2,7 +2,7 @@
 --
 -- TOC entry 165 (class 1259 OID 102266)
 -- Dependencies: 9
--- Name: dm_actionaccess; Type: TABLE; Schema: dm; Owner: postgres; Tablespace: 
+-- Name: dm_actionaccess; Type: TABLE; Schema: dm; Owner: postgres; Tablespace:
 --
 
 CREATE TABLE dm_type (
@@ -13,10 +13,3 @@ CREATE TABLE dm_type (
 ) WITH (
   OIDS=FALSE
 );
-
-
-
-
-
-
-

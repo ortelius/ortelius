@@ -14,7 +14,7 @@ exit /B 1
 if exist "%dbhome%\bin\psql.exe" goto psqlok
 echo Cannot find psql.exe in POSTGRES_HOME\bin
 exit /B 1
-:psqlok 
+:psqlok
 
 shift /5
 
@@ -31,7 +31,7 @@ set PGPASSWORD=%password%
 
 echo.Running %sqlscript% in directory %sqldir%
 cd /d "%sqldir%"
-"%dbhome%\bin\psql.exe" -A -w -U %username% -f "%sqlscript%" "%database%" 
+"%dbhome%\bin\psql.exe" -A -w -U %username% -f "%sqlscript%" "%database%"
 goto :loop
 
 :end_loop
@@ -47,7 +47,7 @@ exit /B 1
 if exist "%dbhome%\bin\sqlplus.exe" goto sqlplusok
 echo Cannot find sqlplus.exe in ORACLE_HOME\bin
 exit /B 1
-:sqlplusok 
+:sqlplusok
 
 shift /5
 
@@ -62,8 +62,8 @@ if NOT "%fileext%" == ".sql" goto :loop_ora
 
 echo.Running %sqlscript% in directory %sqldir%
 cd /d "%sqldir%"
-echo "%dbhome%\bin\sqlplus.exe" "%username%/%password%@%database%" @"%sqlscript%" 
-"%dbhome%\bin\sqlplus.exe" "%username%/%password%@%database%" @"%sqlscript%" 
+echo "%dbhome%\bin\sqlplus.exe" "%username%/%password%@%database%" @"%sqlscript%"
+"%dbhome%\bin\sqlplus.exe" "%username%/%password%@%database%" @"%sqlscript%"
 goto :loop_ora
 
 :end_loop_ora
@@ -77,7 +77,7 @@ exit /B 1
 if exist "%dbhome%\bin\sqlcmd.exe" goto sqlserverok
 echo Cannot find sqlcmd.exe in SQLSERVER_HOME\bin
 exit /B 1
-:sqlserverok 
+:sqlserverok
 
 shift /5
 
@@ -94,7 +94,7 @@ set SQLCMDPASSWORD=%password%
 
 echo.Running %sqlscript% in directory %sqldir%
 cd /d "%sqldir%"
-"%dbhome%\bin\sqlcmd.exe" -S "%database%" -U %username% -i "%sqlscript%" 
+"%dbhome%\bin\sqlcmd.exe" -S "%database%" -U %username% -i "%sqlscript%"
 goto :loop_sqlserver
 
 :end_loop_sqlserver

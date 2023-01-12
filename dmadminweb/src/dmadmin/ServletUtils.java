@@ -44,7 +44,7 @@ public class ServletUtils
 		}
 		return defaultValue;
 	}
-	
+
 	public static String GetCookie(HttpServletRequest request,String CookieName)
 	{
 		Cookie[] cookies = request.getCookies();
@@ -67,11 +67,11 @@ public class ServletUtils
 		}
 		return null;
 	}
-	
+
 	public static String GetURL(HttpServletRequest request)
 	{
 		String requestURI = request.getRequestURI();
-		
+
 		if (request.getQueryString() != null) {
 		    requestURI=requestURI+"?"+request.getQueryString();
 		}

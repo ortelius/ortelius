@@ -25,7 +25,7 @@ do
    /usr/local/google-cloud-sdk/bin/kubectl apply -f $f
 done
 
-if ls *.delete > /dev/null 2>&1; then 
+if ls *.delete > /dev/null 2>&1; then
  for f in *.delete
  do
    DEPLOYMENT=`echo $f | sed "s/\.delete//"`

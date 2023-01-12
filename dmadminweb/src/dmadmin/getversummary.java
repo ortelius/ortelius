@@ -34,7 +34,7 @@ import dmadmin.model.Domain;
  */
 public class getversummary extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -42,7 +42,7 @@ public class getversummary extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
 
     // private void ProcessVersionSummary(HttpServletRequest request,HttpServletResponse response) throws ServletException, IOException {
     @Override
@@ -58,12 +58,12 @@ public class getversummary extends HttpServletBase {
     	//
     	Application app = session.getApplication(appid,true);
     	Domain domain = app.getDomain();
-    	
+
     	String summary = app.getSummary();
     	if(summary == null) {
     		summary = "";
     	}
-    	
+
     	out.println("<html><body>");
     	out.println("<form id='fragattrs'>");
     	out.println("<table border=0><tr><td><img src='images/appver-large.png'></td><td valign='top'>");
@@ -71,7 +71,7 @@ public class getversummary extends HttpServletBase {
     	out.println(summary+"<br>");
     	out.println("Domain: "+domain.getName()+"<br>");
     	out.println("</table>");
-    	out.println("<hr>");  	
+    	out.println("<hr>");
     	out.println("<table border=0 class=\"atttable\" >");
     	out.print("<tr><td>Name</td><td><input id=\"title\" type=\"text\" value=\""+app.getName()+"\"</td></tr>");
     	out.print("<tr><td>Summary</td><td><input id=\"summary\" type=\"text\" value=\""+summary+"\"</td></tr>");

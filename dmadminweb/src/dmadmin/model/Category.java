@@ -28,28 +28,28 @@ import dmadmin.json.LinkField;
 public class Category  extends DMObject
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -4129395953664594214L;
 	private int m_catid;
 	private String m_catname;
 	private List<Fragment> m_fragments;
-	
+
 	public static final Category NO_CATEGORY = new Category(10, "General");
-	
+
 	public Category(int id,String name) {
 		m_catid=id;
 		m_catname=name;
 	}
-	
+
 	public int getId() { return m_catid; }
 	public String getName() { return m_catname; }
 	public List<Fragment> getFragments() { return m_fragments; }
-	
+
 	public void setId(int catid) { m_catid = catid; }
 	public void setName(String catname) { m_catname = catname; }
 	public void setFragments(List<Fragment>f) { m_fragments = f; }
-	
+
 	public IJSONSerializable getLinkJSON() {
 		return new LinkField(ObjectType.ACTION_CATEGORY, m_catid, m_catname, false);
 	}

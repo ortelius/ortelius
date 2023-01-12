@@ -73,7 +73,7 @@ public class Login extends HttpServlet
  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
  {
   response.setHeader("Content-Type", "application/json");
-  
+
   try (DMSession so = DMSession.getInstance(request))
   {
    HttpSession hs = request.getSession();

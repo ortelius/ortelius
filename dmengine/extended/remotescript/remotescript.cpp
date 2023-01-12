@@ -111,7 +111,7 @@ RemoteScriptThread::~RemoteScriptThread()
 int RemoteScriptThread::execute(Context &ctx)
 {
 	ctx.dm().writeToLogFile("Running in remotescript thread 0x%08lxd", m_id);
-	
+
 	m_parent.executePre(ctx);
 
 	m_exitCode = m_xfer->runScriptOnServer(m_shell, m_script, m_params, false, m_usetty, ctx);

@@ -33,7 +33,7 @@ public class GetNotifiers
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -46,9 +46,9 @@ public class GetNotifiers
 			HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
 	{
-	
+
 	 JSONArray ret = session.getNotifierList();
-		
+
 		return ret;
 	}
 

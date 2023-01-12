@@ -34,7 +34,7 @@ public class PanelTabsList
 	implements Serializable
 {
 	private static final long serialVersionUID = 3847864918375923021L;
-	
+
 	private List<PanelTabs> m_list = new ArrayList<PanelTabs>();
 
 	/**
@@ -45,7 +45,7 @@ public class PanelTabsList
 		tab.setTabNumber(m_list.size());
 		return m_list.add(tab);
 	}
-	
+
 	/**
 	 * Convenience property to retrieve the first tab in the collection.
 	 * @return The first tab in the collection.
@@ -53,7 +53,7 @@ public class PanelTabsList
 	public PanelTabs getFirstTab() {
 		return m_list.get(0);
 	}
-	
+
 	/**
 	 * Property to allow access to the list for loops.
 	 * @return The underlying list.

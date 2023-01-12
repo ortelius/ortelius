@@ -22,7 +22,7 @@ const char	*envname;
 
 #ifdef __cplusplus
 extern "C"{
-#endif 
+#endif
 int ScanOptions(OPTIONS *,int,int,char **);
 #ifdef __cplusplus
 }

@@ -23,12 +23,12 @@ public class FragmentListValues
 	private String m_name;
 	private boolean m_selected;
 
-	
+
 	public FragmentListValues() {
 		m_id=0;
 		m_name="";
 		m_selected=false;
-	}	
+	}
 
 	public int getId() { return m_id; }
 	public String getName() { return m_name; }

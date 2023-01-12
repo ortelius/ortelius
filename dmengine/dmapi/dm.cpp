@@ -35,7 +35,7 @@
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#define _O_WRONLY O_WRONLY 
+#define _O_WRONLY O_WRONLY
 #define _O_BINARY 0
 #define _O_CREAT O_CREAT
 #define _O_TRUNC O_TRUNCs
@@ -105,7 +105,7 @@ bool getConnectionDetails(const char *fullurl,char **server,int *port,bool *secu
 			*secure=false;
 			sp=4;
 		}
-		if (fullurl[sp]!=':')	return true;	
+		if (fullurl[sp]!=':')	return true;
 		if (fullurl[sp+1]!='/') return true;
 		if (fullurl[sp+2]!='/') return true;
 		// http://server[:port]/ or
@@ -327,7 +327,7 @@ char *ReadToEndOfStream(SSL *ssl,int *retlen)
 	char		*ret = NULL;
 	char		xBuf[1024];
 
-	while(true) {	
+	while(true) {
         long bytesRead = SSL_read(ssl, xBuf, sizeof(xBuf));
 		if(bytesRead == -1) {
 			break;
@@ -415,10 +415,10 @@ char *ReadLineFromSocket(SSL *ssl)
 }
 
 SSL_CTX* InitCTX(void)
-{   
+{
 	SSL_METHOD *method;
     SSL_CTX *ctx;
- 
+
     OpenSSL_add_all_algorithms();  /* Load cryptos, et.al. */
     SSL_load_error_strings();   /* Bring in and register error messages */
 #ifdef OPENSSL_110
@@ -472,7 +472,7 @@ int getDeploymentLog(triODBC &odbc, int logtoshow, char *logstring)
 }
 
 int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
-			  const char *params, MESSAGE_TYPE mt, bool isSecure,const char *host, 
+			  const char *params, MESSAGE_TYPE mt, bool isSecure,const char *host,
 			  const char *soapaction, DMArray *cookieJar, DMArray *header,	// content
 			  int *status, char **contentType, char **content,char *logfilename /*=NULL*/, int *datalen /*=NULL */)	// return
 {
@@ -537,7 +537,7 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 
 	if (isSecure) {
 		SSL_library_init();
- 
+
 		ctx = InitCTX();
 		ssl = SSL_new(ctx);      /* create new SSL connection state */
 		SSL_set_fd(ssl, sock);    /* attach the socket descriptor */
@@ -674,7 +674,7 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 
 	*status = atoi(&line[9]);
 	debug1("Status: %d", *status);
-	
+
 
 	bool noWait = (*status == 204);	// No Content
 
@@ -687,7 +687,7 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 		} else {
 			line = ReadLineFromSocket(sock);
 		}
-		
+
 		if (logfile) fprintf(logfile,"< %s\n",line);
 
 		if(!*line) break;
@@ -737,7 +737,7 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 			char *newurl;
 			getConnectionDetails(NewLocation,&newserver,&newport,&newsecure,&newurl);
 			// Recurse with new details
-			// Keep original port because nexus 2 returns http://localhost rather than http://localhost:8081 
+			// Keep original port because nexus 2 returns http://localhost rather than http://localhost:8081
 			if (logfile) fflush(logfile);
 			DoHttpRequest(newserver,port,newurl,NULL,mt,newsecure,host,soapaction,cookieJar,header,status,contentType,content,logfilename,datalen);
 		} else {
@@ -793,15 +793,15 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 						*content = data;
 					}
 				}
-				// 
-				
+				//
+
 			} else if(length == -1 && !noWait) {
 				if (isSecure) {
 					*content = ReadToEndOfStream(ssl,datalen);
 				} else {
 					*content = ReadToEndOfStream(sock,datalen);
 				}
-				
+
 			}
 		}
 		if (logfile && length>0) {
@@ -868,16 +868,16 @@ int clearDirectory(const char *pathname)
 //#if defined(WIN32) && defined(_DEBUG)
 #ifdef WIN32
 		LPVOID lpMsgBuf;
-		FormatMessage( 
-			FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-			FORMAT_MESSAGE_FROM_SYSTEM | 
+		FormatMessage(
+			FORMAT_MESSAGE_ALLOCATE_BUFFER |
+			FORMAT_MESSAGE_FROM_SYSTEM |
 			FORMAT_MESSAGE_IGNORE_INSERTS,
 			NULL,
 			GetLastError(),
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 			(LPTSTR) &lpMsgBuf,
 			0,
-			NULL 
+			NULL
 		);
 		debug1("rmdir(\"%s\") failed: %s", pathname, lpMsgBuf);
 		LocalFree(lpMsgBuf);
@@ -963,7 +963,7 @@ bool TempFolder::mkdir(bool empty)
 			// Doesn't exist - so create it
 			bool ret = (MKDIR(m_pathname) == 0) ? true : false;
 			debug3("m_pathname = [%s] ret=%s",m_pathname,ret?"true":"false");
-	        
+
 			if(!ret) {
 				// Create failed - create the parent and then retry
 				debug3("Create failed");
@@ -1037,7 +1037,7 @@ TempFolder *TempFolder::parent()
 	char *pf = (char*) malloc(len + 1);
 	strncpy(pf, m_pathname, len);
 	pf[len] = '\0';
-	
+
 	TempFolder *ret = new TempFolder("dummy");
 	ret->m_pathname = pf;
 	return ret;
@@ -1210,7 +1210,7 @@ bool DM::setCurrentUser(const char *username, const char *domainlist, const char
 	if (currentUser) {
 		if (password != NULL)
 		   m_stack.setGlobal("userpass",password);
-		   
+
 		m_stack.setGlobal("username",username);
 		m_stack.setGlobal("user",new ObjectReference(currentUser));
 		if (domainlist != NULL)
@@ -1443,7 +1443,7 @@ bool DM::createTemporaryFolder(const char *deployId, char **pathname, bool empty
 		*pathname = (char*) tmp->pathname();
 	}
 
-	return tmp ? true : false; 
+	return tmp ? true : false;
 }
 
 
@@ -1542,7 +1542,7 @@ char *DM::getHostname()
 }
 
 
-typedef int (*PLUGIN_START_FN_PTR)(DM&); 
+typedef int (*PLUGIN_START_FN_PTR)(DM&);
 
 
 bool DM::loadPlugin(const char *plugin)
@@ -1557,7 +1557,7 @@ bool DM::loadPlugin(const char *plugin)
 	sprintf(buf, "lib%s.so", plugin);
 	void *handle = dlopen(buf, RTLD_LAZY);
 #endif /*WIN32*/
-	
+
 	if(handle) {
 #ifdef WIN32
 		fn = (PLUGIN_START_FN_PTR) GetProcAddress(handle, "PluginStart");
@@ -1582,7 +1582,7 @@ bool DM::loadPlugin(const char *plugin)
 		if((*fn)(*this) == 0) {
 			writeToLogFile("Plugin \"%s\" loaded.", plugin);
 			return true;
-		} 
+		}
 
 		writeToLogFile("Plugin \"%s\" failed to initialise.", plugin);
 	}
@@ -1602,7 +1602,7 @@ bool DM::installPlugin(const char *plugin)
 	sprintf(buf, "%s.so", plugin);
 	void *handle = dlopen(buf, RTLD_LAZY);
 #endif /*WIN32*/
-	
+
 	if(handle) {
 #ifdef WIN32
 		fn = (PLUGIN_START_FN_PTR) GetProcAddress(handle, "PluginInstall");
@@ -2142,7 +2142,7 @@ bool DM::API(Context &ctx ,const char *URL,const char *params,Expr **ret,DMArray
 	int status;
 	char *contentType;
 	char *content;
-	
+
 	DMArray cookieJar = new DMArray(false);
 	if (!cjp) cjp = &cookieJar;
 
@@ -2153,13 +2153,13 @@ bool DM::API(Context &ctx ,const char *URL,const char *params,Expr **ret,DMArray
 	debug3("URL=[%s]\n",URL);
 
 	int res = DoHttpRequest(hostname,port,URL,
-			  params, MESSAGE_TYPE_GET, secure, hostname, 
+			  params, MESSAGE_TYPE_GET, secure, hostname,
 			  NULL, cjp, NULL,
 			  &status, &contentType,&content);
 
 	// printf("returned, res=%d status=%d contentType=%s\n",res,status,contentType);
 	if(res == 0 && content) {
-		
+
 		if (strncmp(contentType,"application/xml",15)==0) {
 			// XML reply - only API call that returns XML is the SQL interface
 			Expr *e = new Expr(content);
@@ -2224,7 +2224,7 @@ void DM::writeToStdOut(const char* fmt, ...)
 	va_start(args, fmt);
 	vasprintf(&temp,fmt,args);
 	va_end(args);
-	
+
 	writevToStdOut(0, temp);
 	free(temp);
 }
@@ -2236,7 +2236,7 @@ void DM::writevToStdOut(long threadId, const char* buffer)
 	fprintf(stdout, buffer);
 	fprintf(stdout, "\n");
 	fflush(stdout);
-	
+
 	// Also record in db log
 	if(m_model) {
 		Thread::lock(__LINE__,__FILE__);
@@ -2519,7 +2519,7 @@ int DM::runLinkedAction(Action &action)
 	} else {
 		ActionNode *act = action.getActionNode(ctx);
 		ACTION_KIND res;
-		
+
 		if(act) {
 			const char *scopeName = act->isFunction() ? FUNCTION_SCOPE : ACTION_SCOPE;
 			Scope *actscope = new Scope(scopeName, act, *act, true);
@@ -2656,7 +2656,7 @@ int DM::runTask(Task &task)
 	StmtList *args = new StmtList();
 
 	// Add the appropriate arguments for each task type
-	if(strcmp(task.taskType(), "approve") == 0) { 
+	if(strcmp(task.taskType(), "approve") == 0) {
 		OutputStream note;
 		note.readFromStdIn();
 		args->add(new Stmt(strdup("approve"), new Node(NODE_LOOKUP, strdup("approve_approved"))));
@@ -2928,7 +2928,7 @@ int DM::internalNotify(Context &ctx,NotifyTemplate *t)
 		ExprPtr etext1 = expandedText1.evaluate(ctx);
 		ConstCharPtr stext1 = etext1->stringify();
 		args->add(new Stmt(strdup("subject"), new Node(NODE_STR,strdup(stext1)))); //expsubject is freed when Node is deleted
-		
+
 		ExtendedStmt stmt(strdup("notify"), args);
 		Audit &audit = getDummyAudit();
 		AuditEntry *ae = audit.newAuditEntry("notify");
@@ -2966,7 +2966,7 @@ int DM::internalDeployApplication(class Application &app,Context *origctx /* = N
 		}
 		Context ctx(*this, *serverList,stack);
 		Audit &audit = ctx.dm().getDummyAudit();
-		
+
 		Action *preAction = app.getPreAction();
 		Action *postAction = app.getPostAction();
 		int res=0;
@@ -3029,14 +3029,14 @@ int DM::internalDeployApplication(class Application &app,Context *origctx /* = N
 	Action *postAction = app.getPostAction();
 	//List<Component> *components = app.getComponents();
 	ApplicationComponentGraph *compGraph = app.getApplicationComponentGraph();
-	
+
 
 	// Moved to here
 	Context ctx(*this, *(getTargetEnvironment()->getServers()), stack);
 	// compGraph->dump(ctx);
 
 	int res = 0;
-	
+
 	if(compGraph) {
 		// compGraph->dump();
 		if(!getTargetEnvironment()) {
@@ -3129,7 +3129,7 @@ int DM::internalDeployApplication(class Application &app,Context *origctx /* = N
 			avloop->set("dep.last",isLast);
 			avloop->set("dep.rollback",rollback);
 			avloop->set("dep.rollforward",!rollback);
-				
+
 			if(preAction && !preActionRun) {
 				Audit &audit = ctx.dm().getDummyAudit();
 				AuditEntry *ae = audit.newAuditEntry("ApplicationPre");
@@ -3262,7 +3262,7 @@ int DM::doDeployment(Application &app,Context *ctx /* = NULL */)
 	stack.push(app.getVars());
 
 	char *szTaskID = getenv("tritaskid");
-	int deptaskid = 0;	
+	int deptaskid = 0;
 	Task *task = (Task *)0;
 	Action *preAction = (Action *)0;
 	Action *postAction = (Action *)0;

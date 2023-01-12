@@ -30,11 +30,11 @@ public class Server
 	extends DMObject
 {
 	private static final long serialVersionUID = 1327862378913381548L;
-	
+
 	private String m_hostname;
 	private String m_protocol;
 	private String m_basedir;
-	
+
 	private int 	m_xpos;
 	private int 	m_ypos;
 	private String 	m_typename;
@@ -49,7 +49,7 @@ public class Server
 	private NotifyTemplate m_pingTemplate;
 	private NotifyTemplate m_md5Template;
 	private ArrayList<CompType> m_servercomptype;
-	
+
 	private String formatTime(int s)
 	{
 		Integer Hours = (int)Math.floor(s / 3600);
@@ -60,20 +60,20 @@ public class Server
 		if (Mins<10) sMins = "0"+sMins;
 		return sHours+":"+sMins;
 	}
-	
+
 	private void init() {
 		m_typename="";
 	}
 	public Server() {
 		init();
 	}
-	
+
 	public Server(DMSession sess, int id, String name) {
 		super(sess, id, name);
 		init();
 	}
-	
-	
+
+
 	@Override
 	public ObjectType getObjectType() {
 		return ObjectType.SERVER;
@@ -88,113 +88,113 @@ public class Server
 	public String getForeignKey() {
 		return "serverid";
 	}
-	
+
 	public String getHostName()  { return m_hostname; }
 	public void setHostName(String hostname)  { m_hostname = hostname; }
-	
+
 	public String getProtocol()  { return m_protocol; }
 	public void setProtocol(String protocol)  { m_protocol = protocol; }
-	
+
 	public String getBaseDir()  { return m_basedir; }
 	public void setBaseDir(String basedir)  { m_basedir = basedir; }
-	
+
 	public ServerType getServerType()  { return m_serverType; }
 	public void setServerType(ServerType serverType)  { m_serverType = serverType; }
-	
+
  public ArrayList<CompType> getServerCompType()  { return m_servercomptype; }
  public void setServerCompType(ArrayList<CompType> servercomptype)  { m_servercomptype = servercomptype; }
- 
+
 	public Credential getCredential()  { return m_cred; }
 	public void setCredential(Credential cred)  { m_cred = cred; }
-	
+
 	public void setTypeName(String typename) {
 		m_typename = typename;
 	}
-	
+
 	public void setXpos(int xpos) {
 		m_xpos = xpos;
 	}
-	
+
 	public void setYpos(int ypos) {
 		m_ypos = ypos;
 	}
-	
+
 	public void setAutoPing(boolean ap) {
 		m_autoping = ap;
 	}
-	
+
 	public void setAutoMD5(boolean amd5) {
 		m_autoMD5 = amd5;
 	}
-	
+
 	public void setPingInterval(int interval) {
 		m_pingInterval = interval;
 	}
-	
+
 	public void setPingStart(int start) {
 		m_pingStart = start;
 	}
-	
+
 	public void setPingEnd(int end) {
 		m_pingEnd = end;
 	}
-	
+
 	public void setSSHPort(int portnum) {
 		m_sshPort = portnum;
 	}
-	
+
 	public String getTypeName() {
 		return m_typename;
 	}
-	
+
 	public int getXpos() {
 		return m_xpos;
 	}
-	
+
 	public int getYpos() {
 		return m_ypos;
 	}
-	
+
 	public boolean getAutoPing() {
 		return m_autoping;
 	}
-	
+
 	public boolean getAutoMD5() {
 		return m_autoMD5;
 	}
-	
+
 	public int getPingInterval() {
 		return m_pingInterval;
 	}
-	
+
 	public int getPingStart() {
 		return m_pingStart;
 	}
-	
+
 	public int getPingEnd() {
-		return (m_pingEnd>85500 || m_pingEnd==0)?85500:m_pingEnd;	// 85500 = 23:45. 
+		return (m_pingEnd>85500 || m_pingEnd==0)?85500:m_pingEnd;	// 85500 = 23:45.
 	}
-	
+
 	public int getSSHPort() {
 		return m_sshPort;
 	}
-	
+
 	public NotifyTemplate getPingTemplate()  { return m_pingTemplate; }
 	public void setPingTemplate(NotifyTemplate template)  { m_pingTemplate = template; }
-	
+
 	public NotifyTemplate getMD5Template()  { return m_md5Template; }
 	public void setMD5Template(NotifyTemplate template)  { m_md5Template = template; }
-	
+
 	public ServerStatus getServerStatus()
 	{
 		return m_session.getServerStatus(m_id);
 	}
-	
+
  public IJSONSerializable available() {
   PropertyDataSet ds = new PropertyDataSet();
   ServerStatus ss = getServerStatus();
   if (ss != null) {
-   
+
    if (ss.getConnectionStatus().equalsIgnoreCase("Failed"))
     ds.addProperty("running", "false");
    else
@@ -205,7 +205,7 @@ public class Server
 
   return ds.getJSON();
  }
- 
+
 	public IJSONSerializable getStatusData() {
 		PropertyDataSet ds = new PropertyDataSet();
 		ServerStatus ss = getServerStatus();
@@ -258,19 +258,19 @@ public class Server
 				(m_serverType != null) ? m_serverType.getLinkJSON() : null);
 
   boolean found = false;
-  
+
   if (m_servercomptype != null)
-  { 
+  {
    for (int i=0;i<m_servercomptype.size();i++)
    {
     found = true;
     ds.addProperty(SummaryField.SERVER_COMPTYPE, "Endpoint Types", m_servercomptype.get(i).getId() + ";" + m_servercomptype.get(i).getName());
    }
-  } 
-  
+  }
+
   if (!found)
    ds.addProperty(SummaryField.SERVER_COMPTYPE, "Endpoint Types", "");
-  
+
   ds.addProperty(SummaryField.SERVER_HOSTNAME, "Hostname", m_hostname);
 		ds.addProperty(SummaryField.SERVER_PROTOCOL, "Protocol", m_protocol);
 		ds.addProperty(SummaryField.SERVER_SSHPORT,"SSH Port Number",m_sshPort);
@@ -293,7 +293,7 @@ public class Server
 	public boolean updateSummary(SummaryChangeSet changes) {
 		return m_session.updateServer(this, changes);
 	}
-	
+
 	@Override
 	public boolean hasReadWrite() {
 		return false;

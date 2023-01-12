@@ -129,7 +129,7 @@ ApplicationVersion *AppVerLoopStmtImpl::calcTo(Context &ctx)
 
 	/*
 	ConstCharPtr to = m_parent.getArgAsString("to", ctx);
-	if(!to && !m_tgtAppVer) {	
+	if(!to && !m_tgtAppVer) {
 		throw RuntimeError(m_parent, ctx.stack(),
 			"To version must be specified");
 	}
@@ -143,7 +143,7 @@ ApplicationVersion *AppVerLoopStmtImpl::calcTo(Context &ctx)
 	ApplicationVersion *avto = NULL;
 	ExprPtr eto = m_parent.getArg("to", ctx);
 	if(eto) {
-		
+
 		if(eto->kind() == KIND_OBJECT) {
 			ObjectReference *oto = eto->toObjectReference();
 			if(oto) {
@@ -168,7 +168,7 @@ ApplicationVersion *AppVerLoopStmtImpl::calcTo(Context &ctx)
 		}
 	} else {
 		// "to" not specified
-		if(!m_tgtAppVer) {	
+		if(!m_tgtAppVer) {
 			throw RuntimeError(m_parent, ctx.stack(),
 				"To version must be specified");
 		}
@@ -267,7 +267,7 @@ void AppVerLoopStmtImpl::execute(Context &ctx)
 				m_parent.executeBody(newctx);
 			} catch(ContinueException& /*e*/) {
 				ctx.dm().writeToLogFile("continue avloop loop");
-			} 
+			}
 			newctx.stack().pop(APPLICATION_SCOPE);
 			m_isFirst = false;
 		}

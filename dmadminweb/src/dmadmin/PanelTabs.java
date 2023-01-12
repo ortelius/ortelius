@@ -19,23 +19,23 @@ package dmadmin;
 public class PanelTabs implements java.io.Serializable
 {
 	private static final long serialVersionUID = -5362995729983900561L;
-	
+
 	private int m_tabNumber;
 	private String m_tabName;
 	private String m_tabId;
-	
+
 	public PanelTabs() {
 		m_tabNumber = 0;
 		m_tabName = "";
 		m_tabId = "";
     }
-	
+
 	public PanelTabs(String tabName,String tabId) {
 		m_tabNumber = 0;
 		m_tabName = tabName;
 		m_tabId = tabId;
     }
-	
+
 	public void setTabNumber(int tabno) {
 		m_tabNumber = tabno;
 	}
@@ -45,7 +45,7 @@ public class PanelTabs implements java.io.Serializable
 	public void setTabId(String tabId) {
 		m_tabId = tabId;
 	}
-	
+
 	public int getTabNumber() {
 		return m_tabNumber;
 	}

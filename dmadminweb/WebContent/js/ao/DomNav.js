@@ -59,10 +59,10 @@
             tree = removeProp(tree, "parentid");
             return tree;
         }
-        
+
  function DomNav()
  {
-    $("#domnav-panel").html("");   
+    $("#domnav-panel").html("");
 
     $.getJSON("/dmadminweb/ReportsData?type=domainlist", function(flatData) {
         waitForElement("#domnav-panel",function(){
@@ -70,7 +70,7 @@
             data = data[0];
         //    console.log(JSON.stringify(data, null, " "));
 
-            
+
             partition = data => {
                 const root = d3.hierarchy(data)
                     .sum(d => d.children.length + 1)
@@ -79,7 +79,7 @@
                     .size([2 * Math.PI, root.height + 1])
                     (root);
             }
-            
+
             console.log(data);
 
             var color = d3.scaleOrdinal().range(d3.quantize(d3.interpolateRainbow, data.children.length + 1));
@@ -151,7 +151,7 @@
 
             var dname = $("#right_panel_header > h1").text();
             dname = dname.substring("Domain: ".length);
-            
+
             domnav_text = g.append("svg:text")
             .attr("class", "aster-score")
             .attr("dy", "1em")
@@ -159,7 +159,7 @@
             .attr("pointer-events", "all")
             .text(dname)
             .on("click", clicked);
-            
+
             domnav_back = g.append("svg:text")
             .attr("class", "aster-score")
             .attr("dy", "2.5em")
@@ -167,10 +167,10 @@
             .attr("pointer-events", "all")
             .text("")
             .on("click", clicked);
-            
+
             function clicked(p) {
-             
-             if (p.current ? (p.children ? 0 : 1) : 0) 
+
+             if (p.current ? (p.children ? 0 : 1) : 0)
                 $("#domnav-panel > svg > g > circle").attr("fill","rgb(110, 64, 170)").attr("fill-opacity","0.4");
              else
                 $("#domnav-panel > svg > g > circle").attr("fill","#fff");
@@ -180,30 +180,30 @@
                  var middle = $("#domnav-panel > svg > g > circle");
                  middle[0].dispatchEvent(new Event('click'));
                  return;
-                } 
+                }
                 current_dom_data = p;
                 current_dom_path = this;
                 var header_html = '<button class="scorecard_button" onClick="javascript:ScorecardDomain(objid)">' +
                						'<i class="fa-light fa-table-columns aria-hidden="true"  style="padding-right:5px"></i>Scorecard</button>' +
-               						'<h1 style="display:inline-block">Domain: ' + p.data.name + '</h1>';       
-           
+               						'<h1 style="display:inline-block">Domain: ' + p.data.name + '</h1>';
+
                 $("#right_panel_header").html(header_html);
                 domnav_text.text(p.data.name);
-                
+
                 if (p.depth > 0)
                  domnav_back.text("Click to go parent domain");
                 else
                  domnav_back.text("");
-                
+
                 objid = p.data.domid;
                 LoadSummaryData("summ", objtypeAsInt, objtype, p.data.domid, "");
-                
+
                 if (p.current ? (p.children ? 0 : 1) : 0)  //condition to check the last node
                   $("#summ_header_buttons > button.delete_button").css("color","#3367d6");
                 else
                   $("#summ_header_buttons > button.delete_button").css("color","grey");
-               
-                parent.datum(p.parent || root);                
+
+                parent.datum(p.parent || root);
 
                 root.each(d => d.target = {
                     x0: Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
@@ -231,20 +231,20 @@
                     .attr("fill-opacity", d => +labelVisible(d.target))
                     .attrTween("transform", d => () => labelTransform(d.current));
             }
-            
+
             current_dom_path = clicked;
-            
+
             function doDisplay(p, d)
             {
              var parent = p.data.name.split('.');
              var curr   = d.data.name.split('.');
-             
-             if ((parent.length == 1 && curr.length > 2) || d.children) 
+
+             if ((parent.length == 1 && curr.length > 2) || d.children)
               return 0.0;
              else
               return 0.6;
             }
-            
+
             function arcVisible(d) {
                 return d.y1 <= 3 && d.y0 >= 1 && d.x1 > d.x0;
             }
@@ -261,7 +261,7 @@
 
             if (lookupDom != "")
             {
-             var findpath = $("#domnav-panel > svg > g > g > path > title:contains(\"" + lookupDom + "\")"); 
+             var findpath = $("#domnav-panel > svg > g > g > path > title:contains(\"" + lookupDom + "\")");
              if (findpath.length > 0)
              {
               var parent_path = null;
@@ -275,18 +275,18 @@
                 break;
                }
               }
-              
+
               current_dom_data = parent_path;
               }
              }
-            
+
             if (current_dom_data != null)
              current_dom_path(current_dom_data);
-            
+
             if (lookupDom != "")
             {
                 $("#domnav-panel > svg > g > circle").attr("fill","rgb(110, 64, 170)").attr("fill-opacity","0.4");
-                
+
                 if (editdom)
 				  {
 				   setTimeout(
@@ -301,12 +301,12 @@
         });
     });
         }
- 
+
  function LoadTasks(tablename,objtypeAsInt,objtype, objid, sel)
  {
-  
-  $('#tasks_header_buttons > button.delete_button').css("color","grey"); 
-  
+
+  $('#tasks_header_buttons > button.delete_button').css("color","grey");
+
   $.ajax({
    url : "DomainDetails?domainid=" + objid,
    dataType : 'json',
@@ -322,28 +322,28 @@
     var val = row.name;
 
     rowcnt++;
-    
+
     td += '<tr id="task_row_' + rowcnt + '"><td><input type="checkbox" id="task_cb_' + rowcnt + '" onchange="toggleTask(this);" />&nbsp;</td><td id="task_val_' + rowcnt + '">' + val + '</td><td id="task_key_' + rowcnt + '" style="display:none;">' + key + '</td></tr>';
-    
+
     task_rowcnt = rowcnt;
    }
    $("#" + tablename + " > tbody").html(td);
-   
+
    for (var i = 0; i < res.length; i++)
    {
     var row = i+1
-    
+
     $("#task_row_" +  row + " > td:nth-child(2)").on('click', function (e) {
      var id = this.id
      id = id.replace("val","cb");
-     
+
      if ($("#" + id).is(":checked"))
       $("#" + id).prop("checked", false).trigger("change");
      else
       $("#" + id).click();
     });
    }
-   
+
    LoadTaskSummary(null);
   },
   error : function(jqxhr, status, err)
@@ -357,9 +357,9 @@
  function DeleteDomain(objtypeAsInt,objid)
  {
   $.ajax({
-   url:"RemoveNode", 
-   data: { 
-              "rel" : "Domain", 
+   url:"RemoveNode",
+   data: {
+              "rel" : "Domain",
               "id" : objid
    },
    dataType: "json",
@@ -372,24 +372,24 @@
    }
   });
  }
- 
+
  function toggleTask(e)
  {
   if (prevcb != null && prevcb != e.id)
    $("#" + prevcb).prop("checked", false);
-  
+
   prevcb = e.id;
-  
+
   if (e.checked)
-  { 
-   $('#tasks_header_buttons > button.delete_button').css("color","#3367d6"); 
+  {
+   $('#tasks_header_buttons > button.delete_button').css("color","#3367d6");
    LoadTaskSummary(e.id);
-  } 
+  }
   else
   {
-   $('#tasks_header_buttons > button.delete_button').css("color","grey"); 
+   $('#tasks_header_buttons > button.delete_button').css("color","grey");
    LoadTaskSummary(null);
-  } 
+  }
  }
 
  function LoadTaskSummary(cb_id)
@@ -402,13 +402,13 @@
    task_tdedit = "";
    return;
   }
-  
+
   var keyid = cb_id.replace("cb","key");
   var id = $("#" + keyid).text();
   var objtype = id.substring(0,2);
   var objid = id.substring(2);
   var objtypeAsInt = obj2Int[objtype][0];
-  
+
   LoadTaskSummaryData("task_summ", objtypeAsInt, objtype, objid, "");
   LoadTaskAccess();
  }
@@ -445,11 +445,11 @@
        helper : "clone",
        cursor : "move"
       };
-     
+
      $(".icon_inline_Group").draggable(DraggableOptions);
     }
   });
-  
+
   $("#sub_panel_bottomleft").droppable({
    drop : function(event, ui)
    {
@@ -514,7 +514,7 @@
    }
   });
  }
- 
+
  function AddTaskRow(tablename,tasktype)
  {
   $.ajax({
@@ -540,11 +540,10 @@
      editdom = true;
      DomNav();
    }
-  }); 
+  });
  }
- 
+
 function ScorecardDomain(objid)
 {
  window.open("/reports/scorecard.html?domain=" + objid, '_blank');
 }
-        

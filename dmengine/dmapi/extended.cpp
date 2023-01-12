@@ -659,7 +659,7 @@ class WaitForStmtImplFactory : public virtual ExtendedStmtImplFactory
 {
 public:
 	WaitForStmtImplFactory();
-	
+
 	bool allowsBody()    { return false; }
 	bool allowsPrePost() { return false; }
 	bool isThreaded()    { return false; }
@@ -1557,7 +1557,7 @@ void ModifyStmtImpl::execute(Context &ctx)
 				Thread::lock(__LINE__,__FILE__,server->name());
 				if(!dz.exists(*server)) {
 					if(!dz.create(*server, true)) {
-						throw RuntimeError(m_parent, ctx.stack(), 
+						throw RuntimeError(m_parent, ctx.stack(),
 							"Unable to create server dropzone '%s' for server '%s'",
 							dz.name(), server->name());
 					}
@@ -1566,7 +1566,7 @@ void ModifyStmtImpl::execute(Context &ctx)
 
 				ServerDropzone *sdz = dz.getServerDropzone(*server);
 				if(!sdz) {
-					throw RuntimeError(m_parent, ctx.stack(), 
+					throw RuntimeError(m_parent, ctx.stack(),
 						"a) Failed to get server dropzone '%s' for server '%s'",
 						dz.name(), server->name());
 				}
@@ -1576,7 +1576,7 @@ void ModifyStmtImpl::execute(Context &ctx)
 			for(Server *server = sit.first(); server; server = sit.next()) {
 				ServerDropzone *sdz = dz.getServerDropzone(*server);
 				if(!sdz) {
-					throw RuntimeError(m_parent, ctx.stack(), 
+					throw RuntimeError(m_parent, ctx.stack(),
 						"b) Failed to get server dropzone '%s' for server '%s'",
 						dz.name(), server->name());
 				}
@@ -1714,7 +1714,7 @@ void RenameStmtImpl::doRename(IDropzone &indz, Node &nfrom, IDropzone &outdz, No
 				}
 			}
 		}
-		
+
 		if(ret == 0) {
 			DropzoneFile *dzf = indz.getFile(from);
 			if(dzf) {
@@ -1752,7 +1752,7 @@ void RenameStmtImpl::execute(Context &ctx)
 				Thread::lock(__LINE__,__FILE__,server->name());
 				if(!dz.exists(*server)) {
 					if(!dz.create(*server, true)) {
-						throw RuntimeError(m_parent, ctx.stack(), 
+						throw RuntimeError(m_parent, ctx.stack(),
 							"Unable to create server dropzone '%s' for server '%s'",
 							dz.name(), server->name());
 					}
@@ -1761,7 +1761,7 @@ void RenameStmtImpl::execute(Context &ctx)
 
 				ServerDropzone *sdz = dz.getServerDropzone(*server);
 				if(!sdz) {
-					throw RuntimeError(m_parent, ctx.stack(), 
+					throw RuntimeError(m_parent, ctx.stack(),
 						"Failed to get server dropzone '%s' for server '%s'",
 						dz.name(), server->name());
 				}
@@ -1770,7 +1770,7 @@ void RenameStmtImpl::execute(Context &ctx)
 			for(Server *server = sit.first(); server; server = sit.next()) {
 				ServerDropzone *sdz = dz.getServerDropzone(*server);
 				if(!sdz) {
-					throw RuntimeError(m_parent, ctx.stack(), 
+					throw RuntimeError(m_parent, ctx.stack(),
 						"Failed to get server dropzone '%s' for server '%s'",
 						dz.name(), server->name());
 				}
@@ -1850,7 +1850,7 @@ void DeleteStmtImpl::execute(Context &ctx)
 			sfilename = e->toString();
 		}
 		else throw RuntimeError(m_parent,ctx.stack(),"'file' parameter must be a string or DropZoneFile object");
-	} 
+	}
 
 	// ConstCharPtr sfilename = m_parent.getArgAsString("file", ctx);
 	ConstCharPtr filename = sfilename ? Dropzone::slashify(sfilename) : NULL;
@@ -1974,7 +1974,7 @@ void CreateStmtImpl::execute(Context &ctx)
 	int out = open(absfilename, FILE_CREATE_PERMISSIONS, FILE_CREATE_MODE);
 	if (out > 0) {
 		// file was created okay
-		
+
 		Node* nStream = m_parent.getArgNode("stream");
 		if (nStream) {
 			// stream: specified
@@ -2094,14 +2094,14 @@ void ZipAddStmtImpl::AddFile(Context &ctx,Dropzone &dz,Variable *v,const char *o
 	if (tgtfile) {
 		// Check that the file exists. If this has come from a dropzonefile object then it should do
 		// but it may have been passed as an actual filename. Note, zip_source_file_create doesn't read
-		// the file until it comes to create the zipfile (on zip_close). If we left the error to be 
+		// the file until it comes to create the zipfile (on zip_close). If we left the error to be
 		// picked up there, we wouldn't know what file was missing
 		struct stat t;
 		if (stat(tgtfile,&t)!=0) {
 			free(tgtfile);
 			throw RuntimeError("Cannot add file %s to zipfile: %s",fileToAdd,strerror(errno));
 		}
-		
+
 	}
 	struct zip_source *sf = zip_source_file(m_zfp,tgtfile,0,0);
 	if (!sf) {
@@ -2130,7 +2130,7 @@ void ZipAddStmtImpl::AddFile(Context &ctx,Dropzone &dz,Variable *v,const char *o
 			m_dzfiles = (char **)malloc(sizeof(char *)*m_numFiles);
 		}
 		m_dzfiles[m_numFiles-1] = tgtfile;
-		
+
 	}
 }
 
@@ -2177,7 +2177,7 @@ void ZipAddStmtImpl::execute(Context &ctx)
 		}
 		// Files is hopefully an array of DropzoneFile objects
 		DMArray *arr = e->toArray();
-		
+
 		if (arr->isList()) {
 			// If a list, just loop through the keys in sequence
 			for (int i=0;i<arr->count();i++) {
@@ -2190,7 +2190,7 @@ void ZipAddStmtImpl::execute(Context &ctx)
 			// Associative Array
 			AutoPtr<ExprList> keys = e->array_keys();
 			ListIterator<Expr> iter(*keys);
-			for(Expr *k = iter.first(); k; k = iter.next()) { 
+			for(Expr *k = iter.first(); k; k = iter.next()) {
 				ConstCharPtr str = k->toString();
 				Variable *v = arr->get(str);
 				AddFile(ctx,dz,v,(const char *)str);
@@ -2353,7 +2353,7 @@ void ZipDelStmtImpl::execute(Context &ctx)
 	Node *nFiles = m_parent.getArgNode("files");
 	Node *nFile = m_parent.getArgNode("file");
 	if (nFile && nFiles) throw RuntimeError(m_parent, ctx.stack(), "'files' and 'file' parameters are mutually exclusive");
-	
+
 	int ziperr;
 	m_zfp = zip_open(absfilename,0,&ziperr);
 	if (!m_zfp) {
@@ -2370,7 +2370,7 @@ void ZipDelStmtImpl::execute(Context &ctx)
 		}
 		// Files is hopefully an array of DropzoneFile objects
 		DMArray *arr = e->toArray();
-		
+
 		if (arr->isList()) {
 			// If a list, just loop through the keys in sequence
 			for (int i=0;i<arr->count();i++) {
@@ -2383,7 +2383,7 @@ void ZipDelStmtImpl::execute(Context &ctx)
 			// Associative Array
 			AutoPtr<ExprList> keys = e->array_keys();
 			ListIterator<Expr> iter(*keys);
-			for(Expr *k = iter.first(); k; k = iter.next()) { 
+			for(Expr *k = iter.first(); k; k = iter.next()) {
 				ConstCharPtr str = k->toString();
 				Variable *v = arr->get(str);
 				RemoveFile(ctx,v);
@@ -2405,7 +2405,7 @@ void ZipDelStmtImpl::execute(Context &ctx)
 			RemoveFile(ctx,new Variable(NULL,fileToDel));
 		}
 	}
-	
+
 	int cres = zip_close(m_zfp);
 	if (cres == -1) {
 		throw RuntimeError(m_parent, ctx.stack(),
@@ -2513,7 +2513,7 @@ void ZipGetStmtImpl::execute(Context &ctx)
 	Node *nFiles = m_parent.getArgNode("files");
 	Node *nFile = m_parent.getArgNode("file");
 	if (nFile && nFiles) throw RuntimeError(m_parent, ctx.stack(), "'files' and 'file' parameters are mutually exclusive");
-	
+
 	int ziperr;
 	m_zfp = zip_open(absfilename,0,&ziperr);
 	if (!m_zfp) {
@@ -2530,7 +2530,7 @@ void ZipGetStmtImpl::execute(Context &ctx)
 		}
 		// Files is hopefully an array of DropzoneFile objects
 		DMArray *arr = e->toArray();
-		
+
 		if (arr->isList()) {
 			// If a list, just loop through the keys in sequence
 			for (int i=0;i<arr->count();i++) {
@@ -2543,7 +2543,7 @@ void ZipGetStmtImpl::execute(Context &ctx)
 			// Associative Array
 			AutoPtr<ExprList> keys = e->array_keys();
 			ListIterator<Expr> iter(*keys);
-			for(Expr *k = iter.first(); k; k = iter.next()) { 
+			for(Expr *k = iter.first(); k; k = iter.next()) {
 				ConstCharPtr str = k->toString();
 				Variable *v = arr->get(str);
 				GetFile(ctx,dz,v);
@@ -3102,7 +3102,7 @@ int RemoteScriptActionImpl::executeOne(
 		}
 	}
 
-	
+
 
 	// Expand variables in the filepath
 	Node nfilepath(NODE_STR, strdup(rawfilepath), true);

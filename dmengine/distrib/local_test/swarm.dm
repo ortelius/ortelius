@@ -7,13 +7,13 @@ action swarm_add_review_comment
   	'user' => 'Robert',
   	'password' => 'perforce'
   }, 'cookiejar');
-  
+
   // DEBUG
   echo "isValid = ${loginresult.isValid}";
   echo "error = ${loginresult.error}";
   echo "info.userName = ${loginresult.info.userName}";
   // END-DEBUG
-  
+
   restful_post(server: $server, uri: '/comments/add', cookiesfrom: $cookiejar, params: {
   	'topic' => "reviews/${review:-15}",
   	'context' => "{\"reviews\":${review:-15}}",
@@ -32,9 +32,9 @@ function swarm_get_reviews(server)
   	'user' => 'Robert',
   	'password' => 'perforce'
   }, 'cookiejar');
-  
+
   set reviewresult = restful_post($server, 80, '/reviews?format=json', $cookiejar);
-  
+
   // DEBUG
   for(n = 0; $n < ${reviewresult.reviews.length()}; n = $n + 1) {
     set review = ${reviewresult.reviews[$n]};
@@ -42,7 +42,7 @@ function swarm_get_reviews(server)
     echo "${review.id} - $desc";
   }
   // END-DEBUG
-  
+
   return $reviewresult;
 }
 

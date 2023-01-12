@@ -37,7 +37,7 @@ import dmadmin.model.UserGroup;
 public class GetNotifyRecipientList extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
- HttpSession session = null;      
+ HttpSession session = null;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -54,23 +54,23 @@ public class GetNotifyRecipientList extends HttpServlet {
 		response.setContentType("application/json;charset=UTF-8");
 		String templateid = request.getParameter("id");
 		int tid = Integer.parseInt(templateid);
-		
+
 		PrintWriter out = response.getWriter();
-		
+
   try (DMSession so = DMSession.getInstance(request)) {
   session = request.getSession();
   session.setAttribute("session", so);
   so.checkConnection(request.getServletContext());
-  
+
 		List<UserGroup> usergroups = so.getGroupsForTemplate(tid,true);
 		List<User> users = so.getUsersForTemplate(tid,true);
 		List<UserGroup> avgroups = so.getGroupsForTemplate(tid,false);
 		List<User> avusers = so.getUsersForTemplate(tid,false);
-		
+
 		JSONObject obj = new JSONObject();
 		JSONArray arr1 = new JSONArray();
 		JSONArray arr2 = new JSONArray();
-		
+
 		for (UserGroup g: usergroups) {
 			JSONObject gobj = new JSONObject();
 			String id = "ag" + g.getId();
@@ -98,7 +98,7 @@ public class GetNotifyRecipientList extends HttpServlet {
     arr2.add(uobj);
 	  }
 		}
-		
+
 		for (UserGroup g: avgroups) {
 			JSONObject gobj = new JSONObject();
 			String id = "ag" + g.getId();
@@ -107,7 +107,7 @@ public class GetNotifyRecipientList extends HttpServlet {
 			arr2.add(gobj);
 		}
 		for (User s: avusers) {
-			if (s.getId()<0) 
+			if (s.getId()<0)
 			{
 				JSONObject gobj = new JSONObject();
 				String id = "as" + s.getId()*-1;
@@ -124,10 +124,10 @@ public class GetNotifyRecipientList extends HttpServlet {
     arr2.add(uobj);
    }
 		}
-		
+
 		obj.add("Recipients", arr1);
 		obj.add("Available", arr2);
-		
+
 		String ret = obj.getJSON();
 		System.out.println(ret);
 		out.println(ret);

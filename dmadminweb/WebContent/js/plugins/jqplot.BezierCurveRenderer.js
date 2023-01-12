@@ -6,13 +6,13 @@
  * Revision: 1250
  *
  * Copyright (c) 2009-2013 Chris Leonello
- * jqPlot is currently available for use in all personal or commercial projects 
- * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL 
- * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can 
- * choose the license that best suits your project and use it accordingly. 
+ * jqPlot is currently available for use in all personal or commercial projects
+ * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL
+ * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can
+ * choose the license that best suits your project and use it accordingly.
  *
- * Although not required, the author would appreciate an email letting him 
- * know of any substantial use of jqPlot.  You can reach the author at: 
+ * Although not required, the author would appreciate an email letting him
+ * know of any substantial use of jqPlot.  You can reach the author at:
  * chris at jqplot dot com or see http://www.jqplot.com/info.php .
  *
  * If you are feeling kind and generous, consider supporting the project by
@@ -26,7 +26,7 @@
  *     http://hexmen.com/js/sprintf.js
  *     The author (Ash Searle) has placed this code in the public domain:
  *     "This code is unrestricted: you are free to use it however you like."
- * 
+ *
  */
 (function($) {
     // Class: $.jqplot.BezierCurveRenderer.js
@@ -37,11 +37,11 @@
     $.jqplot.BezierCurveRenderer = function(){
         $.jqplot.LineRenderer.call(this);
     };
-    
+
     $.jqplot.BezierCurveRenderer.prototype = new $.jqplot.LineRenderer();
     $.jqplot.BezierCurveRenderer.prototype.constructor = $.jqplot.BezierCurveRenderer;
 
-    
+
     // Method: setGridData
     // converts the user data values to grid coordinates and stores them
     // in the gridData array.
@@ -60,9 +60,9 @@
         if (data.length == 2) {
             if (idx == 0) {
                 this.gridData = [
-                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])], 
-                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]), 
-                        xp.call(this._xaxis, data[1][2]), yp.call(this._yaxis, data[1][3]),  
+                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])],
+                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]),
+                        xp.call(this._xaxis, data[1][2]), yp.call(this._yaxis, data[1][3]),
                         xp.call(this._xaxis, data[1][4]), yp.call(this._yaxis, data[1][5])],
                     [xp.call(this._xaxis, data[1][4]), yp.call(this._yaxis, this._yaxis.min)],
                     [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, this._yaxis.min)]
@@ -71,13 +71,13 @@
             else {
                 var psd = plot.series[idx-1].data;
                 this.gridData = [
-                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])], 
-                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]), 
-                        xp.call(this._xaxis, data[1][2]), yp.call(this._yaxis, data[1][3]),  
+                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])],
+                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]),
+                        xp.call(this._xaxis, data[1][2]), yp.call(this._yaxis, data[1][3]),
                         xp.call(this._xaxis, data[1][4]), yp.call(this._yaxis, data[1][5])],
                     [xp.call(this._xaxis, psd[1][4]), yp.call(this._yaxis, psd[1][5])],
-                    [xp.call(this._xaxis, psd[1][2]), yp.call(this._yaxis, psd[1][3]), 
-                        xp.call(this._xaxis, psd[1][0]), yp.call(this._yaxis, psd[1][1]),  
+                    [xp.call(this._xaxis, psd[1][2]), yp.call(this._yaxis, psd[1][3]),
+                        xp.call(this._xaxis, psd[1][0]), yp.call(this._yaxis, psd[1][1]),
                         xp.call(this._xaxis, psd[0][0]), yp.call(this._yaxis, psd[0][1])]
                 ];
             }
@@ -85,9 +85,9 @@
         else {
             if (idx == 0) {
                 this.gridData = [
-                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])], 
-                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]), 
-                        xp.call(this._xaxis, data[2][0]), yp.call(this._yaxis, data[2][1]),  
+                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])],
+                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]),
+                        xp.call(this._xaxis, data[2][0]), yp.call(this._yaxis, data[2][1]),
                         xp.call(this._xaxis, data[3][0]), yp.call(this._yaxis, data[3][1])],
                     [xp.call(this._xaxis, data[3][1]), yp.call(this._yaxis, this._yaxis.min)],
                     [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, this._yaxis.min)]
@@ -96,19 +96,19 @@
             else {
                 var psd = plot.series[idx-1].data;
                 this.gridData = [
-                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])], 
-                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]), 
-                        xp.call(this._xaxis, data[2][0]), yp.call(this._yaxis, data[2][1]),  
+                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])],
+                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]),
+                        xp.call(this._xaxis, data[2][0]), yp.call(this._yaxis, data[2][1]),
                         xp.call(this._xaxis, data[3][0]), yp.call(this._yaxis, data[3][1])],
                     [xp.call(this._xaxis, psd[3][0]), yp.call(this._yaxis, psd[3][1])],
-                    [xp.call(this._xaxis, psd[2][0]), yp.call(this._yaxis, psd[2][1]), 
-                        xp.call(this._xaxis, psd[1][0]), yp.call(this._yaxis, psd[1][1]),  
+                    [xp.call(this._xaxis, psd[2][0]), yp.call(this._yaxis, psd[2][1]),
+                        xp.call(this._xaxis, psd[1][0]), yp.call(this._yaxis, psd[1][1]),
                         xp.call(this._xaxis, psd[0][0]), yp.call(this._yaxis, psd[0][1])]
                 ];
             }
         }
     };
-    
+
     // Method: makeGridData
     // converts any arbitrary data values to grid coordinates and
     // returns them.  This method exists so that plugins can use a series'
@@ -127,9 +127,9 @@
         if (data.length == 2) {
             if (idx == 0) {
                 gd = [
-                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])], 
-                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]), 
-                        xp.call(this._xaxis, data[1][2]), yp.call(this._yaxis, data[1][3]),  
+                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])],
+                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]),
+                        xp.call(this._xaxis, data[1][2]), yp.call(this._yaxis, data[1][3]),
                         xp.call(this._xaxis, data[1][4]), yp.call(this._yaxis, data[1][5])],
                     [xp.call(this._xaxis, data[1][4]), yp.call(this._yaxis, this._yaxis.min)],
                     [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, this._yaxis.min)]
@@ -138,13 +138,13 @@
             else {
                 var psd = plot.series[idx-1].data;
                 gd = [
-                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])], 
-                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]), 
-                        xp.call(this._xaxis, data[1][2]), yp.call(this._yaxis, data[1][3]),  
+                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])],
+                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]),
+                        xp.call(this._xaxis, data[1][2]), yp.call(this._yaxis, data[1][3]),
                         xp.call(this._xaxis, data[1][4]), yp.call(this._yaxis, data[1][5])],
                     [xp.call(this._xaxis, psd[1][4]), yp.call(this._yaxis, psd[1][5])],
-                    [xp.call(this._xaxis, psd[1][2]), yp.call(this._yaxis, psd[1][3]), 
-                        xp.call(this._xaxis, psd[1][0]), yp.call(this._yaxis, psd[1][1]),  
+                    [xp.call(this._xaxis, psd[1][2]), yp.call(this._yaxis, psd[1][3]),
+                        xp.call(this._xaxis, psd[1][0]), yp.call(this._yaxis, psd[1][1]),
                         xp.call(this._xaxis, psd[0][0]), yp.call(this._yaxis, psd[0][1])]
                 ];
             }
@@ -152,9 +152,9 @@
         else {
             if (idx == 0) {
                 gd = [
-                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])], 
-                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]), 
-                        xp.call(this._xaxis, data[2][0]), yp.call(this._yaxis, data[2][1]),  
+                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])],
+                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]),
+                        xp.call(this._xaxis, data[2][0]), yp.call(this._yaxis, data[2][1]),
                         xp.call(this._xaxis, data[3][0]), yp.call(this._yaxis, data[3][1])],
                     [xp.call(this._xaxis, data[3][1]), yp.call(this._yaxis, this._yaxis.min)],
                     [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, this._yaxis.min)]
@@ -163,20 +163,20 @@
             else {
                 var psd = plot.series[idx-1].data;
                 gd = [
-                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])], 
-                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]), 
-                        xp.call(this._xaxis, data[2][0]), yp.call(this._yaxis, data[2][1]),  
+                    [xp.call(this._xaxis, data[0][0]), yp.call(this._yaxis, data[0][1])],
+                    [xp.call(this._xaxis, data[1][0]), yp.call(this._yaxis, data[1][1]),
+                        xp.call(this._xaxis, data[2][0]), yp.call(this._yaxis, data[2][1]),
                         xp.call(this._xaxis, data[3][0]), yp.call(this._yaxis, data[3][1])],
                     [xp.call(this._xaxis, psd[3][0]), yp.call(this._yaxis, psd[3][1])],
-                    [xp.call(this._xaxis, psd[2][0]), yp.call(this._yaxis, psd[2][1]), 
-                        xp.call(this._xaxis, psd[1][0]), yp.call(this._yaxis, psd[1][1]),  
+                    [xp.call(this._xaxis, psd[2][0]), yp.call(this._yaxis, psd[2][1]),
+                        xp.call(this._xaxis, psd[1][0]), yp.call(this._yaxis, psd[1][1]),
                         xp.call(this._xaxis, psd[0][0]), yp.call(this._yaxis, psd[0][1])]
                 ];
             }
         }
         return gd;
     };
-    
+
 
     // called within scope of series.
     $.jqplot.BezierCurveRenderer.prototype.draw = function(ctx, gd, options) {
@@ -202,22 +202,22 @@
                 ctx.restore();
             }
         }
-        
+
         ctx.restore();
-    };  
-    
+    };
+
     $.jqplot.BezierCurveRenderer.prototype.drawShadow = function(ctx, gd, options) {
         // This is a no-op, shadows drawn with lines.
     };
-    
+
     $.jqplot.BezierAxisRenderer = function() {
         $.jqplot.LinearAxisRenderer.call(this);
     };
-    
+
     $.jqplot.BezierAxisRenderer.prototype = new $.jqplot.LinearAxisRenderer();
     $.jqplot.BezierAxisRenderer.prototype.constructor = $.jqplot.BezierAxisRenderer;
-        
-    
+
+
     // Axes on a plot with Bezier Curves
     $.jqplot.BezierAxisRenderer.prototype.init = function(options){
         $.extend(true, this, options);
@@ -226,9 +226,9 @@
         // the min/max bounds for this axis.
         for (var i=0; i<this._series.length; i++) {
             var s = this._series[i];
-            var d = s.data;  
+            var d = s.data;
             if (d.length == 4) {
-                for (var j=0; j<d.length; j++) { 
+                for (var j=0; j<d.length; j++) {
                     if (this.name == 'xaxis' || this.name == 'x2axis') {
                         if (d[j][0] < db.min || db.min == null) {
                             db.min = d[j][0];
@@ -236,7 +236,7 @@
                         if (d[j][0] > db.max || db.max == null) {
                             db.max = d[j][0];
                         }
-                    }              
+                    }
                     else {
                         if (d[j][1] < db.min || db.min == null) {
                             db.min = d[j][1];
@@ -244,10 +244,10 @@
                         if (d[j][1] > db.max || db.max == null) {
                             db.max = d[j][1];
                         }
-                    }              
+                    }
                 }
-            }          
-            else {    
+            }
+            else {
                 if (this.name == 'xaxis' || this.name == 'x2axis') {
                     if (d[0][0] < db.min || db.min == null) {
                         db.min = d[0][0];
@@ -263,7 +263,7 @@
                             db.max = d[1][j];
                         }
                     }
-                }              
+                }
                 else {
                     if (d[0][1] < db.min || db.min == null) {
                         db.min = d[0][1];
@@ -279,11 +279,11 @@
                             db.max = d[1][j];
                         }
                     }
-                }           
+                }
             }
         }
     };
-    
+
     // setup default renderers for axes and legend so user doesn't have to
     // called with scope of plot
     function preInit(target, data, options) {
@@ -303,12 +303,12 @@
                 }
             }
         }
-        
+
         if (setopts) {
             options.axesDefaults.renderer = $.jqplot.BezierAxisRenderer;
         }
     }
-    
+
     $.jqplot.preInitHooks.push(preInit);
-    
-})(jQuery);    
+
+})(jQuery);

@@ -6,13 +6,13 @@
  * Revision: 1250
  *
  * Copyright (c) 2009-2013 Chris Leonello
- * jqPlot is currently available for use in all personal or commercial projects 
- * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL 
- * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can 
- * choose the license that best suits your project and use it accordingly. 
+ * jqPlot is currently available for use in all personal or commercial projects
+ * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL
+ * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can
+ * choose the license that best suits your project and use it accordingly.
  *
- * Although not required, the author would appreciate an email letting him 
- * know of any substantial use of jqPlot.  You can reach the author at: 
+ * Although not required, the author would appreciate an email letting him
+ * know of any substantial use of jqPlot.  You can reach the author at:
  * chris at jqplot dot com or see http://www.jqplot.com/info.php .
  *
  * If you are feeling kind and generous, consider supporting the project by
@@ -26,23 +26,23 @@
  *     http://hexmen.com/js/sprintf.js
  *     The author (Ash Searle) has placed this code in the public domain:
  *     "This code is unrestricted: you are free to use it however you like."
- * 
+ *
  */
 (function($) {
     /**
      * Class: $.jqplot.MeterGaugeRenderer
      * Plugin renderer to draw a meter gauge chart.
-     * 
+     *
      * Data consists of a single series with 1 data point to position the gauge needle.
-     * 
-     * To use this renderer, you need to include the 
+     *
+     * To use this renderer, you need to include the
      * meter gauge renderer plugin, for example:
-     * 
+     *
      * > <script type="text/javascript" src="plugins/jqplot.meterGaugeRenderer.js"></script>
-     * 
+     *
      * Properties described here are passed into the $.jqplot function
      * as options on the series renderer.  For example:
-     * 
+     *
      * > plot0 = $.jqplot('chart0',[[18]],{
      * >     title: 'Network Speed',
      * >     seriesDefaults: {
@@ -52,16 +52,16 @@
      * >         }
      * >     }
      * > });
-     * 
+     *
      * A meterGauge plot does not support events.
      */
     $.jqplot.MeterGaugeRenderer = function(){
         $.jqplot.LineRenderer.call(this);
     };
-    
+
     $.jqplot.MeterGaugeRenderer.prototype = new $.jqplot.LineRenderer();
     $.jqplot.MeterGaugeRenderer.prototype.constructor = $.jqplot.MeterGaugeRenderer;
-    
+
     // called with scope of a series
     $.jqplot.MeterGaugeRenderer.prototype.init = function(options) {
         // Group: Properties
@@ -74,14 +74,14 @@
         // calculated by default.
         this.padding = null;
         // prop: shadowOffset
-        // offset of the shadow from the gauge ring and offset of 
+        // offset of the shadow from the gauge ring and offset of
         // each succesive stroke of the shadow from the last.
         this.shadowOffset = 2;
         // prop: shadowAlpha
         // transparency of the shadow (0 = transparent, 1 = opaque)
         this.shadowAlpha = 0.07;
         // prop: shadowDepth
-        // number of strokes to apply to the shadow, 
+        // number of strokes to apply to the shadow,
         // each stroke offset shadowOffset from the last.
         this.shadowDepth = 4;
         // prop: background
@@ -141,7 +141,7 @@
         // ticks spaced every 1, 2, 2.5, 5, 10, 20, .1, .2, .25, .5, etc.
         this.tickPositions = [1, 2, 2.5, 5, 10];
         // prop: tickSpacing
-        // Degrees between ticks.  This is a target number, if 
+        // Degrees between ticks.  This is a target number, if
         // incompatible span and ticks are supplied, a suitable
         // spacing close to this value will be computed.
         this.tickSpacing = 30;
@@ -165,12 +165,12 @@
         // as if the meter is "pegged".
         this.pegNeedle = true;
         this._type = 'meterGauge';
-        
+
         $.extend(true, this, options);
         this.type = null;
         this.numberTicks = null;
         this.tickInterval = null;
-        // span, the sweep (in degrees) from min to max.  This gauge is 
+        // span, the sweep (in degrees) from min to max.  This gauge is
         // a semi-circle.
         this.span = 180;
         // get rid of this nonsense
@@ -187,14 +187,14 @@
         this._tickPoints = [];
         // reference to label element.
         this._labelElem = null;
-        
+
         // start the gauge at the beginning of the span
         this.startAngle = (90 + (360 - this.span)/2) * Math.PI/180;
         this.endAngle = (90 - (360 - this.span)/2) * Math.PI/180;
-        
+
         this.setmin = !!(this.min == null);
         this.setmax = !!(this.max == null);
-        
+
         // if given intervals and is an array of values, create labels and colors.
         if (this.intervals.length) {
             if (this.intervals[0].length == null || this.intervals.length == 1) {
@@ -208,7 +208,7 @@
                 }
             }
         }
-        
+
         // compute min, max and ticks if not supplied:
         if (this.ticks.length) {
             if (this.ticks[0].length == null || this.ticks[0].length == 1) {
@@ -232,7 +232,7 @@
                 this.numberMinorTicks = 1;
             }
         }
-        
+
         else if (this.intervals.length) {
             this.min = (this.min == null) ? 0 : this.min;
             this.setmin = false;
@@ -246,7 +246,7 @@
                 this.setmax = false;
             }
         }
-        
+
         else {
             // no ticks and no intervals supplied, put needle in middle
             this.min = (this.min == null) ? 0 : this.min;
@@ -260,7 +260,7 @@
             }
         }
     };
-    
+
     $.jqplot.MeterGaugeRenderer.prototype.setGridData = function(plot) {
         // set gridData property.  This will hold angle in radians of each data point.
         var stack = [];
@@ -274,13 +274,13 @@
             }
         }
         var fact = Math.PI*2/stack[stack.length - 1];
-        
+
         for (var i=0; i<stack.length; i++) {
             td[i][1] = stack[i] * fact;
         }
         this.gridData = td;
     };
-    
+
     $.jqplot.MeterGaugeRenderer.prototype.makeGridData = function(data, plot) {
         var stack = [];
         var td = [];
@@ -293,14 +293,14 @@
             }
         }
         var fact = Math.PI*2/stack[stack.length - 1];
-        
+
         for (var i=0; i<stack.length; i++) {
             td[i][1] = stack[i] * fact;
         }
         return td;
     };
 
-        
+
     function getnmt(pos, interval, fact) {
         var temp;
         for (var i=pos.length-1; i>=0; i--) {
@@ -311,7 +311,7 @@
         }
         return null;
     }
-    
+
     // called with scope of series
     $.jqplot.MeterGaugeRenderer.prototype.draw = function (ctx, gd, options) {
         var i;
@@ -355,15 +355,15 @@
                     break;
             }
         }
-        
-        
-            
+
+
+
         // pre-draw so can get its dimensions.
         if (this.label) {
             this._labelElem = $('<div class="jqplot-meterGauge-label" style="position:absolute;">'+this.label+'</div>');
             this.canvas._elem.after(this._labelElem);
         }
-        
+
         var shadow = (opts.shadow != undefined) ? opts.shadow : this.shadow;
         var showLine = (opts.showLine != undefined) ? opts.showLine : this.showLine;
         var fill = (opts.fill != undefined) ? opts.fill : this.fill;
@@ -379,7 +379,7 @@
         }
         var mindim = Math.min(w,h);
         var d = mindim;
-            
+
         if (!this.diameter) {
             if (this.semiCircular) {
                 if ( w >= 2*h) {
@@ -416,24 +416,24 @@
             if (this._labelElem && this.labelPosition == 'bottom') {
                 this._center[1] -= this._labelElem.outerHeight(true);
             }
-            
+
         }
 
         this._radius = this.diameter/2;
-        
+
         this.tickSpacing = 6000/this.diameter;
-        
+
         if (!this.hubRadius) {
             this.hubRadius = this.diameter/18;
         }
-        
+
         this.shadowOffset = 0.5 + this.ringWidth/9;
         this.shadowWidth = this.ringWidth*1;
-        
+
         this.tickPadding = 3 + Math.pow(this.diameter/20, 0.7);
         this.tickOuterRadius = this._radius - this.ringWidth/2 - this.tickPadding;
         this.tickLength = (this.showTicks) ? this._radius/13 : 0;
-        
+
         if (this.ticks.length == 0) {
             // no ticks, lets make some.
             var max = this.max,
@@ -446,21 +446,21 @@
             (tp > 2 && tp <= 2.5) ? tp = 2.5 : tp = Math.ceil(tp);
             var t = this.tickPositions;
             var tpindex, nt;
-    
+
             for (i=0; i<t.length; i++) {
-                if (tp == t[i] || i && t[i-1] < tp && tp < t[i]) { 
+                if (tp == t[i] || i && t[i-1] < tp && tp < t[i]) {
                     ti = t[i]*Math.pow(10, tf);
                     tpindex = i;
                 }
             }
-        
+
             for (i=0; i<t.length; i++) {
-                if (tp == t[i] || i && t[i-1] < tp && tp < t[i]) { 
+                if (tp == t[i] || i && t[i-1] < tp && tp < t[i]) {
                     ti = t[i]*Math.pow(10, tf);
                     nt = Math.ceil((max - min) / ti);
                 }
             }
-        
+
             // both max and min are free
             if (setmax && setmin) {
                 var tmin = (min > 0) ? min - min % ti : min - min % ti - ti;
@@ -489,17 +489,17 @@
                 }
                 nt += 1;
                 var tmax = min + (nt - 1) * ti;
-                if (max >= tmax) { 
+                if (max >= tmax) {
                     tmax += ti;
                     nt += 1;
                 }
                 // now tmax should always be mroe than dataMax
-                if (tmax - max < 0.23*ti) { 
+                if (tmax - max < 0.23*ti) {
                     tmax += ti;
                     nt += 1;
                 }
                 this.max = max = tmax;
-                this.min = min;    
+                this.min = min;
 
                 this.tickInterval = ti;
                 this.numberTicks = nt;
@@ -509,12 +509,12 @@
                     this.ticks.push([it, it]);
                 }
                 this.max = this.ticks[nt-1][1];
-            
-                this.tickFactor = tf;      
+
+                this.tickFactor = tf;
                 // determine number of minor ticks
 
-                this.numberMinorTicks = getnmt(this.tickPositions, this.tickInterval, this.tickFactor);     
-        
+                this.numberMinorTicks = getnmt(this.tickPositions, this.tickInterval, this.tickFactor);
+
                 if (!this.numberMinorTicks) {
                     this.numberMinorTicks = getnmt(this.tickPositions, this.tickInterval, this.tickFactor-1);
                 }
@@ -538,16 +538,16 @@
                     this.ticks.push([it, it]);
                 }
                 this.max = this.ticks[this.numberTicks-1][1];
-            
+
                 this.tickFactor = tf;
                 // determine number of minor ticks
                 this.numberMinorTicks = getnmt(this.tickPositions, this.tickInterval, this.tickFactor);
-        
+
                 if (!this.numberMinorTicks) {
                     this.numberMinorTicks = getnmt(this.tickPositions, this.tickInterval, this.tickFactor-1);
                 }
             }
-            
+
             // not setting max or min
             if (!setmax && !setmin) {
                 var range = this.max - this.min;
@@ -578,11 +578,11 @@
                 }
                 // determine number of minor ticks
                 this.numberMinorTicks = getnmt(this.tickPositions, this.tickInterval, this.tickFactor);
-        
+
                 if (!this.numberMinorTicks) {
                     this.numberMinorTicks = getnmt(this.tickPositions, this.tickInterval, this.tickFactor-1);
                 }
-                
+
                 if (!this.numberMinorTicks) {
                     this.numberMinorTicks = 1;
                     var nums = [4, 5, 3, 6, 2];
@@ -596,14 +596,14 @@
                 }
             }
         }
-        
+
 
         var r = this._radius,
             sa = this.startAngle,
-            ea = this.endAngle,       
+            ea = this.endAngle,
             pi = Math.PI,
             hpi = Math.PI/2;
-            
+
         if (this.semiCircular) {
             var overAngle = Math.atan(this.innerPad/r),
                 outersa = this.outerStartAngle = sa - overAngle,
@@ -611,28 +611,28 @@
                 hubsa = this.hubStartAngle = sa - Math.atan(this.innerPad/this.hubRadius*2),
                 hubea = this.hubEndAngle = ea + Math.atan(this.innerPad/this.hubRadius*2);
 
-            ctx.save();            
-            
+            ctx.save();
+
             ctx.translate(this._center[0], this._center[1]);
             ctx.lineJoin = "round";
             ctx.lineCap = "round";
-            
+
             // draw the innerbackground
             ctx.save();
-            ctx.beginPath();  
+            ctx.beginPath();
             ctx.fillStyle = this.background;
             ctx.arc(0, 0, r, outersa, outerea, false);
             ctx.closePath();
             ctx.fill();
             ctx.restore();
-            
+
             // draw the shadow
             // the outer ring.
             var shadowColor = 'rgba(0,0,0,'+this.shadowAlpha+')';
             ctx.save();
             for (var i=0; i<this.shadowDepth; i++) {
                 ctx.translate(this.shadowOffset*Math.cos(this.shadowAngle/180*Math.PI), this.shadowOffset*Math.sin(this.shadowAngle/180*Math.PI));
-                ctx.beginPath();  
+                ctx.beginPath();
                 ctx.strokeStyle = shadowColor;
                 ctx.lineWidth = this.shadowWidth;
                 ctx.arc(0 ,0, r, outersa, outerea, false);
@@ -640,40 +640,40 @@
                 ctx.stroke();
             }
             ctx.restore();
-            
+
             // the inner hub.
             ctx.save();
             var tempd = parseInt((this.shadowDepth+1)/2, 10);
             for (var i=0; i<tempd; i++) {
                 ctx.translate(this.shadowOffset*Math.cos(this.shadowAngle/180*Math.PI), this.shadowOffset*Math.sin(this.shadowAngle/180*Math.PI));
-                ctx.beginPath();  
+                ctx.beginPath();
                 ctx.fillStyle = shadowColor;
                 ctx.arc(0 ,0, this.hubRadius, hubsa, hubea, false);
                 ctx.closePath();
                 ctx.fill();
             }
             ctx.restore();
-            
+
             // draw the outer ring.
             ctx.save();
-            ctx.beginPath();  
+            ctx.beginPath();
             ctx.strokeStyle = this.ringColor;
             ctx.lineWidth = this.ringWidth;
             ctx.arc(0 ,0, r, outersa, outerea, false);
             ctx.closePath();
             ctx.stroke();
             ctx.restore();
-            
+
             // draw the hub
-            
+
             ctx.save();
-            ctx.beginPath();  
+            ctx.beginPath();
             ctx.fillStyle = this.ringColor;
             ctx.arc(0 ,0, this.hubRadius,hubsa, hubea, false);
             ctx.closePath();
             ctx.fill();
             ctx.restore();
-            
+
             // draw the ticks
             if (this.showTicks) {
                 ctx.save();
@@ -683,7 +683,7 @@
                     nmt = this.numberMinorTicks,
                     ts = this.span * Math.PI / 180 / (this.ticks.length-1),
                     mts = ts/(nmt + 1);
-                
+
                 for (i = 0; i<this.ticks.length; i++) {
                     ctx.beginPath();
                     ctx.lineWidth = 1.5 + this.diameter/360;
@@ -700,12 +700,12 @@
                             ctx.moveTo(-orad * Math.cos(ts*i+mts*j+sa), orad * Math.sin(ts*i+mts*j+sa));
                             ctx.lineTo(-(orad-mtl) * Math.cos(ts*i+mts*j+sa), (orad-mtl) * Math.sin(ts*i+mts*j+sa));
                             ctx.stroke();
-                        }   
+                        }
                     }
                 }
                 ctx.restore();
             }
-            
+
             // draw the tick labels
             if (this.showTickLabels) {
                 var elem, l, t, ew, eh, dim, maxdim=0;
@@ -723,7 +723,7 @@
                     maxdim = (dim > maxdim) ? dim : maxdim;
                 }
             }
-            
+
             // draw the gauge label
             if (this.label && this.labelPosition == 'inside') {
                 var l = this._center[0] + this.canvas._offsets.left;
@@ -735,16 +735,16 @@
                 t -= this._labelElem.outerHeight(true)/2;
                 this._labelElem.css({left:l, top:t});
             }
-            
+
             else if (this.label && this.labelPosition == 'bottom') {
                 var l = this._center[0] + this.canvas._offsets.left - this._labelElem.outerWidth(true)/2;
                 var t = this._center[1] + this.canvas._offsets.top + this.innerPad + this.ringWidth + this.padding + this.labelHeightAdjust;
                 this._labelElem.css({left:l, top:t});
-                
+
             }
-            
+
             // draw the intervals
-            
+
             ctx.save();
             var inner = this.intervalInnerRadius || this.hubRadius * 1.5;
             if (this.intervalOuterRadius == null) {
@@ -780,7 +780,7 @@
                 ctx.fill();
             }
             ctx.restore();
-            
+
             // draw the needle
             var datapoint = this.data[0][1];
             var dataspan = this.max - this.min;
@@ -793,8 +793,8 @@
                 }
             }
             var dataang = (datapoint - this.min)/dataspan * this.span * Math.PI/180 + this.startAngle;
-            
-            
+
+
             ctx.save();
             ctx.beginPath();
             ctx.fillStyle = this.ringColor;
@@ -803,7 +803,7 @@
             this.needleThickness = (this.needleThickness < 2) ? 2 : this.needleThickness;
             var endwidth = this.needleThickness * 0.4;
 
-            
+
             var dl = this.needleLength/10;
             var dt = (this.needleThickness - endwidth)/10;
             var templ;
@@ -814,22 +814,22 @@
                 ctx.lineTo(dl*(i+1)*Math.cos(dataang), dl*(i+1)*Math.sin(dataang));
                 ctx.stroke();
             }
-            
+
             ctx.restore();
         }
         else {
             this._center = [(cw - trans * offx)/2 + trans * offx, (ch - trans*offy)/2 + trans * offy];
-        }               
+        }
     };
-    
+
     $.jqplot.MeterGaugeAxisRenderer = function() {
         $.jqplot.LinearAxisRenderer.call(this);
     };
-    
+
     $.jqplot.MeterGaugeAxisRenderer.prototype = new $.jqplot.LinearAxisRenderer();
     $.jqplot.MeterGaugeAxisRenderer.prototype.constructor = $.jqplot.MeterGaugeAxisRenderer;
-        
-    
+
+
     // There are no traditional axes on a gauge chart.  We just need to provide
     // dummy objects with properties so the plot will render.
     // called with scope of axis object.
@@ -848,16 +848,16 @@
         this.showTicks = false;
         this.ticks = [];
         this.showMark = false;
-        this.show = false; 
+        this.show = false;
     };
-    
+
     $.jqplot.MeterGaugeLegendRenderer = function(){
         $.jqplot.TableLegendRenderer.call(this);
     };
-    
+
     $.jqplot.MeterGaugeLegendRenderer.prototype = new $.jqplot.TableLegendRenderer();
     $.jqplot.MeterGaugeLegendRenderer.prototype.constructor = $.jqplot.MeterGaugeLegendRenderer;
-    
+
     /**
      * Class: $.jqplot.MeterGaugeLegendRenderer
      *Meter gauges don't typically have a legend, this overrides the default legend renderer.
@@ -869,7 +869,7 @@
         this.numberColumns = null;
         $.extend(true, this, options);
     };
-    
+
     // called with context of legend
     $.jqplot.MeterGaugeLegendRenderer.prototype.draw = function() {
         if (this.show) {
@@ -887,12 +887,12 @@
             this._elem = $('<table class="jqplot-table-legend" style="'+ss+'"></table>');
             // MeterGauge charts legends don't go by number of series, but by number of data points
             // in the series.  Refactor things here for that.
-            
-            var pad = false, 
+
+            var pad = false,
                 reverse = false,
                 nr, nc;
             var s = series[0];
-            
+
             if (s.show) {
                 var pd = s.data;
                 if (this.numberRows) {
@@ -912,10 +912,10 @@
                     nr = pd.length;
                     nc = 1;
                 }
-                
+
                 var i, j, tr, td1, td2, lt, rs, color;
-                var idx = 0;    
-                
+                var idx = 0;
+
                 for (i=0; i<nr; i++) {
                     if (reverse){
                         tr = $('<tr class="jqplot-table-legend"></tr>').prependTo(this._elem);
@@ -945,7 +945,7 @@
                                 }
                             }
                             rs = (pad) ? this.rowSpacing : '0';
-                
+
                             td1 = $('<td class="jqplot-table-legend" style="text-align:center;padding-top:'+rs+';">'+
                                 '<div><div class="jqplot-table-legend-swatch" style="border-color:'+color+';"></div>'+
                                 '</div></td>');
@@ -967,14 +967,14 @@
                             pad = true;
                         }
                         idx++;
-                    }   
+                    }
                 }
             }
         }
-        return this._elem;                
+        return this._elem;
     };
-    
-    
+
+
     // setup default renderers for axes and legend so user doesn't have to
     // called with scope of plot
     function preInit(target, data, options) {
@@ -984,7 +984,7 @@
         options.legend = options.legend || {};
         options.seriesDefaults = options.seriesDefaults || {};
         options.grid = options.grid || {};
-           
+
         // only set these if there is a gauge series
         var setopts = false;
         if (options.seriesDefaults.renderer == $.jqplot.MeterGaugeRenderer) {
@@ -997,7 +997,7 @@
                 }
             }
         }
-        
+
         if (setopts) {
             options.axesDefaults.renderer = $.jqplot.MeterGaugeAxisRenderer;
             options.legend.renderer = $.jqplot.MeterGaugeLegendRenderer;
@@ -1008,22 +1008,20 @@
             options.grid.shadow = (options.grid.shadow != null) ? options.grid.shadow : false;
         }
     }
-    
+
     // called with scope of plot
     function postParseOptions(options) {
         //
     }
-    
+
     $.jqplot.preInitHooks.push(preInit);
     $.jqplot.postParseOptionsHooks.push(postParseOptions);
-    
+
     $.jqplot.MeterGaugeTickRenderer = function() {
         $.jqplot.AxisTickRenderer.call(this);
     };
-    
+
     $.jqplot.MeterGaugeTickRenderer.prototype = new $.jqplot.AxisTickRenderer();
     $.jqplot.MeterGaugeTickRenderer.prototype.constructor = $.jqplot.MeterGaugeTickRenderer;
-    
+
 })(jQuery);
-    
-    

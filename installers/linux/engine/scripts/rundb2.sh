@@ -41,5 +41,5 @@ echo "terminate;"
 ) > /tmp/dbip$$
 db2 -tf /tmp/dbip$$
 # uncomment following line to output the response file to stdout
-cat /tmp/dbip$$ 
+cat /tmp/dbip$$
 rm -f /tmp/dbip$$

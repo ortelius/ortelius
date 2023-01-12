@@ -51,13 +51,13 @@ public enum ObjectType
     COMPVERSION     ( 23, "cv", "component"),              // (c)omponent (v)ersion
     BUILDID			( 26, "bu", "buildnumber"),		// (bu)ild number
     RPROXY   ( 27, "rp", "rproxy"),  // (rp)roxy
- 
+
 	// Never stored in DB and not used by engine
 	ATTACHMENT_LIST	( 50, "al", null),		// Only used in web interface - (a)ttachment (l)ist
 	PASS_HASH		( 51, "pw", null),		// Only used by web interface - (p)ass(w)ord hash
 	SERVER_TYPE		( 52, "st", null),		// Only used by web interface - (s)erver (t)type
 	MODIFIED		( 53, "cm", null),		// Only used by web interface - (c)reated/(m)odified - used to indicate user and time
-	OWNER			( 54, "ow", null),		// Only used by web interface - (ow)ner - used to indicate either user or group	
+	OWNER			( 54, "ow", null),		// Only used by web interface - (ow)ner - used to indicate either user or group
 	ENGINE          ( 55, "ei", "engine"),		// Only used by web interface - (e)ng(i)ne
 	PLUGIN          ( 56, "pi", null),		// Only used by web interface - (p)lug(i)n
 	PROVIDERDEF     ( 57, "pd", null),		// Only used by web interface - (p)rovider (d)ef
@@ -80,7 +80,7 @@ public enum ObjectType
  PREDECESSOR (74,"pc", null), // predecessor
  PARENT (75,"pt", null), // parent
  COMP_KIND ( 76, "ik", null),  // Only used by web interface - (c)redential (k)ind
- 
+
 	// Can be stored in DB but not used by engine
 	PROCEDURE		( 90, "pr", null),		// Only used in web interface - (pr)ocedure - only stored in create permissions table - DO NOT CHANGE
 	FUNCTION		( 91, "fn", null),		// Only used in web interface - (f)unctio(n) - only stored in create permissions table - DO NOT CHANGE
@@ -92,7 +92,7 @@ public enum ObjectType
 	HISTORY_NOTE    ( 98, "hn", null),		// Only used by web interface - (h)istory (n)ote - stored in db - DO NOT CHANGE
 	DEPLOYMENT      ( 99, "de", null),		// Only used by web interface - (de)ployment - stored in db - DO NOT CHANGE
  DEFECT          ( 102, "df", null),
-	
+
 	RESPOSITORY_IMPL(108, null, null),
 	NOTIFY_IMPL     (109, null, null),
 	DATASOURCE_IMPL (110, null, null),
@@ -105,15 +105,15 @@ public enum ObjectType
 	private final String m_table;
 	private static Hashtable<String, ObjectType> s_types;
 	private static Hashtable<String, ObjectType> s_tables;
-	
+
 	ObjectType(int value, String kind, String table) {
 		m_value = value;
 		m_kind = kind;
 		m_table = table;
 	}
-	
+
 	public int value()  { return m_value; }
-	
+
 	/**
 	 * Decode an ObjectType from its integer equivalent, as used in the database
 	 */
@@ -125,11 +125,11 @@ public enum ObjectType
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Decode an ObjectType from its string equivalent, as used by OTIDs and
 	 * the web interface.  The static Hashtable used for lookups is created on
-	 * first use. 
+	 * first use.
 	 */
 	public static ObjectType fromTypeString(String kind) {
 		if(s_types == null) {
@@ -140,14 +140,14 @@ public enum ObjectType
 					//System.out.println("Adding '"+str+"' -> '"+ot+"'");
 					s_types.put(str, ot);
 				}
-			}			
+			}
 		}
 		return s_types.get(kind);
 	}
-	
+
 	/**
 	 * Decode an ObjectType from its table name, as used by GetNewID.  The
-	 * static Hashtable used for lookups is created on first use. 
+	 * static Hashtable used for lookups is created on first use.
 	 */
 	public static ObjectType fromTableName(String table) {
 		if(s_tables == null) {
@@ -158,7 +158,7 @@ public enum ObjectType
 					//System.out.println("Adding '"+str+"' -> '"+ot+"'");
 					s_tables.put(str, ot);
 				}
-			}			
+			}
 		}
 		return s_tables.get(table.toLowerCase());
 	}

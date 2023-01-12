@@ -89,7 +89,7 @@ h4 {
     </div>
    </div>
   </div>
- </div>	
+ </div>
 </div>
 
 <script type="text/javascript">
@@ -125,7 +125,7 @@ function dtSelectNode(data,loading)
 	if (data) {
 		var id = data.inst.get_json()[0].attr.id;
 		$("#tgtdomain").val($('.jstree-clicked').text());
-		if (loading==0 && curtgtid != id) {	
+		if (loading==0 && curtgtid != id) {
 			$tgtbutton.button('enable');
 		}
 		curtgtid=id;

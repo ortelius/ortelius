@@ -59,6 +59,3 @@ void NotifyTemplate::setRecipients(char **reclist)
 {
 	m_recipientotids = reclist;
 }
-
-
-

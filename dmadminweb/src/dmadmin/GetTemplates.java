@@ -33,7 +33,7 @@ import dmadmin.model.NotifyTemplate;
  */
 public class GetTemplates extends JSONServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -63,4 +63,3 @@ public class GetTemplates extends JSONServletBase {
 	}
 
 }
-

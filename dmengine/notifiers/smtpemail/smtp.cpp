@@ -40,7 +40,7 @@
 
 
 
-void SMTP::LogSMTPTraffic(const char* fmt, ...) 
+void SMTP::LogSMTPTraffic(const char* fmt, ...)
 {
 	if(m_logfile)
 	{
@@ -79,7 +79,7 @@ void SMTP::LogSMTPTraffic(const char* fmt, ...)
 		va_start(args,fmt);
 		vasprintf(&temp,fmt,args);
 		va_end(args);
-		
+
 		m_logstream->writevToStdOut(0, temp);
 		free(temp);
 	}
@@ -122,7 +122,7 @@ int EstablishOutgoingConnection(int destination_port, const char *HostName)
 	hp = gethostbyname(HostName);
 	if (hp == (struct hostent *)0)
 	{
-		// gethostbyname fails	
+		// gethostbyname fails
 		errno=h_errno;
 		sock = -1;
 	}
@@ -193,7 +193,7 @@ char *base64encode(unsigned char *data, unsigned long datalen)
 		int maxn = (datalen/3) * 3;
 		for(int n = 0; n < maxn; n += 3)
 		{
-			m1 = (data[n] & 0xfc) >> 2; 
+			m1 = (data[n] & 0xfc) >> 2;
 			m2 = ((data[n] & 0x03) << 4) + ((data[n+1] & 0xf0) >> 4);
 			m3 = ((data[n+1] & 0x0f) << 2) + ((data[n+2] & 0xc0) >> 6);
 			m4 = data[n+2] & 0x3f;
@@ -395,7 +395,7 @@ char *SMTP::readLineFromServer()
 			if (n == SOCKET_ERROR)
 			{
 				LPVOID lpMsgBuf;
-				FormatMessage( 
+				FormatMessage(
 					FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 					NULL, WSAGetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
 					(LPTSTR) &lpMsgBuf, 0, NULL  );
@@ -487,7 +487,7 @@ void SMTP::processChallenge(const char *line)
 	}
 	// Skip the "334 "
 	line += 4;
-	
+
 	m_challenge = strdup(line);
 }
 
@@ -557,7 +557,7 @@ int SMTP::sendCommandToServer(const char *cmd, const char *param /*= NULL*/, voi
 		}
 		while(AnotherLineComing);
 	}
-	
+
 	return (int) atol(Reply);
 }
 
@@ -612,7 +612,7 @@ void SMTP::addCarbonCopy(const char *cc, const char *realname)
 		ma->m_next = nma;
 	} else {
 		m_ccs = nma;
-	}	 
+	}
 
 	m_emails.put(cc, cc);
 }
@@ -627,7 +627,7 @@ void SMTP::addAttachment(const char *name, unsigned char *data, unsigned long da
 		ma->m_next = nma;
 	} else {
 		m_attachs = nma;
-	}	 
+	}
 }
 
 
@@ -777,7 +777,7 @@ bool SMTP::sendMessage()
 			res = sendCommandToServer((m_username ? "EHLO" : "HELO"),
 				((hnok == 0) ? myhostname : "openmakesoftware.com"), &SMTP::processCapabilities);
 		}
-		
+
 		if(m_capabilites & AUTH_CRAM_MD5) {
 			res = sendCommandToServer("AUTH", "CRAM-MD5", &SMTP::processChallenge);
 			if((res != 334) || !m_challenge) {

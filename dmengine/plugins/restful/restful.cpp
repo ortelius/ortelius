@@ -62,12 +62,12 @@ void quote_float(char *in, char *out)
    onval = 1;
    *buf  = '\0';
    *work = '\0';
-  } 
-  
+  }
+
   if (onval && in[i] == ',')
   {
    onval = 0;
-   
+
    isfloat = 1;
    for (x=0;x<strlen(buf);x++)
    {
@@ -82,7 +82,7 @@ void quote_float(char *in, char *out)
       if (out[k] != ':')
       {
        out[k] = '\0';
-       k--; 
+       k--;
       }
       else
        break;
@@ -92,13 +92,13 @@ void quote_float(char *in, char *out)
      strcat(out,work);
      k = strlen(out);
    }
-  } 
+  }
 
   if (onval && in[i] != ':' && in[i] != ' ')
   {
    work[0] = in[i];
-   work[1] = '\0'; 
-   strcat(buf,work);  
+   work[1] = '\0';
+   strcat(buf,work);
   }
  }
 }
@@ -122,7 +122,7 @@ char *base64encode(unsigned char *data, unsigned long datalen)
 		int maxn = (datalen/3) * 3;
 		for(int n = 0; n < maxn; n += 3)
 		{
-			m1 = (data[n] & 0xfc) >> 2; 
+			m1 = (data[n] & 0xfc) >> 2;
 			m2 = ((data[n] & 0x03) << 4) + ((data[n+1] & 0xf0) >> 4);
 			m3 = ((data[n+1] & 0x0f) << 2) + ((data[n+2] & 0xc0) >> 6);
 			m4 = data[n+2] & 0x3f;
@@ -353,7 +353,7 @@ char *ReadToEndOfStream(SSL *ssl)
 	char		*ret = NULL;
 	char		xBuf[1024];
 
-	while(true) {	
+	while(true) {
         long bytesRead = SSL_read(ssl, xBuf, sizeof(xBuf));
 		if(bytesRead == -1) {
 			break;
@@ -440,10 +440,10 @@ char *ReadLineFromSocket(SSL *ssl)
 }
 
 SSL_CTX* InitCTX(void)
-{   
+{
 	SSL_METHOD *method;
     SSL_CTX *ctx;
- 
+
     OpenSSL_add_all_algorithms();  /* Load cryptos, et.al. */
     SSL_load_error_strings();   /* Bring in and register error messages */
     ctx = SSL_CTX_new(SSLv23_method());   /* Create new context */
@@ -460,7 +460,7 @@ SSL_CTX* InitCTX(void)
 
 
 int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
-			  const char *params, MESSAGE_TYPE mt, bool isSecure,const char *host, 
+			  const char *params, MESSAGE_TYPE mt, bool isSecure,const char *host,
 			  const char *soapaction, DMArray *cookieJar, DMArray *header,	// content
 			  int *status, char **contentType, char **content)	// return
 {
@@ -475,7 +475,7 @@ int DoHttpRequest(const char *hostname, int port, const char *uri,	// where
 	struct hostent *hp = gethostbyname(hostname);
 	if(!hp)
 	{
-		// gethostbyname fails	
+		// gethostbyname fails
 		errno = h_errno;
 		return -1;
 	}
@@ -511,7 +511,7 @@ printf("Connecting to %d.%d.%d.%d:%d...\n",
 
 	if (isSecure) {
 		SSL_library_init();
- 
+
 		ctx = InitCTX();
 		ssl = SSL_new(ctx);      /* create new SSL connection state */
 		SSL_set_fd(ssl, sock);    /* attach the socket descriptor */
@@ -559,7 +559,7 @@ printf("Connecting to %d.%d.%d.%d:%d...\n",
 		request.writeToStdOut("User-Agent: ReleaseEngineer\r\n");
 	}
 
-	
+
 
 	if(cookieJar && (cookieJar->count() > 0)) {
 		// Add cookies from the cookie jar hashtable
@@ -644,7 +644,7 @@ printf("Connecting to %d.%d.%d.%d:%d...\n",
 		} else {
 			line = ReadLineFromSocket(sock);
 		}
-		
+
 		// printf("line=%s\n",line);
 		//debug1("line = %s", line);
 
@@ -724,15 +724,15 @@ printf("Connecting to %d.%d.%d.%d:%d...\n",
 					*content = data;
 				}
 			}
-			// 
-			
+			//
+
 		} else if(length == -1) {
 			if (isSecure) {
 				*content = ReadToEndOfStream(ssl);
 			} else {
 				*content = ReadToEndOfStream(sock);
 			}
-			
+
 		}
 	}
 	//printf("Content is:\n");
@@ -755,7 +755,7 @@ char *urlEncode(const char *str)
 	int len = strlen(str) + 1;
 	char *ret = (char*) malloc(len);
 	*ret  = '\0';
-	
+
 	char *y = ret;
 	for(const char *x = str; x && *x; x++) {
 		switch(*x) {
@@ -938,7 +938,7 @@ class Expr *Restful_PostFunctionImpl::evaluate(class ExprList *args, class Conte
 	int maxparams=4;
 	int minparams=1;
 	MESSAGE_TYPE mt;
-	
+
 	if (strcmp(m_parent.name(),RESTFUL_POST_NAME)==0) {
 		FunctionName = RESTFUL_POST_NAME;
 		ParamErrorMsg = RESTFUL_POST_NAME " takes 1-4 arguments";
@@ -989,12 +989,12 @@ class Expr *Restful_PostFunctionImpl::evaluate(class ExprList *args, class Conte
 				soapaction[stream->size()]='\0';
 			} else if (argv[2]->kind() == KIND_STR) {
 				soapaction = argv[2]->toString();
-			} else {	
+			} else {
 				// SOAP BODY can only be STREAM or STRING
 				throw RuntimeError(m_parent, ctx.stack(), "SOAP Body must be Stream or String");
 			}
 		}
-				
+
 		if (args->size()>3) {
 			if(argv[3]->kind() == KIND_ARRAY) {
 				ecookiesfrom = argv[3];
@@ -1057,15 +1057,15 @@ class Expr *Restful_PostFunctionImpl::evaluate(class ExprList *args, class Conte
 	if (getConnectionDetails(fullurl,&server,&port,&secure,&url)) {
 		throw RuntimeError(m_parent, ctx.stack(), MalformedURLErrorMsg);
 	}
-	
+
 
 	char *contentType = NULL;
 	char *content = NULL;
-	
 
-	
+
+
 	DoRestfulPost(server, port, url, params, header, cookiesto, ecookiesfrom, &contentType, &content, mt, secure, soapaction, ctx);
-	
+
 
 	Expr *ret = NULL;
 
@@ -1073,13 +1073,13 @@ class Expr *Restful_PostFunctionImpl::evaluate(class ExprList *args, class Conte
 		// Result is JSON - parse it
 		debug1("Result is JSON");
 		if(content) {
-			  char *newbuf = (char *)malloc(strlen(content)*2); 
+			  char *newbuf = (char *)malloc(strlen(content)*2);
   			  memset(newbuf, '\0', strlen(content)*2);
-  
+
   			  quote_float(content, newbuf);
 			  SAFE_FREE(content);
 			  content = newbuf;
-  
+
 			LexerBuffer lb(expr_lexer, content, NULL);
 			ret = lb.parseExpression(ctx); // May raise an exception
 		} else {

@@ -32,7 +32,7 @@ public class GetAppVersInEnv
 	extends HttpServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     public GetAppVersInEnv() {
         super();
     }
@@ -58,6 +58,6 @@ public class GetAppVersInEnv
 			request.setAttribute("mode", "envs");
 		}
 		request.setAttribute("admin", getStringParameter(request, "admin", "N").equalsIgnoreCase("Y"));
-		request.getRequestDispatcher("/WEB-INF/GetAppsInEnv.jsp").forward(request, response);		
+		request.getRequestDispatcher("/WEB-INF/GetAppsInEnv.jsp").forward(request, response);
 	}
 }

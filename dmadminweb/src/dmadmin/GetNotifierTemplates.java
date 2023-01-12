@@ -35,7 +35,7 @@ import dmadmin.model.NotifyTemplate;
 public class GetNotifierTemplates extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
- HttpSession session = null;      
+ HttpSession session = null;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -49,17 +49,17 @@ public class GetNotifierTemplates extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("application/json");
-		Integer notifierid = ServletUtils.getIntParameter(request,"notifierid"); 
+		Integer notifierid = ServletUtils.getIntParameter(request,"notifierid");
 		PrintWriter out = response.getWriter();
 
   try (DMSession so = DMSession.getInstance(request)) {
   session = request.getSession();
   session.setAttribute("session", so);
   so.checkConnection(request.getServletContext());
-  
+
 		Notify notify = so.getNotify(notifierid,false);
 		List<NotifyTemplate> t = so.getTemplates(notify);
-		
+
 		out.print("[");
 
 		boolean subv=false;
@@ -81,4 +81,3 @@ public class GetNotifierTemplates extends HttpServlet {
 	}
 
 }
-

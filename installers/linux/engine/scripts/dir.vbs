@@ -14,6 +14,6 @@ For Each objFile in colFiles
 	WScript.Echo "'drive' => '" & objFile.Drive & "'"
     WScript.Echo "}"
 	sep=","
-	
+
 Next
 WScript.Echo "}"

@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class Home extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -36,7 +36,7 @@ public class Home extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
     	   		HttpServletRequest request, HttpServletResponse response)

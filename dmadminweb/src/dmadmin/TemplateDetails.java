@@ -59,7 +59,7 @@ public class TemplateDetails
 			if (body == null) body="";
 			if (subject == null) subject="";
 			System.out.print("{\"subject\" : \"" + subject + "\", \"body\" : \"" + body.replace("\n","\\n").replace("\"","\\\"") + "\"}");
-			out.print("{\"subject\" : \"" + subject + "\", \"body\" : \"" + body.replace("\n","\\n").replace("\"","\\\"") + "\"}");	
+			out.print("{\"subject\" : \"" + subject + "\", \"body\" : \"" + body.replace("\n","\\n").replace("\"","\\\"") + "\"}");
 		} else {
 			// Update
 			int templateid = getIntParameter(request, "id");
@@ -113,7 +113,7 @@ public class TemplateDetails
 			PrintWriter out = response.getWriter();
 			out.print("{\"errtext\" : \"" + "" + "\", \"errcode\" : \"" + "0" + "\"}");
 		}
-		
+
 	}
 
 }

@@ -33,7 +33,7 @@ import dmadmin.json.JSONObject;
 public class Profile extends JSONServletBase {
 
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -41,17 +41,16 @@ public class Profile extends JSONServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     @Override
     public IJSONSerializable handleRequest(DMSession session, boolean isPost,
       HttpServletRequest request, HttpServletResponse response)
      throws ServletException, IOException
-    {   
+    {
      int uid = session.GetUserID();
-     
+
      JSONObject o = new JSONObject();
      o.add("uid", uid);
      return o;
     }
    }
-

@@ -3,20 +3,20 @@
 //  <globals>
 //    <set name="agentport" value="9501" />
 //  </globals>
-//  
+//
 //  <servers>
 //    <physical>
 //      <server name="webapp" hostname="harvest-5a013dc" type="windows" protocol="agent" port="${agentport}" custom2="Tomcat">
 //        <basedir>C:\Program Files\Apache Software Foundation\Tomcat 5.5\webapps</basedir>
 //        <set name="web" value="1" />
 //      </server>
-//      
+//
 //      <server name="database" hostname="harvest-5a013dc" type="windows" protocol="agent" port="${agentport}" custom2="Oracle">
 //        <basedir>C:\Temp\Deploy\server2</basedir>
 //        <set name="sql" value="1" />
 //      </server>
 //    </physical>
-//    
+//
 //    <logical>
 //      <server name="envA" custom3="envA">
 //        <physical>webapp</physical>
@@ -27,14 +27,14 @@
 //        <!-- usergroup>admin</usergroup -->
 //        <password filepath="${TRILOGYHOME}/DM/dmdemo.dfo" />
 //      </server>
-//      
+//
 //      <server name="envB">
 //        <physical>webapp</physical>
 //        <state>Development</state>
 //        <state>Test</state>
 //        <!-- usergroup>admin</usergroup -->
 //      </server>
-//      
+//
 //      <server name="envC">
 //        <physical>database</physical>
 //        <state>Development</state>
@@ -43,7 +43,7 @@
 //      </server>
 //    </logical>
 //  </servers>
-//  
+//
 //  <applications>
 //    <application name="DMDemo" PackageFilter="Y">
 //      <!-- usergroup>admin</usergroup -->
@@ -63,7 +63,7 @@
 //      <action>deploy</action>
 //    </application>
 //  </applications>
-//  
+//
 //  <actions>
 
 
@@ -76,9 +76,9 @@ action Preface
     echo "package '${package.name}' has creator email '${package.creator.email}' and assignee email '${package.assignee.email}'";
     foreach(contributor: ${package.contributors}) {
     	echo "  contributor ${package.contributors[$contributor].name}";
-    }	
+    }
   }
-  
+
   echo "\nTo the following servers:";
   psloop {
     echo "${server.name} (${server.hostname}) web=\"${web:-0}\" sql=\"${sql:-0}\" basedir=\"${server.basedir}\"";
@@ -113,9 +113,9 @@ action Percentages
 
 action UpdateWebConfig
 {
-  using dropzone $dropzone { 
+  using dropzone $dropzone {
     jar(options: 'xf', jarfile: ${file}, files: 'WEB-INF/web.xml');
-    
+
     modify(modifier: 'xml', file: 'WEB-INF/web.xml') {
       add_element(xpath: '/web-app', pos: 'inside',
                   value: "<context-param>"
@@ -124,9 +124,9 @@ action UpdateWebConfig
                          "<description>time the application was deployed</description>"
                          "</context-param>");
     }
-    
+
     jar(options: 'uf', jarfile: ${file}, files: 'WEB-INF/web.xml');
-    
+
     delete(dir: 'WEB-INF');
   }
 }
@@ -135,9 +135,9 @@ action UpdateWebConfig
 action Deploy
 {
   harvest_setpackages(packages: $ARGV /*$cmdln_harpackages*/, project: $cmdln_harproject);
-  
+
   Preface;
-                          
+
   // For web servers
   set -g webflag = false;
   if($web = 1)
@@ -145,7 +145,7 @@ action Deploy
     echo "\n-------------------------------------------------------------";
     echo "Checking out [*.war] to web servers in environment $TRIFIELD1";
     echo "-------------------------------------------------------------\n";
-    
+
     // Are we rolling back?
     if(${deploy_action} != 'ROLLBACK')
     {
@@ -181,12 +181,12 @@ action Deploy
         }
       }
     }
-  
+
     UpdateWebConfig(dropzone: 'war', file: 'dmdemo.war');
-  
+
     transfer(dropzone: 'war');
   }
-  
+
   // For database servers
   set -g sqlflag = false;
   if($sql = 1)
@@ -210,9 +210,9 @@ action Deploy
       }
     }
   }
-  
+
   Percentages;
-  
+
   // Were there any failures?
   if(${global.dep.success} -ne ${global.dep.total}) {
     abort(msg: "Failed to deploy!");
@@ -221,7 +221,7 @@ action Deploy
   if(${global.dep.total} -eq 0) {
     abort(msg: "Nothing was deployed!");
   }
-    
+
   // Did we deploy the web component?
   if(($webflag = true) -a ($web = 1)) {
     // Install the war file
@@ -233,11 +233,11 @@ action Deploy
       }
     }
   }
-  
+
   // Were there any database changes?
   if(($sqlflag = true) -a ($sql = 1)) {
     set -g scriptflag = false;
-    
+
     // Deploy the sql apply script
     // viewpath appends to give "\dmdemo\scripts"
     // TODO: state should be passed on command line
@@ -249,15 +249,15 @@ action Deploy
         echo "Deployed ${TRIDM_DEP_SUCCESS:-0} / ${TRIDM_DEP_TOTAL:-0} [${deploy.pattern}] onto remote server ${server.name} (${server.hostname})...";
       }
     }
-    
+
     // Did the script checkout successfully?
     if($scriptflag != true) {
       abort(msg: "Failed to checkout applysql script");
     }
-    
+
     // Transfer the database sql changes and apply script to the server
     transfer(dropzone: 'sql');
-    
+
     // Temp fix
     psloop {
       if(${deploy_action} != 'ROLLBACK') {
@@ -277,19 +277,19 @@ action Deploy
       }
     }
   }
-}      
+}
 
 
 action populate_listbox
 {
   //echo "PACKAGENAME,ASIGNEE,CREATED,MODIFIED";
-  
+
   // dumy data
   set DEQUOTE = true;
   foreach(pkg: $cmdln_harpackages) {
     echo "$pkg,demo,18/09/2012 15:43,18/09/2012 15:43";
   }
-  
+
   //set str = "SELECT b.packageobjid, b.packagename, a.username, b.creationtime, b.modifiedtime";
   //set -a str = " FROM harallusers a, harpackage b, harenvironment c, harstate d";
   //set -a str = " WHERE d.statename='$cmdln_state' AND c.environmentname='DMDemo'";
@@ -303,7 +303,7 @@ action populate_listbox
 
 
 //  </actions>
-//  
+//
 //  <trilogy>
 //    <field number="1" content="servers" />
 //    <field number="2" content="username" />

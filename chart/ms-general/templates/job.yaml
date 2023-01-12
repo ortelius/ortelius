@@ -29,6 +29,5 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: pgcred
-                  key: DBConnectionString 
+                  key: DBConnectionString
       restartPolicy: Never
-      

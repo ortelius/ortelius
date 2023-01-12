@@ -75,7 +75,7 @@ sudo cp -r /keys/* /root/.ssh
 sudo chown -R root /root/.ssh
 sudo chmod 755 /root/.ssh
 
-if [ -e /root/.ssh/known_hosts ]; then 
+if [ -e /root/.ssh/known_hosts ]; then
   sudo chmod 600 /root/.ssh/known_hosts
 fi
 
@@ -101,9 +101,9 @@ if [[ "$DBLOCAL" == "" ]]; then
 else
   if [ "$NGINX" == "OFF" ]; then
     echo Running DeployHub Processes
-    java -jar /opt/deployhub/webadmin/webapp-runner.jar --path /dmadminweb /opt/deployhub/webadmin/deployhub-webadmin.war  2>&1 | perl -pe '$_ = localtime.": $_"' 
+    java -jar /opt/deployhub/webadmin/webapp-runner.jar --path /dmadminweb /opt/deployhub/webadmin/deployhub-webadmin.war  2>&1 | perl -pe '$_ = localtime.": $_"'
   else
     sudo nginx
-    java -jar /opt/deployhub/webadmin/webapp-runner.jar --port 9191 --path /dmadminweb /opt/deployhub/webadmin/deployhub-webadmin.war  2>&1 | perl -pe '$_ = localtime.": $_"' 
+    java -jar /opt/deployhub/webadmin/webapp-runner.jar --port 9191 --path /dmadminweb /opt/deployhub/webadmin/deployhub-webadmin.war  2>&1 | perl -pe '$_ = localtime.": $_"'
   fi
 fi

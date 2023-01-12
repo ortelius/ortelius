@@ -35,7 +35,7 @@ public class GetProviderDefDetailsData
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -50,7 +50,7 @@ public class GetProviderDefDetailsData
 	{
 		int defid = getIntParameter(request, "defid");
 		int engineid = getIntParameter(request, "engid");
-		
+
 		ProviderDefinition def = session.getProviderDefinition(defid);
 		Engine engine = session.getEngine(engineid);
 

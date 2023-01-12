@@ -24,13 +24,13 @@ function ShowAbout()
   success : function(res)
   {
    var pwd = parent.$("#modal");
-   
-   var buttons = 
+
+   var buttons =
     [
           { text: "Ok",     click: function() { UpdateLicense($(this)); } },
           { text: "Cancel", click: function() { $( this ).dialog("close"); } }
        ];
-   
+
    // var tdedit = "<p style=\"padding-left:25px\">Version 7.7.0<p style=\"padding-left:25px\">Build: " + res.build + "<p style=\"padding-left:25px\">Schema: " + res.schema;
    var tdedit = "<table border=0><tr><td style=\"width:150px\">Version</td><td>9.0.0</td></tr>"
 	   +"<tr><td>Build</td><td>"+res.build+"</td></tr>"
@@ -41,7 +41,7 @@ function ShowAbout()
    if (isAdmin != "")
     tdedit += "<p><form>Update License: <input text id=\"lickey\" name=\"lickey\" /></form>";
 
-   pwd.dialog({ resizable: false, modal: true, dialogClass: "aboutsDialog", open: null }); 
+   pwd.dialog({ resizable: false, modal: true, dialogClass: "aboutsDialog", open: null });
    pwd.empty();
    pwd.html(tdedit);
    pwd.dialog("option", "title", "About DeployHub Pro");
@@ -79,7 +79,7 @@ function UpdateLicense(dlg)
       dlg.dialog("close");
      }
     });
- } 
- 
+ }
+
  return;
 }

@@ -23,14 +23,14 @@ public class ExplorerTabs implements java.io.Serializable {
 	private String m_TabName;
 	private String m_TypeStr;
 	private String m_FrameName;
-	
+
 	public ExplorerTabs() {
 		m_TabNumber = 0;
 		m_TabName = "";
 		m_TypeStr = "";
 		m_FrameName = "";
     }
-	
+
 	public ExplorerTabs(int id, int parentId, String tabName, String typeStr, String admin) {
 		m_TabNumber = id;
 		m_TabName = tabName;
@@ -38,7 +38,7 @@ public class ExplorerTabs implements java.io.Serializable {
 		m_FrameName = "mainframe" + parentId;
 		m_Admin = admin;
     }
-	
+
 	public void setTabNumber(int tabno) {
 		m_TabNumber = tabno;
 	}
@@ -54,7 +54,7 @@ public class ExplorerTabs implements java.io.Serializable {
 	public void setFrameName(String fn) {
 		m_FrameName = fn;
 	}
-	
+
 	public int getTabNumber() {
 		return m_TabNumber;
 	}

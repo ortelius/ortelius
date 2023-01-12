@@ -55,7 +55,7 @@
 			warnAfter    : 900000, // 15 minutes
 			redirAfter   : 1200000 // 20 minutes
 		};
-		
+
 		console.log("sessionTimeout called");
 		var DialogOpen=false;
 

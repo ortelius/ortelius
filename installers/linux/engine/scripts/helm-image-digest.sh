@@ -65,7 +65,7 @@ digest=`sha256sum $chartname*.tgz | cut -f1 -d " "`
 echo "{"
 echo "\"digest\": \"$digest\","
 echo "\"images\": ["
-tar -xf *.tgz 
+tar -xf *.tgz
 IFS=$'\n'
 
 # Find the image: fields in the expanded Helm Chart and loop over each image line
@@ -97,7 +97,7 @@ do
    img=$(echo $line | cut -d ":" -f 1)
    tag=$(echo $line | cut -d ":" -f 2)
  fi
- 
+
  # docker.io v2 API endpoint lives in a different location than the registry url
  if [ "$reg" == "docker.io" ]; then
    apidomain="registry-1.docker.io"
@@ -115,9 +115,9 @@ do
  TOKEN=$(curl -s -X GET -u ${dockeruser}:${dockerpass} "${authdomsvc}&scope=${authscope}&offline_token=1&client_id=shell" | jq -r '.token')
 
  # Grab the image digest from the Docker-Content-Digest: that is in the http header
- # Use "Accept: application/vnd.docker.distribution.manifest.v2+json" in order to get the version 2 schema 
+ # Use "Accept: application/vnd.docker.distribution.manifest.v2+json" in order to get the version 2 schema
  digest=$(curl --head -s -H "Authorization: Bearer ${TOKEN}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" https://${apidomain}/v2/${org}/${img}/manifests/$tag | grep "Docker-Content-Digest:" | cut -f 2 -d " " | tr -d '"' | tr -d "\r")
- 
+
  # Print out the details for each image
  cat <<- EOF
         {
@@ -128,14 +128,11 @@ do
          "image_digest": "$digest"
         }
 EOF
-done 
+done
 
-# Print closing JSON 
+# Print closing JSON
 echo "]"
 echo "}"
 
 # Cleanup
 rm $chartname*.tgz
-
-
-

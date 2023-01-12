@@ -36,14 +36,14 @@ public class GetDeploymentFilesData
 	extends HttpServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public GetDeploymentFilesData() {
         super();
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
@@ -61,11 +61,11 @@ public class GetDeploymentFilesData
 			obj.add("data", dep.getFilesJSON());
 		} else if (f.equalsIgnoreCase("s")) {
 			obj.add("data", dep.getScriptsJSON());
-		} 
-		
+		}
+
 		String ret = obj.toString();
-		
+
 		out.println(ret);
-		System.out.println(ret);	
+		System.out.println(ret);
    	}
 }

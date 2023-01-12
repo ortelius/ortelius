@@ -38,11 +38,11 @@ public class GetPendingEnvData
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     public GetPendingEnvData() {
         super();
     }
-    
+
 	@Override
 	public IJSONSerializable handleRequest(DMSession session, boolean isPost,
 			HttpServletRequest request, HttpServletResponse response)
@@ -53,17 +53,17 @@ public class GetPendingEnvData
 		if((envid == 0) && (appid == 0)) {
 			return new JSONObject().add("result", false).add("error", "envid or appid must be specified");
 		}
-		
+
 		System.out.println("appid="+appid+" envid="+envid);
 
 		JSONObject obj = new JSONObject();
 
 		if(envid > 0) {
 			Environment env = session.getEnvironment(envid, false);
-			
+
 			obj.add("readOnly", !env.isUpdatable());
-			
-			TableDataSet data = session.getPendingEnvData(env); 
+
+			TableDataSet data = session.getPendingEnvData(env);
 			obj.add("data", data);
 		} else if(appid > 0) {
 			//
@@ -71,9 +71,9 @@ public class GetPendingEnvData
 			//
 			Application app = session.getApplication(appid, true);
 			boolean isRelease = app.getIsRelease().equalsIgnoreCase("y");
-			
+
 			obj.add("readOnly", !app.isUpdatable());
-			
+
 			TableDataSet data = session.getPendingEnvData(app);
 			Hashtable<Integer, Boolean> dc = new Hashtable<Integer, Boolean>();
 			JSONArray darr = new JSONArray();
@@ -167,13 +167,12 @@ public class GetPendingEnvData
 					}
 				}
 			}
-			
+
 			System.out.println("app is "+app.getId());
 			obj.add("domains",darr);
 			obj.add("data", data);
 		}
-		
+
 		return obj;
 	}
 }
-

@@ -38,7 +38,7 @@ template<class V> Hashtable<V>::Hashtable(bool nocase /*= false*/, bool isOwner 
 		for(int n = 0; n < buckets; n++) {
 			m_buckets[n] = (Bucket<V>*) NULL;
 		}
-	}	
+	}
 }
 
 template<class V> Hashtable<V>::~Hashtable()
@@ -184,7 +184,7 @@ template<class V> void Hashtable<V>::rehash()
 		for(n = 0; n < buckets; n++) {
 			temp[n] = (Bucket<V>*) NULL;
 		}
-		
+
 		for(n = 0; n < m_bucketCount; n++) {
 			Bucket<V> *next = NULL;
 			for(Bucket<V> *b = m_buckets[n]; b; b = next) {
@@ -202,7 +202,7 @@ template<class V> void Hashtable<V>::rehash()
 				}
 			}
 		}
-		
+
 		free(m_buckets);
 		m_buckets = temp;
 		m_bucketCount = buckets;
@@ -399,7 +399,7 @@ template<class V> void HashtableById<V>::rehash()
 		for(n = 0; n < buckets; n++) {
 			temp[n] = (BucketById<V>*) NULL;
 		}
-		
+
 		for(n = 0; n < m_bucketCount; n++) {
 			BucketById<V> *next = NULL;
 			for(BucketById<V> *b = m_buckets[n]; b; b = next) {
@@ -417,7 +417,7 @@ template<class V> void HashtableById<V>::rehash()
 				}
 			}
 		}
-		
+
 		free(m_buckets);
 		m_buckets = temp;
 		m_bucketCount = buckets;

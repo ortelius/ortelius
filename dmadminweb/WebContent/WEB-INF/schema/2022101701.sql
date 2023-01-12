@@ -9,12 +9,12 @@ select id as id, 'readme' as name, 'Y' as value from dm.dm_component a where sta
 union
 select id as id, 'swagger' as name, 'Y' as value from dm.dm_component a where status = 'N' and id in (select distinct compid from dm.dm_textfile where filetype = 'swagger' and compid = a.id)
 union
-select compid as id, c.name, c.value from dm.dm_componentvars c, dm.dm_component d 
-where c.compid = d.id and d.status = 'N' and 
-c.name in ('GitLinesAdded', 'GitLinesDeleted', 'GitLinesTotals', 'GitTotalCommittersCnt', 'GitCommittersCnt', 
+select compid as id, c.name, c.value from dm.dm_componentvars c, dm.dm_component d
+where c.compid = d.id and d.status = 'N' and
+c.name in ('GitLinesAdded', 'GitLinesDeleted', 'GitLinesTotals', 'GitTotalCommittersCnt', 'GitCommittersCnt',
 		   'JobTriggerdBy', 'SonarBugs', 'SonarCodeSmells', 'SonarViolations', 'SonarProjectStatus', 'VericodeScore');
 
-create view dm_scorecard as 
+create view dm_scorecard as
 select id,
 max(case when (b.name='license') then CASE WHEN b.value='Y' THEN b.value ELSE 'N' END ELSE 'N' END) as license,
 max(case when (b.name='readme') then CASE WHEN b.value='Y' THEN b.value ELSE 'N' END ELSE 'N' END) as readme,
@@ -34,9 +34,9 @@ from dm_scorecard_nv b
 group by id;
 
 create view dm_scorecard_ui as
-SELECT distinct c.domainid as "domain", c.name as "application", b.name as "component", license, readme, swagger, 
-COALESCE(round((git_lines_added + git_lines_deleted)/NULLIF(git_lines_total, 0)*100.00,0),100)::text  AS lines_changed, 
+SELECT distinct c.domainid as "domain", c.name as "application", b.name as "component", license, readme, swagger,
+COALESCE(round((git_lines_added + git_lines_deleted)/NULLIF(git_lines_total, 0)*100.00,0),100)::text  AS lines_changed,
 COALESCE(round(git_committers_cnt/NULLIF(git_total_committers_cnt, 0)::float*100.00),0)::text  AS contributing_committers,
 git_total_committers_cnt AS total_committers, git_trigger, sonar_bugs, sonar_code_smells, sonar_violations, sonar_project_status, vericode_score
-FROM dm.dm_scorecard a, dm.dm_component b, dm.dm_application c, dm.dm_applicationcomponent d 
+FROM dm.dm_scorecard a, dm.dm_component b, dm.dm_application c, dm.dm_applicationcomponent d
 WHERE a.id = b.id and c.id = d.appid and d.compid = a.id and c.status = 'N';

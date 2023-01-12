@@ -179,7 +179,7 @@ public:
 
 	OBJECT_KIND getObjectKind()  { return m_objkind; }
 	int getId()  { return m_id; }
-	
+
 	char *toString();
 };
 
@@ -553,8 +553,8 @@ protected:
 	List<class Application> m_children;
 	List<class Application> m_parents;			// pending
 	List<class Application> m_completed;		// completed parents
-	
-	
+
+
 
 	Application(class Model &model, int id, const char *name);
 
@@ -606,7 +606,7 @@ public:
 
 	virtual class ApplicationVersion *toApplicationVersion();
 	/*
-	{ 
+	{
 		return (ApplicationVersion *)this;
 	}
 	*/
@@ -708,7 +708,7 @@ public:
 	//Object *toObject()				{ return NULL; }
 
 	const char *getTargetFolder()  { return m_target; }
-	const char *getKind()  { return m_kind; }	
+	const char *getKind()  { return m_kind; }
 	class Repository *getRepository();
 
 	ComponentFilter getRollup()    { return m_rollup; }
@@ -778,12 +778,12 @@ public:
 	bool getFilterItems()          { return m_filterItems; }
 	bool isDeployAlways()          { return m_deployAlways; }
 	bool isDeploySequentially()    { return m_deploySequentially; }
-	int getParentId()              { return m_parentid; }	
+	int getParentId()              { return m_parentid; }
 	int getPredecessorId()         { return m_predecessorid; }
 	int buildid()				   { return m_buildid; }
 	int datasourceid()             { return m_datasourceid; }
-	
-	
+
+
 	List<Defect> *getDefects();
 	List<Server> *getServerSubset(class Context &ctx);
 	List<ComponentItem> *getItems();
@@ -1142,7 +1142,7 @@ private:
 	void setRepository(class Repository *repo);
 
 	class Dropzone &getScriptDropzone(class Context &ctx);
-	
+
 
 public:
 	~Script();
@@ -1435,7 +1435,7 @@ private:
 	CacheByIdAndName<Task>			m_tskCache;
 
 	// Internals
-	int getDomainID2(char *DomainName,int parent);	
+	int getDomainID2(char *DomainName,int parent);
 	char *ProcessQualifiedName(const char *QualifiedName,int *domain);
 	Environment *internalGetEnvironmentByName(const char *envname,bool throwRTE=false);
 	Credentials *internalGetCredentialsByName(const char *credname,bool throwRTE=false);
@@ -1446,7 +1446,7 @@ private:
 	Server *internalGetServerByName(const char *servname,bool throwRTE=false);
 	UserGroup *internalGetUserGroupByName(const char *grpname,bool throwRTE=false);
 	void internalGetChildrenOfApp(List<Application> *applist,Application &app,bool AllDescendents);
-	
+
 	List<Environment> *internalGetEnvironments(
 		const char *whereClause, bool checkDomain);
 	List<Server> *internalGetServers(
@@ -1637,7 +1637,7 @@ private:
 	void getPluginForAction(Action &act);
 	void getServerTypeFilepathsForAction(Action &act);
 
-	
+
 
 	// Task
 	Task *getTask(const char *name);
@@ -1662,7 +1662,7 @@ private:
 
 	// Timed jobs
 	bool DomainBelongsToEngine(int domainid);
-	
+
 
 public:
 	Model(class triODBC &odbc, const char *engineHostname);

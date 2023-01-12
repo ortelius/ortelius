@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class RenameNode extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -38,7 +38,7 @@ public class RenameNode extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     @Override
 	public void handleRequest(DMSession session, boolean isPost,
 			HttpServletRequest request, HttpServletResponse response)
@@ -49,9 +49,9 @@ public class RenameNode extends HttpServletBase {
 		String id = request.getParameter("id");
 		String newname = request.getParameter("newname");
 		System.out.println("newname=["+newname+"] id=["+id+"] rel=["+rel+"]");
-		// Get the printwriter object from response to write the required json object to the output stream      
+		// Get the printwriter object from response to write the required json object to the output stream
 		PrintWriter out = response.getWriter();
-		
+
 		String errtext = "";
 		String aoran;
 		if ("AEIOUaeiou".indexOf(rel.charAt(0))>0)
@@ -67,7 +67,7 @@ public class RenameNode extends HttpServletBase {
 		int j = 1;
 		boolean renmsg = false;
 		int res = 0;
-		
+
 		do
 		{
 		 res = session.RenameObject(rel, Integer.parseInt(id), newname);
@@ -81,12 +81,12 @@ public class RenameNode extends HttpServletBase {
 		  dup = false;
 		 j++;
 		} while (dup || j > 100);
-		
+
 		if (renmsg)
 		{
 			errtext=aoran+" "+rel+" with " + origname + " already exists and has been set to " + newname;
 			res = 1;
-		} 
+		}
 
 		 out.print("{\"errtext\" : \"" + errtext + "\", \"errcode\" : \"" + res + "\", \"newname\": \"" + newname + "\"}");
 	}

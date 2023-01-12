@@ -34,25 +34,25 @@ public class GetDeploymentStepsGantt
 	extends HttpServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public GetDeploymentStepsGantt() {
         super();
     }
-    
+
     public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
    		throws ServletException, IOException
    	{
     	response.setContentType("application/json");
 		int deployid = ServletUtils.getIntParameter(request, "deployid");
-	
+
 		PrintWriter out = response.getWriter();
-		
+
 		GanttDataSet data = session.getDeploymentStepsGantt(deployid);
-		
+
 		JSONObject obj = new JSONObject();
 		obj.add("ticks", data.getTicksJSON());
 		obj.add("series", data.getSeriesJSON());
@@ -60,7 +60,7 @@ public class GetDeploymentStepsGantt
 		obj.add("canvasOverlay", data.getOverlayJSON());
 		obj.add("data", data.getDataJSON());
 		String ret = obj.toString();
-		
+
 		out.println(ret);
 		System.out.println(ret);
    	}

@@ -91,7 +91,7 @@ DropzoneFile::DropzoneFile(
 DropzoneFile::DropzoneFile(
 		IDropzone &dz, const char *dzpath, DMINT32 size, time_t modtime
 	)
-	: m_dz(dz), m_dzpath(DUP_NULL(dzpath)), m_size(size), m_modtime(modtime), m_zipfile(true)	
+	: m_dz(dz), m_dzpath(DUP_NULL(dzpath)), m_size(size), m_modtime(modtime), m_zipfile(true)
 {
 	if (m_dzpath) {
 		// Always save paths with / separator
@@ -636,7 +636,7 @@ void DropzoneBase::generateDmInfos()
 	List<RepositoryIgnorePattern> *ignores = generateIgnoreList();
 
 	debug1("About to iterate through ikit list (infokeys)");
-	
+
 	for(const char *info = ikit.first(); info; info = ikit.next()) {
 		debug1("info=[%s]",info);
 		HashtableById<List<RepositoryFolder> > *repos = m_infos->get(info);
@@ -721,7 +721,7 @@ void DropzoneBase::generateDmInfos()
 				// Check if the repository folder exists. If it does then we will create another
 				// dm.info file in that folder
 				//
-				
+
 
 				// TiXmlDocument doc2("dm.info");
 				TiXmlDocument *doc2 = new TiXmlDocument("dm.info");
@@ -736,7 +736,7 @@ void DropzoneBase::generateDmInfos()
 					finfo = (char *)malloc(strlen(infodir)+11);
 					sprintf(finfo,"%s%sdm.info",infodir,DIR_SEP_STR);
 					struct stat tt;
-					
+
 					if (stat(finfo,&tt)==0) {
 						// the dm.info file already exists
 						debug3("dm.info already exists in this folder");
@@ -758,7 +758,7 @@ void DropzoneBase::generateDmInfos()
 				char *comment = (char*) malloc(strlen(rf->folder()) + 12);
 				sprintf(comment, " folder: %s ", rf->folder());
 				debug3("   <!--%s-->", comment);
-				
+
 				debug3("Adding comment to inforoot (0x%lx)",inforoot);
 				inforoot->LinkEndChild(new TiXmlComment(comment));
 				SAFE_FREE(comment);
@@ -805,7 +805,7 @@ void DropzoneBase::generateDmInfos()
 				debug2("Count is zero - not generating %s", infofile);
 			}
 		}
-		
+
 
 		SAFE_FREE(infofile);
 	}
@@ -984,7 +984,7 @@ void Dropzone::remove()
 	}
 }
 
-	
+
 void Dropzone::addRef()
 {
 	++m_refCount;
