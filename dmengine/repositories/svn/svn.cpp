@@ -348,7 +348,7 @@ RepositoryImpl *SvnRepositoryImplFactory::create(
 extern "C" SVN_EXPORT int svn_PluginStart(DM &dm)
 {
 	dm.writeToLogFile("Subversion plugin V" SVN_PLUGIN_VERSION);
-	
+
 	RepositoryImplRegistry::instance().registerFactory("svn", new SvnRepositoryImplFactory());
 	return 0;
 }

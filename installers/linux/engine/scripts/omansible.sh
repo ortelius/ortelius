@@ -65,7 +65,7 @@ echo "Executing Ansible role '$ROLE' against server '$TARGET' ... "
 
 if grep -q "$TARGET" "$HOME/.ssh/known_hosts"; then
  echo "SSH Key is already configured"
-else	
+else
  ssh-keyscan -t rsa,dsa $TARGET >> $HOME/.ssh/known_hosts
  sort -u $HOME/.ssh/known_hosts > $HOME/.ssh/known_hosts.unique
  cat $HOME/.ssh/known_hosts.unique > $HOME/.ssh/known_hosts
@@ -73,9 +73,9 @@ fi
 
 if [ "$ID" = "root" ]; then
   /usr/bin/ansible-galaxy install $ROLE
-else			
+else
   $TRILOGYHOME/trilogycli ANSIBLE install $ROLE
-fi		
+fi
 
 echo "- hosts: all" > /tmp/$$.yml
 if [[ "$SUDO_PW" != "none" && "$SUDO_PW" != "" ]]; then
@@ -106,7 +106,7 @@ do
   i=$((i+1))
   val=${ANSIBLE_OPTS[${i}]}
   echo "    $var: $val"  >> /tmp/$$.yml
-done  
+done
 
 echo "   " >> /tmp/$$.yml
 echo "  pre_tasks:" >> /tmp/$$.yml
@@ -130,7 +130,7 @@ if [ "$ID" = "root" ]; then
 else
 	 $TRILOGYHOME/trilogycli KNOWN_HOSTS $TARGET
 fi
-		
+
 echo ansible /tmp/$$.yml -i "$TARGET,"
 
 if [ "$ID" = "root" ]; then

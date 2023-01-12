@@ -68,14 +68,14 @@ jobs:
             yq e '.appVersion |= "${{ env.CHART_VERSION }}"' -i chart/ms-ui/Chart.yaml
             echo "DIGEST=${{ steps.build_ui.outputs.digest }}" >> $GITHUB_ENV
 
-      - name: UI Update Compnent 
+      - name: UI Update Compnent
         id: updatecomp_ui
         run: |
           export COMPNAME=ms-ui
           dh envscript --envvars component.toml --envvars_sh env.sh
           source env.sh
           dh updatecomp --rsp component.toml --deppkg cyclonedx@cyclonedx.json
-          
+
       - name: General Build and Push Docker Image
         id: build_gen
         uses: docker/build-push-action@v3
@@ -99,7 +99,7 @@ jobs:
             yq e '.appVersion |= "${{ env.CHART_VERSION }}"' -i chart/ms-general/Chart.yaml
             echo "DIGEST=${{ steps.build_gen.outputs.digest }}" >> $GITHUB_ENV
 
-      - name: General Update Compnent 
+      - name: General Update Compnent
         id: updatecomp_gen
         run: |
           export COMPNAME=ms-general
@@ -130,7 +130,7 @@ jobs:
             yq e '.appVersion |= "${{ env.CHART_VERSION }}"' -i chart/ms-nginx/Chart.yaml
             echo "DIGEST=${{ steps.build_nginx.outputs.digest }}" >> $GITHUB_ENV
 
-      - name: Nginx Update Compnent 
+      - name: Nginx Update Compnent
         id: updatecomp_nginx
         run: |
           export COMPNAME=ms-nginx
@@ -155,7 +155,7 @@ jobs:
           charts_dir: chart
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          
+
       - name: Trigger Rebuild of Main Chart
         uses: benc-uk/workflow-dispatch@v1
         with:

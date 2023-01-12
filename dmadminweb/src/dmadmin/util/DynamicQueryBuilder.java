@@ -35,16 +35,16 @@ public class DynamicQueryBuilder
 	private StringBuffer m_sql;
 	private List<Object> m_params;
 	private PreparedStatement m_stmt;
-	
+
 	public enum Null {
 		INT,
 		STRING
 	}
-	
+
 	public DynamicQueryBuilder(Connection conn, String baseSql)
 	{
 		m_conn = conn;
-		
+
 		if(countParams(baseSql) != 0) {
 			throw new RuntimeException("Base SQL Fragmnent must not contain params");
 		}
@@ -71,46 +71,46 @@ public class DynamicQueryBuilder
 	{
 		add(3, sqlFrag, param1, param2, param3);
 	}
-	
+
 	private void add(int count, String sqlFrag, Object param1, Object param2, Object param3)
 	{
 	 int pcnt = 0;
-	 
+
 	 if (param1 != null)
 	  pcnt++;
-	 
+
   if (param2 != null)
    pcnt++;
-  
+
   if (param3 != null)
    pcnt++;
-  	 
+
 		if(countParams(sqlFrag) != count || pcnt != count) {
 			throw new RuntimeException("SQL Fragmnent: " + sqlFrag + " contains wrong number of params (" + countParams(sqlFrag) + "!=" + count + ")");
 		}
 		m_sql.append(sqlFrag);
 		if(count > 0) {
-			m_params.add(param1);			
+			m_params.add(param1);
 		}
 		if(count > 1) {
-			m_params.add(param2);			
+			m_params.add(param2);
 		}
 		if(count > 2) {
-			m_params.add(param3);			
+			m_params.add(param3);
 		}
 	}
-	
+
 	private void createStatement()
 		throws SQLException
 	{
 		String sql = m_sql.toString();
-		
+
 		if(countParams(sql) != m_params.size()) {
 			throw new RuntimeException("Number of paramters does not match SQL statement");
 		}
-		
+
 		//System.out.println(sql);
-		
+
 		m_stmt = m_conn.prepareStatement(sql);
 		for(int n = 0; n < m_params.size(); n++) {
 			Object param = m_params.get(n);
@@ -130,14 +130,14 @@ public class DynamicQueryBuilder
 				m_stmt.setLong(n+1, (Long) param);
 			} else if(param instanceof String) {
 				//System.out.println(n + ": '" + (String) param + "'");
-				m_stmt.setString(n+1, (String) param);				
+				m_stmt.setString(n+1, (String) param);
 			} else {
 				throw new RuntimeException("Invalid parameter type " + param.getClass().getName());
 			}
 		}
 		System.out.println("Dyn:" + m_stmt.toString());
 	}
-	
+
 	public ResultSet executeQuery()
 		throws SQLException
 	{
@@ -149,32 +149,32 @@ public class DynamicQueryBuilder
 			throw e;
 		}
 	}
-	
+
 	public void execute()
 		throws SQLException
 	{
 		createStatement();
 		System.out.println("Calling execute");
-		m_stmt.execute();		
+		m_stmt.execute();
 		System.out.println("Done");
 	}
-	
+
 	public String getQueryString()
 	{
 		return m_sql.toString();
 	}
-	
+
  public ArrayList<Object> getQueryParams()
  {
   return (ArrayList<Object>) m_params;
  }
- 
+
 	public int getUpdateCount()
 		throws SQLException
 	{
 		return (m_stmt != null) ? m_stmt.getUpdateCount() : -1;
 	}
-	
+
 	public void close()
 		throws SQLException
 	{
@@ -182,7 +182,7 @@ public class DynamicQueryBuilder
 			m_stmt.close();
 		}
 	}
-	
+
 	private int countParams(String str)
 	{
 		int count = 0;

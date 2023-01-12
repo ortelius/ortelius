@@ -128,7 +128,7 @@ void TextModifyProviderImpl::replace(ExtendedStmt &stmt, Context &ctx)
 		char *t = strdup(m_data);
 		char *p = t;
 		char *ls = p;	// line start
-		
+
 		while (*ls) {
 			while (*p) {
 				if (*p=='\r' || *p=='\n') break;
@@ -140,7 +140,7 @@ void TextModifyProviderImpl::replace(ExtendedStmt &stmt, Context &ctx)
 			char *nl = re.replaceAll(ls, replace, noIterate);	// process line
 			if (!res) {
 				res = (char *)malloc(strlen(nl)+2);
-				strcpy(res,nl);	
+				strcpy(res,nl);
 			} else {
 				res = (char *)realloc(res,strlen(res)+strlen(nl)+2);
 				strcat(res,nl);
@@ -247,7 +247,7 @@ ModifyProviderImpl *TextModifyProviderImplFactory::create(ExtendedStmt &parent)
 extern "C" TEXTMODIFY_EXPORT int textmodify_PluginStart(DM &dm)
 {
 	dm.writeToLogFile("Text Modify plugin V" TEXTMODIFY_PLUGIN_VERSION);
-	
+
 	ModifyProviderImplRegistry::instance().registerFactory(
 		TEXTMODIFY_MODIFY_NAME, new TextModifyProviderImplFactory());
 	ExtendedStmtImplRegistry::instance().registerFactory(

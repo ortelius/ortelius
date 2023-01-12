@@ -107,21 +107,21 @@ action deploy_WSSG
 action MacysDeployOld
 {
   harvest_setpackages(repository: 'dm_demo', packages: {'DMDemo-2.0'});
-  
+
   preface;
-  
+
   parallel {
     deploy_Apollo_SDP;
     deploy_Legacy_Midtier;
   //}
-    
+
   deploy_SDP;
-  
+
   //parallel {
     deploy_NavApp_ShopApp_Portal;
     deploy_WSSG;
   }
-  
+
   harvest_packageloop {
     echo "Promoting package $TRIDM_PACKAGE to ${nextstate}...";
     query(datasource: 'harvest', sql: "SELECT v.versionobjid FROM harversions v, harpackage p, harenvironment e WHERE e.environmentname='$TRIDM_PROJECT' AND p.envobjid=e.envobjid AND p.packagename='$TRIDM_PACKAGE' AND v.packageobjid=p.packageobjid AND v.itemtype=1 and v.versionobjid in(select max(x.versionobjid) from harversions x where x.packageobjid = p.packageobjid and x.itemobjid = v.itemobjid)", result: "row") {
@@ -156,7 +156,7 @@ action MacysDeploy
       echo "end deploy_Legacy_Midtier";
     }
   //}
-  
+
   //parallel {
     sequential { // deploy_NavApp_ShopApp_Portal;
       echo "start deploy_NavApp_ShopApp_Portal 2";

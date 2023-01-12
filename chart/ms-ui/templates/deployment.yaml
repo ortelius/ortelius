@@ -35,10 +35,10 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: pgcred
-                  key: DBConnectionString  
+                  key: DBConnectionString
             - name: NGINX
-              value: "{{ .Values.internal_nginx }}"                      
+              value: "{{ .Values.internal_nginx }}"
           ports:
             - name: http
-              containerPort: 8080        
+              containerPort: 8080
 ---

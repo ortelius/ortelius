@@ -3,7 +3,7 @@ id integer,
 name character varying(2048),
 domainid integer,
 ownerid integer,
-ogrpid integer, 
+ogrpid integer,
 defid integer,
 summary character varying(256),
 credid integer,
@@ -49,7 +49,7 @@ WITH (
 
 CREATE TABLE dm_buildengineprops
 (
-  builderid integer NOT NULL, 
+  builderid integer NOT NULL,
   name character varying(256) NOT NULL,
   value character varying(2048),
   encrypted character(1),

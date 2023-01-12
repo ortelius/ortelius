@@ -27,7 +27,7 @@
 #include <netdb.h>
 #include <errno.h>
 #include <pwd.h>
-#define _O_WRONLY O_WRONLY 
+#define _O_WRONLY O_WRONLY
 #define _O_BINARY 0
 #define _O_CREAT O_CREAT
 #define _O_TRUNC O_TRUNC
@@ -84,7 +84,7 @@ char *base64encode(unsigned char *data, unsigned long datalen)
 		int maxn = (datalen/3) * 3;
 		for(int n = 0; n < maxn; n += 3)
 		{
-			m1 = (data[n] & 0xfc) >> 2; 
+			m1 = (data[n] & 0xfc) >> 2;
 			m2 = ((data[n] & 0x03) << 4) + ((data[n+1] & 0xf0) >> 4);
 			m3 = ((data[n+1] & 0x0f) << 2) + ((data[n+2] & 0xc0) >> 6);
 			m4 = data[n+2] & 0x3f;
@@ -140,7 +140,7 @@ static char *url_encode(char *str)
 	char *buf = (char *)malloc(strlen(str) * 3 + 1);
 	char *pbuf = buf;
 	while (*pstr) {
-		if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~' || *pstr == '&' || *pstr=='=' || *pstr=='?') 
+		if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~' || *pstr == '&' || *pstr=='=' || *pstr=='?')
 			*pbuf++ = *pstr;
 		else if (*pstr == '/')
 			*pbuf++ = '/';
@@ -317,7 +317,7 @@ char *ReadLineFromSocket(int sock)
 				if (n == SOCKET_ERROR)
 				{
 					LPVOID lpMsgBuf;
-					FormatMessage( 
+					FormatMessage(
 						FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 						NULL, WSAGetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
 						(LPTSTR) &lpMsgBuf, 0, NULL  );
@@ -415,18 +415,18 @@ static int local_mkdir(const char *dirname)
 	int ret = mkdir(dirname);
 #else
 		int ret = mkdir(dirname,0777);
-#endif			
+#endif
 
 	if(ret != 0) {
 		// mkdir failed - check to see if parent directory exists
 		ConstCharPtr parentdir = local_dirname(dirname);
 		if((strlen(parentdir) > 0) && (strcmp(parentdir, DIR_SEP_STR) != 0) && !local_dirExists(parentdir)) {
 			if (local_mkdir(parentdir)) {
-#ifdef WIN32				
+#ifdef WIN32
 				ret = mkdir(dirname);
 #else
 				ret = mkdir(dirname,0777);
-#endif								
+#endif
 			}
 		}
 	}
@@ -436,7 +436,7 @@ static int local_mkdir(const char *dirname)
 void createDropZoneFile(void *buf,int buflen,const char *path,const char *BaseName)
 {
 	struct stat s;
-	
+
     debug1("path=[%s]",path);
 	debug1("BaseName=[%s]",BaseName);
 	if (stat(path,&s) != 0 && errno == ENOENT) {
@@ -500,7 +500,7 @@ void *getFileContent(Context &ctx,char *http_request,int sock,int *retlen, int *
 			} else if(strncmp(line, "Content-Type: ", 14) == 0) {
 				debug1("Content-Type: %s",&line[14]);
 				if (stristr(line,"/html")==0) CheckForHTML=true;
-			} 
+			}
 		}
 		debug1("Length: %d", length);
 
@@ -536,13 +536,13 @@ int ConnectToServer(char *host,int port)
 	else
 	{
 		// Create a socket on which to send.
-		sock = socket(AF_INET, SOCK_STREAM, 0);		
+		sock = socket(AF_INET, SOCK_STREAM, 0);
 	}
 	struct sockaddr_in	name;
 	name.sin_family = AF_INET;
 	name.sin_addr.s_addr = *((int *)hp->h_addr);
-	name.sin_port = htons(port);	
-	
+	name.sin_port = htons(port);
+
 	int res = connect(sock,(struct sockaddr*) &name, sizeof(name));
 	if(res)
 	{
@@ -656,7 +656,7 @@ void http_handleCredentials(
 		throw RuntimeError(stmt, ctx.stack(),
 				"Private Key file cannot be used for HTTP repository");
 	}
-	
+
 	if(!(creds->hasUsername() && creds->hasPassword())) {
 		throw RuntimeError(stmt, ctx.stack(),
 				"No usable credentials specified for HTTP repository");
@@ -942,13 +942,13 @@ void HttpRepositoryImpl::checkout(
 							ctx.writeToStdErr("ERROR: HTTP GET %s returns status %d",op,status);
 							callback.checkout_summary(0,0,0,0);						// Record 0 of 0 files checked out successfully
 						}
-						
+
 						free(op);
 						free(content);
 					}
 				}
 			}	/* end loop through patterns */
-		} /* pattern available */		
+		} /* pattern available */
 	} /* no params for http get */
 	if (logout) fclose(logout);
 }
@@ -1009,7 +1009,7 @@ RepositoryImpl *HttpRepositoryImplFactory::create(
 	char *host;
 	int port;
 	char *uri;
-	
+
 	ConstCharPtr server  = stmt.getOverridableArgAsString("server", parent, true, ctx);
 	ConstCharPtr portstr = stmt.getOverridableArgAsString("port", parent, false, ctx);
 	ConstCharPtr params  = stmt.getOverridableArgAsString("params", parent, false, ctx);
@@ -1063,7 +1063,7 @@ RepositoryImpl *HttpRepositoryImplFactory::create(
 		}
 		strcat(uri,uri2);
 	}
-	
+
 	char *cp = strchr(host,':');
 	if (cp) {
 		// url contains a : after the hostname, port specified
@@ -1085,7 +1085,7 @@ RepositoryImpl *HttpRepositoryImplFactory::create(
 extern "C" HTTP_EXPORT int PluginStart(DM &dm)
 {
 	dm.writeToLogFile("Http plugin V" HTTP_PLUGIN_VERSION);
-	
+
 	RepositoryImplRegistry::instance()
 		.registerFactory(HTTP_REPO_NAME, new HttpRepositoryImplFactory());
 

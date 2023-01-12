@@ -119,7 +119,7 @@ private:
 
 public:
 	~AuditEntry();
-	
+
 	int m_compId;
 	int stepId()  { return m_stepId; }
 	int compId()  { return m_compId; }

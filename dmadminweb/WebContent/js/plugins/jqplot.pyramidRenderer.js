@@ -6,13 +6,13 @@
  * Revision: 1250
  *
  * Copyright (c) 2009-2013 Chris Leonello
- * jqPlot is currently available for use in all personal or commercial projects 
- * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL 
- * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can 
- * choose the license that best suits your project and use it accordingly. 
+ * jqPlot is currently available for use in all personal or commercial projects
+ * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL
+ * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can
+ * choose the license that best suits your project and use it accordingly.
  *
- * Although not required, the author would appreciate an email letting him 
- * know of any substantial use of jqPlot.  You can reach the author at: 
+ * Although not required, the author would appreciate an email letting him
+ * know of any substantial use of jqPlot.  You can reach the author at:
  * chris at jqplot dot com or see http://www.jqplot.com/info.php .
  *
  * If you are feeling kind and generous, consider supporting the project by
@@ -26,7 +26,7 @@
  *     http://hexmen.com/js/sprintf.js
  *     The author (Ash Searle) has placed this code in the public domain:
  *     "This code is unrestricted: you are free to use it however you like."
- * 
+ *
  */
 (function($) {
 
@@ -41,7 +41,7 @@
             async: false
         });
     }
-    
+
     if ($.jqplot.PyramidGridRenderer === undefined) {
         $.ajax({
             url: $.jqplot.pluginLocation + 'jqplot.pyramidGridRenderer.js',
@@ -53,10 +53,10 @@
     $.jqplot.PyramidRenderer = function(){
         $.jqplot.LineRenderer.call(this);
     };
-    
+
     $.jqplot.PyramidRenderer.prototype = new $.jqplot.LineRenderer();
     $.jqplot.PyramidRenderer.prototype.constructor = $.jqplot.PyramidRenderer;
-    
+
     // called with scope of a series
     $.jqplot.PyramidRenderer.prototype.init = function(options, plot) {
         options = options || {};
@@ -94,14 +94,14 @@
         // True will push bars up by 1/2 bar width to fill between their y values.
         // If true, there needs to be 1 more tick than there are bars.
         this.offsetBars = false;
-        
+
         // if user has passed in highlightMouseDown option and not set highlightMouseOver, disable highlightMouseOver
         if (options.highlightMouseDown && options.highlightMouseOver == null) {
             options.highlightMouseOver = false;
         }
 
         this.side = 'right';
-        
+
         $.extend(true, this, options);
 
         // if (this.fill === false) {
@@ -115,7 +115,7 @@
         else {
             this._highlightThreshold = [[0,0], [0,0], [this.highlightThreshold, 0], [this.highlightThreshold, 0]];
         }
-        
+
         this.renderer.options = options;
         // index of the currenty highlighted point, if any
         this._highlightedPoint = null;
@@ -125,7 +125,7 @@
         this.fillAxis = 'y';
         this._primaryAxis = '_yaxis';
         this._xnudge = 0;
-        
+
         // set the shape renderer options
         var opts = {lineJoin:'miter', lineCap:'butt', fill:this.fill, fillRect:this.fill, isarc:false, strokeStyle:this.color, fillStyle:this.color, closePath:this.fill, lineWidth: this.lineWidth};
         this.renderer.shapeRenderer.init(opts);
@@ -156,7 +156,7 @@
             }
         }
     };
-    
+
     // setGridData
     // converts the user data values to grid coordinates and stores them
     // in the gridData array.
@@ -203,7 +203,7 @@
             }
         }
     };
-    
+
     // makeGridData
     // converts any arbitrary data values to grid coordinates and
     // returns them.  This method exists so that plugins can use a series'
@@ -276,7 +276,7 @@
             }
         }
     };
-    
+
     $.jqplot.PyramidRenderer.prototype.draw = function(ctx, gridData, options) {
         var i;
         // Ughhh, have to make a copy of options b/c it may be modified later.
@@ -290,11 +290,11 @@
         // clear out data colors.
         this._dataColors = [];
         this._barPoints = [];
-        
+
         if (this.renderer.options.barWidth == null) {
             this.renderer.setBarWidth.call(this);
         }
-        
+
         // var temp = this._plotSeriesInfo = this.renderer.calcSeriesNumbers.call(this);
         // var nvals = temp[0];
         // var nseries = temp[1];
@@ -302,7 +302,7 @@
         var points = [],
             w,
             h;
-        
+
         // this._barNudge = 0;
 
         if (showLine) {
@@ -321,7 +321,7 @@
             var bw2 = bw/2.0;
             var points = [];
             var yadj = this.offsetBars ? bw2 : 0;
-            
+
             for (var i=0, l=gridData.length; i<l; i++) {
                 if (this.data[i][0] == null) {
                     continue;
@@ -345,9 +345,9 @@
                     }
                     else {
                         opts.fillStyle = positiveColor;
-                    }                    
+                    }
                 }
-                
+
                 if (this.fill) {
 
                     if (this._plotData[i][1] >= 0) {
@@ -370,7 +370,7 @@
                     }
                     var clr = opts.fillStyle || this.color;
                     this._dataColors.push(clr);
-                    this.renderer.shapeRenderer.draw(ctx, points, opts); 
+                    this.renderer.shapeRenderer.draw(ctx, points, opts);
                 }
 
                 else {
@@ -380,12 +380,12 @@
 
                     else if (i < l-1) {
                         points = points.concat([[gridData[i-1][0], gridData[i-1][1] - bw2 - yadj], [gridData[i][0], gridData[i][1] + bw2 - yadj], [gridData[i][0], gridData[i][1] - bw2 - yadj]]);
-                    } 
+                    }
 
                     // finally, draw the line
                     else {
                         points = points.concat([[gridData[i-1][0], gridData[i-1][1] - bw2 - yadj], [gridData[i][0], gridData[i][1] + bw2 - yadj], [gridData[i][0], yend], [xstart, yend]]);
-                    
+
                         if (shadow) {
                             this.renderer.shadowRenderer.draw(ctx, points);
                         }
@@ -394,23 +394,23 @@
                         this.renderer.shapeRenderer.draw(ctx, points, opts);
                     }
                 }
-            }  
-        }        
-        
+            }
+        }
+
         if (this.highlightColors.length == 0) {
             this.highlightColors = $.jqplot.computeHighlightColors(this._dataColors);
         }
-        
+
         else if (typeof(this.highlightColors) == 'string') {
             this.highlightColors = [];
             for (var i=0; i<this._dataColors.length; i++) {
                 this.highlightColors.push(this.highlightColors);
             }
         }
-        
+
     };
 
-        
+
     // setup default renderers for axes and legend so user doesn't have to
     // called with scope of plot
     function preInit(target, data, options) {
@@ -431,33 +431,33 @@
                 }
             }
         }
-        
+
         if (setopts) {
             options.axesDefaults.renderer = $.jqplot.PyramidAxisRenderer;
             options.grid.renderer = $.jqplot.PyramidGridRenderer;
             options.seriesDefaults.pointLabels = {show: false};
         }
     }
-    
+
     // called within context of plot
     // create a canvas which we can draw on.
     // insert it before the eventCanvas, so eventCanvas will still capture events.
     function postPlotDraw() {
-        // Memory Leaks patch    
+        // Memory Leaks patch
         if (this.plugins.pyramidRenderer && this.plugins.pyramidRenderer.highlightCanvas) {
 
             this.plugins.pyramidRenderer.highlightCanvas.resetCanvas();
             this.plugins.pyramidRenderer.highlightCanvas = null;
         }
-         
+
         this.plugins.pyramidRenderer = {highlightedSeriesIndex:null};
         this.plugins.pyramidRenderer.highlightCanvas = new $.jqplot.GenericCanvas();
-        
+
         this.eventCanvas._elem.before(this.plugins.pyramidRenderer.highlightCanvas.createElement(this._gridPadding, 'jqplot-pyramidRenderer-highlight-canvas', this._plotDimensions, this));
         this.plugins.pyramidRenderer.highlightCanvas.setContext();
         this.eventCanvas._elem.bind('mouseleave', {plot:this}, function (ev) { unhighlight(ev.data.plot); });
-    }  
-    
+    }
+
     function highlight (plot, sidx, pidx, points) {
         var s = plot.series[sidx];
         var canvas = plot.plugins.pyramidRenderer.highlightCanvas;
@@ -473,7 +473,7 @@
         }
         canvas = null;
     }
-    
+
     function unhighlight (plot) {
         var canvas = plot.plugins.pyramidRenderer.highlightCanvas;
         canvas._ctx.clearRect(0,0, canvas._ctx.canvas.width, canvas._ctx.canvas.height);
@@ -484,8 +484,8 @@
         plot.target.trigger('jqplotDataUnhighlight');
         canvas =  null;
     }
-    
-    
+
+
     function handleMove(ev, gridpos, datapos, neighbor, plot) {
         if (neighbor) {
             var ins = [neighbor.seriesIndex, neighbor.pointIndex, neighbor.data];
@@ -509,6 +509,6 @@
 
     // Have to add hook here, becuase it needs called before series is inited.
     $.jqplot.preInitHooks.push(preInit);
-    
+
 
 })(jQuery);

@@ -36,7 +36,7 @@ import dmadmin.model.UserPermissions;
  */
 public class GroupDetails extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -44,7 +44,7 @@ public class GroupDetails extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
     	   		HttpServletRequest request, HttpServletResponse response)
@@ -57,19 +57,19 @@ public class GroupDetails extends HttpServletBase {
     		// (set attributes and redirect to jsp)
     		//
     		String admin = request.getParameter("a");
-    		String type = request.getParameter("type");    		
+    		String type = request.getParameter("type");
     		PanelTabsList pt = session.getTabsForPanel("group",admin);
     		request.setAttribute("admin",admin);
     		request.setAttribute("pt", pt);
-    		
+
     		int gid = ServletUtils.getIntParameter(request,"gid");
-    		
+
     		UserGroup grp = session.getGroup(gid);
     		UserList ul1 = session.getUsersInGroup(gid);
     		UserList ul2 = session.getUsersNotInGroup(gid);
     		UserPermissions up = session.getUserPermissions();
     		UserPermissions gp = grp.getUserPermissions();
-    		
+
     		String aclDisabled       = session.getAclOverride()?"":"disabled";
     		String tabEndDisabled    = session.getEndPointsTabAccess()?"":"disabled";
     		String tabAppDisabled    = session.getApplicationsTabAccess()?"":"disabled";
@@ -104,7 +104,7 @@ public class GroupDetails extends HttpServletBase {
 					Add2Array(js,"users", tabUserDisabled,grp.getTabUserChecked());
     			}
     			PrintWriter out = response.getWriter();
-    			out.println(js.toString());      
+    			out.println(js.toString());
     		} else if (type.equalsIgnoreCase("Users4Group")) {
     			JSONObject jo = new JSONObject();
     			JSONArray js = new JSONArray();
@@ -122,7 +122,7 @@ public class GroupDetails extends HttpServletBase {
     						readonly =!grp.isUpdatable();
     					}
     					o.add("id", x);
-    					o.add("name", ul1.get(i).getDomain().getFullDomain() + "." + ul1.get(i).getName()); 
+    					o.add("name", ul1.get(i).getDomain().getFullDomain() + "." + ul1.get(i).getName());
     					js.add(o);
     				}
     			}
@@ -143,7 +143,7 @@ public class GroupDetails extends HttpServletBase {
     			}
     			PrintWriter out = response.getWriter();
     			out.println(js.toString());
-    		} 
+    		}
     	} else {
     		//
     		// POST mode
@@ -162,7 +162,7 @@ public class GroupDetails extends HttpServletBase {
     			// adding a user to a group
     			uid = ServletUtils.getIntParameter(request,"id");
     			res = session.AddUserToGroup(gid,uid);
-    			
+
     		}
     		else
     		if (func.equalsIgnoreCase("r"))
@@ -181,7 +181,7 @@ public class GroupDetails extends HttpServletBase {
     			String szActions = request.getParameter("actions");
     			String szProviders = request.getParameter("providers");
     			String szUsers = request.getParameter("users");
-    			
+
     			// Double check the permissions here and remove those to which we don't have access. GroupDetails.jsp will
     			// already have done this ... but we shouldn't just trust the URL.
     			//
@@ -191,9 +191,9 @@ public class GroupDetails extends HttpServletBase {
     			if (!session.getActionsTabAccess()) szActions=null;
     			if (!session.getProvidersTabAccess()) szProviders=null;
     			if (!session.getUsersTabAccess()) szUsers=null;
-    			
+
     			session.setGroupTabAccess(gid, szOverride, szEndPoints, szApplications, szActions, szProviders, szUsers);
-    			
+
     			String szCreateUsers = request.getParameter("cusers");
     			String szCreateGroups = request.getParameter("cgroups");
     			String szCreateDomains = request.getParameter("cdomain");
@@ -210,12 +210,12 @@ public class GroupDetails extends HttpServletBase {
     			String szCreateNotifiers = request.getParameter("cnotify");
        String szCreateEngines = request.getParameter("cengine");
        String szCreateServerCompType = request.getParameter("cservercomptype");
-    			
+
     			UserPermissions up = new UserPermissions(session,gid);
-    			
+
     			// Check the user's permissions to make sure they're not firing us a dodgy URL
     			UserPermissions op = session.getUserPermissions();
-    			
+
     			if (szCreateUsers != null && op.getCreateUsers()) {up.setCreateUsers(szCreateUsers.equalsIgnoreCase("y"));}
     			if (szCreateGroups != null && op.getCreateGroups()) {up.setCreateGroups(szCreateGroups.equalsIgnoreCase("y"));}
     			if (szCreateDomains != null && op.getCreateDomains()) {up.setCreateDomains(szCreateDomains.equalsIgnoreCase("y"));}
@@ -231,8 +231,8 @@ public class GroupDetails extends HttpServletBase {
     			if (szCreateDatasrc != null && op.getCreateDatasrc()) {up.setCreateDatasrc(szCreateDatasrc.equalsIgnoreCase("y"));}
     			if (szCreateNotifiers != null && op.getCreateNotifiers()) {up.setCreateNotifiers(szCreateNotifiers.equalsIgnoreCase("y"));}
     			if (szCreateEngines != null && op.getCreateEngines()) {up.setCreateEngines(szCreateEngines.equalsIgnoreCase("y"));}
-       if (szCreateServerCompType != null && op.getCreateServerCompType()) {up.setCreateServerCompType(szCreateServerCompType.equalsIgnoreCase("y"));} 
-    			
+       if (szCreateServerCompType != null && op.getCreateServerCompType()) {up.setCreateServerCompType(szCreateServerCompType.equalsIgnoreCase("y"));}
+
     			session.setPermissionsForGroup(gid,up);
     		}
     		String errtext;
@@ -241,7 +241,7 @@ public class GroupDetails extends HttpServletBase {
     		out.print("{\"errtext\" : \"" + errtext + "\", \"errcode\" : \"" + res + "\"}");
     	}
     }
-    
+
     void Add2Array(JSONArray js, String key, String disabled, String checked)
     {
      JSONObject o = new JSONObject();

@@ -32,7 +32,7 @@ public class Action
 	extends DMObject
 {
 	private static final long serialVersionUID = 1338224772084535307L;
-	
+
 	private ActionKind m_kind = ActionKind.UNCONFIGURED;
 	private Category m_category;
 	private String m_fragname;
@@ -44,19 +44,19 @@ public class Action
 	private boolean m_copyToRemote;
 	private int m_parentid;
 	private boolean m_useTTY;
-	
+
 	public Action() {
 	}
-	
+
 	public Action(DMSession sess, int id, String name) {
 		super(sess, id, name);
 	}
-	
+
 	public Action(DMSession sess, int id, String name, int domainid) {
 		super(sess, id, name);
 		setDomainId(domainid);
 	}
-	
+
 	@Override
 	public IJSONSerializable getLinkJSON() {
 		System.out.println("in getLinkJSON for ACTION object");
@@ -70,23 +70,23 @@ public class Action
 		boolean showLink=m_session.ValidDomain(getDomainId());
 		return new LinkField(getObjectType(), m_id, name , showLink, m_kind);
 	}
-	
+
 	public ActionKind getKind()  { return m_kind; }
 	public void setKind(ActionKind kind)  { m_kind = kind; }
-	
+
 	public int getParentId() { return m_parentid; }
 	public void setParentId(int parentid) { m_parentid = parentid; }
-	
+
 	public String getKindAsString() {
 		String fn = "";
-		  
+
 		 if (m_function)
 		    fn = "Function";
 		 else if (m_kind == ActionKind.GRAPHICAL)
 		  fn = "Action";
 		 else
 		  fn = "Procedure";
-		
+
 		if(m_kind != null) {
 			switch(m_kind) {
 			default:
@@ -101,61 +101,61 @@ public class Action
 		}
 		return "<UNKNOWN>";
 	}
-	
+
 	public boolean isKindUnconfigured() {
 		return (m_kind == ActionKind.UNCONFIGURED);
 	}
-	
+
 	public boolean getShowDefinition() {
 		return (m_kind == ActionKind.IN_DB);
 	}
-	
+
 	public boolean getShowArgs() {
 		return ((m_kind == ActionKind.IN_DB) && m_function)
 				|| (m_kind == ActionKind.LOCAL_EXTERNAL)
 				|| (m_kind == ActionKind.REMOTE_EXTERNAL);
 	}
-	
+
 	public boolean getShowArgsOutput() {
 		return (m_kind == ActionKind.LOCAL_EXTERNAL) || (m_kind == ActionKind.REMOTE_EXTERNAL);
 	}
-	
+
 	@Override
 	public String getActOrFuncText()  { return m_function ? "Function" : "Action"; }
-	
+
 	public Category getCategory()  { return m_category; }
 	public void setCategory(Category cat)  { m_category = cat; }
-	
+
 	public String getFragmentName()  { return m_fragname; }
 	public void setFragmentName(String fragname)  { m_fragname = fragname; }
-	
+
 	public String getFilepath()  { return m_filepath; }
 	public void setFilepath(String filepath)  { m_filepath = filepath; }
 
 	public String getInterpreter()  { return m_interpreter; }
 	public void setInterpreter(String interpreter)  { m_interpreter = interpreter; }
- 
+
 	public Repository getRepository()  { return m_repository; }
 	public void setRepository(Repository repository)  { m_repository = repository; }
-	
+
 	public boolean isFunction()  { return m_function; }
 	public void setFunction(boolean fn)  { m_function = fn; }
-	
+
 	public boolean isResultIsExpr()  { return m_resultIsExpr; }
 	public void setResultIsExpr(boolean rie)  { m_resultIsExpr = rie; }
-	
+
 	public boolean isUseTTY() { return m_useTTY; }
 	public void setUseTTY(boolean usetty) { m_useTTY = usetty; }
-	
+
 	public boolean isRemote()  { return (m_kind == ActionKind.REMOTE_EXTERNAL); }
-	
+
 	public boolean isCopyToRemote()  { return m_copyToRemote; }
 	public void setCopyToRemote(boolean copy)  { m_copyToRemote = copy; }
-	
+
 	public String getText() {
 		return m_session.getActionText(this);
 	}
-	
+
 	public String getTextWithBreaks() {
 		String text = getText();
 		System.out.println(text);
@@ -165,19 +165,19 @@ public class Action
 			: null;
 
 	}
-	
+
 	public List<ActionArg> getInputArgs() {
 		return m_session.getActionArgsForInput(this);
 	}
-	
+
 	public List<ActionArg> getPaletteArgs() {
 		return m_session.getActionArgsForPalette(this);
 	}
-	
+
 	public List<ActionArg> getOutputArgs() {
 		return m_session.getActionArgsForOutput(this);
 	}
-	
+
 	@Override
 	public ObjectType getObjectType() {
 		System.out.println("getObjectType in");
@@ -220,20 +220,20 @@ public class Action
 		} else {
 			System.out.println("Adding category NO_CATEGORY");
 		}
-		
+
   ds.addProperty(SummaryField.ACTION_CATEGORY, "Category",
     ((m_category != null) ? m_category : Category.NO_CATEGORY).getLinkJSON());
 
   ds.addProperty(SummaryField.OWNER, "Owner", (m_owner != null) ? m_owner.getLinkJSON()
     : ((m_ownerGroup != null) ? m_ownerGroup.getLinkJSON() : null));
-  
+
 		addCreatorModifier(ds);
-		
+
 		ds.addProperty(SummaryField.ACTION_KIND, "Kind", new LinkField(ObjectType.ACTION_KIND,
 			(m_kind != null) ? m_kind.value() : 0, getKindAsString()));
 
 		ds.addProperty(SummaryField.ACTION_FRAGNAME, "Display Name", m_fragname);
-							
+
 		if (m_kind == ActionKind.SCRIPT || m_kind == ActionKind.UNCONFIGURED) {
 			// DMScript in a repository (or nothing configured yet)
 			ds.addProperty(SummaryField.ACTION_REPO, "Repository",
@@ -241,15 +241,15 @@ public class Action
 					? m_repository.getLinkJSON()
 					: null);
 		}
-		
+
 		ds.addProperty(SummaryField.ACTION_FILEPATH, "Filepath", m_filepath);
 		ds.addProperty(SummaryField.ACTION_INTERPRETER, "Command Line Interpreter", m_interpreter);
 		ds.addProperty(SummaryField.ACTION_USETTY, "Allocate Terminal", new BooleanField(m_useTTY));
-		
+
 		if(m_function && ((m_kind == ActionKind.LOCAL_EXTERNAL) || (m_kind == ActionKind.REMOTE_EXTERNAL))) {
 			ds.addProperty(SummaryField.ACTION_RESISEXPR, "Result Is Expr", new BooleanField(m_resultIsExpr));
 		}
-		
+
 		ds.addProperty(SummaryField.ACTION_COPYTOREM, "Copy to Remote", new BooleanField(m_copyToRemote));
 		return ds.getJSON();
 	}
@@ -262,27 +262,27 @@ public class Action
 	public boolean updateArgs(ACDChangeSet<Action.ActionArg> changes) {
 		return m_session.updateActionArgs(this, changes);
 	}
-	
+
 	@Override
 	public String getWriteTitle() {
 		return "Execute Access";
 	}
-	
+
 	public enum SwitchMode {
 		MODE_NONE(null),
 		MODE_SWITCH("S"),
 		MODE_PREFIX("P"),
 		MODE_ALWAYS("A"),
 		MODE_BOOLEAN("B");
-		
+
 		private String m_value;
-		
+
 		private SwitchMode(String value) {
 			m_value = value;
 		}
-		
+
 		public String value()  { return m_value; }
-		
+
 		public static SwitchMode fromString(String str) {
 			for(SwitchMode mode : values()) {
 				if((mode.m_value != null) && mode.m_value.equals(str)) {
@@ -292,7 +292,7 @@ public class Action
 			return MODE_NONE;
 		}
 	}
-	
+
 	public class ActionArg
 	{
 		private String m_id;			// This is actually the original name, but it serves as an id
@@ -325,7 +325,7 @@ public class Action
 			m_switch = switchstr;
 			m_negswitch = negswitch;
 		}
-		
+
 		public String getId()  { return m_id; }
 		public String getName()  { return m_name; }
 		public String getType()  { return m_type; }
@@ -336,9 +336,9 @@ public class Action
 		public SwitchMode getSwitchMode()  { return m_mode; }
 		public String getSwitch()  { return m_switch; }
 		public String getNegSwitch()  { return m_negswitch; }
-		
+
 		public boolean isAlways()  { return (m_mode == SwitchMode.MODE_ALWAYS); }
-		
+
 		public String getOutputBorderClass()  {
 			if(m_required || isAlways()) {
 				return "actionarg_required";
@@ -348,17 +348,17 @@ public class Action
 				return "actionarg_optional";
 			}
 		}
-		
+
 		public String getPaletteBorderClass()  {
 			return m_required ? "actionarg_required" : "actionarg_optional";
 		}
-		
+
 		public String getTextWithMarkup()
 		{
 			StringBuffer ret = new StringBuffer();
-			
+
 			String nameMarkup = "<span class=\"argName\">" + m_name + "</span>";
-			
+
 			switch(m_mode) {
 			default:
 			case MODE_NONE:
@@ -387,7 +387,7 @@ public class Action
 						+ "</div><div class=\"tooltip-arrow\">&#9660;</div></div>");
 				break;
 			}
-			
+
 			return ret.toString();
 		}
 	}

@@ -155,7 +155,7 @@ Sub RemoveSubFolders(Folder)
 		f=f+1
 	End If
 End Sub
- 
+
 
 
 Sub RemoveWorkFiles(s)
@@ -164,14 +164,14 @@ Sub RemoveWorkFiles(s)
 	wf = Left(e1,InStrRev(e1,"\bin\")) & "work\catalina\localhost\" & appname
 	af = Left(e1,InStrRev(e1,"\bin\")) & "webapps\" & appname
 	If fs.FolderExists(wf) Then
-		WScript.Echo "Cleaning Work Directory " & wf	
+		WScript.Echo "Cleaning Work Directory " & wf
 		n=0
 		f=0
 		RemoveSubFolders fs.GetFolder(wf)
 		WScript.Echo "Removed " & n & " file(s), " & f & " folder(s)"
 	End If
 	If fs.FolderExists(af) Then
-		WScript.Echo "Cleaning app Directory " & af	
+		WScript.Echo "Cleaning app Directory " & af
 		n=0
 		f=0
 		RemoveSubFolders fs.GetFolder(af)
@@ -183,14 +183,14 @@ Sub CleanFromRoot
 	wf = rootdir & "work\catalina\localhost\" & appname
 	af = rootdir & "webapps\" & appname
 	If fs.FolderExists(wf) Then
-		WScript.Echo "Cleaning Work Directory " & wf	
+		WScript.Echo "Cleaning Work Directory " & wf
 		n=0
 		f=0
 		RemoveSubFolders fs.GetFolder(wf)
 		WScript.Echo "Removed " & n & " file(s), " & f & " folder(s)"
 	End If
 	If fs.FolderExists(af) Then
-		WScript.Echo "Cleaning app Directory " & af	
+		WScript.Echo "Cleaning app Directory " & af
 		n=0
 		f=0
 		RemoveSubFolders fs.GetFolder(af)

@@ -26,4 +26,3 @@ void regerror( char* s);	/* for internal use only */
 void set_regerror_func( void (*func)( char*));
 
 #endif /*_REGEXP_H*/
-

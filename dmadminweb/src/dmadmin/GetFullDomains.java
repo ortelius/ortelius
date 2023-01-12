@@ -37,7 +37,7 @@ import dmadmin.model.Domain;
  */
 public class GetFullDomains extends JSONServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -54,7 +54,7 @@ public class GetFullDomains extends JSONServletBase {
    JSONArray ret = new JSONArray();
 	  String domlist = session.getDomainList();
 	  String parts[] = domlist.split(",");
-	  
+
 	  if (parts != null)
 	  {
 	   for (int i=0;i<parts.length;i++)
@@ -67,7 +67,7 @@ public class GetFullDomains extends JSONServletBase {
 
 	  List<String> sortedKeys=new ArrayList<String>(doms.keySet());
 	  Collections.sort(sortedKeys);
-	  
+
 	  for (int k=0;k<sortedKeys.size();k++)
 	  {
     String name = sortedKeys.get(k);

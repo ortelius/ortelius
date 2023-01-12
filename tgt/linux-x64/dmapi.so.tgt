@@ -30,7 +30,7 @@
                 <Parameter></Parameter>
                 <Description></Description>
                 <Type>378</Type>
-            </Option>			
+            </Option>
             <Option>
                 <Flag>-fpermissive</Flag>
                 <Parameter></Parameter>
@@ -69,7 +69,7 @@
         <Type>5</Type>
         <ParentBuildTask>Compile</ParentBuildTask>
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
-    </Dependency>				
+    </Dependency>
     <Dependency>
         <Name>dmengine\dmapi\charptr.cpp</Name>
         <Type>5</Type>
@@ -87,7 +87,7 @@
         <Type>5</Type>
         <ParentBuildTask>Compile</ParentBuildTask>
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
-    </Dependency>	
+    </Dependency>
     <Dependency>
         <Name>dmengine\dmapi\context.cpp</Name>
         <Type>5</Type>
@@ -441,7 +441,7 @@
         <Type>37</Type>
         <ParentBuildTask>Compile</ParentBuildTask>
         <ParentOptionGroup>Build Task Options</ParentOptionGroup>
-    </Dependency>        
+    </Dependency>
     <Dependency>
         <Name>dmengine\notifiers\smtpemail\smtpemail.cpp</Name>
         <Type>37</Type>

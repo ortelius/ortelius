@@ -37,7 +37,7 @@ import dmadmin.model.ComponentItem;
 public class GetComponentItemLayout extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
- HttpSession session = null;      
+ HttpSession session = null;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -54,14 +54,14 @@ public class GetComponentItemLayout extends HttpServlet {
   response.setContentType("application/json;charset=UTF-8");
   response.setHeader("Cache-Control","no-cache");
   int compid = ServletUtils.getIntParameter(request, "compid");
-  
+
   PrintWriter out = response.getWriter();
 
   try (DMSession so = DMSession.getInstance(request)) {
   session = request.getSession();
   session.setAttribute("session", so);
   so.checkConnection(request.getServletContext());
-  
+
   Component comp = so.getComponent(compid,true);
   boolean bReadOnly = !comp.isUpdatable();
 

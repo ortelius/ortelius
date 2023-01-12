@@ -33,12 +33,12 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
     {
      console.log(res);
      readonly = res.readOnly;
-     
+
      if (readonly)
       $("#title_icon").hide();
      else
-      $("#title_icon").show();    
-      
+      $("#title_icon").show();
+
      saveRes = res;
      var td = "";
      tdedit = "<form id=\"summform\"><table id=\"summtab\" class=\"summtable\">";
@@ -350,21 +350,21 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">Owner Type:</td>";
        tdedit += "<td style=\"padding-top:2px;padding-bottom:2px;\"><select id=\"ownertype_val\" name=\"ownertype_val\">";
        if (isuser)
-       { 
+       {
         tdedit += "<option value=\"User\" selected>User</option>";
         tdedit += "<option value=\"Group\">Group</option>";
        }
        else
-       { 
+       {
         tdedit += "<option value=\"User\">User</option>";
         tdedit += "<option value=\"Group\" selected>Group</option>";
-       } 
+       }
        tdedit += "</select></td>";
        tdedit += "<td><input type=\"hidden\" name=\"ownertype_field\" value=\"" + field + "\"/></td>";
        tdedit += "<td><input type=\"hidden\" name=\"ownertype_callback\" value=\"" + callback + "\"/></td>";
        tdedit += "<td><input type=\"hidden\" name=\"ownertype_oldval\" value=\"" + owner.type + "\"/></td>";
        tdedit += "</tr>";
-       
+
        tdedit += "<tr id=\"owner_row\">";
        tdedit += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">Users:</td>";
        tdedit += "<td style=\"padding-top:2px;padding-bottom:2px;\"><select name=\"owner_val\">";
@@ -374,7 +374,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "<td><input type=\"hidden\" name=\"owner_callback\" value=\"" + callback + "\"/></td>";
        tdedit += "<td><input type=\"hidden\" name=\"owner_oldval\" value=\"" + owner.type + owner.id + "\"/></td>";
        tdedit += "</tr>";
-       
+
        tdedit += "<tr id=\"group_row\">";
        tdedit += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">Groups:</td>";
        tdedit += "<td style=\"padding-top:2px;padding-bottom:2px;\"><select name=\"groupowner_val\">";
@@ -860,7 +860,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        val = kind.name;
        if (val == "From Vars")
         val = "From Variables";
-       
+
        if (kind.id != "6")
        {
        tdedit += "<tr>";
@@ -874,7 +874,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        tdedit += "</tr>";
        save_kind_id = kind.id;
        }
-       
+
        switch (Number(kind.id))
        {
         case 1: // DMScript Function in repository
@@ -1039,7 +1039,7 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else  if (label == "Custom Action" &&  !(summSaveobjtype == "ap" || summSaveobjtype == "av"))
       {
-       // skip these guys for components 
+       // skip these guys for components
       }
       else
       {
@@ -1185,7 +1185,7 @@ function HideFields()
  default:
   break;
  }
- 
+
 }
 
 function EditSummaryButton()
@@ -1273,7 +1273,7 @@ function EditSummaryButton()
      if (typeof namefld !== undefined)
       name = namefld.val();
      NewID("Usergroup", "USERGROUP", currenttree, "", name);
-    } 
+    }
     break;
 
     default:
@@ -1299,7 +1299,7 @@ function EditSummaryButton()
  {
   modal : true,
   open : function(event, ui)
-  {   
+  {
    if (isLifeCycle)
    {
     var sdl = pwd.find("#subdomainlist");
@@ -1446,10 +1446,10 @@ function EditSummaryButton()
       var owner = myform.find(":input[name=\"owner_val\"]");
 
       var userid = save_owner_val;
-      
+
       if (userid == "")
        userid = myuserid;
-    
+
       for (n = 0; n < res.length; n++)
       {
        if (userid == res[n].name)
@@ -1457,7 +1457,7 @@ function EditSummaryButton()
        else
         owner.append('<option id="owner' + n + '" value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
       }
-      
+
       $.ajax(
         {
          url : "GetGroups",
@@ -1472,7 +1472,7 @@ function EditSummaryButton()
           var owner = myform.find(":input[name=\"groupowner_val\"]");
 
           var group = save_groupowner_val;
-       
+
           for (n = 0; n < res.length; n++)
           {
            if (group == res[n].name)
@@ -1481,7 +1481,7 @@ function EditSummaryButton()
             owner.append('<option id="groupowner' + n + '" value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
           }
           $("#ownertype_val").change(ToggleOwner);
-          
+
           ToggleOwner();
          },
          error : function(jqxhr, status, err)
@@ -1498,8 +1498,8 @@ function EditSummaryButton()
      }
     });
    }
-   
-   
+
+
 
    if (myform.find(":input[name=\"repository_val\"]").length > 0)
    {
@@ -1582,7 +1582,7 @@ function EditSummaryButton()
       }
       cat.attr('selectBoxOptions', selections);
       createEditableSelect(cat[0]);
-      window.addEventListener("selectBox", ToggleDisplayName, false); 
+      window.addEventListener("selectBox", ToggleDisplayName, false);
       cat.val(save_category_val);
 //      if (save_category_val == "No category" || save_category_val == "Do not display")
 //       $("#fragmentname_row").hide();
@@ -1885,7 +1885,7 @@ function EditSummaryButton()
     $("#usernameenc_row").hide();
     $("#passwordenc_row").hide();
     $("#username_row").show();
-    $("#password_row").show();    
+    $("#password_row").show();
    }
   }
  });
@@ -1897,10 +1897,10 @@ function EditSummaryButton()
   var objstr = obj2Int[summSaveobjtype][1];
   if (objstr == "Notify")
    objstr = "Notifier";
-  
+
   if (objstr == "Application")
    objstr = "Application Base Version";
-  
+
   if (objstr == "Component")
    objstr = "Component Base Version";
 
@@ -2318,12 +2318,12 @@ function GetSaveSummaryData(instance, data, prefix)
 
  var ownertype = $("#ownertype_val");
  var owt = "User";
- 
+
  if (ownertype.length > 0)
    owt = ownertype.val();
 
  if (owt == "User")
- { 
+ {
   if (view.owner_val != view.owner_oldval)
   {
    console.log(prefix + 'change_' + view.owner_field + ' = ' + view.owner_val);
@@ -2339,7 +2339,7 @@ function GetSaveSummaryData(instance, data, prefix)
    data[prefix + 'change_' + view.groupowner_field] = view.groupowner_val;
    ret = true;
   }
- } 
+ }
 
  if (view.fragmentname_val != view.fragmentname_oldval)
  {
@@ -2382,7 +2382,7 @@ function GetSaveSummaryData(instance, data, prefix)
   data[prefix + 'change_' + view.credential_field] = view.credential_val;
   ret = true;
  }
- 
+
  if (view.resultisexpr_val != view.resultisexpr_oldval)
  {
   console.log(prefix + 'change_' + view.resultisexpr_field + ' = ' + view.resultisexpr_val);
@@ -2593,7 +2593,7 @@ function SaveSummaryData(instance, tablename, objtypeAsInt, objtype, objid, addP
       * eval(typecbfn); if ((typeof typeCallbackFn === "function") &&
       * savedata.typeCallbackReqd) { typeCallbackFn(); console.log(typecbfn + "
       * called"); } }
-      * 
+      *
       * if (savedata.nameCallbackReqd) { FireSummaryEvent('namechg', { newname :
       * savedata.newname, newsumm : savedata.newsumm }); } if
       * (savedata.typeCallbackReqd) { FireSummaryEvent('typechg'); }
@@ -2751,12 +2751,12 @@ function ToggleDisplayName(ev) {
 //  var pwd = parent.$("#modal");
 //  var myform = pwd.find("#summform");
 //  var f = myform.find(":input[name=\"fragmentname_val\"]");
-//  
+//
 //  if (f.length > 0)
 //   f.val("");
-//   
+//
 //  $("#fragmentname_row").hide();
-// } 
+// }
 // else
   $("#fragmentname_row").show();
 }
@@ -2767,7 +2767,7 @@ function ToggleOwner()
  var myform = pwd.find("#summform");
  var f = myform.find(":input[name=\"ownertype_val\"]");
  var val = f.val();
- 
+
  if (val == "User")
  {
   $("#owner_row").show();
@@ -2779,4 +2779,3 @@ function ToggleOwner()
   $("#group_row").show();
  }
 }
-

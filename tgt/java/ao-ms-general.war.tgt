@@ -417,13 +417,13 @@
        <Type>5</Type>
        <ParentBuildTask>Ant War</ParentBuildTask>
        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
-   </Dependency>			
+   </Dependency>
    <Dependency>
        <Name>dmadminweb/WebContent/css/img/timeline/*.png</Name>
        <Type>5</Type>
        <ParentBuildTask>Ant War</ParentBuildTask>
        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
-   </Dependency>							
+   </Dependency>
    <Dependency>
        <Name>dmadminweb/WebContent/css/*.css</Name>
        <Type>5</Type>
@@ -495,7 +495,7 @@
        <Type>5</Type>
        <ParentBuildTask>Ant War</ParentBuildTask>
        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
-   </Dependency>				
+   </Dependency>
    <Dependency>
        <Name>dmadminweb/WebContent/hot/*.css</Name>
        <Type>5</Type>
@@ -849,14 +849,14 @@
        <Type>37</Type>
        <ParentBuildTask>Ant War</ParentBuildTask>
        <ParentOptionGroup>Web-Inf</ParentOptionGroup>
-   </Dependency>				
+   </Dependency>
    <Dependency>
        <Name>dmadminweb/microservice/ao-ms-general/web.xml</Name>
 
        <Type>5</Type>
        <ParentBuildTask>Ant War</ParentBuildTask>
        <ParentOptionGroup>Web-Inf</ParentOptionGroup>
-   </Dependency>		
+   </Dependency>
    <Dependency>
        <Name>dmadminweb/WebContent/WEB-INF/schema/*.sql</Name>
        <Type>37</Type>
@@ -868,13 +868,13 @@
        <Type>37</Type>
        <ParentBuildTask>Ant War</ParentBuildTask>
        <ParentOptionGroup>Web-Inf</ParentOptionGroup>
-   </Dependency>  
+   </Dependency>
    <Dependency>
        <Name>dmadminweb/WebContent/WEB-INF/schema/*.md</Name>
        <Type>37</Type>
        <ParentBuildTask>Ant War</ParentBuildTask>
        <ParentOptionGroup>Web-Inf</ParentOptionGroup>
-   </Dependency>     
+   </Dependency>
    <Dependency>
        <Name>dmadminweb/WebContent/WEB-INF/*.tld</Name>
        <Type>5</Type>

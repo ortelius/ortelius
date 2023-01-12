@@ -28,10 +28,10 @@ def main():
           if ("$" in arg):
             drive=parts[1][0] + ':'
         elif (arg.startswith('-c')):
-          junk="" 
+          junk=""
         else:
           cmd=arg
-        
+
 #    print(user)
 #    print(pw)
 #    print(host)
@@ -50,12 +50,12 @@ def main():
      fc.write(data)
      fc.close()
      from_cmd = cmd2
-     
+
 #    print(cmd)
 
 
     dir = ""
-    if (";put " in cmd): 
+    if (";put " in cmd):
       dir=cmd.split(';')[0]
       dir=dir.replace("mkdir ", "")
       dir=dir.replace("cd ","")
@@ -70,12 +70,12 @@ def main():
       from_file=cmd.split(';')[2]
       if ('/' in from_file):
         from_file=from_file[5:]
-        from_file=from_file[:-(len(file) + 4)] 
+        from_file=from_file[:-(len(file) + 4)]
       else:
         from_file=os.getcwd() + '/' + file
-      
+
       to_file = drive + dir + '\\' + file
-      to_dir  = drive + dir 
+      to_dir  = drive + dir
 
 #      pprint(from_file)
 #      pprint(to_file)
@@ -83,25 +83,25 @@ def main():
 
       tempdir = tempfile.mkdtemp()
       os.chdir(tempdir)
-    
-      fp = open('hosts','w') 
+
+      fp = open('hosts','w')
       fp.write("[windows]\n")
       fp.write(host + "\n")
       fp.close()
 
       os.mkdir('group_vars')
 
-      fp = open('group_vars/windows.yml','w') 
+      fp = open('group_vars/windows.yml','w')
       fp.write("ansible_user: '" + user + "'\n")
       fp.write("ansible_password: '" + pw + "'\n")
       # fp.write("ansible_port: '5985'\n")
       fp.write("ansible_connection: winrm\n")
       fp.write("ansible_winrm_transport: credssp\n")
-      fp.write("ansible_winrm_server_cert_validation: ignore\n") 
-      fp.write("validate_certs: false\n")    
+      fp.write("ansible_winrm_server_cert_validation: ignore\n")
+      fp.write("validate_certs: false\n")
       fp.close()
 
-      fp = open('runit.yml','w') 
+      fp = open('runit.yml','w')
       fp.write("---\n")
       fp.write("- name: Transfer File\n")
       fp.write("  hosts: all\n")
@@ -126,12 +126,12 @@ def main():
          if ('ok=2' in str(line) or 'ok=3' in str(line)):
            success=1
       p.wait()
-      
+
       if (success):
        print("stream: [::$DATA], " + str(os.stat(from_file).st_size) + " bytes")
 
-    elif ("mkdir " in cmd): 
-      dir=cmd.split('&')[0] 
+    elif ("mkdir " in cmd):
+      dir=cmd.split('&')[0]
       dir=dir[15:]
       dir=dir[:-1]
       dir=dir.replace('" 2>nul','')
@@ -139,25 +139,25 @@ def main():
 
       tempdir = tempfile.mkdtemp()
       os.chdir(tempdir)
-    
-      fp = open('hosts','w') 
+
+      fp = open('hosts','w')
       fp.write("[windows]\n")
       fp.write(host + "\n")
       fp.close()
 
       os.mkdir('group_vars')
 
-      fp = open('group_vars/windows.yml','w') 
+      fp = open('group_vars/windows.yml','w')
       fp.write("ansible_user: '" + user + "'\n")
       fp.write("ansible_password: '" + pw + "'\n")
       # fp.write("ansible_port: '5985'\n")
       fp.write("ansible_connection: winrm\n")
       fp.write("ansible_winrm_transport: credssp\n")
-      fp.write("ansible_winrm_server_cert_validation: ignore\n") 
-      fp.write("validate_certs: false\n")   
+      fp.write("ansible_winrm_server_cert_validation: ignore\n")
+      fp.write("validate_certs: false\n")
       fp.close()
 
-      fp = open('runit.yml','w') 
+      fp = open('runit.yml','w')
       fp.write("---\n")
       fp.write("- name: Make Directory\n")
       fp.write("  hosts: all\n")
@@ -181,31 +181,31 @@ def main():
       if (success):
        print(dir)
 
-    else: 
+    else:
       cmd = cmd.replace("cmd /c \"",'')
       cmd = cmd[:-1]
 
       tempdir = tempfile.mkdtemp()
       os.chdir(tempdir)
-    
-      fp = open('hosts','w') 
+
+      fp = open('hosts','w')
       fp.write("[windows]\n")
       fp.write(host + "\n")
       fp.close()
 
       os.mkdir('group_vars')
 
-      fp = open('group_vars/windows.yml','w') 
+      fp = open('group_vars/windows.yml','w')
       fp.write("ansible_user: '" + user + "'\n")
       fp.write("ansible_password: '" + pw + "'\n")
       # fp.write("ansible_port: '5985'\n")
       fp.write("ansible_connection: winrm\n")
       fp.write("ansible_winrm_transport: credssp\n")
-      fp.write("ansible_winrm_server_cert_validation: ignore\n") 
-      fp.write("validate_certs: false\n")   
+      fp.write("ansible_winrm_server_cert_validation: ignore\n")
+      fp.write("validate_certs: false\n")
       fp.close()
 
-      fp = open('runit.yml','w') 
+      fp = open('runit.yml','w')
       fp.write("---\n")
       fp.write("- name: Run Batch file\n")
       fp.write("  hosts: all\n")
@@ -248,7 +248,7 @@ def main():
     else:
       sys.exit(1)
 
-#      shutil.rmtree(tempdir) 
+#      shutil.rmtree(tempdir)
 
 if __name__ == "__main__":
     main()

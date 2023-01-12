@@ -96,7 +96,7 @@ function addToHistoryFeed($feed, item, otid, prepend, $after)
 		  var linkval = "<a href='javascript:SwitchDisplay(\""+item.app.type+item.app.id+"\");'>"+item.app.name+"</a>";
 		  if (item.app.type == "av") {
 			  text += ' of Application Version <b>"' + linkval + '"</b>';
-		  } else 
+		  } else
 		  if (item.app.type == "rl") {
 			  text += ' of Release <b>"' + linkval + '"</b>';
 		  } else {
@@ -338,7 +338,7 @@ function addMoreHistoryButton($feed, otid, since, isPending)
 {
  if (isPending)
   return;
- 
+
  $feed.append("<tr id=\"morenews\"><td colspan=\"2\"><a id=\"morenewsbtn\">Click to see ealier items</a></td></tr>");
 
  $feed.find('#morenews #morenewsbtn').bind('click', function()
@@ -397,7 +397,7 @@ function addNewsCallbacks($feed)
 {
  // use event delegation and attach the handler once
  $feed.off('click', '.newscomment');
- 
+
  $feed.on('click', '.newscomment', function(event)
  {
   event.stopPropagation();
@@ -533,7 +533,7 @@ function addNewsCallbacks($feed)
  });
 
  $feed.off('click', '.newssubscribe');
- 
+
  $feed.on('click', '.newssubscribe', function(event)
  {
   event.stopPropagation() ;
@@ -727,12 +727,12 @@ $.fn.createNewsMessageBox = function createNewsMessageBox(/* boxid, */feedid, te
      }
      return;
     }
-   
+
     var tab = feedid.split('-')[0];
     tab = tab.substring(1);
-    
+
     createNewsFeed(tab, objtype, objid, false);
-    
+
 //    addToHistoryFeed($(feedid), res.data, otid, true);
 //    messageText.value = messageText.defaultValue;
 //    messageText.style.color = '#777';
@@ -817,11 +817,11 @@ function createNewsFeed(tablename, objtype, objid, isPending)
 {
  $('#' + tablename + '-historyadd').empty();
  $('#' + tablename + '-historyadd').createNewsMessageBox('#' + tablename + '-histfeed', 'Say something about this '+objname+'?', objtype+objid);
- 
+
  var pending = /* (id.indexOf('pending') != -1) */(isPending === true) ? '&pending=1' : '';
  var $feed = $("#" + tablename + " > tbody");
  $feed.empty();
- 
+
  console.log('NewsFeed?otid=' + objtype + objid + pending);
  $.ajax(
  {
@@ -861,7 +861,7 @@ function DisplayDeploy(lognum)
 {
 	saveLognum = lognum;
 	var save_objtypeAsInt = objtypeAsInt;
-	
+
 	var h = "<div class=\"tabrow_tabmenu\" id=\"displaylogtabs\">" +
 	"<div class=\"moduletable_tabmenu\">" +
 	"<ul class=\"menu_tabmenu\">" +
@@ -876,10 +876,10 @@ function DisplayDeploy(lognum)
     "<div id=\"deprefresh\" style=\"float:right;display:none;\"><input id=\"autorefresh\" type=\"checkbox\" checked onClick=\"javascript:TogglePlayPause(summSaveobjid)\">Auto Refresh&nbsp;&nbsp;&nbsp;</div>"+
  //   "<button id=\"deprefresh\" class=\"edit_button\" style=\"float:right;display:none;\" onClick=\"javascript:TogglePlayPause(summSaveobjid)\"><img alt=\"Refresh\" src=\"images/play.png\"></button>" +
  //    "<button id=\"depmaximize\" class=\"edit_button\" style=\"float:right;\" onClick=\"javascript:MaxLogDetail(summSaveobjid)\"><img alt=\"Maximize\" src=\"images/maximize.png\"></button>" +
- //   "<button id=\"depminimize\" class=\"edit_button\" style=\"float:right;\" onClick=\"javascript:MinLogDetail(summSaveobjid)\"><img alt=\"Minimize\" src=\"images/minimize.png\"></button>" + 
+ //   "<button id=\"depminimize\" class=\"edit_button\" style=\"float:right;\" onClick=\"javascript:MinLogDetail(summSaveobjid)\"><img alt=\"Minimize\" src=\"images/minimize.png\"></button>" +
     "</h1>" +
     "</div>" +
-    "<div id=\"displaylogtabs-general-data\" style=\"height:400px; display:none\"><table id=\"newssum\" class=\"dev_table\"><tbody></tbody></table></div>" +   
+    "<div id=\"displaylogtabs-general-data\" style=\"height:400px; display:none\"><table id=\"newssum\" class=\"dev_table\"><tbody></tbody></table></div>" +
     "<div id=\"displaylogtabs-log-data\" style=\"height:400px; overflow:auto;display:none\"><table id=\"deploymentlog\"></table></div>" +
     "<div id=\"displaylogtabs-files-data\" style=\"height:400px; display:none;padding-left:0px;padding-right:0px\"></div>" +
     "<div id=\"displaylogtabs-scripts-data\" style=\"height:400px; display:none;padding-left:0px;padding-right:0px\"></div>" +
@@ -891,26 +891,26 @@ function DisplayDeploy(lognum)
      "</div>" +
     "</div>" +
 	"</div>";
-	
-	
-	
- 
+
+
+
+
   var pwd = parent.$("#displaylog");
   pwd.html(h);
-  
+
   //pwd.bind('DOMSubtreeModified',function() {
-//	 alert("resize"); 
+//	 alert("resize");
  // });
-  
-    
+
+
   pwd.dialog(
     {
      modal : true,
      open : function(event, ui)
      {
-    	
+
       GetNewsDetails(lognum);
-      
+
 
       $(this).css("height", "400px").find(".right_panel_title_area").css({cursor: 'move'});
       // $("#displaylogtabs").tabs({ heightStyle: "fill" });
@@ -920,7 +920,7 @@ function DisplayDeploy(lognum)
      },
      dialogClass: 'tabbedDialog'
     }).parent().draggable({cancel:'',handle:'.right_panel_title_area'});
- 
+
 
   var buttons = [
                  {
@@ -936,9 +936,9 @@ function DisplayDeploy(lognum)
     // pwd.dialog("option", "height", "450px");
     pwd.dialog("option", "width", "1080px");
     pwd.dialog("option", "buttons", buttons);
-    
+
     pwd.dialog('open');
-   
+
 }
 
 function DisplayBuild(compid,buildno,success)
@@ -967,10 +967,10 @@ function DisplayBuild(compid,buildno,success)
 	"<div id=\"dbt-files-data\" style=\"height:400px; display:none\"><table id=\"buildfiles\" class=\"dev_table\"><tbody></tbody></table></div>" +
 	"<div id=\"dbt-defects-data\" style=\"height:400px; display:none\"><table id=\"builddefects\"><thead class=\"ui-widget-header\"><tr><td style=\"width:100px\">CR ID</td><td>Title</td></tr></thead><tbody></tbody></table></div>" +
 	"</div>";
- 
+
   var pwd = parent.$("#buildlog");
   pwd.html(h);
-  
+
   pwd.dialog({
 	  modal : true,
 	  open : function(event, ui) {
@@ -994,7 +994,7 @@ function DisplayBuild(compid,buildno,success)
                  } ];
     pwd.dialog("option", "width", "650px");
     pwd.dialog("option", "buttons", buttons);
-    
+
     pwd.dialog('open');
-   
+
 }

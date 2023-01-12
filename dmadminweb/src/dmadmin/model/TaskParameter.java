@@ -23,7 +23,7 @@ public class TaskParameter
 	private String m_var;
 	private String m_type;
 	private String m_arr;
-	
+
 	public TaskParameter(int pos,String label,String var,String type) {
 		m_pos=pos;
 		m_label=label;
@@ -31,7 +31,7 @@ public class TaskParameter
 		m_type = type;
 		m_arr = null;
 	}
-	
+
 	public TaskParameter(int pos,String label,String var,String type,String arr) {
 		m_pos=pos;
 		m_label=label;
@@ -39,7 +39,7 @@ public class TaskParameter
 		m_type = type;
 		m_arr = arr;
 	}
-	
+
 	public int getPos() { return m_pos; }
 	public String getLabel() { return m_label; }
 	public String getVar() { return m_var; }

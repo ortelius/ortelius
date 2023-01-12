@@ -20,15 +20,15 @@ html, body {
 	background: #f8f8f8 url(images/header_gradient_tile_horz.png) repeat-x 0 0;
 	font-family: 'Open Sans', sans-serif;
 	font-size: .85em;
-	
+
 	color: #676767;
 	margin: 0 auto;
 	min-height: 100%;
 	}
-	
-body {	
-  table-layout: fixed;	
-}  
+
+body {
+  table-layout: fixed;
+}
 
 /* a:focus {  outline: none; } */
 
@@ -42,9 +42,9 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
   float:left;
   position:absolute;
   right:1px;
-  
 
- } 
+
+ }
  .selectBoxInput{
   border: 0;
   padding-left:1px;
@@ -57,7 +57,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 
  .selectBox{
   border: 1px solid #DDDDDD;
-  height:20px; 
+  height:20px;
  }
  .selectBoxOptionContainer{
   position:absolute;
@@ -82,11 +82,11 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
   background-color:#FFF;
   border: 0;
   z-index:999;
- } 
+ }
 
 /***********  MAIN CONTAINERS - NO VISIBLE ATTRIBUTES  ***************/
-	
-#container, 	
+
+#container,
 #panel_container.left,
 #panel_container_right {
 	position: absolute;
@@ -110,7 +110,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 
 #panel_container_right {  /* container for all right panel stuff */
 	left: 627px;
-	right: 18px; 
+	right: 18px;
 	overflow: hidden;
 }
 
@@ -118,7 +118,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	position: absolute;
 	top: 50px;
 	left: 280px;
-	right: 18px; 
+	right: 18px;
 	bottom: 55px;
 }
 
@@ -131,11 +131,11 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	left: 0;
 	height: 47px;
 	width: 100%;
-	min-width: 950px;	
-	border-top: 2px solid #275d95;	
+	min-width: 950px;
+	border-top: 2px solid #275d95;
 	display: inline-block;
 	}
-	
+
 .clear {
 	clear: both;
 	}
@@ -143,20 +143,20 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 .omlogo  {
 	position: absolute;
 	width: 155px;
-	height: 29px; 
+	height: 29px;
 	top: 5px;
 	left: 13px;
 	display: inline;
 	}
-	
+
 #left_panel_tabs {  /* houses the tabs above the tree panel */
 	width:362px;
 	float: left;
-	height: 23px; 
+	height: 23px;
 	position: relative;
 	top: 0;
 	left: 0;
-	display: inline-block;	 
+	display: inline-block;
 	}
 
 #left_panel_tabs .position_refresh_icon {
@@ -165,7 +165,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	right: 2px;
 	z-index: 100;
 }
-	  
+
 #left_panel_tree {  /* houses the tree inside the left panel container */
 	border:2px solid #d4dde7;
 	border-radius:5px;
@@ -202,15 +202,15 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	}
 
 #right_panel_tabs, #home_right_panel_tabs {  /* container for tabs */
-	height: 23px; 
+	height: 23px;
 	width:  calc(100% - 500px);
 	position: relative;
 	top: 27px;
-	display: inline-block;	
-	white-space: nowrap;	
+	display: inline-block;
+	white-space: nowrap;
 	}
-	
-#right_panel_main, #home_right_panel_main {   
+
+#right_panel_main, #home_right_panel_main {
 /*	background-color:#fafafa;
 	border:2px solid #d4dde7;
 	border-radius:5px; */
@@ -219,62 +219,62 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	right: 0;
 	bottom: 0;
 	}
-	
+
 #tabs-General-data {
 	background-color: white;
 }
-	
+
 #tabs-General-row-10 {
 		display: flex;
 		background-color: white;
-}	
-	
+}
+
 #tabs-General-row-12 {
 		display: flex;
 		background-color: white;
-}		
+}
 
 #tabs-General-row-12a {
 		display: flex;
 		background-color: white;
-}		
-	
+}
+
 #tabs-General-row-15 {
 		display: flex;
 		background-color: white;
-}	
+}
 
 #tabs-CompItems-left {
 	width: 50%;
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-}	
-		
+}
+
 #tabs-General-row-20 {
 		display: flex;
 		background-color: white;
-}	
+}
 
 #tabs-General-row-25 {
 		display: flex;
 		background-color: white;
-}	
+}
 
 #tabs-General-row-28 {
 	border: 1px solid lightgrey;
-    margin:8px;	
+    margin:8px;
     margin-top: 16px;
     height: 400px;
-}	
-	
+}
+
 #logs-panel {
 	width: 50%;
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
 
-}	
+}
 
 #logs-data {
  	max-height: 120px;
@@ -296,29 +296,29 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
     margin:8px;
     font-size: 14px;
 }
-	
+
 #outerworkflow {
 	width: 80%;
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-}	
+}
 
 #pickproc {
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
 }
-	
+
 #steps-panel {
 	width: 50%;
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-}	
+}
 
 #deploymenttimebystep4_scroll {
- overflow-x: auto;	
+ overflow-x: auto;
  min-width: 215px;
  position: absolute;
  left: 200px;
@@ -329,17 +329,17 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
   position: relative !important;
   left: 0px !important;
   top: 0px !important;
-}	
-	
+}
+
 #feedback-panel {
 	height: 100%;
-}	
-	
-	
+}
+
+
 #feedback-data {
 	height: calc(100% - 40px);
-}				
-		
+}
+
 #tabs-General-row-30 {
 	display: flex;
 	background-color: white;
@@ -348,7 +348,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 
 #tabs-General-row-32 {
 	display: flex;
-	background-color: white;	
+	background-color: white;
 }
 
 #tabs-General-row-35 {
@@ -362,18 +362,18 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 }
 
 #tabs-General-row-50 {
-    margin:8px;	
+    margin:8px;
     margin-top: 16px;
     border: 1px solid lightgrey;
 }
-	
-	
+
+
 #tabs-General-left {
 	width: 50%;
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-}	
+}
 
 #tabs-General-right {
 	border: 1px solid lightgrey;
@@ -388,7 +388,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-}	
+}
 
 #tabs-General-right-20 {
 	width: 50%;
@@ -424,7 +424,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
     margin:8px;
     max-height: 300px;
     overflow: auto
-}	
+}
 
 #attrs10-panel {
 	width: 100%;
@@ -585,7 +585,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-}	
+}
 
 #groupmembership_title {
 	display: inline-block;
@@ -622,7 +622,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-}	
+}
 
 #usermembership_title {
 	display: inline-block;
@@ -651,7 +651,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 
 #row-10-right-panel {
   width: 50%;
-  border: 1px solid lightgrey;	
+  border: 1px solid lightgrey;
   margin: 8px;
 }
 
@@ -678,7 +678,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 }
 
 #cr-panel {
-  border: 1px solid lightgrey;	
+  border: 1px solid lightgrey;
   margin-left: 8px;
   margin-right: 8px;
 }
@@ -810,108 +810,108 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	top: 120px;
 	bottom: 50px;
 	left: 260px;
-	right: 0; 
+	right: 0;
     text-align: center;
-	}	
-		
+	}
+
 .versionsandinformation {
- 	overflow-y:scroll; 
-}	
-	
-.panel_container .versions {  
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */ 
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
-	position: absolute;	
+ 	overflow-y:scroll;
+}
+
+.panel_container .versions {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */
+	position: absolute;
 	left: 0;
 	top: 0;
-	bottom: 0;   
+	bottom: 0;
 	background-color: #fff;
 	border: 2px solid #d4dde7;
 	border-radius: 5px;
 	overflow-y: scroll;
 	width: calc(100% - 277px);
 	}
-	
-.panel_container .appversions {  
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */ 
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
+
+.panel_container .appversions {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */
 /* 	top: 0; */
 	}
 
-.compversions {  
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */ 
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
+.compversions {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */
 	position: relative;
 	top: 20px;
 	width: calc(100%);
-    height: calc(100%);	
-}		
-		
-#innercomp {
- width: calc(100%);
- height: 600px;	
+    height: calc(100%);
 }
 
-.panel_container .compitems {  
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */ 
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
+#innercomp {
+ width: calc(100%);
+ height: 600px;
+}
+
+.panel_container .compitems {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */
 	top: 0;
-	}		
-		
-				
-.panel_container .information  {  
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */ 
-	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
+	}
+
+
+.panel_container .information  {
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=148 */
+	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */
 
 	background-color: #fff;
 	border: 2px solid #d4dde7;
 	border-radius:5px;
 	overflow: hidden;
 	top: 0;
-	bottom: 0;  
-	right: 0;	  	
+	bottom: 0;
+	right: 0;
 	position: absolute;
 	width: 256px;
-	}	
-	
-.accordionpanel {   
-/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */ 
+	}
+
+.accordionpanel {
+/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */
 	position: absolute;
 	background-color: #f8f8f8;
 	border: 2px solid #d4dde7;
 	border-radius:5px;
 	overflow: hidden;
 	top: 0;
-    height: calc(100%); 
+    height: calc(100%);
 	overflow-y: scroll;
-	left: calc(79%); 
+	left: calc(79%);
 	}
-		
+
 .panel_container iframe.accordion {
 	/* http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=157 */
 	border:  none;
-	width: calc(100% - 18px);	
+	width: calc(100% - 18px);
 	height: 100%;
 	overflow: scroll;
 	padding-top: 4px;
 	padding-bottom: 6px;
-	}	
+	}
 
 .tbd {
 	overflow-y: hidden;
 	}
-	
-.tbd .helppanel {   
+
+.tbd .helppanel {
 	position: absolute;
 	background-color: #fff;
 	border: 2px solid #d4dde7;
 	border-radius:5px;
 	overflow: hidden;
 	top: 40px;
-	bottom: 0;   
+	bottom: 0;
 	width: 54%;
 	overflow-y: scroll;
-	right: 0; 
+	right: 0;
 	}
 /********** MULTI PANEL CONFIGURATION **************/
 
@@ -921,7 +921,7 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 }
 
 
-#panel_container_taskspanelbottom, 
+#panel_container_taskspanelbottom,
 #panel_container_taskspaneltop_left,
 #panel_container_taskspanelbottom_left,
 #panel_container_taskspanel_right {
@@ -944,36 +944,36 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	display: flex;
 	width: 100%;
 	height: calc(50% - 28px);
-	}	
-		
+	}
+
 #panel_container_taskspanelbottom {
 	display: flex;
 	width: 100%;
 	margin-top: 8px;
 	height: calc(50% - 50px);
-	}		
-			
+	}
+
 #panel_container_taskspaneltop_left {
 	width: calc(50% - 14px);
 	height: calc(50% - 28px);
-	}	
-		
+	}
+
 #panel_container_taskspanelbottom_left {
 	width: calc(50% - 14px);
 	height: calc(50% - 50px);
-	}	
-		
+	}
+
 #panel_container_taskspanel_right {
-	position: relative;	
+	position: relative;
 	left: 554px;
 	right: 18px;
 	width: calc(50% - 14px);
 	height: calc(100%- 14px);
 	}
-	
-#sub_panel_right, 
-#sub_panel_topleft,	
-#sub_panel_topright,	
+
+#sub_panel_right,
+#sub_panel_topleft,
+#sub_panel_topright,
 #sub_panel_bottomleft,
 #sub_panel_bottommiddle,
 #sub_panel_bottomright,
@@ -997,34 +997,34 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 #sub_panel_bottomright {
   margin: 8px;
   margin-right: 0;
-   width: 25%;	 
+   width: 25%;
 }
 
 #sub_panel_topleft {
-	margin-right: 8px;	
+	margin-right: 8px;
 	width: 50%;
 }
-	
-#sub_panel_topright { 
+
+#sub_panel_topright {
   margin-left: 8px;
 }
-		
-#panel_deploy {  
-	width: 50%;	
+
+#panel_deploy {
+	width: 50%;
 	margin-left: 8px;
 	border: none;
 }
-	
+
 
 /********** END PANEL CONFIGURATION **************/
 
-				
-.panel_container_title_area  {   
+
+.panel_container_title_area  {
 	width: 100%;
-	display: inline;   
+	display: inline;
 }
-	
-	
+
+
 .static_tab_deploy {
 	position:  absolute;
 	border-bottom: 1px solid #d4dde7;
@@ -1037,46 +1037,46 @@ div.blog, .categories-list {   /* for my site only... joomla specific   */
 	bottom: 0;
 }
 
-.right_panel_title_area  {  
+.right_panel_title_area  {
 	position: relative;
 	top: 0;
-	left: 0;	
+	left: 0;
 	height: 4px;
 	width: 100%;
-	border-top: 2px solid #c6ccd2;	
+	border-top: 2px solid #c6ccd2;
 	display: inline-block; /*keep title bar contents horz inline */
 	}
-		
+
 .title_icon {
     float: left;
     position: absolute;
     right: 20px;
     top: 0;
-}	
-	
-	
-.deploy_sub_panel_container {  
+}
+
+
+.deploy_sub_panel_container {
     min-height: 100px;
 	height: 100%;
 	width: 100%;
 	display: inline-block;
-	}	
-	
-iframe,    
-iframe.summary, 
-iframe.general, 
-iframe.versiontable, 
- 
+	}
+
+iframe,
+iframe.summary,
+iframe.general,
+iframe.versiontable,
+
 iframe.tasks_sub_table {
 	border:  none;
 	width: 100%;
 	height: calc(100% - 2px);
-	}	
+	}
 
 iframe.deploy_sub_table {
  	   width: 100% !important;
- 	 	 
-	} 
+
+	}
 
 iframe.dialog_white {
 	background-color: #fff;
@@ -1086,8 +1086,8 @@ iframe.dialog_white {
 	background-color: #fff;
 	height: 100%;
 	}
-	
-#panel_container_history iframe.history, 
+
+#panel_container_history iframe.history,
 #panel_container_pending iframe.pending,
 #panel_container iframe.calendar {
 	border:  none;
@@ -1105,57 +1105,57 @@ iframe.dialog_white {
 	bottom: 55px;
 	right: 18px;
 	min-width: 600px;
-	}	
+	}
 
-#panel_container_history, 
-#panel_container_pending { 
-/* REF http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=145 */  
+#panel_container_history,
+#panel_container_pending {
+/* REF http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=145 */
 	background-color: #fff;
 	border:2px solid #d4dde7;
 	border-radius:5px;
-	overflow: hidden;	
+	overflow: hidden;
 	}
-	
+
 #panel_container_history,
 #panel_container_pending {
-	/* REF http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=145 */ 
+	/* REF http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=145 */
 	position: absolute;
 	top: 23px;
 	bottom: 0;
 	}
 
-#panel_container_history { 
+#panel_container_history {
  	width: calc(50% - 23px);	/* keeps the spacing between panels exact (css 3) */
 	}
 
-#panel_container_pending {   
+#panel_container_pending {
 	width: 50%;
-	right: 0;	 
+	right: 0;
 	}
 
 .static_tab_pending,
 .static_tab_history {
 	/* REF http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=145 */
 	position: absolute;
-	top: 0; 
+	top: 0;
 	margin-left: 6px;
 	height: 23px;
 	background: url(images/tab_static.png) no-repeat;
 	}
-	
+
 .static_tab_pending {
 	width:  calc(50% - 2px);	/* keeps the spacing between static tab containers exact (css 3) */
 	right: 0;
-	} 
-	 
+	}
+
 .static_tab_history {
-	width: calc(50% - 23px);  /* keeps the spacing between static tab containers exact (css 3) */	
+	width: calc(50% - 23px);  /* keeps the spacing between static tab containers exact (css 3) */
 	}
 
 
-#footer_container {  
+#footer_container {
 	height: 23px;
-	display: inline-block; 
+	display: inline-block;
 	border: 2px solid #d4dde7;
 	border-radius: 5px;
 	background-color: lightgrey;
@@ -1188,7 +1188,7 @@ iframe.dialog_white {
  display: flex;
  justify-content: center;
  align-items: center;
-}  
+}
 
 .dataTables_paginate {
   flex: 1;
@@ -1200,7 +1200,7 @@ iframe.dialog_white {
 .status {
 	display: inline;
 	width: 282px;
-	padding-left: 12px; 
+	padding-left: 12px;
 	vertical-align: middle;
 }
 
@@ -1271,7 +1271,7 @@ iframe.dialog_white {
   	font-size: .85em;
   	padding: .5em .5em .5em .7em;
 }
-   
+
 /* IE7-/Win - Fix extra vertical space in lists */
 .ui-accordion a {
    }
@@ -1294,8 +1294,8 @@ iframe.dialog_white {
   	position: relative;
   	top: 1px;
   	overflow: auto;
-  	display: none;  
-  
+  	display: none;
+
 	border: 1px solid #d4dde7;
 }
 .ui-accordion .ui-accordion-content-active {
@@ -1305,7 +1305,7 @@ iframe.dialog_white {
 /* CONTEXT MENU  */
 
 
- 
+
 /* Define a custom icon */
 
 .ui-icon.custom-icon-firefox {
@@ -1328,25 +1328,25 @@ iframe.dialog_white {
 	display: inline;
 	color: #ffffff;
 	letter-spacing: .05ex;
-	padding-right: 32px; 
+	padding-right: 32px;
 	white-space: nowrap;
 }
 
-#positiondevopsmenu li:hover {		
+#positiondevopsmenu li:hover {
 	color: #f8951a;
 	font-size: 16px;
 	}
 
-#positiondevopsmenu li  {		
+#positiondevopsmenu li  {
 	color: #ffffff;
 	font-size: 16px;
 	}
-	
-#positiondevopsmenu li.current {		
+
+#positiondevopsmenu li.current {
 	color: #f8951a;
 	font-size: 16px;
 	}
-	
+
 
 /* @end */
 /* @group MAIN NAV ALWAYS AVAILABLE */
@@ -1355,14 +1355,14 @@ iframe.dialog_white {
 	color: #abbed8;
 	display: inline;
 	float: right;
-	position: relative;	 
+	position: relative;
 }
 
 #positiondevopsmenu_right ul li {
 	display: inline;
 	color: #ffffff;
 	letter-spacing: .05ex;
-	padding-right: 24px; 
+	padding-right: 24px;
 	}
 
 #positiondevopsmenu_right a {
@@ -1376,19 +1376,19 @@ iframe.dialog_white {
 	}
 
 
-#positiondevopsmenu_right a  {		
+#positiondevopsmenu_right a  {
 	display: inline;
 	color: white;
 	font-weight:700;
 	}
-	
-#positiondevopsmenu_right li.current a {	
+
+#positiondevopsmenu_right li.current a {
 	display: inline;
 	color: #f5f7fa;
 	font-weight:700;
 	opacity: 1;
 }
-	
+
 
 /* @end */
 
@@ -1482,17 +1482,17 @@ overflow: hidden;
 	white-space: nowrap;
 	top: 5px !important;
 	position: relative;
-} 
+}
 
 .fragment > span > img {
     height: 20px;
     padding-right: 5px;
     top: 5px;
     position: relative;
-} 
+}
 
 .accordionpanel {
- width:20%;	
+ width:20%;
 }
 
 .componentbox,
@@ -1552,7 +1552,7 @@ overflow: hidden;
 	cursor: -webkit-grab;
 }
 
-.startcomponent, 
+.startcomponent,
 .startapplication,
 .startapplicationver,
 .startworkflow,
@@ -1613,14 +1613,14 @@ a:hover {
 
 h1 {
 	font-weight: 700;
-	margin-left: 12px; 
-	font-size: 1.0em ; 
+	margin-left: 12px;
+	font-size: 1.0em ;
 	}
-	
+
 h2 {
 	font-weight: 700;
-	margin-left: 12px; 
-	font-size: 1.25em ; 
+	margin-left: 12px;
+	font-size: 1.25em ;
 	color: #273746;
 	}
 
@@ -1655,45 +1655,45 @@ h1.domain {
 	line-height:  24px;
 	font-size: 1.2em;
 }
-	
+
 h1.action {
 	background: url(images/actions.png) no-repeat left top;
 	background-size: 24px 24px;
 	}
-	
+
 h1.notify {
 	background: url(images/notifiers.png) no-repeat left top;
 	background-size: 24px 24px;
 	}
-	
+
 h1.repository {
 	background: url(images/repositories.png) no-repeat left top;
-    background-size: 24px 24px;	
+    background-size: 24px 24px;
 	}
 
 h1.procedure {
 	background: url(images/proc_24x.png) no-repeat left top;
 	}
-	
+
 h1.function {
 	background: url(images/func_24x.png) no-repeat left top;
 	}
-	
+
 h1.datasource {
 	background: url(images/datasources.png) no-repeat left top;
-    background-size: 24px 24px;	
+    background-size: 24px 24px;
 	}
-	
+
 h1.user {
 	background: url(images/users.png) no-repeat left top;
 	background-size: 24px 24px;
 	}
-	
+
 h1.usergroup {
 	background: url(images/groups.png) no-repeat left top;
 	background-size: 24px 24px;
 	}
-		
+
 h1.deploy {
 	background: url(images/component_24x.png) no-repeat left top;
 	}
@@ -1707,7 +1707,7 @@ h1.comptype {
 	background: url(images/customization.png) no-repeat left top;
 	background-size: 24px 24px;
 	}
-			
+
 h1.deploy_general {
 /* Ref http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=214 */
 	margin-top: 13px;
@@ -1720,7 +1720,7 @@ h1.server {
 	background: url(images/endpoints.png) no-repeat left top;
     background-size: 24px 24px;
 	}
-	
+
 h1.appversion  {
 	background: url(images/applications.png) no-repeat left top;
     background-size: 24px 24px;
@@ -1730,20 +1730,20 @@ h1.builder  {
 	background: url(images/buildengines.png) no-repeat left top;
 	background-size: 24px 24px;
 		}
-		
+
 h1.buildjob  {
 	background: url(images/buildjobs.png) no-repeat left top;
 	background-size: 24px 24px;
 		}
-		
+
 h1.build_ok {
 	background: url(images/blue_24x.png) no-repeat left top;
 		}
-		
+
 h1.build_fail  {
 	background: url(images/red_24x.png) no-repeat left top;
 		}
-		
+
 h1.environment  {
 	background: url(images/environments.png) no-repeat left top;
 	 background-size: 24px 24px;
@@ -1753,7 +1753,7 @@ h1.application  {
 	background: url(images/applications.png) no-repeat left top;
 	background-size: 24px 24px;
 	}
-	
+
 h1.domain  {
 	background: url(images/domains.png) no-repeat left top;
 	background-size: 24px 24px;
@@ -1763,35 +1763,35 @@ h1.release  {
 	background: url(images/releases.png) no-repeat left top;
 	background-size: 24px 24px;
 	}
-	
+
 h1.relversion  {
 	background: url(images/releases.png) no-repeat left top;
 	background-size: 24px 24px;
 	}
-	
+
 h1.compversion  {
 	background: url(images/components.png) no-repeat left top;
 	background-size: 24px 24px;
-	}	
+	}
 
 h1.component  {
 	background: url(images/components.png) no-repeat left top;
     background-size: 24px 24px;
 	}
-	
+
 h1.template  {
 	background: url(images/templates.png) no-repeat left top;
 	background-size: 24px 24px;
 	}
-		
+
 h1.accordion  {
 	font-size: .85em;
-	font-weight: 700; 
+	font-weight: 700;
 	}
 
 h1.dialog_subtitle  {
 	font-size: 1.2em;
-	font-weight: 700; 
+	font-weight: 700;
 	text-align: left;
 	margin-top: 0;
 	margin-left: 6px;
@@ -1802,10 +1802,10 @@ span.subtitle {
 	font-style: normal;
 }
 
-h1.appversion_noicon, .taskpanels {  
+h1.appversion_noicon, .taskpanels {
 /* REF:  http://om.frydesign.com/index.php?option=com_content&view=category&layout=blog&id=12&Itemid=203 */
 	padding: 0;
-	width:  250px; 
+	width:  250px;
 	line-height: 25px;
 	text-align: left;
 	margin-top: 0;
@@ -1816,15 +1816,15 @@ h2.message_title  {
 	background: url(images/notes_24x.png) no-repeat left top;
 	margin-top: 5px;
 	padding-left: 32px;
-	width:  250px; 
+	width:  250px;
 	line-height:  24px;
 	}
-	
+
 p {
 	font-size: 1em;
 	font-weight: normal;
 	font-style: normal;
-	margin-left: 15px; 
+	margin-left: 15px;
 	}
 
 p.information  {
@@ -1842,7 +1842,7 @@ p.information  {
 	margin-top: 4px;
 }
 
-.summwrap { 
+.summwrap {
       display:block;
       width:300px;
       word-wrap:break-word;
@@ -1850,7 +1850,7 @@ p.information  {
 
 .inner_panel_title {
 	font-weight: 700;
-	margin-left: 8px; 
+	margin-left: 8px;
 	font-size: 12px;
 	margin-top: 2px;
 	}
@@ -1859,11 +1859,11 @@ p.information  {
 	border-top:2px solid #d4dde7;
 	border-left:2px solid #d4dde7;
 	border-right:2px solid #d4dde7;
-	border-bottom:2px solid #d4dde7;	
+	border-bottom:2px solid #d4dde7;
 	border-radius:5px;
 	background:#fff;
 	}
-	
+
 .panel_title_area  {
 	background:#d4dde7;
 	border-bottom: 1px solid #c6ccd2;
@@ -1880,7 +1880,7 @@ p.information  {
 {
  background: white;
  overflow: scroll;
- height: 600px;	
+ height: 600px;
 }
 
 ul.subpanel {   /* styles list with icons in "Tasks for this Domain" panel */
@@ -1890,10 +1890,10 @@ ul.subpanel {   /* styles list with icons in "Tasks for this Domain" panel */
 	text-align: left;
 	padding-left: 4px;
 }
-	
+
 ul.subpanel li {
 	text-align: left;
-}	
+}
 
 
 /* @group Table */
@@ -1903,14 +1903,14 @@ ul.subpanel li {
 	width: 20px;
 	background: url(images/users_sm.png) no-repeat;
 	}
-	
-.dev_table { 
+
+.dev_table {
 	width: 100%;
     border-collapse: collapse;
     border: none;
     border-spacing: 0;
 }
-	
+
 .dev_table td:first-child {
 	font-style: italic;
 	width: 300px;
@@ -1944,8 +1944,8 @@ ul.subpanel li {
 	vertical-align: top;
 	}
 
-.dev_table td { 
-	padding:4px; 
+.dev_table td {
+	padding:4px;
 	padding-left: 8px;
 	text-align: left;
 	}
@@ -1954,7 +1954,7 @@ ul.subpanel li {
 	height: 32px;
 	font-size: 13px;
 	color: #676767;
-}	
+}
 
 .dev_table th {
 	padding:4px;
@@ -1965,13 +1965,13 @@ ul.subpanel li {
 }
 
 
-.cb_dev_table { 
+.cb_dev_table {
 	width: 100%;
     border-collapse: collapse;
     border: none;
     border-spacing: 0;
 }
-	
+
 .cb_dev_table td:first-child {
 	width:40px;
 }
@@ -1986,9 +1986,9 @@ ul.subpanel li {
 
 .cb_dev_table td:last-child {
 	}
-	
-.cb_dev_table td { 
-	padding:4px; 
+
+.cb_dev_table td {
+	padding:4px;
 	padding-left: 8px;
 	text-align: left;
 	}
@@ -1997,14 +1997,14 @@ ul.subpanel li {
 	height: 32px;
 	font-size: 13px;
 	color: #676767;
-}	
+}
 
 .cb_dev_table th {
 	padding:4px;
 	text-align: left;
 	font-weight: 700;
 	padding-left: 8px;
-}	
+}
 
 #histfeed table{
   display:block;
@@ -2128,7 +2128,7 @@ ul.subpanel li {
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-}	
+}
 
 #emailto_title {
 	display: inline-block;
@@ -2160,7 +2160,7 @@ ul.subpanel li {
 }
 
 #feedback_title {
- float: left;	
+ float: left;
 }
 
 #feedback-label {
@@ -2184,7 +2184,7 @@ ul.subpanel li {
     margin:8px;
     overflow-y: auto;
     max-height: 300px;
-}	
+}
 
 #readme_title {
 	display: inline-block;
@@ -2204,7 +2204,7 @@ ul.subpanel li {
     margin:8px;
     overflow-y: auto;
     max-height: 300px;
-}	
+}
 
 #swagger_title {
 	display: inline-block;
@@ -2243,7 +2243,7 @@ ul.subpanel li {
 	border: 1px solid lightgrey;
     margin:8px;
     max-height: 400px;
-}	
+}
 
 #cve_title {
 	display: inline-block;
@@ -2258,7 +2258,7 @@ ul.subpanel li {
 	border: 1px solid lightgrey;
     margin:8px;
     max-height: 400px;
-}	
+}
 
 #license_title {
 	display: inline-block;
@@ -2279,7 +2279,7 @@ ul.subpanel li {
 	margin: 8px;
     overflow-y: auto;
     max-height: 300px;
-}	
+}
 
 #licensemd_title {
 	display: inline-block;
@@ -2302,7 +2302,7 @@ ul.subpanel li {
 	display:inline-block;
 	border: 1px solid lightgrey;
     margin:8px;
-}	
+}
 
 #srv4comp_title {
 	display: inline-block;
@@ -2343,7 +2343,7 @@ ul.subpanel li {
 	border: 1px solid lightgrey;
     margin:8px;
     margin-bottom: 0;
-}	
+}
 
 #comp4srv_title {
 	display: inline-block;
@@ -2383,7 +2383,7 @@ ul.subpanel li {
 	border: 1px solid lightgrey;
     margin:8px;
     margin-bottom: 0;
-}	
+}
 
 #inputparams_title {
 	display: inline-block;
@@ -2423,7 +2423,7 @@ ul.subpanel li {
 	border: 1px solid lightgrey;
     margin:8px;
     margin-bottom: 0;
-}	
+}
 
 #switchargs_title {
 	display: inline-block;
@@ -2463,7 +2463,7 @@ ul.subpanel li {
 #env4app td {
 	border: none;
 }
- 	
+
 #env4app td:nth-child(2) {
 	border: none;
 	white-space: nowrap;
@@ -2484,7 +2484,7 @@ ul.subpanel li {
 #app4env td {
 	border: none;
 }
- 	
+
 /******/
 
 #domnav-panel {
@@ -2493,7 +2493,7 @@ ul.subpanel li {
 	border: 1px solid lightgrey;
     margin:8px;
     text-align: center;
-}	
+}
 
 /*** Start srv4env ***/
 
@@ -2507,7 +2507,7 @@ ul.subpanel li {
 	border: 1px solid lightgrey;
     margin-top: 8px;
     margin-bottom: 8px;
-}	
+}
 
 #srv4env_title {
 	display: inline-block;
@@ -2535,7 +2535,7 @@ ul.subpanel li {
 
 /*** End srv4env  **?
 
-#component_item_details tr:nth-child(odd) { 
+#component_item_details tr:nth-child(odd) {
 	background: #fdfaf7;
 	}
 
@@ -2569,7 +2569,7 @@ ul.subpanel li {
 	}
 
 .tabrow_tabmenu li:hover {
-/*	background: #4473a6 url(images/tab_active_gradient_tile.png) 0 top;	 
+/*	background: #4473a6 url(images/tab_active_gradient_tile.png) 0 top;
 	z-index: 2;
 	border-width: 1px 0px 0px 1px;
 	border-color: #275d95; */
@@ -2586,8 +2586,8 @@ ul.subpanel li {
 	top: -1px;
 	right:  -26px;
 	width: 26px;
-	height: 24px;	 
-	background: url(images/tab_active_right_45.png) no-repeat;	 
+	height: 24px;
+	background: url(images/tab_active_right_45.png) no-repeat;
 	}
 
 .tabrow_tabmenu li:after {
@@ -2596,50 +2596,50 @@ ul.subpanel li {
 	top: -1px;
 	right:  -26px;
 	width: 26px;
-	height: 24px;	
+	height: 24px;
 	background: url(images/tab_inactive_right_45.png) no-repeat;
 	}
 */
-	
+
 .tabrow_tabmenu a {
 	font-weight: 700;
-	color: #5b7394; 
+	color: #5b7394;
 	text-decoration: none;
 	}
 
-/*	
+/*
 .tabrow_tabmenu li a:after {
-	color: #5b7394; 
+	color: #5b7394;
 	text-decoration: none;
 	}
-	
+
 .tabrow_tabmenu li.selected a:after {
-	color: #5b7394; 
+	color: #5b7394;
 	text-decoration: none;
 	background: url(images/tab_active_right_45.png) no-repeat;
 	}
 */
-	
+
 .tabrow_tabmenu li.current   {
-/*	background: #4473a6 url(images/tab_active_gradient_tile.png) 0 top;	
+/*	background: #4473a6 url(images/tab_active_gradient_tile.png) 0 top;
 	z-index: 2;
 	border-width: 1px 0px 0px 1px;
-	border-color: #275d95; 
+	border-color: #275d95;
 	text-decoration: underline; */
 	color: #4473a6;
 	}
-	
-.tabrow_tabmenu li.current a   {	 
+
+.tabrow_tabmenu li.current a   {
 /*	z-index: 2; */
 	color: #4473a6;
 	}
 
 .tabrow_tabmenu li.current:after {
 /*	font-weight: 700;
-	color: #5b7394; 
+	color: #5b7394;
 	text-decoration: none;
 	background: url(images/tab_active_right_45.png) no-repeat; */
-	
+
 	background: #3367d6;
     bottom: 0;
     content: "";
@@ -2648,7 +2648,7 @@ ul.subpanel li {
     left: 2px;
     position: absolute;
     right: 0;
-	} 
+	}
 
 /* @end */
 
@@ -2657,17 +2657,17 @@ ul.subpanel li {
 #component_item_details  {
 }
 
-.panel_component_item_details {  
-	position: absolute;	
-	width: calc(100% - 28px);	 
+.panel_component_item_details {
+	position: absolute;
+	width: calc(100% - 28px);
 	background-color: transparent;
 	border: 2px solid #dcdcdc;
 	border-radius:5px;
 	overflow: hidden;
 	top: 57px;
-	bottom: 6px;   
-	}	
-	
+	bottom: 6px;
+	}
+
 /* @end */
 
 
@@ -2679,8 +2679,8 @@ ul.subpanel li {
 	color: #676767;
  	background-color: #f7f3ec;
 }
-	 
-.ui-dialog { 
+
+.ui-dialog {
 	border: 2px solid #a9a398;
 	border-radius: 6px;
 /*	box-shadow: 8px 8px 23px #afafaf !important;
@@ -2688,9 +2688,9 @@ ul.subpanel li {
 	font-family: 'Open Sans', sans-serif;
 	font-size: 1em;
 	color: #676767;
-	padding: 0;		
+	padding: 0;
 }
-	
+
 .ui-dialog-titlebar {
 	position: relative;
 	height: 34px !important;
@@ -2698,8 +2698,8 @@ ul.subpanel li {
 	background-color: #f6ead3 !important;
  	top: 0 !important;
 	left: 0 !important;
-/*	border-top: 2px solid #f6ead3 !important;	
-	border-left: 2px solid #f6ead3 !important;	
+/*	border-top: 2px solid #f6ead3 !important;
+	border-left: 2px solid #f6ead3 !important;
 	border-right: 2px solid #f6ead3 !important; */
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
@@ -2718,19 +2718,19 @@ img.dialog_title_icon {
 
 .ui-dialog .ui-dialog-title {
 	float: left;
-	margin: .1em 0; 
+	margin: .1em 0;
 	font-size: 1.5em;
 	font-weight: 700;
-	color: #676767;	
+	color: #676767;
 	white-space: nowrap;
 	width: calc(100% - 28px);
 	overflow: hidden;
 	text-overflow: ellipsis;
-	
+
 }
 
 .ui-widget-header .ui-icon {
-    background-image: url(images/ui-icons_676767_256x240.png)/*{iconsHeader}*/; 
+    background-image: url(images/ui-icons_676767_256x240.png)/*{iconsHeader}*/;
 }
 
 .ui-dialog-titlebar-close   {
@@ -2758,7 +2758,7 @@ img.dialog_title_icon {
 	font-size: 1.0em;
 /*	color: #676767; */
 	background-image: none !important;
-	background-color: #f7f3ec !important; 
+	background-color: #f7f3ec !important;
 	width: calc(100% - 28px);
 	padding: 8px 0 12px 12px;
 	overflow: scroll;
@@ -2774,7 +2774,7 @@ img.dialog_title_icon {
 	position: relative !important;
 	padding: 0 !important;
 	line-height: normal !important;
-	margin-right: 6px !important;	
+	margin-right: 6px !important;
 	margin-bottom: 14px !important;
 	cursor: pointer !important;
 	vertical-align: middle !important;
@@ -2790,7 +2790,7 @@ img.dialog_title_icon {
 	color: #676767 !important;
 	font-weight: 700 !important;
 	text-decoration: none !important;
-	
+
 }
 
 For timepicker
@@ -2878,7 +2878,7 @@ button.edit_button {
 button.edit_button_disabled {
 	background-color: grey;
 	}
-	
+
 button.delete_button {
   background-color: inherit;
   font-family: 'Open Sans', sans-serif;
@@ -2901,8 +2901,8 @@ button.delete_button {
 button.delete_button_disabled {
 	background-color: grey;
 	}
-	
-	
+
+
 button.add_button {
   background-color: inherit;
   font-family: 'Open Sans', sans-serif;
@@ -2925,8 +2925,8 @@ button.add_button {
 button.add_button_disable {
 	background-color: grey;
 	}
-	
-	
+
+
 button.save_button {
   background-color: inherit;
   font-family: 'Open Sans', sans-serif;
@@ -2945,7 +2945,7 @@ button.save_button {
   box-sizing: border-box;
   color: grey;
 	}
-	
+
 button.cancel_button {
   background-color: inherit;
   font-family: 'Open Sans', sans-serif;
@@ -2963,8 +2963,8 @@ button.cancel_button {
   transition: 0.3s;
   box-sizing: border-box;
   color: grey;
-	}	
-	
+	}
+
 button.test_button {
   background-color: inherit;
   font-family: 'Open Sans', sans-serif;
@@ -2983,7 +2983,7 @@ button.test_button {
   box-sizing: border-box;
   color: #3367d6;
   display: none;
-	}		
+	}
 
 button.save_button_sub, button.save_button_sub:hover {
 	position: absolute;
@@ -3023,7 +3023,7 @@ button.up_button_disabled {
 	cursor: pointer !important;
 	background-color: #eaedf0;
 	}
-	
+
 
 button.down_button {
   background-color: inherit;
@@ -3052,7 +3052,7 @@ button.down_button_disabled {
 	cursor: pointer !important;
 	background-color: #eaedf0;
 	}
-	
+
 /****  CSS FOR 16X ICON BUTTONS   *****/
 button.edit_button_param {
   position: absolute;
@@ -3075,7 +3075,7 @@ button.edit_button_param {
   transition: 0.3s;
   box-sizing: border-box;
 }
-	
+
 button.add_button_param {
   position: absolute;
   right: 82px;
@@ -3141,7 +3141,7 @@ button.up_button_param {
   transition: 0.3s;
   box-sizing: border-box;
 	}
-	
+
 button.down_button_param {
   position: absolute;
   right: 4px;
@@ -3163,7 +3163,7 @@ button.down_button_param {
   transition: 0.3s;
   box-sizing: border-box;
 	}
-	
+
 button.edit_button_sub_small {
 	position: absolute;
 	right: 4px;
@@ -3192,7 +3192,7 @@ button.save_button_sub_small img {
 button.save_button_sub_small img {
 	padding: 0 !important;
 	}
-	
+
 /****  END CSS FOR 16X ICON BUTTONS   *****/
 
 
@@ -3229,7 +3229,7 @@ button.save_button_sub_small img {
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
 	border-bottom-right-radius:0;
-	border-bottom-left-radius:0;	
+	border-bottom-left-radius:0;
 	width: 500px;
 	height: 330px;
 	padding: 0;
@@ -3255,7 +3255,7 @@ button.save_button_sub_small img {
 	padding-left: 3px;
 	border-radius: 3px;
 	background-color: #f0f0f0;
-	border: 1px solid #999999;	
+	border: 1px solid #999999;
 	box-shadow: inset 1px 1px 2px rgba(53, 53, 53, 0.1);
 	}
 
@@ -3268,7 +3268,7 @@ button.save_button_sub_small img {
 	width:  380px;
 	top: 4px;
 	left: 0;
-	margin: 0 60px 0 auto; 
+	margin: 0 60px 0 auto;
 	}
 
 .logindialog .error {  /********* this div should only appear with a login error ************/
@@ -3286,7 +3286,7 @@ button.save_button_sub_small img {
 	}
 
 .logindialog p.error-text {
-	font-size: 1em;	
+	font-size: 1em;
 	letter-spacing: .03ex;
 	font-weight: bold;
 	font-style: italic;
@@ -3300,7 +3300,7 @@ button.save_button_sub_small img {
 	left: 0;
 	bottom: 0;
 	width: calc(100% - 2px);
-	text-align: center !important; 	 
+	text-align: center !important;
 }
 
 .logindialog p.copyright {
@@ -3308,9 +3308,9 @@ button.save_button_sub_small img {
 	font-weight: 600;
 	text-align: center;
 	margin-left: 15px;
-	margin-right: 15px; 
+	margin-right: 15px;
 	}
-   
+
 .logindialog .ui-dialog-titlebar {
 	display: none;
 	  	}
@@ -3331,7 +3331,7 @@ button.save_button_sub_small img {
 	position: absolute;
 	width:  calc(100% - 75px);
     border: none;
-	bottom:  130px; 
+	bottom:  130px;
 }
 
 .logindialog .ui-widget-overlay {
@@ -3353,8 +3353,8 @@ button.save_button_sub_small img {
 	vertical-align: middle;
 	text-align: center;
 	overflow: visible; /* removes extra width in IE */
-	} 
-	
+	}
+
 .logindialog .ui-button,
 .logindialog .ui-button:link,
 .logindialog .ui-button:visited,
@@ -3368,9 +3368,9 @@ button.save_button_sub_small img {
 	font-weight: 700;
 }
 
-.stackedbutton { 
+.stackedbutton {
 	display: block !important;
-	padding-right: 180px !important; 
+	padding-right: 180px !important;
 	padding-top: 10px !important;
 	padding-bottom: 10px !important;
 	padding-left:40px !important;
@@ -3379,12 +3379,12 @@ button.save_button_sub_small img {
 }
 
 .login_hide {
- display: none !important;	
+ display: none !important;
 }
 
 
 #deployhub {
-    padding-right: 155px !important; 
+    padding-right: 155px !important;
 }
 
 .github-logo {
@@ -3412,7 +3412,7 @@ button.save_button_sub_small img {
 /* @end */  /* END LOGIN CSS */
 
 
-#execute_err_box { 
+#execute_err_box {
 	position: relative;
     left: -6px;
     top: 5px;
@@ -3428,7 +3428,7 @@ button.save_button_sub_small img {
 	}
 
 #execute_err {
-	font-size: 1em;	
+	font-size: 1em;
 	letter-spacing: .03ex;
 	font-weight: bold;
 	font-style: italic;
@@ -3458,7 +3458,7 @@ button.save_button_sub_small img {
 	left: 0;
 	bottom:  0;
 	width: calc(100% - 8px);
-	text-align: center !important; 
+	text-align: center !important;
 	font-size: .75em;
 	font-weight: 600;
 	margin-top: 4px;
@@ -3527,7 +3527,7 @@ button.save_button_sub_small img {
 	margin-bottom: 10px;
 }
 
-h2.reports { 
+h2.reports {
 	color: white
 }
 
@@ -3545,12 +3545,12 @@ h2.reports {
 
 .vis-item {
   color: white;
-  background-color: #3a87ad;  
+  background-color: #3a87ad;
 }
 
 .vis-item.release {
   color: white;
-  background-color: #3a87ad;   
+  background-color: #3a87ad;
 }
 
 .vis-item.absent {
@@ -3566,14 +3566,14 @@ h2.reports {
 
 .vis-item.inenv {
   color: white;
-  background-color: #61838F;	
+  background-color: #61838F;
 }
 
 .vis-item.vis-point.vis-selected, .vis-item.vis-selected {
   border-color: #beebff;
   background-color: #beebff;
 }
- 
+
 .vis-inner {
 	width: 100%;
 }
@@ -3601,7 +3601,7 @@ h2.reports {
 }
 
 div.dt-buttons {
-	margin-left: 20px 
+	margin-left: 20px
 }
 
 #panel_container_menu.left {
@@ -3705,7 +3705,7 @@ div.dt-buttons {
 
 .verttab_rel:before {
     background: url("images/releases.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3719,7 +3719,7 @@ div.dt-buttons {
 
 .verttab_env:before {
     background: url("images/environments.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3733,7 +3733,7 @@ div.dt-buttons {
 
 .verttab_endpoint:before {
     background: url("images/endpoints.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3747,7 +3747,7 @@ div.dt-buttons {
 
 .verttab_buildeng:before {
     background: url("images/buildengines.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3761,7 +3761,7 @@ div.dt-buttons {
 
 .verttab_buildjob:before {
     background: url("images/buildjobs.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3774,12 +3774,12 @@ div.dt-buttons {
 }
 
 #verttab_template {
-    padding-left: 60px;	
+    padding-left: 60px;
 }
 
 .verttab_template:before {
     background: url("images/templates.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3792,12 +3792,12 @@ div.dt-buttons {
 }
 
 #verttab_user {
-    padding-left: 60px;	
+    padding-left: 60px;
 }
 
 .verttab_user:before {
     background: url("images/users.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3810,12 +3810,12 @@ div.dt-buttons {
 }
 
 #verttab_group {
-    padding-left: 60px;	
+    padding-left: 60px;
 }
 
 .verttab_group:before {
     background: url("images/groups.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3829,7 +3829,7 @@ div.dt-buttons {
 
 .verttab_servercomptype:before {
     background: url("images/customization.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3843,7 +3843,7 @@ div.dt-buttons {
 
 .verttab_action:before {
     background: url("images/actions.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3857,7 +3857,7 @@ div.dt-buttons {
 
 .verttab_procedure:before {
     background: url("images/functions_procedures_sm.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3870,12 +3870,12 @@ div.dt-buttons {
 }
 
 #verttab_notifier {
-    padding-left: 60px;		
+    padding-left: 60px;
 }
 
 .verttab_notifier:before {
     background: url("images/notifiers.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3888,12 +3888,12 @@ div.dt-buttons {
 }
 
 #verttab_repository {
-    padding-left: 60px;	
+    padding-left: 60px;
 }
 
 .verttab_repository:before {
     background: url("images/repositories.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3906,12 +3906,12 @@ div.dt-buttons {
 }
 
 #verttab_datasource {
-    padding-left: 60px;		
+    padding-left: 60px;
 }
 
 .verttab_datasource:before {
     background: url("images/datasources.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3929,7 +3929,7 @@ div.dt-buttons {
 
 .verttab_credential:before {
     background: url("images/credentials.png") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3943,7 +3943,7 @@ div.dt-buttons {
 
 .verttab_setup:before {
     background: url("images/cog-light.svg") no-repeat scroll center center / 100% auto rgba(0, 0, 0, 0);
-    background-size: 24px 24px;    
+    background-size: 24px 24px;
     content: "";
     display: inline-block;
     color: #fff;
@@ -3963,77 +3963,77 @@ div.dt-buttons {
     left: 0;
     top: 0;
     right: 0;
-} 
+}
 
-#applist > tbody > tr > td:focus { 
-	outline: none; 
-   }
-   
-#complist > tbody > tr > td:focus { 
-	outline: none; 
-   }  
-   
-#rellist > tbody > tr > td:focus { 
-	outline: none; 
-   }    
-   
-#envlist > tbody > tr > td:focus { 
-	outline: none; 
-   }
-   
-#endpointlist > tbody > tr > td:focus { 
-	outline: none; 
-   }   
-   
-#buildenglist > tbody > tr > td:focus { 
-	outline: none; 
+#applist > tbody > tr > td:focus {
+	outline: none;
    }
 
-#buildjoblist > tbody > tr > td:focus { 
-	outline: none; 
+#complist > tbody > tr > td:focus {
+	outline: none;
+   }
+
+#rellist > tbody > tr > td:focus {
+	outline: none;
+   }
+
+#envlist > tbody > tr > td:focus {
+	outline: none;
+   }
+
+#endpointlist > tbody > tr > td:focus {
+	outline: none;
+   }
+
+#buildenglist > tbody > tr > td:focus {
+	outline: none;
+   }
+
+#buildjoblist > tbody > tr > td:focus {
+	outline: none;
    }
 
 
-#actionlist > tbody > tr > td:focus { 
-	outline: none; 
+#actionlist > tbody > tr > td:focus {
+	outline: none;
    }
 
-#procedurelist > tbody > tr > td:focus { 
-	outline: none; 
+#procedurelist > tbody > tr > td:focus {
+	outline: none;
    }
 
-#notifierlist > tbody > tr > td:focus { 
-	outline: none; 
-   }
-   
-#repositorylist > tbody > tr > td:focus { 
-	outline: none; 
-   }
-   
-#datasourcelist > tbody > tr > td:focus { 
-	outline: none; 
+#notifierlist > tbody > tr > td:focus {
+	outline: none;
    }
 
-#credentiallist > tbody > tr > td:focus { 
-	outline: none; 
+#repositorylist > tbody > tr > td:focus {
+	outline: none;
    }
-   
-#userlist > tbody > tr > td:focus { 
-	outline: none; 
-   }   
-    
-#grouplist > tbody > tr > td:focus { 
-	outline: none; 
-   }   
-            
-#servercomptypelist > tbody > tr > td:focus { 
-	outline: none; 
-   }    
-   
-#templatelist > tbody > tr > td:focus { 
-	outline: none; 
-   }    
-   
+
+#datasourcelist > tbody > tr > td:focus {
+	outline: none;
+   }
+
+#credentiallist > tbody > tr > td:focus {
+	outline: none;
+   }
+
+#userlist > tbody > tr > td:focus {
+	outline: none;
+   }
+
+#grouplist > tbody > tr > td:focus {
+	outline: none;
+   }
+
+#servercomptypelist > tbody > tr > td:focus {
+	outline: none;
+   }
+
+#templatelist > tbody > tr > td:focus {
+	outline: none;
+   }
+
 #right_panel_header {
 	height: 34px;
 	float:right;
@@ -4140,7 +4140,7 @@ div.dt-buttons {
     top: 176px !important;
     left: 276px !important;
     width: 50% !important;
-    height: calc(100% - 232px) !important;	
+    height: calc(100% - 232px) !important;
     border: none;
     border-radius: 0;
     background-color: none;
@@ -4177,7 +4177,7 @@ input[type=text], textarea {
   margin: 5px 1px 3px 0;
   border: 1px solid #DDDDDD;
 }
- 
+
 input[type=text]:focus, textarea:focus {
   box-shadow: 0 0 5px rgba(81, 203, 238, 1);
   padding: 3px 0px 3px 3px;
@@ -4193,24 +4193,24 @@ input[type=text]:focus, textarea:focus {
 .VS-search-box {
   border:none !important;
  }
- 
+
 .VS-interface.ui-autocomplete .ui-menu-item a {
 	white-space: nowrap;
-} 
+}
 
 .VS-search .search_facet .category {
 	text-transform: none;
 }
 
 .VS-search .search_input input {
-	border: none;	
+	border: none;
 }
 
 .VS-search .search_input.is_editing input {
-	box-shadow: none;	
+	box-shadow: none;
 }
 .VS-search .search_facet input {
-    border:none;	
+    border:none;
 }
 
 .VS-search .VS-search-box {
@@ -4271,5 +4271,5 @@ th.rotate > div {
     height: 50px !important;
     width: 150px !important;
     text-align: left;
-    
+
 }

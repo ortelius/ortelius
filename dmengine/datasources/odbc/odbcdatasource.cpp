@@ -168,7 +168,7 @@ void OdbcDatasourceImpl::query(class Model &model, class ExtendedStmt &stmt, cla
 
 	char *user = creds->getDecryptedUsername(ctx);
 	char *pass = creds->getDecryptedPassword(ctx);
-	SQLRETURN res = odbc.ConnectToDataSource(&(ctx.dm()),m_dsn, user, pass);		
+	SQLRETURN res = odbc.ConnectToDataSource(&(ctx.dm()),m_dsn, user, pass);
 	SECURE_FREE(user);
 	SECURE_FREE(pass);
 	if(res == SQL_ERROR) {
@@ -179,7 +179,7 @@ void OdbcDatasourceImpl::query(class Model &model, class ExtendedStmt &stmt, cla
 	AutoPtr<triSQL> tsql = odbc.GetSQL();
 
 	res = tsql->PrepareStatement((const char*) sql);
-	if((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO)) {		
+	if((res != SQL_SUCCESS) && (res != SQL_SUCCESS_WITH_INFO)) {
 		tsql->GetLastError(&msg, &err);
 		throw RuntimeError(stmt, ctx.stack(), "%s (%d)", msg, err);
 	}
@@ -289,7 +289,7 @@ void OdbcDatasourceImpl::query(class Model &model, class ExtendedStmt &stmt, cla
 			tsql->CloseSQL();
 			throw;
 		}
-					
+
 		res = (SQLRETURN) tsql->FetchRow();
 	}
 
@@ -385,7 +385,7 @@ LDAP *LdapDatasourceImpl::ConnectToLDAP(class Context &ctx,class ExtendedStmt *s
 	Credentials *cred = m_datasource.getCredentials();
 	char *un = (char *)0;
 	char *pw = (char *)0;
-	
+
 	if (cred) {
 		un = cred->getDecryptedUsername(ctx);
 		pw = cred->getDecryptedPassword(ctx);
@@ -395,7 +395,7 @@ LDAP *LdapDatasourceImpl::ConnectToLDAP(class Context &ctx,class ExtendedStmt *s
 			pw = (char *)m_password->value();
 		}
 	}
-#ifdef WIN32	
+#ifdef WIN32
 	if (un == (char *)0 || pw == (char *)0) {
 		// No username or password - try anonymous connection
 		res = ldap_connect(ld,NULL);
@@ -408,8 +408,8 @@ LDAP *LdapDatasourceImpl::ConnectToLDAP(class Context &ctx,class ExtendedStmt *s
 			}
 		}
 	} else {
-#endif		
-		// credentials or username/password combination specified - use 
+#endif
+		// credentials or username/password combination specified - use
 		res = ldap_bind_s(ld,un,pw,LDAP_AUTH_SIMPLE);
 		if (res != LDAP_SUCCESS) {
 			if (stmt) {
@@ -419,9 +419,9 @@ LDAP *LdapDatasourceImpl::ConnectToLDAP(class Context &ctx,class ExtendedStmt *s
 			}
 			return (LDAP *)0;
 		}
-#ifdef WIN32		
+#ifdef WIN32
 	}
-#endif	
+#endif
 	SAFE_FREE(sc);
 	return ld;
 }
@@ -492,7 +492,7 @@ void LdapDatasourceImpl::query(class Model &model, class ExtendedStmt &stmt, cla
 				n++;
 			}
 			*/
-		}	
+		}
 	}
 
 
@@ -550,7 +550,7 @@ void LdapDatasourceImpl::query(class Model &model, class ExtendedStmt &stmt, cla
 								ht->put(pAttribute,new Variable(NULL, (char*) *ppValue));
 							}
 						}
-					} 
+					}
 					// Free memory.
 					if (ppValue != NULL) ldap_value_free(ppValue);
 					ppValue = NULL;
@@ -570,7 +570,7 @@ void LdapDatasourceImpl::query(class Model &model, class ExtendedStmt &stmt, cla
 					throw;
 				}
 			}
-			
+
 		} else {
 			if (pMsg != NULL) {
 				ldap_msgfree(pMsg);
@@ -633,7 +633,7 @@ DatasourceProviderImpl *LdapDatasourceImplFactory::create(
 extern "C" ODBCDATASOURCE_EXPORT int odbcdatasource_PluginStart(DM &dm)
 {
 	dm.writeToLogFile("ODBC Datasource plugin V" ODBCDATASOURCE_PLUGIN_VERSION);
-	
+
 	DatasourceProviderImplRegistry::instance().registerFactory("odbc", new OdbcDatasourceImplFactory());
 	DatasourceProviderImplRegistry::instance().registerFactory("ldap", new LdapDatasourceImplFactory());
 	return 0;

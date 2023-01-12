@@ -60,13 +60,13 @@ public class InitServer extends HttpServletBase
 	private static final long serialVersionUID = 1L;
 	private String os = null;
 	private Timer m_timer = null;
-	
+
 	private String getOsName()
 	{
 	      if (os == null) { os = System.getProperty("os.name"); }
 	      return os;
 	}
-	
+
 	private boolean isWindows()
 	{
 		return getOsName().startsWith("Windows") || getOsName().startsWith("Mac");	// For PAG dev
@@ -76,13 +76,13 @@ public class InitServer extends HttpServletBase
 	{
 		return !isWindows();
 	}
-	
+
 	public void destroy()
 	{
 		System.out.println("destroy method called");
 		if (m_timer != null) m_timer.cancel();
 	}
-	
+
  String DMHome = null;
 
  private Connection m_conn;
@@ -183,8 +183,8 @@ public class InitServer extends HttpServletBase
 
   try
   {
-   try (PreparedStatement st = m_conn.prepareStatement("SELECT schemaver FROM dm.dm_tableinfo"); 
-     
+   try (PreparedStatement st = m_conn.prepareStatement("SELECT schemaver FROM dm.dm_tableinfo");
+
    ResultSet rs = st.executeQuery())
    {
     if (rs.next())
@@ -198,18 +198,18 @@ public class InitServer extends HttpServletBase
   {
    rollback();
   }
-  
+
   return res;
  }
- 
+
  private boolean checkProTables()
  {
   boolean res = true;
 
   try
   {
-   try (PreparedStatement st = m_conn.prepareStatement("SELECT count(*) FROM dm.dm_defects"); 
-     
+   try (PreparedStatement st = m_conn.prepareStatement("SELECT count(*) FROM dm.dm_defects");
+
    ResultSet rs = st.executeQuery())
    {
     if (rs.next())
@@ -222,7 +222,7 @@ public class InitServer extends HttpServletBase
   {
    rollback();
   }
-  
+
   return res;
  }
 
@@ -231,17 +231,17 @@ public class InitServer extends HttpServletBase
  {
 
  }
- 
+
  public void init()
  {
   if (System.getenv("LOAD_DB") == null)
    return;
-  
+
   try (DMSession session = new DMSession(getServletContext()))
   {
   String absoluteDiskPath = getServletContext().getRealPath("/WEB-INF") + "/localdeploy.reg";
   File regfile = new File(absoluteDiskPath);
-  
+
   if (regfile.exists())
   {
    String[] cmd = { "regedit", "/S", regfile.getAbsolutePath() };
@@ -259,9 +259,9 @@ public class InitServer extends HttpServletBase
 
   long starttime = System.currentTimeMillis();
   System.setProperty("StartTime", (new Long(starttime)).toString());
-  
+
   int dbtype = InitDBConnection();	// 0 = Postgres, 1 = Oracle
-  
+
   if (dbtype == 1) {
 	  // For Oracle, switch the schema first. This may not work on first install because only the
 	  // base install script creates the schema
@@ -275,14 +275,14 @@ public class InitServer extends HttpServletBase
   }
   String sqlpath=(dbtype==1)?"/WEB-INF/schema/oracle":"/WEB-INF/schema";
   System.out.println("Taking SQL Scripts from "+sqlpath);
-    
+
   absoluteDiskPath = getServletContext().getRealPath(sqlpath);
   File sf = new File(absoluteDiskPath);
 
   ArrayList<File> files = listFilesForFolder(sf);
   Collections.sort(files, new FileNameComp());
 
-  
+
   int schemaver = getSchemaVersion();
   boolean proTablesMissing = checkProTables();
 
@@ -290,7 +290,7 @@ public class InitServer extends HttpServletBase
    {
     ArrayList<String> pfiles = new ArrayList<String>();
     pfiles.add("2015123101.sql");
-    
+
     pfiles.add("2015123101.sql");
     pfiles.add("2016021501.sql");
     pfiles.add("2016092001.sql");
@@ -306,14 +306,14 @@ public class InitServer extends HttpServletBase
     pfiles.add("2017060201.sql");
     pfiles.add("2017062301.sql");
     pfiles.add("2017111001.sql");
-    
+
     for (int i = 0; i < files.size(); i++)
     {
      String bn = files.get(i).getName();
-     
+
      if (!pfiles.contains(bn))
       continue;
-     
+
      String ext = bn.replaceAll("^.*[.]", "");
      String name = bn.replace(".sql", "").replace(".re", "");
      String basename = name.replace("_linux", "").replace("_windows", "");
@@ -407,10 +407,10 @@ public class InitServer extends HttpServletBase
      }
     }
    }
-  
+
   System.out.println("SCHEMA=" + schemaver);
   System.setProperty("SCHEMA", (new Integer(schemaver)).toString());
-  
+
   for (int i = 0; i < files.size(); i++)
   {
    String bn = files.get(i).getName();
@@ -426,11 +426,11 @@ public class InitServer extends HttpServletBase
     maxver = filever.intValue();
    // Handle platform specific files
    if (name.endsWith("_linux") && !isLinux()) continue;
-   if (name.endsWith("_windows") && !isWindows()) continue; 
+   if (name.endsWith("_windows") && !isWindows()) continue;
 
    if (ext.equalsIgnoreCase("sql")) {
 	   System.out.println("Loading sql from " + name + ".sql");
-	
+
 	   try
 	   {
 	    BufferedReader br = new BufferedReader(new FileReader(files.get(i)));
@@ -441,13 +441,13 @@ public class InitServer extends HttpServletBase
 	     if (!line.startsWith("--") && line.trim().length() > 0)
 	      onebigline.append(line + "\n");
 	    }
-	
+
 	    br.close();
-	
+
 	    line = onebigline.toString();
 	    String[] parts = line.split("\\);\n");
 	    if (line.toLowerCase().contains("create ") && line.toLowerCase().contains("function dm."))
-	    { 
+	    {
 	     parts = line.split("\n");
 	     System.out.println("Executing ["+parts[0]+"]");
 	     Statement st;
@@ -469,12 +469,12 @@ public class InitServer extends HttpServletBase
 	    for (int k = 0; k < parts.length; k++)
 	    {
 	     if (parts[k].trim().length() > 0)
-	      if (parts[k].toLowerCase().contains("update ") || parts[k].toLowerCase().contains("delete from")) 
+	      if (parts[k].toLowerCase().contains("update ") || parts[k].toLowerCase().contains("delete from"))
 	       RunStatement(parts[k]);
 	      else if (parts[k].toLowerCase().contains("insert ") && parts[k].toLowerCase().contains("select "))
 	       RunStatement(parts[k]);
 	      else if (!parts[k].trim().endsWith(";"))
-	        RunStatement(parts[k] + ");");	
+	        RunStatement(parts[k] + ");");
 	      else
 	       RunStatement(parts[k]);
 	    }
@@ -486,7 +486,7 @@ public class InitServer extends HttpServletBase
 	   }
 	   catch (IOException e)
 	   {
-	
+
 	   }
 	   if (i==0 && dbtype == 1) {
 		   // First file through when running Oracle could fail if the "dm" user
@@ -508,7 +508,7 @@ public class InitServer extends HttpServletBase
   else
   {
    cleanAttrs();
-	  
+
    try
    {
     if (updatePerformed)
@@ -525,11 +525,11 @@ public class InitServer extends HttpServletBase
      if (dbtype == 0) {
     	 // Postgres
     	 String user = dUserName.toString();
-    	 
+
     	 if (user.contains("@"))
     	 {
     	  String parts[] = user.split("@");
-    	  st.execute("ALTER USER " + parts[0] + " SET search_path TO dm,public;"); 
+    	  st.execute("ALTER USER " + parts[0] + " SET search_path TO dm,public;");
     	 }
     	 else
     	  st.execute("ALTER USER " + dUserName.toString() + " SET search_path TO dm,public;");
@@ -537,12 +537,12 @@ public class InitServer extends HttpServletBase
     	 // Oracle
     	 st.execute("ALTER SESSION set current_schema=dm");
      }
-     
+
      st.close();
-     
+
      m_conn.commit();
 
-    } 
+    }
    }
    catch (SQLException e)
    {
@@ -552,8 +552,8 @@ public class InitServer extends HttpServletBase
    }
   }
   }
-  
-  // Exit everything 
+
+  // Exit everything
   if (System.getenv("INIT_ONLY") != null)
   {
    System.out.println("INIT_ONLY - Exiting");
@@ -586,43 +586,43 @@ public class InitServer extends HttpServletBase
   return newString;
  }
 
- public void cleanAttrs() 
+ public void cleanAttrs()
  {
   ArrayList<String> kw = new ArrayList<>(Arrays.asList("buildid", "buildurl", "chart", "operator", "builddate",
 				"dockersha", "gitcommit", "gitrepo", "gittag", "giturl", "chartversion", "chartnamespace", "dockertag",
 				"chartrepo", "chartrepourl", "serviceowner", "serviceowneremail", "serviceownerphone", "slackchannel",
 				"discordchannel", "hipchatchannel", "pagerdutyurl", "pagerdutybusinessurl"));
-		
-  try 
-  {	
+
+  try
+  {
    for (int i=0;i<kw.size();i++)
    {
 	String key = kw.get(i);
 	String sql = "select compid, name, value from dm.dm_componentvars where lower(name) = ?";
-	
+
 	PreparedStatement stmt = m_conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 
 	stmt.setString(1,key);
 	ResultSet rs = stmt.executeQuery();
-	while(rs.next()) 
+	while(rs.next())
 	{
 	 int compid = rs.getInt(1);
 	 String value = rs.getString(3);
-	 
+
 	 // see if compitem exists if not insert row
 	 String csql = "select count(*) from dm.dm_componentitem where compid = ?";
-	 
+
 	 PreparedStatement cstmt = m_conn.prepareStatement(csql);
 	 cstmt.setInt(1,compid);
 	 ResultSet crs = cstmt.executeQuery();
 	 int cnt = 0;
-	 if (crs.next()) 
+	 if (crs.next())
 	 {
 	  cnt = crs.getInt(1);
 	 }
 	 crs.close();
 	 cstmt.close();
-	 
+
 	 if (cnt <= 0) // insert compitem row for compid
 	 {
 	  String isql = "INSERT INTO dm.dm_componentitem(id, compid, name, xpos, ypos, creatorid, status, kind) values (nextval('dm_compitem_id_seq'), ?, 'item 1', 140, 80, 1, 'N', 'docker')";
@@ -631,27 +631,27 @@ public class InitServer extends HttpServletBase
 	  istmt.execute();
 	  istmt.close();
 	 }
-	 
+
 	 String usql = "update dm.dm_componentitem set " + key + "=? where compid=? and " + key + " is null";
 	 PreparedStatement ustmt = m_conn.prepareStatement(usql);
 	 ustmt.setString(1,value);
 	 ustmt.setInt(2, compid);
 	 ustmt.execute();;
 	 ustmt.close();
-	 
+
 	 rs.deleteRow(); // delete row from componentvars
 	}
 	rs.close();
 	stmt.close();
 	m_conn.commit();
    }
-  } 
-  catch (SQLException e) 
+  }
+  catch (SQLException e)
   {
 		e.printStackTrace();
-  }   
+  }
  }
- 
+
 
  String readFile(String filename) throws FileNotFoundException, IOException
  {
@@ -681,38 +681,38 @@ public class InitServer extends HttpServletBase
  private int InitDBConnection()
  {
    int ret=0;	// Postgres default
-   
+
    //
    // Connect to the database
    //
    DMHome = "";
    ConnectionString = "";
    DriverName = "";
-   
+
    System.out.println("connectToDatabase()");
-   
+
    DMHome = System.getenv("DMHome");
    if (DMHome == null)
     DMHome = getServletContext().getInitParameter("DMHOME");
-   
+
    ConnectionString = System.getenv("DBConnectionString");
    if (ConnectionString == null)
     ConnectionString = getServletContext().getInitParameter("DBConnectionString");
-   
+
    DriverName = System.getenv("DBDriverName");
    if (DriverName == null)
     DriverName = getServletContext().getInitParameter("DBDriverName");
 
    System.out.println("DMHOME="+DMHome);
-   
+
    dUserName = new StringBuilder();
-   
+
    String DBUserName = System.getenv("DBUserName");
    if (DBUserName != null)
     dUserName.append(DBUserName);
-   
+
    dPassword = new StringBuilder();
-   
+
    String DBPassword = System.getenv("DBPassword");
    if (DBPassword != null)
     dPassword.append(DBPassword);
@@ -721,11 +721,11 @@ public class InitServer extends HttpServletBase
 	   ret=1;
    }
    System.out.println("DMHOME=" + DMHome);
-   
+
    try
    {
     if (dUserName.length() == 0)
-    { 
+    {
      String base64Original = readFile(DMHome + "/dm.odbc");
      String base64passphrase = readFile(DMHome + "/dm.asc");
 
@@ -747,7 +747,7 @@ public class InitServer extends HttpServletBase
        d++;
      }
     }
-    
+
     DriverName = DriverName.replaceAll("com\\.impossibl\\.postgres\\.jdbc\\.PGDriver", "org.postgresql.Driver");
     ConnectionString = ConnectionString.replaceAll("jdbc\\:pgsql", "jdbc:postgresql");
     // DSN is ignored for Postgres Driver
@@ -774,9 +774,9 @@ public class InitServer extends HttpServletBase
   try
   {
    sql = sql.replace("VAIO", getHostName());
-    
+
   // System.out.println("Before: "+sql);
-  
+
 
   // Loop through each statement - note a ; could be in quotes in which case it's part
   // of a string and NOT a statement terminator
@@ -820,7 +820,7 @@ public class InitServer extends HttpServletBase
   errorcnt++;
   System.out.println(e.getMessage());
  }
-   
+
  }
 
  private static byte[][] EVP_BytesToKey(int key_len, int iv_len, MessageDigest md, byte[] salt, byte[] data, int count)
@@ -926,4 +926,3 @@ public class InitServer extends HttpServletBase
   }
  }
 }
-

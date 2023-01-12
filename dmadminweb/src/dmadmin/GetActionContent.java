@@ -35,7 +35,7 @@ public class GetActionContent extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
  HttpSession session = null;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -50,21 +50,21 @@ public class GetActionContent extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		System.out.println("GetActionContent");
 		response.setContentType("application/json");
-		Integer actionid = ServletUtils.getIntParameter(request,"actionid"); 
+		Integer actionid = ServletUtils.getIntParameter(request,"actionid");
 		PrintWriter out = response.getWriter();
 
   try (DMSession so = DMSession.getInstance(request)) {
   session = request.getSession();
   session.setAttribute("session", so);
   so.checkConnection(request.getServletContext());
-  
+
 		Action action = so.getAction(actionid,false);
 
 		out.print("[");
 
-		if (action != null) {  
+		if (action != null) {
 			List<Action> a = so.getActionVersions(action);
-	
+
 			boolean subv=false;
 			for (Action av: a)
 			{
@@ -77,7 +77,7 @@ public class GetActionContent extends HttpServlet {
 				} else {
 					kind = "";
 				}
-				
+
 				if (av.getParentId() > 0)
 					out.print("{\"data\" : \"" + av.getName() + "\", \"attr\" : { \"id\" : \"" + av.getOtid() + kind + "\", \"rel\" : \"" + ot + "\" }}");
 				else

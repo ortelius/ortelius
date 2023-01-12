@@ -61,16 +61,16 @@ def main():
 
     values = qtoml.loads(valstr)
     newvals.update(values)
- 
+
     # flatten to make the lookup eaiser
     flat_newvals = flatten_dict(newvals, '.')
- 
+
     # find Argo Git Repo, Branch and Overlay file
     gitrepo = newvals.get('ArgoGitRepo','')
     gitbranch = newvals.get('ArgoGitBranch','main')
     helmvalues = newvals.get('HelmValues', '')
 
-    # make a temp dir for the clone    
+    # make a temp dir for the clone
     tempdir = tempfile.TemporaryDirectory()
     os.chdir(tempdir.name)
 
@@ -95,15 +95,15 @@ def main():
                         lookup = flat_newvals.get(key + '.' + subkey, None)
                         if (lookup is not None):
                             k_vals[key][index][subkey] = lookup
-                index = index+1 
+                index = index+1
         else:
             lookup = flat_newvals.get(key, None)
             if (lookup is not None):
-                k_vals[key] = lookup         
-    
+                k_vals[key] = lookup
+
     with open(helmvalues, 'w') as file:
         yaml.dump(k_vals, file)
-    
+
     lines = subprocess.run(['cat', helmvalues], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
     for line in lines:
         print(line)
@@ -114,9 +114,9 @@ def main():
         print("Loading " + helmvalues)
         with open(helmvalues, 'r') as stream:
             k_vals = yaml.safe_load(stream)
-        
+
         version = k_vals.get('version', None)
-        
+
         if (version is not None):
             parts = version.split('.')
             vnum = int(parts[-1])
@@ -126,7 +126,7 @@ def main():
             version = k_vals.get('version', None)
 
             with open(helmvalues, 'w') as file:
-                yaml.dump(k_vals, file) 
+                yaml.dump(k_vals, file)
 
         chartname = k_vals.get('name', None)
         appname = newvals.get('application', None)
@@ -142,11 +142,11 @@ def main():
 
                 if (len(data.strip()) > 0):
                     comp2app = json.loads(data)
-                    
+
             comp2app.append({ 'chartname': chartname, 'version': version })
-            
+
             with open(appfile, 'w') as file:
-                json.dump(comp2app, file)            
+                json.dump(comp2app, file)
 
     run_git('git config --global user.name "' + newvals.get('GitUserName', 'ortelius') + '"')
     run_git('git config --global user.email "' + newvals.get('GitUserEmail', 'ortelius@users.noreply.github.com') + '"')
@@ -154,6 +154,6 @@ def main():
     run_git('git commit -m "[DeployHub deployment: ' + flat_newvals.get('images.tag', flat_newvals.get('images.newTag', flat_newvals.get('DockerTag', ''))) + ']"')
     run_git('git push')
     os.chdir('/tmp')
-   
+
 if __name__ == '__main__':
     main()

@@ -6,13 +6,13 @@
  * Revision: 1250
  *
  * Copyright (c) 2011 Takashi Okamoto
- * jqPlot is currently available for use in all personal or commercial projects 
- * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL 
- * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can 
- * choose the license that best suits your project and use it accordingly. 
+ * jqPlot is currently available for use in all personal or commercial projects
+ * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL
+ * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can
+ * choose the license that best suits your project and use it accordingly.
  *
- * Although not required, the author would appreciate an email letting him 
- * know of any substantial use of jqPlot.  You can reach the author at: 
+ * Although not required, the author would appreciate an email letting him
+ * know of any substantial use of jqPlot.  You can reach the author at:
  * chris at jqplot dot com or see http://www.jqplot.com/info.php .
  *
  * If you are feeling kind and generous, consider supporting the project by

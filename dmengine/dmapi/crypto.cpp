@@ -118,7 +118,7 @@ char *decryptBIO(BIO *bmem, const char *passphrase, int *len)
 #endif /*HAVE_DMEXCEPTIONS*/
 	}
 
-	
+
 
 	// Sanity check
 	if(strncmp(dummy, MAGIC_VALUE, strlen(MAGIC_VALUE)) != 0) {
@@ -292,7 +292,7 @@ bool readPassphraseFile(const char *filename)
  * The passphrase is a random sequence of 16 bytes which is then base-64
  * encoded to give only printable characters.  This is then encrypted using
  * triple DES and base-64 encoded before being written to a file.
- * 
+ *
  */
 bool createPassphraseFile(const char *filename)
 {
@@ -325,7 +325,7 @@ bool createPassphraseFile(const char *filename)
 	if(!bmem) {
 		return false;
 	}
-	
+
 	bool ret = encryptBIO(bmem, randomString, strlen(randomString), passphrase);
 
 	SAFE_FREE(randomString);
@@ -453,7 +453,7 @@ char *cmac_md5(const char *challenge, const char *username, const char *secret)
 unsigned char *decryptbase64(char *md,int *retlen)
 {
 	BIO *bmem = BIO_new_mem_buf((void*) md, strlen(md));
-	
+
 	BIO *b64 = BIO_new(BIO_f_base64());
 	BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
 

@@ -52,7 +52,7 @@ int EstablishOutgoingConnection(int destination_port, const char *HostName)
 	hp = gethostbyname(HostName);
 	if (hp == (struct hostent *)0)
 	{
-		// gethostbyname fails	
+		// gethostbyname fails
 		errno=h_errno;
 		sock = -1;
 	}
@@ -312,7 +312,7 @@ char *HTTPS::readLine()
 			// Have to do this first as LogFTPTraffic corrupts the error number.
 			if (n == SOCKET_ERROR) {
 				LPVOID lpMsgBuf;
-				FormatMessage( 
+				FormatMessage(
 					FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 					NULL, WSAGetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
 					(LPTSTR) &lpMsgBuf, 0, NULL  );

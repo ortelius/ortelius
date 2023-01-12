@@ -29,19 +29,19 @@ function AddAttrRow(tablename)
 {
  if ($("#" + tablename + "-edit").is(":visible") == false)
    EditAttrRow(tablename);
- 
+
  key = "";
  val = "";
  arrid = "";
  attr_rowcnt++;
- 
+
  var td = '<tr id="attr_row_' + attr_rowcnt + '">';
  td += '<td><input type="checkbox" id="attr_edit_cb_' + attr_rowcnt  + '"  onchange="toggleAttrDelete(this);" />&nbsp;</td>';
  td += '<td><input type="text" id="attr_key_' + attr_rowcnt + '" value="' + key + '" style="width:100%;"></td><td><input type="text" id="attr_val_' + attr_rowcnt + '" value="' + val + '" style="width:100%"></td>';
  td += "<td><input type=\"hidden\" id=\"attr_oldkey_" + attr_rowcnt + "\" value=\"" + key + "\"\></td>";
  td += "<td><input type=\"hidden\" id=\"attr_arrid_" + attr_rowcnt + "\" value=\"" + arrid + "\"\></td>";
  td += "<td><input type=\"hidden\" id=\"attr_oldval_" + attr_rowcnt + "\" value=\"" + val + "\"\></td></tr>";
- 
+
  $("#" + tablename + "-edit > tbody").append(td);
 }
 
@@ -49,11 +49,11 @@ function CancelAttrRow(tablename)
 {
  if ($('#attrs_header_buttons > button.cancel_button').css("color") == "grey")
   return;
- 
+
  $('#attrs_header_buttons > button.save_button').css("color","grey");
  $('#attrs_header_buttons > button.cancel_button').css("color","grey");
  $('#attrs10_header_buttons > button.save_button').css("color","grey");
- $('#attrs10_header_buttons > button.cancel_button').css("color","grey"); 
+ $('#attrs10_header_buttons > button.cancel_button').css("color","grey");
 
  $("#" + tablename).show();
  $("#" + tablename + "-edit").hide();
@@ -64,12 +64,12 @@ function SaveAttrRow(tablename)
 {
  if ($('#attrs_header_buttons > button.save_button').css("color") == "grey")
   return;
- 
+
  $('#attrs_header_buttons > button.save_button').css("color","grey");
  $('#attrs_header_buttons > button.cancel_button').css("color","grey");
  $('#attrs10_header_buttons > button.save_button').css("color","grey");
  $('#attrs10_header_buttons > button.cancel_button').css("color","grey");
- 
+
  $("#" + tablename).show();
  $("#" + tablename + "-edit").hide();
  SaveAttributesData(tablename);
@@ -79,34 +79,34 @@ function DeleteAttrRow(tablename)
 {
  if ($('#attrs_header_buttons > button.delete_button').css("color") == "grey")
   return;
- 
+
  $("#" + tablename + '-edit > tbody  > tr').each(function(rowid, tr)
  {
   rowid++;
-  
+
   cb  = $("#attr_edit_cb_" + rowid);
-  
-  if (cb.is( ":checked" ) == true) 
+
+  if (cb.is( ":checked" ) == true)
   {
    key = $("#attr_oldkey_" + rowid).val();
    val = $("#attr_oldval_" + rowid).val();
- 
+
    if (key != "")
      DeleteAttributesData(key,val, tablename);
   }
  });
- 
+
  $("#" + tablename + ' > tbody  > tr').each(function(rowid, tr)
    {
     rowid++;
-    
+
     cb  = $("#attr_cb_" + rowid);
-    
-    if (cb.is( ":checked" ) == true) 
+
+    if (cb.is( ":checked" ) == true)
     {
      key = $("#attr_oldkey_" + rowid).val();
      val = $("#attr_oldval_" + rowid).val();
-   
+
      if (key != "")
        DeleteAttributesData(key,val, tablename);
     }
@@ -117,13 +117,13 @@ function toggleAttrDelete(e)
 {
   if (e.checked)
   {
-   $('#attrs_header_buttons > button.delete_button').css("color","#3367d6"); 
-   $('#attrs10_header_buttons > button.delete_button').css("color","#3367d6"); 
+   $('#attrs_header_buttons > button.delete_button').css("color","#3367d6");
+   $('#attrs10_header_buttons > button.delete_button').css("color","#3367d6");
   }
   else
   {
-   $('#attrs_header_buttons > button.delete_button').css("color","grey"); 
-   $('#attrs10_header_buttons > button.delete_button').css("color","grey"); 
+   $('#attrs_header_buttons > button.delete_button').css("color","grey");
+   $('#attrs10_header_buttons > button.delete_button').css("color","grey");
   }
 }
 
@@ -136,8 +136,8 @@ function LoadAttributesData(tablename,objtypeAsInt, objtype, objid)
  attrs_tdedit = "";
  attr_rowcnt = 0;
 
- $('#attrs_header_buttons > button.delete_button').css("color","grey"); 
- 
+ $('#attrs_header_buttons > button.delete_button').css("color","grey");
+
  console.log("GetAttributeData?objtype=" + objtypeAsInt + "&id=" + objid);
  $.ajax(
  {
@@ -163,12 +163,12 @@ function LoadAttributesData(tablename,objtypeAsInt, objtype, objid)
     var key = row[3].trim().replaceAll('"',"'");
     var val = row[4];
     var arrid = "";
-    
+
     if (key.indexOf('[') > 0)
      arrid = row[5];
- 
+
     rowcnt++;
-    
+
     attrs_tdedit += '<tr id="attr_row_' + rowcnt + '">';
     attrs_tdedit += '<td><input type="checkbox" id="attr_edit_cb_' + rowcnt + '" onchange="toggleAttrDelete(this);" />&nbsp;</td>';
     attrs_tdedit += '<td><input type="text" id="attr_key_' + rowcnt + '" value="' + key + '" style="width:100%;"></td><td><input type="text" id="attr_val_' + rowcnt + '" value="' + val + '" style="width:100%"></td>';
@@ -178,7 +178,7 @@ function LoadAttributesData(tablename,objtypeAsInt, objtype, objid)
     td += '<tr><td><input type="checkbox" id="attr_cb_' + rowcnt + '" onchange="toggleAttrDelete(this);" />&nbsp;</td><td>' + key + '</td><td>' + val + '</td></tr>';
     attr_rowcnt = rowcnt;
    }
-   
+
    $("#" + tablename + " > tbody").html(td);
    $("#" + tablename + "-edit > tbody").html(attrs_tdedit);
   },
@@ -198,18 +198,18 @@ function GetSaveAttributesData(rowid, data)
  view.value_val = $("#attr_val_" + rowid).val();
  view.value_oldval = $("#attr_oldval_" + rowid).val();
  view.arr_val = $("#attr_arrid_" + rowid).val();
- 
+
  if (view.name_val != view.name_oldval && view.name_oldval == "")
  {
   var prefix = "";
   var arrid  = "";
-  
+
   if (view.name_val.indexOf('[') >= 0)
   {
    prefix = "ele_";
    arrid  = "_" + view.arr_val;
   }
-  
+
   console.log(prefix + 'add_' + view.name_val + arrid + ' = ' + view.value_val);
   data[prefix + 'add_' + view.name_val + arrid] = view.value_val;
  }
@@ -217,16 +217,16 @@ function GetSaveAttributesData(rowid, data)
   {
    var prefix = "";
    var arrid  = "";
-   
+
    if (typeof view.arr_val != "undefined")
    {
     prefix = "ele_";
     arrid = "_" + view.arr_val;
    }
-   
+
    console.log(prefix + 'del_' + view.name_oldval + arrid + ' = ' + view.value_val);
    data[prefix + 'del_' + view.name_oldval + arrid] = view.value_val;
-   
+
    if (view.name_val.indexOf('[') >= 0)
    {
     prefix = "ele_";
@@ -237,21 +237,21 @@ function GetSaveAttributesData(rowid, data)
     prefix = "";
     arrid = "";
    }
-   
+
    console.log(prefix + 'add_' + view.name_val + arrid + ' = ' + view.value_val);
-   data[prefix + 'add_' + view.name_val + arrid] = view.value_val;   
+   data[prefix + 'add_' + view.name_val + arrid] = view.value_val;
   }
   else if (view.value_val != view.value_oldval)
   {
    var prefix = "";
    var arrid  = "";
-   
+
    if (view.name_val.indexOf('[') >= 0)
    {
     prefix = "ele_";
     arrid  = "_" + view.arr_val;
    }
-      
+
    console.log(prefix + 'chg_' + view.name_val + arrid + ' = ' + view.value_val);
    data[prefix + 'chg_' + view.name_val + arrid] = view.value_val;
   }
@@ -268,7 +268,7 @@ function SaveAttributesData(tablename)
 $("#" + tablename + '-edit > tbody  > tr').each(function(rowid, tr)
 {
  rowid++;
- 
+
   var savedata =
  {
   objtype : objtypeAsInt,
@@ -279,7 +279,7 @@ $("#" + tablename + '-edit > tbody  > tr').each(function(rowid, tr)
 
  if (jQuery.isEmptyObject(savedata))
   return;
- 
+
  $.ajax(
  {
   url : "UpdateAttributesData?objtype=" + objtypeAsInt + "&id=" + objid,
@@ -324,19 +324,19 @@ function DeleteAttributesData(key,value, tablename)
   objtype : objtypeAsInt,
   id : objid
  };
- 
+
  var prefix = "";
  var arrid  = "";
- 
+
  if (key.indexOf('[') >= 0)
  {
   prefix = "ele_";
   arrid  = "_" + value;
  }
- 
+
  console.log(prefix + 'del_' + key + arrid + ' = ' + value);
  savedata[prefix + 'del_' + key + arrid] = value;
- 
+
  console.log(savedata);
 
  $.ajax(

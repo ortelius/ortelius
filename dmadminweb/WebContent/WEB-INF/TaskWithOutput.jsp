@@ -38,7 +38,7 @@
   <div id="tasktabs-Output">
    <div style="margin-right: 8px; border: 1px solid black; background-color: #fff; color: #000; width: 100%; height: 100%; overflow-x: wrap; overflow-y: scroll">
     <code id="tasklog"></code>
-   </div>   
+   </div>
   </div>
  </div>
 </body>

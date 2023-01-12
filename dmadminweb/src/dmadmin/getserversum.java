@@ -33,7 +33,7 @@ import dmadmin.model.Server;
  */
 public class getserversum extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -41,38 +41,37 @@ public class getserversum extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
    		throws ServletException, IOException
    	{
     	response.setContentType("text/html;charset=UTF-8");
-    	
-		PrintWriter out = response.getWriter();	
+
+		PrintWriter out = response.getWriter();
 		System.out.println("in ProcessServerSummary");
     	int servid = ServletUtils.getIntParameter(request,"serverid");
     	//
     	//Get existing values (if any)
     	//
     	Server serv = session.getServer(servid,true);
-    	
+
     	String summary = serv.getSummary();
     	if(summary == null) {
     		summary = "";
     	}
-    	
+
     	out.println("<html><body>");
     	out.println("<form id='cvs'>");
     	out.println("<h3>"+serv.getName()+"</h3>");
     	out.println(summary+"<br>");
     	out.println("<hr>");
-    		
+
     	out.println("<table border=0 class=\"atttable\" >");
     	out.print("<tr><td>Name</td><td><input id=\"title\" type=\"text\" value=\""+serv.getName()+"\"</td></tr>");
-    	out.print("<tr><td>Summary</td><td><input id=\"summary\" type=\"text\" style=\"width:200px\" value=\""+summary+"\"</td></tr>");  	
+    	out.print("<tr><td>Summary</td><td><input id=\"summary\" type=\"text\" style=\"width:200px\" value=\""+summary+"\"</td></tr>");
     	out.println("</table></form>");
     	out.println("</body></html>");
    	}
 }
-

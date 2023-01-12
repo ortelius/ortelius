@@ -33,7 +33,7 @@
 #toppanel    {float: left; width: 280px; height:49%;}
 #bottompanel {float: left; width: 280px; height:49%;}
 #spacer      {width: 10px;}
-#access      {float: left; height:100%; clear:both;} 
+#access      {float: left; height:100%; clear:both;}
 #midspacer   {float: left; width: 100%; height:10px;clear:both;}
 #${vaid}     {width: 250px; overflow-y:scroll; text-align: left;}
 #${uaid}     {float: left; width: 250px; overflow-y:scroll; text-align: left;}
@@ -57,7 +57,7 @@ h4           {line-height: 16px;margin: 0 0 0.4em;}
 				</c:forEach>
 				<c:forEach items="${viewlist}" var="vl">
 				<div id="${vaid}${vl.id}" class="tmain group">${vl.name}</div>
-				</c:forEach>			
+				</c:forEach>
 			</div>
 			<div id="spacer">&nbsp;</div>
 			<div id="${uaid}">
@@ -72,7 +72,7 @@ h4           {line-height: 16px;margin: 0 0 0.4em;}
 				<div id="${uaid}${ul.id}" class="tmain group">${ul.name}</div>
 				</c:forEach>
 			</div>
-			<div id="spacer">&nbsp;</div>		
+			<div id="spacer">&nbsp;</div>
 			<div id="bottompanel">
 		</div>
 		<c:if test="${readtitle != null}">
@@ -103,9 +103,9 @@ h4           {line-height: 16px;margin: 0 0 0.4em;}
 				<div id="${waid}${wl.id}" class="tmain group">${wl.name}</div>
 				</c:forEach>
 			</div>
-		</c:if>	
+		</c:if>
 		</div>
-	</div>	
+	</div>
 	<div id="${agid}_group">
 	<h4 style="padding-left:6px">Available Groups</h4>
 	<c:forEach items="${grouplist}" var="gl">
@@ -182,7 +182,7 @@ function MoveGroupOut($item)
 						clone.addClass("denygroup");
 						clone.appendTo("#"+divid).fadeIn(200);
 					}
-					
+
 				} else {
 					$item.fadeOut(200).remove()
 				}
@@ -217,10 +217,10 @@ function MoveGroupIn(divid,$item)
 					console.log("Already a deny in this div - removing the deny");
 					$(this).remove();
 					rd=true;
-				} 
+				}
 			}
 		});
-		
+
 		$("#"+divid).children().each(function( index ) {
 			if ($(this).attr("id") == tid) {
 				// found matching id indiv
@@ -235,7 +235,7 @@ function MoveGroupIn(divid,$item)
 				}
 			}
 		});
-		
+
 		console.log("add="+add+" deny="+deny);
 		if (add) {
 			console.log("GetAccess?f=ag&gid="+id+"&t="+divid+"&id=${obj.id}&objtype=${obj.objectTypeAsInt}&din=${din}&st="+(deny?"N":"Y"));
@@ -273,7 +273,7 @@ function MoveGroupIn(divid,$item)
 					  {
 						clone.removeClass("group");
 						clone.addClass("denygroup");
-					  }	
+					  }
 					}
 				}
 			});
@@ -297,12 +297,12 @@ function MoveGroupIn(divid,$item)
 </c:otherwise>
 </c:choose>
 }
-	
+
 $(document).ready(function () {
 	<c:if test="${em == true}">
 	SetGroupsDraggable();
 	</c:if>
-	
+
 	$("#${agid}_group").droppable({
 		drop : function(event, ui)
 		{

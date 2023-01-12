@@ -35,7 +35,7 @@ var targetmenu = function(m,t)
  var ts = $(currenttree).attr("id");
  ts = ts.substring(0,ts.length-5);
  console.log(ts);
- $.ajax({  
+ $.ajax({
    url: "GetMenu?t="+lastobj.attr("rel")+"&id="+lastobj.attr("id").substr(2)+"&d="+lastdomain+"&a="+isAdmin+"&ct="+ts,
    async: false,
    cache: false,
@@ -49,8 +49,8 @@ var targetmenu = function(m,t)
     menudata.push(tmo);
    });
   });
- }); 
- 
+ });
+
  return menudata;
 };
 
@@ -59,22 +59,22 @@ function NewID(ot,rt,treeid,at,name,catid,kindid)
 {
 	var tid = treeid.substring(1);
 	var url;
-	if (typeof lastsel == "undefined") 
-	{ 
-	 if (typeof catid != "undefined") 
+	if (typeof lastsel == "undefined")
+	{
+	 if (typeof catid != "undefined")
 	  url = "GetNewID?objtype="+ot+"&pid="+parentid+"&ptype="+parenttype+"&at="+at+"&name="+name + "&treeid="+tid + "&catid="+catid;
 	 else
    url = "GetNewID?objtype="+ot+"&pid="+parentid+"&ptype="+parenttype+"&at="+at+"&name="+name + "&treeid="+tid;
  }
 	else
 	{
-	 if (typeof catid != "undefined") 
+	 if (typeof catid != "undefined")
 	 {
-	 	if (typeof kindid != "undefined") 
+	 	if (typeof kindid != "undefined")
 	 	{
 	 		url = "GetNewID?objtype="+ot+"&pid="+lastsel_id.substr(2)+"&ptype="+lastsel_rel+"&at="+at+"&name="+name + "&treeid="+tid+"&catid="+catid+"&kindid="+kindid.substr(2);
-	 	} 
-	 	else 
+	 	}
+	 	else
 	 	{
 	 		url = "GetNewID?objtype="+ot+"&pid="+lastsel_id.substr(2)+"&ptype="+lastsel_rel+"&at="+at+"&name="+name + "&treeid="+tid+"&catid="+catid;
 	 	}
@@ -83,13 +83,13 @@ function NewID(ot,rt,treeid,at,name,catid,kindid)
 	 {
 	  url = "GetNewID?objtype="+ot+"&pid="+lastsel_id.substr(2)+"&ptype="+lastsel_rel+"&at="+at+"&name="+name + "&treeid="+tid;
 	 }
-	} 
+	}
 	console.log(url);
 	var t=$(treeid);
 	if (lastSelectedNode != "") {
 		t.jstree('deselect_node',"#" + lastSelectedNode);
 	}
- 
+
 	$.ajax({
 		url: url,
 		dataType: 'json',
@@ -120,13 +120,13 @@ function NewID(ot,rt,treeid,at,name,catid,kindid)
 //				 }
 //				}
 //			}
-			
-   
+
+
 //			if (data.id.indexOf("co") == 0) {
-//				currentSubTabsSelection["#components_tree"][0] = "tabs-ComponentItems"; 
+//				currentSubTabsSelection["#components_tree"][0] = "tabs-ComponentItems";
 //				ActivateSubTabs();
 //			}
-   
+
 			summSaveobjid = data.id.substring(2);
 			objid = summSaveobjid;
 			if (summSaveobjid.indexOf("-") > -1) {
@@ -136,7 +136,7 @@ function NewID(ot,rt,treeid,at,name,catid,kindid)
 		}
 	});
 }
- 
+
 function NewDomain(tv)
 {
  if (hideOSS == "Y" && currenttree == "#domains_tree")
@@ -147,14 +147,14 @@ function NewDomain(tv)
 
     $.ajax(
       {
-       url:"API/domain/"+lastobj.attr("id").substr(2), 
+       url:"API/domain/"+lastobj.attr("id").substr(2),
        async: false,
        dataType: "json",
        success: function (res)
-       {         
+       {
         isLF = res.result.lifecycle;
-       } 
-     }); 
+       }
+     });
 
    if (!isLF && NodeType != "Lifecycle")
    {
@@ -166,7 +166,7 @@ function NewDomain(tv)
      width: "auto",
      height: "auto",
      resizable:false,
-     buttons: [{      
+     buttons: [{
       text : "Upgrade",
       click : function()
       {
@@ -188,7 +188,7 @@ function NewDomain(tv)
    }
   }
  }
- summSavedomid = lastdomain;	
+ summSavedomid = lastdomain;
  NewID("Domain","Domain",currenttree,"");
  currentSubTabsSelection[currenttree][0] = "tabs-General";
  ActivateSubTabs();
@@ -211,7 +211,7 @@ function NewServer(tv)
  objtype = "se";
  objid = -1;
  currentSubTabsSelection[currenttree][0] = "tabs-General";
- ActivateSubTabs(); 
+ ActivateSubTabs();
 }
 
 function NewComponent(tv)
@@ -245,7 +245,7 @@ function NewCredential(tv)
  credtype = tv;
  currentSubTabsSelection[currenttree][0] = "tabs-General";
  $("#credentiallist_buttons > div > div").hide();
- ActivateSubTabs(); 
+ ActivateSubTabs();
 }
 
 function NewRepository(tv)
@@ -284,9 +284,9 @@ function NewAppVer(tv)
 {
  objtype = "av";
  objtypeAsInt = obj2Int[objtype][0];
- objtypeName = obj2Int[objtype][1]; 
+ objtypeName = obj2Int[objtype][1];
  objid = -1;
- 
+
  $.ajax({
   url: "UpdateAttrs?f=nv&a=" + tv + "&xpos=400&ypos=100",
   dataType: "json",
@@ -298,16 +298,16 @@ function NewAppVer(tv)
    currentSubTabsSelection[currenttree][0] = "tabs-General";
    ActivateSubTabs();
   }
- }); 
+ });
 }
 
 function NewRelVer(tv)
 {
  objtype = "rv";
  objtypeAsInt = obj2Int[objtype][0];
- objtypeName = obj2Int[objtype][1]; 
+ objtypeName = obj2Int[objtype][1];
  objid = -1;
- 
+
  $.ajax({
   url: "UpdateAttrs?f=nv&a=" + tv + "&xpos=400&ypos=100&isRelease=Y",
   dataType: "json",
@@ -319,16 +319,16 @@ function NewRelVer(tv)
    currentSubTabsSelection[currenttree][0] = "tabs-General";
    ActivateSubTabs();
   }
- }); 
+ });
 }
 
 function NewCompVer(tv)
 {
  objtype = "cv";
  objtypeAsInt = obj2Int[objtype][0];
- objtypeName = obj2Int[objtype][1]; 
+ objtypeName = obj2Int[objtype][1];
  objid = -1;
- 
+
  $.ajax({
   url: "UpdateAttrs?f=cnv&c=" + tv + "&xpos=400&ypos=100",
   dataType: "json",
@@ -340,7 +340,7 @@ function NewCompVer(tv)
    currentSubTabsSelection[currenttree][0] = "tabs-General";
    ActivateSubTabs();
   }
- }); 
+ });
 }
 
 function NewBuilder(tv)
@@ -358,7 +358,7 @@ function NewBuilder(tv)
 function NewRelease(tv)
 {
  if (hideOSS == "Y" && currenttree == "#releases_tree")
- { 
+ {
    $dialogform = $("#rel-upgrade");
    $dialogform.dialog({
     autoResize: true,
@@ -367,7 +367,7 @@ function NewRelease(tv)
     width: "auto",
     height: "auto",
     resizable:false,
-    buttons: [{      
+    buttons: [{
      text : "Upgrade",
      click : function()
      {
@@ -386,7 +386,7 @@ function NewRelease(tv)
     }});
    $dialogform.dialog("open");
    return false;
- } 
+ }
  summSavedomid = lastdomain;
  objtypeAsInt = 21;
  objtype = "rl";
@@ -409,8 +409,8 @@ function NewAction(tv,at)
    ActivateSubTabs();
   }
   break;
- 
- case "F": 
+
+ case "F":
   {
    objtypeAsInt = 91;
    objtype = "fn";
@@ -420,7 +420,7 @@ function NewAction(tv,at)
    ActivateSubTabs();
   }
   break;
-  
+
  default:
   {
    objtypeAsInt = 90;
@@ -523,7 +523,7 @@ function PasteNode(tv)
 		  alert("Could not paste "+data.objtype+": "+data.error+" is not available in target domain");
 	  } else {
 		  console.log("id = "+data.id+" rel="+data.rt+" newcat="+data.newcat+" category="+data.category);
-		  
+
 		  cnc=null;
 		  if (typeof data.newcat != "undefined" && data.newcat) {
 			// Need to create a new category in the tree - create_node binding will fire and take over...
@@ -541,7 +541,7 @@ function PasteNode(tv)
 				console.log("b");
 				SwitchDisplay(data.id);
 			}
-		  }  
+		  }
 	  }
   });
 }
@@ -576,14 +576,14 @@ function sendTestNotify()
 function uploadFile()
 {
 	$('#importForm').ajaxForm();
-	
+
 	lastdomain = $("#importForm > select option:checked").val();
-	
+
 	var $bar = $('.progress-bar');
 	var $percent = $('.progress-percent');
 	console.log("uploadFile, lastdomain="+lastdomain);
  parent.$("#modal").dialog("close");
- 
+
 	$('#importForm').ajaxSubmit({
 	    url: "ImportProc?domain="+lastdomain,
 	    dataType: 'json',
@@ -711,18 +711,18 @@ function importProc()
     {
      var cnt = 0;
      var options = "";
-     
+
      for (n = 0; n < res.length; n++)
      {
       if (!res[n].name.startsWith(userdom))
        continue;
-      
+
       if (n == 0)
        options += '<option id="domain' + n + '" value=\"' + res[n].id + "\" selected>" + res[n].name + '</option>';
       else
        options += '<option id="domain' + n + '" value=\"' + res[n].id + "\">" + res[n].name + '</option>';
      }
-     
+
      var pwd = parent.$("#modal");
      var buttons = [
      {
@@ -760,7 +760,7 @@ function importProc()
      console.log(err);
     }
    });
- 
+
 	var pwd = parent.$("#modal");
 	var buttons = [
 	{
@@ -822,7 +822,7 @@ function TestDataSource(tv)
 function TestNotify(tv)
 {
 	var pwd = parent.$("#modal");
-	
+
 	$.ajax({
 		dataType : "json",
 		url : "UserDetails?type=getemail&notid="+lastobj.attr("id").substr(2),
@@ -861,7 +861,7 @@ function TestNotify(tv)
 		fs2(sms,chat);
 		pwd.dialog('open');
 	});
-	
+
 }
 
 function DeleteNode(tv)
@@ -871,7 +871,7 @@ function DeleteNode(tv)
  objtype = ot.substr(0,1).toUpperCase()+ot.substr(1).toLowerCase();
  if (objtype=="Credentials") objtype="Credential";
  if (objtype=="Notify") objtype="Notifier";
- if (objtype=="Servercomptype") objtype="Endpoint Type"; 
+ if (objtype=="Servercomptype") objtype="Endpoint Type";
  var pwd = parent.$("#modal");
  var buttons = [
  {
@@ -889,7 +889,7 @@ function DeleteNode(tv)
    parent.$("#modal").dialog("close");
   }
  } ];
- 
+
  pwd.empty();
  pwd.html("<table border=0><tr><td valign='center'><img src='css/images/question_36px.png'></td><td><b>Are you sure?</b><br><hr>Please confirm you want to delete the "+objtype+" \""+selection+"\"?</td></tr></table>");
  pwd.dialog({open : null});
@@ -904,9 +904,9 @@ function ShowTaskOutput(taskname,retdata)
 {
 	var buttons = [{ text: "Ok", click: function(){$(this).dialog("close");}}];
 	var pwd = parent.$("#modal");
-	pwd.empty();	 
+	pwd.empty();
 	pwd.html(retdata);
-		 
+
 	pwd.dialog({
 		  autoResize: true,
 		  autoOpen:false,
@@ -951,17 +951,17 @@ function Execute(taskname,taskid,otype,id,tasktype,params,domainid)
 	 $("#execute_err").html("Please enter value(s) for the highlighted field(s)");
 	 return;
  }
- 
- 
+
+
  var url = "";
- 
+
  if (typeof hasApps != "undefined" && tasktype == "DEPLOY" && $("#envs").val() != null)
  {
   var envid = $("#envs").val();
   var appid = $("#apps").val();
-  id = appid.substring(3);  
+  id = appid.substring(3);
   envid = envid.substring(3);
-  
+
   console.log("Executing taskid "+taskid + " envid=" + envid + " appid=" + id);
   url = "RunTask?f=run&tid="+taskid+"&id="+id + "&envid=" + envid +  aps;
  }
@@ -969,7 +969,7 @@ function Execute(taskname,taskid,otype,id,tasktype,params,domainid)
  {
   var envid = $("#envs").val();
   envid = envid.substring(3);
- 
+
   console.log("Executing taskid "+taskid + " envid=" + envid);
   url = "RunTask?f=run&tid="+taskid+"&id="+id + "&envid=" + envid  + aps;
  }
@@ -977,27 +977,27 @@ function Execute(taskname,taskid,otype,id,tasktype,params,domainid)
  {
   var envid = $("#envs").val();
   envid = envid.substring(3);
- 
+
   console.log("Executing taskid "+taskid + " envid=" + envid);
   url = "RunTask?f=run&tid="+taskid+"&id="+id + "&envid=" + envid + aps;
- } 
+ }
  else if (tasktype == "APPROVE")
  {
   var approve = $("#acceptreject").val();
-  
+
   if (approve == "Accept")
    approve = "Y";
   else
    approve = "N";
-  
+
   var notes = $("#notes").val();
-  
+
   url = "RunTask?f=run&tid="+taskid+"&id="+id + "&approve=" + approve + "&notes=" + encodeURIComponent(notes)  + aps;
- } 
+ }
  else if (tasktype == "MOVE")
  {
   var notes = $("#notes").val();
-  
+
   url = "RunTask?f=run&tid="+taskid+"&id="+id + "&notes=" + encodeURIComponent(notes) + aps;
  }
  else if (tasktype == "CREATE_VERSION")
@@ -1007,7 +1007,7 @@ function Execute(taskname,taskid,otype,id,tasktype,params,domainid)
 		 pred = pred.substr(2);	// PAG MOD: for specific versions, val is an OTID
 	 }
 	 url = "RunTask?f=run&tid="+taskid+"&id="+id + "&pred=" + pred + aps;
- } 
+ }
  else if (tasktype == "REQUEST")
  {
 	 var notes = $("#notes").val();
@@ -1017,15 +1017,15 @@ function Execute(taskname,taskid,otype,id,tasktype,params,domainid)
  {
 	 url = "RunTask?f=run&objtype="+otype+"&tid="+taskid+"&id="+id+ aps;
  }
-   
+
    $.getJSON(url, function(data) {
     // success - close the dialog
      console.log(data);
      if (data.error != "" && typeof data.error != "undefined") {
-    	 $("#execute_err").html(data.error); 
+    	 $("#execute_err").html(data.error);
      } else if (data.depno > 0 || data.result == true) {
     	 // Success
-    	 pwd.dialog("close"); 
+    	 pwd.dialog("close");
     	 if (save_showoutput && typeof data.output != "undefined" && data.output != "") {
     		 ShowTaskOutput(taskname,data.output);
          }
@@ -1044,17 +1044,17 @@ function Execute(taskname,taskid,otype,id,tasktype,params,domainid)
     	 if (data.output != "" && typeof data.output != "undefined") {
     		 $("#execute_err").html(data.output);
     	 } else {
-    		 $("#execute_err").html("Task failed to execute");  
+    		 $("#execute_err").html("Task failed to execute");
     	 }
      }
-   }); 
+   });
   }
 
 function RefreshDropDowns()
 {
 	var envs = $("#envs");
 	var apps = $("#apps");
-	
+
 	var envid = (envs.val() != null)?envs.val().substr(3):0;
 	var appid = (apps.val() != null)?apps.val().substr(3):0;
 	console.log("appid="+appid);
@@ -1085,7 +1085,7 @@ function RunTask(taskname,otid,taskid)
  var deployname = objName;
  var domid = objDomainId;
  var id = otid.substring(2);
- 
+
  console.log("Running task taskid="+taskid + " otype="+otype+" id="+id);
  var tasktype = "";
  var domainname = "";
@@ -1107,7 +1107,7 @@ function RunTask(taskname,otid,taskid)
   envs = data.Environments;
   tasktype = data.tasktype;
   domainname = data.domain;
-  domainid = data.domainid;  
+  domainid = data.domainid;
   save_showoutput = data.showoutput;
   // process additional parameters
   params = data.params;
@@ -1125,26 +1125,26 @@ function RunTask(taskname,otid,taskid)
 	   }
 	   ap=ap+"<tr><td id=\"tpa"+i+"\" style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">"+ params[i].label +":</td><td id=\"tpb"+i+"\">"+str+"</td></tr>";
    }
-  } 
+  }
  });
- 
- 
+
+
  if (taskid == "Unsubscribe" || taskid == "Subscribe")
   return;
- 
- var buttons = 
+
+ var buttons =
   [
         { text: "Ok",     click: function() { Execute(taskname,taskid,otype,id, tasktype, params, domainid); } },
         { text: "Cancel", click: function() { $( this ).dialog("close"); } }
      ];
- 
+
  pwd.empty();
- 
+
  var h = "<form id=\"runtaskform\"><table id=\"runtask\" width=\"100%\" ><tbody></tbody></table></form>";
- h += "<div class=\"error\" id=\"execute_err_box\"><p class=\"error_txt\" id=\"execute_err\"></p></div>";        
- 
+ h += "<div class=\"error\" id=\"execute_err_box\"><p class=\"error_txt\" id=\"execute_err\"></p></div>";
+
  pwd.html(h);
- 
+
  pwd.dialog(
  {
   autoResize: true,
@@ -1153,38 +1153,38 @@ function RunTask(taskname,otid,taskid)
   width: "auto",
   height: "auto",
   resizable:false,
-  
+
   open : function(event, ui)
   {
    var td = "";
-   
+
    if (tasktype == "DEPLOY" && typeof applications != "undefined")
    {
-    td = "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Environment:</td><td><select onchange=\"javascript:RefreshDropDowns();\" name=\"envs\" id=\"envs\" style=\"width:100%\">";   
-    
+    td = "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Environment:</td><td><select onchange=\"javascript:RefreshDropDowns();\" name=\"envs\" id=\"envs\" style=\"width:100%\">";
+
     var rowcnt = 0;
     var dups = [];
-    
+
     for (a = 0; a < envs.length; a++)
     {
      if (typeof dups[envs[a].name] == "undefined")
      {
       dups[envs[a].name] = 1;
-      
+
       td += "<option  value=\"env" + envs[a].id + "\">" + envs[a].name + "</option>";
-     } 
-    }    
-    
-    td += "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Application:</td><td><select onchange=\"javascript:RefreshDropDowns();\" name=\"apps\" id=\"apps\" style=\"width:100%\">"; 
+     }
+    }
+
+    td += "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Application:</td><td><select onchange=\"javascript:RefreshDropDowns();\" name=\"apps\" id=\"apps\" style=\"width:100%\">";
     rowcnt = 0;
     dups = [];
-    
+
     for (a = 0; a < applications.length; a++)
     {
      if (typeof dups[applications[a].name] == "undefined")
      {
       dups[applications[a].name] = 1;
-      
+
       td += "<option  value=\"app" + applications[a].id + "\">" + applications[a].name + "</option>";
       for (b = 0; b < applications[a].versions.length; b++)
       {
@@ -1192,9 +1192,9 @@ function RunTask(taskname,otid,taskid)
        {
         dups[applications[a].versions[b].name] = 1;
         td += "<option  value=\"app" + applications[a].versions[b].id + "\">" + applications[a].versions[b].name + "</option>";
-       } 
+       }
       }
-     } 
+     }
     }
     td += "</td></tr>";
     $("#runtask > tbody").html(td+ap);
@@ -1206,8 +1206,8 @@ function RunTask(taskname,otid,taskid)
     $.getJSON('GetAppVersInEnvData', "appid=" + id + "&reason="+rsn+"&tid="+taskid, function(res)
      {
       td = "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Application:</td><td>" + objName + "<input type=\"hidden\" id=\"apps\" value=\"app"+id+"\"></td></tr>";
-      td += "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Environment:</td><td><select onchange=\"javascript:RefreshDropDowns();\" name=\"envs\" id=\"envs\" style=\"width:100%\">"; 
-       
+      td += "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Environment:</td><td><select onchange=\"javascript:RefreshDropDowns();\" name=\"envs\" id=\"envs\" style=\"width:100%\">";
+
       var rowcnt = 0;
       console.log(res['data']);
       for (a = 0; a < res['data'].length; a++)
@@ -1222,7 +1222,7 @@ function RunTask(taskname,otid,taskid)
       $("#runtask > tbody").html(td+ap);
       RefreshDropDowns();
      });
-       
+
     }
     else if (tasktype == "APPROVE")
     {
@@ -1233,7 +1233,7 @@ function RunTask(taskname,otid,taskid)
      td += "<option  value=\"Reject\">Reject</option>";
      td += ap;
      td += "<tr><td style=\"text-align:left;\" style=\"width:30%\">Notes:</td><td>&nbsp;</td></tr>";
-     td += "<tr><td colspan=\"2\" width=\"100%\"><textarea rows=\"5\" id=\"notes\" name=\"notes\" /></td></tr>";   
+     td += "<tr><td colspan=\"2\" width=\"100%\"><textarea rows=\"5\" id=\"notes\" name=\"notes\" /></td></tr>";
      td += "</td></tr>";
      $("#runtask > tbody").html(td);
      RefreshDropDowns();
@@ -1244,11 +1244,11 @@ function RunTask(taskname,otid,taskid)
      td += "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Application:</td><td>" + objName + "<input type=\"hidden\" id=\"apps\" value=\"app"+id+"\"></td></tr>";
      td += ap;
      td += "<tr><td style=\"text-align:left;\" style=\"width:30%\">Notes:</td><td>&nbsp;</td></tr>";
-     td += "<tr><td colspan=\"2\" width=\"100%\"><textarea rows=\"5\" id=\"notes\" name=\"notes\" /></td></tr>";   
+     td += "<tr><td colspan=\"2\" width=\"100%\"><textarea rows=\"5\" id=\"notes\" name=\"notes\" /></td></tr>";
      td += "</td></tr>";
      $("#runtask > tbody").html(td);
      RefreshDropDowns();
-    }   
+    }
     else if (tasktype == "CREATE_VERSION")
     {
      td = "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Domain:</td><td>" + domainname +  "</td></tr>";
@@ -1256,14 +1256,14 @@ function RunTask(taskname,otid,taskid)
      td += "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Predecessor Version:</td><td><select name=\"predlist\" id=\"predlist\">";
      td += "<option  value=\"-1\">Latest version</option>";
      td += "<option  value=\"0\" select>Application Base Version</option>";
-     
+
      $.ajax(
        {
-        url:"GetApplicationContent?appid=" + id, 
+        url:"GetApplicationContent?appid=" + id,
         async: false,
         dataType: "json",
         success: function (res)
-        {         
+        {
          var rowcnt = 0;
 
          console.log(res);
@@ -1274,12 +1274,12 @@ function RunTask(taskname,otid,taskid)
 
           td += "<option  value=\"" + id + "\">" + data + "</option>";
          }
-        } 
-      });     
-     td += "</select></td></tr>";     
+        }
+      });
+     td += "</select></td></tr>";
      td += ap;
      td += "<tr><td style=\"text-align:left;\" style=\"width:30%\">Notes:</td><td>&nbsp;</td></tr>";
-     td += "<tr><td colspan=\"2\" width=\"100%\"><textarea rows=\"5\" id=\"notes\" name=\"notes\" /></td></tr>";   
+     td += "<tr><td colspan=\"2\" width=\"100%\"><textarea rows=\"5\" id=\"notes\" name=\"notes\" /></td></tr>";
      td += "</td></tr>";
      $("#runtask > tbody").html(td);
      RefreshDropDowns();
@@ -1290,7 +1290,7 @@ function RunTask(taskname,otid,taskid)
      td += "<tr><td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\" style=\"width:30%\">Application:</td><td>" + objName + "<input type=\"hidden\" id=\"apps\" value=\"app"+id+"\"></td></tr>";
      td += ap;
      td += "<tr><td style=\"text-align:left;\" style=\"width:30%\">Notes:</td><td>&nbsp;</td></tr>";
-     td += "<tr><td colspan=\"2\" width=\"100%\"><textarea rows=\"5\" id=\"notes\" name=\"notes\" /></td></tr>";   
+     td += "<tr><td colspan=\"2\" width=\"100%\"><textarea rows=\"5\" id=\"notes\" name=\"notes\" /></td></tr>";
      td += "</td></tr>";
      $("#runtask > tbody").html(td);
      RefreshDropDowns();
@@ -1299,12 +1299,12 @@ function RunTask(taskname,otid,taskid)
     {
     	$("#runtask > tbody").html(ap);
     }
-   
-    
+
+
    $("edit_button").button(
    {
     disabled : true
-   });  
+   });
   }
  });
 
@@ -1318,7 +1318,7 @@ function RunTask(taskname,otid,taskid)
 function WorkbenchTask(taskname,taskid)
 {
  console.log("WorkbenchTask, taskname="+taskname+" taskid="+taskid);
- var tid=taskid.substr(taskid.lastIndexOf("-")+1); 
+ var tid=taskid.substr(taskid.lastIndexOf("-")+1);
  console.log("tid="+tid+" id of selected object="+lastsel_id);
  RunTask(taskname,lastsel_id,tid);
 }
@@ -1331,17 +1331,17 @@ function DoRefresh()
 
 function getAttr(key)
 {
- return 
+ return
 }
 function callback(currenttree,taskname,taskid,tv)
 {
  console.log(currenttree);
- 
+
  if (currenttree == "#applications_tree")
  {
   $("#applist_buttons > div > div").css({display: "none"});
   dropdownShowing = false;
-  
+
   var data = applist_table.rows({selected:  true}).data();
   if (data != null && data.length > 0)
   {
@@ -1352,14 +1352,14 @@ function callback(currenttree,taskname,taskid,tv)
    objtype = lastsel_id.substr(0,2);
    objName = data[0]["name"];
    objtypeAsInt = obj2Int[objtype][0];
-   objtypeName = obj2Int[objtype][1]; 
+   objtypeName = obj2Int[objtype][1];
    objkind="";
-   if (objtype == "pr" || objtype == "fn") 
+   if (objtype == "pr" || objtype == "fn")
    {
     objkind=objid.substr(objid.indexOf("-")+1);
     objid = objid.substr(0,objid.indexOf("-"));
    }
-  } 
+  }
  }
  else
  {
@@ -1367,7 +1367,7 @@ function callback(currenttree,taskname,taskid,tv)
   lastsel_id = lastsel.attr('id');
   lastsel_rel = lastsel.attr('rel');
  }
- 
+
  switch(taskid) {
  case "Rename":        RenameNode(tv); break;
  case "Delete":        DeleteNode(tv); break;
@@ -1386,7 +1386,7 @@ function callback(currenttree,taskname,taskid,tv)
  case "NewApp":        NewApp(tv); break;
  case "NewBuilder":    NewBuilder(tv); break;
  case "NewServerCompType":    NewServerCompType(tv); break;
- case "NewRelease":    NewRelease(tv); break; 
+ case "NewRelease":    NewRelease(tv); break;
  case "NewUser":       NewUser(tv); break;
  case "NewAction1":    NewAction(tv,"G"); break;
  case "NewAction2":    NewAction(tv,"F"); break;
@@ -1460,20 +1460,20 @@ function jsSelectNode(frameid,admin,nodetype,id, objtypeAsInt)
 
 function eventSelectNode(frameid,admin,data)
 {
- 
+
 	// var NodeType = data.inst.get_json()[0].attr.rel;
 	if (lastobj) console.log("eventSelectNode, lastobjid="+lastobj.attr("id"));
 	 NodeType = data.rslt.obj.attr("rel");
-		
+
 	// if (lastSelectedNode == data.inst.get_json()[0].attr.id) {
 	if (lastSelectedNode == data.rslt.obj.attr("id")) {
 		console.log("returning early");
 		return;
 	}
-	
+
 	// lastSelectedNode = data.inst.get_json()[0].attr.id;
 	lastSelectedNode = data.rslt.obj.attr("id");
-	
+
 	console.log("selected node = "+lastSelectedNode);
 	objid = data.rslt.obj.attr("id").substr(2);	//OTID, first two chars are Object Type
 	objtype = data.rslt.obj.attr("id").substr(0,2);
@@ -1484,7 +1484,7 @@ function eventSelectNode(frameid,admin,data)
 		  objid = objid.substr(0,objid.indexOf("-"));
 	  }
 	objtypeAsInt = obj2Int[objtype][0];
-	objtypeName = obj2Int[objtype][1];	
+	objtypeName = obj2Int[objtype][1];
 	if (typeof data.inst.get_json()[0] == "undefined") {
 		$(currenttree).jstree("select_node","#"+objtype+objid);
 		objName = $(currenttree+' .jstree-clicked').text();
@@ -1495,7 +1495,7 @@ function eventSelectNode(frameid,admin,data)
  console.log("objName");
  console.log(data);
  console.log("id="+objid+" objtype="+objtype + " objtypeAsInt=" + objtypeAsInt + " objtypeName=" + objtypeName + " objName=" + objName + " objkind=" + objkind+ " oldmenu=" + oldmenu + " currenttree=" + data.inst.get_container().attr("id"));
- 
+
  jsSelectNode(frameid,admin,NodeType,objid, objtypeAsInt);
 
  console.log("data.inst.get_container().attr(\"id\")="+data.inst.get_container().attr("id"));
@@ -1530,9 +1530,9 @@ function jsRemoveNode(frameid,admin,data)
 	if (otid.substr(0,2)!="cc" && otid.substr(0,2)!="cy" && otid.substr(0,2)!="cp") {
 		// Do not fire if we're removing a category
 		$.ajax({
-	    	   url:"RemoveNode", 
-	    	   data: { 
-                    "rel" : data.rslt.obj.attr("rel"), 
+	    	   url:"RemoveNode",
+	    	   data: {
+                    "rel" : data.rslt.obj.attr("rel"),
                     "id" : data.rslt.obj.attr("id").substr(2)
 	    	   },
 	    	   dataType: "json",
@@ -1566,7 +1566,7 @@ function jsRemoveNode(frameid,admin,data)
 	    		   }
 	    	   }
 	    });
-	} 
+	}
 	console.log("done calling RemoveNode");
 }
 
@@ -1577,8 +1577,8 @@ function MoveNode(data)
 	var parenttype = data.rslt.op[0].id.substr(0,2);
 	var parentid = data.rslt.op[0].id.substr(2);
 	var targetid = data.rslt.np[0].id.substr(2);
-	
-	console.log("targetid="+targetid); 
+
+	console.log("targetid="+targetid);
 	console.log("parentid="+parentid);
 	console.log("parenttype="+parenttype);
 	var newcat=null;
@@ -1594,14 +1594,14 @@ function MoveNode(data)
 		console.log("catname=["+catname+"]");
 	}
 	$.post(
-	            "MoveNode", 
+	            "MoveNode",
 	            {
 	            		"nodetype"   : data.rslt.o[0].getAttribute("rel"),
 	            		"parentid"	 : parentid,
 	                    "nodeid"     : nodeid,
 	                    "targettype" : data.rslt.np[0].getAttribute("rel"),
 	                    "targetid"   : data.rslt.np[0].id.substr(2)
-	            }, 
+	            },
 	            function (d)
 	            {
 	                  if (d.errtext.length > 0)
@@ -1640,12 +1640,12 @@ function jsRenameNode(frameid,admin,data)
 {
 	console.log("rename_node.jstree newname="+data.rslt.name);
 	$.post(
-	            "RenameNode", 
-	            { 
-	                    "rel" : data.rslt.obj.attr("rel"), 
+	            "RenameNode",
+	            {
+	                    "rel" : data.rslt.obj.attr("rel"),
 	                    "id" : data.rslt.obj.attr("id").substr(2),
 	                    "newname" : data.rslt.name
-	            }, 
+	            },
 	            function (d)
 	            {
 	                  console.log("d.name="+d.errtext+" d.id="+d.errcode);
@@ -1660,7 +1660,7 @@ function jsRenameNode(frameid,admin,data)
 	                  }
 
 	                	 eventSelectNode(frameid,admin,data);
-	                	 
+
 	            }
 	  );
 	  console.log("done calling RenameNode");
@@ -1669,19 +1669,19 @@ function jsRenameNode(frameid,admin,data)
 function GetDomainData(typestr)
 {
 	var res=null;
-	
+
 	console.log("GetDomainData("+typestr+")");
-	
+
 	var builtins = "";
-	
+
  if (currenttree == "#procedures_tree")
   builtins = "&nobuiltins=1";
-	
+
 	$.ajax({
 		  dataType: "json",
 		  url: "GetDomainContent?typestr="+typestr+"&domainid=0" + builtins,
 		  error: function(a,textStatus,errorThrown) {
-			console.log("ERROR: status=["+textStatus+"] errorThrown=["+errorThrown+"]"); 
+			console.log("ERROR: status=["+textStatus+"] errorThrown=["+errorThrown+"]");
 		  },
 		  async: false
 		}).done(function( data ) {
@@ -1700,7 +1700,7 @@ function chgsel(sel)
 	document.cookie = "jstree_selected_"+ct.substr(1)+"=#"+sel.id;
 	selid=sel.id;
 	selname=sel.name;
-	
+
  if (ct == "#applications_tree" || ct == "#components_tree" || ct == "#releases_tree")
  {
   var data = {id: selid, name: selname}
@@ -1708,7 +1708,7 @@ function chgsel(sel)
   eventOpenRow(type,isAdmin,data);
   return;
  }
-	
+
 	console.log("chgsel t="+sel.t+" id="+sel.id+" tm="+sel.tm+" odl="+sel.odl);
 	console.log("EnableTabs: currentmenu="+currentmenu);
 	if (sel.tm != currentmenu) {
@@ -1717,7 +1717,7 @@ function chgsel(sel)
 	console.log("Done EnableTabs - SetActive");
 	SetActive(sel.t);
 	console.log("Done SetActive");
-	
+
 	HighlightNode="#"+sel.id;
 	console.log("chgsel: HighlightNode="+HighlightNode);
 	$(ct).bind("load_node.jstree", function (e,data) {
@@ -1801,7 +1801,7 @@ function AddToFooter(t)
 			 lastd=this;
 		  });
 		  if (tw>(pw-50)) {
-			  var ed = cbcl.indexOf("</div>");    	 
+			  var ed = cbcl.indexOf("</div>");
 			  cbcl = cbcl.substr(ed+6);
 		  }
 	} while (tw>(pw-50));
@@ -1847,14 +1847,14 @@ function CreateTree(nodename,typestr,admin,frameid)
 		if (event.pageY > downpt && Dragging) {scrollit=true;Scroll(lpt,2);}
 		else scrollit=false;
 	});
- 
+
 	var BaseNode=0;
 	var plugins = ["themes","json_data","ui","crrm","types", "cookies"];
 	var current_tree = $(nodename);
-	
+
       console.log(current_tree);
       if (admin=="Y") plugins.push("dnd");
-	 
+
       console.log("GetDomainContent?typestr="+typestr+"&domainid=0");
       current_tree.jstree("destroy");
       current_tree.jstree({
@@ -1883,7 +1883,7 @@ function CreateTree(nodename,typestr,admin,frameid)
                     		  objkind=id.substr(id.indexOf("-")+1);
                     		  id = id.substr(0,id.indexOf("-"));
                     	  }
-                    
+
                     	  console.log("objtype="+objtype+" id="+id);
                     	  var catdomain = 0;
                        if (objtype == "cy" || objtype == "cp" || objtype == "cf" || objtype == "cc") {
@@ -1892,7 +1892,7 @@ function CreateTree(nodename,typestr,admin,frameid)
                         id = id.substr(0,id.indexOf("-"));
                        }
                     	  console.log("id="+id+" objtype="+objtype+" objkind="+objkind + " catdomain=" + catdomain);
-                    	  
+
                     	  if (objtype == "do") {
                     		  console.log("Calling GetDomainContent?typestr="+typestr+"&domainid="+id);
                     		  return "GetDomainContent?typestr="+typestr+"&domainid="+id;
@@ -1904,7 +1904,7 @@ function CreateTree(nodename,typestr,admin,frameid)
                     	  } else if (objtype == "ap") {
                     		  return "GetApplicationContent?appid="+id;
                     	  } else if (objtype == "rl") {
-                    		  return "GetApplicationContent?appid="+id + "&isRelease=y"; 
+                    		  return "GetApplicationContent?appid="+id + "&isRelease=y";
                     	  } else if (objtype == "no") {
                     		  return "GetNotifierTemplates?notifierid="+id;
                     	  } else if (objtype == "co") {
@@ -1915,15 +1915,15 @@ function CreateTree(nodename,typestr,admin,frameid)
                     		  return "GetBuildEngineJobs?builderid="+id;
                     	  } else if (objtype == "cy" || objtype == "cp" || objtype == "cf" || objtype == "cc") {
                     	   var builtins = "";
-                    	   
+
                     	   if (currenttree == "#procedures_tree")
                     	     builtins = "&nobuiltins=1";
-                    	   
+
                     		  console.log("GetCategoryContent?domainid="+catdomain + "&catid="+id+"&objtype="+objtype + builtins);
                         return "GetCategoryContent?domainid="+catdomain + "&catid=" + id + "&objtype=" + objtype + builtins;
                     	  }
                     	  else {
-                        	  console.log("objtype=" + objtype + "; id=" + id);                    		  
+                        	  console.log("objtype=" + objtype + "; id=" + id);
                     	  }
                       }
                  },
@@ -1936,7 +1936,7 @@ function CreateTree(nodename,typestr,admin,frameid)
           // Those two checks may slow jstree a lot, so use only when needed
           "max_depth" : -2,
           "max_children" : -2,
-          // I want only `domain` nodes to be root nodes 
+          // I want only `domain` nodes to be root nodes
           // This will prevent moving or creating any other type as a root node
           "valid_children" : [ "Domain" ],
           "types" : {
@@ -1994,7 +1994,7 @@ function CreateTree(nodename,typestr,admin,frameid)
                "icon" : {
                    "image" : "css/images/applications_sm.png"
                }
-              },             
+              },
               "CompVersion" : {
                "icon" : {
                    "image" : "css/images/components_sm.png"
@@ -2004,7 +2004,7 @@ function CreateTree(nodename,typestr,admin,frameid)
                "icon" : {
                    "image" : "css/images/tag-light.svg"
                }
-              },              
+              },
               "Action" : {
                   "icon" : {
                       "image" : "images/action.png"
@@ -2064,10 +2064,10 @@ function CreateTree(nodename,typestr,admin,frameid)
                "icon" : {
                    "image" : "images/rproxy.png"
                }
-              } 
+              }
            }
       },
-      "crrm" : { 
+      "crrm" : {
           "move" : {
               "check_move" : function (m) {
             	console.log("in check_move");
@@ -2111,7 +2111,7 @@ function CreateTree(nodename,typestr,admin,frameid)
     	  "cookie_options" : { "path" : "/" }
       }
       });
-      
+
       $(document).unbind("drag_start.vakata");
       $(document).unbind("drag_stop.vakata");
       $(document).bind("drag_start.vakata", function (e, data) {
@@ -2119,46 +2119,46 @@ function CreateTree(nodename,typestr,admin,frameid)
 		    console.log("Drag start (1)");
 		    Dragging=true;
 		  }
-		}); 
+		});
 	  $(document).bind("drag_stop.vakata", function (e, data) {
 		  if(data.data.jstree) {
 		    console.log("Drag end (1)");
 		    Dragging=false;
 		  }
 		});
-      
+
       $(nodename).dmContextMenu(targetmenu, {theme:'xp'});
 
-      $(nodename).bind("hover_node.jstree", function (e, data) 
+      $(nodename).bind("hover_node.jstree", function (e, data)
       {
          lastobj = data.rslt.obj;
          inTree=true;
       });
-            
-      $(nodename).bind("reopen.jstree", function (e, data) 
+
+      $(nodename).bind("reopen.jstree", function (e, data)
       {
     	  console.log("LOADING COMPLETE");
       });
-      
-      $(nodename).bind("dehover_node.jstree", function (e, data) 
+
+      $(nodename).bind("dehover_node.jstree", function (e, data)
       {
     	 lastobj = data.rslt.obj;
     	 inTree=false;
       });
-      
+
       $(nodename).bind("rename_node.jstree", function (e, data)
       {
-    	  jsRenameNode(frameid,admin,data); 
+    	  jsRenameNode(frameid,admin,data);
       });
-      
-     
-      $(nodename).bind("select_node.jstree", function (e, data) 
+
+
+      $(nodename).bind("select_node.jstree", function (e, data)
       {
     	console.log("select_node.jstree entry");
     	console.log(e);
     	console.log(data);
     	path2root = data.inst.get_path(data.node, "/");
-     
+
     	var id = data.rslt.obj.attr("id");
     	console.log("id="+id+" selid="+selid);
 
@@ -2213,12 +2213,12 @@ function CreateTree(nodename,typestr,admin,frameid)
   		    		+";background-repeat: no-repeat;background-position:0px 2px;padding:0px 3px 3px 16px;\" "
   		    		+"<a href=\"javascript:void(0);\" "
   		    		+"onClick='chgsel({t: \""+ct+"\", id: \""+otid+"\", odl: \""+odl+"\", tm: \""+currentmenu+"\"})'>"+selection+"|</a></div>"
-    		  );  
+    		  );
     	  }
     	}
     	console.log("select_node exits (id="+id+")");
-      }); 
-      
+      });
+
       $(nodename).bind("create_node.jstree", function (e, data) {
     	  // fired whenever a new node is created - cnc is set if we've created a new category node
 	     console.log("Node created - name = "+data.rslt.obj.text()+" id="+data.rslt.obj[0].id);
@@ -2235,14 +2235,14 @@ function CreateTree(nodename,typestr,admin,frameid)
 	    	 }
 	     }
 	  });
-      
-      $(nodename).bind("remove.jstree", function (e, data) 
+
+      $(nodename).bind("remove.jstree", function (e, data)
       {
     	  console.log("remove fired: "+data.rslt);
-    	  jsRemoveNode(frameid,admin,data); 
+    	  jsRemoveNode(frameid,admin,data);
     	  return true;
-      }); 
-     
+      });
+
       $(nodename).bind("select_node.jstree", function(evt, data)
       {
        lastobj = data.rslt.obj;
@@ -2250,7 +2250,7 @@ function CreateTree(nodename,typestr,admin,frameid)
     	  console.log(lastobj);
     	  eventSelectNode(frameid,admin,data);
       });
-      
+
       $(nodename).bind("open_node.jstree close_node.jstree", function (evt, data) {
     	    var state = evt.type == "open_node" ? "open" : "closed";
     	    /*
@@ -2266,26 +2266,26 @@ function CreateTree(nodename,typestr,admin,frameid)
     	    }
     	    */
       });
-      
+
       $(nodename).bind('move_node.jstree',function(event,data){
 
-      
-      // .o - the node being moved 
-      // .r - the reference node in the move 
-      // .ot - the origin tree instance 
-      // .rt - the reference tree instance 
-      // .p - the position to move to (may be a string - "last", "first", etc) 
-      // .cp - the calculated position to move to (always a number) 
-      // .np - the new parent 
-      // .oc - the original node (if there was a copy) 
-      // .cy - boolen indicating if the move was a copy 
-      // .cr - same as np, but if a root node is created this is -1 
-      // .op - the former parent 
-      // .or - the node that was previously in the position of the moved node 
+
+      // .o - the node being moved
+      // .r - the reference node in the move
+      // .ot - the origin tree instance
+      // .rt - the reference tree instance
+      // .p - the position to move to (may be a string - "last", "first", etc)
+      // .cp - the calculated position to move to (always a number)
+      // .np - the new parent
+      // .oc - the original node (if there was a copy)
+      // .cy - boolen indicating if the move was a copy
+      // .cr - same as np, but if a root node is created this is -1
+      // .op - the former parent
+      // .or - the node that was previously in the position of the moved node
 
       	MoveNode(data);
-      
-     
+
+
   });
 }
 
@@ -2296,11 +2296,11 @@ function Refresh(nodename)
 	if (typeof sel == "undefined") {
 		selid = sel;
 	}
-	
-	
+
+
 	console.log("Refresh("+nodename+") - sel="+sel);
 	ExplorerRefreshing = (sel && (sel.length > 0));
-	
+
 	// Refresh all open nodes
 	var n = new Array();
 	$(nodename).find("> ul > li").each(function (i) {

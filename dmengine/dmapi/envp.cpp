@@ -194,7 +194,7 @@ void Envp::internalPut(const char* name, char *buf)
 		m_envp[count] = buf;
 		m_envp[count+1] = NULL;
 	}
-	
+
 //	LeaveCriticalSection(m_criticalSection);
 }
 
@@ -207,7 +207,7 @@ void Envp::put(const char* name, const char *value)
 	char *buf = (char*) malloc(strlen(name) + strlen(value) + 2);
 	if (value == NULL)
 	 sprintf(buf, "%s=", name);
-	else	
+	else
 	 sprintf(buf, "%s=%s", name, value);
 	internalPut(name, buf);
 }

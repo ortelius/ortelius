@@ -24,18 +24,18 @@ public class SearchResult
 	private String m_url;
 	private String m_iconname;
 	private String m_summary;
-	
-	
+
+
 	public SearchResult() {
-		
+
 	}
-	
+
 	public int getId() { return m_id; }
 	public String getName() { return m_name; }
 	public String getUrl() { return m_url; }
 	public String getIconName() { return m_iconname; }
 	public String getSummary() { return m_summary; }
-	
+
 	public void setId(int id) { m_id = id; }
 	public void setName(String name) { m_name = name; }
 	public void setUrl(String url) { m_url = url; }

@@ -21,7 +21,7 @@ import java.io.Serializable;
 public class ServerStatus implements Serializable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 8820282733974373811L;
 
@@ -29,89 +29,89 @@ public class ServerStatus implements Serializable
 	private String m_pingStatus;
 	private String m_connectionStatus;
 	private String m_baseDirectoryStatus;
-	private int m_pingTime; 
+	private int m_pingTime;
 	private String m_ipAddress;
 	private String m_lastError;
 	private int m_lastTime;
-	
+
 	public ServerStatus()
 	{}
-	
+
 	public void setNameResolution(String nr)
 	{
 		m_nameResolution = nr;
 	}
-	
+
 	public void setPingStatus(String ps)
 	{
 		m_pingStatus = ps;
 	}
-	
+
 	public void setConnectionStatus(String cs)
 	{
 		m_connectionStatus = cs;
 	}
-	
+
 	public void setBaseDirStatus(String bds)
 	{
 		m_baseDirectoryStatus = bds;
 	}
-	
+
 	public void setPingTime(int pt)
-	{	
+	{
 		m_pingTime = pt;
 	}
-	
+
 	public void setIPAddress(String ipa)
 	{
 		m_ipAddress = ipa;
 	}
-	
+
 	public void setLastError(String es)
 	{
 		m_lastError = es;
 	}
-	
+
 	public void setLastTime(int lt)
 	{
 		m_lastTime = lt;
 	}
-	
+
 	public String getNameResolution()
 	{
 		return m_nameResolution;
 	}
-	
+
 	public String getPingStatus()
 	{
 		return m_pingStatus;
 	}
-	
+
 	public String getConnectionStatus()
 	{
 		return m_connectionStatus;
 	}
-	
+
 	public String getBaseDirStatus()
 	{
 		return m_baseDirectoryStatus;
 	}
-	
+
 	public int getPingTime()
-	{	
+	{
 		return m_pingTime;
 	}
-	
+
 	public String getIPAddress()
 	{
 		return m_ipAddress;
 	}
-	
+
 	public String getLastError()
 	{
 		return m_lastError;
 	}
-	
+
 	public int getLastTime()
 	{
 		return m_lastTime;

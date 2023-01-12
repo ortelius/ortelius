@@ -67,7 +67,7 @@ void OutputStream::writeToStdOut(const char *fmt, ...)
 	va_start(args, fmt);
 	vasprintf(&temp,fmt,args);
 	va_end(args);
-	
+
 	writevToStdOut(0, temp);
 	free(temp);
 }
@@ -76,7 +76,7 @@ void OutputStream::writeToStdOut(const char *fmt, ...)
 void OutputStream::writevToStdOut(long threadId, const char *buffer)
 {
 	int len = strlen(buffer);
-	
+
 	if(m_buffer) {
 		m_buffer = (char*)realloc(m_buffer, m_len + len + 2);
 		// if this is not the first line we automatically start a new line
@@ -84,7 +84,7 @@ void OutputStream::writevToStdOut(long threadId, const char *buffer)
 		m_buffer = (char *)malloc(len+2);
 		*m_buffer = '\0';
 	}
-	
+
 	if (m_autoNewline && m_len) {
 		strcat(m_buffer,"\n");
 		strcat(m_buffer,buffer);
@@ -92,7 +92,7 @@ void OutputStream::writevToStdOut(long threadId, const char *buffer)
 	} else {
 		strcat(m_buffer,buffer);
 		m_len =strlen(m_buffer);
-	}			
+	}
 	return;
 }
 
@@ -120,7 +120,7 @@ void OutputStream::writeToStdErr(const char *fmt, ...)
 	va_start(args, fmt);
 	vasprintf(&temp,fmt,args);
 	va_end(args);
-	
+
 	writevToStdErr(0, temp);
 	free(temp);
 }

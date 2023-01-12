@@ -2,18 +2,18 @@ Dim objSWbemLocator,objWMIService
 
 
 
-'------------------------------------------ 
- Const EXW_LOGOFF   = 0 
- Const EXW_SHUTDOWN = 1 
- Const EXW_REBOOT   = 2 
- Const EXW_FORCE    = 4 
- Const EXW_POWEROFF = 8 
- '------------------------------------------ 
- Const ANONYMOUS    = 1 
- Const IDENTIFY     = 2 
- Const IMPERSONATE  = 3 
- Const DELEGATE     = 4 
- Const PKT          = 4 
+'------------------------------------------
+ Const EXW_LOGOFF   = 0
+ Const EXW_SHUTDOWN = 1
+ Const EXW_REBOOT   = 2
+ Const EXW_FORCE    = 4
+ Const EXW_POWEROFF = 8
+ '------------------------------------------
+ Const ANONYMOUS    = 1
+ Const IDENTIFY     = 2
+ Const IMPERSONATE  = 3
+ Const DELEGATE     = 4
+ Const PKT          = 4
 
 If WScript.Arguments.Count <> 3 Then
    ShowUsage()
@@ -21,12 +21,12 @@ If WScript.Arguments.Count <> 3 Then
 End If
 
 Set objSWbemLocator = CreateObject("WbemScripting.SWbemLocator")
-objSWbemLocator.Security_.impersonationlevel = IMPERSONATE 
-objSWbemLocator.Security_.authenticationLevel = PKT 
-objSWbemLocator.Security_.Privileges.AddAsString ("SeDebugPrivilege") 
-objSWbemLocator.Security_.Privileges.AddAsString ("SeSecurityPrivilege") 
-objSWbemLocator.Security_.Privileges.AddAsString ("SeShutdownPrivilege") 
-objSWbemLocator.Security_.Privileges.AddAsString ("SeRemoteShutdownPrivilege") 
+objSWbemLocator.Security_.impersonationlevel = IMPERSONATE
+objSWbemLocator.Security_.authenticationLevel = PKT
+objSWbemLocator.Security_.Privileges.AddAsString ("SeDebugPrivilege")
+objSWbemLocator.Security_.Privileges.AddAsString ("SeSecurityPrivilege")
+objSWbemLocator.Security_.Privileges.AddAsString ("SeShutdownPrivilege")
+objSWbemLocator.Security_.Privileges.AddAsString ("SeRemoteShutdownPrivilege")
 
 Set objWMIService = objSWbemLocator.ConnectServer(ServerName ,"root\CIMV2",strUser,strPassword)
 
@@ -40,7 +40,7 @@ Function GetServiceState(ServerName, ServiceName)
    '  Running, Continue Pending, Pause Pending,
    '  Paused, Unknown
 
-   Set colItems = objWMIService.ExecQuery( "SELECT State FROM Win32_Service WHERE Name='RpcSs'",,48) 
+   Set colItems = objWMIService.ExecQuery( "SELECT State FROM Win32_Service WHERE Name='RpcSs'",,48)
 
    For Each objItem in colItems
 	GetServiceState =  objItem.State
@@ -151,10 +151,6 @@ Function IsAvailable(ServerName)
 WScript.Echo "IsAvailable "& ServerName
    ' Use Windows RPC service state as vital sign
 t = GetServiceState(ServerName, "RpcSs")
-WScript.Echo t 
+WScript.Echo t
    IsAvailable = (GetServiceState(ServerName, "RpcSs") = "Running")
 End Function
-
-
-
-

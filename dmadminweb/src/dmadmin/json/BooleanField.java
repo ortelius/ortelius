@@ -25,7 +25,7 @@ public class BooleanField
 	public BooleanField(boolean value) {
 		this(value, false);
 	}
-	
+
 	public BooleanField(boolean value, boolean readOnly) {
 		m_value = value;
 		m_readOnly = readOnly;

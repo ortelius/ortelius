@@ -29,7 +29,7 @@ import javax.servlet.http.HttpSession;
  */
 public class Logout extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -53,7 +53,7 @@ public class Logout extends HttpServlet {
 		response.setContentType("text/html");
 //		Cookie[] cookies = request.getCookies();
 //		String srv = "console.deployhub.com";
-//		
+//
 //		if (cookies != null) {
 //			for (Cookie usercookie : cookies) {
 //				System.out.println("Clearing cookie "+ srv + ":" + usercookie.getName());
@@ -76,7 +76,7 @@ public class Logout extends HttpServlet {
 		response.getWriter().write("<body onload=\"DeleteCookies()\">\n");
 		response.getWriter().write("You have been logged out.");
 		response.getWriter().write("</body>");
-		response.getWriter().write("</html>"); 
+		response.getWriter().write("</html>");
 	}
 
 	/**

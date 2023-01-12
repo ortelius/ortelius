@@ -31,7 +31,7 @@ public class ComponentItem
 	extends DMObject
 {
 	private static final long serialVersionUID = -5362995729983900561L;
-	
+
 	private Component m_parent;
 	private Repository m_repo;
 	private String m_targetdir = "";
@@ -65,49 +65,49 @@ public class ComponentItem
 	private String HipChatChannel = "";
 	private String PagerDutyServiceUrl = "";
 	private String PagerDutyBusinessServiceUrl = "";
-	
+
 	public ComponentItem() {
         super.setId(0);
         super.setName("");
     }
-	
+
 	public ComponentItem(DMSession sess, int id, String name) {
 		super(sess,id,name);
 	}
-	
+
 	public Component getParent()  { return m_parent; }
 	public void setParent(Component comp)  { m_parent = comp; }
-	
-	public int getParentId() 
+
+	public int getParentId()
 	{
 	 if (m_parent == null)
 	  return -1;
 	 return m_parent.getId();
 	}
-	
+
 	public Repository getRepository()  { return m_repo; }
 	public void setRepository(Repository repo)  { m_repo = repo; }
-	
+
 	public String getTargetDir()  { return m_targetdir; }
 	public void setTargetDir(String dir)  { m_targetdir = dir; }
-	
+
 	public int getPredecessorId()  { return m_predecessorId; }
 	public void setPredecessorId(int id)  { m_predecessorId = id; }
-	
+
 	public ComponentFilter getRollup()  { return m_rollup; }
 	public void setRollup(ComponentFilter rollup)  { m_rollup = rollup; }
 
 	public ComponentFilter getRollback()  { return m_rollback; }
 	public void setRollback(ComponentFilter rollback)  { m_rollback = rollback; }
-	
+
 	public int getXpos()  { return m_xpos; }
 	public void setXpos(int xpos)  { m_xpos = xpos; }
-	
+
 	public int getYpos()  { return m_ypos; }
 	public void setYpos(int ypos)  { m_ypos = ypos; }
-	
-	
-	
+
+
+
 	public String getBuildId()
  {
   return BuildId;
@@ -142,45 +142,45 @@ public class ComponentItem
  {
   return ChartVersion;
  }
- 
+
  public String getChartRepo()
  {
   return ChartRepo;
  }
- 
+
  public String getChartRepoUrl()
  {
   return ChartRepoUrl;
  }
- 
- 
+
+
  public void setChartNamespace(String chartnamespace)
  {
   ChartNamespace = chartnamespace;
  }
- 
+
  public String getChartNamespace()
  {
   return ChartNamespace;
  }
- 
+
 
  public void setChartVersion(String chartversion)
  {
   ChartVersion = chartversion;
  }
- 
+
  public void setChartRepo(String chartrepo)
  {
   ChartRepo = chartrepo;
  }
- 
+
  public void setChartRepoUrl(String chartrepourl)
  {
   ChartRepoUrl = chartrepourl;
  }
- 
- 
+
+
  public String getDockerSha()
  {
   return DockerSha;
@@ -240,8 +240,8 @@ public class ComponentItem
  {
   GitUrl = gitUrl;
  }
- 
- 
+
+
 
  public String getOperator()
  {
@@ -262,8 +262,8 @@ public class ComponentItem
  {
   BuildDate = buildDate;
  }
- 
- 
+
+
 
  public String getSlackChannel() {
 	return SlackChannel;
@@ -344,7 +344,7 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
 	public String getForeignKey() {
 		return "compid";
 	}
-	
+
 	@Override
 	public boolean isViewable() {
 		return (m_parent != null) ? m_parent.isViewable() : false;
@@ -359,7 +359,7 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
 	{
 		return ((m_rollup != ComponentFilter.OFF) ? "-up" : "") +  ((m_rollback != ComponentFilter.OFF) ? "-down" : "");
 	}
-	
+
 	public List<DMProperty> getProperties() {
 		 return m_session.getPropertiesForComponentItem(this);
 	}
@@ -370,9 +370,9 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
 		PropertyDataSet ds = new PropertyDataSet();
 		ds.addProperty(SummaryField.NAME, "Name", getName());
 		ds.addProperty(SummaryField.SUMMARY, "Summary", getSummary());
-		
+
   String pname = "";
-  
+
   ComponentItem p = null;
   try
   {
@@ -380,13 +380,13 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
   }
   catch (RuntimeException e)
   {
-   
+
   }
-  
+
   if (p != null)
     pname = p.getName();
   ds.addProperty(SummaryField.PREDECESSOR, "Predecessor", pname);
-  
+
   p = null;
   try
   {
@@ -394,9 +394,9 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
   }
   catch (RuntimeException e)
   {
-   
+
   }
-		
+
 		//addCreatorModifier(ds); // TODO: Addind this makes the table too big for dialog
   ds.addProperty(SummaryField.COMP_KIND, "Kind", getItemkind().toString());
 		if (getItemkind() == ComponentItemKind.DATABASE)
@@ -404,10 +404,10 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
 		 ds.addProperty(SummaryField.ROLLUP, "Roll Forward", getRollup().toString());
 		 ds.addProperty(SummaryField.ROLLBACK, "Rollback", getRollback().toString());
 		}
-  
+
   ds.addProperty(SummaryField.XPOS, "XPos", getXpos());
   ds.addProperty(SummaryField.YPOS, "YPos", getYpos());
-  
+
   if (getItemkind() == ComponentItemKind.DOCKER || getItemkind() == ComponentItemKind.FILE)
   {
    ds.addProperty(SummaryField.DOCKER_BUILDID, "Build Id", getBuildId());
@@ -438,25 +438,25 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
    ds.addProperty(SummaryField.PAGERDUTY_SERVICE_URL, "Pager Duty Service Url", getPagerDutyServiceUrl());
    ds.addProperty(SummaryField.PAGERDUTY_BUSINESS_URL, "Pager Duty Business Service Url", getPagerDutyBusinessServiceUrl());
   }
-  
+
   if (getItemkind() == ComponentItemKind.DATABASE || getItemkind() == ComponentItemKind.FILE)
-  {  
+  {
    String repotype = "";
-   
+
    if (getRollup() == ComponentFilter.ON)
     repotype = "Roll Forward ";
- 
+
    if (getRollback() == ComponentFilter.ON)
     repotype = "Roll Back ";
 
    ds.addProperty(SummaryField.ITEM_TARGETDIR, repotype + "Target Directory", getTargetDir());
-   
+
    if (getRepository() == null)
     ds.addProperty(SummaryField.ITEM_REPOSITORY, repotype + "Repository", "");
    else
     ds.addProperty(SummaryField.ITEM_REPOSITORY, repotype + "Repository", getRepository().getDomain().getFullDomain() + "." + getRepository().getName());
   }
-  
+
 		return ds.getJSON();
 	}
 
@@ -464,16 +464,16 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
 	public boolean updateSummary(SummaryChangeSet changes) {
 		return m_session.updateComponentItemSummary(this, changes);
 	}
-	
+
 	public void deleteProperties()
 	{
 	 m_session.DeleteProperties(this);
 	}
-	
+
  public boolean updateProperties(ACDChangeSet<DMProperty> changes) {
   return m_session.updateComponentItemProperties(this, changes, false);
  }
- 
+
 	public boolean updateProperties(ACDChangeSet<DMProperty> changes, boolean deleteAll) {
 		return m_session.updateComponentItemProperties(this, changes, deleteAll);
 	}
@@ -493,9 +493,9 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
   JSONObject obj = new JSONObject();
   obj.add("Name", getFullName());
   obj.add("Summary", getSummary());
-  
+
   String pname = "";
-  
+
   ComponentItem p = null;
   try
   {
@@ -503,13 +503,13 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
   }
   catch (RuntimeException e)
   {
-   
+
   }
-  
+
   if (p != null)
     pname = p.getName();
   obj.add("Predecessor", pname);
-  
+
   p = null;
   try
   {
@@ -517,19 +517,19 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
   }
   catch (RuntimeException e)
   {
-   
+
   }
-  
+
   //addCreatorModifier(ds); // TODO: Addind this makes the table too big for dialog
   if (getItemkind() == ComponentItemKind.DATABASE)
   {
    obj.add("Roll Forward", getRollup().toString());
    obj.add("Rollback", getRollback().toString());
   }
-  
+
   obj.add("XPos", getXpos());
   obj.add("YPos", getYpos());
-  
+
   if (getItemkind() == ComponentItemKind.DATABASE || getItemkind() == ComponentItemKind.FILE)
   {
    obj.add("Target Directory", getTargetDir());
@@ -538,7 +538,7 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
    else
     obj.add( "Repository", getRepository().getName());
   }
-  
+
   if (getItemkind() == ComponentItemKind.DOCKER)
   {
    obj.add("Build Id", getBuildId());
@@ -566,7 +566,7 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
    obj.add("Pager Duty Service Url", getPagerDutyServiceUrl());
    obj.add("Pager Duty Business Service Url", getPagerDutyBusinessServiceUrl());
   }
-  
+
   return obj;
  }
 
@@ -574,7 +574,7 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
  {
   DockerTag = tag;
  }
- 
+
  public String getDockerTag()
  {
   return DockerTag;

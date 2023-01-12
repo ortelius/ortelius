@@ -47,25 +47,25 @@ import dmadmin.model.Server;
 
 public class GetComponentLayout extends JSONServletBase {
 	private static final long serialVersionUID = 1L;
-	
+
 @Override
 public IJSONSerializable handleRequest(DMSession session, boolean isPost,
 		HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException
 {
-	
+
 	String szApplicationID = request.getParameter("appid");
 	String szServerID = request.getParameter("servid");
 	String szCompID = request.getParameter("compid");
 	// String szType = request.getParameter("t");
 	boolean bReadOnly;
 	boolean isRelease = false;
-	
+
 	if (request.getParameter("isRelease") != null && request.getParameter("isRelease").equalsIgnoreCase("Y"))
 	 isRelease = true;
-	
+
 	System.out.println("isRelease="+isRelease+" szApplicationID="+szApplicationID);
-	
+
 	if (szServerID != null) {
 		// Components and Versions on Server
 		int serverid = Integer.parseInt(szServerID);
@@ -90,7 +90,7 @@ public IJSONSerializable handleRequest(DMSession session, boolean isPost,
 		System.out.println("comps.size="+comps.size());
 		List<ComponentLink> complinks = session.getComponentLinks(appid);
 		JSONObject obj = new JSONObject();
-		
+
 		JSONArray arr1 = new JSONArray();
 		for(Component ci: comps) {
 			JSONObject vobj = new JSONObject();
@@ -110,7 +110,7 @@ public IJSONSerializable handleRequest(DMSession session, boolean isPost,
 		}
 		obj.add("Nodes", arr1);
 		obj.add("NodeCount", comps.size());
-		
+
 		JSONArray arr2 = new JSONArray();
 		for(ComponentLink cl: complinks) {
 			JSONObject vlobj = new JSONObject();
@@ -139,4 +139,3 @@ public IJSONSerializable handleRequest(DMSession session, boolean isPost,
 	}
 }
 }
-

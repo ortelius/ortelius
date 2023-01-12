@@ -31,7 +31,7 @@ import dmadmin.json.JSONObject;
  */
 public class GetEnvOwner extends JSONServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -44,11 +44,11 @@ public class GetEnvOwner extends JSONServletBase {
 			HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
 	{
-	 
+
 	 int envid = getIntParameter(request,"envid");
-	 
+
   boolean isOwner = session.userOwnsEnvironment(envid);
-  
+
   JSONObject o = new JSONObject();
   o.add("isowner", isOwner);
   return o;

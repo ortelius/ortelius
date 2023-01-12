@@ -40,7 +40,7 @@ import dmadmin.model.TaskRequest;
  */
 public class getTaskDetails extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -48,7 +48,7 @@ public class getTaskDetails extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
@@ -60,7 +60,7 @@ public class getTaskDetails extends HttpServletBase {
 		String cbfunc = request.getParameter("cbfunc");
 		request.setAttribute("tid", tid);
 		request.setAttribute("cbfunc",cbfunc);
-		
+
 		switch(tt) {
 		case APPROVE: {
 			System.out.println("Getting task approve (in getTaskData)");

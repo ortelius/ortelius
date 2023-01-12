@@ -160,7 +160,7 @@ Expr *function_obj_children(int argc, Expr *self, Expr **argv, Context &ctx)
 	// true: All children, grandchildren, great-grandchildren etc.
 	// false (default): Just immediate descendents
 	//
-	bool option = (argc>0)?argv[0]->toBool():false;		
+	bool option = (argc>0)?argv[0]->toBool():false;
 	List<Application> *apps = app->getChildren(option);
 
 	DMArray *res = new DMArray(true,false,false);
@@ -177,7 +177,7 @@ Expr *function_obj_components(int argc, Expr *self, Expr **argv, Context &ctx)
 	Application *app = (Application*) self->toObjectReference()->toObject();
 	//
 	// Gets the components of this application version.
-	//	
+	//
 	List<Component> *comps =  app->getComponents();
 
 	// ctx.dm().writeToStdOut("app->getComponents returns, size=%d\n",comps->size());
@@ -349,7 +349,7 @@ Expr *function_obj_dropzonefile_dir(int argc, Expr *self, Expr **argv, Context &
 			}
 		}
 	}
-	
+
 	return new Expr(res);
 }
 
@@ -472,7 +472,7 @@ Expr *function_obj_stream_base64_decode(int argc, Expr *self, Expr **argv, Conte
 		// No stream parameter - we need to be in "using stream" block
 		if (!ctx.inUsingStream()) throw RuntimeError("base64decode needs 'stream' parameter or to be within a 'using stream' block");
 	}
-	
+
 	int retlen;
 	// Remove all newline chars from the base64 encoded string
 	char *ts = (char *)malloc(strlen(self->toString())+1);
@@ -492,7 +492,7 @@ Expr *function_obj_stream_base64_decode(int argc, Expr *self, Expr **argv, Conte
 		ctx.writeBufferToStdOut(0,(const char *)res,retlen);
 	}
 	return new Expr(retlen);	// return is the length of the decoded data
-	
+
 }
 
 
@@ -558,7 +558,7 @@ Expr *function_obj_string_instr(int argc, Expr *self, Expr **argv, Context &ctx)
 	ConstCharPtr s = self->toString();
 	ConstCharPtr c = argv[0]->toString();
 	const char *res = strstr(s,c);
-	return new Expr(res?(int)(res-((const char *)s)):(int)(-1)); 
+	return new Expr(res?(int)(res-((const char *)s)):(int)(-1));
 }
 
 
@@ -705,9 +705,9 @@ Expr *function_obj_array_sum(int argc, Expr *self, Expr **argv, Context &ctx)
 	try {
 		AutoPtr<ExprList> keys = self->array_keys();
 		ListIterator<Expr> iter(*keys);
-		for(Expr *k = iter.first(); k; k = iter.next()) { 
+		for(Expr *k = iter.first(); k; k = iter.next()) {
 			ConstCharPtr str = k->toString();
-			maxScope->set("key", (const char*) str);			
+			maxScope->set("key", (const char*) str);
 			Variable *value = arr->get(str);
 			if(value) {
 				switch(value->type()) {
@@ -783,10 +783,10 @@ Expr *function_obj_date_to_int(int argc, Expr *self, Expr **argv, Context &ctx)
 }
 
 // This table is only scanned for functions. Note that several attributes (such as children for applications)
-// are also handled in ::getAttribute. 
+// are also handled in ::getAttribute.
 DMObjFnTable obj_fn_table[] = {
-	{ "append",			KIND_OBJECT, OBJ_KIND_SERVER,      2, 2, function_obj_append }, 
-	{ "appendstd",		KIND_OBJECT, OBJ_KIND_SERVER,      2, 2, function_obj_appendstd },  
+	{ "append",			KIND_OBJECT, OBJ_KIND_SERVER,      2, 2, function_obj_append },
+	{ "appendstd",		KIND_OBJECT, OBJ_KIND_SERVER,      2, 2, function_obj_appendstd },
 	{ "applications",	KIND_OBJECT, OBJ_KIND_DOMAIN,      0, 0, function_obj_applications },
 	{ "approvals",		KIND_OBJECT, OBJ_KIND_APPLICATION, 0, 1, function_obj_approvals },
 	{ "base64decode",	KIND_STR,    OBJ_KIND_NONE,        0, 1, function_obj_stream_base64_decode },
@@ -829,7 +829,7 @@ DMObjFnTable obj_fn_table[] = {
 	//{ "setatt",			KIND_OBJECT, OBJ_KIND_APPVERSION,  2, 2, function_obj_application_setatt },
 	//{ "setatt",			KIND_OBJECT, OBJ_KIND_SERVER,      2, 2, function_obj_server_setatt },
 	{ "split",			KIND_STR,    OBJ_KIND_NONE,        1, 1, function_obj_string_split },
-	{ "stdpath",		KIND_OBJECT, OBJ_KIND_SERVER,      1, 1, function_obj_stdpath },    
+	{ "stdpath",		KIND_OBJECT, OBJ_KIND_SERVER,      1, 1, function_obj_stdpath },
 	{ "substr",			KIND_ALL,    OBJ_KIND_NONE,        1, 2, function_obj_substr },
 	{ "sum",			KIND_ARRAY,  OBJ_KIND_NONE,        1, 1, function_obj_array_sum },
 	{ "to_char",		KIND_DATE,   OBJ_KIND_NONE,        0, 2, function_obj_date_to_char },
@@ -839,7 +839,7 @@ DMObjFnTable obj_fn_table[] = {
 	{ "upper",			KIND_STR,    OBJ_KIND_NONE,        0, 0, function_obj_string_upper },
 	{ "versions",		KIND_OBJECT, OBJ_KIND_APPLICATION, 0, 1, function_obj_children },
 	{ "xmlparse",		KIND_STR,    OBJ_KIND_NONE,        0, 0, function_obj_string_parsexml },
-	{ "xmlparse",		KIND_STREAM, OBJ_KIND_NONE,        0, 0, function_obj_stream_parsexml },		
+	{ "xmlparse",		KIND_STREAM, OBJ_KIND_NONE,        0, 0, function_obj_stream_parsexml },
 	{ NULL, 0, OBJ_KIND_NONE, 0, 0, NULL }
 };
 
@@ -955,7 +955,7 @@ Expr *function_dropzone(int argc, Expr **argv, Context &ctx)
 		if(dz) {
 			return new Expr(dz->pathname());
 		}
-	}	
+	}
 	return new Expr(KIND_ERROR, "failed to get dropzone");
 }
 
@@ -991,7 +991,7 @@ Expr *function_dirname(int argc, Expr **argv, Context &ctx)
 	//	return new Expr(KIND_ERROR, "Not a valid path");
 	//}
 	//if(s1 > s2) { *s1 = '\0'; } else { *s2 = '\0'; }
-	//return new Expr(name);	
+	//return new Expr(name);
 
 	AutoPtr<PathNameImpl> path = createPath(argv[0], (argc>1 ? argv[1] : NULL), ctx);
 	AutoPtr<PathNameImpl> dirname = path->dirname();
@@ -1494,7 +1494,7 @@ Expr::~Expr()
 		SAFE_DELETE(m_date);
 		break;
 	}
-	
+
 	// arr is not owned
 }
 
@@ -1513,7 +1513,7 @@ Expr *Expr::operator_not(class Context &ctx) const
 	return new Expr();
 }
 
-	
+
 //Expr *Expr::operator + (const Expr &b) const
 Expr *Expr::operator_plus(const Expr &b, Context &ctx) const
 {
@@ -1627,7 +1627,7 @@ Expr *Expr::operator_minus(const Expr &b, Context &ctx) const
 	}
 	if(b.isNumber()) {
 		switch(m_kind) {
-		case KIND_DATE: 
+		case KIND_DATE:
 			if(m_date) {
 				return new Expr(*m_date - b.toInt());
 			}
@@ -1810,11 +1810,11 @@ Expr *Expr::array_access(const Expr &a) const
 	if(val) {
 		e = new Expr(val);
 	}
-	
-	if(!e) {	
+
+	if(!e) {
 		return new Expr(KIND_ERROR, "Subscript not found");
 	}
-	
+
 	e->m_simple = false;
 	return e;
 }
@@ -1855,7 +1855,7 @@ Expr *Expr::object_access(const char *str, Context &ctx) const
 		debug1/*1*/("Not an object or array - %s", kindStr());
 		if (strcmp(kindStr(),"string")==0) {
 			debug1("String is %s",toString());
-			
+
 		}
 		if (strcmp(kindStr(),"error")==0) {
 			debug1("error is %s",this->stringify());
@@ -1884,7 +1884,7 @@ Expr *Expr::object_access(const char *str, Context &ctx) const
 		e->m_simple = false;
 		return e;
 	}
-	
+
 	//return new Expr(KIND_ERROR, "No such object or property");
 	debug1("No such object or property '%s'", str);
 	return new Expr("");
@@ -1921,7 +1921,7 @@ DMObjFnPtr Expr::find_object_function(const char *str, int argc, Context &ctx)
 			}
 			if(!f->fn) {
 				throw RuntimeError(ctx.stack(), "Method '%s' not implemented", str);
-			}			
+			}
 			return f->fn;
 		}
 	}
@@ -1939,7 +1939,7 @@ Expr *Expr::object_function(const char *str, const ExprList &args, Context &ctx)
 	// Called from object.method() syntax
 	//
 	int argc = args.size();
-	
+
 	DMObjFnPtr f = find_object_function(str, argc, ctx);
 	if(f) {
 		Expr** argv = args.toArgv();
@@ -1953,7 +1953,7 @@ Expr *Expr::object_function(const char *str, const ExprList &args, Context &ctx)
 			throw;
 		}
 	}
-	
+
 	return new Expr(KIND_ERROR, "Unknown object function");
 }
 
@@ -2108,7 +2108,7 @@ char *Expr::stringify() const
 	case KIND_DATE:
 		return m_date ? m_date->toString() : strdup("");
 	}
-	
+
 	// object
 	return strdup("");
 }
@@ -2301,7 +2301,7 @@ Expr *lookup_object(const char *str, Context &ctx)
 	Scope *scope = ctx.stack().getScope(str);
 	if(scope) {
 			return new Expr(scope);
-	}	
+	}
 	return NULL;
 }
 
@@ -2312,9 +2312,9 @@ Expr *lookup_variable(const char *str, bool allowXml, Context &ctx)
 	if(obj) {
 		return obj;
 	}
-	
+
 	Variable *var = ctx.stack().get(str);
-	if(var) {		
+	if(var) {
 		// TODO: Lazy expansion goes here
 		return new Expr((Variable*) var);
 	}
@@ -2333,7 +2333,7 @@ Expr *namelist_expr_or_obj(const char *str, Context &ctx)
 	if(obj) {
 		return obj;
 	}
-	
+
 	return new Expr(str);
 }
 
@@ -2413,7 +2413,7 @@ Expr *evaluate_function(const char *str, const ExprList *args, Context &ctx)
 			throw;
 		}
 	}
-	
+
 	return NULL;
 }
 
@@ -2425,7 +2425,7 @@ Expr *concatenate_expr(const Expr &e1, const Expr &e2)
 		ConstCharPtr rs = concatenate_string(s1, s2);
 		return new Expr((const char*) rs);
 	}
-	
+
 	return new Expr();
 }
 

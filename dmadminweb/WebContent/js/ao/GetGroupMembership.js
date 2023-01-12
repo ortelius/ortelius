@@ -24,7 +24,7 @@ function LoadGroupMembershipData(tablename, objtypeAsInt, objtype, objid, addPar
  summSaveaddParams = addParams;
  groupmembership_tdedit = "";
  groupmembership_rowcnt = 0;
- 
+
  $.ajax(
    {
     url : "UserDetails?uid=" + summSaveobjid + "&type=AvailGroups4User",
@@ -40,7 +40,7 @@ function LoadGroupMembershipData(tablename, objtypeAsInt, objtype, objid, addPar
      {
       if (!data.groups[a].name.startsWith(userdom))
        continue;
-      
+
       groupmembershipdropdown += "<option value=\"gr" + data.groups[a].id + "\">" + data.groups[a].name + "</option>";
      }
     },
@@ -48,14 +48,14 @@ function LoadGroupMembershipData(tablename, objtypeAsInt, objtype, objid, addPar
      console.log(status);
      console.log(err);
     }
-   }); 
- 
+   });
+
 
  $.getJSON('UserDetails', "uid=" + objid + "&type=Groups4User", function(data)
  {
   var td = "";
   var rowcnt = 0;
-  
+
   for (a = 0; a < data.groups.length; a++)
   {
     key = "gr" + data.groups[a].id;
@@ -136,7 +136,7 @@ function SaveGroupMembershipData(tablename)
       success: function (data) {
       }
     });
-  
+
   $.ajax(
     {
      url: "UserDetails?gid="+ srvid + "&id=" + summSaveobjid + "&f=a",

@@ -37,7 +37,7 @@ public class CopyAndPaste extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
  HttpSession session = null;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -51,14 +51,14 @@ public class CopyAndPaste extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("application/json;charset=UTF-8");
-		
+
 		PrintWriter out = response.getWriter();
 
   try (DMSession so = DMSession.getInstance(request)) {
   session = request.getSession();
   session.setAttribute("session", so);
-  so.checkConnection(request.getServletContext());	
-  
+  so.checkConnection(request.getServletContext());
+
 		String mode = request.getParameter("f");
 		if (mode.equalsIgnoreCase("c")) {
 			// Copy Mode
@@ -242,9 +242,9 @@ public class CopyAndPaste extends HttpServlet {
 					System.out.println("category is "+cat.getName()+" catid="+catid);
 					newcat = !so.CategoryInDomain(obj.getId(), cat.getId(), domain, t);
 				}
-				
+
 				if (kind>0) {
-					out.print("{\"error\" : \"\", \"name\" : \"" + obj.getName() + "\", \"id\" : \"" + obj.getOtid() + "-"+kind+"\", \"rt\" : \""+rt+"\", \"category\": \""+catid+"\", \"catname\": \""+catname+"\", \"newcat\": "+newcat+"}");	
+					out.print("{\"error\" : \"\", \"name\" : \"" + obj.getName() + "\", \"id\" : \"" + obj.getOtid() + "-"+kind+"\", \"rt\" : \""+rt+"\", \"category\": \""+catid+"\", \"catname\": \""+catname+"\", \"newcat\": "+newcat+"}");
 				} else {
 					out.print("{\"error\" : \"\", \"name\" : \"" + obj.getName() + "\", \"id\" : \"" + obj.getOtid() + "\", \"rt\" : \""+rt+"\", \"category\": \""+catid+"\", \"catname\": \""+catname+"\", \"newcat\": "+newcat+"}");
 				}
@@ -261,4 +261,3 @@ public class CopyAndPaste extends HttpServlet {
 	}
 
 }
-

@@ -26,7 +26,7 @@ var $attvals = {
             },
           "cancel": function() {
         	  $( this ).dialog( "close" );
-          }  
+          }
      },
      Cancel: function() {
         $( this ).dialog( "close" );
@@ -45,7 +45,7 @@ var $modalatts = {
           },
         "cancel": function() {
       	  $( this ).dialog( "close" );
-        }  
+        }
         },
     Cancel: function() {
        $( this ).dialog( "close" );

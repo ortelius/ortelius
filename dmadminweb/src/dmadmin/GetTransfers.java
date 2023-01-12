@@ -35,7 +35,7 @@ public class GetTransfers
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -49,7 +49,7 @@ public class GetTransfers
 		throws ServletException, IOException
 	{
 		List<Transfer> xfers = session.getTransfers();
-		
+
 		JSONArray ret = new JSONArray();
 		for(Transfer x : xfers) {
 			ret.add(x.getName());

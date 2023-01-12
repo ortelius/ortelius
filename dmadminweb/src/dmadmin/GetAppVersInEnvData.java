@@ -36,11 +36,11 @@ public class GetAppVersInEnvData
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     public GetAppVersInEnvData() {
         super();
     }
-    
+
 	@Override
 	public IJSONSerializable handleRequest(DMSession session, boolean isPost,
 			HttpServletRequest request, HttpServletResponse response)
@@ -52,15 +52,15 @@ public class GetAppVersInEnvData
 		if((envid == 0) && (appid == 0)) {
 			return new JSONObject().add("result", false).add("error", "envid or appid must be specified");
 		}
-		
+
 		String reason = request.getParameter("reason");
 		String oldenv = request.getParameter("oldenv");
-		
+
 		if (oldenv != null && !oldenv.isEmpty())
 		 delenvid = new Integer(oldenv).intValue();
-		
+
 		System.out.println("GetAppVersInEnvData - reason="+reason);
-		
+
 		if(reason != null) {
 			if (reason.equalsIgnoreCase("envlist")) {
 				return getEnvironmentList(session);
@@ -68,7 +68,7 @@ public class GetAppVersInEnvData
 				int tid = getIntParameter(request, "tid", 0);
 				Application app = session.getApplication(appid, true);
 				List<Environment> envs = app.getPermittedEnvironments(tid);
-				TableDataSet data = session.envListToTableData(envs); 
+				TableDataSet data = session.envListToTableData(envs);
 				System.out.println("Done, data="+data.getJSON());
 				JSONObject obj = new JSONObject();
 				obj.add("data", data);
@@ -77,7 +77,7 @@ public class GetAppVersInEnvData
 				int tid = getIntParameter(request, "tid", 0);
 				Application app = session.getApplication(appid, false);
 				List<Environment> envs = app.getDeployedEnvironments(tid);
-				TableDataSet data = session.envListToTableData(envs); 
+				TableDataSet data = session.envListToTableData(envs);
 				System.out.println("Done, data="+data.getJSON());
 				JSONObject obj = new JSONObject();
 				obj.add("data", data);
@@ -94,7 +94,7 @@ public class GetAppVersInEnvData
 				 Environment env = session.getEnvironment(delenvid, false);
 				 session.clearAppInEnv(env, app);
 				}
-				setAppInEnv(session, envid, appid, isVersion, note); 
+				setAppInEnv(session, envid, appid, isVersion, note);
 				return addToAppsAllowedInEnv(session, envid, appid);
 			} else if(reason.equalsIgnoreCase("set")) {
 				if((envid == 0) || (appid == 0)) {
@@ -109,12 +109,12 @@ public class GetAppVersInEnvData
 				if((envid == 0) || (appid == 0)) {
 					return new JSONObject().add("result", false).add("error", "Both envid and appid must be specified");
 				}
-				return removeFromAppsAllowedInEnv(session, envid, appid);				
+				return removeFromAppsAllowedInEnv(session, envid, appid);
 			} else if(reason.equalsIgnoreCase("clr")) {
 				if((envid == 0) || (appid == 0)) {
 					return new JSONObject().add("result", false).add("error", "Both envid and appid must be specified");
 				}
-				return clearAppInEnv(session, envid, appid);				
+				return clearAppInEnv(session, envid, appid);
 			} else {
 				return new JSONObject().add("result", false).add("error", "Invalid reason");
 			}
@@ -124,31 +124,31 @@ public class GetAppVersInEnvData
 
 		if(envid > 0) {
 			Environment env = session.getEnvironment(envid, false);
-			
+
 			obj.add("readOnly", !env.isUpdatable());
-			
-			TableDataSet data = session.getAppVersInEnvData(env); 
+
+			TableDataSet data = session.getAppVersInEnvData(env);
 			obj.add("data", data);
 		} else if(appid > 0) {
 			Application app = session.getApplication(appid, false);
-			
+
 			obj.add("readOnly", !app.isUpdatable());
-			
+
 			System.out.println("Calling getAppVersInEnvData for app "+app.getId());
-			TableDataSet data = session.getAppVersInEnvData(app); 
+			TableDataSet data = session.getAppVersInEnvData(app);
 			System.out.println("Done, data="+data.getJSON());
 			obj.add("data", data);
 		}
-		
+
 		return obj;
 	}
-	
+
 	private IJSONSerializable getEnvironmentList(DMSession session)
 	{
 		List<Environment> envs =  session.getEnvironmentsInDomain();
 		JSONArray domarr = new JSONArray();
 		JSONArray envarr = new JSONArray();
-		
+
 		Environment LastEnvironment = null;
 		for(Environment e : envs) {
 			// list is ordered by domain first
@@ -186,7 +186,7 @@ public class GetAppVersInEnvData
 		obj.add("data", domarr);
 		return obj;
 	}
-	
+
 	private IJSONSerializable addToAppsAllowedInEnv(DMSession session, int envid, int appid)
 	{
 		System.out.println("GetAppVersInEnvData.addToAppsAllowedInEnv - " + envid + ", " + appid);
@@ -203,7 +203,7 @@ public class GetAppVersInEnvData
 			return new JSONObject().add("result", false).add("error", e);
 		}
 	}
-	
+
 	private IJSONSerializable setAppInEnv(DMSession session, int envid, int appid, boolean isVersion, String note)
 	{
 		System.out.println("GetAppVersInEnvData.setAppInEnv - " + envid + ", " + appid + ", " + isVersion + ", " + note);
@@ -227,7 +227,7 @@ public class GetAppVersInEnvData
 			return new JSONObject().add("result", false).add("error", e);
 		}
 	}
-	
+
 	private IJSONSerializable removeFromAppsAllowedInEnv(DMSession session, int envid, int appid)
 	{
 		System.out.println("GetAppVersInEnvData.removeFromAppsAllowedInEnv - " + envid + ", " + appid);

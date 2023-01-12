@@ -32,26 +32,26 @@ public class TaskCreateVersion
 	private Application m_predecessor;
 	private boolean m_useLatest;
 	private CommandLine m_cmd;
-	
+
 	public TaskCreateVersion() {
 	}
-	
+
 	public TaskCreateVersion(DMSession sess, int id, String name) {
 		super(sess, id, name);
 	}
-	
+
 	public Domain getTargetDomain() { return m_domain; }
 	public void setTargetDomain(Domain domain) { m_domain = domain; }
-	
+
 	public Application getApplication() { return m_application; }
 	public void setApplication(Application application) { m_application = application; }
-	
+
 	public Application getPredecessor() { return m_predecessor; }
 	public void setPredecessor(Application application) { m_predecessor = application; }
-	
+
 	public boolean getUseLatest() { return m_useLatest; }
 	public void setUseLatest(boolean useLatest) { m_useLatest = useLatest; }
-	
+
 	@Override
 	public boolean run()
 	{
@@ -84,7 +84,7 @@ public class TaskCreateVersion
   ds.addProperty(SummaryField.TASK_CREATEVERSION_DOMAIN, "Create Version in Domain", ((getTargetDomain() != null) ? getTargetDomain().getFullDomain() : null));
   return ds.getJSON();
  }
- 
+
 	public String getOutput() {
 		return m_cmd.getOutput();
 	}

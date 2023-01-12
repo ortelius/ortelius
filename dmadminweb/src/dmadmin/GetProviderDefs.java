@@ -36,7 +36,7 @@ public class GetProviderDefs
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -79,8 +79,8 @@ public class GetProviderDefs
 				throw new RuntimeException("Invalid object type");
 			}
 			List<ProviderDefinition> defs = session.getProviderDefinitionsOfType(objtype);
-			
-			
+
+
 			for(ProviderDefinition pd : defs) {
 				ret.add(pd.getLinkJSON());
 			}

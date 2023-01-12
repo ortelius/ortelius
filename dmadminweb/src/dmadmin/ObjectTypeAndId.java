@@ -27,7 +27,7 @@ public class ObjectTypeAndId
 	private ObjectType m_objtype;
 	private int m_id;
 	private int m_subid;
-	
+
 	public ObjectTypeAndId(String otid) {
 		if((otid == null) || (otid.length() < 3)) {
 			throw new RuntimeException("Invalid OTID: " + otid);
@@ -39,7 +39,7 @@ public class ObjectTypeAndId
 		if(m_objtype == null) {
 			throw new RuntimeException("Invalid Object Type: " + ot);
 		}
-		
+
 		if (oid.equalsIgnoreCase("-1")) {
 			// Initial creation?
 			m_id = -1;
@@ -70,11 +70,11 @@ public class ObjectTypeAndId
 		m_id = obj.getId();
 		m_subid = 0;
 	}
-	
+
 	public ObjectType getObjectType()  { return m_objtype; }
 	public int getId()  { return m_id; }
 	public int getSubId() { return m_subid; }
-	
+
 	public String toString() {
 		if (m_subid>0) {
 			return m_objtype.getTypeString() + m_id + "-" + m_subid;

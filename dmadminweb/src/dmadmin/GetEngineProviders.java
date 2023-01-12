@@ -36,7 +36,7 @@ public class GetEngineProviders
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -50,19 +50,19 @@ public class GetEngineProviders
 		throws ServletException, IOException
 	{
 		int engineid = getIntParameter(request, "engid");
-		
+
 		Engine engine = session.getEngine(engineid);
-		
+
 		List<ProviderDefinition> defs = engine.getProviderDefs();
-		
+
 		JSONArray ret = new JSONArray();
-		
+
 		for(ProviderDefinition pd : defs) {
 			JSONArray row = new JSONArray();
 			row.add(pd.getLinkJSON());
 			ret.add(row);
 		}
-		
+
 		return ret;
 	}
 

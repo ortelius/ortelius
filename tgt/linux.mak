@@ -1473,7 +1473,7 @@ $(CFG)/bin/libdmapi.so : libldap.so \
 	$(CFG)/dmapi/base64.o \
 		VERSIONINFO  \
 		RELOPTIONS RUL(Link)[25]{ gcc -shared -L/usr/lib $(BLD_OPTIONS_C) -lm -lrt} BTOG(Link|Build Task Options)[0]{} DT[5] \
-		DEBOPTIONS RUL(Link)[17]{ -g} RUL(Link)[25]{ gcc -shared -L/usr/lib $(BLD_OPTIONS_C) -lm -lrt} BTOG(Link|Build Task Options)[0]{} DT[5] \				
+		DEBOPTIONS RUL(Link)[17]{ -g} RUL(Link)[25]{ gcc -shared -L/usr/lib $(BLD_OPTIONS_C) -lm -lrt} BTOG(Link|Build Task Options)[0]{} DT[5] \
 	$(CFG)/dmapi/smtpemail.o \
 		VERSIONINFO  \
 		RELOPTIONS RUL(Link)[25]{ gcc -shared -L/usr/lib $(BLD_OPTIONS_C) -lm -lrt} BTOG(Link|Build Task Options)[0]{} DT[5] \
@@ -1781,7 +1781,7 @@ if ($ScriptVersion =~ /^\s*\$Header:\s*(\S+),v\s+(\S+)\s+(\S+)\s+(\S+)/ )
 #  @PerlData = $TargetRelDeps->load("TargetRelDeps", @PerlData );
 @PerlData = $TargetSrcDeps->load("TargetSrcDeps", @PerlData );
 
-####### Setting Compiler Choice and Search Behavior #######  
+####### Setting Compiler Choice and Search Behavior #######
 
 @CompilersPassedInFlags = ("gcc", "g++");
 $DefaultCompiler  = "gcc";
@@ -1793,7 +1793,7 @@ my $ForceIOption = ""; #-- both aCC and cc should support -I-
 my $ForceIMsg = '';
 
 #-- print warning
-$ForceIMsg = "Using $ForceIOption to override 'include \" \"' headers in local source directories\n\n" 
+$ForceIMsg = "Using $ForceIOption to override 'include \" \"' headers in local source directories\n\n"
   if ( $Quiet =~ /no/i );
 
 #-- add this to $IncludeNL so that it's printed in the logging
@@ -1828,7 +1828,7 @@ if ($Target->getExt() eq ".cl")
  if ($RC == 0)
  {
   open(FP, ">" . $Target->get());
-  
+
   foreach $src ($TargetSrcDeps->getList())
   {
    $f = Openmake::File->new($src);
@@ -1886,7 +1886,7 @@ if ($ScriptVersion =~ /^\s*\$Header:\s*(\S+),v\s+(\S+)\s+(\S+)\s+(\S+)/ )
 #  @PerlData = $TargetRelDeps->load("TargetRelDeps", @PerlData );
 #  @PerlData = $TargetSrcDeps->load("TargetSrcDeps", @PerlData );
 
-####### Setting Compiler Choice and Search Behavior #######  
+####### Setting Compiler Choice and Search Behavior #######
 
 @CompilersPassedInFlags = ("gcc", "g++", "ld", "c++");
 $DefaultCompiler  = "gcc";
@@ -1917,7 +1917,7 @@ if ( defined $FootPrintFile )
 
  #push(@DeleteFileList,$FPSource); # don't push source file in yet.
  push ( @DeleteFileList, $FPObject );
- 
+
  $CompilerArguments = "-c -o $FPObject $FPSource";
  $CompilerFound     = "cc";
  $CompilerFound     = "gcc", $FPObjKeep = "-Xlinker -bkeepfile:$FPObject" if ( $BuildType eq "GNU Executable" );
@@ -1978,7 +1978,7 @@ foreach $RawObject (@RawObjectList)
  $RawObjectObject = Openmake::File->new($RawObject);
  $Object = $RawObjectObject->getRelative();
   #-- JAG - 10.13.04 - case 4499 - UNIX spaces. Quote objects
- 
+
  if ($Object =~ m/lib([^\/\.]+)\.a$/)
  {
   $Object = " -l$1";
@@ -1993,7 +1993,7 @@ foreach $RawObject (@RawObjectList)
   next;
  }
 
- if( $Object =~ m/lib([^\/\.]+)\.so$/) 
+ if( $Object =~ m/lib([^\/\.]+)\.so$/)
  {
 
   $CorrectFMTSOLibs .= " -l$1";
@@ -2004,9 +2004,9 @@ foreach $RawObject (@RawObjectList)
  {
   $IncorrectFMTLibs .= " \"$Object\"";
   next;
- } 
+ }
 
- if( $Object =~ /\.so$/) 
+ if( $Object =~ /\.so$/)
  {
   $SOLibs .= " \"$Object\"";
   next;
@@ -2033,7 +2033,7 @@ $NoExtLibs        =~ s/^ //;
 @CorrectFMTLibList = &OrderLibs( $AORFile, @CorrectFMTLibList ) if ( $AORFile ne "" && -e $AORFile );
 $CorrectFMTLibs = join ( " ", @CorrectFMTLibList );
 
-$CompilerArguments = "$Flags $Defines $PerlLibs -o $TargetFile $Objs $FPObject $NoExtLibs $SOLibs $CorrectFMTSOLibs $CorrectFMTLibs $IncorrectFMTLibs "; 
+$CompilerArguments = "$Flags $Defines $PerlLibs -o $TargetFile $Objs $FPObject $NoExtLibs $SOLibs $CorrectFMTSOLibs $CorrectFMTLibs $IncorrectFMTLibs ";
 
 $ENV{LD_LIBRARY_PATH} = $VPath->getString( '', ':' ) . $ENV{LD_LIBRARY_PATH};
 
@@ -2061,7 +2061,7 @@ $RC = $?;
 
 omlogger("Final",$StepDescription,"ERROR:","ERROR: $StepDescription failed!",$Compiler,$CompilerArguments,$LibPathNL,$RC,@CompilerOut), $RC = 1 if ($RC != 0);
 omlogger("Final",$StepDescription,"ERROR:","$StepDescription succeeded.",$Compiler,$CompilerArguments,$LibPathNL,$RC,@CompilerOut) if ($RC == 0);
- 
+
 
 
 --End:GNU gcc Linker.sc

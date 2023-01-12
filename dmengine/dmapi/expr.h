@@ -106,7 +106,7 @@ public:
 	Expr(class Variable *var);
 	Expr(const Expr &copy);
 	~Expr();
-	
+
 	//Expr *operator + (const Expr &b) const;
 	//Expr *operator - () const;
 	//Expr *operator - (const Expr &b) const;
@@ -149,7 +149,7 @@ public:
 	class DMArray *toArray() const;
 	ObjectReference *toObjectReference() const;
 	class DateTime *toDate() const;
-	
+
 	friend class ExprList;
 	friend class SetStmt;
 	friend class Expr *evaluate_function(const char *str, const class ExprList *args, class Context &ctx);
@@ -158,7 +158,7 @@ public:
 
 
 class DMAPI_API ExprList : public virtual List<Expr>
-{	
+{
 public:
 	ExprList();
 	~ExprList();

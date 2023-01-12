@@ -6,7 +6,7 @@ CREATE TABLE dm.dm_discovery
   targetfilename character varying(2048),
   md5 character varying(256),
   discovery_time integer
-)  
+)
 WITH (
   OIDS=FALSE
 );

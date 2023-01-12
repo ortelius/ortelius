@@ -64,7 +64,7 @@ private:
 public:
     License();
     virtual ~License();
-    
+
     // Member Functions
     void   OpenLicenseFile(const char *BaseDir,const char *FileName);
     LicenseError   LoadLicenseFile();

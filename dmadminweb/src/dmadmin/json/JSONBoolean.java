@@ -24,7 +24,7 @@ public class JSONBoolean
 	implements IJSONSerializable
 {
 	private boolean m_value;
-		
+
 	public JSONBoolean(boolean value)
 	{
 		m_value = value;
@@ -35,7 +35,7 @@ public class JSONBoolean
 	{
 		return m_value ? "true" : "false";
 	}
-	
+
 	@Override
 	public String toString()
 	{

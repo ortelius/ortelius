@@ -32,7 +32,7 @@ public:
 	ModifyProviderImpl(class ExtendedStmt &parent);
 	virtual ~ModifyProviderImpl();
 
-	virtual void loadFile(const char *infile, class Context &ctx) = 0; 
+	virtual void loadFile(const char *infile, class Context &ctx) = 0;
 	virtual void saveFile(const char *outfile, class Context &ctx) = 0;
 
 	virtual void executeSubStmt(class ExtendedStmt &stmt, class Context &ctx) = 0;
@@ -78,7 +78,7 @@ public:
 	ModifyProviderStmtImpl(class ExtendedStmt &parent);
 	virtual ~ModifyProviderStmtImpl();
 
-	void execute(class Context &ctx); 
+	void execute(class Context &ctx);
 };
 
 

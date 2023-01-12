@@ -75,4 +75,3 @@ Remote script execution works by connecting to the ADMIN$ share and pushing a sm
 program which is started as a service using remote WMI interface. This service then
 accepts incoming requests to run jobs on the remote server. When the job completes
 the service shuts down and uninstalls itself automatically.
-

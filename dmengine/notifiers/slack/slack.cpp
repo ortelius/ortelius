@@ -70,7 +70,7 @@ void SlackNotifyImpl::handleRecipients(ExtendedStmt &stmt, Expr *recip, StringLi
 		return;
 	}
 	// recip->print();
-	
+
 	switch(recip->kind()) {
 	case KIND_OBJECT: {
 		ObjectReference *obj = recip->toObjectReference();
@@ -114,7 +114,7 @@ void SlackNotifyImpl::handleRecipients(ExtendedStmt &stmt, Expr *recip, StringLi
 		ConstCharPtr roomid = recip->toString();
 		if(roomid && roomid[0]) list.add(roomid);
 		}
-		break;	
+		break;
 	}
 }
 */
@@ -173,7 +173,7 @@ void SlackNotifyImpl::notify(
 		}
 	} else {
 		// No "to" specified - use default room id
-		
+
 	}
 	*/
 	char *params = (char *)malloc(body.size()+512);
@@ -295,7 +295,7 @@ NotifyProviderImpl *SlackNotifyImplFactory::create(
 extern "C" SLACK_EXPORT int slack_PluginStart(DM &dm)
 {
 	dm.writeToLogFile("Slack plugin V" SLACK_PLUGIN_VERSION);
-	
+
 	NotifyProviderImplRegistry::instance().registerFactory("slack", new SlackNotifyImplFactory());
 	return 0;
 }

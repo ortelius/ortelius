@@ -33,7 +33,7 @@ import dmadmin.model.Component;
 public class ReportsData extends HttpServletBase
 {
  /**
-  * 
+  *
   */
  private static final long serialVersionUID = -9191721031006941798L;
 
@@ -52,14 +52,14 @@ public class ReportsData extends HttpServletBase
   response.setContentType("text/html; charset=UTF-8");
   PrintWriter out = response.getWriter();
   String type = request.getParameter("type");
- 
+
   out.println("{");
   out.println("\"data\":");
-  
+
   if (type.equalsIgnoreCase("FileAudit"))
   {
    String md5 = request.getParameter("md5");
-   
+
    if (md5 != null)
    {
     JSONArray arr = session.getFileAuditReport(md5);
@@ -81,28 +81,28 @@ public class ReportsData extends HttpServletBase
     out.println(arr.getJSON());
     out.println("}");
     return;
-  }  
+  }
   else if (type.equalsIgnoreCase("ServerInventory"))
   {
     JSONArray arr = session.getServerInventoryReport();
     out.println(arr.getJSON());
     out.println("}");
     return;
-  }    
+  }
   else if (type.equalsIgnoreCase("AppList"))
   {
     JSONArray arr = session.getAppList();
     out.println(arr.getJSON());
     out.println("}");
     return;
-  }  
+  }
   else if (type.equalsIgnoreCase("RelList"))
   {
     JSONArray arr = session.getReleaseList();
     out.println(arr.getJSON());
     out.println("}");
     return;
-  }  
+  }
   else if (type.equalsIgnoreCase("CompList"))
   {
     JSONArray arr = session.getCompList();
@@ -112,21 +112,21 @@ public class ReportsData extends HttpServletBase
     System.out.println(arr.getJSON());
     System.out.println("}");
     return;
-  }  
+  }
   else if (type.equalsIgnoreCase("EnvList"))
   {
     JSONArray arr = session.getEnvList();
     out.println(arr.getJSON());
     out.println("}");
     return;
-  } 
+  }
   else if (type.equalsIgnoreCase("EndPointList"))
   {
     JSONArray arr = session.getEndPointList();
     out.println(arr.getJSON());
     out.println("}");
     return;
-  }  
+  }
   else if (type.equalsIgnoreCase("ActionList"))
   {
     JSONArray arr = session.getActionList();
@@ -140,49 +140,49 @@ public class ReportsData extends HttpServletBase
     out.println(arr.getJSON());
     out.println("}");
     return;
-  } 
+  }
   else if (type.equalsIgnoreCase("NotifierList"))
   {
     JSONArray arr = session.getNotifierList();
     out.println(arr.getJSON());
     out.println("}");
     return;
-  } 
+  }
   else if (type.equalsIgnoreCase("RepositoryList"))
   {
     JSONArray arr = session.getRepositoryList();
     out.println(arr.getJSON());
     out.println("}");
     return;
-  }  
+  }
   else if (type.equalsIgnoreCase("DatasourceList"))
   {
     JSONArray arr = session.getDatasourceList();
     out.println(arr.getJSON());
     out.println("}");
     return;
-  } 
+  }
   else if (type.equalsIgnoreCase("CredentialList"))
   {
     JSONArray arr = session.getCredentialList();
     out.println(arr.getJSON());
     out.println("}");
     return;
-  } 
+  }
   else if (type.equalsIgnoreCase("UserList"))
   {
     JSONArray arr = session.getUserList();
     out.println(arr.getJSON());
     out.println("}");
     return;
-  } 
+  }
   else if (type.equalsIgnoreCase("GroupList"))
   {
     JSONArray arr = session.getGroupList();
     out.println(arr.getJSON());
     out.println("}");
     return;
-  } 
+  }
   else if (type.equalsIgnoreCase("ServerCompTypeList"))
   {
     JSONArray arr = session.getServerCompTypeList();
@@ -196,7 +196,7 @@ public class ReportsData extends HttpServletBase
     out.println(arr.getJSON());
     out.println("}");
     return;
-  } 
+  }
   else if (type.equalsIgnoreCase("BuildJobList"))
   {
     JSONArray arr = session.getBuildJobList();
@@ -210,24 +210,24 @@ public class ReportsData extends HttpServletBase
     out.println(arr.getJSON());
     out.println("}");
     return;
-  } 
+  }
   else if (type.equalsIgnoreCase("Apps4Package"))
   {
    String pkgname = request.getParameter("pkgname");
    String pkgver = request.getParameter("pkgversion");
-   
+
    if (pkgname != null)
    {
     JSONArray arr = session.getApps4PackageList(pkgname, pkgver);
     out.println(arr.getJSON());
     out.println("}");
     return;
-   } 
-  } 
+   }
+  }
   else if (type.equalsIgnoreCase("appcompList"))
   {
    String appid = request.getParameter("appid");
-   
+
    if (appid != null)
    {
     JSONArray arr = new JSONArray();
@@ -236,18 +236,18 @@ public class ReportsData extends HttpServletBase
     for (int i=0;i< comps.size(); i++)
     {
      Component c = comps.get(i);
-     JSONObject obj = new JSONObject(); 
+     JSONObject obj = new JSONObject();
      obj.add("name", c.getName());
      obj.add("domain", c.getDomain().getFullDomain());
      arr.add(obj);
     }
-    
+
     out.println(arr.getJSON());
     out.println("}");
     return;
-   } 
-  } 
+   }
+  }
   out.println("}");
  }
- 
+
 }

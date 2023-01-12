@@ -14,7 +14,7 @@ editAreaLoader.load_syntax["dmscript"] = {
 		//]
 		, 'statements': [
             'echo', 'if', 'else', 'while', 'for', 'foreach', 'iterate', 'set', 'incr', 'decr',
-            'try', 'catch', 'finally', 'switch', 'case', 'default', 'break', 'continue', 
+            'try', 'catch', 'finally', 'switch', 'case', 'default', 'break', 'continue',
             'psloop', 'avloop', 'comploop', 'parallel', 'sequential', 'return', 'eval'
 		]
  		, 'actions': [
@@ -59,7 +59,7 @@ editAreaLoader.load_syntax["dmscript"] = {
 			'search' : '()(\\$\\w+)()'
 			,'class' : 'variables'
 			,'modifiers' : 'g'
-			,'execute' : 'before' // before or after 
+			,'execute' : 'before' // before or after
 		},
 		'var3' : {
 			'search' : '(set[\\t ]*)(\\w+)()'
@@ -81,7 +81,7 @@ editAreaLoader.load_syntax["dmscript"] = {
 			,'execute' : 'after' // before or after
 		},
 
-		
+
 		*/
 		'usingapp' : {
 			'search' : '()(using application)()'
@@ -113,7 +113,7 @@ editAreaLoader.load_syntax["dmscript"] = {
 				,'modifiers' : 'g'
 				,'execute' : 'before' // before or after
 		}
- 		
+
 	}
 	, 'STYLES': {
 	    'COMMENTS': 'color: #AAAAAA;'

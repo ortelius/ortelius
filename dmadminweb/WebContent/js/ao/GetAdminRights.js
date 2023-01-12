@@ -19,7 +19,7 @@ function LoadAdminRightsData(objtypeAsInt, objtype, objid)
 	summSaveobjtypeAsInt = objtypeAsInt;
 	summSaveobjtype = objtype;
 	summSaveobjid = objid;
-	
+
 	var ar = {};
 	ar["ar_override"] = "Override Access Control";
  ar["ar_cusers"] = "Users";
@@ -43,19 +43,19 @@ function LoadAdminRightsData(objtypeAsInt, objtype, objid)
   var title = "";
   var tdedit = "<form id=\"adminrightsform\"><table id=\"adminrightstab\" class=\"dev_table\"><tbody>";
   var td = "";
-  
+
   for (var r = 0; r < data.length; r++)
   {
    var myid = data[r].key;
-   
+
    if (!(myid in ar))
     continue;
-   
+
    var checked = data[r].checked;
    var disabled = data[r].disabled;
    var val = "No";
    var label = ar[myid];
-   
+
    if (checked.toLowerCase() == "checked")
     val = "Yes";
 
@@ -64,7 +64,7 @@ function LoadAdminRightsData(objtypeAsInt, objtype, objid)
    td += ":</td><td>";
    td += val;
    td += "</tr>";
-   
+
    if (disabled)
    {
     tdedit += "<tr>";
@@ -83,17 +83,17 @@ function LoadAdminRightsData(objtypeAsInt, objtype, objid)
     tdedit += "</tr>";
    }
   }
-  
+
   tdedit += "</tbody></table></form>";
 
   var pwd = parent.$("#adminrights > tbody");
   pwd.empty().append(td);
-  
+
   pwd = parent.$("#adminrights_data_edit");
   pwd.empty().append(tdedit);
-  
+
   saveAdminRights = new Array();
-  for (a = 0; a < data.length; a++) 
+  for (a = 0; a < data.length; a++)
   {
     saveAdminRights.push(data[a].key);
     console.log(data[a]);
@@ -106,27 +106,27 @@ function LoadAdminRightsData(objtypeAsInt, objtype, objid)
 
 function SaveAdminRightsData()
 {
- 
+
  var pwd = parent.$("#adminrights_data_edit");
- 
+
  if (!pwd.is(":visible"))
   return;
- 
+
  var url = "GroupDetails?gid=" + summSaveobjid + "&f=sv";
- 
+
  for (i=0;i<saveAdminRights.length;i++)
  {
   var key = saveAdminRights[i];
   key = key.substring(3);
-  
+
   if ($("#" + saveAdminRights[i]).is(':checked'))
    url += "&" + key + "=y";
   else
-   url += "&" + key + "=n";   
+   url += "&" + key + "=n";
  }
- 
+
  console.log(url);
- 
+
   saveRes = $.ajax(
   {
    url : url,

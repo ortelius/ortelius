@@ -30,7 +30,7 @@ function ptype_chg()
 function varnameUsed(varname)
 {
 	var res=false;
-	$("#tptable tr").each(function(i, tr) {   
+	$("#tptable tr").each(function(i, tr) {
 		var v = $.trim($(this).find("td").eq(2).html());
 		if (v == $.trim(varname)) {
 			res=true;
@@ -124,7 +124,7 @@ function AddParamButton()
 function EditParamButton()
 {
 	console.log("edit");
-	$("#tptable tr.ui-tp-highlight").each(function(i, tr) {   
+	$("#tptable tr.ui-tp-highlight").each(function(i, tr) {
 		var pos = $.trim($(this).find("td").eq(0).html());
 		var label = $.trim($(this).find("td").eq(1).html());
 		var varname = $.trim($(this).find("td").eq(2).html());
@@ -134,9 +134,9 @@ function EditParamButton()
 		console.log("varname="+varname);
 		console.log("typedesc="+typedesc);
 		var arrname = "";
-       
+
 		if (label == "&nbsp;") return;
-       	
+
 		var pwd = parent.$("#modal");
 		var buttons = [{
         	text : "Ok",
@@ -162,10 +162,10 @@ function EditParamButton()
 				parent.$("#modal").dialog("close");
         	}
        	}];
-		
+
        var tdedit = "<form id=\"tpform\"><table id=\"tptab\">";
        tdedit=tdedit+"</table></form>";
-       
+
        pwd.empty();
        var h="<table border=0 style=\"width:100%\">";
        h=h+"<tr><td style=\"width:200px;\">Label</td><td><input id=\"plabel\" value=\""+label+"\" width=\"40\"></td></tr>";
@@ -209,7 +209,7 @@ function EditParamButton()
 
 function DelParamButton()
 {
-	$("#tptable tr.ui-tp-highlight").each(function(i, tr) {   
+	$("#tptable tr.ui-tp-highlight").each(function(i, tr) {
 		console.log("got a row");
 		var varname = $.trim($(this).find("td").eq(2).html());
 		console.log("deleting varname "+varname);
@@ -266,7 +266,7 @@ function UpParamButton()
 	console.log("rowToMove.length="+rowToMove.length);
 	var prev = rowToMove.prev('tr.clickablerow');
 	console.log("prev.length="+prev.length);
-	if (prev.length == 1) { 
+	if (prev.length == 1) {
 		prev.before(rowToMove);
 		ChangeParamOrder();
 	}
@@ -362,7 +362,7 @@ function MoveDomGroupOut($item)
 			});
 		}
 	});
-	
+
 }
 
 function taskSummarySaved(newname) {
@@ -396,10 +396,10 @@ function taskSummarySaved(newname) {
    	helper : "clone",
    	cursor : "move"
    };
-  
+
   $(".icon_inline_Group").draggable(DraggableOptions);
  }
- 
+
 function Loaded()
 {
  $("#panel_deploy").show();
@@ -407,7 +407,7 @@ function Loaded()
 
 function seltask()
 {
-	if (SelectedTask!="") 
+	if (SelectedTask!="")
 	  $("#hl"+SelectedTask.substr(1)).css("background-color","white");
 	SelectedTask=$(this).attr("id");
 	$("#hl"+SelectedTask.substr(1)).css("background-color","#96ebff");
@@ -474,7 +474,7 @@ function seltask()
 function AddTask(tasktype)
 {
  $("#new_task_dropdown").hide();
- 
+
 	$.ajax({
 		async: true,
 		url: "DomainDetails?f=at&domainid=${domain.id}&tasktype="+tasktype,
@@ -548,7 +548,7 @@ function toggleTaskMenu()
 {
  var taskdd = $("#new_task_dropdown");
  var showing = taskdd.is(":visible");
- 
+
  console.log("showing " + showing);
  if (showing)
   taskdd.hide();
@@ -557,7 +557,7 @@ function toggleTaskMenu()
 }
 
 $(function()
-{	
+{
 	<c:choose>
 	<c:when test="${domain.updatable == true}">
 	$("#sub_panel_topleft").dmContextMenu(getmenu, {theme:'xp'});
@@ -573,7 +573,7 @@ $(function()
 	$("#t${tl.id}").click(seltask);
 	</c:forEach>
 	SelectedTask="";
-	
+
 	$("#panel_deploy").html("<div class=\"panel_container_title_area tasks\"><h1 class=\"taskpanels\">Task Detail</h1><button style=\"display:none\" class=\"edit_button_sub_small\" onClick=\"javascript:EditSummaryButton()\"><i class=\"fal fa-pencil\" aria-hidden=\"true\" style=\"padding-right:5px\"></i>Edit</button></div><div class=\"deploy_sub_panel_container\"><table id=\"task_summ\" class=\"dev_table\"><tbody></tbody></table></div>");
 	$("#task_params").html(
 			"<div class=\"panel_container_title_area\">"

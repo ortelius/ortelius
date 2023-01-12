@@ -23,7 +23,7 @@ public class DMActionLink implements java.io.Serializable {
 	private int m_nodeto;
 	private int m_pos;
 
-	
+
 	public DMActionLink() {
 		m_flowid=0;
 		m_nodefrom=0;
@@ -42,7 +42,7 @@ public class DMActionLink implements java.io.Serializable {
 	public void setPos(int pos) {
 		m_pos = pos;
 	}
-	
+
 	public int getFlowID() {
 		return m_flowid;
 	}

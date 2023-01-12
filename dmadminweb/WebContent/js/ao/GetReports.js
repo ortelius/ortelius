@@ -28,18 +28,18 @@ function CreateTimeline()
 		 console.log("GetTimeline?envid="+objid);
 		 url = "envid=" + objid;
 		 cbt = "ap";
-	 } else 
+	 } else
 	 if (objtype=="se") {
 		 // server
 		 console.log("GetTimeline?servid="+objid);
 		 url = "servid=" + objid;
-		 cbt = "co"; 
+		 cbt = "co";
 	 } else {
 		 // Suppress endpoint timeline for apps and releases
 		 $("#endpointtimeline").hide();
 		 $("#changehistoryheader").hide();
 	 }
-	
+
 	 if (url != "") {
 		 $("#endpointtimeline").show();
 		 $("#changehistoryheader").show();
@@ -66,14 +66,14 @@ function CreateTimeline()
 				    min: new Date(res.created * 1000),
 				    max: now
 				};
-				
+
 			if ("groups" in res)
-			{ 
+			{
 				for (g=0;g<res.groups.length;g++) {
 					groups.push({"content": "<a href='javascript:SwitchDisplay(\""+cbt+res.groups[g].id+"\");'><b>"+res.groups[g].name+"</b></a>", "id": res.groups[g].id, "value": res.groups[g].id});
 				}
 			}
-			
+
 			if ("items" in res)
 			{
 				for (i=0;i<res.items.length;i++) {
@@ -82,7 +82,7 @@ function CreateTimeline()
 			}
 				var container = document.getElementById('endpointtimeline');
 				container.innerHTML = "";
-				 
+
 				var timeline = new vis.Timeline(container);
 				timeline.setOptions(options);
 				timeline.setGroups(groups);
@@ -104,7 +104,7 @@ function CreateReports()
    + plot.data[seriesIndex][pointIndex][0] + '</td></tr><tr><td>time:</td><td>'
    + plot.data[seriesIndex][pointIndex][1] + '&nbsp;s</td></tr></table>';
  };
-  
+
  try {
   plot1 = $.jqplot('timetodeploylinechart', [[['no data', 0]]], {
    title: 'Time Taken to Deploy (Last 10 Deployments)',
@@ -139,7 +139,7 @@ function CreateReports()
   });
 
   $('#plot1resizable').bind('jqplotDataClick',
-          function (ev, seriesIndex, pointIndex, data) { 
+          function (ev, seriesIndex, pointIndex, data) {
 	  			// alert(data[seriesIndex][pointIndex][0]);
 	  			var depid = plot1.axes.xaxis.ticks[pointIndex];
 	  			DisplayDeploy(depid);
@@ -151,7 +151,7 @@ function CreateReports()
  } catch(e) {
   alert('Exception: ' + e);
  }
- 
+
  try {
   plot2 = $.jqplot('applicationsuccesspiechart', [[['no data', 0]]], {
    title: 'Application Deployments',
@@ -202,7 +202,7 @@ function ReplotReports(objtype)
    }
   });
   if((ret != null) && (ret.ticks != null)) {
-   if((options != null) && (options.dataAxis == 'x')) { 
+   if((options != null) && (options.dataAxis == 'x')) {
     plot.axes.yaxis.ticks = ret.ticks;
    } else {
     plot.axes.xaxis.ticks = ret.ticks;
@@ -219,24 +219,24 @@ function ReplotReports(objtype)
 	 console.log("GetTimeToDeploy?appid="+objid);
 	 jsonurl1 = "GetTimeToDeploy?appid=" + objid;
 	 jsonurl2 = "GetSuccessFailure?appid=" + objid;
- } else 
+ } else
  if (objtype=="se") {
 	 // server
 	 console.log("GetTimeToDeploy?servid="+objid);
 	 jsonurl1 = "GetTimeToDeploy?servid=" + objid;
 	 jsonurl2 = "GetSuccessFailure?servid=" + objid;
- } else 
+ } else
  if (objtype=="en") {
 	 // environment
 	 console.log("GetTimeToDeploy?envid="+objid);
 	 jsonurl1 = "GetTimeToDeploy?envid=" + objid;
 	 jsonurl2 = "GetSuccessFailure?envid=" + objid;
  }
- 
+
  if (jsonurl1 != null) {
 	 try {
-	  
-	  plot1._gridPadding = { top: null, right: null, bottom: null, left: null }; 
+
+	  plot1._gridPadding = { top: null, right: null, bottom: null, left: null };
 	  plot1.replot({
 	   data: jsonurl1,
 	   dataRenderer : ajaxDataRenderer,
@@ -245,7 +245,7 @@ function ReplotReports(objtype)
 	 } catch(e) {
 	  console.log('Exception: ' + e);
 	 }
-	
+
 	 try {
 	  plot2._gridPadding = { top: null, right: null, bottom: null, left: null };
 	  plot2.replot({

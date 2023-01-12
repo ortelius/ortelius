@@ -18,7 +18,7 @@ steps:
     id: login
     entrypoint: 'bash'
     args: ['-c', 'docker login quay.io --username "$$QUAY_USERID" --password $$QUAY_PASSWORD']
-    secretEnv: ['QUAY_USERID', 'QUAY_PASSWORD']     
+    secretEnv: ['QUAY_USERID', 'QUAY_PASSWORD']
     env:
       - 'DOCKER_CONFIG=/workspace/docker-config'
 
@@ -37,4 +37,4 @@ secrets:
     QUAY_USERID: ***REMOVED***
 - kmsKeyName: projects/eighth-physics-169321/locations/global/keyRings/cli/cryptoKeys/quay-pw
   secretEnv:
-    QUAY_PASSWORD: ***REMOVED*** 
+    QUAY_PASSWORD: ***REMOVED***

@@ -25,16 +25,16 @@ public class JSONObject
 	private class JSONProperty {
 		String key;
 		Object value;
-		
+
 		JSONProperty(String k, Object v) {
 			key = k;
 			value = v;
 		}
 	}
-	
+
 	private List<JSONProperty> m_items = new ArrayList<JSONProperty>();
 	private boolean m_allString;
-	
+
 	public JSONObject()
 	{
 		this(false);
@@ -44,7 +44,7 @@ public class JSONObject
 	{
 		m_allString = allString;
 	}
-	
+
 	public JSONObject add(String key, Object value)
 	{
 		m_items.add(new JSONProperty(key, value));
@@ -62,7 +62,7 @@ public class JSONObject
 			sb.append("\"").append(item.key).append("\":");
 			Object obj = item.value;
 			if(obj == null) {
-				sb.append("\"\"");				
+				sb.append("\"\"");
 			} else if(obj instanceof IJSONSerializable) {
 				sb.append(((IJSONSerializable) obj).getJSON());
 			} else if(m_allString || (obj instanceof String)) {
@@ -75,7 +75,7 @@ public class JSONObject
 		sb.append("}");
 		return sb.toString();
 	}
-	
+
 	@Override
 	public String toString()
 	{

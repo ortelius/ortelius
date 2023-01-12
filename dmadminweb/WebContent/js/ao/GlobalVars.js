@@ -362,7 +362,7 @@ var connectorPaintStyle = {
  outlineColor : "#EAEDEF",
  outlineWidth : 3
 },
-// .. and this is the hover style. 
+// .. and this is the hover style.
 connectorHoverStyle = {
  lineWidth : 2, // was 4
  strokeStyle : "#deea18"
@@ -447,7 +447,7 @@ sourceEndpointLeft = {
  isSource : true,
  connector : [ "Flowchart", {
   stub : [ 10, 10 ],
-  gap : 5 ,  
+  gap : 5 ,
   cornerRadius: 10
  } ],
  connectorStyle : connectorPaintStyle,
@@ -470,7 +470,7 @@ sourceEndpointRight = {
  isSource : true,
  connector : [ "Flowchart", {
   stub : [ 10, 10 ],
-  gap : 5 ,  
+  gap : 5 ,
   cornerRadius: 10
  } ],
  connectorStyle : connectorPaintStyle,
@@ -486,7 +486,7 @@ sourceEndpointRight = {
 },
 // a source endpoint that sits at BottomCenter
 // bottomSource = jsPlumb.extend( { anchor:"BottomCenter" }, sourceEndpoint),
-// the definition of target endpoints (will appear when the user drags a connection) 
+// the definition of target endpoints (will appear when the user drags a connection)
 targetEndpoint = {
  endpoint : "Dot",
  paintStyle : {
@@ -520,21 +520,21 @@ targetEndpoint = {
  var cCurrentMousePos = { x: -1, y: -1 };
  var ComponentCurrentRow=0;
  var CurrentlySelectedID=0;
- 
+
  var spinTimer1=null;
  var spinTimer2=null;
-                 
+
  var onpasteventmenu = [
                        {'View this Event': {icon:"images/edit.png",onclick:function(menuItem,menu){ModifyEvent(this);} } }
                      ];
-                     
+
  var ondeploymenu = [
                        {'Show Deployment Log': {icon:"images/deploy.gif",onclick:function(menuItem,menu){ShowDeploy(this);} } }
                      ];
-                  
+
  var ontempmenu = [
                     {'Create New Event':  {icon:"images/calendar-small.png",onclick:function(menuItem,menu){ModifyEvent(this);} } }
-                  ];  
+                  ];
 
 var blankmenu = [
                  {'Create New Event':function(menuItem,menu) { ModifyEvent(this); }} ];
@@ -542,16 +542,16 @@ var blankmenu = [
 var ontempReqmenu = [
         {'Request Time Slot': {icon:"images/calendar-small.png",onclick:function(menuItem,menu){ModifyEvent(this);} } }
                   ];
- 
+
  var menu1=[
             {"Go to this Component":  {icon:"css/images/components_sm.png",onclick:function(menuItem,menu){cGotoComponent(this);} }},
             {"Delete this Component": {icon:"images/delete.png",onclick:function(menuItem,menu){cDeleteNode(this);} }}
          ];
- 
+
  var mainmenu = [
                {'Create New Component': {icon:"css/images/components_sm.png",onclick:function(menuItem,menu){cNewComponent(this);} } }
-         ];       
- 
+         ];
+
  var menuVersions=[
             {"Go to this Application Version":  {icon:"css/images/applications_sm.png",onclick:function(menuItem,menu){aGotoApplication(this);} }},
             {"Delete this Application Version": {icon:"images/delete.png",onclick:function(menuItem,menu){aDeleteNode(this);} }}
@@ -561,92 +561,92 @@ var ontempReqmenu = [
             {"View Details":           {icon:"images/view.png",onclick:function(menuItem,menu){wfOpenDetails(this,false);} }},
             {"Delete this Activity":   {icon:"images/delete.png",onclick:function(menuItem,menu){wfDeleteNode(this);} }}
             ];
- 
+
  var menu1WorkflowProc=[
             {"View Details":           {icon:"images/view.png",onclick:function(menuItem,menu){wfOpenDetails(this,false);} }},
             {"Goto this Procedure":	   {icon:"css/images/functions_procedures_sm.png",onclick:function(menuItem,menu){wfViewAction(this);} }},
-            {"Delete this Activity":   {icon:"images/delete.png",onclick:function(menuItem,menu){wfDeleteNode(this);} }}        
+            {"Delete this Activity":   {icon:"images/delete.png",onclick:function(menuItem,menu){wfDeleteNode(this);} }}
             ];
- 
+
  var menu1WorkflowFunction=[
             {"View Details":           {icon:"images/view.png",onclick:function(menuItem,menu){wfOpenDetails(this,false);} }},
             {"Goto this Function":	   {icon:"css/images/functions_procedures_sm.png",onclick:function(menuItem,menu){wfViewAction(this);} }},
-            {"Delete this Activity":   {icon:"images/delete.png",onclick:function(menuItem,menu){wfDeleteNode(this);} }}              
+            {"Delete this Activity":   {icon:"images/delete.png",onclick:function(menuItem,menu){wfDeleteNode(this);} }}
             ];
- 
+
  var menu2Workflow=[
             {"View Details":           {icon:"images/view.png",onclick:function(menuItem,menu){wfOpenDetails(this,false);} }}
             ];
-         
+
  var menu2WorkflowProc=[
             {"View Details":           {icon:"images/view.png",onclick:function(menuItem,menu){wfOpenDetails(this,false);} }},
-            {"Goto this Procedure":	   {icon:"css/images/functions_procedures_sm.png",onclick:function(menuItem,menu){wfViewAction(this);} }}   
+            {"Goto this Procedure":	   {icon:"css/images/functions_procedures_sm.png",onclick:function(menuItem,menu){wfViewAction(this);} }}
             ];
-         
+
  var menu2WorkflowFunction=[
             {"View Details":           {icon:"images/view.png",onclick:function(menuItem,menu){wfOpenDetails(this,false);} }},
-            {"Goto this Function":	   {icon:"css/images/functions_procedures_sm.png",onclick:function(menuItem,menu){wfViewAction(this);} }}        
+            {"Goto this Function":	   {icon:"css/images/functions_procedures_sm.png",onclick:function(menuItem,menu){wfViewAction(this);} }}
             ];
 
  var menuRelVersions=[
                    {"Delete this Release Version": {icon:"images/delete.png",onclick:function(menuItem,menu){aDeleteNode(this);} }}
                 ];
- 
+
  var mainmenuVersions = [
                {'Create New Application Version': {icon:"css/images/appversions_sm.png",onclick:function(menuItem,menu){aNewVersions(this);} } }
          ];
- 
+
  var mainmenuAction = [
                          {'Create New Action': {icon:"css/images/appversions_sm.png",onclick:function(menuItem,menu){wfNewVersions(this);} } }
                    ];
-           
+
  var mainmenuRelVersions = [
                          {'Create New Release Version': {icon:"css/images/appversions_sm.png",onclick:function(menuItem,menu){aNewVersions(this);} } }
-                   ]; 
- 
+                   ];
+
  var menuApplicationVersion=[
             {"Delete this Application Version": {icon:"images/delete.png",onclick:function(menuItem,menu){avDeleteNode(this);} }}
          ];
- 
+
  var menuContextApplicationVersion=[
             {"Go to this Application Version":  {icon:"css/images/applications_sm.png",onclick:function(menuItem,menu){aGotoApplication(this);} }},
             {"Delete this Application Version": {icon:"images/delete.png",onclick:function(menuItem,menu){avDeleteNode(this);} }}
 ];
- 
+
  var mainmenuApplicationVersion = [
                {'Create New Application Version': {icon:"css/images/appversions_sm.png",onclick:function(menuItem,menu){avNewApplicationVersion(this);} } }
-         ]; 
+         ];
 
  var menuComponentVersions=[
                              {"Delete this Component Version": {icon:"images/delete.png",onclick:function(menuItem,menu){cvDeleteNode(this);} }}
                           ];
-                  
+
 var mainmenuComponentVersions = [
                                 {'Create New Component Version': {icon:"css/images/components_sm.png",onclick:function(menuItem,menu){cvNewComponentVersions(this);} } }
-                          ]; 
+                          ];
 
 var menuComponentItems=[
                            {"Edit Details":    {icon:"images/view.png",onclick:function(menuItem,menu){ciOpenDetails(this);} }},
                            {"Delete this Component Item": {icon:"images/delete.png",onclick:function(menuItem,menu){ciDeleteNode(this);} }}
                         ];
-                
+
 var mainmenuComponentItems = [
                               {'Create New Component Item': {icon:"css/images/component_items_sm.png",onclick:function(menuItem,menu){ciNewComponentItems(this,'file');} } },
                               {'Create New Container Component Item': {icon:"css/images/component_items_sm.png",onclick:function(menuItem,menu){ciNewComponentItems(this,'docker');} } },
                               {'Create New Database Component Item': {icon:"css/images/component_items_sm.png",onclick:function(menuItem,menu){ciNewComponentItems(this,'database');} } }
-                        ]; 
+                        ];
 
 var menuReleaseVersion=[
                       {"Delete this Release Version": {icon:"images/delete.png",onclick:function(menuItem,menu){avDeleteNode(this);} }}
                    ];
- 
+
 var startmenu=[
                {"View Start Parameters":  {icon:"images/view.png",onclick:function(menuItem,menu){OpenStartParameters(this);} }}
             ];
-            
+
 var TaskList = new Array();
 
-var obj2Int = { "en":[2,"Environment"], 
+var obj2Int = { "en":[2,"Environment"],
   "do":[3,"Domain"],
   "se":[4,"Server"],
   "ap":[5,"Application"],
@@ -671,18 +671,18 @@ var obj2Int = { "en":[2,"Environment"],
   "rp":[27,"Reverse Proxy"],
   "cp":[66,"Category"],
   "ct":[67,"Endpoint Type"],
-  "cy":[68,"Category"],  
-  "cf":[69,"Category"],  
-  "cc":[70,"Category"],    
+  "cy":[68,"Category"],
+  "cf":[69,"Category"],
+  "cc":[70,"Category"],
   "pr":[90,"Procedure"],
   "fn":[91,"Function"],
   "fg":[92,"Fragment"],
   "sr":[100,"Source"],
   "cm":[101,"Commit"],
   "df":[102,"Defect"]};
-  
-  
-var Int2obj = { 2:["en","Environment"], 
+
+
+var Int2obj = { 2:["en","Environment"],
   3:["do","Domain"],
   4:["se","Server"],
   5:["ap","Application"],
@@ -705,11 +705,11 @@ var Int2obj = { 2:["en","Environment"],
   24:["be","Build Engine"],
   25:["bj","Build Job"],
   27:["rp","Reverse Proxy"],
-  66:["cp","Category"],  
+  66:["cp","Category"],
   67:["ct","Endpoint Type"],
-  68:["cy","Category"],  
-  69:["cf","Category"], 
-  70:["cc","Category"],  
+  68:["cy","Category"],
+  69:["cf","Category"],
+  70:["cc","Category"],
   90:["pr","Procedure"],
   91:["fn","Function"],
   92:["fg","Fragment"],
@@ -723,23 +723,23 @@ var tree2menu = {  "#applications_tree": "application",
 "#environments_tree": "environment",
 "#builders_tree": "buildeng",
 "#credentials_tree": "credential",
-"#servers_tree": "endpoint",  
-"#domains_tree": "domain", 
-"#datasources_tree": "datasource", 
-"#repositories_tree": "repository",  
+"#servers_tree": "endpoint",
+"#domains_tree": "domain",
+"#datasources_tree": "datasource",
+"#repositories_tree": "repository",
 "#notifiers_tree": "notifier",
-"#actions_tree": "action",   
+"#actions_tree": "action",
 "#notifiers_tree": "notifier",
-"#users_tree": "user", 
-"#types_tree": "servercomptype",        
+"#users_tree": "user",
+"#types_tree": "servercomptype",
 "#groups_tree": "group"};
-  
+
 var menu2tree = {
   "setup_menu":"setup_tab",
   "domains_menu":"domains_tab",
   "application_menu":"releases_tab",
-  "containers_menu":"repositories_tab",  
-  "endpoints_menu":"environments_tab", 
+  "containers_menu":"repositories_tab",
+  "endpoints_menu":"environments_tab",
   "deploy_menu":"actions_tab",
   "usersgroups_menu":"users_tab"};
 
@@ -749,60 +749,60 @@ var treeloaded = {  "applications_tree": false,
         "environments_tree": false,
         "builders_tree": false,
         "credentials_tree": false,
-        "servers_tree": false,  
-        "domains_tree": false, 
-        "datasources_tree": false, 
-        "repositories_tree": false,  
+        "servers_tree": false,
+        "domains_tree": false,
+        "datasources_tree": false,
+        "repositories_tree": false,
         "notifiers_tree": false,
-        "actions_tree": false,   
+        "actions_tree": false,
         "notifiers_tree": false,
-        "users_tree": false, 
-        "types_tree": false,        
+        "users_tree": false,
+        "types_tree": false,
         "groups_tree": false};
-        
+
 var canView = {  "#applications_tree": true,
   "#releases_tree": true,
   "#components_tree": true,
   "#environments_tree": true,
   "#builders_tree": true,
   "#credentials_tree": true,
-  "#servers_tree": true,  
-  "#repositories_tree": true,    
-  "#datasources_tree": true, 
-  "#actions_tree": true,  
+  "#servers_tree": true,
+  "#repositories_tree": true,
+  "#datasources_tree": true,
+  "#actions_tree": true,
   "#domains_tree": true,
   "#notifiers_tree": true,
-  "#users_tree": true,  
-  "#types_tree": true,   
+  "#users_tree": true,
+  "#types_tree": true,
   "#groups_tree": true};
-    
+
 var appTabs = { "#applications_tree":["#tabs-General",
             "#tabs-PackageComponents",
 			"#tabs-apps2s"],
-    "#components_tree":["#tabs-General"],         
+    "#components_tree":["#tabs-General"],
     "#releases_tree":["#tabs-General",
-                      "#tabs-PackageApplications"],       
+                      "#tabs-PackageApplications"],
      "#domains_tree":["#tabs-General",
           "#tabs-Tasks",
-          "#tabs-Access"],      
+          "#tabs-Access"],
     "#environments_tree":["#tabs-General",
                           "#tabs-Calendar"],
-    "#servers_tree":["#tabs-General"],                 
+    "#servers_tree":["#tabs-General"],
              "#credentials_tree":["#tabs-General"],
                 "#actions_tree":["#tabs-General"],
                 "#functions_tree":["#tabs-General"],
-                "#procedures_tree":["#tabs-General"],                                                
-                "#repositories_tree":["#tabs-General"], 
-                "#datasources_tree":["#tabs-General"],                              
+                "#procedures_tree":["#tabs-General"],
+                "#repositories_tree":["#tabs-General"],
+                "#datasources_tree":["#tabs-General"],
                 "#notifiers_tree":["#tabs-General"],
                 "#users_tree":["#tabs-General"],
                  "#groups_tree":["#tabs-General"],
              "#builders_tree":["#tabs-General"],
              "#types_tree":["#tabs-General"]
-            };  
- 
+            };
+
 var currentSubTabsSelection = { "#applications_tree":["tabs-General",""],
-                            "#releases_tree":["tabs-General", ""],       
+                            "#releases_tree":["tabs-General", ""],
                                "#domains_tree":["tabs-General", ""],
                                "#components_tree":["tabs-General", ""],
                             "#environments_tree":["tabs-General", ""],
@@ -812,16 +812,16 @@ var currentSubTabsSelection = { "#applications_tree":["tabs-General",""],
                                 "#actions_tree":["tabs-General", ""],
                                 "#functions_tree":["tabs-General", ""],
                                 "#procedures_tree":["tabs-General", ""],
-                                "#repositories_tree":["tabs-General", ""], 
+                                "#repositories_tree":["tabs-General", ""],
                                 "#datasources_tree":["tabs-General", ""],
-                                "#groups_tree":["tabs-General", ""], 
-                                "#users_tree":["tabs-General", ""], 
+                                "#groups_tree":["tabs-General", ""],
+                                "#users_tree":["tabs-General", ""],
                                 "#servers_tree":["tabs-General", ""],
                                 "#notifiers_tree":["tabs-General", ""],
                                 "#builders_tree":["tabs-General", ""]
-          };  
-          
-var plot1 = null, plot2 = null, plot3 = null, plot4 = null;  
+          };
+
+var plot1 = null, plot2 = null, plot3 = null, plot4 = null;
 
 var menuForType = {
   "co": {tm: "application_menu",    t: "components_tab",   image : "css/images/components_sm.png"},  // Component Base
@@ -836,8 +836,8 @@ var menuForType = {
   "en": {tm: "endpoints_menu",  t: "environments_tab", image : "css/images/environments_sm.png"},  // Environments
   "pr": {tm: "deploy_menu",     t: "procedures_tab",   image : "css/images/functions_procedures_sm.png"},  // Procedures
   "fn": {tm: "deploy_menu",     t: "procedures_tab",   image : "css/images/functions_procedures_sm.png"},  // Functions
-  "do": {tm: "domains_menu",    t: "domains_tab",      image : "css/images/domains_sm.png"},   // Domains 
-  "rp": {tm: "domains_menu",    t: "domains_tab",      image : "css/images/domains_sm.png"},   // Domains  
+  "do": {tm: "domains_menu",    t: "domains_tab",      image : "css/images/domains_sm.png"},   // Domains
+  "rp": {tm: "domains_menu",    t: "domains_tab",      image : "css/images/domains_sm.png"},   // Domains
   "ds": {tm: "containers_menu", t: "datasources_tab",  image : "css/images/datasources_sm.png"},  // Datasources
   "be": {tm: "endpoints_menu",  t: "builders_tab",     image : "css/images/buildengines_sm.png"},   // Build Engines
   "bj": {tm: "endpoints_menu",  t: "builders_tab",     image : "css/images/buildjobs_sm.png"},   // Build Jobs
@@ -881,7 +881,7 @@ compitem_colmap.set('rollup', ["702", false, "rr", "Roll Forward"]);
 compitem_colmap.set('targetdirectory', ["705", false, "", "Target Directory"]);
 compitem_colmap.set('xpos', ["714", false, "", "xpos"]);
 compitem_colmap.set('ypos', ["715", false, "", "ypos"]);
-        
+
 
 function getLocaleDateString(){
 
@@ -1101,7 +1101,7 @@ function getLocaleDateString(){
     // return formats[navigator.language] || 'dd/mm/yyyy';
     return userdatefmt;
 
- } 
+ }
 
 function getLocaleDatePickerString(){
 
@@ -1321,4 +1321,4 @@ function getLocaleDatePickerString(){
     return formats[navigator.language] || 'dd/MM/yy';
 
  	// return userdatefmt;
- } 
+ }

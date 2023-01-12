@@ -36,14 +36,14 @@ public class GetDeploymentStepDetailsData
 	extends HttpServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public GetDeploymentStepDetailsData() {
         super();
     }
-    
+
     public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
    		throws ServletException, IOException
@@ -53,16 +53,16 @@ public class GetDeploymentStepDetailsData
 		int depid = ServletUtils.getIntParameter(request, "id");
 		int stepid = ServletUtils.getIntParameter(request, "step");
 		int instid = ServletUtils.getIntParameter(request, "inst");
-	
+
 		Deployment dep = session.getDeployment(depid, false);
-		
+
 		JSONObject obj = new JSONObject();
 		obj.add("readOnly", true);
 		obj.add("data", dep.getStepDetails(stepid, instid).getStepJSON());
-		
+
 		String ret = obj.toString();
-		
+
 		out.println(ret);
-		System.out.println(ret);	
+		System.out.println(ret);
    	}
 }

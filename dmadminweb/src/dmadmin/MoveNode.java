@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class MoveNode extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -38,7 +38,7 @@ public class MoveNode extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
     	   		HttpServletRequest request, HttpServletResponse response)
@@ -63,7 +63,7 @@ public class MoveNode extends HttpServletBase {
 		System.out.println("parentid="+parentid);
 		String targettype = request.getParameter("targettype");
         int targetid = ServletUtils.getIntParameter(request,"targetid",0);
-        
+
 		PrintWriter out = response.getWriter();
 		String errtext = session.MoveObject(nodetype, parentid, nodeid, targettype, targetid);
 		out.print("{\"errtext\" : \"" + errtext + "\"}");

@@ -7,4 +7,3 @@ CREATE TABLE dm.dm_typeaccess (
   readaccess character(1),
   writeaccess character(1)
 );
-

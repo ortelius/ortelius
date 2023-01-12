@@ -1,14 +1,14 @@
 /**
  * Copyright (c)2005-2009 Matt Kruse (javascripttoolbox.com)
- * 
- * Dual licensed under the MIT and GPL licenses. 
+ *
+ * Dual licensed under the MIT and GPL licenses.
  * This basically means you can use this code however you want for
  * free, but don't claim to have written it yourself!
  * Donations always accepted: http://www.JavascriptToolbox.com/donate/
- * 
+ *
  * Please do not link to the .js files on javascripttoolbox.com from
  * your site. Copy the files locally to your server instead.
- * 
+ *
  */
 /**
  * jquery.contextmenu.js
@@ -16,7 +16,7 @@
  * http://www.JavascriptToolbox.com/lib/contextmenu/
  *
  * Copyright (c) 2008 Matt Kruse (javascripttoolbox.com)
- * Dual licensed under the MIT and GPL licenses. 
+ * Dual licensed under the MIT and GPL licenses.
  *
  * @version 1.1
  * @history 1.1 2010-01-25 Fixed a problem with 1.4 which caused undesired show/hide animations
@@ -43,14 +43,14 @@
 		appendTo:'body',
 		direction:'down',
 		constrainToScreen:true,
-				
+
 		showTransition:'show',
 		hideTransition:'hide',
 		showSpeed:null,
 		hideSpeed:null,
 		showCallback:null,
 		hideCallback:null,
-		
+
 		className:'dmcontext-menu',
 		itemClassName:'dmcontext-menu-item',
 		itemHoverClassName:'dmcontext-menu-item-hover',
@@ -68,14 +68,14 @@
 		bgiframe:null, // The iframe object for IE6
 		shown:false, // Currently being shown?
 		useIframe:/*@cc_on @*//*@if (@_win32) true, @else @*/false,/*@end @*/ // This is a better check than looking at userAgent!
-		
+
 		// Create the menu instance
 		create: function(menu,opts) {
 			var cmenu = $.extend({},this,opts); // Clone all default properties to created object
 			// If a selector has been passed in, then use that as the menu
 			if (typeof menu=="string") {
 				cmenu.menu = $(menu);
-			} 
+			}
 			// If a function has been passed in, call it each time the menu is shown to create the menu
 			else if (typeof menu=="function") {
 				cmenu.menuFunction = menu;
@@ -88,7 +88,7 @@
 				cmenu.menu.css({display:'none'});
 				$(cmenu.appendTo).append(cmenu.menu);
 			}
-			
+
 			// Create the shadow object if shadow is enabled
 			if (cmenu.shadow) {
 				cmenu.createShadow(cmenu); // Extracted to method for extensibility
@@ -97,12 +97,12 @@
 			$('body').bind('contextmenu',function(){cmenu.hide();}); // If right-clicked somewhere else in the document, hide this menu
 			return cmenu;
 		},
-		
+
 		// Create an iframe object to go behind the menu
 		createIframe: function() {
 		    return $('<iframe frameborder="0" tabindex="-1" src="javascript:false" style="display:block;position:absolute;z-index:-1;filter:Alpha(Opacity=0);"/>');
 		},
-		
+
 		// Accept an Array representing a menu structure and turn it into HTML
 		createMenu: function(menu,cmenu) {
 			var className = cmenu.className;
@@ -111,7 +111,7 @@
 			var $tr = $('<tr></tr>');
 			var $td = $('<td></td>');
 			var $div = $('<div class="'+className+'"></div>');
-			
+
 			// Each menu item is specified as either:
 			//     title:function
 			// or  title: { property:value ... }
@@ -134,7 +134,7 @@
 			//console.log("menu.length="+menu.length);
 			return $t;
 		},
-		
+
 		// Create an individual menu item
 		createMenuItem: function(label,obj) {
 			var cmenu = this;
@@ -163,47 +163,47 @@
 			$div.append($idiv);
 			return $div;
 		},
-		
+
 		// Create a separator row
 		createSeparator: function() {
 			return $('<div class="'+this.separatorClassName+'"></div>');
 		},
-		
+
 		// Determine if an individual item is currently disabled. This is called each time the item is hovered or clicked because the disabled status may change at any time
 		isItemDisabled: function(item) { return $(item).is('.'+this.disabledItemClassName); },
-		
+
 		// Functions to fire on hover. Extracted to methods for extensibility
 		hoverItem: function(c) { $(this).addClass(c); },
 		hoverItemOut: function(c) { $(this).removeClass(c); },
-		
+
 		// Create the shadow object
 		createShadow: function(cmenu) {
 			cmenu.shadowObj = $('<div class="'+cmenu.shadowClass+'"></div>').css( {display:'none',position:"absolute", zIndex:9998, opacity:cmenu.shadowOpacity, backgroundColor:cmenu.shadowColor } );
 			$(cmenu.appendTo).append(cmenu.shadowObj);
 		},
-		
+
 		// Display the shadow object, given the position of the menu itself
 		showShadow: function(x,y,e) {
 			var cmenu = this;
 			if (cmenu.shadow) {
 				cmenu.shadowObj.css( {
-					width:(cmenu.menu.width()+cmenu.shadowWidthAdjust)+"px", 
-					height:(cmenu.menu.height()+cmenu.shadowHeightAdjust)+"px", 
-					top:(y+cmenu.shadowOffsetY)+"px", 
+					width:(cmenu.menu.width()+cmenu.shadowWidthAdjust)+"px",
+					height:(cmenu.menu.height()+cmenu.shadowHeightAdjust)+"px",
+					top:(y+cmenu.shadowOffsetY)+"px",
 					left:(x+cmenu.shadowOffsetX)+"px"
 				}).addClass(cmenu.shadowClass)[cmenu.showTransition](cmenu.showSpeed);
 			}
 		},
-		
+
 		// A hook to call before the menu is shown, in case special processing needs to be done.
 		// Return false to cancel the default show operation
 		beforeShow: function() { return true; },
-		
+
 		// Show the context menu
 		show: function(t,e) {
 			var cmenu=this, x=e.pageX, y=e.pageY;
 			cmenu.target = t; // Preserve the object that triggered this context menu so menu item click methods can see it
-	  
+
 			if (cmenu.beforeShow()!==false) {
 				// If the menu content is a function, call it to populate the menu each time it is displayed
 				if (cmenu.menuFunction) {
@@ -227,7 +227,7 @@
 				$(document).one('click',null,function(){cmenu.hide();}); // Handle a single click to the document to hide the menu
 			}
 		},
-		
+
 		// Find the position where the menu should appear, given an x,y of the click event
 		getPosition: function(clickX,clickY,cmenu,e) {
 			var x = clickX+cmenu.offsetX;
@@ -246,7 +246,7 @@
 			if (dir=="up") { y -= h; }
 			return {'x':x,'y':y};
 		},
-		
+
 		// Hide the menu, of course
 		hide: function() {
 			console.log("in hide");
@@ -260,7 +260,7 @@
 			cmenu.shown = false;
 		}
 	};
-	
+
 	// This actually adds the .dmcontextMenu() function to the jQuery namespace
 	$.fn.dmContextMenu = function(menu,options) {
 		var cmenu = $.dmContextMenu.create(menu,options);

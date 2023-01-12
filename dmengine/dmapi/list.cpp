@@ -88,7 +88,7 @@ StringListIterator::StringListIterator(const StringList &list)
 	: m_list(list), m_pos(NULL)
 {}
 
-	
+
 const char *StringListIterator::first()
 {
 	m_pos = m_list.m_head;
@@ -168,7 +168,7 @@ IntListIterator::IntListIterator(const IntList &list)
 	: m_list(list), m_pos(NULL)
 {}
 
-	
+
 int IntListIterator::first()
 {
 	m_pos = m_list.m_head;

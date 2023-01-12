@@ -23,15 +23,15 @@ public class Group implements java.io.Serializable {
 	private String m_email;
 	private String m_Domain;
 	private String m_Summary;
-	
-	
+
+
 	public Group() {
 		m_GroupName = "";
 		m_Domain = "";
 		m_email="";
 		m_Summary="";
     }
-    
+
 	public Group(String gname, String gdomain, String gsummary, String gemail) {
         // empty constructor
 		m_GroupName = gname;
@@ -39,7 +39,7 @@ public class Group implements java.io.Serializable {
 		m_email=gemail;
 		m_Summary=gsummary;
     }
-	
+
 	public void setGroupName(String userName) {
 		m_GroupName = userName;
 	}
@@ -52,7 +52,7 @@ public class Group implements java.io.Serializable {
 	public void setSummary(String summary) {
 		m_Summary = summary;
 	}
-	
+
 	public String getGroupName() {
 		return m_GroupName;
 	}

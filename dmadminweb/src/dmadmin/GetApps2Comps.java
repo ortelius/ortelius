@@ -32,15 +32,15 @@ import dmadmin.json.JSONObject;
 public class GetApps2Comps extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public GetApps2Comps() {
         super();
     }
-    
-@Override    
+
+@Override
 public IJSONSerializable handleRequest(DMSession session, boolean isPost,
       HttpServletRequest request, HttpServletResponse response)
      throws ServletException, IOException
@@ -48,7 +48,7 @@ public IJSONSerializable handleRequest(DMSession session, boolean isPost,
     	response.setContentType("application/json");
 		String appids = request.getParameter("appids");
 		JSONObject data = session.getApps2CompsNodesEdges(appids);
-		String ret = data.getJSON();	
+		String ret = data.getJSON();
 		System.out.println(ret);
 		return data;
    	}

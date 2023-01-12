@@ -35,10 +35,10 @@ public class Deployment
 	extends DMObject
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -9012423705055815648L;
-	
+
 	private Application m_app;
 	private Environment m_env;
 	private User m_user;
@@ -47,10 +47,10 @@ public class Deployment
 	private int m_exitCode;
 	private String m_exitStatus;
 	private boolean m_colorize;
-	
+
 	public Deployment() {
 	}
-	
+
 	public Deployment(DMSession sess, int id, int exitCode) {
 		super(sess, id, "#" + id);
 		m_exitCode = exitCode;
@@ -70,25 +70,25 @@ public class Deployment
 	public String getForeignKey() {
 		return "deploymentid";
 	}
-	
+
 	public Application getApplication()  { return m_app; }
 	public void setApplication(Application app)  { m_app = app; }
 
 	public Environment getEnvironment()  { return m_env; }
 	public void setEnvironment(Environment env)  { m_env = env; }
-	
+
 	public User getUser()  { return m_user; }
 	public void setUser(User user)  { m_user = user; }
-	
+
 	public int getStarted()  { return m_started; }
 	public void setStarted(int started)  { m_started = started; }
-	
+
 	public int getFinished()  { return m_finished; }
 	public void setFinished(int finished)  { m_finished = finished; }
-	
+
 	public int getExitCode()  { return m_exitCode; }
 	public void setExitCode(int exitCode)  { m_exitCode = exitCode; }
-	
+
 	public String getExitStatus()  { return m_exitStatus; }
 	public void setExitStatus(String exitStatus)  { m_exitStatus = exitStatus; }
 
@@ -101,11 +101,11 @@ public class Deployment
 		if(!isComplete()) { return "deployrun-large.gif"; }
 		return (m_exitCode == 0) ? "deploy-large.png" : "deployfail-large.png";
 	}
-	
+
 	public boolean isComplete() {
 		return (m_finished != 0);
 	}
-	
+
 	//public boolean getColorize()  { return m_colorize; }
 	public void setColorize(boolean colorize)  { m_colorize = colorize; }
 
@@ -133,9 +133,9 @@ public class Deployment
 	@Override
 	public IJSONSerializable getLinkJSON() {
 	 LinkField l = new LinkField(ObjectType.DEPLOYMENT, m_id, m_name,
-				(m_finished != 0) ? m_session.formatDateToUserLocale(m_finished) : 
+				(m_finished != 0) ? m_session.formatDateToUserLocale(m_finished) :
 					(m_started != 0) ? m_session.formatDateToUserLocale(m_started) : null);
-	 
+
 	 l.setDeploymentid(getId());
 	 return l;
 	}
@@ -150,16 +150,16 @@ public class Deployment
 		implements Serializable
 	{
 		private static final long serialVersionUID = -544942802319970165L;
-		
+
 		private int m_lineno;
 		private int m_stream;
 		private int m_thread;
 		private String m_line;
 		private int m_color;
-		
-		public DeploymentLogEntry() {	
+
+		public DeploymentLogEntry() {
 		}
-		
+
 		public DeploymentLogEntry(int lineno, int stream, int thread, String line) {
 			m_lineno = lineno;
 			m_stream = stream;
@@ -167,19 +167,19 @@ public class Deployment
 			m_line = line;
 			m_color = 0;
 		}
-		
+
 		public int getLineNo()  { return m_lineno; }
 		public void setLineNo(int lineno)  { m_lineno = lineno; }
-		
+
 		public int getStream()  { return m_stream; }
 		public void setStream(int stream)  { m_stream = stream; }
-		
+
 		public int getThread()  { return m_thread; }
 		public void setThread(int thread)  { m_thread = thread; }
-		
+
 		public String getLine()  { return m_line; }
 		public void setLine(String line)  { m_line = line; }
-		
+
 		public int getColor()  { return m_color; }
 		public void setColor(int color)  { m_color = color; }
 
@@ -188,7 +188,7 @@ public class Deployment
 					.replace(" ", "&nbsp;")
 					.replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
 		}
-		
+
 		public IJSONSerializable getJSON() {
 			return new JSONObject()
 				.add("lineno", m_lineno)
@@ -197,7 +197,7 @@ public class Deployment
 				.add("color", m_color);
 		}
 	}
-	
+
 	public List<DeploymentLogEntry> getLog() {
 		List<DeploymentLogEntry> ret = m_session.getDeploymentLog(this);
 		if((ret != null) && m_colorize) {
@@ -219,11 +219,11 @@ public class Deployment
 		}
 		return ret;
 	}
-	
+
 	public List<DeploymentLogEntry> getLogSinceLine(int lineno) {
 		return m_session.getDeploymentLogSinceLine(this, lineno);
 	}
-	
+
 	public class DeploymentXfer
 	{
 		private int m_step;
@@ -236,8 +236,8 @@ public class Deployment
 		private String m_targetPath;
 		private String m_checksum;
 		private int m_buildno;
-		
-		
+
+
 		public DeploymentXfer(
 			int step, Repository repo, int repoInst, String repoPath, String repoVer,
 			Component comp, Server target, String targetPath, String checksum, int buildno)
@@ -253,12 +253,12 @@ public class Deployment
 			m_checksum = checksum;
 			m_buildno = buildno;
 		}
-		
+
 		public Component getComp()
 		{
-		 return m_comp; 
+		 return m_comp;
 		}
-		
+
 		public IJSONSerializable getJSON() {
 			JSONObject step = new JSONObject();
 			step.add("type", "x");
@@ -276,20 +276,20 @@ public class Deployment
 			return ret;
 		}
 	}
-	
+
 	public class DeploymentScript
 	{
 		private int m_step;
 		private Action m_action;
-		
-		
+
+
 		public DeploymentScript(
 			int step, Action action)
 		{
 			m_step = step;
 			m_action = action;
 		}
-		
+
 		public IJSONSerializable getJSON() {
 			JSONObject step = new JSONObject();
 			step.add("step",m_step);
@@ -306,7 +306,7 @@ public class Deployment
 		}
 		return ret;
 	}
-	
+
 	public IJSONSerializable getScriptsJSON()
 	{
 		JSONArray ret = new JSONArray();
@@ -315,7 +315,7 @@ public class Deployment
 		}
 		return ret;
 	}
-	
+
 	public PropertyDataSet getStepDetails(int stepid, int instid)
 	{
 		return m_session.getDeploymentProps(this, stepid, instid);

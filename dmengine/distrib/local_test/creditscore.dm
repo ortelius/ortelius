@@ -1,7 +1,7 @@
 action DeployCreditScore
 {
   // avloop
-  
+
   /**
    * Starting point - base application and V3 should be on stack
    */
@@ -15,7 +15,7 @@ action DeployCreditScore
     }
     assert(str1: $slist, str2: 'server1,server2');
   }
-  
+
   /**
    * Forwards - using selected target $application
    */
@@ -26,7 +26,7 @@ action DeployCreditScore
     }
     assert(str1: $favlist1, str2: '1,2,3');
   }
-  
+
   /**
    * Make sure stack looks the same afterwards
    */
@@ -56,7 +56,7 @@ action DeployCreditScore
     }
     assert(str1: $favlist2, str2: '1,2,3');
     assert(str1: $slist2, str2: '1:server1,1:server2,2:server1,2:server2,3:server1,3:server2');
-  }  
+  }
 
   /*
    * Forwards down other path using two fixed versions - test first and last
@@ -71,7 +71,7 @@ action DeployCreditScore
     }
     assert(str1: $favlist3, str2: '1,4,5,6');
   }
-  
+
   /*
    * Forwards from nothing to target $application
    */
@@ -82,7 +82,7 @@ action DeployCreditScore
     }
     assert(str1: $favlist4, str2: '1,2,3');
   }
-  
+
   /*
    * Forwards from what is on server to target $application
    * DB should contain CreditScore;1 as current version
@@ -115,7 +115,7 @@ action DeployCreditScore
       assert(str1: $e, str2: "There is no path between 'CreditScore;3' and 'CreditScore;6'");
     }
   }
-  
+
   // AV arithmetic
   test(name: "Predecessor tests - without avloop") {
     assert(str1: ${application.predecessor.name}, str2: 'CreditScore;2');
@@ -134,7 +134,7 @@ action DeployCreditScore
       assert(str1: $e, str2: 'Successor to application version 303 is ambiguous');
     }
   }
-  
+
   test(name: "Predecessor tests - within avloop") {
     avloop(from: 'CreditScore;1', to: 'CreditScore;3') {
       switch(${application.name}) {
@@ -157,7 +157,7 @@ action DeployCreditScore
       }
     }
   }
-  
+
   // comploop
 
   test(name: "Comploop on 'CreditScore;3' no filter") {
@@ -231,7 +231,7 @@ action DeployCreditScore
     assert(str1: $avlist9, str2: '2,3');
     assert(str1: $clist7, str2: 'CreditScoreDB_rollup,CreditScoreDB;3');
   }
-  
+
   // Component Items
 
   test(name: "Component Items for rollup from nothing to 'CreditScore;3'") {
@@ -275,7 +275,7 @@ action Wibble
   // Deploy new version
   comploop(rollback: true) {		// true/false*
     deploy(rollback: true);		// true/false*
-  }    
+  }
 }
 
 

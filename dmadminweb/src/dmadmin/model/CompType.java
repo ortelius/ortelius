@@ -35,7 +35,7 @@ public class CompType extends DMObject
  public CompType(DMSession sess, int id, String name, String database, String deletedir, int domainid)
  {
   super(sess, id, name);
- 
+
   this.id = id;
   this.name = name;
   this.database = database;
@@ -57,7 +57,7 @@ public class CompType extends DMObject
  public String getForeignKey() {
   return "comptypeid";
  }
- 
+
  public int getId()
  {
   return id;
@@ -98,23 +98,23 @@ public class CompType extends DMObject
 
   if (getDatabase() != null && getDatabase().equalsIgnoreCase("Y"))
    return true;
-  
+
   return false;
  }
- 
+
  public boolean getDeletedirBoolean()
  {
   if (getDeletedir() != null && getDeletedir().equalsIgnoreCase("Y"))
    return true;
-  
+
   return false;
  }
- 
+
  public void setDeletedir(String deletedir)
  {
   this.deletedir = deletedir;
  }
- 
+
  @Override
  public IJSONSerializable getSummaryJSON() {
   PropertyDataSet ds = new PropertyDataSet();

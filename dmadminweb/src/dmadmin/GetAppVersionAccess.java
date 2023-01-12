@@ -33,7 +33,7 @@ import dmadmin.model.Task.TaskType;
  */
 public class GetAppVersionAccess extends JSONServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -49,10 +49,10 @@ public class GetAppVersionAccess extends JSONServletBase {
 	 JSONObject ret = new JSONObject();
 	 int appid = getIntParameter(request,"appid");
 	 Application app = session.getApplication(appid,false);
-	 
+
 	 ret.add("hasaccess", session.getCreatePermission(ObjectType.APPVERSION));
 	 ret.add("createversion", session.isTaskInDomain(app.getDomainId(),TaskType.CREATE_VERSION));
-  
+
 	 return ret;
 	}
 

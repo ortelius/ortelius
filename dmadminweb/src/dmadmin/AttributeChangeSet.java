@@ -31,7 +31,7 @@ public class AttributeChangeSet
 	private Hashtable<Integer, ArrayList<DMAttribute>> m_addedElements   = new Hashtable<Integer, ArrayList<DMAttribute>>();
 	private Hashtable<Integer, ArrayList<DMAttribute>> m_deletedElements = new Hashtable<Integer, ArrayList<DMAttribute>>();
 	private Hashtable<Integer, ArrayList<DMAttribute>> m_changedElements = new Hashtable<Integer, ArrayList<DMAttribute>>();
-	
+
 	public class AttributeIteratorDelegator
 		implements Iterable<DMAttribute>
 	{
@@ -45,20 +45,20 @@ public class AttributeChangeSet
 			return m_iter;
 		}
 	}
-	
+
 	public AttributeChangeSet()
 	{}
-	
+
 	public void addAdded(DMAttribute attr)
 	{
 		m_added.add(attr);
 	}
-	
+
 	public void addDeleted(DMAttribute attr)
 	{
 		m_deleted.add(attr);
 	}
-	
+
 	public void addChanged(DMAttribute attr)
 	{
 		m_changed.add(attr);
@@ -72,7 +72,7 @@ public class AttributeChangeSet
 		}
 		list.add(attr);
 	}
-	
+
 	public void addDeletedElement(int arrayid, DMAttribute attr)
 	{
 		ArrayList<DMAttribute> list = m_deletedElements.get(arrayid);
@@ -81,7 +81,7 @@ public class AttributeChangeSet
 		}
 		list.add(attr);
 	}
-	
+
 	public void addChangedElement(int arrayid, DMAttribute attr)
 	{
 		ArrayList<DMAttribute> list = m_changedElements.get(arrayid);
@@ -117,7 +117,7 @@ public class AttributeChangeSet
 		ArrayList<DMAttribute> list = m_changedElements.get(arrayid);
 		return new AttributeIteratorDelegator((list != null) ? list : new ArrayList<DMAttribute>());
 	}
-	
+
 	public boolean isEmpty()
 	{
 		return (m_added.isEmpty() && m_deleted.isEmpty() && m_changed.isEmpty());
@@ -127,12 +127,12 @@ public class AttributeChangeSet
  {
   m_deleted.removeAll(found);
  }
- 
+
  public void removeAllAdded(List<DMAttribute> found)
  {
   m_added.removeAll(found);
  }
- 
+
  public void removeAllUpdated(List<DMAttribute> found)
  {
   m_changed.removeAll(found);

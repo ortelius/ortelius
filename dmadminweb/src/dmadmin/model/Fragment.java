@@ -25,8 +25,8 @@ public class Fragment
 	private int m_exitpoints;
 	private boolean m_drilldown;
 	private int m_actionid;
-	
-	
+
+
 	public Fragment(int id,String name,String summary,int exitpoints,String dd, int actionid) {
 		m_fragid=id;
 		m_fragname=name;
@@ -35,15 +35,15 @@ public class Fragment
 		m_actionid = actionid;
 		m_drilldown = dd!=null?dd.equalsIgnoreCase("Y"):false;
 	}
-	
+
 	public int getId() { return m_fragid; }
  public int getActionId() { return m_actionid; }
 	public String getName() { return m_fragname; }
 	public String getSummary() { return m_summary; }
 	public int getExitpoints() { return m_exitpoints; }
 	public String getDrillDown() { return m_drilldown?"Y":"N"; }
-	
-	
+
+
 	public void setId(int id) { m_fragid = id; }
  public void setActionId(int id) { m_actionid = id; }
 	public void setName(String name) { m_fragname = name; }

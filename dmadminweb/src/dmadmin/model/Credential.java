@@ -28,7 +28,7 @@ public class Credential
 	extends DMObject
 {
 	private static final long serialVersionUID = 5047906217038129076L;
-	
+
 	private CredentialKind m_kind;
 	private String m_varusername;
 	private String m_varpassword;
@@ -40,28 +40,28 @@ public class Credential
 		super(session, id, name);
 		this.session = session;
 	}
-	
+
  public Credential(DMSession session, int id, String name, int domainid) {
   super(session, id, name);
   this.setDomainId(domainid);
   this.session = session;
  }
- 
+
 	public CredentialKind getKind()  { return m_kind; }
 	public void setKind(CredentialKind kind)  { m_kind = kind; }
-	
+
 	public String getVarUsername()  { return m_varusername; }
 	public void setVarUsername(String vu)  { m_varusername = vu; }
 
 	public String getVarPassword()  { return m_varpassword; }
 	public void setVarPassword(String vp)  { m_varpassword = vp; }
-	
+
 	public String getFilename()  { return m_filename; }
 	public void setFilename(String fn)  { m_filename = fn; }
-	
+
 	public void setPlainUsername(String un) { m_plainusername = un; }
 	public String getPlainUsername() { return m_plainusername; }
-	
+
 	public String getKindAsString() {
 		if(m_kind != null) {
 			switch(m_kind) {
@@ -76,12 +76,12 @@ public class Credential
 		}
 		return "unconfigured";
 	}
-	
+
 	public boolean isKindUnconfigured() {
 		return (m_kind == CredentialKind.UNCONFIGURED);
 	}
 
-	
+
 	@Override
 	public ObjectType getObjectType() {
 		return ObjectType.CREDENTIALS;

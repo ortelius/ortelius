@@ -29,7 +29,7 @@ public class TaskDeploy
 	extends Task
 {
 	private static final long serialVersionUID = 1327862378913381548L;
-	
+
 	private Application m_app;
 	private Environment m_env;
 	private String m_deploySessionId;
@@ -37,30 +37,30 @@ public class TaskDeploy
 	// private Map<String,String> m_cmdlineParams;
 	private CommandLine m_cmd;
 	private DMSession m_so;
-	
+
 	public TaskDeploy() {
 	}
-	
+
 	public TaskDeploy(DMSession sess, int id, String name) {
 		super(sess, id, name);
 		m_so = sess;
 	}
-	
+
 	public Application getApplication()  { return m_app; }
 	public void setApplication(Application app)  { m_app = app; }
-	
+
 	public Environment getEnvironment()  { return m_env; }
 	public void setEnvironment(Environment env)  { m_env = env; }
-	
+
 	public String getDeploymentSessionId()  { return m_deploySessionId; }
 	public void setDeploymentSessionId(String sessionId)  { m_deploySessionId = sessionId; }
-	
+
 	public boolean getWaitFor()  { return m_waitFor; }
 	public void setWaitFor(boolean waitFor)  { m_waitFor = waitFor; }
-	
+
 	// public Map<String,String> getCmdlineParams()  { return m_cmdlineParams; }
 	// public void setCmdlineParams(Map<String,String> params)  { m_cmdlineParams = params; }
-	
+
 	@Override
 	public boolean run()
 	{
@@ -70,16 +70,16 @@ public class TaskDeploy
 		}
 		if(m_session == null) {
 			System.err.println("Session was null");
-			return false;			
+			return false;
 		}
-		
+
   List<Component> comps = m_so.getComponents(ObjectType.APPLICATION, m_app.getId(), false);
   for (Component c : comps)
   {
    if (c.getAlwaysDeploy())
    {
     List<ComponentItem> citems = m_so.getComponentItems(c.getId());
-    
+
     boolean isDocker = false;
     if (citems != null)
     {
@@ -89,7 +89,7 @@ public class TaskDeploy
        isDocker = true;
      }
     }
-    
+
     if (isDocker)  // place component in env to skip incremental version jumping
     {
      List<Server> srvs = m_so.getServersInEnvironment(m_env.getId());
@@ -100,15 +100,15 @@ public class TaskDeploy
        System.out.println("Adding component " + c.getName() + " to server " + srvs.get(i).getName());
        m_so.addComponentVersionToServer(srvs.get(i).getId(), c.getId());
       }
-     } 
+     }
     }
    }
   }
-	 
+
 		int res = startDeployment(m_app, m_env, m_session.GetUserName(), m_deploySessionId, m_waitFor, m_aps);
 		return (res == 0);
 	}
-	
+
 	public boolean updateTask(Hashtable<String, String> changes) {
 		// TODO Auto-generated method stub
 		return false;
@@ -117,8 +117,8 @@ public class TaskDeploy
 	public String getLastOutputLine() {
 		return (m_cmd != null) ? m_cmd.getLastOutputLine() : null;
 	}
-	
-	
+
+
  private int startDeployment(Application app, Environment env, String userName, String sessionid, boolean waitFor, Map<String, String> cmdline_params)
  {
   Domain domain = env.getDomain();
@@ -164,11 +164,10 @@ public class TaskDeploy
 
   return m_cmd.runWithTrilogyNoCapture(waitFor, null);
  }
-	
+
 	public int getDeploymentID()
 	{
 		Deployment dep = m_so.getDeploymentBySessionId(this,30);
 		return dep.m_id;
 	}
 }
-

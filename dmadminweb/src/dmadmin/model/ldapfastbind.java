@@ -56,7 +56,7 @@ public class ldapfastbind
   try
   {
    ctx.addToEnvironment(Context.SECURITY_PRINCIPAL, username);
-   ctx.addToEnvironment(Context.SECURITY_CREDENTIALS, password);   
+   ctx.addToEnvironment(Context.SECURITY_CREDENTIALS, password);
    ctx.reconnect(connCtls);
    System.out.println(username + " is authenticated");
    return true;

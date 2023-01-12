@@ -43,7 +43,7 @@ public class GetComponentItemSourceData
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -57,10 +57,10 @@ public class GetComponentItemSourceData
 		throws ServletException, IOException
 	{
 		int ciid = getIntParameter(request, "ciid");
-		
+
 		System.out.println("ciid="+ciid);
-		
-		String reason = request.getParameter("reason"); 
+
+		String reason = request.getParameter("reason");
 		if(reason != null) {
 			if(reason.equalsIgnoreCase("repos")) {
 				System.out.println("Calling getRepositories");
@@ -71,15 +71,15 @@ public class GetComponentItemSourceData
 			}
 			throw new RuntimeException("Bad reason '" + reason + "'");
 		}
-		
+
   ComponentItem ci = session.getComponentItem(ciid, true);
-  
+
 		ProviderObject po = ci.getRepository();
 		boolean readOnly = !ci.isUpdatable(); 	// was !po.isUpdatable(), which is wrong and give an NPE if repo not set
-		
+
 		JSONObject ret = new JSONObject();
 		ret.add("readOnly", readOnly);
-	
+
 		JSONArray arr = new JSONArray();
 		ret.add("defs", arr);
 
@@ -90,48 +90,48 @@ public class GetComponentItemSourceData
 			for(DMProperty p: po.getProperties()) {
 				repoprops.put(p.getName(), p);
 			}
-			
+
 			// Filter the defs
 			for(DMPropertyDef d : po.getPropertyDefs()) {
 				// Only pass the defs that are not defined or can be overridden or appended
-				DMProperty rp = repoprops.get(d.getName()); 
+				DMProperty rp = repoprops.get(d.getName());
 				if((rp == null) || rp.isAppendable() || rp.isOverridable()) {
 					arr.add(d);
 				}
 			}
 		}
-					
+
 		JSONArray arr2 = new JSONArray();
 		ret.add("data", arr2);
-			
+
 		// Add the repository as the first property
 		arr2.add(new JSONArray().add(new JSONBoolean(false))	// dirty
 				.add(new JSONBoolean(false))					// added
 				.add(new JSONBoolean(false))					// deleted
 				.add("Repository")								// name
 				.add((po != null) ? ((LinkField) po.getLinkJSON()).setShowLink(false) : null)
-				.add(false)										// encrypted 
+				.add(false)										// encrypted
 				.add(false)										// overridable
 				.add(false));									// appendable
-		
+
 		// Add all the properties that are not defined or can be overridden or appended
 		for(DMProperty p: ci.getProperties()) {
-			DMProperty rp = repoprops.get(p.getName()); 
+			DMProperty rp = repoprops.get(p.getName());
 			if((rp == null) || rp.isAppendable() || rp.isOverridable()) {
 				arr2.add(p);
 			}
 		}
-		
+
 		return ret;
 	}
-	
+
 	private IJSONSerializable getRepositories(DMSession session, int ciid)
 	{
 	 if (ciid < 0)
 	  return session.getRepositoryList();
-	 
+
 		ComponentItem ci = session.getComponentItem(ciid, true);
-  
+
 		JSONArray ret = new JSONArray();
 		List<Repository> repos = session.getAccessibleRepositories("ci"+ciid,ci.getDomainId());
 		for(Repository r : repos) {
@@ -141,31 +141,31 @@ public class GetComponentItemSourceData
 		System.out.println("returning ret.size="+ret.length());
 		return ret;
 	}
-	
+
 	private IJSONSerializable getDefsForRepository(DMSession session, int repoid)
 	{
 		JSONObject ret = new JSONObject();
 		JSONArray arr = new JSONArray();
 		ret.add("defs", arr);
-		
+
 		if (repoid>0) {
 			ProviderObject po = session.getRepository(repoid, false);
-	
+
 			// Lookup table of properties defined on the Repository itself
 			Hashtable<String, DMProperty> repoprops = new Hashtable<String, DMProperty>();
 			for(DMProperty p: po.getProperties()) {
 				repoprops.put(p.getName(), p);
 			}
-			
+
 			// Filter the defs
 			for(DMPropertyDef d : po.getPropertyDefs()) {
 				// Only pass the defs that are not defined or can be overridden or appended
-				DMProperty rp = repoprops.get(d.getName()); 
+				DMProperty rp = repoprops.get(d.getName());
 				if((rp == null) || rp.isAppendable() || rp.isOverridable()) {
 					arr.add(d);
 				}
 			}
-		}	
+		}
 		return ret;
 	}
 }

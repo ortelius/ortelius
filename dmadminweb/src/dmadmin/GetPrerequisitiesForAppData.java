@@ -33,7 +33,7 @@ import dmadmin.model.Component;
  */
 public class GetPrerequisitiesForAppData extends JSONServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -49,7 +49,7 @@ public class GetPrerequisitiesForAppData extends JSONServletBase {
 	{
 		int appid = getIntParameter(request, "appid");
 		Application app = session.getApplication(appid, false);
-		
+
 		String reason = request.getParameter("reason");
 		if(reason != null) {
 			String objtype = request.getParameter("objtype");
@@ -64,8 +64,8 @@ public class GetPrerequisitiesForAppData extends JSONServletBase {
 					// Application or Application Version
 					int depid = getIntParameter(request, "id");
 					return addToPrerequisities(session, ObjectType.APPLICATION,appid, depid);
-				}	
-			} else 
+				}
+			} else
 			if (reason.equalsIgnoreCase("change")) {
 				String coltype = request.getParameter("coltype");
 				String colval = request.getParameter("colval");
@@ -82,15 +82,15 @@ public class GetPrerequisitiesForAppData extends JSONServletBase {
 				return new JSONObject().add("result", false).add("error", "Invalid reason");
 			}
 		}
-		
+
 		JSONObject obj = new JSONObject();
 		obj.add("readOnly", !app.isUpdatable());
-		TableDataSet data = session.getPreRequisitiesForApp(app); 
+		TableDataSet data = session.getPreRequisitiesForApp(app);
 		obj.add("data", data);
-		
+
 		return obj;
 	}
-	
+
 	private IJSONSerializable addToPrerequisities(DMSession session, ObjectType t,int appid, int id)
 	{
 		try {
@@ -114,7 +114,7 @@ public class GetPrerequisitiesForAppData extends JSONServletBase {
 			return new JSONObject().add("result", false).add("error", e);
 		}
 	}
-	
+
 	private IJSONSerializable changePrerequisite(DMSession session, ObjectType t,int appid, int id,String coltype,String newval)
 	{
 		try {
@@ -130,7 +130,3 @@ public class GetPrerequisitiesForAppData extends JSONServletBase {
 		}
 	}
 }
-
-
-
-

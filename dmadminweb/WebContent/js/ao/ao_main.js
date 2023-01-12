@@ -25,19 +25,19 @@ function Stack()
  this.pop=function() {
    return this.stac.pop();
   }
- 
+
   this.push=function(item) {
     this.stac.push(item);
   }
- 
+
  this.shift=function() {
   return this.stac.shift();
   }
- 
+
  this.prev=function() {
   if (this.stac.length-1 >= 0) return this.stac[this.stac.length-1];
     return null;
-  } 
+  }
 }
 
 var breadcrumbs = new Stack();
@@ -61,7 +61,7 @@ var breadcrumbs = new Stack();
  function escapeRegExp(str) {
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
- 
+
 $(document).click(function (e) {
    if ($(e.target).parents(".dropdown_menu").length === 0) {
        $(".dropdown_menu-content").hide();
@@ -92,32 +92,32 @@ $(document).click(function (e) {
   window.addEventListener("resize", servercomptypelist_table_resize);
   window.addEventListener("resize", templatelist_table_resize);
   window.addEventListener("resize", buildjoblist_table_resize);
-  
+
   CreateReports();
   $(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
   $.blockUI.defaults.message = $('#throbber');
   $.blockUI.defaults.fadeOut = 200;
   $.blockUI.defaults.overlayCSS.opacity = 0;
-  
+
   var blockcss = $.blockUI.defaults.css;
   blockcss['border'] = "none";
   blockcss["backgroundColor"] = "transparent";
   $.blockUI.defaults.css = blockcss;
-  
-  if (window.history && window.history.pushState) 
+
+  if (window.history && window.history.pushState)
   {
    $(window).on('popstate', function() {
      var hashLocation = location.hash;
      var hashSplit = hashLocation.split("#!/");
      var hashName = hashSplit[1];
 
-     if (hashName !== '') 
+     if (hashName !== '')
      {
        var hash = window.location.hash;
-       if (hash === '#dhmain') 
+       if (hash === '#dhmain')
        {
         if (typeof currenttree != "undefined")
-        { 
+        {
          var listName = tree2menu[currenttree];
          openList(null,listName);
         }
@@ -125,10 +125,10 @@ $(document).click(function (e) {
        else
        {
         window.history.back();
-       } 
+       }
      }
    });
-   
+
 
     var href = window.location.href;
     href = href.replace("#dhmain","");
@@ -137,16 +137,16 @@ $(document).click(function (e) {
     window.history.pushState('dhmain', null, href + '#dhmain');
     urlstack['dhmain'] = 1;
   }
-  
+
   HideSetup();
  //$.blockUI.defaults.theme = false;
  //$.blockUI.defaults.themedCSS.width = "15%";
-   
+
   loginformData = "";  // decodeURIComponent(GetCookie("logindata"));
-     
+
   loggedin='N';
  // loginformData = loginformData.replaceAll("&initial=Y","")
-  
+
    $.ajax({
     type : "POST",
     url : "Login",
@@ -248,7 +248,7 @@ $(document).click(function (e) {
      }
     } ]);
     $("#modal").dialog("open");
-    
+
     $("#newpassword").on("keyup", VerifyPW);
     $("#newpasswordagain").on("keyup", VerifyPW);
   }
@@ -291,7 +291,7 @@ $(document).click(function (e) {
    l += "</div>";
    $("#login_container_dialog").html(l);
 
-  
+
    $("#login_container_dialog").dialog(
    {
     resizable : false,
@@ -300,7 +300,7 @@ $(document).click(function (e) {
     modal : true,
     dialogClass : "logindialog"
    });
-   
+
    $("#login_container_dialog").dialog(
    {
     draggable : false
@@ -327,13 +327,13 @@ $(document).click(function (e) {
     click : function()
     {
      OAuth.initialize(htuAO);
-    
+
      OAuth.popup('google').done(function(result) {
          console.log(result);
          result.me().done(function(data) {
           console.log("GOOGLE");
           console.log(data.email);
-          DoOAuthLogin(data.email,result.access_token,result.provider);    
+          DoOAuthLogin(data.email,result.access_token,result.provider);
          }).fail(function (err) {
           console.log(err);
          });;
@@ -348,16 +348,16 @@ $(document).click(function (e) {
     click : function()
     {
      OAuth.initialize(htuAO);
-    
+
      OAuth.popup('github').done(function(result) {
          console.log(result);
          result.me().done(function(data) {
-          DoOAuthLogin(data.alias,result.access_token,result.provider);    
+          DoOAuthLogin(data.alias,result.access_token,result.provider);
       }).fail(function (err) {
        console.log(err);
       });;
      })
-    } 
+    }
    }, */
    {
     id: "deployhub",
@@ -375,14 +375,14 @@ $(document).click(function (e) {
     }
    }
    ]);
-   
+
    $("#google").addClass("login_hide");
    $("#github").addClass("login_hide");
    $("#deployhub").addClass("login_hide");
    $("#login").removeClass("login_hide");
    $("#logindlg_user").show();
    $("#logindlg_pw").show();
-   
+
    $("#login_container_dialog").dialog("open");
 //   $("#login").addClass("login_hide");
    $("#newpassword").on("keyup", VerifyPW);
@@ -402,44 +402,44 @@ $(document).click(function (e) {
 
    EnableTabs("application_menu");
   }
-  
+
 
   console.log("Myuserid="+myuserid);
   EnableTabs('application_menu');
-  
+
   $.ajax(
     {
-     url:"Engine?userid="+myuserid, 
+     url:"Engine?userid="+myuserid,
      dataType: "json",
      success: function (res)
-     {         
+     {
       $("#rproxy_menu").text(res.runningcnt + " of " + res.totalcnt + " Reverse Proxy running");
-     } 
-   }); 
+     }
+   });
 //set timeout
   var tid = setTimeout(rproxy_online, 240000);
 
   function rproxy_online() {
-   
+
    $.ajax(
      {
-      url:"Engine?userid="+myuserid, 
+      url:"Engine?userid="+myuserid,
       dataType: "json",
       success: function (res)
-      {         
+      {
        $("#rproxy_menu").text(res.runningcnt + " of " + res.totalcnt + " Reverse Proxy running");
-      } 
-    }); 
-   
+      }
+    });
+
     tid = setTimeout(rproxy_online, 240000); // repeat myself
   }
   function abortTimer() { // to be called when you want to stop the timer
     clearTimeout(tid);
   }
-  
+
   document.getElementById('upload_readme').addEventListener('click', getReadme);
   document.getElementById('upload_swagger').addEventListener('click', getSwagger);
-  
+
  });
 
   async function getReadme()
@@ -450,7 +450,7 @@ $(document).click(function (e) {
      const contents = await file.text();
      AddCompFile(contents, 'readme');
   };
-  
+
   async function getSwagger()
   {
 	let fileHandle;
@@ -459,7 +459,7 @@ $(document).click(function (e) {
      const contents = await file.text();
      AddCompFile(contents, 'swagger');
   };
-  
+
  function VerifyPW()
  {
   var pw1 = $("#newpassword").val();
@@ -494,54 +494,54 @@ $(document).click(function (e) {
  {
   var val = $("#" + field).val();
   var label = $("#" + field).closest('td').prev('td').text().replace(":","");
-  
+
   if (val.replace(/ /g,"") == "")
    $("#login_err").html(label + " is required");
  }
- 
+
  function VerifyPassword(field)
  {
   var val = $("#" + field).val();
   var label = $("#" + field).closest('td').prev('td').text().replace(":","");
-  
+
   if (val.replace(/ /g,"") == "")
    $("#login_err").html(label + " is required");
-  
+
   if (val.replace(/ /g, "") != val)
    $("#login_err").html(label + " must cannot contain spaces");
  }
- 
+
  function VerifyField(field)
  {
   var val = $("#" + field).val();
   var label = $("#" + field).closest('td').prev('td').text().replace(":","");
-  
+
   if (val.replace(/ /g,"") == "")
   {
    $("#login_err").html(label + " is required");
    return;
   }
-  
+
   if (val.replace(/([a-zA-Z0-9 ])/g, "") != "")
    $("#login_err").html(label + " must contain only spaces, letters and numbers");
 
  }
- 
+
  function VerifyUserName(field)
  {
   var val = $("#" + field).val();
   var label = $("#" + field).closest('td').prev('td').text().replace(":","");
-  
+
   if (val.replace(/ /g,"") == "")
   {
    $("#login_err").html(label + " is required");
    return;
   }
-  
+
   if (val.replace(/([a-z0-9])/g, "") != "")
    $("#login_err").html(label + " must be lower case and contain only letters and numbers");
  }
- 
+
  function DoAdminPasswordSet(dlg)
  {
   console.log("DoAdminPasswordSet");
@@ -619,7 +619,7 @@ $(document).click(function (e) {
 
   });
  }
- 
+
  function DoLogin(dlg)
  {
   console.log("DoLogin");
@@ -646,9 +646,9 @@ $(document).click(function (e) {
       dataType : 'json',
       url : "ChangePassword?oldpw=" + encodeURIComponent(oldpw) + "&newpw=" + encodeURIComponent(newpw) + "&username=" + myuserid,
       async : false
-     }).done(function(data) { 
+     }).done(function(data) {
       console.log(data.errtext);
-    
+
       if (data.errtext != "") {
          $("#login_err").html(data.errtext);
          loggedin = 'N';
@@ -689,15 +689,15 @@ $(document).click(function (e) {
             EnableTabs("application_menu");
   //          SetCookie("logindata",loginformData);
             openList(event, 'application');
-             } else { 
+             } else {
             loggedin = "N";
             admin = "N";
             SetCookie("admin",admin);
                 SetCookie("loggedin",loggedin);
          }
         });
-       } 
-      }); 
+       }
+      });
     } else {
      $.post("Login", loginformData, null, "json").done(function(data) {
       console.log("data=");
@@ -778,7 +778,7 @@ $(document).click(function (e) {
    }
 
  }
- 
+
  function DoOAuthLogin(username,access_token,provider)
  {
   var url = 'Login?username=' + username + "&password=" + access_token + "&provider=" + provider;
@@ -848,8 +848,8 @@ $(document).click(function (e) {
         SetCookie("admin",admin);
         SetCookie("loggedin",loggedin);
         console.log("newUser="+newUser);
-        } 
-         
+        }
+
   if (loggedin=="Y") {
 //   SetCookie("p1",username);
 //   SetCookie("p2",provider + ":" + access_token);
@@ -865,8 +865,8 @@ $(document).click(function (e) {
     EnableTabs("application_menu");
 //    SetCookie("logindata",loginformData);
     openList(event, 'application');
-  } 
-     }); 
+  }
+     });
  }
 
  function ActivateSubTabs()
@@ -876,7 +876,7 @@ $(document).click(function (e) {
    $("#panel_container_right").hide();
    return;
   }
-  
+
   if (parent.$('#summ_data_edit').is(':visible') && !msgbox_showing)
   {
    msgbox_showing = true;
@@ -900,14 +900,14 @@ $(document).click(function (e) {
    });
    return;
   }
-  
+
   $("#panel_container_right_list").hide();
    $("#panel_container_right").css('left', '274px');
- 
+
 
   console.log("ActivateSubTabs()");
   ShowHome(false,ShowingInitialHelp);
-  
+
   if (typeof objid == "undefined")
    objid = 1;
 
@@ -921,15 +921,15 @@ $(document).click(function (e) {
    objtype = "do";
    objkind="";
    objtypeAsInt = obj2Int[objtype][0];
-   objtypeName = obj2Int[objtype][1]; 
+   objtypeName = obj2Int[objtype][1];
    objName = "GLOBAL";
    console.log("id="+objid+" objtype="+objtype + " objtypeAsInt=" + objtypeAsInt + " objtypeName=" + objtypeName + " objName=" + objName + " objkind=" + objkind+ " oldmenu=" + oldmenu + " currenttree=" + currenttree);
    tabId  = "tabs-General";
    $("#tabs-General").addClass("current active");
-  }  
-  
+  }
+
   var classname = objtypeName.toLowerCase();
-  
+
   console.log("classname="+classname+" currenttree="+currenttree);
 
   for ( var menuKey in appTabs)
@@ -948,10 +948,10 @@ $(document).click(function (e) {
   }
 
   HideSubTabs(oldtreename, currenttree);
-  
+
   if (objtypeName == "Notify")
    objtypeName = "Notifier";
-  
+
   if (objtypeName == "Server")
    objtypeName = "Endpoint";
 
@@ -963,27 +963,27 @@ $(document).click(function (e) {
 
   if (classname == "component type")
    classname = "comptype";
-  
+
   if (classname == "build engine")
    classname = "builder";
-  
+
   if (classname == "build job")
    classname = "buildjob";
-  
+
   if (classname == "data source")
    classname = "datasource";
-  
+
   if (classname == "end point")
    classname = "server";
-  
+
   if (classname == "user group")
    classname = "usergroup";
-  
+
   classname = hookActivateSubTabs();
-  
+
   console.log(breadcrumbs);
   console.log(currentSubTabsSelection);
-  
+
   var tabIdNode = currentSubTabsSelection[currenttree];
   var tabId = "";
 
@@ -997,29 +997,29 @@ $(document).click(function (e) {
    $("#" + tabId).addClass('current');
    $("#" + tabId).addClass('active');
   }
-  
+
   console.log("currenttree="+currenttree+" lastSelectedNode.substring(0, 2)="+lastSelectedNode.substring(0, 2));
   console.log("currentSubTab="+currentSubTabsSelection[currenttree]);
 
   $("#panel_container_right").hide();
   $("#panel_container_historyandpending").hide();
-  
+
   if (currenttree == "#servers_tree" && lastSelectedNode.substring(0,2) == "se")
   {
-   $("#panel_container_right").show(); 
-   $("#tabs-ServerStatus").hide();  
+   $("#panel_container_right").show();
+   $("#tabs-ServerStatus").hide();
   }
   if (currenttree == "#environments_tree")
   {
    if (lastSelectedNode.substring(0, 2) == "se")
-   { 
+   {
     $("#panel_container_right").show();
     $("#tabs-Servers").hide();
     $("#tabs-Calendar").hide();
     $("#tabs-Applications").hide();
     $("#tabs-Reports").hide();
-    $("#tabs-ServerStatus").hide();  
-    $("#tabs-SrvComponents").hide();  
+    $("#tabs-ServerStatus").hide();
+    $("#tabs-SrvComponents").hide();
     $("#tabs-EnvDefects").hide();
     if (currentSubTabsSelection["#environments_tree"][0] == "tabs-EnvDefects") {
      currentSubTabsSelection["#environments_tree"] = ["tabs-General", ""];
@@ -1029,10 +1029,10 @@ $(document).click(function (e) {
    }
    else
    {
-    $("#tabs-ServerStatus").hide();  
-    $("#tabs-SrvComponents").hide();  
+    $("#tabs-ServerStatus").hide();
+    $("#tabs-SrvComponents").hide();
     $("#tabs-EnvDefects").hide();
-   } 
+   }
   }
   if (currenttree == "#notifiers_tree" && lastSelectedNode.substring(0, 2) == "te")
   {
@@ -1058,7 +1058,7 @@ $(document).click(function (e) {
     tabId  = "tabs-General";
     $("#tabs-General").addClass("current active");
    }
-  }  
+  }
   else if (currenttree == "#environments_tree" && lastSelectedNode.substring(0, 2) == "en")
   {
    $("#panel_container_right").show();
@@ -1112,7 +1112,7 @@ $(document).click(function (e) {
      $("#tab-Args").hide();
      $("#tabs-ProcBody").hide();
      break;
-     
+
        case 1: // DMScript Function in repository
        console.log("Showing arguments tab");
         $("#tabs-Args").hide();
@@ -1144,7 +1144,7 @@ $(document).click(function (e) {
        $("#tabs-ProcBody").hide();
       default:
        break;
-      }  
+      }
   }
   else if (currenttree == "#domains_tree")
   {
@@ -1162,10 +1162,10 @@ $(document).click(function (e) {
   }
   else
    hookTabs(currenttree);
-  
+
   console.log("tabId="+tabId+" currenttree="+currenttree+" lastSelectedNode="+lastSelectedNode+" objtype="+objtype);
-  
-   
+
+
   var isAdmin = "N";
   if (canView[currenttree])
    isAdmin = "Y";
@@ -1188,25 +1188,25 @@ $(document).click(function (e) {
      {
 	    html = '<button class="scorecard_button" onClick="javascript:ScorecardDomain(objid)">' +
 						'<i class="fa-light fa-table-columns aria-hidden="true"  style="padding-right:5px"></i>Scorecard</button>' +
-						'<h1 style="display:inline-block">Domain: ' + objName + '</h1>';  
+						'<h1 style="display:inline-block">Domain: ' + objName + '</h1>';
 		parent.$("#right_panel_header").html(html);
      }
      else
       parent.$("#right_panel_header").html("<h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    }   
+    }
     parent.$("#title_icon").html("");
 
     reset_html = '<tbody></tbody>';
-     
+
     parent.$("#summ").html(reset_html);
 
     console.log("LoadSummaryData, objtypeAsInt="+objtypeAsInt+" objtype="+objtype);
-    
+
     if (objtype == "bj")
      addParams = "&be="+lastSelectedNode;
     else if (objtype != "pr" && objtype != "fn")
      addParams = "";
-     
+
     LoadSummaryData("summ", objtypeAsInt, objtype, objid, addParams);
     addParams = "";
    }
@@ -1254,8 +1254,8 @@ $(document).click(function (e) {
      $("#tabs-General-row-32").show();
      $("#tabs-General-row-35").show();
      $("#tabs-General-row-40").show();
-    } 
-   
+    }
+
     $("#panel_container_right").show();
     if (objtype == "ap" || objtype == "co")
     {
@@ -1299,7 +1299,7 @@ $(document).click(function (e) {
    console.trace();
      $('#calendar').fullCalendar('render');
    }
-  
+
   if (tabId == "tabs-DomainSummary")
   {
    if (lastSelectedNode.substring(0, 2) == "do") {
@@ -1339,7 +1339,7 @@ $(document).click(function (e) {
        if (udh+dac > maxdepth) maxdepth = udh+dac;
       }
       console.log("maxdepth="+maxdepth);
-      
+
       for(i=0;i<res.length;i++) {
        var x="<div style='border-radius: 5px; border:2px solid #d4dde7;background-color: "
       +colours[i]
@@ -1370,7 +1370,7 @@ $(document).click(function (e) {
         console.log("icon for "+res[i].apps[z].name+" is "+icon);
         var pf=(res[i].apps[z].pid>0)?"av":"ap";
         if (z==0) {
-         
+
         }
         x=x+"<div style='border-radius: 5px; border:2px solid #d4dde7;margin: 0 auto;background-color:#ccbbaa;width:190px;height:35px;'>"
          +"<table border=0><tr>"
@@ -1425,7 +1425,7 @@ $(document).click(function (e) {
        }
         x=x+"</div>"
         +"<div style='width:7px;height:20px;float:left'></div>";
-        
+
        $("#domsumm").append(x);
       }
       $("#tabs-DomainSummary").hide();
@@ -1438,7 +1438,7 @@ $(document).click(function (e) {
     });
   }
   }
- 
+
   if ($("#panel_container_right").is(":hidden")) {
    $("#panel_container_right").show();
    displayhome=true;
@@ -1486,18 +1486,18 @@ $(document).click(function (e) {
  }
  $("#"+tabname+"-data").show();
  console.log("Showing #" + tabname+"-data");
- 
+
  if (tabname=="displaylogtabs-reports") {
   // May need to call replot here
   CreateDeployReports();
-  ReplotDeployReports(saveLognum); 
+  ReplotDeployReports(saveLognum);
  }
  if (tabname=="displaylogtabs-deploydeps") {
   // May need to call replot here
-  CreateDeployDeps(saveLognum); 
+  CreateDeployDeps(saveLognum);
  }
  }
- 
+
  function SetActive(tabname)
  {
   explorerFlasher = false; // switch off highlighting if in help mode
@@ -1533,7 +1533,7 @@ $(document).click(function (e) {
   // CreateTree(currenttree, itemname, canView[currenttree], "mainframe3");
   console.log("Calling CreateTree(\""+currenttree+"\",\""+itemname+"\",\""+admin+"\", \"mainframe3\"");
   CreateTree(currenttree, itemname, admin, "mainframe3");
-  
+
   // $("#footer_container").html("");
 
   ActivateSubTabs();
@@ -1572,7 +1572,7 @@ $(document).click(function (e) {
   viewFlasher=false;
   currentmenu = menuname;
   SetActiveMenu(menuname);
-  
+
   nocallback = nocallback || false;
   console.log("EnableTabs("+menuname+") ShowingInitialHelp="+ShowingInitialHelp);
 
@@ -1580,7 +1580,7 @@ $(document).click(function (e) {
    $("#panel_container_menu").show();
    $("#panel_container").show();
    $("#panel_container_historyandpending").hide();
-   
+
    var i, tabcontent, tablinks;
 
    // Get all elements with class="tablinks" and remove the class "active"
@@ -1599,9 +1599,9 @@ $(document).click(function (e) {
    }
 
    hookHide();
-   
+
    $("#panel_container_right_list").show();
-   $("#panel_container").hide(); 
+   $("#panel_container").hide();
    $("#applications_tab").hide();
    $("#components_tab").hide();
    $("#environments_tab").hide();
@@ -1618,13 +1618,13 @@ $(document).click(function (e) {
    $("#repositories_tab").hide();
    $("#domains_tab").hide();
    $("#types_tab").hide();
-  
+
   console.log("EnableTabs("+menuname+") DONE");
   ActivateSubTabs();
  }
- 
+
  function openList(evt, listName) {
-  
+
   if (parent.$('#summ_data_edit').is(':visible') && !msgbox_showing)
   {
    msgbox_showing = true;
@@ -1654,7 +1654,7 @@ $(document).click(function (e) {
    });
    return;
   }
-  
+
   // Declare all variables
   var i, tabcontent, tablinks;
 
@@ -1667,7 +1667,7 @@ $(document).click(function (e) {
   for (i = 0; i < tablinks.length; i++) {
     tablinks[i].className = tablinks[i].className.replace(" active", "");
   }
-  
+
   // Show the current tab, and add an "active" class to the link that opened the tab
   var vb = $("#verttab_" + listName);
   vb.addClass("active");
@@ -1678,7 +1678,7 @@ $(document).click(function (e) {
    $("#panel_container_right").css('left', '274px');
   else
    $("#panel_container_right").css('left', '396px');
-   
+
   if (listName == "application")
   {
    getAppList("list");
@@ -1714,7 +1714,7 @@ $(document).click(function (e) {
   else if (listName == "datasource")
   {
    getDatasourceList("list");
-  } 
+  }
   else if (listName == "credential")
   {
    getCredentialList("list");
@@ -1737,11 +1737,11 @@ $(document).click(function (e) {
   }
   else
   {
-   hookList(listName); 
+   hookList(listName);
   }
- 
+
 }
- 
+
  function openMap(evt, listName) {
   if (listName == "application")
   {
@@ -1752,11 +1752,11 @@ $(document).click(function (e) {
    getCompList("map");
   }
  }
- 
+
  function delRow(event,type)
  {
   var data = null;
-  
+
   if (type == "application")
    data = applist_table.rows({selected:  true}).data();
   else if (type == "component")
@@ -1774,7 +1774,7 @@ $(document).click(function (e) {
   else if (type == "repository")
    data = repositorylist_table.rows({selected:  true}).data();
   else if (type == "datasource")
-   data = datasourcelist_table.rows({selected:  true}).data(); 
+   data = datasourcelist_table.rows({selected:  true}).data();
   else if (type == "credential")
    data = credentiallist_table.rows({selected:  true}).data();
   else if (type == "user")
@@ -1787,23 +1787,23 @@ $(document).click(function (e) {
    data = templatelist_table.rows({selected:  true}).data();
   else
    data = hookDelRow(type);
-  
+
   if (data == null || data.length == 0)
    return;
-  
-  var newarray=[];       
+
+  var newarray=[];
   var msg = "";
-  
+
   for (var i=0; i < data.length ;i++)
   {
    newarray.push(data[i]['id'].substr(2));
-            
+
    if (i==0)
      msg += data[i]['name'];
    else
      msg += ", " + data[i]['name'];
   }
-   
+
   var pwd = parent.$("#modal");
   var buttons = [
   {
@@ -1812,19 +1812,19 @@ $(document).click(function (e) {
    {
     for (var i=0;i<newarray.length;i++)
     {
-     var id = newarray[i]; 
-    
+     var id = newarray[i];
+
      $.ajax(
       {
-       url:"/dmadminweb/API/del/" + type + "/" + id, 
+       url:"/dmadminweb/API/del/" + type + "/" + id,
        async: false,
        dataType: "json",
        success: function (res)
-       {         
-       } 
-      }); 
-    } 
-    
+       {
+       }
+      });
+    }
+
     parent.$("#modal").dialog("close");
     openList(event, type);
    }
@@ -1836,7 +1836,7 @@ $(document).click(function (e) {
     parent.$("#modal").dialog("close");
    }
   } ];
-  
+
   pwd.empty();
   pwd.html("<table border=0><tr><td valign='center'><img src='css/images/question_36px.png'></td><td><b>Are you sure?</b><br><hr>Please confirm you want to delete " + msg + "\"?</td></tr></table>");
   pwd.dialog({open : null});
@@ -1846,7 +1846,7 @@ $(document).click(function (e) {
   pwd.dialog("option", "buttons", buttons);
   pwd.dialog('open');
  }
- 
+
  function addRow(event,type)
  {
   displaySubTabs = "Y";
@@ -1854,7 +1854,7 @@ $(document).click(function (e) {
   {
    currenttree = "#applications_tree";
    objtypeName = "Application";
-   NewApp(null);   
+   NewApp(null);
   }
   else if (type == "appversion")
   {
@@ -1863,7 +1863,7 @@ $(document).click(function (e) {
    objkind="";
    currenttree = "#applications_tree";
    objtypeName = "Application";
-   NewAppVer(objid);   
+   NewAppVer(objid);
   }
   else if (type == "compversion")
   {
@@ -1872,32 +1872,32 @@ $(document).click(function (e) {
    objkind="";
    currenttree = "#components_tree";
    objtypeName = "Component";
-   NewCompVer(objid);   
+   NewCompVer(objid);
   }
   else if (type == "docker" || type == "database" || type == "file")
   {
    currenttree = "#components_tree";
    objtypeName = "Component";
-   NewComponent(type);   
-  } 
+   NewComponent(type);
+  }
   else if (type == "environment")
   {
    currenttree = "#environments_tree";
    objtypeName = "Environment";
-   NewEnvironment(null);   
-  } 
+   NewEnvironment(null);
+  }
   else if (type == "endpoint")
   {
    currenttree = "#servers_tree";
    objtypeName = "Endpoint";
-   NewServer(null);   
-  } 
+   NewServer(null);
+  }
   else if (type == "action")
   {
    currenttree = "#actions_tree";
    objtypeName = "Action";
-   NewAction(null,"G");   
-  } 
+   NewAction(null,"G");
+  }
   else if (type.includes("procedure"))
   {
    currenttree = "#procedures_tree";
@@ -1905,8 +1905,8 @@ $(document).click(function (e) {
    var parts = type.split("-ak");
    objkind=parts[1];
    addParams="&actkind=" + objkind;
-   NewAction(null,"P");   
-  }  
+   NewAction(null,"P");
+  }
   else if (type.includes("function"))
   {
    currenttree = "#procedures_tree";
@@ -1914,62 +1914,62 @@ $(document).click(function (e) {
    var parts = type.split("-ak");
    objkind=parts[1];
    addParams="&actkind=" + objkind;
-   NewAction(null,"F");   
+   NewAction(null,"F");
   }
   else if (type == "slack" || type == "hipchat" || type == "smtpemail" || type == "txtlocal")
   {
    currenttree = "#notifiers_tree";
    objtypeName = "Notifiers";
-   NewNotifier(type);   
-  } 
+   NewNotifier(type);
+  }
   else if (type == "filesystem" || type == "ftprep" || type == "harvest" || type == "http" || type == "meister" || type == "perforce" || type == "svn")
   {
    currenttree = "#repositories_tree";
    objtypeName = "Repositories";
-   NewRepository(type);   
-  } 
+   NewRepository(type);
+  }
   else if (type == "ldap" || type == "odbc" || type == "jira" || type == "github" || type == "bugzilla")
   {
    currenttree = "#datasources_tree";
    objtypeName = "Data Sources";
-   NewDatasource(type);   
+   NewDatasource(type);
   }
   else if (type == "ck10" || type == "ck4" || type == "ck2" || type == "ck5")
   {
    currenttree = "#credentials_tree";
    objtypeName = "Credential";
-   NewCredential(type);   
+   NewCredential(type);
   }
   else if (type == "user")
   {
    currenttree = "#users_tree";
    objtypeName = "User";
-   NewUser(null);   
-  } 
+   NewUser(null);
+  }
   else if (type == "group")
   {
    currenttree = "#groups_tree";
    objtypeName = "Groups";
-   NewGroup(null);   
+   NewGroup(null);
   }
   else if (type == "servercomptype")
   {
    currenttree = "#types_tree";
    objtypeName = "Type";
-   NewCompType(null);   
-  } 
+   NewCompType(null);
+  }
   else if (type == "template")
   {
    currenttree = "#notifiers_tree";
    objtypeName = "Notifier Template";
-   NewTemplate(null);   
+   NewTemplate(null);
   }
   else
   {
-   hookAddRow(type); 
+   hookAddRow(type);
   }
  }
- 
+
  function eventOpenRow(frameid,admin,data)
  {
   $.blockUI();
@@ -2004,14 +2004,14 @@ $(document).click(function (e) {
    currenttree = "#notifiers_tree";
   else
    currenttree = hookEventOpenRow(frameid);
-  
+
   lastSelectedNode = data["id"];
-  
+
   console.log("selected node = "+lastSelectedNode);
   objid = lastSelectedNode.substr(2); //OTID, first two chars are Object Type
   objtype = lastSelectedNode.substr(0,2);
   objkind="";
- 
+
   console.log("*** SelectNode objtype="+objtype+" objid="+objid);
     if (objtype == "pr" || objtype == "fn") {
      objkind=objid.substr(objid.indexOf("-")+1);
@@ -2019,7 +2019,7 @@ $(document).click(function (e) {
     }
   objtypeAsInt = obj2Int[objtype][0];
   objtypeName = obj2Int[objtype][1];
-  
+
   if ("type" in data && currenttree == "#procedures_tree")
   {
    if (data["type"] == "Func")
@@ -2027,19 +2027,19 @@ $(document).click(function (e) {
    else
     objtypeName = "Procedure";
   }
-  
+
   objName = data['name'];
-  
+
   if (typeof objName == "undefined")
    objName = "";
-  
+
   summSavedomid = domlist[0];
   lastdomain = domlist[0];
   parentid = domlist[0];
   parenttype = "Domain";
-  
+
   console.log("id="+objid+" objtype="+objtype + " objtypeAsInt=" + objtypeAsInt + " objtypeName=" + objtypeName + " objName=" + objName + " objkind=" + objkind+ " oldmenu=" + oldmenu + " currenttree=" + currenttree);
-  
+
   crumb = currentSubTabsSelection[currenttree];
   console.log(crumb);
   if (typeof crumb != "undefined") {
@@ -2047,13 +2047,13 @@ $(document).click(function (e) {
   }
   console.log("currentSubTabsSelection[" + currenttree + "]="+crumb);
   currentSubTabsSelection[currenttree] = crumb;
-  
+
   var cs=(objtype=="cc" || objtype=="cp" || objtype=="cy");
   if (objName.length>0) {
    var image = "";
    var odl = "";
      var ctab = "";
-     
+
      var tld = menuForType[objtype];
 
      if (tld != null)
@@ -2061,7 +2061,7 @@ $(document).click(function (e) {
       ctab = tld.t;
       image = "background-image:url('" + tld.image + "');background-repeat: no-repeat;background-position:0px 2px;";
      }
-     
+
     console.log("image="+image);
     var addLink=HighlightFooterLink(lastSelectedNode);
     if (addLink) {
@@ -2071,140 +2071,140 @@ $(document).click(function (e) {
        +"padding:3px 3px 3px 26px;\" "
        +"<a href=\"javascript:void(0);\" "
        +"onClick='chgsel({t: \""+ctab+"\", id: \""+lastSelectedNode+"\", odl: \""+odl+"\", tm: \""+currentmenu+"\", name: \""+objName+"\"})'>"+objName+"|</a></div>"
-     );  
+     );
     }
   }
- 
+
   displaySubTabs = "Y";
   ActivateSubTabs();
 
   });
 
- } 
+ }
 
  function notifierMenu()
  {
   var pwd = parent.$("#notifierlist_buttons > div > div");
-  
+
   if (pwd.is(":visible"))
     pwd.hide();
   else
     pwd.show();
  }
- 
+
 
  function addTaskMenu()
  {
   var pwd = parent.$("#tasks_header_buttons > div > div");
-  
+
   if (pwd.is(":visible"))
     pwd.hide();
   else
     pwd.show();
  }
- 
+
  function credMenu()
  {
   var pwd = parent.$("#credentiallist_buttons > div > div");
-  
+
   if (pwd.is(":visible"))
     pwd.hide();
   else
     pwd.show();
  }
- 
+
  function datasourceMenu()
  {
   var pwd = parent.$("#datasourcelist_buttons > div > div");
-  
+
   if (pwd.is(":visible"))
     pwd.hide();
   else
     pwd.show();
  }
- 
+
  function buildengineMenu()
  {
   var pwd = parent.$("#buildenglist_buttons > div > div");
-  
+
   if (pwd.is(":visible"))
     pwd.hide();
   else
     pwd.show();
  }
- 
+
  function compMenu()
  {
   var pwd = parent.$("#complist_buttons > div > div");
-  
+
   if (pwd.is(":visible"))
     pwd.hide();
   else
     pwd.show();
  }
- 
+
  function envRptMenu()
  {
   var pwd = parent.$("#envlist_buttons > div > div");
-  
+
   if (pwd.is(":visible"))
     pwd.hide();
   else
     pwd.show();
  }
- 
+
  function endpointRptMenu()
  {
   var pwd = parent.$("#endpointlist_buttons > div > div");
-  
+
   if (pwd.is(":visible"))
     pwd.hide();
   else
     pwd.show();
  }
- 
+
  function repoMenu()
  {
   var pwd = parent.$("#repositorylist_buttons > div > div");
-  
+
   if (pwd.is(":visible"))
     pwd.hide();
   else
     pwd.show();
  }
- 
+
  function procMenu()
  {
   $("#procedurelist_buttons > div:nth-child(3) > div").hide();
   var pwd = parent.$("#procedurelist_buttons > div:nth-child(2) > div");
-  
+
   if (pwd.is(":visible"))
     pwd.hide();
   else
     pwd.show();
  }
- 
+
  function funcMenu()
  {
   $("#procedurelist_buttons > div:nth-child(2) > div").hide();
   var pwd = parent.$("#procedurelist_buttons > div:nth-child(3) > div");
-  
+
   if (pwd.is(":visible"))
     pwd.hide();
   else
     pwd.show();
  }
- 
+
  function taskMenu()
  {
   if (currenttree == "#applications_tree")
-  { 
+  {
    var data = applist_table.rows({selected:  true}).data();
-  
+
    if (!dropdownShowing && data != null && data.length > 0)
-   { 
+   {
     var id = lastsel_id.substr(2);
-    $.ajax({  
+    $.ajax({
      url: "GetMenu?t=APPLICATION&id="+id+"&d=0&a=N&ct=applications",
      async: false,
      cache: false,
@@ -2217,7 +2217,7 @@ $(document).click(function (e) {
        console.log("key2="+key2+" val2="+val2);
        newhtml += "<a onclick='callback(\"" + currenttree + "\",\"" + key2 + "\",\"" + val2 + "\",this);'>" + key2 + '</a>';
        $("#applist_buttons > div > div").html(newhtml);
-       $("#applist_buttons > div > div").css({display: "block"});  
+       $("#applist_buttons > div > div").css({display: "block"});
        dropdownShowing = true;
       });
      });
@@ -2230,7 +2230,7 @@ $(document).click(function (e) {
   }
  }
  else
-  hookTaskMenu(currenttree);  
+  hookTaskMenu(currenttree);
 }
 
 function AppS2S(objid)
@@ -2244,25 +2244,25 @@ function AddCompFile(file_data, filetype)
 
  var file = [];
 
- for (var i = 0, charsLength = encoded_bytes.length; i < charsLength; i += 76) 
+ for (var i = 0, charsLength = encoded_bytes.length; i < charsLength; i += 76)
  {
   file.push(encoded_bytes.substring(i, i + 76));
  }
 
  payload = JSON.stringify({'compid': parseInt(objid), 'filetype': filetype, 'file': file})
-    
+
  $.ajax({
       type : "POST",
       dataType : 'json',
       url : "/msapi/textfile",
 	  contentType: "application/json",
       data : payload
-     }).done(function(data) { 
+     }).done(function(data) {
       if (filetype == 'readme')
         LoadReadme(objid);
-      else if (filetype == 'swagger')  
+      else if (filetype == 'swagger')
         LoadSwagger(objid);
-      else if (filetype == 'license')  
+      else if (filetype == 'license')
         LoadLicense(objid);
       console.log(data.errtext);
      });
@@ -2271,19 +2271,19 @@ function AddCompFile(file_data, filetype)
 function openPkgSearch()
 {
   var pwd = parent.$("#modal");
-   
-  var buttons = 
+
+  var buttons =
     [
           { text: "Ok",     click: function() { LaunchPkgSearch($(this)); } },
           { text: "Cancel", click: function() { $( this ).dialog("close"); } }
        ];
 
-   var tdedit = "<form><table border=0>" + 
+   var tdedit = "<form><table border=0>" +
 	"<tr><td style=\"width:150px\">Package Name</td><td><input text id=\"pkgname\" name=\"pkgname\" /></td></tr>" +
-	"<tr><td style=\"width:150px\">Package Version</td><td><input text id=\"pkgversion\" name=\"pkgversion\" /></td></tr>" +	
+	"<tr><td style=\"width:150px\">Package Version</td><td><input text id=\"pkgversion\" name=\"pkgversion\" /></td></tr>" +
 	"</table></form>";
 
-   pwd.dialog({ resizable: false, modal: true, dialogClass: "aboutsDialog", open: null }); 
+   pwd.dialog({ resizable: false, modal: true, dialogClass: "aboutsDialog", open: null });
    pwd.empty();
    pwd.html(tdedit);
    pwd.dialog("option", "title", "Package Search");
@@ -2298,6 +2298,6 @@ function LaunchPkgSearch(dlg)
  dlg.dialog("close");
  var pkgname = $("#pkgname").val();
  var pkgversion = $("#pkgversion").val();
- 
+
  window.open("/dmadminweb/reports/PkgSearch.html?pkgname=" + pkgname + "&pkgversion=" + pkgversion, '_blank');
 }

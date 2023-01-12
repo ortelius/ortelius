@@ -35,7 +35,7 @@ public class GetEngineConfig
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -49,17 +49,17 @@ public class GetEngineConfig
 		throws ServletException, IOException
 	{
 		int engineid = getIntParameter(request, "engid");
-		
+
 		Engine engine = session.getEngine(engineid);
-		
+
 		List<Engine.ConfigEntry> config = engine.getConfig();
-		
+
 		JSONArray ret = new JSONArray();
-		
+
 		for(Engine.ConfigEntry c : config) {
 			ret.add(c);
 		}
-		
+
 		return ret;
 	}
 }

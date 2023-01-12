@@ -26,11 +26,11 @@ public class DeployDepsNode
 	private String label;
 	private int level;
 	private String color;
-	
+
 	public DeployDepsNode(String id,String label) {
 	 this.id=id;
   this.label=label;
-	 
+
   if (id.startsWith("bd"))
   {
    this.level=0;
@@ -77,7 +77,7 @@ public class DeployDepsNode
    this.color="#ACD1E9";
   }
 	}
-	
+
 	public IJSONSerializable getJSON() {
 		JSONObject dep = new JSONObject();
 		dep.add("id",id);

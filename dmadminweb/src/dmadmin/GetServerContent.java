@@ -33,7 +33,7 @@ import dmadmin.model.Component;
  */
 public class GetServerContent extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -41,7 +41,7 @@ public class GetServerContent extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
@@ -49,11 +49,11 @@ public class GetServerContent extends HttpServletBase {
    	{
     	response.setContentType("application/json");
 		String serverid = request.getParameter("serverid");
-		// Get the printwriter object from response to write the required json object to the output stream      
+		// Get the printwriter object from response to write the required json object to the output stream
 		PrintWriter out = response.getWriter();
-		
+
 		List<Component> d = session.getComponents(ObjectType.SERVER,Integer.parseInt(serverid), false);
-		
+
 		out.print("[");
 
 		boolean subenv=false;

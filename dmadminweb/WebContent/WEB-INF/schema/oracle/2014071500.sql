@@ -14,5 +14,3 @@ GRANT create any procedure TO dm;
 GRANT create sequence TO dm;
 GRANT create synonym TO dm;
 ALTER SESSION SET current_schema=dm;
-
-

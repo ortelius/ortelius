@@ -33,14 +33,14 @@ import dmadmin.json.JSONObject;
  */
 public class GetDeploymentsPerApplicationForEnvironment extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public GetDeploymentsPerApplicationForEnvironment() {
         super();
     }
-    
+
     @Override
 	public void handleRequest(DMSession session, boolean isPost,
 			HttpServletRequest request, HttpServletResponse response)
@@ -48,15 +48,15 @@ public class GetDeploymentsPerApplicationForEnvironment extends HttpServletBase 
 	{
     	response.setContentType("application/json");
 		int envid = ServletUtils.getIntParameter(request, "envid");
-	
+
 		PrintWriter out = response.getWriter();
-		
+
 		ReportDataSet data = session.getDeploymentsPerApplicationForEnvironment(envid);
 		JSONObject obj = new JSONObject();
 		obj.add("ticks", data.getCatLabelsJSON());
 		obj.add("data", data.getBarDataSeriesJSON());
 		String ret = obj.toString();
-		
+
 		out.println(ret);
 		System.out.println(ret);
 	}

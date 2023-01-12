@@ -68,7 +68,7 @@ public class GetSummaryData extends HttpServletBase
   String sid = request.getParameter("id");
   String comptype = request.getParameter("comptype");
   String actkind = request.getParameter("actkind");
-  
+
   if (!sid.equalsIgnoreCase("-1")) sid = sid.replaceAll("-.*$","");
   int id = Integer.parseInt(sid);
   ObjectType objtype = ObjectType.fromInt(ot);
@@ -79,9 +79,9 @@ public class GetSummaryData extends HttpServletBase
 
   System.out.println("getDetailedObject for id "+id);
   DMObject dmobj;
-  
+
   if (objtype == ObjectType.COMPONENTITEM && id < 0)
-  { 
+  {
    ComponentItem ci = new ComponentItem();
    if (comptype.equalsIgnoreCase("docker"))
     ci.setItemkind(ComponentItemKind.DOCKER);
@@ -97,7 +97,7 @@ public class GetSummaryData extends HttpServletBase
     {
      ci.setRollup(ComponentFilter.OFF);
      ci.setRollback(ComponentFilter.ON);
-    }     
+    }
    }
    else
     ci.setItemkind(ComponentItemKind.FILE);
@@ -106,16 +106,16 @@ public class GetSummaryData extends HttpServletBase
   }
   else
    dmobj = session.getDetailedObject(objtype, id);
-  
-  boolean readOnly = 
+
+  boolean readOnly =
 		  (dmobj.getObjectType() == ObjectType.DEPLOYMENT) ||
 		  (dmobj.getObjectType() == ObjectType.USER && id == session.GetUserID() && !session.getAclOverride()) ||	// Cannot edit yourself
 		  !dmobj.isUpdatable();
-  
+
   if (id < 0 && dmobj instanceof Component)
   {
    Component comp = (Component)dmobj;
-   
+
    if (comptype.equalsIgnoreCase("docker"))
    {
     CompType ct = session.getCompTypeByName("Kubernetes");
@@ -123,7 +123,7 @@ public class GetSummaryData extends HttpServletBase
     {
      comp.setComptypeId(ct.getId());
      comp.setComptype(ct.getName());
-    } 
+    }
     comp.setKind(ComponentItemKind.DOCKER);
    }
    else if (comptype.contains("database"))
@@ -133,9 +133,9 @@ public class GetSummaryData extends HttpServletBase
     {
      comp.setComptypeId(ct.getId());
      comp.setComptype(ct.getName());
-    } 
+    }
     comp.setKind(ComponentItemKind.DATABASE);
-   } 
+   }
    else
    {
     CompType ct = session.getCompTypeByName("Application Server");
@@ -143,27 +143,27 @@ public class GetSummaryData extends HttpServletBase
     {
      comp.setComptypeId(ct.getId());
      comp.setComptype(ct.getName());
-    } 
+    }
     comp.setKind(ComponentItemKind.FILE);
-   } 
+   }
   }
   else if (id < 0 && dmobj instanceof Action)
   {
    Action act = (Action)dmobj;
-   
+
    if (actkind == null)
     actkind = "" + act.getKind().value();
-   
+
    if (actkind == null || actkind.equals("0"))
     act.setKind(ActionKind.LOCAL_EXTERNAL);
-   else 
+   else
    {
     int akid = new Integer(actkind).intValue();
     ActionKind ak = ActionKind.fromInt(akid);
     act.setKind(ak);
    }
   }
-  
+
   if (dmobj instanceof Action) {
 	  if (((Action)dmobj).getParentId() > 0) {
 		  // Archived actions are not editable
@@ -235,7 +235,7 @@ public class GetSummaryData extends HttpServletBase
    }
    else // Just Object
    obj.add("data", dmobj.getSummaryJSON());
-  
+
   String ret = obj.toString();
 
   out.println(ret);

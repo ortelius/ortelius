@@ -27,4 +27,3 @@ insert into dm_actionarg(actionid,name,type,outpos,required,switch,pad,inpos,swi
 
 insert into dm_actionarg(actionid,name,type,outpos,required,switch,pad,inpos,switchmode,negswitch)
 	values(14,'SQLScript','Entry',6,'Y',NULL,'N',1,NULL,NULL);
-

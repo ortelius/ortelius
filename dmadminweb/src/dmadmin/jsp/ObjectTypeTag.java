@@ -29,15 +29,15 @@ public class ObjectTypeTag
 {
 	private String m_valueOf;
 	private String m_nameOf;
-	
+
 	public void setValueOf(String value) {
 		m_valueOf = value;
 	}
-	
+
 	public void setNameOf(String value) {
 		m_nameOf = value;
 	}
-	
+
 	@Override
 	public void doTag()
 		throws JspException, IOException
@@ -60,7 +60,7 @@ public class ObjectTypeTag
 		}
 		// If not found report an error
 		if(match == null) {
-			throw new JspException("Not a valid ObjectType: " + value);			
+			throw new JspException("Not a valid ObjectType: " + value);
 		}
 		// Output either the integer value or the type string (for OTID)
 		JspWriter out = getJspContext().getOut();

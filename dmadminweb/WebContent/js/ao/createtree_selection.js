@@ -24,16 +24,16 @@ function eventSelectNode_selection(frameid,readonly,data)
 	console.log("eventSelectNode=");
 	console.log(data.inst);
 
- 
+
 	if (lastSelectedNode_selection == data.inst.get_json()[0].attr.id) {
 		console.log("returning early");
 		return;
 	}
-	 
+
 	console.log("here");
-	
+
 	lastSelectedNode_selection = data.inst.get_json()[0].attr.id;
-	
+
 	objid_selection = data.inst.get_json()[0].attr.id.substr(2);	//OTID, first two chars are Object Type
 	objtype_selection = data.inst.get_json()[0].attr.id.substr(0,2);
 	objkind_selection="";
@@ -44,9 +44,9 @@ function eventSelectNode_selection(frameid,readonly,data)
 		  objid = objid.substr(0,objid.indexOf("-"));
 	}
 	objtypeAsInt_selection = obj2Int[objtype][0];
- objtypeName_selection = obj2Int[objtype][1];	
+ objtypeName_selection = obj2Int[objtype][1];
  objName_selection = data.inst.get_json()[0].data;
- 
+
 // $("#" + lastSelectedNode_selection).addClass("compsource ui-draggable droppable drop");
  console.log(lastSelectedNode_selection);
  console.log(data.inst.get_json()[0].attr);
@@ -58,18 +58,18 @@ function eventSelectNode_selection(frameid,readonly,data)
 function CreateTree_Selection(nodename,typestr,readonly,frameid)
 {
  console.log("selobj=" + lastSelectedNode);
- 
+
  // var myparent = $.jstree._reference(currenttree)._get_parent("#" + lastSelectedNode);
 
  console.log("Creating tree " + nodename + "," + typestr + "," + readonly + "," + frameid);
- 
+
 	var BaseNode=0;
 	var plugins = ["themes","json_data","ui","types", "cookies"];
 	current_tree_selection = $(nodename);
-	
+
 	if (nodename == "#allocated" || nodename == "#addenv2app" || nodename == "#addapp" || nodename == "#addsrv2env" || nodename == "#addcomp2srv")
 	 plugins.push("checkbox");
-	
+
 	if (!readonly) {
 		if (nodename == "#componentlist" || nodename == "#applicationversionlist" || nodename == "#fragmentlist") {
 			plugins.push("dnd");
@@ -80,7 +80,7 @@ function CreateTree_Selection(nodename,typestr,readonly,frameid)
 				    console.log("Drag start");
 				    Dragging=true;
 				  }
-				}); 
+				});
 			$(document).bind("drag_stop.vakata", function (e, data) {
 				  if(data.data.jstree) {
 				    console.log("Drag end");
@@ -91,8 +91,8 @@ function CreateTree_Selection(nodename,typestr,readonly,frameid)
 	}
 
 	console.log("GetDomainHierarchy?typestr="+typestr+"&domainid=0");
-	
-	
+
+
 
 	 current_tree_selection.jstree({
    "themes" : {
@@ -131,7 +131,7 @@ function CreateTree_Selection(nodename,typestr,readonly,frameid)
     		   id = id.substr(0,id.indexOf("-"));
     	   }
        }
-       
+
        console.log("id="+id+" objtype="+objtype+" objkind="+objkind + " catdomain=" + catdomain);
 
 	      if (objtype == "do") {
@@ -145,7 +145,7 @@ function CreateTree_Selection(nodename,typestr,readonly,frameid)
 	      } else if (objtype == "ap") {
 	       return "GetApplicationContent?appid="+id;
 	      } else if (objtype == "rl") {
-	       return "GetApplicationContent?appid="+id + "&isRelease=y"; 
+	       return "GetApplicationContent?appid="+id + "&isRelease=y";
 	      } else if (objtype == "no") {
 	       return "GetNotifierTemplates?notifierid="+id;
 	      } else if (objtype == "co") {
@@ -153,14 +153,14 @@ function CreateTree_Selection(nodename,typestr,readonly,frameid)
        } else if (objtype == "cy") {
         return "GetFragmentContent?domainid="+catdomain + "&catid=" + id + "&objtype=" + objtype;
        } else if (objtype == "cp") {
-        return "GetFragmentContent?domainid="+catdomain + "&catid=" + id + "&objtype=" + objtype; 
+        return "GetFragmentContent?domainid="+catdomain + "&catid=" + id + "&objtype=" + objtype;
        } else if (objtype == "cf") {
-        return "GetFragmentContent?domainid="+catdomain + "&catid=" + id + "&objtype=" + objtype;  
+        return "GetFragmentContent?domainid="+catdomain + "&catid=" + id + "&objtype=" + objtype;
        } else if (objtype == "cc") {
     	   console.log("cc >>> id="+id);
          return "GetCategoryContent?domainid="+catdomain + "&catid=" + id + "&objtype=" + objtype;
-	      } else {	       
-	       console.log("objtype=" + objtype + "; id=" + id);                        
+	      } else {
+	       console.log("objtype=" + objtype + "; id=" + id);
 	      }
 	     }
 	    },
@@ -173,7 +173,7 @@ function CreateTree_Selection(nodename,typestr,readonly,frameid)
 	   // Those two checks may slow jstree a lot, so use only when needed
 	   "max_depth" : -2,
 	   "max_children" : -2,
-	   // I want only `domain` nodes to be root nodes 
+	   // I want only `domain` nodes to be root nodes
 	   // This will prevent moving or creating any other type as a root node
 	   "valid_children" : [ "Domain" ],
 	   "types" : {
@@ -231,7 +231,7 @@ function CreateTree_Selection(nodename,typestr,readonly,frameid)
 	     "icon" : {
 	      "image" : "css/images/appversions_sm.png"
 	     }
-	    },             
+	    },
 	    "CompVersion" : {
 	     "icon" : {
 	      "image" : "css/images/components_sm.png"
@@ -261,17 +261,17 @@ function CreateTree_Selection(nodename,typestr,readonly,frameid)
 			 "icon" : {
 			 "image" : "css/images/functions_procedures.png"
 			 }
-		},    
+		},
      "Category" : {
       "icon" : {
        "image" : "css/images/tag-light.svg"
       }
-     },	    
+     },
 	    "Function" : {
 	     "icon" : {
 	      "image" : "images/file.png"
 	     }
-	    },              
+	    },
 	    "Datasource" : {
 	     "icon" : {
 	      "image" : "images/datasource.png"
@@ -315,19 +315,19 @@ function CreateTree_Selection(nodename,typestr,readonly,frameid)
 	   "save_loaded"    : "jstree_load_"+nodename.substr(5),
 	   "cookie_options" : { "path" : "/" }
 	  }
-	 }); 
+	 });
 
-      
-      $(nodename).bind("hover_node.jstree", function (e, data) 
+
+      $(nodename).bind("hover_node.jstree", function (e, data)
         {
          lastobj = data.rslt.obj;
         });
-      
-      
-      $(nodename).bind("select_node.jstree", function (e, data) 
+
+
+      $(nodename).bind("select_node.jstree", function (e, data)
       {
        var parent=data.inst._get_parent(data.rslt.obj);
-       
+
        if (parent != -1)
        {
            while (parent && !("attr" in parent) && parent.attr("rel")!="Domain" && parent.attr("rel")!="Lifecycle")
@@ -340,19 +340,19 @@ function CreateTree_Selection(nodename,typestr,readonly,frameid)
        {
         lastdomain_selection=1; // Global
        }
-      }); 
-      
-     
+      });
+
+
       $(nodename).bind("select_node.jstree", function(evt, data){
 
  			  eventSelectNode_selection(frameid,readonly,data);
       });
-      
+
       $(nodename).bind("open_node.jstree close_node.jstree", function (evt, data) {
     	    var state = evt.type == "open_node" ? "open" : "closed";
     	    console.log("type="+data.rslt.obj.attr("rel")+" id="+data.rslt.obj.attr("id")+" "+state);
-      });     
-      
+      });
+
       $(nodename).bind("load_node.jstree", function (evt,data) {
     	 var $nodes = data.rslt.obj
          if( $nodes == -1 ){
@@ -382,7 +382,7 @@ function GetDomainDataHierarchy(typestr)
    lastdomain = domlist[1];
  else
    lastdomain = domlist[0];
- 
+
  console.log("GetDomainData("+typestr+")=" +lastdomain);
  var url;
  if (typestr == "fragments") {
@@ -409,7 +409,7 @@ function CheckTarget(data)
 function ReplaceComponentVersion(data)
 {
 	target = data.r;
-	var newid = data.o[0].id.substr(2); 
+	var newid = data.o[0].id.substr(2);
 	var oldid = parseInt(target[0].id.substr(6));
 	var fromlist = [];
 	var tolist = [];
@@ -437,7 +437,7 @@ function ReplaceComponentVersion(data)
 			}
 		}
 	});
-  
+
 	var p = cPlumb.getConnections({source: "window"+oldid},true);
 	for (var i=0;i<p.length;i++) {
 		console.log("Detaching flow TO: #"+p[i].targetId);
@@ -492,37 +492,37 @@ function ReplaceComponentVersion(data)
 
 function DropFromTree(data)
 {
- 
+
   if (DontSave)
    return;
-  
+
   event = data.e;
   target = data.r;
   var droppedobj = $("#" + data.o[0].id);
-  var windowid = data.o[0].id.substr(2); 
+  var windowid = data.o[0].id.substr(2);
   var droptype = data.o[0].id.substr(0,2);
   save_fragment_id = data.o[0].id.substr(2);
-  
+
   if ((droptype=="co" || droptype=="cv") && target[0].id.substr(0,6)=="window") {
    var n = parseInt(target[0].id.substr(6));
    ReplaceComponentVersion(data);
    return;
   }
-  
+
   var tx = (event.pageX) % 20;
   var ty = (event.pageY) % 20;
   if (tx>10) tx=-(20-tx);
   if (ty>10) ty=-(20-ty);
   var xpos = Math.round(event.offsetX);
   var ypos = Math.round(event.offsetY);
-  
+
   // Components
-  
+
   console.log("droptype="+droptype);
-  
+
   if (droptype == "co" || droptype == "cv") {
    DontSave = true;
-   
+
    if ($.inArray("window" + windowid,usedComponents) >= 0) {
     alert(droppedobj.text() + " is already defined to the Application Version");
     DontSave=false;
@@ -585,9 +585,9 @@ function DropFromTree(data)
     DontSave=false;
     return;
    }
-     
+
    usedApplicationVersions.push("window" + windowid);
-   
+
    $("#innerappver").append(getApplicationVersionMarkup(windowid, droptype, droppedobj.text(), '', xpos, ypos, ''));
    $("#window"+windowid).dblclick(function() {
     avDrillDown($(this));
@@ -600,7 +600,7 @@ function DropFromTree(data)
    function() {
     $(this).removeClass("ui-state-highlight");
    });
-   
+
    avPlumb.draggable(avPlumb.getSelector(".applicationbox"), {
     grid : [ 20, 20 ],
     containment: '#innerappver',
@@ -610,7 +610,7 @@ function DropFromTree(data)
    try {
     $('#window'+windowid).dmContextMenu(menuContextApplicationVersion, {theme:'xp'});
    } catch(e) { console.log(e); }
-   
+
    // Releases have connectors between the applications to indicate deployment order
    avPlumb.addEndpoint("window"+windowid, targetEndpoint, {
     anchor : "TopCenter",
@@ -620,7 +620,7 @@ function DropFromTree(data)
     anchor : "BottomCenter",
     uuid : "window"+windowid+"out"
    });
-   
+
    $.getJSON("UpdateAttrs","f=acvm&isRelease=y&c="+windowid+"&a=" + objid + "&xpos="+xpos+"&ypos="+ypos,
      function(data){
     // Updated DB - safe to add link
@@ -632,7 +632,7 @@ function DropFromTree(data)
      var connection = avPlumb.connect({uuids:[swd.fuuid, "window"+windowid+"in"], editable:true});
      DontSave=false;
     }
-   });   
+   });
   }
   else if (droptype == "fg")  // Fragment
   {
@@ -658,21 +658,21 @@ function DropFromTree(data)
       $(this).removeClass("ui-state-highlight");
      }
     );
-    
+
     jsPlumb.draggable(jsPlumb.getSelector(".fragment, .ddfragment"), {
      grid : [ 20, 20 ],
      containment: '#innerworkflow',
      cursor: "-webkit-grab",
      stop: wfWindowMoved
     });
-    
-    
+
+
     // apps have connectors between the components to indicate deployment order
     jsPlumb.addEndpoint("window"+windowid, targetEndpoint, {
       anchor : "TopCenter",
       uuid : "window"+windowid+"in"
      });
-    
+
     if (data.exitpoints == 1)
     {
      console.log("Adding endpoint window"+windowid+"out");
@@ -686,7 +686,7 @@ function DropFromTree(data)
     {
      console.log("style="+data.style);
      if (data.style==1) {
-       // If Block 
+       // If Block
        console.log("Adding endpoint window"+windowid+"leftout");
        jsPlumb.addEndpoint("window"+windowid, sourceEndpointLeft, {
         anchor : "LeftMiddle",
@@ -763,11 +763,11 @@ function DropFromTree(data)
       }
      } catch(e) { console.log(e); }
      console.log("Calling UpdateAttrs, f=af");
-     
+
 
     }
     var x = {id: "window"+windowid};
     wfOpenDetails(x,true);
-   });   
+   });
   }
 }

@@ -6,13 +6,13 @@
  * Revision: 1250
  *
  * Copyright (c) 2009-2013 Chris Leonello
- * jqPlot is currently available for use in all personal or commercial projects 
- * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL 
- * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can 
- * choose the license that best suits your project and use it accordingly. 
+ * jqPlot is currently available for use in all personal or commercial projects
+ * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL
+ * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can
+ * choose the license that best suits your project and use it accordingly.
  *
- * Although not required, the author would appreciate an email letting him 
- * know of any substantial use of jqPlot.  You can reach the author at: 
+ * Although not required, the author would appreciate an email letting him
+ * know of any substantial use of jqPlot.  You can reach the author at:
  * chris at jqplot dot com or see http://www.jqplot.com/info.php .
  *
  * If you are feeling kind and generous, consider supporting the project by
@@ -26,7 +26,7 @@
  *     http://hexmen.com/js/sprintf.js
  *     The author (Ash Searle) has placed this code in the public domain:
  *     "This code is unrestricted: you are free to use it however you like."
- * 
+ *
  */
 (function($) {
     /**
@@ -34,15 +34,15 @@
      * Plugin renderer to draw a donut chart.
      * x values, if present, will be used as slice labels.
      * y values give slice size.
-     * 
-     * To use this renderer, you need to include the 
+     *
+     * To use this renderer, you need to include the
      * donut renderer plugin, for example:
-     * 
+     *
      * > <script type="text/javascript" src="plugins/jqplot.donutRenderer.js"></script>
-     * 
+     *
      * Properties described here are passed into the $.jqplot function
      * as options on the series renderer.  For example:
-     * 
+     *
      * > plot2 = $.jqplot('chart2', [s1, s2], {
      * >     seriesDefaults: {
      * >         renderer:$.jqplot.DonutRenderer,
@@ -53,12 +53,12 @@
      * >          }
      * >      }
      * > });
-     * 
+     *
      * A donut plot will trigger events on the plot target
      * according to user interaction.  All events return the event object,
-     * the series index, the point (slice) index, and the point data for 
+     * the series index, the point (slice) index, and the point data for
      * the appropriate slice.
-     * 
+     *
      * 'jqplotDataMouseOver' - triggered when user mouseing over a slice.
      * 'jqplotDataHighlight' - triggered the first time user mouses over a slice,
      * if highlighting is enabled.
@@ -71,10 +71,10 @@
     $.jqplot.DonutRenderer = function(){
         $.jqplot.LineRenderer.call(this);
     };
-    
+
     $.jqplot.DonutRenderer.prototype = new $.jqplot.LineRenderer();
     $.jqplot.DonutRenderer.prototype.constructor = $.jqplot.DonutRenderer;
-    
+
     // called with scope of a series
     $.jqplot.DonutRenderer.prototype.init = function(options, plot) {
         // Group: Properties
@@ -104,14 +104,14 @@
         // true or false, whether to fil the slices.
         this.fill = true;
         // prop: shadowOffset
-        // offset of the shadow from the slice and offset of 
+        // offset of the shadow from the slice and offset of
         // each succesive stroke of the shadow from the last.
         this.shadowOffset = 2;
         // prop: shadowAlpha
         // transparency of the shadow (0 = transparent, 1 = opaque)
         this.shadowAlpha = 0.07;
         // prop: shadowDepth
-        // number of strokes to apply to the shadow, 
+        // number of strokes to apply to the shadow,
         // each stroke offset shadowOffset from the last.
         this.shadowDepth = 5;
         // prop: highlightMouseOver
@@ -147,7 +147,7 @@
         // Number of pixels to slide the label away from (+) or toward (-) the center of the pie.
         this.dataLabelNudge = 0;
         // prop: startAngle
-        // Angle to start drawing donut in degrees.  
+        // Angle to start drawing donut in degrees.
         // According to orientation of canvas coordinate system:
         // 0 = on the positive x axis
         // -90 = on the positive y axis.
@@ -158,12 +158,12 @@
         // Used as check for conditions where donut shouldn't be drawn.
         this._drawData = true;
         this._type = 'donut';
-        
+
         // if user has passed in highlightMouseDown option and not set highlightMouseOver, disable highlightMouseOver
         if (options.highlightMouseDown && options.highlightMouseOver == null) {
             options.highlightMouseOver = false;
         }
-        
+
         $.extend(true, this, options);
         if (this.diameter != null) {
             this.diameter = this.diameter - this.sliceMargin;
@@ -181,7 +181,7 @@
         this._sliceAngles = [];
         // index of the currenty highlighted point, if any
         this._highlightedPoint = null;
-        
+
         // set highlight colors if none provided
         if (this.highlightColors.length == 0) {
             for (var i=0; i<this.seriesColors.length; i++){
@@ -196,7 +196,7 @@
                 this.highlightColors.push('rgb('+newrgb[0]+','+newrgb[1]+','+newrgb[2]+')');
             }
         }
-        
+
         plot.postParseOptionsHooks.addOnce(postParseOptions);
         plot.postInitHooks.addOnce(postInit);
         plot.eventListenerHooks.addOnce('jqplotMouseMove', handleMove);
@@ -205,10 +205,10 @@
         plot.eventListenerHooks.addOnce('jqplotClick', handleClick);
         plot.eventListenerHooks.addOnce('jqplotRightClick', handleRightClick);
         plot.postDrawHooks.addOnce(postPlotDraw);
-        
-        
+
+
     };
-    
+
     $.jqplot.DonutRenderer.prototype.setGridData = function(plot) {
         // set gridData property.  This will hold angle in radians of each data point.
         var stack = [];
@@ -230,14 +230,14 @@
             tot += this.data[i][1];
         }
         var fact = Math.PI*2/stack[stack.length - 1];
-        
+
         for (var i=0; i<stack.length; i++) {
             td[i][1] = stack[i] * fact;
             td[i][2] = this.data[i][1]/tot;
         }
         this.gridData = td;
     };
-    
+
     $.jqplot.DonutRenderer.prototype.makeGridData = function(data, plot) {
         var stack = [];
         var td = [];
@@ -258,14 +258,14 @@
             tot += data[i][1];
         }
         var fact = Math.PI*2/stack[stack.length - 1];
-        
+
         for (var i=0; i<stack.length; i++) {
             td[i][1] = stack[i] * fact;
             td[i][2] = data[i][1]/tot;
         }
         return td;
     };
-    
+
     $.jqplot.DonutRenderer.prototype.drawSlice = function (ctx, ang1, ang2, color, isShadow) {
         var r = this._diameter / 2;
         var ri = r - this._thickness;
@@ -274,7 +274,7 @@
         ctx.save();
         ctx.translate(this._center[0], this._center[1]);
         // ctx.translate(this.sliceMargin*Math.cos((ang1+ang2)/2), this.sliceMargin*Math.sin((ang1+ang2)/2));
-        
+
         if (isShadow) {
             for (var i=0; i<this.shadowDepth; i++) {
                 ctx.save();
@@ -282,11 +282,11 @@
                 doDraw();
             }
         }
-        
+
         else {
             doDraw();
         }
-        
+
         function doDraw () {
             // Fix for IE and Chrome that can't seem to draw circles correctly.
             // ang2 should always be <= 2 pi since that is the way the data is converted.
@@ -301,7 +301,7 @@
             if (ang1 >= ang2) {
                 return;
             }
-            ctx.beginPath();  
+            ctx.beginPath();
             ctx.fillStyle = color;
             ctx.strokeStyle = color;
             // ctx.lineWidth = lineWidth;
@@ -316,16 +316,16 @@
                 ctx.stroke();
             }
         }
-        
+
         if (isShadow) {
             for (var i=0; i<this.shadowDepth; i++) {
                 ctx.restore();
             }
         }
-        
+
         ctx.restore();
     };
-    
+
     // called with scope of series
     $.jqplot.DonutRenderer.prototype.draw = function (ctx, gd, options, plot) {
         var i;
@@ -370,7 +370,7 @@
                     break;
             }
         }
-        
+
         var shadow = (opts.shadow != undefined) ? opts.shadow : this.shadow;
         var showLine = (opts.showLine != undefined) ? opts.showLine : this.showLine;
         var fill = (opts.fill != undefined) ? opts.fill : this.fill;
@@ -381,7 +381,7 @@
         var mindim = Math.min(w,h);
         var d = mindim;
         var ringmargin =  (this.ringMargin == null) ? this.sliceMargin * 2.0 : this.ringMargin;
-        
+
         for (var i=0; i<this._previousSeries.length; i++) {
             d -= 2.0 * this._previousSeries[i]._thickness + 2.0 * ringmargin;
         }
@@ -398,7 +398,7 @@
         this._innerRadius = this._radius - this._thickness;
         var sa = this.startAngle / 180 * Math.PI;
         this._center = [(cw - trans * offx)/2 + trans * offx, (ch - trans*offy)/2 + trans * offy];
-        
+
         if (this.shadow) {
             var shadowColor = 'rgba(0,0,0,'+this.shadowAlpha+')';
             for (var i=0; i<gd.length; i++) {
@@ -407,7 +407,7 @@
                 ang1 += this.sliceMargin/180*Math.PI;
                 this.renderer.drawSlice.call (this, ctx, ang1, gd[i][1]+sa, shadowColor, true);
             }
-            
+
         }
         for (var i=0; i<gd.length; i++) {
             var ang1 = (i == 0) ? sa : gd[i-1][1] + sa;
@@ -416,10 +416,10 @@
             var ang2 = gd[i][1] + sa;
             this._sliceAngles.push([ang1, ang2]);
             this.renderer.drawSlice.call (this, ctx, ang1, ang2, this.seriesColors[i], false);
-            
+
             if (this.showDataLabels && gd[i][2]*100 >= this.dataLabelThreshold) {
                 var fstr, avgang = (ang1+ang2)/2, label;
-                
+
                 if (this.dataLabels == 'label') {
                     fstr = this.dataLabelFormatString || '%s';
                     label = $.jqplot.sprintf(fstr, gd[i][0]);
@@ -436,12 +436,12 @@
                     fstr = this.dataLabelFormatString || '%s';
                     label = $.jqplot.sprintf(fstr, this.dataLabels[i]);
                 }
-                
+
                 var fact = this._innerRadius + this._thickness * this.dataLabelPositionFactor + this.sliceMargin + this.dataLabelNudge;
-                
+
                 var x = this._center[0] + Math.cos(avgang) * fact + this.canvas._offsets.left;
                 var y = this._center[1] + Math.sin(avgang) * fact + this.canvas._offsets.top;
-                
+
                 var labelelem = $('<span class="jqplot-donut-series jqplot-data-label" style="position:absolute;">' + label + '</span>').insertBefore(plot.eventCanvas._elem);
                 x -= labelelem.width()/2;
                 y -= labelelem.height()/2;
@@ -450,17 +450,17 @@
                 labelelem.css({left: x, top: y});
             }
         }
-               
+
     };
-    
+
     $.jqplot.DonutAxisRenderer = function() {
         $.jqplot.LinearAxisRenderer.call(this);
     };
-    
+
     $.jqplot.DonutAxisRenderer.prototype = new $.jqplot.LinearAxisRenderer();
     $.jqplot.DonutAxisRenderer.prototype.constructor = $.jqplot.DonutAxisRenderer;
-        
-    
+
+
     // There are no traditional axes on a donut chart.  We just need to provide
     // dummy objects with properties so the plot will render.
     // called with scope of axis object.
@@ -479,19 +479,19 @@
         this.showTicks = false;
         this.ticks = [];
         this.showMark = false;
-        this.show = false; 
+        this.show = false;
     };
-    
-    
-    
-    
+
+
+
+
     $.jqplot.DonutLegendRenderer = function(){
         $.jqplot.TableLegendRenderer.call(this);
     };
-    
+
     $.jqplot.DonutLegendRenderer.prototype = new $.jqplot.TableLegendRenderer();
     $.jqplot.DonutLegendRenderer.prototype.constructor = $.jqplot.DonutLegendRenderer;
-    
+
     /**
      * Class: $.jqplot.DonutLegendRenderer
      * Legend Renderer specific to donut plots.  Set by default
@@ -508,7 +508,7 @@
         this.numberColumns = null;
         $.extend(true, this, options);
     };
-    
+
     // called with context of legend
     $.jqplot.DonutLegendRenderer.prototype.draw = function() {
         var legend = this;
@@ -527,13 +527,13 @@
             this._elem = $('<table class="jqplot-table-legend" style="'+ss+'"></table>');
             // Donut charts legends don't go by number of series, but by number of data points
             // in the series.  Refactor things here for that.
-            
-            var pad = false, 
+
+            var pad = false,
                 reverse = false,
                 nr, nc;
             var s = series[0];
             var colorGenerator = new $.jqplot.ColorGenerator(s.seriesColors);
-            
+
             if (s.show) {
                 var pd = s.data;
                 if (this.numberRows) {
@@ -553,10 +553,10 @@
                     nr = pd.length;
                     nc = 1;
                 }
-                
+
                 var i, j, tr, td1, td2, lt, rs, color;
-                var idx = 0;    
-                
+                var idx = 0;
+
                 for (i=0; i<nr; i++) {
                     if (reverse){
                         tr = $('<tr class="jqplot-table-legend"></tr>').prependTo(this._elem);
@@ -585,7 +585,7 @@
                                 }
                             }
                             rs = (pad) ? this.rowSpacing : '0';
-                
+
                             td1 = $('<td class="jqplot-table-legend" style="text-align:center;padding-top:'+rs+';">'+
                                 '<div><div class="jqplot-table-legend-swatch" style="border-color:'+color+';"></div>'+
                                 '</div></td>');
@@ -607,13 +607,13 @@
                             pad = true;
                         }
                         idx++;
-                    }   
+                    }
                 }
             }
         }
-        return this._elem;                
+        return this._elem;
     };
-    
+
     // setup default renderers for axes and legend so user doesn't have to
     // called with scope of plot
     function preInit(target, data, options) {
@@ -633,7 +633,7 @@
                 }
             }
         }
-        
+
         if (setopts) {
             options.axesDefaults.renderer = $.jqplot.DonutAxisRenderer;
             options.legend.renderer = $.jqplot.DonutLegendRenderer;
@@ -641,7 +641,7 @@
             options.seriesDefaults.pointLabels = {show: false};
         }
     }
-    
+
     // called with scope of plot.
     function postInit(target, data, options) {
         // if multiple series, add a reference to the previous one so that
@@ -665,7 +665,7 @@
             }
         }
     }
-    
+
     var postParseOptionsRun = false;
     // called with scope of plot
     function postParseOptions(options) {
@@ -674,7 +674,7 @@
             this.series[i].colorGenerator = $.jqplot.colorGenerator;
         }
     }
-    
+
     function highlight (plot, sidx, pidx) {
         var s = plot.series[sidx];
         var canvas = plot.plugins.donutRenderer.highlightCanvas;
@@ -683,7 +683,7 @@
         plot.plugins.donutRenderer.highlightedSeriesIndex = sidx;
         s.renderer.drawSlice.call(s, canvas._ctx, s._sliceAngles[pidx][0], s._sliceAngles[pidx][1], s.highlightColors[pidx], false);
     }
-    
+
     function unhighlight (plot) {
         var canvas = plot.plugins.donutRenderer.highlightCanvas;
         canvas._ctx.clearRect(0,0, canvas._ctx.canvas.width, canvas._ctx.canvas.height);
@@ -693,7 +693,7 @@
         plot.plugins.donutRenderer.highlightedSeriesIndex = null;
         plot.target.trigger('jqplotDataUnhighlight');
     }
- 
+
     function handleMove(ev, gridpos, datapos, neighbor, plot) {
         if (neighbor) {
             var ins = [neighbor.seriesIndex, neighbor.pointIndex, neighbor.data];
@@ -713,8 +713,8 @@
         else if (neighbor == null) {
             unhighlight (plot);
         }
-    } 
-    
+    }
+
     function handleMouseDown(ev, gridpos, datapos, neighbor, plot) {
         if (neighbor) {
             var ins = [neighbor.seriesIndex, neighbor.pointIndex, neighbor.data];
@@ -731,14 +731,14 @@
             unhighlight (plot);
         }
     }
-    
+
     function handleMouseUp(ev, gridpos, datapos, neighbor, plot) {
         var idx = plot.plugins.donutRenderer.highlightedSeriesIndex;
         if (idx != null && plot.series[idx].highlightMouseDown) {
             unhighlight(plot);
         }
     }
-    
+
     function handleClick(ev, gridpos, datapos, neighbor, plot) {
         if (neighbor) {
             var ins = [neighbor.seriesIndex, neighbor.pointIndex, neighbor.data];
@@ -749,7 +749,7 @@
             plot.target.trigger(evt, ins);
         }
     }
-    
+
     function handleRightClick(ev, gridpos, datapos, neighbor, plot) {
         if (neighbor) {
             var ins = [neighbor.seriesIndex, neighbor.pointIndex, neighbor.data];
@@ -763,13 +763,13 @@
             evt.pageY = ev.pageY;
             plot.target.trigger(evt, ins);
         }
-    }    
-    
+    }
+
     // called within context of plot
     // create a canvas which we can draw on.
     // insert it before the eventCanvas, so eventCanvas will still capture events.
     function postPlotDraw() {
-        // Memory Leaks patch    
+        // Memory Leaks patch
         if (this.plugins.donutRenderer && this.plugins.donutRenderer.highlightCanvas) {
             this.plugins.donutRenderer.highlightCanvas.resetCanvas();
             this.plugins.donutRenderer.highlightCanvas = null;
@@ -790,16 +790,14 @@
         var hctx = this.plugins.donutRenderer.highlightCanvas.setContext();
         this.eventCanvas._elem.bind('mouseleave', {plot:this}, function (ev) { unhighlight(ev.data.plot); });
     }
-    
+
     $.jqplot.preInitHooks.push(preInit);
-    
+
     $.jqplot.DonutTickRenderer = function() {
         $.jqplot.AxisTickRenderer.call(this);
     };
-    
+
     $.jqplot.DonutTickRenderer.prototype = new $.jqplot.AxisTickRenderer();
     $.jqplot.DonutTickRenderer.prototype.constructor = $.jqplot.DonutTickRenderer;
-    
+
 })(jQuery);
-    
-    

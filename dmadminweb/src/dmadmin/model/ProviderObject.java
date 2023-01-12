@@ -30,23 +30,23 @@ public abstract class ProviderObject
 	extends DMObject
 {
 	private static final long serialVersionUID = -8147651036390520017L;
-		
+
 	private ProviderDefinition m_def;
 	private Credential m_cred;
 
 	public ProviderObject(DMSession sess, int id, String name) {
 		super(sess, id, name);
 	}
-	
+
 	public List<DMProperty> getProperties() {
 		return m_session.getPropertiesForProviderObject(this);
 	}
-	
+
 	public ProviderDefinition getDef() {
 		if(m_def == null) {
 			m_def = m_session.getProviderDefForProviderObject(this);
 		}
-		
+
   if (m_def.getName().equalsIgnoreCase("unconfigured"))
   {
    List<ProviderDefinition> deflist = m_session.getProviderDefinitionsOfType(getObjectType());
@@ -58,18 +58,18 @@ public abstract class ProviderObject
      {
       m_def = deflist.get(i);
       break;
-     } 
+     }
     }
    }
   }
-		
+
 		if(m_def == null) {
 			throw new RuntimeException("Unable to retrieve provider definition for " + getObjectType() + " " + getId());
 		}
 		return m_def;
 	}
 	public void setDef(ProviderDefinition def)  {  m_def = def; }
-	
+
 	public boolean isTypeUnconfigured() {
 		return (getDef().getId() == 0);
 	}
@@ -78,10 +78,10 @@ public abstract class ProviderObject
 	 ProviderDefinition def = getDef();
 		return m_session.getPropertyDefsForProviderDef(def);
 	}
-	
+
 	public Credential getCredential()  { return m_cred; }
 	public void setCredential(Credential cred)  { m_cred = cred; }
-	
+
 	@Override
 	public IJSONSerializable getSummaryJSON() {
 		System.out.println("Getting Summary JSON for id "+m_id);
@@ -105,11 +105,11 @@ public abstract class ProviderObject
 	public boolean updateSummary(SummaryChangeSet changes) {
 		return m_session.updateProviderObject(this, changes);
 	}
-	
+
 	public boolean updateProperties(ACDChangeSet<DMProperty> changes) {
 		return m_session.updateProviderProperties(this, changes, false);
 	}
-	
+
  public boolean updateProperties(ACDChangeSet<DMProperty> changes, boolean deleteAll) {
   return m_session.updateProviderProperties(this, changes, deleteAll);
  }

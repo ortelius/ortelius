@@ -34,7 +34,7 @@ public class GetUsers
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -48,11 +48,11 @@ public class GetUsers
 		throws ServletException, IOException
 	{
 		System.out.println("GetUsers");
-		
+
 		JSONArray ret = new JSONArray();
 		for(User u : session.getUsersNotInGroup(0)) {
 			ret.add(u.getLinkJSON());
-		}		
+		}
 		return ret;
 	}
 }

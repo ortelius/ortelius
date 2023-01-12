@@ -24,7 +24,7 @@ ALTER TABLE dm.dm_defects add status character varying(40);
 ALTER TABLE dm.dm_defects add datasourceid integer;
 
 CREATE TABLE dm.dm_defecthistory(
-timestamp		integer NOT NULL, 
+timestamp		integer NOT NULL,
 appid			integer,
 compid			integer,
 open			integer NOT NULL,
@@ -48,4 +48,3 @@ CREATE TABLE dm_builddefects
       REFERENCES dm_buildjob (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION
 );
-

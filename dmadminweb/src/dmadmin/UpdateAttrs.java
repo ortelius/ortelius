@@ -90,7 +90,7 @@ public class UpdateAttrs extends HttpServletBase
 
  private void WindowMoved(HttpServletRequest request, DMSession so, PrintWriter out)
  {
-  
+
   int actionid = Integer.parseInt(request.getParameter("a"));
   int windowid = Integer.parseInt(request.getParameter("w"));
   String spw = request.getParameter("pw");
@@ -120,7 +120,7 @@ public class UpdateAttrs extends HttpServletBase
   so.MoveServer(envid, serverid, xpos, ypos);
   out.println("{\"success\": true}");
  }
- 
+
  private void addServerComplete(HttpServletRequest request, DMSession so, PrintWriter out)
  {
 	 int envid = Integer.parseInt(request.getParameter("e"));
@@ -190,7 +190,7 @@ public class UpdateAttrs extends HttpServletBase
  {
   int compid = Integer.parseInt(request.getParameter("c"));
   int servid = Integer.parseInt(request.getParameter("s"));
-   
+
   so.addComponentVersionToServer(servid, compid);
   out.println("{\"success\": true}");
  }
@@ -212,7 +212,7 @@ public class UpdateAttrs extends HttpServletBase
   int ypos = GetPosition(request, "ypos");
   String kind = request.getParameter("kind");
   String removeall = request.getParameter("removeall");
- 
+
   if (removeall != null && removeall.equalsIgnoreCase("Y"))
   {
    try
@@ -568,7 +568,7 @@ public class UpdateAttrs extends HttpServletBase
   so.updateTaskRequest(tid, tgt);
   out.println("{\"success\": true}");
  }
- 
+
  private void updateTaskAction(HttpServletRequest request, DMSession so, PrintWriter out)
  {
   int tid = Integer.parseInt(request.getParameter("tid"));
@@ -741,7 +741,7 @@ public class UpdateAttrs extends HttpServletBase
    updateServerLabel(request, session, out);
   else if (f.equalsIgnoreCase("asc"))
    addServerComplete(request, session, out);
- 
+
  }
 
  /**

@@ -96,7 +96,7 @@ FunctionNodeImpl *IIS_GetVersionFunctionImplFactory::create(class DM &dm, Functi
 extern "C" IISPLUGIN_EXPORT int PluginStart(DM &dm)
 {
 	dm.writeToLogFile("IIS plugin V" IISPLUGIN_PLUGIN_VERSION);
-	
+
 	ExtendedStmtImplRegistry::instance()
 		.registerFactory("iis_getsites", new IIS_GetSitesStmtImplFactory());
 	FunctionNodeImplRegistry::instance()

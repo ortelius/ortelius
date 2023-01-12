@@ -6,13 +6,13 @@
  * Revision: 1250
  *
  * Copyright (c) 2009-2013 Chris Leonello
- * jqPlot is currently available for use in all personal or commercial projects 
- * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL 
- * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can 
- * choose the license that best suits your project and use it accordingly. 
+ * jqPlot is currently available for use in all personal or commercial projects
+ * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL
+ * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can
+ * choose the license that best suits your project and use it accordingly.
  *
- * Although not required, the author would appreciate an email letting him 
- * know of any substantial use of jqPlot.  You can reach the author at: 
+ * Although not required, the author would appreciate an email letting him
+ * know of any substantial use of jqPlot.  You can reach the author at:
  * chris at jqplot dot com or see http://www.jqplot.com/info.php .
  *
  * If you are feeling kind and generous, consider supporting the project by
@@ -31,18 +31,18 @@
  *
  * Copyright (c) 2010-2013 Chris Leonello
  *
- * jsDate is currently available for use in all personal or commercial projects 
- * under both the MIT and GPL version 2.0 licenses. This means that you can 
+ * jsDate is currently available for use in all personal or commercial projects
+ * under both the MIT and GPL version 2.0 licenses. This means that you can
  * choose the license that best suits your project and use it accordingly.
  *
- * jsDate borrows many concepts and ideas from the Date Instance 
+ * jsDate borrows many concepts and ideas from the Date Instance
  * Methods by Ken Snyder along with some parts of Ken's actual code.
- * 
+ *
  * Ken's original Date Instance Methods and copyright notice:
- * 
+ *
  * Ken Snyder (ken d snyder at gmail dot com)
  * 2008-09-10
- * version 2.0.2 (http://kendsnyder.com/sandbox/date/)     
+ * version 2.0.2 (http://kendsnyder.com/sandbox/date/)
  * Creative Commons Attribution License 3.0 (http://creativecommons.org/licenses/by/3.0/)
  *
  * jqplotToImage function based on Larry Siden's export-jqplot-to-png.js.
@@ -52,11 +52,11 @@
  * Larry's original code can be found here:
  *
  * https://github.com/lsiden/export-jqplot-to-png
- * 
- * 
+ *
+ *
  */
 
-(function($) {    
+(function($) {
     // This code is a modified version of the canvastext.js code, copyright below:
     //
     // This code is released to the public domain by Jim Studt, 2007.
@@ -66,7 +66,7 @@
         this.fontStyle = 'normal';  // normal, italic, oblique [not implemented]
         this.fontVariant = 'normal';    // normal, small caps [not implemented]
         this.fontWeight = 'normal'; // normal, bold, bolder, lighter, 100 - 900
-        this.fontSize = '10px'; 
+        this.fontSize = '10px';
         this.fontFamily = 'sans-serif';
         this.fontStretch = 1.0;
         this.fillStyle = '#666666';
@@ -82,13 +82,13 @@
         this.normalizedFontSize = this.normalizeFontSize(this.fontSize);
         this.setHeight();
     };
-    
+
     $.jqplot.CanvasTextRenderer.prototype.init = function(options) {
         $.extend(true, this, options);
         this.normalizedFontSize = this.normalizeFontSize(this.fontSize);
         this.setHeight();
     };
-    
+
     // convert css spec into point size
     // returns float
     $.jqplot.CanvasTextRenderer.prototype.normalizeFontSize = function(sz) {
@@ -111,8 +111,8 @@
             return n/this.pt2px;
         }
     };
-    
-    
+
+
     $.jqplot.CanvasTextRenderer.prototype.fontWeight2Float = function(w) {
         // w = normal | bold | bolder | lighter | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
         // return values adjusted for Hershey font.
@@ -136,39 +136,39 @@
                 default:
                     return 1;
                     break;
-             }   
+             }
         }
     };
-    
+
     $.jqplot.CanvasTextRenderer.prototype.getText = function() {
         return this.text;
     };
-    
+
     $.jqplot.CanvasTextRenderer.prototype.setText = function(t, ctx) {
         this.text = t;
         this.setWidth(ctx);
         return this;
     };
-    
+
     $.jqplot.CanvasTextRenderer.prototype.getWidth = function(ctx) {
         return this.width;
     };
-    
+
     $.jqplot.CanvasTextRenderer.prototype.setWidth = function(ctx, w) {
         if (!w) {
             this.width = this.measure(ctx, this.text);
         }
         else {
-            this.width = w;   
+            this.width = w;
         }
         return this;
     };
-    
+
     // return height in pixels.
     $.jqplot.CanvasTextRenderer.prototype.getHeight = function(ctx) {
         return this.height;
     };
-    
+
     // w - height in pt
     // set heigh in px
     $.jqplot.CanvasTextRenderer.prototype.setHeight = function(w) {
@@ -177,7 +177,7 @@
             this.height = this.normalizedFontSize * this.pt2px;
         }
         else {
-            this.height = w;   
+            this.height = w;
         }
         return this;
     };
@@ -201,7 +201,7 @@
     {
         var total = 0;
         var len = str.length;
- 
+
         for (var i = 0; i < len; i++) {
             var c = this.letter(str.charAt(i));
             if (c) {
@@ -222,7 +222,7 @@
 
          ctx.save();
          var tx, ty;
-         
+
          // 1st quadrant
          if ((-Math.PI/2 <= this.angle && this.angle <= 0) || (Math.PI*3/2 <= this.angle && this.angle <= Math.PI*2)) {
              tx = 0;
@@ -243,7 +243,7 @@
              tx = Math.sin(this.angle) * this.height - Math.cos(this.angle)*this.width;
              ty = -Math.cos(this.angle) * this.height;
          }
-         
+
          ctx.strokeStyle = this.fillStyle;
          ctx.fillStyle = this.fillStyle;
          ctx.translate(tx, ty);
@@ -252,7 +252,7 @@
          // multiplier was 2.0
          var fact = (this.normalizedFontSize > 30) ? 2.0 : 2 + (30 - this.normalizedFontSize)/20;
          ctx.lineWidth = fact * mag * this.fontWeight2Float(this.fontWeight);
-         
+
          for ( var i = 0; i < len; i++) {
             var c = this.letter( str.charAt(i));
             if ( !c) {
@@ -380,7 +380,7 @@
          '}': { width: 14, points: [[5,25],[7,24],[8,23],[9,21],[9,19],[8,17],[7,16],[6,14],[6,12],[8,10],[-1,-1],[7,24],[8,22],[8,20],[7,18],[6,17],[5,15],[5,13],[6,11],[10,9],[6,7],[5,5],[5,3],[6,1],[7,0],[8,-2],[8,-4],[7,-6],[-1,-1],[8,8],[6,6],[6,4],[7,2],[8,1],[9,-1],[9,-3],[8,-5],[7,-6],[5,-7]] },
          '~': { width: 24, points: [[3,6],[3,8],[4,11],[6,12],[8,12],[10,11],[14,8],[16,7],[18,7],[20,8],[21,10],[-1,-1],[3,8],[4,10],[6,11],[8,11],[10,10],[14,7],[16,6],[18,6],[20,7],[21,10],[21,12]] }
      };
-     
+
     $.jqplot.CanvasFontRenderer = function(options) {
         options = options || {};
         if (!options.pt2px) {
@@ -388,7 +388,7 @@
         }
         $.jqplot.CanvasTextRenderer.call(this, options);
     };
-    
+
     $.jqplot.CanvasFontRenderer.prototype = new $.jqplot.CanvasTextRenderer({});
     $.jqplot.CanvasFontRenderer.prototype.constructor = $.jqplot.CanvasFontRenderer;
 
@@ -412,7 +412,7 @@
 
          ctx.save();
          var tx, ty;
-         
+
          // 1st quadrant
          if ((-Math.PI/2 <= this.angle && this.angle <= 0) || (Math.PI*3/2 <= this.angle && this.angle <= Math.PI*2)) {
              tx = 0;
@@ -445,5 +445,5 @@
 
          ctx.restore();
     };
-    
+
 })(jQuery);

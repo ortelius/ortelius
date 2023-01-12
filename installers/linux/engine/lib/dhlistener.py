@@ -153,10 +153,10 @@ def main(dhurl, clientid,  DMHOME, dm_database, dm_port):
             r = getURL(dhurl + "/dmadminweb/EngineEvent?clientid=" + clientid)    # First time so get all messages in queue table
         else:
             r = getURL(dhurl + "/dmadminweb/EngineEvent?clientid=" + clientid + "&since=" + str(since))  # Get all new messages since last time
-        
+
         if (r is None):
             continue
-        
+
         logging.debug("Received event")
         logging.debug(r.text)
 

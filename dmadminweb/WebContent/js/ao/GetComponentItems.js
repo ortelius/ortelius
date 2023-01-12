@@ -63,14 +63,14 @@ function SaveComponentItemsDetails(id)
 function ciClickElement(id, comptype)
 {
  summSaveItemobjid = id;
- 
+
  if (id < 0)
   summSavedomid = 1;
 
  var addParams = "";
  if (id < 0)
    addParams += "&comptype=" + comptype;
- 
+
  console.log("GetSummaryData?objtype=14&id=" + id + addParams);
  $.ajax(
  {
@@ -83,34 +83,34 @@ function ciClickElement(id, comptype)
   {
    console.log(status);
    console.log(err);
-  }, 
+  },
   success : function(res)
   {
    var data = [];
-   
+
    /* Combine rows */
-   
+
    for (j=0;j<res.length;j++)
    {
     row = res[j];
-    
+
     for (let [key, value] of compitem_colmap)
     {
      if (key in row)
      {
       newrow = JSON.parse(JSON.stringify(value));
-      
+
       if (row[key] == null)
         newrow.push('');
       else
-        newrow.push(row[key]);   
+        newrow.push(row[key]);
       data.push(newrow);
      }
     }
    }
    res.data = data;
    console.log(data);
-   
+
    saveRes = res;
    var title = "";
    var tdedit3 = "<form id=\"compitemform\"><div style=\"display:none\">" + id + "</div><table id=\"compitemtab\" class=\"dev_table\"><tbody>";
@@ -120,7 +120,7 @@ function ciClickElement(id, comptype)
    var repolist = [];
    var prefix = "";
    var findprefix = "";
-   
+
    if (comptype == "")
    {
     for (var r = 0; r < res.data.length; r++)
@@ -128,7 +128,7 @@ function ciClickElement(id, comptype)
      var row = res.data[r];
      var label = row[3];
      var val = row[4];
-     
+
      if (label == "Kind")
      {
       if (val.toLowerCase() == "DATABASE".toLowerCase())
@@ -137,7 +137,7 @@ function ciClickElement(id, comptype)
         comptype = "docker";
       else
         comptype = "file";
-     } 
+     }
 
      if (comptype.includes('database') && label.indexOf("Roll Forward") >= 0 && val == '1')
       findprefix = "rf_";
@@ -147,18 +147,18 @@ function ciClickElement(id, comptype)
 
     comptype = findprefix + comptype;
    }
-   
+
    if (comptype == "rf_database")
    {
      tdedit3 = "<form id=\"compitemform\"><div style=\"display:none\">rf_" + id + "</div><table id=\"compitemtab\" class=\"dev_table\"><tbody>";
      prefix = "rf_";
-   }  
+   }
    if (comptype == "rb_database")
    {
     tdedit3 = "";
     prefix = "rb_";
-   } 
-   
+   }
+
    for (var r = 0; r < res.data.length; r++)
    {
     var row = res.data[r];
@@ -172,7 +172,7 @@ function ciClickElement(id, comptype)
 
    if (label.toLowerCase() != "Predecessor".toLowerCase() && label.toLowerCase() != "XPos".toLowerCase() &&
        label.toLowerCase() != "YPos".toLowerCase() && label.toLowerCase() != "Summary".toLowerCase() &&
-       label.toLowerCase() != "Name".toLowerCase() && label.toLowerCase() != "Kind".toLowerCase() && 
+       label.toLowerCase() != "Name".toLowerCase() && label.toLowerCase() != "Kind".toLowerCase() &&
 	   label.toLowerCase() != "Service Owner Id".toLowerCase())
    {
 	if (comptype == 'docker')
@@ -196,7 +196,7 @@ function ciClickElement(id, comptype)
 	     label.toLowerCase() == "Roll Back".toLowerCase() ||
 	     label.toLowerCase() == "Roll Forward".toLowerCase())
 	  continue;
-	}		
+	}
 	else if (comptype.includes('database'))
 	{
 	 if (label.toLowerCase() == "Container Registry".toLowerCase() ||
@@ -217,23 +217,23 @@ function ciClickElement(id, comptype)
 	     label.toLowerCase() == "Roll Back".toLowerCase() ||
 	     label.toLowerCase() == "Roll Forward".toLowerCase())
 	  continue;
-	}	
-	
+	}
+
     if (label == "Service Owner" || label == "Service Owner Email" || label == "Service Owner Phone" || label == "Service Owner Id" ||
         label == "Slack Channel" || label == "Discord Channel" || label == "HipChat Channel" ||
         label == "PagerDuty Service Url" || label == "PagerDuty Business Service Url")
     {
      var myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
-     
+
      myid = myid.replace("rollforward","rf_");
      myid = myid.replace("rollback","rb_");
-     
+
      compowner_td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\">";
      compowner_td += label;
      compowner_td += ":</td><td>";
      compowner_td += val;
      compowner_td += "</tr>";
-    }    
+    }
     else
     {
 	 if (label.toLowerCase() == "Repository".toLowerCase()  && comptype == "rf_database")
@@ -248,21 +248,21 @@ function ciClickElement(id, comptype)
 	   label = "Roll Back Target Directory";
      else if (label.toLowerCase() == "Target Directory".toLowerCase()  && comptype == "file")
 	   label = "Target Directory";
-			
+
      var myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
 
      myid = myid.replace("rollforward","rf_");
      myid = myid.replace("rollback","rb_");
-     
+
       td += "<tr id=\"" + myid + "\" ><td class=\"summlabel\">";
       td += label;
       td += ":</td><td>";
       td += val;
       td += "</tr>";
     }
-   } 
-     
-    
+   }
+
+
     if (label == "Summary")
     {
     }
@@ -308,7 +308,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"buildid_callback\" value=\"" + callback + "\"/></td>";
      tdedit3 += "<td><input type=\"hidden\" name=\"buildid_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
-     
+
      var sel = $("#lastbuildnumber_sumrow > td:nth-child(2)").text();
      if (sel == "")
      {
@@ -355,7 +355,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"chartnamespace_callback\" value=\"" + callback + "\"/></td>";
      tdedit3 += "<td><input type=\"hidden\" name=\"chartnamespace_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
-    }   
+    }
     else if (label == "Helm Chart Repo" && comptype == 'docker')
     {
      tdedit3 += "<tr>";
@@ -365,7 +365,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"chartrepo_callback\" value=\"" + callback + "\"/></td>";
      tdedit3 += "<td><input type=\"hidden\" name=\"chartrepo_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
-    }  
+    }
     else if (label == "Helm Chart Repo Url" && comptype == 'docker')
     {
      tdedit3 += "<tr>";
@@ -375,7 +375,7 @@ function ciClickElement(id, comptype)
      tdedit3 += "<td><input type=\"hidden\" name=\"chartrepourl_callback\" value=\"" + callback + "\"/></td>";
      tdedit3 += "<td><input type=\"hidden\" name=\"chartrepourl_oldval\" value=\"" + val + "\"/></td>";
      tdedit3 += "</tr>";
-    }  
+    }
     else if (label == "Service Owner")
     {
        save_owner_name = val;
@@ -387,12 +387,12 @@ function ciClickElement(id, comptype)
        tdedit4 += "<td><input type=\"hidden\" name=\"owner_field\" value=\"" + field + "\"/></td>";
        tdedit4 += "<td><input type=\"hidden\" name=\"owner_callback\" value=\"" + callback + "\"/></td>";
        tdedit4 += "<td><input type=\"hidden\" name=\"owner_oldval\" value=\"us" + save_owner_id + "\"/></td>";
-       tdedit4 += "</tr>";      
-    }  
+       tdedit4 += "</tr>";
+    }
     else if (label == "Service Owner Id")
     {
      save_owner_id = val;
-    }  
+    }
     else if (label == "Service Owner Email")
     {
      tdedit4 += "<tr>";
@@ -402,7 +402,7 @@ function ciClickElement(id, comptype)
      tdedit4 += "<td></td>";
      tdedit4 += "<td></td>";
      tdedit4 += "</tr>";
-    }  
+    }
     else if (label == "Service Owner Phone")
     {
      tdedit4 += "<tr>";
@@ -412,7 +412,7 @@ function ciClickElement(id, comptype)
      tdedit4 += "<td></td>";
      tdedit4 += "<td></td>";
      tdedit4 += "</tr>";
-    } 
+    }
     else if (label == "Slack Channel")
     {
      tdedit4 += "<tr>";
@@ -422,7 +422,7 @@ function ciClickElement(id, comptype)
      tdedit4 += "<td><input type=\"hidden\" name=\"slackchannel_callback\" value=\"" + callback + "\"/></td>";
      tdedit4 += "<td><input type=\"hidden\" name=\"slackchannel_oldval\" value=\"" + val + "\"/></td>";
      tdedit4 += "</tr>";
-    }  
+    }
     else if (label == "Discord Channel")
     {
      tdedit4 += "<tr>";
@@ -432,7 +432,7 @@ function ciClickElement(id, comptype)
      tdedit4 += "<td><input type=\"hidden\" name=\"discordchannel_callback\" value=\"" + callback + "\"/></td>";
      tdedit4 += "<td><input type=\"hidden\" name=\"discordchannel_oldval\" value=\"" + val + "\"/></td>";
      tdedit4 += "</tr>";
-    }  
+    }
     else if (label == "HipChat Channel")
     {
      tdedit4 += "<tr>";
@@ -442,7 +442,7 @@ function ciClickElement(id, comptype)
      tdedit4 += "<td><input type=\"hidden\" name=\"hipchatchannel_callback\" value=\"" + callback + "\"/></td>";
      tdedit4 += "<td><input type=\"hidden\" name=\"hipchatchannel_oldval\" value=\"" + val + "\"/></td>";
      tdedit4 += "</tr>";
-    }  
+    }
     else if (label == "PagerDuty Service Url")
     {
      tdedit4 += "<tr>";
@@ -452,7 +452,7 @@ function ciClickElement(id, comptype)
      tdedit4 += "<td><input type=\"hidden\" name=\"pagerdutyurl_callback\" value=\"" + callback + "\"/></td>";
      tdedit4 += "<td><input type=\"hidden\" name=\"pagerdutyurl_oldval\" value=\"" + val + "\"/></td>";
      tdedit4 += "</tr>";
-    }  
+    }
     else if (label == "PagerDuty Business Service Url")
     {
      tdedit4 += "<tr>";
@@ -462,7 +462,7 @@ function ciClickElement(id, comptype)
      tdedit4 += "<td><input type=\"hidden\" name=\"pagerdutybusinessurl_callback\" value=\"" + callback + "\"/></td>";
      tdedit4 += "<td><input type=\"hidden\" name=\"pagerdutybusinessurl_oldval\" value=\"" + val + "\"/></td>";
      tdedit4 += "</tr>";
-    }                                   
+    }
     else if (label == "Operator")
     {
      tdedit3 += "<tr>";
@@ -624,38 +624,38 @@ function ciClickElement(id, comptype)
    }
 
    if (comptype == "rb_database")
-   { 
+   {
     var pwd = parent.$("#compitem > tbody:last-child");
     pwd.append(td);
-    
+
     $('#compitemtab > tbody:last-child').append(tdedit3);
     var ids = $("#compitemform > div").text() + ",rb_" + id;
     $("#compitemform > div").html(ids);
    }
    else
-   { 
+   {
     tdedit3 += "</tbody></table></form>";
- 
+
     var pwd = parent.$("#compitem");
     pwd.empty().append(td);
-   
+
     pwd = parent.$("#compitem_data_edit");
     pwd.empty().append(tdedit3);
-    
+
     tdedit4 += "</tbody></table></form>";
     var pwd = parent.$("#compowner_summ");
     pwd.empty().append(compowner_td);
-   
+
     pwd = parent.$("#compowner_summ_data_edit");
     pwd.empty().append(tdedit4);
-   } 
-   
+   }
+
    var myform = pwd.find("#compitemform");
-   
+
    var prefix = "";
    var workid = save_repository_id;
    var workval = save_repository_val;
-   
+
    if (comptype == "rf_database")
    {
     prefix = "rf_";
@@ -668,7 +668,7 @@ function ciClickElement(id, comptype)
     workid = save_rb_repository_id;
     workval = save_rb_repository_val;
    }
-    
+
    if ($("#" + prefix + "repository_val").length > 0)
    {
     $.ajax(
@@ -683,21 +683,21 @@ function ciClickElement(id, comptype)
       // $.parseJSON("[{\"type\":\"ac\",\"id\":310,\"name\":\"Action310\",\"showlink\":true},{\"type\":\"ac\",\"id\":311,\"name\":\"Action311\",\"showlink\":true}]");
       var myform = pwd.find("#compitemform");
       var owner = $("#" + prefix + "repository_val");
-      
+
       console.log("save_repository_val=["+save_repository_val+"]");
       var select_val = "";
-      
+
       for (n = 0; n < res.length; n++)
       {
        if (workval == res[n].name)
        {
         owner.append('<option id="' + prefix + 'repository' + n + '" selected value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
         select_val = res[n].type + res[n].id;
-       } 
+       }
        else
         owner.append('<option id="' + prefix + 'repository' + n + '" value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
       }
-      
+
       if (select_val == "" && res.length > 0)
         $("#" +  prefix + "repository_val").val(res[0].type + res[0].id);
 
@@ -710,7 +710,7 @@ function ciClickElement(id, comptype)
      }
     });
    }
-   
+
    }
   });
 }
@@ -718,33 +718,33 @@ function ciClickElement(id, comptype)
 function SaveSummaryItemData(instance, tablename, objtypeAsInt, objtype, objid, addParams)
 {
  var pwd = parent.$("#compitem_data_edit");
- 
+
  if (!pwd.is(":visible"))
   return;
- 
+
  var summ_pwd = parent.$("#summ_data_edit");
  var myform = summ_pwd.find("#summform");
  var kind = myform.find(":input[name=\"kind_val\"]").val();
  var id = $("#compitemform > div").text();
  var repolist = id.split(",");
- 
+
  for (k=0;k< repolist.length; k++)
  {
   var compitemid = -1;
   var prefix = "";
   repo = repolist[k];
-  
+
   if (repo.startsWith("rf_") || repo.startsWith("rb_"))
   {
    prefix = repo.substring(0,3);
    id = repo.substring(3);
-  } 
+  }
   else
   {
    prefix = "";
    id = repo;
   }
-  
+
  if (id < 0)
  {
   if (addcomptype == "docker")
@@ -753,8 +753,8 @@ function SaveSummaryItemData(instance, tablename, objtypeAsInt, objtype, objid, 
    kind = "ik0";
   else
    kind = "ik1";
- } 
- 
+ }
+
  var savedata =
  {
   objtype : 14,
@@ -867,15 +867,15 @@ function GetSaveSummaryItemData(instance, data, prefix)
  var form = $("#compitemform");
  var viewArr = form.serializeArray();
  var viewArr2 = $("#compownerform").serializeArray();
- 
+
  viewArr = viewArr.concat(viewArr2);
- 
+
  var view = {};
 
  for ( var i in viewArr)
  {
   if (prefix.length > 0 && viewArr[i].name.startsWith(prefix))
-   view[viewArr[i].name.substring(3)] = viewArr[i].value; 
+   view[viewArr[i].name.substring(3)] = viewArr[i].value;
   else if (prefix.length == 0 && !viewArr[i].name.startsWith("rf_") && !viewArr[i].name.startsWith("rb_"))
     view[viewArr[i].name] = viewArr[i].value;
  }
@@ -885,8 +885,8 @@ function GetSaveSummaryItemData(instance, data, prefix)
  var summ_pwd = parent.$("#summ_data_edit");
  var myform = summ_pwd.find("#summform");
  var name = myform.find(":input[name=\"name_val\"]").val();
- view.name_val = name + " " + prefix + "item"; 
- 
+ view.name_val = name + " " + prefix + "item";
+
 //if (view.name_val != view.name_oldval)
 // {
   data.newname = view.name_val;
@@ -908,7 +908,7 @@ function GetSaveSummaryItemData(instance, data, prefix)
    console.log('change_' + view.rollup_field + ' = ' + view.rollup_val);
    data['change_' + view.rollup_field] = view.rollup_val;
    ret = true;
- } 
+ }
 
  if (typeof view.rollback_val !== 'undefined')
  {
@@ -916,7 +916,7 @@ function GetSaveSummaryItemData(instance, data, prefix)
    data['change_' + view.rollback_field] = view.rollback_val;
    ret = true;
  }
- 
+
  if (typeof view.target_val !== 'undefined' && typeof view.target_oldval !== 'undefined')
  {
   if (view.target_val != view.target_oldval)
@@ -925,7 +925,7 @@ function GetSaveSummaryItemData(instance, data, prefix)
    data['change_' + view.target_field] = view.target_val;
    ret = true;
   }
- } 
+ }
 
  if (typeof view.repository_val !== 'undefined' && typeof view.repository_oldval !== 'undefined')
  {
@@ -935,8 +935,8 @@ function GetSaveSummaryItemData(instance, data, prefix)
    data['change_' + view.repository_field] = view.repository_val;
    ret = true;
   }
- } 
- 
+ }
+
  if (typeof view.buildid_val !== 'undefined' && typeof view.buildid_oldval !== 'undefined')
  {
   if (view.buildid_val != view.buildid_oldval)
@@ -945,7 +945,7 @@ function GetSaveSummaryItemData(instance, data, prefix)
    data['change_' + view.buildid_field] = view.buildid_val;
    ret = true;
   }
- } 
+ }
 
  if (typeof view.buildurl_val !== 'undefined' && typeof view.buildurl_oldval !== 'undefined')
  {
@@ -955,7 +955,7 @@ function GetSaveSummaryItemData(instance, data, prefix)
    data['change_' + view.buildurl_field] = view.buildurl_val;
    ret = true;
   }
- } 
+ }
 
  if (typeof view.builddate_val !== 'undefined' && typeof view.builddate_oldval !== 'undefined')
  {
@@ -965,7 +965,7 @@ function GetSaveSummaryItemData(instance, data, prefix)
    data['change_' + view.builddate_field] = view.builddate_val;
    ret = true;
   }
- } 
+ }
 
  if (typeof view.chart_val !== 'undefined' && typeof view.chart_oldval !== 'undefined')
  {
@@ -975,7 +975,7 @@ function GetSaveSummaryItemData(instance, data, prefix)
    data['change_' + view.chart_field] = view.chart_val;
    ret = true;
   }
- } 
+ }
 
  if (typeof view.chartversion_val !== 'undefined' && typeof view.chartversion_oldval !== 'undefined')
  {
@@ -985,7 +985,7 @@ function GetSaveSummaryItemData(instance, data, prefix)
    data['change_' + view.chartversion_field] = view.chartversion_val;
    ret = true;
   }
- } 
+ }
 
  if (typeof view.chartnamespace_val !== 'undefined' && typeof view.chartnamespace_oldval !== 'undefined')
  {
@@ -995,8 +995,8 @@ function GetSaveSummaryItemData(instance, data, prefix)
    data['change_' + view.chartnamespace_field] = view.chartnamespace_val;
    ret = true;
   }
- } 
- 
+ }
+
  if (typeof view.chartrepo_val !== 'undefined' && typeof view.chartrepo_oldval !== 'undefined')
  {
   if (view.chartrepo_val != view.chartrepo_oldval)
@@ -1005,8 +1005,8 @@ function GetSaveSummaryItemData(instance, data, prefix)
    data['change_' + view.chartrepo_field] = view.chartrepo_val;
    ret = true;
   }
- } 
- 
+ }
+
  if (typeof view.chartrepourl_val !== 'undefined' && typeof view.chartrepourl_oldval !== 'undefined')
  {
   if (view.chartrepourl_val != view.chartrepourl_oldval)
@@ -1015,8 +1015,8 @@ function GetSaveSummaryItemData(instance, data, prefix)
    data['change_' + view.chartrepourl_field] = view.chartrepourl_val;
    ret = true;
   }
- } 
- 
+ }
+
 if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_oldval !== 'undefined')
 {
   if (view.slackchannel_val != view.slackchannel_oldval)
@@ -1035,8 +1035,8 @@ if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_old
    data['change_' + view.discordchannel_field] = view.discordchannel_val;
    ret = true;
   }
- } 
- 
+ }
+
  if (typeof view.hipchatchannel_val !== 'undefined' && typeof view.hipchatchannel_oldval !== 'undefined')
  {
   if (view.hipchatchannel_val != view.hipchatchannel_oldval)
@@ -1045,7 +1045,7 @@ if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_old
    data['change_' + view.hipchatchannel_field] = view.hipchatchannel_val;
    ret = true;
   }
- } 
+ }
 
  if (typeof view.pagerdutyurl_val !== 'undefined' && typeof view.pagerdutyurl_oldval !== 'undefined')
  {
@@ -1055,8 +1055,8 @@ if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_old
    data['change_' + view.pagerdutyurl_field] = view.pagerdutyurl_val;
    ret = true;
   }
- } 
- 
+ }
+
  if (typeof view.pagerdutybusinessurl_val !== 'undefined' && typeof view.pagerdutybusinessurl_oldval !== 'undefined')
  {
   if (view.pagerdutybusinessurl_val != view.pagerdutybusinessurl_oldval)
@@ -1065,9 +1065,9 @@ if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_old
    data['change_' + view.pagerdutybusinessurl_field] = view.pagerdutybusinessurl_val;
    ret = true;
   }
- }       
+ }
 
-  
+
  if (typeof view.operator_val !== 'undefined' && typeof view.operator_oldval !== 'undefined')
  {
   if (view.operator_val != view.operator_oldval)
@@ -1076,7 +1076,7 @@ if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_old
    data['change_' + view.operator_field] = view.operator_val;
    ret = true;
   }
- } 
+ }
 
 
  if (typeof view.dockerrepo_val !== 'undefined' && typeof view.dockerrepo_oldval !== 'undefined')
@@ -1087,8 +1087,8 @@ if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_old
    data['change_' + view.dockerrepo_field] = view.dockerrepo_val;
    ret = true;
   }
- } 
- 
+ }
+
  if (typeof view.dockersha_val !== 'undefined' && typeof view.dockersha_oldval !== 'undefined')
  {
   if (view.dockersha_val != view.dockersha_oldval)
@@ -1097,8 +1097,8 @@ if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_old
    data['change_' + view.dockersha_field] = view.dockersha_val;
    ret = true;
   }
- } 
- 
+ }
+
 
  if (typeof view.dockertag_val !== 'undefined' && typeof view.dockertag_oldval !== 'undefined')
  {
@@ -1108,8 +1108,8 @@ if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_old
    data['change_' + view.dockertag_field] = view.dockertag_val;
    ret = true;
   }
- } 
- 
+ }
+
  if (typeof view.gitcommit_val !== 'undefined' && typeof view.gitcommit_oldval !== 'undefined')
  {
   if (view.gitcommit_val != view.gitcommit_oldval)
@@ -1118,7 +1118,7 @@ if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_old
    data['change_' + view.gitcommit_field] = view.gitcommit_val;
    ret = true;
   }
- } 
+ }
 
  if (typeof view.gitrepo_val !== 'undefined' && typeof view.gitrepo_oldval !== 'undefined')
  {
@@ -1128,7 +1128,7 @@ if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_old
    data['change_' + view.gitrepo_field] = view.gitrepo_val;
    ret = true;
   }
- } 
+ }
 
  if (typeof view.gittag_val !== 'undefined' && typeof view.gittag_oldval !== 'undefined')
  {
@@ -1138,7 +1138,7 @@ if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_old
    data['change_' + view.gittag_field] = view.gittag_val;
    ret = true;
   }
- } 
+ }
 
  if (typeof view.giturl_val !== 'undefined' && typeof view.giturl_oldval !== 'undefined')
  {
@@ -1148,7 +1148,7 @@ if (typeof view.slackchannel_val !== 'undefined' && typeof view.slackchannel_old
    data['change_' + view.giturl_field] = view.giturl_val;
    ret = true;
   }
- } 
+ }
 
  return ret;
 }
@@ -1157,19 +1157,19 @@ function SavePropertyData(id, view, prefix)
 {
 	var dor = deleteoldrows;
 	console.log("in SavePropertyData, deleteoldrows="+deleteoldrows);
-	
+
 	for ( var prop in view)
  {
   var name = "";
-  
+
   if (prefix.length > 0 && !prop.startsWith(prefix))
    continue;
-    
+
   if (prop.indexOf("prop_oldval") >= 0) continue;
   console.log("x) prop="+prop);
-  
+
   if (prop.indexOf("rf_prop_val") >= 0 || prop.indexOf("rb_prop_val") >= 0)
-   name = prop.substring(12); 
+   name = prop.substring(12);
   else if (prop.indexOf("prop_val") >= 0)
    name = prop.substring(9);
 
@@ -1181,7 +1181,7 @@ function SavePropertyData(id, view, prefix)
    else
     val = 'Y';
   }
-  
+
   console.log("x) view["+prop+"] ="+view[prop]);
 
   prop = prop.replace("_val", "_oldval");
@@ -1214,13 +1214,13 @@ function SavePropertyData(id, view, prefix)
     key = "prop_add_" + name;
    else if (val == "")
     key = "prop_delete_" + name;
-   else if (val != oldval) 
+   else if (val != oldval)
 	key = "prop_change_" + name;
    else if (val == oldval && dor)
 	key = "prop_add_" + name;
-   
+
    console.log("key="+key);
-   
+
    if (key != "")
    {
     console.log(name + "=" + val + "," + oldval + "," + mask);
@@ -1254,43 +1254,43 @@ function ToggleRepoProps(objid,t, init,selchanged)
  var prefix = "";
  var td = "";
  var tdedit3 = "";
- 
+
  if ($(field).length == 0)
   return;
- 
+
  field = field.replace("_row","_val");
  if (t.startsWith("rf_"))
   prefix = "rf_";
  else  if (t.startsWith("rb_"))
-  prefix = "rb_"; 
-  
+  prefix = "rb_";
+
  current_repository_val = $(field).val();
  console.log("REPO=" + current_repository_val);
- 
+
  if (selchanged)
   deleteoldrows = (current_repository_val != save_repository_val);
  else
   deleteoldrows = false;
- 
+
  console.log("deleteoldrows="+deleteoldrows);
 
  if (objid < 0)
   olditemvalues = [];
- 
+
  var repoid = (current_repository_val!=null)?$(field).val().substring(2):0;
 
- 
+
  if (deleteoldrows)
   $("#compitemtab > tbody > tr.repoprops").remove();
 // if (init)
-// { 
+// {
 //  $(field).find("tr.repoprops").remove();
 //  $(field).find("tr.rf_repoprops").remove();
 //  $(field).find("tr.rb_repoprops").remove();
 //  init = false;
-// }  
+// }
   console.log("GetComponentItemSourceData?ciid=" + objid + "&reason=defs&repid=" + repoid);
-  
+
 //  $.ajax(
 //    {
 //     url : "GetComponentItemSourceData?ciid=" + objid + "&reason=defs&repid=" + repoid,
@@ -1301,9 +1301,9 @@ function ToggleRepoProps(objid,t, init,selchanged)
 //     {
 //      console.log(res);
 //      olditemvalues = [];
-//      
+//
 //      saveRes = res.defs;
-//      
+//
 //      tdedit3 += mrp;
 //      for (var p = 0; p < res.defs.length; p++)
 //      {
@@ -1313,14 +1313,14 @@ function ToggleRepoProps(objid,t, init,selchanged)
 //       var callback = "";
 //
 //       if (typeof val == "undefined") val = "";
-//       
+//
 //       console.log("a) val="+val+" label="+label);
-//       
+//
 //       tdedit3 += "<tr class=\"" + prefix + "repoprops\">";
 //       tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
 //       if (label == "recursive" || label == "UseSSL") {
 //    	   var checked = val==1?"checked":"";
-//    	   tdedit3 += "<td><input name=\"" + prefix + "prop_val_" + label + "\" id=\"prop_val_" + label + "\" style='width:100%' type=\"checkbox\" value=\"1\" " + checked + "/></td>";   
+//    	   tdedit3 += "<td><input name=\"" + prefix + "prop_val_" + label + "\" id=\"prop_val_" + label + "\" style='width:100%' type=\"checkbox\" value=\"1\" " + checked + "/></td>";
 //       } else {
 //    	   tdedit3 += "<td><input name=\"" + prefix + "prop_val_" + label + "\" id=\"prop_val_" + label + "\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
 //       }
@@ -1334,11 +1334,11 @@ function ToggleRepoProps(objid,t, init,selchanged)
 //    });
 // }
 // else
-// { 
+// {
 //  $(field).find("tr." + prefix + "repoprops").remove();
- 
+
   if (!deleteoldrows && objid >= 0)
-  { 
+  {
    $.ajax(
    {
     url : "GetComponentItemSourceData?ciid=" + objid + "&repid=" + repoid,
@@ -1349,7 +1349,7 @@ function ToggleRepoProps(objid,t, init,selchanged)
     {
      console.log(res);
      olditemvalues = [];
-     
+
 
      for (var p = 0; p < res.data.length; p++)
      {
@@ -1367,15 +1367,15 @@ function ToggleRepoProps(objid,t, init,selchanged)
       var label = res.defs[p].name;
       var display_label = label.charAt(0).toUpperCase() + label.slice(1) + " Override";
       display_label = display_label.replace("URI","URL");
-    
+
       var val = olditemvalues[label];
       var field = "";
       var callback = "";
-      
+
       if (typeof val == "undefined") val = "";
-      
+
       console.log("b) val="+val);
-      
+
       tdedit3 += "<tr class=\"" + prefix + "repoprops\">";
       tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + display_label + ":</td>";
       if (label == "recursive" || label == "UseSSL") {
@@ -1385,10 +1385,10 @@ function ToggleRepoProps(objid,t, init,selchanged)
       } else {
      	 tdedit3 += "<td><input name=\"" + prefix + "prop_val_" + label + "\" id=\"prop_val_" + label + "\" type=\"text\" value=\"" + val + "\"/></td>";
       }
-      
+
       tdedit3 += "<td><input type=\"hidden\" name=\"" + prefix + "prop_oldval_" + label + "\" id=\"prop_oldval_" + label + "\" value=\"" + val + "\" /></td>";
       tdedit3 += "</tr>";
-      
+
       if (label != "Predecessor" && label != "XPos" && label != "YPos" && label != "Summary" && label != "Name")
       {
        var myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
@@ -1402,7 +1402,7 @@ function ToggleRepoProps(objid,t, init,selchanged)
     }
    });
   }
-  
+
     if (tdedit3 == "")
     {
     	console.log("GetComponentItemSourceData?ciid=" + objid + "&reason=defs&repid=" + repoid);
@@ -1415,11 +1415,11 @@ function ToggleRepoProps(objid,t, init,selchanged)
        success : function(res)
        {
         console.log(res);
-        
+
         saveRes = res.defs;
-        
+
         tdedit3 += mrp;
-        
+
         for (var p = 0; p < res.defs.length; p++)
         {
          var label = res.defs[p].name;
@@ -1431,7 +1431,7 @@ function ToggleRepoProps(objid,t, init,selchanged)
 
          if (typeof val == "undefined") val = "";
          console.log("3) label="+label+" val="+val);
-         
+
          tdedit3 += "<tr class=\"" + prefix + "repoprops\">";
          tdedit3 += "<td style=\"text-align:left; white-space: nowrap;\">" + display_label + ":</td>";
          if (label == "recursive" || label == "UseSSL") {
@@ -1443,7 +1443,7 @@ function ToggleRepoProps(objid,t, init,selchanged)
          }
          tdedit3 += "<td><input type=\"hidden\" name=\"" + prefix + "prop_oldval_" + label + "\" id=\"prop_oldval_" + label + "\" value=\"" + val + "\"/></td>";
          tdedit3 += "</tr>";
-         
+
          if (label != "Predecessor" && label != "XPos" && label != "YPos" && label != "Summary" && label != "Name")
          {
           var myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
@@ -1455,10 +1455,10 @@ function ToggleRepoProps(objid,t, init,selchanged)
          }
         }
        }
-      }); 
+      });
     }
     tdedit3+=mrp2;
     $("#" + prefix + "repository_row").after(tdedit3);
     $("#" + prefix + "repository_sumrow").after(td);
-// } 
+// }
 }

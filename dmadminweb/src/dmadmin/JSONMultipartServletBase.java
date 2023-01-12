@@ -41,14 +41,14 @@ public abstract class JSONMultipartServletBase
 {
  DMSession so = null;
  HttpSession session = null;
- 
+
 	public class HttpParameters
 		extends Hashtable<String,String>
 	{
 		public HttpParameters() {
 			super();
 		}
-		
+
 		public int getIntParameter(String name) {
 			String value = get(name);
 			if(value != null) {
@@ -58,7 +58,7 @@ public abstract class JSONMultipartServletBase
 			}
 			throw new RuntimeException("Parameter '" + name + "' not specified or invalid value");
 		}
-		
+
 		public int getIntParameter(String name, int defaultValue) {
 			String value = get(name);
 			if(value != null) {
@@ -70,8 +70,8 @@ public abstract class JSONMultipartServletBase
 		}
 	}
 
-	
-	
+
+
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
@@ -79,7 +79,7 @@ public abstract class JSONMultipartServletBase
 		internalHandleRequest(false, request, response);
 	}
 
-	
+
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
@@ -87,10 +87,10 @@ public abstract class JSONMultipartServletBase
 		internalHandleRequest(true, request, response);
 	}
 
-	
+
 	private void internalHandleRequest(boolean isPost, HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException
-	{		
+	{
 		response.setContentType("application/json");
 
   try (DMSession so = DMSession.getInstance(request)) {
@@ -102,7 +102,7 @@ public abstract class JSONMultipartServletBase
 		response.setHeader("Cache-Control", "no-cache");
 
 		System.out.println("In " + getClass().getName());
-		
+
 		// Apache Commons FileUpload
 		boolean isMultipart = ServletFileUpload.isMultipartContent(request);
 
@@ -111,28 +111,28 @@ public abstract class JSONMultipartServletBase
 
 		try {
 			IJSONSerializable json = null;
-		
+
 			if(!isMultipart) {
 				for(Object name : request.getParameterMap().keySet()) {
 					if(name instanceof String) {
 						String value = request.getParameter((String) name);
 						params.put((String) name, value);
 					}
-				}		
-			} else {			
+				}
+			} else {
 				DiskFileItemFactory factory = new DiskFileItemFactory();
-		
+
 				//factory.setSizeThreshold(yourMaxMemorySize);
 				//factory.setRepository(yourTempDirectory);
-		
+
 				ServletFileUpload upload = new ServletFileUpload(factory);
-		
+
 				//upload.setSizeMax(yourMaxRequestSize);
-				
+
 				try {
 					List<FileItem> items = upload.parseRequest(request);
-				
-					for(FileItem item : items) {	
+
+					for(FileItem item : items) {
 					    if (item.isFormField()) {
 							String name = item.getFieldName();
 						    String value = item.getString();
@@ -148,14 +148,14 @@ public abstract class JSONMultipartServletBase
 					e.printStackTrace();
 				}
 			}
-			
+
 			json = handleRequest(so, isPost, request, response, params, files);
-			
+
 			PrintWriter out = response.getWriter();
 
 			// Serialize as JSON
-			String ret = (json != null) ? json.getJSON() : "{}"; 
-			
+			String ret = (json != null) ? json.getJSON() : "{}";
+
 			out.println(ret);
 			System.out.println(ret);
 		} catch(Exception e) {

@@ -2,14 +2,14 @@ action Test
 {
   echo "Test Suite execution started $(now())";
   echo "Deployment id is ${DEPLOY_ID}; pid is $$";
-  
+
   if(1 = 1) {
     //echo '1 = 1';
   }
-    
+
   //echo "DMHOME = '${DMHOME}'";
   //echo "TRIDM_PLATFORM = '${TRIDM_PLATFORM}'";
-  
+
   //for(n = 1; $n <= 4; n = $n + 1) {
   //  echo "TRIFIELD${n} = '${TRIFIELD$n}'";
   //}
@@ -19,20 +19,20 @@ action Test
   //echo "logical.name = '${logical.name}'";
 
   //set -i nocasevar = 'hello';
-  
+
   // Global test data
   set -g myglobalvar1 = 'somevalue1';
   set -g myglobalarray = { 'one' => 'ONE', 'two' => 'TWO' };
 
   // Run the tests
-  //dump;  
+  //dump;
   //notify_tests;
   //sms_tests;
   //abort;
-  
+
   //deploy_tests;
   //abort;
-  
+
   //script_tests;
   //abort;
 
@@ -41,17 +41,17 @@ action Test
 
   //remote_tests;
   //abort;
-  
+
   //modify_tests;
   //abort;
-  
+
   //graphical_tests;
   //abort;
-  
+
   //echo "before sleep $(now())";
   //sleep(delay: 10);
   //echo "After sleep $(now())";
-  
+
   //set rand = random(100);
   //echo "rand = $rand";
   //abort;
@@ -63,18 +63,18 @@ action Test
       echo 'localhost is not responding';
     }
   }*/
-  
+
   //checkout(repository: 'perforce', dropzone: 'perforce1', recursive: true, pattern: {'*.sql', '*.war'}) {	//  pattern: '*/*'
   //  post {
   //    dump(what: $dropzone);
   //  }
   //}
   //abort;
-  
+
   //swarm_add_review_comment(server: 'swarm', review: 15, body: 'We have rested and we shall continue');
   //set temp = swarm_get_reviews('swarm');
   //abort;
-  
+
   set_tests;
   scope_tests;
   operator_tests;
@@ -97,7 +97,7 @@ action Test
   graphical_tests;
   //task_tests;
   //populate_combo3;
-  
+
   // Simple switch
   test(name: 'switch test #1') {
     set val = 1;
@@ -125,27 +125,27 @@ action Test
   } else {
     echo "***** Test report: ${global.test_total} tests executed.  All tests passed!";
   }
-  
+
   try {
     splat(fred: 'jim') { sheila; }
   } catch(e) {
     echo "Caught exception: ${e}";
     echo ${e.stacktrace};
   }
- 
+
   try {
     assert(expr: 0);
   } catch(e) {
     echo "Caught exception: ${e}";
   }
-  
+
   echo "Test Suite execution finished $(now())";
 }
 
 action show_repository_details
 {
   echo "Deploy repository is '${deploy.repository}'; Pattern is '${deploy.pattern}'; Repository type is '${repository.type}'";
-  
+
   switch(${repository.type}) {
   case 'harvest': echo "Broker: '${repository.broker}'; Project: '${repository.project}'; State: '${repository.state}'"; break;
   case 'svn':     echo "URL: '${repository.url}${repository.path}'"; break;
@@ -164,7 +164,7 @@ action deploy_tests
       assert(str1: $e, str2: "Repository 'dm_demo' not found");
     }
   }
-	
+
 //  try {
 //    // test, test_svn or noaccess - dm_demo_svn
 ////using dropzone 'jim' {
@@ -176,7 +176,7 @@ action deploy_tests
 //      post {
 //      	echo "Checked out $TRIDM_DEP_SUCCESS/$TRIDM_DEP_TOTAL from ${deploy.path}";
 //      	//abort(msg: 'abort deploy');
-//      	//dump(what: $dropzone);  	
+//      	//dump(what: $dropzone);
 //      }
 //    }
 ////dump(what: $dropzone);
@@ -197,12 +197,12 @@ action deploy_tests
           echo "Checked out $TRIDM_DEP_SUCCESS/$TRIDM_DEP_TOTAL from ${deploy.path}";
         }
       }
-      
+
       jar(options: 'xf', jarfile: "dmdemo.war", files: 'WEB-INF/web.xml');
 
       // WEB-INF/web.xml created
       dump(what: $dropzone);
-    
+
       modify(modifier: 'xml', file: 'WEB-INF/web.xml') {
         add_element(xpath: '/web-app', pos: 'inside',  value: "<wibble />");
       }
@@ -211,25 +211,25 @@ action deploy_tests
       dump(what: $dropzone);
 
       modify(modifier: 'xml', file: 'WEB-INF/web.xml', serverspecific: true);
-      
+
       delete(file: 'WEB-INF/web.xml');
-      
+
       rename(from: 'WEB-INF/web.xml', to: "WEB-INF/web_${server.name}.xml", serverspecific: true);
 
       modify(modifier: 'text', file: 'sql_files/rollback_dob.sql', serverspecific: true) {
       	text_replace(find: 'users', replace: 'dmdemo.users');
       	text_replace(find: '(.)e', replace: '\1EE');
       }
-      
+
       delete(file: 'sql_files/rollback_dob.sql');
-      
+
       //retrieve;
-      
+
       //harvest_createpackage(repository: 'test', name: 'mypackage');
-      
+
       checkin(repository: 'test', source: 'WEB-INF', viewpath: @"logs\${server.name}",
               package: 'foobar', createpackage: true, options: 'ne');
-      
+
       dump(what: $dropzone);
 
       set flist = "";
@@ -241,7 +241,7 @@ action deploy_tests
         echo "${fileobj.dzpath} - mtime: ${fileobj.mtime}";
       }
       echo "fred.find('*.sql'): ${flist}";
-      
+
       set size = ${sqlfiles.sum('${value.size}')};
       echo "sqlfiles.size: ${size} bytes";
 
@@ -251,10 +251,10 @@ action deploy_tests
         set flist = "${flist}${flist:+', '}${file}";
       }
       echo "fred.find('*.xml'): ${flist}";
-      
+
       set size = ${xmlfiles.sum('${value.size}')};
       echo "xmlfiles.size: ${size} bytes";
-      
+
       if(${server.name} = 'server2') {
         transfer(target: 'subdir');
       }
@@ -264,7 +264,7 @@ action deploy_tests
     echo ${e.stacktrace};
   }
 
-  
+
   /*try {
     parallel {
       deploy(repository: 'test_svn') {
@@ -295,12 +295,12 @@ action set_tests
     set test1 = 1;
     assert(expr1: $test1, expr2: 1);
   }
-  
+
   test(name: 'set test #2') {
     set test2 = 'hello';
     assert(str1: $test2, str2: 'hello');
   }
-  
+
   test(name: 'set test #3') {
     set test3 = 'hello world';
     try {
@@ -310,33 +310,33 @@ action set_tests
     }
     assert(str1: ${exmsg}, str2: 'value was \'hello world\' expecting \'hello\'');
   }
-  
+
   test(name: 'set test #4') {
     set test4 = 'hello';
     assert(str1: upper($test4), str2: 'HELLO');
     assert(expr1: length($test4), expr2: 5);
     assert(str1: substr($test4,1,3), str2: 'ell');
   }
-  
+
   // #5: String literal concatenation 1
   test(name: 'set test #5') {
     set test5 = "Hello" " " "World" "!";
-    assert(str1: ${test5}, str2: "Hello World!");	
+    assert(str1: ${test5}, str2: "Hello World!");
   }
-  
+
   // #6: String literal concatenation 2
   test(name: 'set test #6') {
     set test6 = 'Hello' ' ' 'World' '!';
-    assert(str1: ${test6}, str2: "Hello World!");	
+    assert(str1: ${test6}, str2: "Hello World!");
   }
-  
+
   // #7: Long string literal
   test(name: 'set test #7') {
     set test7 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwzyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwzyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwzyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwzyz0123456789";
     assert(expr1: length($test7), expr2: 258);
     assert(str1: ${test7}, str2: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwzyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwzyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwzyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwzyz0123456789');
   }
-  
+
   // #8: String functions - rtrim
   test(name: 'set test #8') {
     set string1 = rtrim('string \t \r\n');
@@ -353,7 +353,7 @@ action set_tests
     assert(str1: $bvar1, str2: '1');
     assert(str1: $bvar2, str2: '0');
   }
-  
+
   // #10: String append
   test(name: 'set test #10') {
     set str1 = 'hello';
@@ -368,14 +368,14 @@ action set_tests
     set op1 += 1;
     assert(expr1: $op1, expr2: 2);
   }
-  
+
   // #12: set with decrement
   test(name: 'set test #12') {
     set op2 = 2;
     set op2 -= 1;
     assert(expr1: $op2, expr2: 1);
   }
-  
+
   // #13: set with multiply
   test(name: 'set test #13') {
     set op3 = 2;
@@ -389,14 +389,14 @@ action set_tests
     incr inc1;
     assert(expr1: $inc1, expr2: 2);
   }
-  
+
   // #15: set with decrement
   test(name: 'set test #12') {
     set dec1 = 2;
     decr dec1;
     assert(expr1: $dec1, expr2: 1);
   }
-  
+
   // #16: substr (object version)
   test(name: 'set test #16') {
     set test16 = 'hello';
@@ -404,7 +404,7 @@ action set_tests
     assert(expr1: ${test16.length()}, expr2: 5);
     assert(str1: ${test16.substr(1,3)}, str2: 'ell');
   }
-  
+
   // #17: String functions - rtrim (object version)
   test(name: 'set test #17') {
     set string1 = 'string \t \r\n';
@@ -420,7 +420,7 @@ action set_tests
     set FOO_FIE_FUM = 'FEE';
     assert(str1: ${FOO_${BAR}_${BAT}}, str2: 'FEE');
   }
-  
+
   // #2: Test expansion of variables names - result longer than spec
   test(name: 'expansion test #2') {
     set ROLE = 'some_big_long_role_name';
@@ -432,7 +432,7 @@ action set_tests
   set pkg = 'Application_v1.23';
   set base1 = @'D:\temp.tmp';
   set base1r = @'D:\\temp.tmp';
-      
+
   // #1: Regular expresion substitutions - extract first section
   test(name: 'regexp test #1') {
     set app = regsub($pkg, '^([A-Za-z]+)_v([0-9]+.[0-9]+)', '\1');
@@ -451,20 +451,20 @@ action set_tests
     set numbers2 = regsub($path1, @"^${base1r}\\([0-9]+.[0-9]+)\\.*\$", '\1');
     assert(str1: ${numbers2}, str2: '1.23');
   }
-      
+
   // #4: Regexp - no match - returns original string
   test(name: 'regexp test #4') {
     //set path1 = @"${base1}\wibble";
     set nomatch = regsub($pkg, @"^${base1r}\\([0-9]+.[0-9]+).*\$", '\1');
     assert(str1: ${nomatch}, str2: $pkg);
   }
-      
+
   // #5: Regexp - spaces
   test(name: 'regexp test #5') {
     set regexp5 = regsub('@some value@', '^@([A-Za-z ]+)@$', '\1');
     assert(str1: ${regexp5}, str2: 'some value');
   }
-      
+
   // #6: Regexp - multiple occurences
   test(name: 'regexp test #6') {
     set regexp6 = regsub('foo bar bat', 'ba(.)', 'ca\1t');
@@ -476,23 +476,23 @@ action set_tests
     set numbers2 = ${pkg.regsub('^([A-Za-z]+)_v([0-9]+.[0-9]+)', '\2')};
     assert(str1: ${numbers2}, str2: '1.23');
   }
-  
+
   // #1: Global var using name/value set
   test(name: 'global test #1') {
     assert(str1: ${myglobalvar1}, str2: 'somevalue1');
   }
-      
+
   // #2: Global var using child elements set
   //test(name: 'global test #2') {
   //      assert(str1: ${myglobalvar2}" str2="somevalue2" />
   //}
-      
+
   // #3: Global array using array set
   test(name: 'global test #3') {
     assert(str1: ${myglobalarray}, str2: '"ONE" "TWO"');
     assert(str1: ${myglobalarray['one']}, str2: 'ONE');
   }
-  
+
   // #1: Array on a server
   test(name: 'server array test #1') {
     set -g arrcount1 = 0;
@@ -504,7 +504,7 @@ action set_tests
     }
     assert(expr1: $arrcount1, expr2: 1);
   }
-  
+
   // #2: No case array on a server
   test(name: 'server array test #2') {
     set -g arrcount2 = 0;
@@ -528,35 +528,35 @@ action set_tests
     }
     assert(expr1: $arrcount3, expr2: 1);
   }
-  
+
   // #1: String compares - default case sensitive
   test(name: 'strcmp test #1') {
     set string1 = 'STRING';
     set string2 = 'string';
     assert(expr: ${string1} != ${string2});
   }
-  
+
   // #2: String compares - convert to lower
   test(name: 'strcmp test #2') {
     set string1 = lower('STRING');
     set string2 = 'string';
     assert(expr: ${string1} = ${string2});
   }
-  
+
   // #3: String compares - convert to upper
   test(name: 'strcmp test #3') {
     set string1 = 'STRING';
     set string2 = upper('string');
     assert(expr: ${string1} = ${string2});
-  }  
-  
+  }
+
   // #4: String compares - convert to upper (object version)
   test(name: 'strcmp test #4') {
     set string1 = 'STRING';
     set string2 = 'string';
     assert(expr: ${string1} = ${string2.upper()});
-  }  
-  
+  }
+
   // #1: Case sensitivity - simple variables
   test(name: 'case sens test #1') {
     set varcs1 = 'one';
@@ -572,7 +572,7 @@ action set_tests
     assert(expr: ${varcs4} = 'TWO');
     assert(expr: ${varcs4} = 'two');
   }
-  
+
   // #2: Case sensitivity - array indices
   test(name: 'case sens test #2') {
     set arraycs1 = { 'one' => 'ONE', 'TWO' => 'two' };
@@ -586,81 +586,81 @@ action set_tests
     assert(str1: ${arraycs2['two']}, str2: 'two');
     assert(str1: ${arraycs2['TWO']}, str2: 'two');
   }
-   
+
   // #3: Case sensitivity - global with case insens
   test(name: 'case sens test #3') {
     set -g -i myglobalstr1 = 'Hello';
     assert(expr: ${global.myglobalstr1} = 'hello');
   }
- 
+
   // #1: String expansion - simple variables
   test(name: 'string expansion test #1') {
     set var1 = 'foo';
     set var2 = 'bar';
     assert(str1: "$var1 is $var2", str2: 'foo is bar');
   }
-  
+
   // #2: String expansion - simple variables in braces
   test(name: 'string expansion test #2') {
     set var1 = 'foo';
     set var2 = 'bar';
     assert(str1: "${var1} is ${var2}", str2: 'foo is bar');
   }
-  
+
   // #3: String expansion - arrays
   test(name: 'string expansion test #3') {
     set array1 = { 'one' => 'ONE', 'TWO' => 'two' };
     set two = 'TWO';
     assert(str1: "${array1['one']} is ${array1[$two]}", str2: 'ONE is two');
   }
-  
+
   // #4: String expansion - objects
   test(name: 'string expansion test #4') {
     assert(str1: "${environment.name} is ${application.name}", str2: 'envA is app2');
   }
-  
+
   // #5: String expansion - escaped characters
   test(name: 'string expansion test #5') {
     set var1 = 'foo';
     assert(str1: "\$var1 $var1 \$var1 ${var1} \${var1}", str2: '$var1 foo $var1 foo \foo');
   }
-  
+
   // #6: String expansion - windows filenames
   test(name: 'string expansion test #6') {
     set var1 = 'foo';
     assert(str1: "C:\\Temp\\${var1}\\$var1", str2: @'C:\Temp\foo$var1');
   }
-  
+
   // #7: String expansion - windows filenames 2
   test(name: 'string expansion test #7') {
     set var1 = 'foo';
     assert(str1: @"C:\Temp\${var1}\$var1", str2: @'C:\Temp\foo$var1');
   }
-  
+
   // #8: String expansion - abutted variables
   test(name: 'string expansion test #8') {
     set var1 = 'foo';
     set var2 = 'bar';
     assert(str1: "$var1$var2", str2: 'foobar');
   }
-  
+
   // #9: String expansion - abutted variables in braces
   test(name: 'string expansion test #9') {
     set var1 = 'foo';
     set var2 = 'bar';
     assert(str1: "${var1}${var2}", str2: 'foobar');
   }
-  
+
   // #10: String expansion - old objects
   test(name: 'string expansion test #10') {
     assert(str1: "${logical.name} is ${application.name}", str2: 'envA is app2');
   }
-   
+
   // #11: String expansion - simple expression
   test(name: 'string expansion test #11') {
     assert(str1: "1 + 1 = $(1+1)", str2: '1 + 1 = 2');
   }
-   
+
   // #12: String expansion - expression involving functions
   test(name: 'string expansion test #12') {
     set var1 = 'foo';
@@ -672,14 +672,14 @@ action set_tests
   test(name: 'cmd line vars #1') {
     assert(str1: ${cmdln_var}, str2: 'testvalue');
   }
-  
+
   // #2: Command-line specified arguments
   test(name: 'cmd line vars #2') {
     assert(expr1: ${ARGC}, expr2: 2);
     assert(str1: ${ARGV[0]}, str2: 'argv1');
     assert(str1: ${ARGV[1]}, str2: 'argv2');
   }
-  
+
   // #1: Trifield variables - simple field
   test(name: 'trifield vars #1') {
     assert(str1: ${TRIFIELD1}, str2: 'envA');
@@ -782,64 +782,64 @@ action operator_tests
   test(name: 'operator test #1') {
     assert(expr1: 1 + 1, expr2: 2);
   }
-  
+
   // #2: subtraction operator
   test(name: 'operator test #2') {
     assert(expr1: 2 - 1, expr2: 1);
   }
-  
+
   // #3: multiplication operator
   test(name: 'operator test #3') {
     assert(expr1: 2 * 2, expr2: 4);
   }
-  
+
   // #4: integer division operator
   test(name: 'operator test #4') {
     assert(expr1: 5 / 2, expr2: 2);
   }
-  
+
   // #5: modulo operator
   test(name: 'operator test #5') {
     assert(expr1: 5 % 2, expr2: 1);
   }
-  
+
   // #6: operator precedence test - taken from daft internet example
   test(name: 'operator test #6') {
     assert(expr1: 6 - 1 * 0 + 2 / 2, expr2: 7);
   }
-  
+
   // #7: less than operator
   test(name: 'operator test #7') {
     assert(expr1: 2 < 3, expr2: true);
     assert(expr1: 3 < 2, expr2: false);
   }
-  
+
   // #8: greater than operator
   test(name: 'operator test #8') {
     assert(expr1: 3 > 2, expr2: true);
     assert(expr1: 2 > 3, expr2: false);
   }
-  
+
   // #9: less than equal operator
   test(name: 'operator test #9') {
     assert(expr1: 2 <= 3, expr2: true);
     assert(expr1: 2 <= 2, expr2: true);
     assert(expr1: 3 <= 2, expr2: false);
   }
-  
+
   // #10: greater than equal operator
   test(name: 'operator test #10') {
     assert(expr1: 3 >= 2, expr2: true);
     assert(expr1: 2 >= 2, expr2: true);
     assert(expr1: 2 >= 3, expr2: false);
   }
-  
+
   // #11: not operator
   test(name: 'operator test #11') {
     assert(expr1: !false, expr2: true);
     assert(expr1: !true, expr2: false);
   }
-  
+
   // #12: and operator
   test(name: 'operator test #12') {
     assert(expr1: false & false, expr2: false);
@@ -847,7 +847,7 @@ action operator_tests
     assert(expr1: true & false, expr2: false);
     assert(expr1: true & true, expr2: true);
   }
-  
+
   // #13: or operator
   test(name: 'operator test #13') {
     assert(expr1: false | false, expr2: false);
@@ -867,7 +867,7 @@ action flow_tests
     }
     assert(str1: ${list}, str2: 'one,two,three');
   }
-      
+
   // #2: Simple for loop with pipe separated values and pipe ifs
   test(name: 'foreach string loop test #2') {
     set IFS = '|';
@@ -904,7 +904,7 @@ action flow_tests
     assert(expr1: $b, expr2: 2);
     assert(expr1: $o, expr2: 2);
   }
-  
+
   // #5: Simple for loop with space separated values and default ifs using alternate syntax to please Phil
   test(name: 'foreach string loop test #5') {
     foreach foo in 'one two three' {
@@ -912,7 +912,7 @@ action flow_tests
     }
     assert(str1: ${list}, str2: 'one,two,three');
   }
-  
+
   // #6: Simple for loop with space separated values and default ifs and break
   test(name: 'foreach string loop test #6') {
     foreach(foo: 'one two three') {
@@ -921,7 +921,7 @@ action flow_tests
     }
     assert(str1: ${list}, str2: 'one,two');
   }
-  
+
   // #7: Simple for loop with space separated values and default ifs and continue
   test(name: 'foreach string loop test #7') {
     foreach(foo: 'one two three') {
@@ -963,7 +963,7 @@ action flow_tests
     }
     assert(str1: ${list}, str2: '1,2,4,5,6');
   }
-      
+
   // Test for interaction between then and else - 1.25 onwards should pass this
   test(name: 'if/then/else test') {
     set match = 'hostname';
@@ -982,7 +982,7 @@ action flow_tests
     assert(str1: ${matched}, str2: 'server1 server2');
     assert(str1: ${not_matched}, str2: '');
   }
- 
+
   // #1: For loop with array iterating over keys
   test(name: 'foreach array test #1') {
     set arr = { 'a' => '1', 'b' => '2', 'c' => '3', 'd' => '4', 'e' => '5' };
@@ -993,7 +993,7 @@ action flow_tests
     assert(str1: ${list}, str2: 'd,e,a,b,c');
     assert(str1: ${list2}, str2: '4,5,1,2,3');
   }
-  
+
   // #2: For loop with array iterating over values
   test(name: 'foreach array test #2') {
     set arr = { 'a' => '1', 'b' => '2', 'c' => '3', 'd' => '4', 'e' => '5' };
@@ -1002,7 +1002,7 @@ action flow_tests
     }
     assert(str1: ${list}, str2: '"4","5","1","2","3"');
   }
- 
+
   // #3: For loop with array iterating over keys with break
   test(name: 'foreach array test #3') {
     set arr = { 'a' => '1', 'b' => '2', 'c' => '3', 'd' => '4', 'e' => '5' };
@@ -1012,7 +1012,7 @@ action flow_tests
     }
     assert(str1: ${list}, str2: 'd,e,a');
   }
- 
+
   // #4: For loop with array iterating over keys with continue
   test(name: 'foreach array test #4') {
     set arr = { 'a' => '1', 'b' => '2', 'c' => '3', 'd' => '4', 'e' => '5' };
@@ -1048,7 +1048,7 @@ action flow_tests
     }
     assert(str1: ${list}, str2: '0,1,2,4,5');
   }
-  
+
   // #1: try/catch/finally - exception not raised
   test(name: 'try/catch test #1') {
     try {
@@ -1060,7 +1060,7 @@ action flow_tests
     }
     assert(expr: $a = 1 -a $b = 0 -a $c = 3);
   }
-  
+
   // #2: try/catch/finally - exception was raised
   test(name: 'try/catch test #2') {
     try {
@@ -1073,7 +1073,7 @@ action flow_tests
     }
     assert(expr: $a = 1 -a $b = 2 -a $c = 3);
   }
-  
+
   // #3: try/catch/finally interaction with break
   test(name: 'try/catch test #3') {
     foreach(foo: 'one two three') {
@@ -1089,7 +1089,7 @@ action flow_tests
     assert(str1: ${list}, str2: 'one,two');
     assert(str1: ${list2}, str2: 'one,two');
   }
-  
+
   // #4: try/catch/finally interaction with continue
   test(name: 'try/catch test #4') {
     foreach(foo: 'one two three') {
@@ -1105,7 +1105,7 @@ action flow_tests
     assert(str1: ${list}, str2: 'one,three');
     assert(str1: ${list2}, str2: 'one,two,three');
   }
-  
+
   // #5: try/catch - exception properties
   test(name: 'try/catch test #5') {
     try {
@@ -1235,7 +1235,7 @@ action call_tests
     subaction7;
     assert(str1: $subaction7_result, str2: ' ');
   }
-  
+
   // #8: call an action in another domain that we shouldn't be able to see
   test(name: 'call test #8') {
     try {
@@ -1245,7 +1245,7 @@ action call_tests
       assert(str1: $e, str2: "Unrecognised statement 'Deploy'");
     }
   }
-  
+
   // #9: call an action that returns from with a psloop - previously rasied a syntax error
   test(name: 'call test #9') {
     try {
@@ -1335,13 +1335,13 @@ action function_tests
 
   // #4: dropzone
   test(name: 'builtin func test #4') {
-    if($TRIDM_PLATFORM = 'Windows') {  	
+    if($TRIDM_PLATFORM = 'Windows') {
       assert(str1: dropzone('fred'), str2: @"${TEMP}\tdm.${DEPLOY_ID}.fred");
     } else {
       assert(str1: dropzone('fred'), str2: "/tmp/tdm.${DEPLOY_ID}.fred");
     }
   }
-  
+
   // #1: hex (object version)
   test(name: 'object func test #1') {
     set int1 = 255;
@@ -1362,7 +1362,7 @@ action function_tests
     }
     assert(expr1: $objfncount2, expr2: 2);
   }
-  
+
   // #3: dirname (object version)
   test(name: 'object func test #3') {
     set -g objfncount3 = 0;
@@ -1377,7 +1377,7 @@ action function_tests
     }
     assert(expr1: $objfncount3, expr2: 2);
   }
-  
+
   // #4: length of string (object version)
   // Second syntax is correct - both should work
   test(name: 'object func test #4') {
@@ -1385,7 +1385,7 @@ action function_tests
     assert(expr1: ${$str.length()}, expr2: 5);
     assert(expr1: ${str.length()}, expr2: 5);
   }
-  
+
   // #5: length of array (object version)
   // Second syntax is correct - both should work
   test(name: 'object func test #5') {
@@ -1393,7 +1393,7 @@ action function_tests
     assert(expr1: ${$arr.length()}, expr2: 4);
     assert(expr1: ${arr.length()}, expr2: 4);
   }
-  
+
   // #6: flatten array (object version)
   // Second syntax is correct - both should work
   test(name: 'object func test #6') {
@@ -1401,7 +1401,7 @@ action function_tests
     assert(str1: ${$arr.flatten()}, str2: '"c" "d" "a" "b"');
     assert(str1: ${arr.flatten()}, str2: '"c" "d" "a" "b"');
   }
-	
+
   // #1: simple function invocation
   test(name: 'function test #1') {
     assert(str1: testfunc(), str2: 'value');
@@ -1450,7 +1450,7 @@ action function_tests
   test(name: 'function test #9') {
     assert(expr1: libfunc(2), expr2: 4);
   }
-  
+
   // #10: undefined function
   test(name: 'function test #10') {
     set okay = true;
@@ -1462,7 +1462,7 @@ action function_tests
     }
     assert(expr: $okay);
   }
-  
+
   // #11: undefined function
   test(name: 'function test #11') {
     try {
@@ -1491,14 +1491,14 @@ action array_tests
     // echo "array[2] = $array[2]";
     assert(str1: $array[2], str2: 'two');
   }
-  
+
   // #3: Array element access with variable subscript
   test(name: 'array test #3') {
     set subscript = 1;
     //echo "array[$subscript] = $array[$subscript]";
     assert(str1: $array[$subscript], str2: 'one');
   }
-  
+
   // #4: For loop through result of array to string conversion
   test(name: 'array test #4') {
     set DEQUOTE = true;
@@ -1508,7 +1508,7 @@ action array_tests
     }
     assert(str1: ${array1}, str2: 'two one');
   }
-  
+
   // #5: For loop through array keys
   test(name: 'array test #5') {
     foreach(key: $array) {
@@ -1518,7 +1518,7 @@ action array_tests
     }
     assert(expr: (${array2} = '2 1') -a (${array3} = 'two one'));
   }
-  
+
   // #6: For loop through result of array to string conversion with spaces in elements
   test(name: 'array test #6') {
     set arrayb[1] = 'one two';
@@ -1536,7 +1536,7 @@ action array_tests
   set subsb = 'TWO';
   set arrayc[$subsa] = 'one two';
   set arrayc[$subsb] = 'three four';
-  
+
   // #7: For loop through result of array to string conversion with spaces in elements and string subscripts
   test(name: 'array test #7') {
     set DEQUOTE = true;
@@ -1564,7 +1564,7 @@ action array_tests
     set -a arrayd[1] = 'THREE';
     assert(str1: $arrayd[1], str2: 'ONE, TWO, THREE');
   }
-  
+
   // #10: New set array syntax to set serveral array elements in one go
   test(name: 'array test #10') {
     set index = 'two';
@@ -1572,7 +1572,7 @@ action array_tests
     assert(str1: $arraye['one'], str2: 'val one');
     assert(str1: $arraye[${index}], str2: 'val two');
   }
-  
+
   // #11: New set array syntax in conjunction with name expansion to set serveral array elements in one go
   test(name: 'array test #11') {
     set stub = 'foo';
@@ -1581,7 +1581,7 @@ action array_tests
     assert(str1: ${arrayf_${stub}['one']}, str2: 'val one');
     assert(str1: ${arrayf_${stub}[${index}]}, str2: 'val two');
   }
-  
+
   // #12: Use xml variables in array subscripts
   test(name: 'array test #12') {
     psloop {
@@ -1590,7 +1590,7 @@ action array_tests
     assert(str1: ${arrayg['server1']}, str2: 'bar1');
     assert(str1: ${arrayg['server2']}, str2: 'bar');
   }
-  
+
   // #13: Use xml variables in array names
   test(name: 'array test #13') {
     psloop {
@@ -1599,7 +1599,7 @@ action array_tests
     assert(str1: ${arrayh_server1['foo']}, str2: 'bar1');
     assert(str1: ${arrayh_server2['foo']}, str2: 'bar');
   }
-  
+
   // #14: Use xml variables in array names
   test(name: 'array test #14') {
     psloop {
@@ -1610,7 +1610,7 @@ action array_tests
     assert(str1: ${arrayh_server1_foo}, str2: 'bar1');
     assert(str1: ${arrayh_server2_foo}, str2: 'bar');
   }
-  
+
   // #15: Array subscripted by array element
   test(name: 'array test #15') {
     set arrayi[1] = 'one';
@@ -1618,7 +1618,7 @@ action array_tests
     assert(str1: $arrayj[$arrayi[1]], str2: 'two');
     assert(str1: ${arrayj[${arrayi[1]}]}, str2: 'two');
   }
- 
+
   // #16: Array subscripted by array element
   test(name: 'array test #16') {
     set subsk = 'spacey name';
@@ -1626,7 +1626,7 @@ action array_tests
     assert(str1: $arrayk['spacey name'], str2: 'one');
     assert(str1: $arrayk[$subsk], str2: 'one');
   }
- 
+
   // #17: Array filtering
   test(name: 'array test #17') {
     set arrayl = { 'fred' => 'fred', 'jim' => 'jim', 'sheila' => 'sheila' };
@@ -1635,7 +1635,7 @@ action array_tests
     assert(str1: $arrayl2['jim'], str2: '');
     assert(str1: $arrayl2['sheila'], str2: 'sheila');
   }
-  
+
   // #18: Array addition
   test(name: 'array test #18') {
     set arraym = { 'fred' => 'fred', 'jim' => 'jim' } + { 'sheila' => 'sheila' };
@@ -1643,7 +1643,7 @@ action array_tests
     assert(str1: $arraym['jim'], str2: 'jim');
     assert(str1: $arraym['sheila'], str2: 'sheila');
   }
-  
+
   // #19: Array of arrays
   test(name: 'array test #19') {
     set arrayn = {
@@ -1655,7 +1655,7 @@ action array_tests
     assert(str1: $arrayn['jim']['two'], str2: 'jim');
     assert(str1: $arrayn['sheila']['three'], str2: 'sheila');
   }
-  
+
   // #20: Sum of array values
   test(name: 'array test #20') {
     set arrayo = {
@@ -1664,8 +1664,8 @@ action array_tests
       'sheila' => 4
     };
     assert(str1: ${arrayo.sum('$value')}, str2: 7);
-  }  
-  
+  }
+
   // #1: New set list syntax to set several list elements in one go
   test(name: 'list test #1') {
     set index = 1;
@@ -1673,7 +1673,7 @@ action array_tests
     assert(str1: $lista[0], str2: 'val one');
     assert(str1: $lista[${index}], str2: 'val two');
   }
-  
+
   // #2: Append a list to make sure indexing works
   test(name: 'list test #2') {
     set index = 3;
@@ -1683,7 +1683,7 @@ action array_tests
     assert(str1: $listb[2], str2: 'val three');
     assert(str1: $listb[${index}], str2: 'val four');
   }
-  
+
   // #3: Append a list to make sure indexing works
   test(name: 'list test #3') {
     set index = 3;
@@ -1694,7 +1694,7 @@ action array_tests
     assert(str1: $listc[2], str2: 'val three');
     assert(str1: $listc[${index}], str2: 'val four');
   }
-  
+
   // #4: List addition
   test(name: 'list test #4') {
     set listd = { 'val one', 'val two' } + { 'val three', 'val four' };
@@ -1702,7 +1702,7 @@ action array_tests
     assert(str1: $listd[2], str2: 'val three');
     assert(str1: $listd[3], str2: 'val four');
   }
-  
+
   // #5: List of lists
   test(name: 'list test #5') {
     set liste = {
@@ -1728,7 +1728,7 @@ action array_tests
     assert(expr1: $jsonobj1['three'], expr2: 3);
     assert(expr1: $jsonobj1['four'], expr2: true);
   }
-  
+
   // #2: JSON Array syntax - maps to DM list
   test(name: 'json test #2') {
     set index = 1;
@@ -1742,13 +1742,13 @@ action array_tests
 
 
 action metadata_tests
-{ 
+{
   // #1: Meta-data - access environment
   test(name: 'meta test #1') {
     set name = ${environment.name};
     assert(str1: ${name}, str2: 'envA');
   }
-  
+
   // #2: Meta-data - access server
   // Use psloop to push each server onto the stack and then put the name into a
   // global list
@@ -1757,8 +1757,8 @@ action metadata_tests
       set -g meta2list = ${meta2list}${meta2list:+','}${server.name};
     }
     assert(str1: ${meta2list}, str2: 'server1,server2');
-  }  
-  
+  }
+
   // #3: Meta-data - access servers via environment
   // Foreach iterates over the keys (the server names) and then we access
   // properties of the server object
@@ -1769,18 +1769,18 @@ action metadata_tests
       set list2 = ${list2}${list2:+','}${s.hostname};
       set list3 = ${list3}${list3:+','}${s.type};
     }
-    assert(str1: ${list}, str2: 'server1,server2'); 
-    assert(str1: ${list2}, str2: 'hostname1,hostname2'); 
-    assert(str1: ${list3}, str2: 'windows,unix'); 
+    assert(str1: ${list}, str2: 'server1,server2');
+    assert(str1: ${list2}, str2: 'hostname1,hostname2');
+    assert(str1: ${list3}, str2: 'windows,unix');
   }
-  
+
   // #4: Meta-data: environment owner attributes
   test(name: 'meta test #4') {
     assert(str1: ${environment.owner.name}, str2: 'robert');
     assert(str1: ${environment.owner.email}, str2: 'rhthornburrow@trinem.com');
     assert(str1: ${environment.owner.realname}, str2: 'Robert Thornburrow');
   }
-  
+
   // #5: Meta-data: user groups for user
   test(name: 'meta test #5') {
     foreach(group: ${environment.owner.groups}) {
@@ -1790,7 +1790,7 @@ action metadata_tests
     assert(str1: ${list}, str2: 'Trinem_Administrators,EVERYONE,Group1,Group2,Developers');
     assert(str1: ${list2}, str2: 'Trinem_Administrators,EVERYONE,Group1,Group2,Developers');
   }
-  
+
   // #6: Meta-data: server owner attributes
   test(name: 'meta test #6') {
     foreach(server: ${environment.servers}) {
@@ -1800,7 +1800,7 @@ action metadata_tests
     assert(str1: ${list}, str2: 'robert,phil');
     assert(str1: ${list2}, str2: 'rhthornburrow@trinem.com,pgibbs@trinem.com');
   }
-  
+
   // #7: Meta-data: environment domain attributes
   test(name: 'meta test #7') {
     assert(str1: ${environment.domain.name}, str2: 'TestEnvironments');
@@ -1808,7 +1808,7 @@ action metadata_tests
     assert(str1: ${environment.domain.domain.name}, str2: 'Trinem');
     assert(str1: ${environment.domain.domain.owner.name}, str2: 'robert');
   }
-  
+
   // #8: Meta-data: application domain attributes
   test(name: 'meta test #8') {
     assert(str1: ${application.domain.name}, str2: 'TestApps');
@@ -1816,7 +1816,7 @@ action metadata_tests
     assert(str1: ${application.domain.domain.name}, str2: 'TestEnvironments');
     assert(str1: ${application.domain.domain.domain.name}, str2: 'Trinem');
   }
-  
+
   // #9: Meta-data: environment domain attributes using object references
   test(name: 'meta test #9') {
     set names = { 1 => 'envA', 2 => 'TestEnvironments', 3 => 'Trinem' };
@@ -1829,7 +1829,7 @@ action metadata_tests
     }
     assert(str1: ${current.name}, str2: $names[$count]);
   }
-  
+
   // #10: Meta-data: fully qualified domains
   test(name: 'meta data #10') {
     assert(str1: ${environment.fqdomain}, str2: 'Global.Trinem.TestEnvironments');
@@ -1839,7 +1839,7 @@ action metadata_tests
     }
     assert(str1: ${list}, str2: 'Global.Trinem.TestEnvironments.TestServers,Global.Trinem.TestEnvironments.TestServers');
   }
-  
+
   // #11: Meta-data: summaries
   test(name: 'meta data #11') {
     assert(str1: ${environment.summary}, str2: 'environment a');
@@ -1849,16 +1849,16 @@ action metadata_tests
     }
     assert(str1: ${list}, str2: 'test server #1,test server #2');
   }
-  
+
   // #12: Meta-data - access servers via reference to environment server array
   test(name: 'meta test #12') {
     set servers = ${environment.servers};
     foreach(server: $servers) {
       set list = ${list}${list:+','}${server};
     }
-    assert(str1: ${list}, str2: 'server1,server2'); 
+    assert(str1: ${list}, str2: 'server1,server2');
   }
-  
+
   // #13: Meta-data - access servers via environment using old names
   // Foreach iterates over the keys (the server names) and then we access
   // properties of the server object
@@ -1869,11 +1869,11 @@ action metadata_tests
       set list2 = ${list2}${list2:+','}${s.hostname};
       set list3 = ${list3}${list3:+','}${s.type};
     }
-    assert(str1: ${list}, str2: 'server1,server2'); 
-    assert(str1: ${list2}, str2: 'hostname1,hostname2'); 
-    assert(str1: ${list3}, str2: 'windows,unix'); 
+    assert(str1: ${list}, str2: 'server1,server2');
+    assert(str1: ${list2}, str2: 'hostname1,hostname2');
+    assert(str1: ${list3}, str2: 'windows,unix');
   }
-  
+
   // #14: Meta-data - repository meta-data
   test(name: 'meta test #14') {
     checkout(dropzone: 'meta14', repository: 'test', pattern: '*.java') {
@@ -1901,7 +1901,7 @@ action metadata_tests
     assert(str1: $meta14_repovar2, str2: "myrepovalue");
     assert(str1: $meta14_local, str2: "");
   }
-  
+
   // #15: Meta-data - repository meta-data with statement args overriding
   test(name: 'meta test #15') {
     checkout(dropzone: 'meta15', repository: 'test', state: "$releaseState", viewpath: 'src', pattern: '*.java') {
@@ -1925,7 +1925,7 @@ action metadata_tests
     assert(str1: $meta15_pattern,  str2: "*.java");
     assert(str1: $meta15_repovar,  str2: "myrepovalue");
   }
-  
+
   // #16: Meta-data: domain children attribute
   test(name: 'meta test #16') {
     assert(str1: ${application.domain.domain.children['TestApps'].name}, str2: 'TestApps');
@@ -1941,25 +1941,25 @@ action objectref_tests
     set var1 = null;
     assert(obj1: $var1, obj2: null);
   }
-  
+
   // #2: null comparison
   test(name: 'null #2') {
     set var1 = null;
     assert(expr: $var1 = null);
   }
-  
+
   // #3: null in array
   test(name: 'null #3') {
     set arr1 = { 'foo' => null };
     assert(expr: $arr1['foo'] = null);
   }
-  
+
   // #4: null in list
   test(name: 'null #4') {
     set list1 = { null };
     assert(expr: $list1[0] = null);
   }
-  
+
   // #5: dereference null for property
   test(name: 'null #5') {
     try {
@@ -1969,8 +1969,8 @@ action objectref_tests
     } catch(e) {
       assert(str1: $e, str2: 'null reference');
     }
-  }  
-  
+  }
+
   // #6: dereference null for function
   test(name: 'null #6') {
     try {
@@ -1980,43 +1980,43 @@ action objectref_tests
     } catch(e) {
       assert(str1: $e, str2: 'null reference');
     }
-  }  
-  
+  }
+
   // #7: null equality comparison with non-null
   test(name: 'null #7') {
     assert(expr: $application != null);
   }
-  
+
   // #8: null greater than comparison with non-null
   test(name: 'null #8') {
     assert(expr: $application > null);
   }
-  
+
   // #9: null less than comparison with non-null
   test(name: 'null #9') {
     assert(expr: null < $application);
   }
-  
+
   // #10: inequality comparison of two non-nulls
   test(name: 'null #10') {
     assert(expr: $environment != $application);
   }
-  
+
   // #11: equality comparison of two non-nulls
   test(name: 'null #11') {
     assert(expr: $application = $application);
   }
-  
+
   // #12: not null
   test(name: 'null #12') {
     assert(expr1: !null, expr2: true);
   }
-  
+
   // #13: not non-null
   test(name: 'null #13') {
     assert(expr1: !$application, expr2: false);
   }
-  
+
   // #14: not undefined
   test(name: 'null #14') {
     assert(expr1: !$undefined, expr2: true);
@@ -2048,7 +2048,7 @@ action stream_tests
     echo 'Hello World!' >> $stream1;
     assert(str1: $stream1, str2: 'Hello World!');
   }
-  
+
   // #2: Write a multi-line message to a stream
   test(name: 'stream test #2') {
     set lines = { 1 => 'Hello World!', 2 => 'Line two.' };
@@ -2061,7 +2061,7 @@ action stream_tests
     	assert(str1: $line, str2: $lines[$n]);
     }
   }
-  
+
   // #3: Write a multi-line message to a stream using using
   test(name: 'stream test #3') {
     using stream $stream3 {
@@ -2105,7 +2105,7 @@ action date_tests
   // #1: Create a known date and time
   test(name: 'date test #1') {
     set -g now1 = to_date(2013, 8, 29, 17, 39, 12);
-    if($TRIDM_PLATFORM = 'Windows') {  	
+    if($TRIDM_PLATFORM = 'Windows') {
       assert(str1: "$now1", str2: 'Thursday, August 29, 2013 17:39:12');
     } else {
       assert(str1: "$now1", str2: 'Thu Aug 29 17:39:12 2013');
@@ -2115,7 +2115,7 @@ action date_tests
   // #2: Add an offset to a known date and time
   test(name: 'date test #2') {
     set now2 = $now1 + 25*3600;
-    if($TRIDM_PLATFORM = 'Windows') {  	
+    if($TRIDM_PLATFORM = 'Windows') {
       assert(str1: "$now2", str2: 'Friday, August 30, 2013 18:39:12');
     } else {
       assert(str1: "$now2", str2: 'Fri Aug 30 18:39:12 2013');
@@ -2125,7 +2125,7 @@ action date_tests
   // #3: Subtract an offset from a known date and time
   test(name: 'date test #3') {
     set now3 = $now1 - 25*3600;
-    if($TRIDM_PLATFORM = 'Windows') {  	
+    if($TRIDM_PLATFORM = 'Windows') {
       assert(str1: "$now3", str2: 'Wednesday, August 28, 2013 16:39:12');
     } else {
       assert(str1: "$now3", str2: 'Wed Aug 28 16:39:12 2013');
@@ -2150,40 +2150,40 @@ action date_tests
     assert(expr1: $now1 < $now4, expr2: true);
     assert(expr1: $now4 < $now1, expr2: false);
   }
-  
+
   // #7: Stringify date and time - default format
   test(name: 'date test #7') {
-    if($TRIDM_PLATFORM = 'Windows') {  	
+    if($TRIDM_PLATFORM = 'Windows') {
       assert(str1: to_char($now1), str2: 'Thursday, August 29, 2013 17:39:12');
     } else {
       assert(str1: to_char($now1), str2: 'Thu Aug 29 17:39:12 2013');
     }
   }
-  
+
   // #8: Stringify date and time - object syntax, default format
   test(name: 'date test #8') {
-    if($TRIDM_PLATFORM = 'Windows') {  	
+    if($TRIDM_PLATFORM = 'Windows') {
       assert(str1: ${now1.to_char()}, str2: 'Thursday, August 29, 2013 17:39:12');
-    } else {	
+    } else {
       assert(str1: ${now1.to_char()}, str2: 'Thu Aug 29 17:39:12 2013');
     }
   }
-  
+
   // #9: Stringify date and time - user-defined format
   test(name: 'date test #9') {
     assert(str1: to_char($now1, '%Y%m%d %H%M%S'), str2: '20130829 173912');
   }
-  
+
   // #10: Stringify date and time - object syntax, user-defined format
   test(name: 'date test #10') {
     assert(str1: ${now1.to_char('%Y%m%d %H%M%S')}, str2: '20130829 173912');
   }
-  
+
   // #11: Stringify date and time - user-defined format with offset (PST)
   test(name: 'date test #11') {
     assert(str1: to_char($now1, '%Y%m%d %H%M%S', -8), str2: '20130829 093912');
   }
-  
+
   // #12: Stringify date and time - object syntax, user-defined format with offset (PST)
   test(name: 'date test #12') {
     assert(str1: ${now1.to_char('%Y%m%d %H%M%S', -8)}, str2: '20130829 093912');
@@ -2196,13 +2196,13 @@ action notify_tests
   using stream $body {
     echo "This is a test notification";
   }
-  
+
   //notify(notifier: 'email', to: [ 'rhthornburrow@trinem.com', 'pgibbs@trinem.com' ],
   //       subject: 'Test Notification', from: 'dm2@trinem.com', body: $body, logfile: 'smtp.log');
-  
+
   notify(notifier: 'email', to: ${environment.owner},
          subject: 'Test Notification', from: 'dm2@trinem.com', body: $body, logfile: 'smtp.log');
-	
+
   return;
 
   //using stream $body {
@@ -2214,7 +2214,7 @@ action notify_tests
   //  echo '';
   //  echo '     Deployment Manager 2';
   //}
-  //  
+  //
   //notify(to: ${environment.owner}, // cc: 'pgibbs@trinem.com',
   //       subject: 'Test Notification', from: 'dm2@trinem.com',
   //       mailserver: ${cmdln_mailserver}, username: ${cmdln_mailuser},
@@ -2223,7 +2223,7 @@ action notify_tests
   using stream $attachment {
     echo 'This is a file attachment.';
   }
-  
+
   notify(notifier: 'email', //to: ${environment.owner}, // cc: 'pgibbs@trinem.com',
          subject: 'Test Notification', from: 'dm2@trinem.com',
          attachment: $attachment, logfile: 'smtp.log' /*, mailserver: 'unused'*/) {
@@ -2237,13 +2237,13 @@ action notify_tests
     echo '';
     echo '     Deployment Manager 2';
     echo "     (sent via ${notify.type} ${notify.mailserver})";
-    
+
     attachment(name: 'attachment2.txt', body: $attachment);
 
     attachment(name: 'attachment3.txt') {
       echo 'This is the third file attachment';
     }
-    
+
     attachment(name: 'trilogy.log') {
       //trilogy(jobname: 'SIMPLE_DIR');
     }
@@ -2258,8 +2258,8 @@ action sms_tests
     echo "Application ${application.name} has been deployed to environment ${environment.name}";
   }
 }
-	
-  
+
+
 action trilogy_tests
 {
   /*using stream $script_error4 {
@@ -2267,7 +2267,7 @@ action trilogy_tests
   }
   echo $?;
   echo $script_error4;*/
-  
+
   test(name: 'trilogy tests #1') {
     try {
       trilogy;
@@ -2288,7 +2288,7 @@ action script_tests
   test(name: 'script tests #1') {
     psloop {
       echo "${server.name}:" >> $messages;
-      
+
       using stream $input {
         remotescript(filepath: '/tmp/arrayout.sh') {
           post {
@@ -2297,18 +2297,18 @@ action script_tests
         }
         echo "Overall exit code: $?" >> $messages;
       }
-      
+
       echo "$messages";
-      
+
       try {
         eval("set arrayout = $input;");
         echo $arrayout;
       } catch(e) {
         echo $e;
-      }  
+      }
     }
   }
-  
+
   test(name: 'script tests #2') {
     if($sql = 1) {
       try {
@@ -2324,7 +2324,7 @@ action script_tests
       assert(str1: $result['server2'], str2: '"ONE" "TWO"');
     }
   }
-  
+
   test(name: 'script tests #3') {
     psloop {
       try {
@@ -2392,8 +2392,8 @@ action query_tests
       set msg = ${e.message};
       set kind = ${e.kind};
     }
-    assert(str1: $msg, str2: "No write access to datasource 'dm'");    
-    assert(str1: $kind, str2: 'PermissionDeniedException');    
+    assert(str1: $msg, str2: "No write access to datasource 'dm'");
+    assert(str1: $kind, str2: 'PermissionDeniedException');
   }
 }
 
@@ -2421,7 +2421,7 @@ action localscript_tests
            str2: '%1 = [hello] %2 = [world] %3 = [] %4 = []'
                  ' ARG1 = [hello] ARG2 = [world] ARG3 = [] ARG4 = []');
   }
-  
+
   // #2: call a local script passing two required and one padded argument
   test(name: 'localscript test #2') {
     using stream $localscript2 {
@@ -2435,7 +2435,7 @@ action localscript_tests
            str2: '%1 = [goodbye] %2 = [cruel] %3 = [world] %4 = []'
                  ' ARG1 = [goodbye] ARG2 = [cruel] ARG3 = [world] ARG4 = []');
   }
-  
+
   // #3: call a local script omitting a required argument - should error
   test(name: 'localscript test #3') {
     try {
@@ -2446,7 +2446,7 @@ action localscript_tests
       assert(str1: $e, str2: "Required arg 'arg1' must be specified for action 'testscript_win'");	// was localscript
     }
   }
-  
+
   // #4: call a local script with a missing optional argument - should pad
   test(name: 'localscript test #4') {
     using stream $localscript4 {
@@ -2474,7 +2474,7 @@ action localscript_tests
            str2: '%1 = [-a] %2 = [hello] %3 = [-b] %4 = [world]'
                  ' ARG1 = [hello] ARG2 = [world] ARG3 = [] ARG4 = []');
   }
-  
+
   // #6: call a local script function passing two arguments
   test(name: 'localscript test #6') {
     if($TRIDM_PLATFORM = 'Windows') {
@@ -2486,7 +2486,7 @@ action localscript_tests
            str2: '%1 = [hello] %2 = [world]'
                  ' ARG1 = [hello] ARG2 = [world]');
   }
-  
+
   if($TRIDM_PLATFORM = 'Windows') {
     // #7: call a local VBScript passing two required arguments
     test(name: 'localscript test #7') {
@@ -2497,7 +2497,7 @@ action localscript_tests
              str2: '%1 = [hello] %2 = [world] %3 = [] %4 = []'
                    ' ARG1 = [hello] ARG2 = [world] ARG3 = [] ARG4 = []');
     }
-  
+
     // #8: call a local script function passing two arguments
     test(name: 'localscript test #8') {
       set result = testfuncvbs('hello', 'world');
@@ -2506,7 +2506,7 @@ action localscript_tests
                    ' ARG1 = [hello] ARG2 = [world]');
     }
   }
-  
+
   // #9: call a local script function passing two args which returns text
   test(name: 'localscript test #9') {
     if($TRIDM_PLATFORM = 'Windows') {
@@ -2517,7 +2517,7 @@ action localscript_tests
     assert(str1: rtrim($result),
            str2: '{ \'one\' => \'hello\', \'two\' => \'world\' }');
   }
-  
+
   // #10: call a local script function passing two args which returns an expr
   test(name: 'localscript test #10') {
     if($TRIDM_PLATFORM = 'Windows') {
@@ -2678,7 +2678,7 @@ action localscript_tests
            str2: '%# = [3] %1 = [-b] %2 = [-d] %3 = [-e] %4 = []'
                  ' ARG1 = [0] ARG2 = [0] ARG3 = [0] ARG4 = []');
   }
-  
+
   // #22: call a local script function passing two required arguments - padding will make three args
   test(name: 'localscript test #22') {
     if($TRIDM_PLATFORM = 'Windows') {
@@ -2724,7 +2724,7 @@ action localscript_tests
       assert(str1: $e, str2: "Function 'funcscript2_win' requires at least 2 arguments");
     }
   }
-  
+
   // #26: call a local script function passing no arguments - padding and always will make three args
   test(name: 'localscript test #26') {
     if($TRIDM_PLATFORM = 'Windows') {
@@ -2736,7 +2736,7 @@ action localscript_tests
            str2: '%# = [3] %1 = [-a] %2 = [] %3 = [-c] %4 = []'
                  ' ARG1 = [] ARG2 = [] ARG3 = [] ARG4 = []');
   }
-  
+
   // #27: call a local script function passing padded arg - always will make four args
   test(name: 'localscript test #27') {
     if($TRIDM_PLATFORM = 'Windows') {
@@ -2748,7 +2748,7 @@ action localscript_tests
            str2: '%# = [4] %1 = [-a] %2 = [hello] %3 = [-bworld] %4 = [-c]'
                  ' ARG1 = [world] ARG2 = [hello] ARG3 = [] ARG4 = []');
   }
-  
+
   // #28: call a local script function passing optional arg - padding and always will make four args
   test(name: 'localscript test #28') {
     if($TRIDM_PLATFORM = 'Windows') {
@@ -2760,7 +2760,7 @@ action localscript_tests
            str2: '%# = [4] %1 = [-a] %2 = [] %3 = [-bhello] %4 = [-c]'
                  ' ARG1 = [hello] ARG2 = [] ARG3 = [] ARG4 = []');
   }
-  
+
   // #29: try to pass an extra arg
   test(name: 'localscript test #29') {
     try {
@@ -2770,7 +2770,7 @@ action localscript_tests
       assert(str1: $e, str2: "Argument 3 to function 'funcscript3_win' is unexpected");
     }
   }
-  
+
   // #30: boolean args and neg switches - no args passed - neg switches should output
   test(name: 'localscript test #30') {
     if($TRIDM_PLATFORM = 'Windows') {
@@ -2782,7 +2782,7 @@ action localscript_tests
            str2: '%# = [1] %1 = [-e] %2 = [] %3 = [] %4 = []'
                  ' ARG1 = [] ARG2 = [] ARG3 = [] ARG4 = []');
   }
-  
+
   // #31: boolean args and neg switches - bool args all true - optional given
   test(name: 'localscript test #31') {
     if($TRIDM_PLATFORM = 'Windows') {
@@ -2794,7 +2794,7 @@ action localscript_tests
            str2: '%# = [3] %1 = [-a] %2 = [-c] %3 = [value] %4 = []'
                  ' ARG1 = [1] ARG2 = [1] ARG3 = [1] ARG4 = [value]');
   }
-  
+
   // #32: boolean args and neg switches - bool args all false - optional not given
   test(name: 'localscript test #32') {
     if($TRIDM_PLATFORM = 'Windows') {
@@ -2806,7 +2806,7 @@ action localscript_tests
            str2: '%# = [3] %1 = [-b] %2 = [-d] %3 = [-e] %4 = []'
                  ' ARG1 = [0] ARG2 = [0] ARG3 = [0] ARG4 = []');
   }
-  
+
   // #33: boolean args and neg switches - bool args all true - optional given
   test(name: 'localscript test #33') {
     using stream $localscript33 {
@@ -2894,15 +2894,15 @@ action dbscript_tests
       set msg = ${e.message};
       set kind = ${e.kind};
     }
-    assert(str1: $msg, str2: '>>>123<<<;\nsyntax error, unexpected integer value');    
-    assert(str1: $kind, str2: 'SyntaxError');    
+    assert(str1: $msg, str2: '>>>123<<<;\nsyntax error, unexpected integer value');
+    assert(str1: $kind, str2: 'SyntaxError');
   }
 
   // #3: call a stored function in the database
   test(name: 'dbscript test #3') {
     assert(str1: dbfunc('hello'), str2: 'prefix_hello');
   }
-  
+
   // #1: if/then/else - all control paths return a value
   test(name: 'control path returns #1') {
     set okay = false;
@@ -2915,7 +2915,7 @@ action dbscript_tests
     assert(expr1: $okay, expr2: true);
     assert(expr1: $x, expr2: true);
   }
-  
+
   // #2: if/then - all control paths return a value
   test(name: 'control path returns #2') {
     set okay = false;
@@ -2928,7 +2928,7 @@ action dbscript_tests
     assert(expr1: $okay, expr2: true);
     assert(expr1: $x, expr2: true);
   }
-  
+
   // #3: if/then - not all control paths return a value
   test(name: 'control path returns #3') {
     set okay = true;
@@ -2941,9 +2941,9 @@ action dbscript_tests
     }
     assert(expr1: $okay, expr2: true);
     assert(str1: $msg, str2: 'Not all control paths return a value');
-    assert(str1: $kind, str2: 'SyntaxError');        
+    assert(str1: $kind, str2: 'SyntaxError');
   }
- 
+
   // #4: if/then - function with a return that doesn't specify a value
   test(name: 'control path returns #4') {
     set okay = true;
@@ -2956,7 +2956,7 @@ action dbscript_tests
     }
     assert(expr1: $okay, expr2: true);
     assert(str1: $msg, str2: 'function return must specify a value');
-    assert(str1: $kind, str2: 'SyntaxError');        
+    assert(str1: $kind, str2: 'SyntaxError');
   }
 }
 
@@ -2981,7 +2981,7 @@ action eval_tests
     }
     assert(str1: $eval2, str2: 'foo');
   }
-  
+
   // #3: simple eval to set a variable
   //     string expands to "set foo = $bar", so $foo should contain 'bat'
   test(name: 'eval test #3') {
@@ -3010,10 +3010,10 @@ action modify_tests
   set id_map = { 'a' => 'one', 'b' => 'two', 'c' => 'three', 'd' => 'four' };
   set myvalue = 'stem1';
   set mytext = 'This is a leaf';
-   
+
   using dropzone 'fred' {
     echo "dropzone 'fred' is at: ${dropzone.path}";
-     
+
     checkout(/*dropzone: 'fred',*/ repository: 'local', pattern: 'testxmlinput.xml');
 
     echo "fred contains: ${dropzone.files}";
@@ -3029,9 +3029,9 @@ action modify_tests
     using dropzone 'jim' {
       echo "jim contains: ${dropzone.files}";
     }
-    
+
     abort;
-     
+
 //    modify(/*dropzone: 'fred',*/ modifier: 'xml',
 //           file: 'testxmlinput.xml', outfile: 'testxmlinput.xml.1') {
 //      set_attribute(xpath: '/root/trunk[@attr]/@attr', value: 'hello world');	// was ${physical.hostname}
@@ -3048,11 +3048,11 @@ action modify_tests
 //        set_attribute(xpath: "/root/trunk/knot[@id=${id}]/@attr", value: ${id_map[$id]});
 //      }
 //    }
-//     
+//
 //    using stream $mod1 {
 //      diff(options: '-w', left: 'testxmlinput.xml', right: 'testxmlinput.xml.1');
 //    }
-//     
+//
 //    modify(/*dropzone: 'fred',*/ modifier: 'xml',
 //           file: 'testxmlinput.xml', outfile: 'testxmlinput.xml.1', serverspecific: true) {
 //      set_attribute(xpath: '/root/trunk[@attr]/@attr', value: ${server.hostname});
@@ -3064,10 +3064,10 @@ action modify_tests
 //        set_attribute(xpath: "/root/trunk/knot[@id=${id}]/@attr", value: ${id_map[$id]});
 //      }
 //    }
-//     
+//
 //    //transfer/*(dropzone: 'fred')*/;
   }
-  
+
   test(name: 'modify test #1') {
     set mod1ref = {
       '3,15c3,18',
@@ -3165,12 +3165,12 @@ action pathname_tests
   test(name: 'windows pathname #1') {
     assert(str1: basename(@'C:\Temp\file.txt', 'windows'), str2: 'file.txt');
   }
-  
+
   // #2: basename - one level
   test(name: 'windows pathname #2') {
     assert(str1: basename(@'C:\Temp', 'windows'), str2: 'Temp');
   }
-  
+
   // #3: basename - two levels
   test(name: 'windows pathname #3') {
     assert(str1: basename(@'C:\', 'windows'), str2: @'C:\');
@@ -3210,12 +3210,12 @@ action pathname_tests
   test(name: 'vms pathname #1') {
     assert(str1: basename('$2$DKA200:[FERDU01.TEST]file.txt', 'vms'), str2: 'file.txt');
   }
-  
+
   // #2: basename - one level
   test(name: 'vms pathname #2') {
     assert(str1: basename('$2$DKA200:[FERDU01.TEST]', 'vms'), str2: 'TEST');
   }
-  
+
   // #3: basename - two levels
   test(name: 'vms pathname #3') {
     assert(str1: basename('$2$DKA200:[FERDU01]', 'vms'), str2: '$2$DKA200:[FERDU01]');
@@ -3304,14 +3304,14 @@ action component_tests
       assert(str1: ${compsrvlist}, str2: 'server1,server2');
     }
   }
-  
+
   // #3: using component - component variables
   test(name: 'components #3') {
     using component 'testcomp' {
       assert(str1: $compvar, str2: 'component1');
     }
   }
-  
+
   // #4: component metadata
   test(name: 'components #4') {
     using component 'testcomp' {
@@ -3321,7 +3321,7 @@ action component_tests
       assert(str1: ${compsrvlist2}, str2: 'server1,server2');
     }
   }
-  
+
   // #5: component item metadata
   test(name: 'components #5') {
     using component 'testcomp' {
@@ -3400,7 +3400,7 @@ action iisplugin_tests
   test(name: 'iisplugin tests #1') {
     assert(str1: iis_getversion(), str2: '1.23');
   }
-  
+
   // #2: iis_getsites statement
   test(name: 'iisplugin tests #2') {
     iis_getsites;

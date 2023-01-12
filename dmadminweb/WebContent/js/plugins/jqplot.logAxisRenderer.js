@@ -6,13 +6,13 @@
  * Revision: 1250
  *
  * Copyright (c) 2009-2013 Chris Leonello
- * jqPlot is currently available for use in all personal or commercial projects 
- * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL 
- * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can 
- * choose the license that best suits your project and use it accordingly. 
+ * jqPlot is currently available for use in all personal or commercial projects
+ * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL
+ * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can
+ * choose the license that best suits your project and use it accordingly.
  *
- * Although not required, the author would appreciate an email letting him 
- * know of any substantial use of jqPlot.  You can reach the author at: 
+ * Although not required, the author would appreciate an email letting him
+ * know of any substantial use of jqPlot.  You can reach the author at:
  * chris at jqplot dot com or see http://www.jqplot.com/info.php .
  *
  * If you are feeling kind and generous, consider supporting the project by
@@ -26,20 +26,20 @@
  *     http://hexmen.com/js/sprintf.js
  *     The author (Ash Searle) has placed this code in the public domain:
  *     "This code is unrestricted: you are free to use it however you like."
- * 
+ *
  */
 (function($) {
     /**
     *  class: $.jqplot.LogAxisRenderer
     *  A plugin for a jqPlot to render a logarithmic axis.
-    * 
+    *
     *  To use this renderer, include the plugin in your source
     *  > <script type="text/javascript" language="javascript" src="plugins/jqplot.logAxisRenderer.js"></script>
-    *  
+    *
     *  and supply the appropriate options to your plot
-    *  
+    *
     *  > {axes:{xaxis:{renderer:$.jqplot.LogAxisRenderer}}}
-    **/ 
+    **/
     $.jqplot.LogAxisRenderer = function() {
         $.jqplot.LinearAxisRenderer.call(this);
         // prop: axisDefaults
@@ -57,10 +57,10 @@
             tickDistribution :'power'
         };
     };
-    
+
     $.jqplot.LogAxisRenderer.prototype = new $.jqplot.LinearAxisRenderer();
     $.jqplot.LogAxisRenderer.prototype.constructor = $.jqplot.LogAxisRenderer;
-    
+
     $.jqplot.LogAxisRenderer.prototype.init = function(options) {
         // prop: drawBaseline
         // True to draw the axis baseline.
@@ -85,7 +85,7 @@
 
         this.resetDataBounds();
     };
-    
+
     $.jqplot.LogAxisRenderer.prototype.createTicks = function(plot) {
         // we're are operating on an axis here
         var ticks = this._ticks;
@@ -128,7 +128,7 @@
                     t.axis = this.name;
                     this._ticks.push(t);
                 }
-                
+
                 else {
                     t.value = ut;
                     if (!this.showTicks) {
@@ -146,19 +146,19 @@
             this.min = this._ticks[0].value;
             this.max = this._ticks[this.numberTicks-1].value;
         }
-        
+
         // we don't have any ticks yet, let's make some!
         else if (this.min == null && this.max == null) {
             min = db.min * (2 - this.padMin);
             max = db.max * this.padMax;
-            
+
             // if min and max are same, space them out a bit
             if (min == max) {
                 var adj = 0.05;
                 min = min*(1-adj);
                 max = max*(1+adj);
             }
-            
+
             // perform some checks
             if (this.min != null && this.min <= 0) {
                 throw new Error("Log axis minimum must be greater than 0");
@@ -205,7 +205,7 @@
 
             this.min = rmin;
             this.max = rmax;
-            var range = this.max - this.min;            
+            var range = this.max - this.min;
 
             var minorTicks = (this.minorTicks === 'auto') ? 0 : this.minorTicks;
             var numberTicks;
@@ -270,11 +270,11 @@
                 tt = Math.pow(this.base, i - numberTicks + 1) * this.max;
 
                 t = new this.tickRenderer(this.tickOptions);
-            
+
                 if (this._overrideFormatString) {
                     t.formatString = this._autoFormatString;
                 }
-                
+
                 if (!this.showTicks) {
                     t.showLabel = false;
                     t.showMark = false;
@@ -292,7 +292,7 @@
                     for (var j=minorTicks-1; j>=0; j--) {
                         val = tt1-interval*(j+1);
                         t = new this.tickRenderer(this.tickOptions);
-            
+
                         if (this._overrideFormatString && this._autoFormatString != '') {
                             t.formatString = this._autoFormatString;
                         }
@@ -306,8 +306,8 @@
                         t.setTick(val, this.name);
                         this._ticks.push(t);
                     }
-                }       
-            }     
+                }
+            }
         }
 
         // min and max are set as would be the case with zooming
@@ -330,7 +330,7 @@
                 for (var i=0; i<nt; i++) {
                     opts.value = this.min + i * ti;
                     t = new this.tickRenderer(opts);
-                    
+
                     if (this._overrideFormatString && this._autoFormatString != '') {
                         t.formatString = this._autoFormatString;
                     }
@@ -351,7 +351,7 @@
                 for (var i=0; i<nt; i++) {
                     opts.value = this.min + i * this.tickInterval;
                     t = new this.tickRenderer(opts);
-                    
+
                     if (this._overrideFormatString && this._autoFormatString != '') {
                         t.formatString = this._autoFormatString;
                     }
@@ -367,7 +367,7 @@
             }
         }
     };
-    
+
     $.jqplot.LogAxisRenderer.prototype.pack = function(pos, offsets) {
         var lb = parseInt(this.base, 10);
         var ticks = this._ticks;
@@ -378,25 +378,25 @@
         var offmax = offsets.max;
         var offmin = offsets.min;
         var lshow = (this._label == null) ? false : this._label.show;
-        
+
         for (var p in pos) {
             this._elem.css(p, pos[p]);
         }
-        
+
         this._offsets = offsets;
         // pixellength will be + for x axes and - for y axes becasue pixels always measured from top left.
         var pixellength = offmax - offmin;
         var unitlength = max - min;
-        
+
         // point to unit and unit to point conversions references to Plot DOM element top left corner.
         this.p2u = function(p){
             return invtrans((p - offmin) * unitlength / pixellength + min);
         };
-        
+
         this.u2p = function(u){
             return (trans(u) - min) * pixellength / unitlength + offmin;
         };
-        
+
         if (this.name == 'xaxis' || this.name == 'x2axis'){
             this.series_u2p = function(u){
                 return (trans(u) - min) * pixellength / unitlength;
@@ -414,14 +414,14 @@
                 return invtrans(p * unitlength / pixellength + max);
             };
         }
-        
+
         if (this.show) {
             if (this.name == 'xaxis' || this.name == 'x2axis') {
                 for (var i=0; i<ticks.length; i++) {
                     var t = ticks[i];
                     if (t.show && t.showLabel) {
                         var shim;
-                        
+
                         if (t.constructor == $.jqplot.CanvasAxisTickRenderer && t.angle) {
                             switch (t.labelPosition) {
                                 case 'auto':
@@ -472,7 +472,7 @@
             else {
                 for (var i=0; i<ticks.length; i++) {
                     var t = ticks[i];
-                    if (t.show && t.showLabel) {                        
+                    if (t.show && t.showLabel) {
                         var shim;
                         if (t.constructor == $.jqplot.CanvasAxisTickRenderer && t.angle) {
                             switch (t.labelPosition) {
@@ -511,7 +511,7 @@
                         else {
                             shim = -t.getHeight()/2;
                         }
-                        
+
                         var val = this.u2p(t.value) + shim + 'px';
                         t._elem.css('top', val);
                         t.pack();
@@ -525,10 +525,10 @@
                     }
                     else {
                         this._label._elem.css('right', '0px');
-                    }   
+                    }
                     this._label.pack();
                 }
             }
-        }        
+        }
     };
 })(jQuery);

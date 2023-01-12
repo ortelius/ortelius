@@ -40,7 +40,7 @@ public class NewsFeed
 {
 	private static final long serialVersionUID = 8314171259294636898L;
 
-	
+
     public NewsFeed() {
         super();
     }
@@ -51,7 +51,7 @@ public class NewsFeed
 			HttpServletRequest requestNotUsed, HttpServletResponse response,
 			HttpParameters params, List<FileItem> files)
 		throws ServletException, IOException
-	{				
+	{
 		// Either result or data go in here
 		JSONObject obj = null;
 
@@ -64,7 +64,7 @@ public class NewsFeed
 
 		String sotid = params.get("otid");
 		ObjectTypeAndId otid = ((sotid != null) && (sotid.length() > 0)) ? new ObjectTypeAndId(sotid) : null;
-		
+
 		String reason = params.get("reason");
 		if(reason != null) {
 			if(sotid == null) {
@@ -90,15 +90,15 @@ public class NewsFeed
 		} else {
 			obj = doGetNotes(session, otid, params);
 		}
-		
+
 		return obj;
 	}
-	
+
 	private JSONObject doGetComments(DMSession session, ObjectTypeAndId otid)
 	{
 		JSONObject obj = new JSONObject();
 		try {
-			NewsFeedDataSet data = session.getCommentsForObject(otid);			
+			NewsFeedDataSet data = session.getCommentsForObject(otid);
 			obj.add("result", (data != null));
 			if(data != null) {
 				obj.add("data", data.getJSON());
@@ -110,12 +110,12 @@ public class NewsFeed
 		}
 		return obj;
 	}
-	
+
  private JSONObject doAppLogs(DMSession session, ObjectTypeAndId otid)
  {
   JSONObject obj = new JSONObject();
   try {
-   JSONArray data = session.getApplicationDeployments(otid);  
+   JSONArray data = session.getApplicationDeployments(otid);
    obj.add("result", (data != null));
    if(data != null) {
     obj.add("data", data);
@@ -127,7 +127,7 @@ public class NewsFeed
   }
   return obj;
  }
-	
+
 	private JSONObject doGetAttachments(DMSession session, ObjectTypeAndId otid)
 	{
 		JSONObject obj = new JSONObject();
@@ -154,25 +154,25 @@ public class NewsFeed
 			String text = params.get("text");
 			String icon = params.get("icon");
 			System.out.println("addnews: otid = " + otid + "; text = '" + text + "'; icon = '" + icon + "'");
-					
+
 			PropertyDataSet data = session.addNewsToObject(otid, text, icon);
 			obj.add("result", (data != null));
 			if(data == null) {
 				return obj;
 			}
-					
+
 			if(files != null) {
 				int attachCount = 0;
 				for(FileItem file : files) {
 					InputStream is = file.getInputStream();
-					int attachid = session.addAttachmentToObject(data.getNewObject(), file.getName(), (int) file.getSize(), is); 
+					int attachid = session.addAttachmentToObject(data.getNewObject(), file.getName(), (int) file.getSize(), is);
 					if(attachid != 0) {
 						attachCount++;
-					}				
+					}
 				}
 				data.addProperty("attach", attachCount);
 			}
-	
+
 			obj.add("data", data.getNewsJSON());
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -207,7 +207,7 @@ public class NewsFeed
 			if(unsubscribe) {
 				session.newsUnsubscribeObject(otid);
 			} else {
-				session.newsSubscribeObject(otid);				
+				session.newsSubscribeObject(otid);
 			}
 			obj.add("result", true);
 		} catch(Exception e) {
@@ -225,22 +225,22 @@ public class NewsFeed
 			int from = params.getIntParameter("from", 0);
 			int to = params.getIntParameter("to", 0);
 			int pending = params.getIntParameter("pending", 0);
-			
+
 			System.out.println("goGetNotes: from="+from+" to="+to);
-	
+
 			if(from == 0) {
 				from = (int)(System.currentTimeMillis()/1000) - (31*24*60*60);
 			}
-			
+
 			if (to == 0)
 			 to = (int)(System.currentTimeMillis()/1000)+10000;
-			
+
 			System.out.println("doGetNotes 2: from="+from+" to="+to);
-			
+
 			if(pending == 1) {
 				System.out.println("getpending: otid = " + otid + "; from = " + from + "; to = " + to);
 				NewsFeedDataSet data = session.getPendingNewsForObject(otid, from, to);
-				obj.add("data", data.getJSON());			
+				obj.add("data", data.getJSON());
 			} else {
 				System.out.println("gethistory: otid = " + otid + "; from = " + from + "; to = " + to);
 				NewsFeedDataSet data = session.getHistoryNewsForObject(otid, from, to);

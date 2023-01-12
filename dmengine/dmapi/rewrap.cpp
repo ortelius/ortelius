@@ -100,7 +100,7 @@ char *RegExpWrapper::replaceAll(const char *str, const char *replace, bool noIte
 	{
 		if (ret[start]=='\0') break;	// end of file
 		// Find the first match
-		
+
 		if(!regexec(m_re, (char*) &ret[start]) || !m_re->startp[0] || !m_re->endp[0]) {
 			break;
 		}

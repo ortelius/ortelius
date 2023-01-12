@@ -33,7 +33,7 @@ import dmadmin.model.Server;
  */
 public class GetEnvironmentContent extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -47,11 +47,11 @@ public class GetEnvironmentContent extends HttpServletBase {
    	{
     	response.setContentType("application/json");
 		String envid = request.getParameter("envid");
-		// Get the printwriter object from response to write the required json object to the output stream      
+		// Get the printwriter object from response to write the required json object to the output stream
 		PrintWriter out = response.getWriter();
-		
+
 		List<Server> d = session.getServersInEnvironment(Integer.parseInt(envid));
-		
+
 		out.print("[");
 
 		boolean subenv=false;

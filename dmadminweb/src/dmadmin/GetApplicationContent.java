@@ -34,7 +34,7 @@ import dmadmin.model.Application;
 public class GetApplicationContent extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
- HttpSession session = null;       
+ HttpSession session = null;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -48,7 +48,7 @@ public class GetApplicationContent extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("application/json");
-		Integer appid = ServletUtils.getIntParameter(request,"appid"); 
+		Integer appid = ServletUtils.getIntParameter(request,"appid");
 
 		PrintWriter out = response.getWriter();
 
@@ -60,10 +60,10 @@ public class GetApplicationContent extends HttpServlet {
 		Application app = so.getApplication(appid,false);
 		List<Application> a = so.getApplicationVersions(app);
 		boolean isRelease = false;
-		
+
 		if (request.getParameter("isRelease") != null && request.getParameter("isRelease").equalsIgnoreCase("Y"))
 		 isRelease = true;
-		
+
 		out.print("[");
 
 		boolean subv=false;
@@ -76,7 +76,7 @@ public class GetApplicationContent extends HttpServlet {
 				 out.print("{\"data\" : \"" + xav.getName() + "\", \"attr\" : { \"id\" : \"" + xav.getOtid() + "\", \"rel\" : \"" + ObjectType.RELVERSION + "\" }}");
 				else
 				 out.print("{\"data\" : \"" + xav.getName() + "\", \"attr\" : { \"id\" : \"" + xav.getOtid() + "\", \"rel\" : \"" + ObjectType.APPVERSION + "\" }}");
-	
+
 				subv=true;
 			}
 		}

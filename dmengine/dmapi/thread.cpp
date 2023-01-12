@@ -138,7 +138,7 @@ void Thread::SuspendThread(void *arg)
 		debug1("Unlocking m_SuspendMutex=0x%lx, m_ResumeCond=0x%lx",&m_SuspendMutex,&m_ResumeCond);
 		pthread_cond_wait(&m_ResumeCond, &m_SuspendMutex);
 		debug1("pthread_cond_wait returns");
-	} 
+	}
 	debug1("unlocking 0x%lx",&m_SuspendMutex);
 	pthread_mutex_unlock(&m_SuspendMutex);
 	((Thread *) arg)->run();
@@ -218,7 +218,7 @@ int Thread::waitForWithTimeout()
 	if(clock_gettime(CLOCK_REALTIME, &ts) == -1) {
 		debug1("clock_gettime failed");
 		return -1;
-	} 
+	}
 	ts.tv_nsec += 50000;	// 50 milliseconds - 1/20th of a second
 	int s = pthread_timedjoin_np(m_id, NULL, &ts);
 	switch(s) {

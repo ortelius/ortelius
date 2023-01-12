@@ -17,7 +17,7 @@
 function CreateDeployReports()
 {
  $.jqplot.config.enablePlugins = true;
- 
+
  console.log("in CreateDeployReports");
 
  var tooltipContentEditor = function(str, seriesIndex, pointIndex, plot) {
@@ -25,7 +25,7 @@ function CreateDeployReports()
    + plot.data[seriesIndex][pointIndex][0] + '</td></tr><tr><td>time:</td><td>'
    + plot.data[seriesIndex][pointIndex][1] + '&nbsp;s</td></tr></table>';
  };
-   
+
  try {
   plot3 = $.jqplot('deploymenttimebystep', [[['no data', 0]]], {
    title: 'Step Duration',
@@ -36,7 +36,7 @@ function CreateDeployReports()
     rendererOptions: { padding: 8, showDataLabels: false }
    },
    legend: {show: true, placement: "outside"},
-   
+
       highlighter: {
     	  showTooltip: false,
           // showTooltip: true,
@@ -77,7 +77,7 @@ function ReplotDeployReports(deployid)
    }
   });
   if((ret != null) && (ret.ticks != null)) {
-   if((options != null) && (options.dataAxis == 'x')) { 
+   if((options != null) && (options.dataAxis == 'x')) {
     plot.axes.yaxis.ticks = ret.ticks;
    } else {
     plot.axes.xaxis.ticks = ret.ticks;
@@ -88,13 +88,13 @@ function ReplotDeployReports(deployid)
 
  try {
   var jsonurl1 = "GetTimePerStepForDeployment?deployid=" + deployid;
-  plot3._gridPadding = { top: null, right: null, bottom: null, left: null }; 
+  plot3._gridPadding = { top: null, right: null, bottom: null, left: null };
   plot3.replot({
    data: jsonurl1,
    dataRenderer : ajaxDataRenderer,
    resetAxes: true
   });
-  
+
   jQuery(document).ready(function() {
    var $mainTable = $("#deploymenttimebystep > table");
    var splitBy = 15;
@@ -109,9 +109,9 @@ function ReplotDeployReports(deployid)
        top: "24px",
        left: left + "px"
    });
-   
+
 });
-  
+
  } catch(e) {
   console.log('Exception (plot3): ' + e);
  }
@@ -121,7 +121,7 @@ function ReplotDeployReports(deployid)
 function CreateDeployReports4()
 {
  $.jqplot.config.enablePlugins = true;
- 
+
  console.log("in CreateDeployReports4");
 
  var tooltipContentEditor = function(str, seriesIndex, pointIndex, plot) {
@@ -129,7 +129,7 @@ function CreateDeployReports4()
    + plot.data[seriesIndex][pointIndex][0] + '</td></tr><tr><td>time:</td><td>'
    + plot.data[seriesIndex][pointIndex][1] + '&nbsp;s</td></tr></table>';
  };
-   
+
  try {
   plot4 = $.jqplot('deploymenttimebystep4', [[['no data', 0]]], {
    title: 'Step Duration',
@@ -140,7 +140,7 @@ function CreateDeployReports4()
     rendererOptions: { padding: 8, showDataLabels: false }
    },
    legend: {show: true, placement: "outside"},
-   
+
       highlighter: {
        showTooltip: false,
           // showTooltip: true,
@@ -181,7 +181,7 @@ function ReplotDeployReports4(deployid)
    }
   });
   if((ret != null) && (ret.ticks != null)) {
-   if((options != null) && (options.dataAxis == 'x')) { 
+   if((options != null) && (options.dataAxis == 'x')) {
     plot.axes.yaxis.ticks = ret.ticks;
    } else {
     plot.axes.xaxis.ticks = ret.ticks;
@@ -192,47 +192,47 @@ function ReplotDeployReports4(deployid)
 
  try {
   var jsonurl1 = "GetTimePerStepForDeployment?deployid=" + deployid;
-  plot4._gridPadding = { top: null, right: null, bottom: null, left: null }; 
+  plot4._gridPadding = { top: null, right: null, bottom: null, left: null };
   plot4.replot({
    data: jsonurl1,
    dataRenderer : ajaxDataRenderer,
    resetAxes: true
   });
-  
+
   var mytbody = $("#deploymenttimebystep4 > table > tbody").html();
    var rows = mytbody.split("</tr>");
-   
+
    for (i=0;i<rows.length;i++)
    {
     rows[i] = rows[i].replace("<tr class=\"jqplot-table-legend\">","");
    }
-   
+
    var size = 8;
    var newArray = new Array(Math.ceil(rows.length / size)).fill("")
    .map(function() { return this.splice(0, size) }, rows.slice());
-  
+
    rows = [];
    for (i=0;i<10;i++)
     rows[i] = "<tr class=\"jqplot-table-legend\">";
-   
+
    for (i=0;i<newArray.length;i++)
    {
     tds = newArray[i];
     for (j=0;j<tds.length;j++)
     {
-     rows[j] += tds[j]; 
-    } 
+     rows[j] += tds[j];
+    }
    }
-   
+
    for (i=0;i<10;i++)
     rows[i] += "</tr>";
-   
+
    console.log(rows);
    $("#deploymenttimebystep4 > table > tbody").html(rows.join());
-   
+
    if (!$("#deploymenttimebystep4_scroll").length)
       $("#deploymenttimebystep4 > table").wrap("<div id=\"deploymenttimebystep4_scroll\"></div>");
-  
+
  } catch(e) {
   console.log('Exception (plot4): ' + e);
  }
@@ -241,9 +241,9 @@ function ReplotDeployReports4(deployid)
 function updateDeployDiff(event)
 {
  var envid;
- 
+
  envid = event.value.substring(2);;
- 
+
  $.ajax({
   url: "GetDeployDeps?appid="+objid + "&envid=" + envid,
   type: 'POST',
@@ -253,11 +253,11 @@ function updateDeployDiff(event)
    // create a network
    var nodes = new vis.DataSet(x.nodes);
    var edges = new vis.DataSet(x.edges);
-   
+
    if ("labels" in x)
-   { 
+   {
     var labels = x.labels;
-   
+
     if (labels.prevapp == "never")
      $("#feedback-label").html("<strong>" + labels.currapp + "</strong> has never been deployed to this environment");
     else if (labels.prevapp == "")
@@ -265,12 +265,12 @@ function updateDeployDiff(event)
     else
      $("#feedback-label").html("Difference between deployed <strong>" + labels.currapp + "</strong> version and previous deployed <strong>" + labels.prevapp + "</strong> version");
     }
-    
+
     var data = {
       nodes: nodes,
       edges: edges
     };
-    
+
     var options = {autoResize: true,
       height: '100%',
       width: '100%',
@@ -289,7 +289,7 @@ function updateDeployDiff(event)
                     nodes:{shape:'box'},
                     interaction:{navigationButtons: true}
    };
-    
+
     var container = document.getElementById('feedback-data');
     var network = new vis.Network(container, data, options);
   }
@@ -298,11 +298,11 @@ function updateDeployDiff(event)
 
 function CreateCurrentEnv2Comps(objid)
 {
- 
+
  $("#feedback_title").html("<h2>Deployed Environments for Component</h2>");
  $("#feedback-env-sel").hide();
  $("#feedback-label").hide();
- 
+
 $.ajax({
  url: "GetDeployDeps?compid="+objid,
  type: 'POST',
@@ -312,12 +312,12 @@ $.ajax({
   // create a network
   var nodes = new vis.DataSet(x.nodes);
   var edges = new vis.DataSet(x.edges);
-  
+
    var data = {
      nodes: nodes,
      edges: edges
    };
-   
+
    var options = {autoResize: true,
      height: '100%',
      width: '100%',
@@ -336,7 +336,7 @@ $.ajax({
                    nodes:{shape:'box'},
                    interaction:{navigationButtons: true}
   };
-   
+
    var container = document.getElementById('feedback-data');
    var network = new vis.Network(container, data, options);
  }
@@ -346,11 +346,11 @@ $.ajax({
 
 function CreateCurrentComp2Envs(objid)
 {
- 
+
  $("#feedback_title").html("<h2>Deployed Components for Environment</h2>");
  $("#feedback-env-sel").hide();
  $("#feedback-label").hide();
- 
+
 $.ajax({
  url: "GetDeployDeps?envid="+objid,
  type: 'POST',
@@ -360,12 +360,12 @@ $.ajax({
   // create a network
   var nodes = new vis.DataSet(x.nodes);
   var edges = new vis.DataSet(x.edges);
-  
+
    var data = {
      nodes: nodes,
      edges: edges
    };
-   
+
    var options = {autoResize: true,
      height: '100%',
      width: '100%',
@@ -383,7 +383,7 @@ $.ajax({
                    nodes:{shape:'box'},
                    interaction:{navigationButtons: true}
   };
-   
+
    var container = document.getElementById('feedback-data');
    var network = new vis.Network(container, data, options);
  }
@@ -393,10 +393,10 @@ $.ajax({
 
 function CreateDeployDeps(deployid)
 {
- 
+
  $("#feedback-env-sel").hide();
  $("#feedback-label").hide();
- 
+
  console.log('Setup RESIZE');
  console.log($('#displaylog'));
  var myElement = document.getElementById('displaylog'),
@@ -416,12 +416,12 @@ $.ajax({
   // create a network
   var nodes = new vis.DataSet(x.nodes);
   var edges = new vis.DataSet(x.edges);
-  
+
    var data = {
      nodes: nodes,
      edges: edges
    };
-   
+
    var options = {autoResize: true,
      height: '100%',
      width: '100%',
@@ -440,7 +440,7 @@ $.ajax({
                    nodes:{shape:'box'},
                    interaction:{navigationButtons: true}
   };
-   
+
    var container = document.getElementById('displaylogtabs-deploydeps-data');
    var network = new vis.Network(container, data, options);
  }
@@ -456,13 +456,13 @@ $.ajax({
        function(fn){ return window.setTimeout(fn, 20); };
    return function(fn){ return raf(fn); };
  })();
- 
+
  var cancelFrame = (function(){
    var cancel = window.cancelAnimationFrame || window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame ||
           window.clearTimeout;
    return function(id){ return cancel(id); };
  })();
- 
+
  function resizeListener(e){
    var win = e.target || e.srcElement;
    if (win.__resizeRAF__) cancelFrame(win.__resizeRAF__);
@@ -473,12 +473,12 @@ $.ajax({
      });
    });
  }
- 
+
  function objectLoad(e){
    this.contentDocument.defaultView.__resizeTrigger__ = this.__resizeElement__;
    this.contentDocument.defaultView.addEventListener('resize', resizeListener);
  }
- 
+
  window.addResizeListener = function(element, fn){
    if (!element.__resizeListeners__) {
      element.__resizeListeners__ = [];
@@ -488,7 +488,7 @@ $.ajax({
      }
      else {
        if (getComputedStyle(element).position == 'static') element.style.position = 'relative';
-       var obj = element.__resizeTrigger__ = document.createElement('object'); 
+       var obj = element.__resizeTrigger__ = document.createElement('object');
        obj.setAttribute('style', 'display: block; position: absolute; top: 0; left: 0; height: 100%; width: 100%; overflow: hidden; pointer-events: none; z-index: -1;');
        obj.__resizeElement__ = element;
        obj.onload = objectLoad;
@@ -500,7 +500,7 @@ $.ajax({
    }
    element.__resizeListeners__.push(fn);
  };
- 
+
  window.removeResizeListener = function(element, fn){
    element.__resizeListeners__.splice(element.__resizeListeners__.indexOf(fn), 1);
    if (!element.__resizeListeners__.length) {

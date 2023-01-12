@@ -6,13 +6,13 @@
  * Revision: 1250
  *
  * Copyright (c) 2009-2013 Chris Leonello
- * jqPlot is currently available for use in all personal or commercial projects 
- * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL 
- * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can 
- * choose the license that best suits your project and use it accordingly. 
+ * jqPlot is currently available for use in all personal or commercial projects
+ * under both the MIT (http://www.opensource.org/licenses/mit-license.php) and GPL
+ * version 2.0 (http://www.gnu.org/licenses/gpl-2.0.html) licenses. This means that you can
+ * choose the license that best suits your project and use it accordingly.
  *
- * Although not required, the author would appreciate an email letting him 
- * know of any substantial use of jqPlot.  You can reach the author at: 
+ * Although not required, the author would appreciate an email letting him
+ * know of any substantial use of jqPlot.  You can reach the author at:
  * chris at jqplot dot com or see http://www.jqplot.com/info.php .
  *
  * If you are feeling kind and generous, consider supporting the project by
@@ -26,7 +26,7 @@
  *     http://hexmen.com/js/sprintf.js
  *     The author (Ash Searle) has placed this code in the public domain:
  *     "This code is unrestricted: you are free to use it however you like."
- * 
+ *
  */
 (function($) {
     /**
@@ -35,24 +35,24 @@
      * the <$.jqplot.MekkoAxisRenderer> should be used with mekko charts.  The mekko renderer
      * overrides the default legend renderer with its own $.jqplot.MekkoLegendRenderer
      * which allows more flexibility to specify number of rows and columns in the legend.
-     * 
-     * Data is specified per bar in the chart.  You can specify data as an array of y values, or as 
-     * an array of [label, value] pairs.  Note that labels are used only on the first series.  
+     *
+     * Data is specified per bar in the chart.  You can specify data as an array of y values, or as
+     * an array of [label, value] pairs.  Note that labels are used only on the first series.
      * Labels on subsequent series are ignored:
-     * 
+     *
      * > bar1 = [['shirts', 8],['hats', 14],['shoes', 6],['gloves', 16],['dolls', 12]];
      * > bar2 = [15,6,9,13,6];
      * > bar3 = [['grumpy',4],['sneezy',2],['happy',7],['sleepy',9],['doc',7]];
-     * 
-     * If you want to place labels for each bar under the axis, you use the barLabels option on 
+     *
+     * If you want to place labels for each bar under the axis, you use the barLabels option on
      * the axes.  The bar labels can be styled with the ".jqplot-mekko-barLabel" css class.
-     * 
+     *
      * > barLabels = ['Mickey Mouse', 'Donald Duck', 'Goofy'];
      * > axes:{xaxis:{barLabels:barLabels}}
-     * 
+     *
      */
-    
-    
+
+
     $.jqplot.MekkoRenderer = function(){
         this.shapeRenderer = new $.jqplot.ShapeRenderer();
         // prop: borderColor
@@ -63,7 +63,7 @@
         // False will draw borders lines with the same color as the area.
         this.showBorders = true;
     };
-    
+
     // called with scope of series.
     $.jqplot.MekkoRenderer.prototype.init = function(options, plot) {
         this.fill = false;
@@ -80,7 +80,7 @@
         plot.axes.x2axis._series.push(this);
         this._type = 'mekko';
     };
-    
+
     // Method: setGridData
     // converts the user data values to grid coordinates and stores them
     // in the gridData array.  Will convert user data into appropriate
@@ -111,7 +111,7 @@
             }
         }
     };
-    
+
     // Method: makeGridData
     // converts any arbitrary data values to grid coordinates and
     // returns them.  This method exists so that plugins can use a series'
@@ -137,7 +137,7 @@
         }
         return gd;
     };
-    
+
 
     // called within scope of series.
     $.jqplot.MekkoRenderer.prototype.draw = function(ctx, gd, options) {
@@ -160,25 +160,25 @@
                 }
             }
         }
-        
+
         ctx.restore();
-    };  
-    
+    };
+
     $.jqplot.MekkoRenderer.prototype.drawShadow = function(ctx, gd, options) {
         // This is a no-op, no shadows on mekko charts.
     };
-    
+
     /**
      * Class: $.jqplot.MekkoLegendRenderer
-     * Legend renderer used by mekko charts with options for 
+     * Legend renderer used by mekko charts with options for
      * controlling number or rows and columns as well as placement
      * outside of plot area.
-     * 
+     *
      */
     $.jqplot.MekkoLegendRenderer = function(){
         //
     };
-    
+
     $.jqplot.MekkoLegendRenderer.prototype.init = function(options) {
         // prop: numberRows
         // Maximum number of rows in the legend.  0 or null for unlimited.
@@ -190,7 +190,7 @@
         this.placement = "outside";
         $.extend(true, this, options);
     };
-    
+
     // called with scope of legend
     $.jqplot.MekkoLegendRenderer.prototype.draw = function() {
         var legend = this;
@@ -205,13 +205,13 @@
             this._elem = $('<table class="jqplot-table-legend" style="'+ss+'"></table>');
             // Mekko charts  legends don't go by number of series, but by number of data points
             // in the series.  Refactor things here for that.
-            
-            var pad = false, 
+
+            var pad = false,
                 reverse = true,    // mekko charts are always stacked, so reverse
                 nr, nc;
             var s = series[0];
             var colorGenerator = new $.jqplot.ColorGenerator(s.seriesColors);
-            
+
             if (s.show) {
                 var pd = s.data;
                 if (this.numberRows) {
@@ -231,10 +231,10 @@
                     nr = pd.length;
                     nc = 1;
                 }
-                
+
                 var i, j, tr, td1, td2, lt, rs, color;
-                var idx = 0;    
-                
+                var idx = 0;
+
                 for (i=0; i<nr; i++) {
                     if (reverse){
                         tr = $('<tr class="jqplot-table-legend"></tr>').prependTo(this._elem);
@@ -263,7 +263,7 @@
                                 }
                             }
                             rs = (pad) ? this.rowSpacing : '0';
-                
+
                             td1 = $('<td class="jqplot-table-legend" style="text-align:center;padding-top:'+rs+';">'+
                                 '<div><div class="jqplot-table-legend-swatch" style="border-color:'+color+';"></div>'+
                                 '</div></td>');
@@ -285,7 +285,7 @@
                             pad = true;
                         }
                         idx++;
-                    }   
+                    }
                 }
 
                 tr = null;
@@ -295,11 +295,11 @@
         }
         return this._elem;
     };
-    
+
     $.jqplot.MekkoLegendRenderer.prototype.pack = function(offsets) {
         if (this.show) {
             // fake a grid for positioning
-            var grid = {_top:offsets.top, _left:offsets.left, _right:offsets.right, _bottom:this._plotDimensions.height - offsets.bottom};        
+            var grid = {_top:offsets.top, _left:offsets.left, _right:offsets.right, _bottom:this._plotDimensions.height - offsets.bottom};
             if (this.placement == 'insideGrid') {
                 switch (this.location) {
                     case 'nw':
@@ -350,7 +350,7 @@
                         this._elem.css({right:a, bottom:b});
                         break;
                 }
-                
+
             }
             else {
                 switch (this.location) {
@@ -403,9 +403,9 @@
                         break;
                 }
             }
-        } 
+        }
     };
-    
+
     // setup default renderers for axes and legend so user doesn't have to
     // called with scope of plot
     function preInit(target, data, options) {
@@ -424,14 +424,14 @@
                 }
             }
         }
-        
+
         if (setopts) {
             options.axesDefaults.renderer = $.jqplot.MekkoAxisRenderer;
             options.legend.renderer = $.jqplot.MekkoLegendRenderer;
             options.legend.preDraw = true;
         }
     }
-    
+
     $.jqplot.preInitHooks.push(preInit);
-    
-})(jQuery);    
+
+})(jQuery);

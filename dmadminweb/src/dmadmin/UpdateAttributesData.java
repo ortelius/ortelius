@@ -119,10 +119,10 @@ public class UpdateAttributesData extends HttpServletBase
         try
         {
          arrayid = Integer.parseInt(param.substring(index));
-        } 
+        }
         catch (NumberFormatException e)
         {
-         
+
         }
         String work = param.substring(0,index-1);
         work = work.substring("ele_add_".length());
@@ -140,10 +140,10 @@ public class UpdateAttributesData extends HttpServletBase
         try
         {
          arrayid = Integer.parseInt(param.substring(index));
-        } 
+        }
         catch (NumberFormatException e)
         {
-         
+
         }
         String work = param.substring(0,index-1);
         work = work.substring("ele_del_".length());
@@ -156,7 +156,7 @@ public class UpdateAttributesData extends HttpServletBase
          String key = parts[1];
          System.out.println("delete array (" + arrayid + ") element '" + name + "' = '" + value + "'");
          changes.addDeleted(new DMAttribute(name, arrayid, key, value));
-        } 
+        }
         else
         {
          String name = work;

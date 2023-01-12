@@ -39,11 +39,11 @@ public class UserPermissions
 	boolean m_createnotifier;
 	boolean m_createengine;
  boolean m_createservercomptype;
-	
+
 	public UserPermissions(DMSession sess,int groupid) {
 		sess.setUserPermissions(groupid,this);
 	}
-	
+
 	//
 	// get/set general create permissions
 	//
@@ -63,7 +63,7 @@ public class UserPermissions
 	public boolean getCreateNotifiers()  { return m_createnotifier; }
 	public boolean getCreateEngines()    { return m_createengine; }
  public boolean getCreateServerCompType()    { return m_createservercomptype; }
- 
+
 	public void setCreateUsers(boolean bval)      {  m_createuser = bval; }
 	public void setCreateGroups(boolean bval)     {  m_creategroup = bval; }
 	public void setCreateDomains(boolean bval)    {  m_createdomain = bval; }
@@ -80,43 +80,43 @@ public class UserPermissions
 	public void setCreateNotifiers(boolean bval)  {  m_createnotifier = bval; }
 	public void setCreateEngines(boolean bval)     {  m_createengine = bval; }
  public void setCreateServerCompType(boolean bval)     {  m_createservercomptype = bval; }
- 
+
 	//
 	// Returns the word "disabled" if the corresponding permission is not set.
 	// Used in "new user group" scenarios to prevent the permission being granted
 	// to a group to which the invoking user does not have access
 	//
-	public String getUsersDisabled()     { return m_createuser?"":"disabled"; } 
-	public String getGroupsDisabled()    { return m_creategroup?"":"disabled"; } 
-	public String getDomainsDisabled()   { return m_createdomain?"":"disabled"; } 
-	public String getEnvsDisabled()      { return m_createenv?"":"disabled"; } 
-	public String getServersDisabled()   { return m_createserver?"":"disabled"; } 
-	public String getReposDisabled()     { return m_createrepos?"":"disabled"; } 
-	public String getCompsDisabled()     { return m_createcomp?"":"disabled"; } 
-	public String getCredsDisabled()     { return m_createcred?"":"disabled"; } 
-	public String getAppsDisabled()      { return m_createapp?"":"disabled"; } 
-	public String getAppversDisabled()   { return m_createappver?"":"disabled"; } 
-	public String getActionsDisabled()   { return m_createaction?"":"disabled"; } 
-	public String getProcsDisabled()     { return m_createproc?"":"disabled"; } 
-	public String getDatasrcDisabled()   { return m_createdatasrc?"":"disabled"; } 
-	public String getNotifiersDisabled() { return m_createnotifier?"":"disabled"; } 
+	public String getUsersDisabled()     { return m_createuser?"":"disabled"; }
+	public String getGroupsDisabled()    { return m_creategroup?"":"disabled"; }
+	public String getDomainsDisabled()   { return m_createdomain?"":"disabled"; }
+	public String getEnvsDisabled()      { return m_createenv?"":"disabled"; }
+	public String getServersDisabled()   { return m_createserver?"":"disabled"; }
+	public String getReposDisabled()     { return m_createrepos?"":"disabled"; }
+	public String getCompsDisabled()     { return m_createcomp?"":"disabled"; }
+	public String getCredsDisabled()     { return m_createcred?"":"disabled"; }
+	public String getAppsDisabled()      { return m_createapp?"":"disabled"; }
+	public String getAppversDisabled()   { return m_createappver?"":"disabled"; }
+	public String getActionsDisabled()   { return m_createaction?"":"disabled"; }
+	public String getProcsDisabled()     { return m_createproc?"":"disabled"; }
+	public String getDatasrcDisabled()   { return m_createdatasrc?"":"disabled"; }
+	public String getNotifiersDisabled() { return m_createnotifier?"":"disabled"; }
 	public String getEnginesDisabled()   { return m_createengine?"":"disabled"; }
  public String getServerCompTypeDisabled()   { return m_createservercomptype?"":"disabled"; }
- 
-	public String getUsersChecked()     { return m_createuser?"Checked":""; } 
-	public String getGroupsChecked()    { return m_creategroup?"Checked":""; } 
-	public String getDomainsChecked()   { return m_createdomain?"Checked":""; } 
-	public String getEnvsChecked()      { return m_createenv?"Checked":""; } 
-	public String getServersChecked()   { return m_createserver?"Checked":""; } 
-	public String getReposChecked()     { return m_createrepos?"Checked":""; } 
-	public String getCompsChecked()     { return m_createcomp?"Checked":""; } 
-	public String getCredsChecked()     { return m_createcred?"Checked":""; } 
-	public String getAppsChecked()      { return m_createapp?"Checked":""; } 
-	public String getAppversChecked()   { return m_createappver?"Checked":""; } 
-	public String getActionsChecked()   { return m_createaction?"Checked":""; } 
-	public String getProcsChecked()     { return m_createproc?"Checked":""; } 
-	public String getDatasrcChecked()   { return m_createdatasrc?"Checked":""; } 
-	public String getNotifiersChecked() { return m_createnotifier?"Checked":""; } 
-	public String getEnginesChecked()   { return m_createengine?"Checked":""; } 
- public String getServerCompTypeChecked()   { return m_createservercomptype?"Checked":""; } 
+
+	public String getUsersChecked()     { return m_createuser?"Checked":""; }
+	public String getGroupsChecked()    { return m_creategroup?"Checked":""; }
+	public String getDomainsChecked()   { return m_createdomain?"Checked":""; }
+	public String getEnvsChecked()      { return m_createenv?"Checked":""; }
+	public String getServersChecked()   { return m_createserver?"Checked":""; }
+	public String getReposChecked()     { return m_createrepos?"Checked":""; }
+	public String getCompsChecked()     { return m_createcomp?"Checked":""; }
+	public String getCredsChecked()     { return m_createcred?"Checked":""; }
+	public String getAppsChecked()      { return m_createapp?"Checked":""; }
+	public String getAppversChecked()   { return m_createappver?"Checked":""; }
+	public String getActionsChecked()   { return m_createaction?"Checked":""; }
+	public String getProcsChecked()     { return m_createproc?"Checked":""; }
+	public String getDatasrcChecked()   { return m_createdatasrc?"Checked":""; }
+	public String getNotifiersChecked() { return m_createnotifier?"Checked":""; }
+	public String getEnginesChecked()   { return m_createengine?"Checked":""; }
+ public String getServerCompTypeChecked()   { return m_createservercomptype?"Checked":""; }
 }

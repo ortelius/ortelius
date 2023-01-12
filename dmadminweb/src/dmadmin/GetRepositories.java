@@ -37,7 +37,7 @@ public class GetRepositories
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -72,9 +72,9 @@ public class GetRepositories
   Repository none = new Repository(session, domid, domstr);
   none.setId(-1);
   none.setName("");
-  
+
   ret.add(none.getLinkJSON());
-  
+
   for (Repository r : repos)
   {
    ret.add(r.getLinkJSON());

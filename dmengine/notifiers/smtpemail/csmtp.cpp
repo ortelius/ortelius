@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Original class CFastSmtp written by 
+// Original class CFastSmtp written by
 // christopher w. backen <immortal@cox.net>
 // More details at: http://www.codeproject.com/KB/IP/zsmtp.aspx
-// 
+//
 // Modifications introduced by Jakub Piwowarczyk:
 // 1. name of the class and functions
 // 2. new functions added: SendData,ReceiveData and more
@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// SSL/TLS support added by John Tang by making use of OpenSSL: http://www.openssl.org/ 
+// SSL/TLS support added by John Tang by making use of OpenSSL: http://www.openssl.org/
 // More details at: http://www.codeproject.com/KB/IP/smtp_ssl.aspx
 //
 // PLAIN, CRAM-MD5 and DIGESTMD5 authentication added by David Johns
@@ -105,7 +105,7 @@
 #endif
 
 
-Command_Entry command_list[] = 
+Command_Entry command_list[] =
 {
 	{command_INIT,          0,     5*60,  220, ECSmtp::SERVER_NOT_RESPONDING},
 	{command_EHLO,          5*60,  5*60,  250, ECSmtp::COMMAND_EHLO},
@@ -224,10 +224,10 @@ CSmtp::CSmtp()
 #ifndef LINUX
 	// Initialize WinSock
 	WSADATA wsaData;
-	WORD wVer = MAKEWORD(2,2);    
+	WORD wVer = MAKEWORD(2,2);
 	if (WSAStartup(wVer,&wsaData) != NO_ERROR)
 		throw ECSmtp(ECSmtp::WSA_STARTUP);
-	if (LOBYTE( wsaData.wVersion ) != 2 || HIBYTE( wsaData.wVersion ) != 2 ) 
+	if (LOBYTE( wsaData.wVersion ) != 2 || HIBYTE( wsaData.wVersion ) != 2 )
 	{
 		WSACleanup();
 		throw ECSmtp(ECSmtp::WSA_VER);
@@ -237,10 +237,10 @@ CSmtp::CSmtp()
 	char hostname[255];
 	if(gethostname((char *) &hostname, 255) == SOCKET_ERROR) throw ECSmtp(ECSmtp::WSA_HOSTNAME);
 	m_sLocalHostName = hostname;
-	
+
 	if((RecvBuf = new char[BUFFER_SIZE]) == NULL)
 		throw ECSmtp(ECSmtp::LACK_OF_MEMORY);
-	
+
 	if((SendBuf = new char[BUFFER_SIZE]) == NULL)
 		throw ECSmtp(ECSmtp::LACK_OF_MEMORY);
 
@@ -316,7 +316,7 @@ void CSmtp::AddAttachment(const char *Path)
 //							JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
 void CSmtp::AddRecipient(const char *email, const char *name)
-{	
+{
 	if(!email)
 		throw ECSmtp(ECSmtp::UNDEF_RECIPIENT_MAIL);
 
@@ -325,7 +325,7 @@ void CSmtp::AddRecipient(const char *email, const char *name)
 	if(name!=NULL) recipient.Name = name;
 	else recipient.Name.empty();
 
-	Recipients.insert(Recipients.end(), recipient);   
+	Recipients.insert(Recipients.end(), recipient);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -341,7 +341,7 @@ void CSmtp::AddRecipient(const char *email, const char *name)
 //							JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
 void CSmtp::AddCCRecipient(const char *email, const char *name)
-{	
+{
 	if(!email)
 		throw ECSmtp(ECSmtp::UNDEF_RECIPIENT_MAIL);
 
@@ -366,7 +366,7 @@ void CSmtp::AddCCRecipient(const char *email, const char *name)
 //							JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
 void CSmtp::AddBCCRecipient(const char *email, const char *name)
-{	
+{
 	if(!email)
 		throw ECSmtp(ECSmtp::UNDEF_RECIPIENT_MAIL);
 
@@ -535,8 +535,8 @@ void CSmtp::ClearMessage()
 //   ARGUMENTS: none
 // USES GLOBAL: m_sSMTPSrvName, m_iSMTPSrvPort, SendBuf, RecvBuf, m_sLogin,
 //              m_sPassword, m_sMailFrom, Recipients, CCRecipients,
-//              BCCRecipients, m_sMsgBody, Attachments, 
-// MODIFIES GL: SendBuf 
+//              BCCRecipients, m_sMsgBody, Attachments,
+// MODIFIES GL: SendBuf
 //     RETURNS: void
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
@@ -573,7 +573,7 @@ void CSmtp::Send()
 			hFile = fopen(Attachments[FileId].c_str(), "rb");
 			if(hFile == NULL)
 				throw ECSmtp(ECSmtp::FILE_NOT_EXIST);
-			
+
 			// checking file size:
 			fseek(hFile, 0, SEEK_END);
 			FileSize = ftell(hFile);
@@ -588,7 +588,7 @@ void CSmtp::Send()
 		}
 
 		// ***** SENDING E-MAIL *****
-		
+
 		// MAIL <SP> FROM:<reverse-path> <CRLF>
 		if(!m_sMailFrom.size())
 			throw ECSmtp(ECSmtp::UNDEF_MAIL_FROM);
@@ -621,13 +621,13 @@ void CSmtp::Send()
 			SendData(pEntry);
 			ReceiveResponse(pEntry);
 		}
-		
+
 		pEntry = FindCommandEntry(command_DATA);
 		// DATA <CRLF>
 		snprintf(SendBuf, BUFFER_SIZE, "DATA\r\n");
 		SendData(pEntry);
 		ReceiveResponse(pEntry);
-		
+
 		pEntry = FindCommandEntry(command_DATABLOCK);
 		// send header(s)
 		FormatHeader(SendBuf);
@@ -680,7 +680,7 @@ void CSmtp::Send()
 			hFile = fopen(Attachments[FileId].c_str(), "rb");
 			if(hFile == NULL)
 				throw ECSmtp(ECSmtp::FILE_NOT_EXIST);
-			
+
 			// get file size:
 			fseek(hFile, 0, SEEK_END);
 			FileSize = ftell(hFile);
@@ -709,14 +709,14 @@ void CSmtp::Send()
 		}
 		delete[] FileBuf;
 		FileBuf=NULL;
-		
+
 		// sending last message block (if there is one or more attachments)
 		if(Attachments.size())
 		{
 			snprintf(SendBuf, BUFFER_SIZE, "\r\n--%s--\r\n",BOUNDARY_TEXT);
 			SendData(pEntry);
 		}
-		
+
 		pEntry = FindCommandEntry(command_DATAEND);
 		// <CRLF> . <CRLF>
 		snprintf(SendBuf, BUFFER_SIZE, "\r\n.\r\n");
@@ -734,18 +734,18 @@ void CSmtp::Send()
 
 ////////////////////////////////////////////////////////////////////////////////
 //        NAME: ConnectRemoteServer
-// DESCRIPTION: Connecting to the service running on the remote server. 
+// DESCRIPTION: Connecting to the service running on the remote server.
 //   ARGUMENTS: const char *server - service name
 //              const unsigned short port - service port
 // USES GLOBAL: m_pcSMTPSrvName, m_iSMTPSrvPort, SendBuf, RecvBuf, m_pcLogin,
 //              m_pcPassword, m_pcMailFrom, Recipients, CCRecipients,
-//              BCCRecipients, m_pcMsgBody, Attachments, 
-// MODIFIES GL: m_oError 
+//              BCCRecipients, m_pcMsgBody, Attachments,
+// MODIFIES GL: m_oError
 //     RETURNS: socket of the remote service
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
 ////////////////////////////////////////////////////////////////////////////////
-bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort_/*=0*/, 
+bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort_/*=0*/,
 								SMTP_SECURITY_TYPE securityType/*=DO_NOT_SET*/,
 								bool authenticate/*=true*/, const char* login/*=NULL*/,
 								const char* password/*=NULL*/)
@@ -775,16 +775,16 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 			lpServEnt = getservbyname("mail", 0);
 			if (lpServEnt == NULL)
 				nPort = htons(25);
-			else 
+			else
 				nPort = lpServEnt->s_port;
 		}
-				
+
 		sockAddr.sin_family = AF_INET;
 		sockAddr.sin_port = nPort;
 		if((sockAddr.sin_addr.s_addr = inet_addr(szServer)) == INADDR_NONE)
 		{
 			LPHOSTENT host;
-				
+
 			host = gethostbyname(szServer);
 			if (host)
 				memcpy(&sockAddr.sin_addr,host->h_addr_list[0],host->h_length);
@@ -796,7 +796,7 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 				closesocket(hSocket);
 #endif
 				throw ECSmtp(ECSmtp::WSA_GETHOSTBY_NAME_ADDR);
-			}				
+			}
 		}
 
 		// start non-blocking mode for socket:
@@ -920,7 +920,7 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 				snprintf(SendBuf, BUFFER_SIZE, "%s\r\n",encoded_login.c_str());
 				SendData(pEntry);
 				ReceiveResponse(pEntry);
-				
+
 				// send password:
 				std::string encoded_password = base64_encode(reinterpret_cast<const unsigned char*>(m_sPassword.c_str()),m_sPassword.size());
 				pEntry = FindCommandEntry(command_PASSWORD);
@@ -954,7 +954,7 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 				std::string encoded_challenge = RecvBuf;
 				encoded_challenge = encoded_challenge.substr(4);
 				std::string decoded_challenge = base64_decode(encoded_challenge);
-				
+
 				/////////////////////////////////////////////////////////////////////
 				//test data from RFC 2195
 				//decoded_challenge = "<1896.697170952@postoffice.reston.mci.net>";
@@ -1034,7 +1034,7 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 				//To test jump into authenticate and read this line and the ones down to next test data section
 				//decoded_challenge = "realm=\"elwood.innosoft.com\",nonce=\"OA6MG9tEQGm2hh\",qop=\"auth\",algorithm=md5-sess,charset=utf-8";
 				/////////////////////////////////////////////////////////////////////
-				
+
 				//Get the nonce (manditory)
 				int find = decoded_challenge.find("nonce");
 				if(find<0)
@@ -1131,18 +1131,18 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 				//authzid could be added here
 				md5a1b.finalize();
 				char *a1 = md5a1b.hex_digest();
-				
+
 				MD5 md5a2;
 				md5a2.update((unsigned char*) "AUTHENTICATE:", 13);
 				md5a2.update(ustrUri, uri.size());
-				//authint and authconf add an additional line here	
+				//authint and authconf add an additional line here
 				md5a2.finalize();
 				char *a2 = md5a2.hex_digest();
 
 				delete[] ua1;
 				ua1 = CharToUnsignedChar(a1);
 				unsigned char *ua2 = CharToUnsignedChar(a2);
-				
+
 				//compute KD
 				MD5 md5;
 				md5.update(ua1, 32);
@@ -1200,7 +1200,7 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 				ReceiveResponse(pEntry);
 
 				//Send completion carraige return
-				snprintf(SendBuf, BUFFER_SIZE, "\r\n");				
+				snprintf(SendBuf, BUFFER_SIZE, "\r\n");
 				pEntry = FindCommandEntry(command_PASSWORD);
 				SendData(pEntry);
 				ReceiveResponse(pEntry);
@@ -1317,18 +1317,18 @@ void CSmtp::FormatHeader(char* header)
 			cc.append(">");
 		}
 	}
-	
+
 	// Date: <SP> <dd> <SP> <mon> <SP> <yy> <SP> <hh> ":" <mm> ":" <ss> <SP> <zone> <CRLF>
 	snprintf(header, BUFFER_SIZE, "Date: %d %s %d %d:%d:%d\r\n", timeinfo->tm_mday,
 	         month[timeinfo->tm_mon], timeinfo->tm_year+1900, timeinfo->tm_hour,
-             timeinfo->tm_min, timeinfo->tm_sec); 
-	
+             timeinfo->tm_min, timeinfo->tm_sec);
+
 	// From: <SP> <sender>  <SP> "<" <sender-email> ">" <CRLF>
 	if(!m_sMailFrom.size()) throw ECSmtp(ECSmtp::UNDEF_MAIL_FROM);
-	 
+
 	strcat(header,"From: ");
 	if(m_sNameFrom.size()) strcat(header, m_sNameFrom.c_str());
-	 
+
 	strcat(header," <");
 	strcat(header,m_sMailFrom.c_str());
 	strcat(header, ">\r\n");
@@ -1395,7 +1395,7 @@ void CSmtp::FormatHeader(char* header)
 	}
 
 	// Subject: <SP> <subject-text> <CRLF>
-	if(!m_sSubject.size()) 
+	if(!m_sSubject.size())
 		strcat(header, "Subject:  ");
 	else
 	{
@@ -1403,7 +1403,7 @@ void CSmtp::FormatHeader(char* header)
 	  strcat(header, m_sSubject.c_str());
 	}
 	strcat(header, "\r\n");
-	
+
 	// MIME-Version: <SP> 1.0 <CRLF>
 	strcat(header,"MIME-Version: 1.0\r\n");
 	if(!Attachments.size())
@@ -1573,10 +1573,10 @@ void CSmtp::SendData(Command_Entry* pEntry)
 
 ////////////////////////////////////////////////////////////////////////////////
 //        NAME: GetLocalHostName
-// DESCRIPTION: Returns local host name. 
+// DESCRIPTION: Returns local host name.
 //   ARGUMENTS: none
 // USES GLOBAL: m_pcLocalHostName
-// MODIFIES GL: m_oError, m_pcLocalHostName 
+// MODIFIES GL: m_oError, m_pcLocalHostName
 //     RETURNS: socket of the remote service
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
@@ -1591,7 +1591,7 @@ const char* CSmtp::GetLocalHostName()
 // DESCRIPTION: Returns the number of recipents.
 //   ARGUMENTS: none
 // USES GLOBAL: Recipients
-// MODIFIES GL: none 
+// MODIFIES GL: none
 //     RETURNS: number of recipents
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
@@ -1603,10 +1603,10 @@ unsigned int CSmtp::GetRecipientCount() const
 
 ////////////////////////////////////////////////////////////////////////////////
 //        NAME: GetBCCRecipientCount
-// DESCRIPTION: Returns the number of bcc-recipents. 
+// DESCRIPTION: Returns the number of bcc-recipents.
 //   ARGUMENTS: none
 // USES GLOBAL: BCCRecipients
-// MODIFIES GL: none 
+// MODIFIES GL: none
 //     RETURNS: number of bcc-recipents
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
@@ -1621,7 +1621,7 @@ unsigned int CSmtp::GetBCCRecipientCount() const
 // DESCRIPTION: Returns the number of cc-recipents.
 //   ARGUMENTS: none
 // USES GLOBAL: CCRecipients
-// MODIFIES GL: none 
+// MODIFIES GL: none
 //     RETURNS: number of cc-recipents
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
@@ -1636,7 +1636,7 @@ unsigned int CSmtp::GetCCRecipientCount() const
 // DESCRIPTION: Returns m_pcReplyTo string.
 //   ARGUMENTS: none
 // USES GLOBAL: m_sReplyTo
-// MODIFIES GL: none 
+// MODIFIES GL: none
 //     RETURNS: m_sReplyTo string
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
@@ -1651,7 +1651,7 @@ const char* CSmtp::GetReplyTo() const
 // DESCRIPTION: Returns m_pcMailFrom string.
 //   ARGUMENTS: none
 // USES GLOBAL: m_sMailFrom
-// MODIFIES GL: none 
+// MODIFIES GL: none
 //     RETURNS: m_sMailFrom string
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
@@ -1666,7 +1666,7 @@ const char* CSmtp::GetMailFrom() const
 // DESCRIPTION: Returns m_pcNameFrom string.
 //   ARGUMENTS: none
 // USES GLOBAL: m_sNameFrom
-// MODIFIES GL: none 
+// MODIFIES GL: none
 //     RETURNS: m_sNameFrom string
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
@@ -1681,7 +1681,7 @@ const char* CSmtp::GetSenderName() const
 // DESCRIPTION: Returns m_pcSubject string.
 //   ARGUMENTS: none
 // USES GLOBAL: m_sSubject
-// MODIFIES GL: none 
+// MODIFIES GL: none
 //     RETURNS: m_sSubject string
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
@@ -1696,7 +1696,7 @@ const char* CSmtp::GetSubject() const
 // DESCRIPTION: Returns m_pcXMailer string.
 //   ARGUMENTS: none
 // USES GLOBAL: m_pcXMailer
-// MODIFIES GL: none 
+// MODIFIES GL: none
 //     RETURNS: m_pcXMailer string
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
@@ -1711,7 +1711,7 @@ const char* CSmtp::GetXMailer() const
 // DESCRIPTION: Returns m_iXPriority string.
 //   ARGUMENTS: none
 // USES GLOBAL: m_iXPriority
-// MODIFIES GL: none 
+// MODIFIES GL: none
 //     RETURNS: CSmptXPriority m_pcXMailer
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
@@ -1735,8 +1735,8 @@ unsigned int CSmtp::GetMsgLines() const
 
 ////////////////////////////////////////////////////////////////////////////////
 //        NAME: SetCharSet
-// DESCRIPTION: Allows the character set to be changed from default of US-ASCII. 
-//   ARGUMENTS: const char *sCharSet 
+// DESCRIPTION: Allows the character set to be changed from default of US-ASCII.
+//   ARGUMENTS: const char *sCharSet
 // USES GLOBAL: m_sCharSet
 // MODIFIES GL: m_sCharSet
 //     RETURNS: none
@@ -1750,8 +1750,8 @@ void CSmtp::SetCharSet(const char *sCharSet)
 
 ////////////////////////////////////////////////////////////////////////////////
 //        NAME: SetLocalHostName
-// DESCRIPTION: Allows the local host name to be set externally. 
-//   ARGUMENTS: const char *sLocalHostName 
+// DESCRIPTION: Allows the local host name to be set externally.
+//   ARGUMENTS: const char *sLocalHostName
 // USES GLOBAL: m_sLocalHostName
 // MODIFIES GL: m_sLocalHostName
 //     RETURNS: none
@@ -1769,7 +1769,7 @@ void CSmtp::SetLocalHostName(const char *sLocalHostName)
 //   ARGUMENTS: CSmptXPriority priority - priority of the message (	XPRIORITY_HIGH,
 //              XPRIORITY_NORMAL, XPRIORITY_LOW)
 // USES GLOBAL: none
-// MODIFIES GL: m_iXPriority 
+// MODIFIES GL: m_iXPriority
 //     RETURNS: none
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
@@ -1917,7 +1917,7 @@ void CSmtp::SetPassword(const char *Password)
 //   ARGUMENTS: const char* SrvName - SMTP service name
 //              const unsigned short SrvPort - SMTO service port
 // USES GLOBAL: m_sSMTPSrvName
-// MODIFIES GL: m_sSMTPSrvName 
+// MODIFIES GL: m_sSMTPSrvName
 //     RETURNS: none
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
@@ -1935,7 +1935,7 @@ void CSmtp::SetSMTPServer(const char* SrvName, const unsigned short SrvPort, boo
 // DESCRIPTION: Returns the string for specified error code.
 //   ARGUMENTS: CSmtpError ErrorId - error code
 // USES GLOBAL: none
-// MODIFIES GL: none 
+// MODIFIES GL: none
 //     RETURNS: error string
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
@@ -2059,7 +2059,7 @@ void CSmtp::SayHello()
 void CSmtp::SayQuit()
 {
 	// ***** CLOSING CONNECTION *****
-	
+
 	Command_Entry* pEntry = FindCommandEntry(command_QUIT);
 	// QUIT <CRLF>
 	snprintf(SendBuf, BUFFER_SIZE, "QUIT\r\n");
@@ -2176,7 +2176,7 @@ void CSmtp::ReceiveData_SSL(SSL* ssl, Command_Entry* pEntry)
 					trying to rehandshake and we block on
 					a write during that rehandshake.
 
-					We need to wait on the socket to be 
+					We need to wait on the socket to be
 					writeable but reinitiate the read
 					when it is */
 					read_blocked_on_write=1;
@@ -2225,7 +2225,7 @@ void CSmtp::ReceiveResponse(Command_Entry* pEntry)
 			if(offset + 1 < len) // we found a line
 			{
 				// see if this is the last line
-				// the last line must match the pattern: XYZ<SP>*<CRLF> or XYZ<CRLF> where XYZ is a string of 3 digits 
+				// the last line must match the pattern: XYZ<SP>*<CRLF> or XYZ<CRLF> where XYZ is a string of 3 digits
 				offset += 2; // skip <CRLF>
 				if(offset - begin >= 5)
 				{
@@ -2242,7 +2242,7 @@ void CSmtp::ReceiveResponse(Command_Entry* pEntry)
 				}
 				begin = offset;	// try to find next line
 			}
-			else // we haven't received the last line, so we need to receive more data 
+			else // we haven't received the last line, so we need to receive more data
 			{
 				break;
 			}
@@ -2262,7 +2262,7 @@ void CSmtp::OutputDebugStringA(const char *buf)
 	{
 		FILE *fp = fopen((const char*)m_sLogfile.c_str(), "a");
 		fprintf(fp,"%s\n",buf);
-		fclose(fp);	
+		fclose(fp);
 	}
 }
 
@@ -2316,7 +2316,7 @@ void CSmtp::SendData_SSL(SSL* ssl, Command_Entry* pEntry)
 
 			/* Try to write */
 			res = SSL_write(ssl, SendBuf+offset, nLeft);
-	          
+
 			switch(SSL_get_error(ssl,res))
 			{
 			  /* We wrote something*/
@@ -2324,7 +2324,7 @@ void CSmtp::SendData_SSL(SSL* ssl, Command_Entry* pEntry)
 				nLeft -= res;
 				offset += res;
 				break;
-	              
+
 				/* We would have blocked */
 			  case SSL_ERROR_WANT_WRITE:
 				break;
@@ -2332,15 +2332,15 @@ void CSmtp::SendData_SSL(SSL* ssl, Command_Entry* pEntry)
 				/* We get a WANT_READ if we're
 				   trying to rehandshake and we block on
 				   write during the current connection.
-	               
+
 				   We need to wait on the socket to be readable
 				   but reinitiate our write when it is */
 			  case SSL_ERROR_WANT_READ:
 				write_blocked_on_read=1;
 				break;
-	              
+
 				  /* Some other error */
-			  default:	      
+			  default:
 				FD_ZERO(&fdread);
 				FD_ZERO(&fdwrite);
 				throw ECSmtp(ECSmtp::SSL_PROBLEM);
@@ -2367,7 +2367,7 @@ void CSmtp::OpenSSLConnect()
 {
 	if(m_ctx == NULL)
 		throw ECSmtp(ECSmtp::SSL_PROBLEM);
-	m_ssl = SSL_new (m_ctx);   
+	m_ssl = SSL_new (m_ctx);
 	if(m_ssl == NULL)
 		throw ECSmtp(ECSmtp::SSL_PROBLEM);
 	SSL_set_fd (m_ssl, (int)hSocket);
@@ -2419,7 +2419,7 @@ void CSmtp::OpenSSLConnect()
 			FD_ZERO(&fdread);
 			return;
 			break;
-              
+
 		  case SSL_ERROR_WANT_WRITE:
 			write_blocked = 1;
 			break;
@@ -2427,8 +2427,8 @@ void CSmtp::OpenSSLConnect()
 		  case SSL_ERROR_WANT_READ:
 			read_blocked = 1;
 			break;
-              
-		  default:	      
+
+		  default:
 			FD_ZERO(&fdwrite);
 			FD_ZERO(&fdread);
 			throw ECSmtp(ECSmtp::SSL_PROBLEM);
@@ -2446,7 +2446,7 @@ void CSmtp::CleanupOpenSSL()
 	}
 	if(m_ctx != NULL)
 	{
-		SSL_CTX_free (m_ctx);	
+		SSL_CTX_free (m_ctx);
 		m_ctx = NULL;
 		ERR_remove_state(0);
 		ERR_free_strings();

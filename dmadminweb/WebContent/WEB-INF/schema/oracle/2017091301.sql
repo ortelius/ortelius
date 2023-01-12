@@ -20,4 +20,3 @@ insert into dm.dm_fragmentattrs(id,typeid,attype,atname,inherit,atorder,required
 insert into dm.dm_fragmentattrs(id,typeid,attype,atname,inherit,atorder,required) values(11302,113,'entry','FileToDelete','N',2,'Y');
 insert into dm.dm_fragmenttext(fragmentid,data,type) values(113,'zipdel(zipfile: "@zipfile@", file: "@filetodelete@");',0);
 insert into dm.dm_fragment_categories(id,categoryid) values(113,9);
-

@@ -33,15 +33,12 @@ public class ComponentLink
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     public void setObjFrom(int cf) { m_objfrom = cf; }
     public void setObjTo(int ct) { m_objto = ct; }
     public void setAppId(int appid) { m_appid = appid; }
-    
+
     public int getCompFrom() { return m_objfrom; }
     public int getCompTo() { return m_objto; }
     public int getAppId() { return m_appid; }
 }
-
-
-

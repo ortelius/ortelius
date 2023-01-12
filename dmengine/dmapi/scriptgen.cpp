@@ -551,7 +551,7 @@ void ActionFragment::pathCalc(ActionPath *path, bool isDrillDown)
 				throw RuntimeError("pathCalc: ERROR fragment %d can't find path entry", m_windowid);
 			}
 			switch(entry->pos()) {
-			case LEFT_POS: 
+			case LEFT_POS:
 				m_loopLeft = true;
 				debug1("pathCalc: loop goes down left branch at %d", m_windowid);
 				break;
@@ -584,7 +584,7 @@ void ActionFragment::pathCalc(ActionPath *path, bool isDrillDown)
 	// This code will handle N links out
 	AutoPtr<IntList> links = m_linksOut.keys();
 	IntListIterator iter(*links);
-	int count = m_linksOut.count(); 
+	int count = m_linksOut.count();
 	List<ActionPath> paths(false);
 	for(int pos = iter.first(); iter.more(); pos = iter.next()) {
 		ActionFragment *frag = m_linksOut.get(pos);
@@ -783,7 +783,7 @@ void ActionFragment::generate(FILE *out, int ind)
 
 	if(insertLoop) {
 		ind--;
-		indent(out, ind); fprintf(out, "}\n");		
+		indent(out, ind); fprintf(out, "}\n");
 	}
 
 	if(m_exitPoint) {
@@ -932,7 +932,7 @@ void ActionPath::dump()
 		if(f.m_loopStart) {
 			if(e->pos() == 3) {
 				debug1(f.m_loopLeft ? "{" : ".");
-			} else if(e->pos() == 2) { 
+			} else if(e->pos() == 2) {
 				debug1(f.m_loopRight ? "{" : ".");
 			} else {
 				debug1("{");
@@ -1274,7 +1274,7 @@ bool GraphicalScriptGenerator::generate()
 
 	// Now for any conditions, look and see which joins belong to them
 	AutoPtr<IntList> frags = m_frags->keys();
-	IntListIterator iter(*frags);	
+	IntListIterator iter(*frags);
 	for(int fragid = iter.first(); iter.more(); fragid = iter.next()) {
 		ActionFragment *frag = m_frags->get(fragid);
 		if(frag && frag->isConditional()) {

@@ -19,7 +19,7 @@ package dmadmin;
 public enum SummaryField
 {
 	READ_ONLY		(0, null),
-	
+
 	// DMObject
 	NAME			(1, "Name", 	null),						// This value is used in GetSummary.jsp for callback
 	SUMMARY			(2, "Summary", 	null),						// This value is used in GetSummary.jsp for callback
@@ -28,10 +28,10 @@ public enum SummaryField
 	// Engine
 	ENGINE_HOSTNAME (5, null),
 	ENGINE_CLIENTID (6, null),
-	
+
 	// Environment
 	AVAILABILITY	(10,  "Availability",		null),
- 
+
 	// Application
 	PRE_ACTION		(101, "Pre Action",					ObjectType.ACTION),
 	POST_ACTION		(102, "Post Action",				ObjectType.ACTION),
@@ -53,11 +53,11 @@ public enum SummaryField
 	SERVER_PINGTEMPLATE (212, "Ping Template",	ObjectType.TEMPLATE),
 	SERVER_MD5TEMPLATE  (213, "MD5 Template",	ObjectType.TEMPLATE),
 	SERVER_SSHPORT		(214, "SSH Port",		null),
-	
+
 	// Providers
 	PROVIDER_TYPE	(301, ObjectType.PROVIDERDEF),	// This is used in GetSummary.jsp for callback
 	PROVIDER_CRED	(302, ObjectType.CREDENTIALS),
-	
+
 	// User
 	USER_REALNAME	(401, "Real Name",		null),					// This is used in GetSummary.jsp for callback
 	USER_EMAIL		(402, "email Address",	null),
@@ -68,10 +68,10 @@ public enum SummaryField
 	USER_DATE_FMT   (407, "Date Format",	null),
 	USER_TIME_FMT   (408, "Time Format",	null),
 	USER_DATASOURCE (409, "Data Source",	ObjectType.DATASOURCE),
-	
+
 	// UserGroup
 	GROUP_EMAIL		(501, "email address",	null),
-	
+
 	// Components/Component Items
 	FILTER_ITEMS    	(701, "Filter Items",			ObjectType.FILTER_ITEMS),
 	ROLLUP 				(702, "Rollup flag",			ObjectType.COMPONENT_FILTER),
@@ -84,7 +84,7 @@ public enum SummaryField
 	DEPLOY_SEQUENTIALLY (709, "Deploy Sequentially",	ObjectType.BOOLEAN),
 	COMP_DATASOURCE		(710, "Change Request Data Source",ObjectType.DATASOURCE),
 	COMP_BUILDJOB  (711, "Build Job", null),
-	COMP_LASTBUILDNUMBER(712, "Last Build Number",		null),	
+	COMP_LASTBUILDNUMBER(712, "Last Build Number",		null),
 	DOCKER    (713, "Container Kind",  null),
 	XPOS (714,"xpos", null),
 	YPOS (715,"ypos", null),
@@ -100,7 +100,7 @@ public enum SummaryField
 	CRED_VARPASSWORD(805, "Password",	null),						// This is used in CredDetails.jsp for show/hide
 	CRED_FILENAME   (806, "Filename",	null),						// This is used in CredDetails.jsp for show/hide
 	CRED_USERNAME	(807, "Username",	ObjectType.ENCRYPTED),		// For displaying unencrypted username
-	
+
 	// Task
 	TASK_SHOWOUTPUT     	 		(901, ObjectType.BOOLEAN),
 	TASK_APPROVAL_DOMAIN			(902, null),
@@ -110,11 +110,11 @@ public enum SummaryField
 	TASK_CREATEVERSION_DOMAIN 		(906, null),
 	TASK_ACTION						(907, ObjectType.ACTION),
 	TASK_AVAILABLE_TO_SUBDOMAINS	(908, ObjectType.BOOLEAN),
- 
+
 	// Domain
 	DOMAIN_LIFECYCLE(1001,ObjectType.BOOLEAN),
 	DOMAIN_FULLNAME(1002,"Domain", null),
-	
+
 	// Action
 	ACTION_FILEPATH 	(1101,	"Filepath",			null),						// This is used in actiondetails.jsp for show/hide
 	ACTION_RESISEXPR	(1102,	"Result is Expr",	ObjectType.BOOLEAN),
@@ -125,12 +125,12 @@ public enum SummaryField
 	ACTION_FRAGNAME 	(1107,	"Display Name",		null),						// This is used in actiondetails.jsp for show/hide
 	ACTION_INTERPRETER	(1108,	"Interpreter",		null),
 	ACTION_USETTY		(1109,	"Use TTY",			ObjectType.BOOLEAN),
- 
+
 	// Notifications
 	SUCCESS_TEMPLATE (1201,		"Success Template",	ObjectType.TEMPLATE),
 	FAILURE_TEMPLATE (1202,		"Failure Template",	ObjectType.TEMPLATE),
 	NOTIFIER (1203, "Notifier", ObjectType.NOTIFY),
-	
+
 	// Server Summary Data
 	NAME_RESOLUTION (1301,null),
 	PING_SUCCESS (1302,null),
@@ -140,16 +140,16 @@ public enum SummaryField
 	IP_ADDRESS (1306,null),
 	LAST_PING_TIME(1307,null),
 	LAST_ERROR(1308,null),
-	
+
 	// Server Component Type
 	DATABASE  (1401,ObjectType.BOOLEAN),
  	DELETEDIR (1402,ObjectType.BOOLEAN),
- 
+
  	// Build Engines
  	PROJECTNAME (1501,		"Project Name",		null),
- 
+
  // Container Component Item Details
- DOCKER_BUILDID (1601, "Build Id",  null),   
+ DOCKER_BUILDID (1601, "Build Id",  null),
  DOCKER_BUILDURL  (1602, "Build URL", null),
  DOCKER_CHART  (1603, "Helm Chart", null),
  DOCKER_OPERATOR  (1604, "Operator",  null),
@@ -170,37 +170,37 @@ public enum SummaryField
  SERVICE_OWNER_EMAIL (1619, "Service Owner Email", null),
  SERVICE_OWNER_PHONE (1620, "Service Owner Phone", null),
  SLACK_CHANNEL (1621, "Slack Channel", null),
- DISCORD_CHANNEL (1622, "Discord Channel", null),	
+ DISCORD_CHANNEL (1622, "Discord Channel", null),
  HIPCHAT_CHANNEL (1623, "HipChat Channel", null),
  PAGERDUTY_SERVICE_URL (1624, "PagerDuty Service Url", null),
  PAGERDUTY_BUSINESS_URL (1625, "PagerDuty Business Service Url", null),
  COMP_SWAGGER (1626, "Swagger", null),
  SERVICE_OWNER_ID (1627, "Service Owner Id", null);
- 
+
 	private final int m_value;
 	private final ObjectType m_type;
 	private final String m_fieldname;
 
-	public static final int OBJECT_MAX = 99;	
-	
+	public static final int OBJECT_MAX = 99;
+
 	SummaryField(int value, ObjectType type) {
 		m_value = value;
 		m_type = type;
 		m_fieldname = null;
 	}
-	
+
 	SummaryField(int value, String fieldname, ObjectType type) {
 		m_value = value;
 		m_type = type;
 		m_fieldname = fieldname;
 	}
-	
+
 	public int value()  { return m_value; }
 
 	public ObjectType type()  { return m_type; }
-	
+
 	public String fieldname() { return m_fieldname; }
-	
+
 	public static SummaryField fromInt(int value) {
 		for(SummaryField ot : SummaryField.values()) {
 			if(ot.value() == value) {

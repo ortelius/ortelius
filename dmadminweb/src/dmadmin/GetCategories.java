@@ -35,7 +35,7 @@ import dmadmin.model.Fragment;
  */
 public class GetCategories extends JSONServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     public GetCategories() {
         super();
     }
@@ -54,9 +54,9 @@ public class GetCategories extends JSONServletBase {
 			}
 			throw new RuntimeException("Not a good enough reason");
 		}
-		
+
 		List <Category> categories = session.GetFragmentsAndCategories();
-		
+
 		JSONArray arr1 = new JSONArray();
 		for(Category c: categories) {
 			JSONObject cobj = new JSONObject();
@@ -78,7 +78,7 @@ public class GetCategories extends JSONServletBase {
 			cobj.add("fragcount",fragments.size());
 			arr1.add(cobj);
 		}
-		
+
 		JSONObject obj = new JSONObject();
 		obj.add("Categories", arr1);
 		obj.add("CategoryCount", categories.size());
@@ -87,7 +87,7 @@ public class GetCategories extends JSONServletBase {
 
 	private IJSONSerializable doCategoriesForAction(DMSession session)
 	{
-		JSONArray ret = new JSONArray();		
+		JSONArray ret = new JSONArray();
 		ret.add(new Category(-1, "Create new category...").getLinkJSON());
 
 		for(Category c: session.GetFragmentsAndCategories()) {
@@ -102,11 +102,11 @@ public class GetCategories extends JSONServletBase {
 		if(name == null) {
 			return new JSONObject().add("result", false).add("error", "No category name");
 		}
-		
+
 		try {
 			Category c = session.createNewCategory(name);
 			return new JSONObject().add("result", true).add("newid", c.getId()).add("name", c.getName());
-		} catch(RuntimeException e) {			
+		} catch(RuntimeException e) {
 			return new JSONObject().add("result", false).add("error", e.getMessage());
 		}
 	}

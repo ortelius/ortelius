@@ -1,19 +1,19 @@
 /*
  * jsPlumb
- * 
+ *
  * Title:jsPlumb 1.4.0
- * 
+ *
  * Provides a way to visually connect elements on an HTML page, using either SVG, Canvas
- * elements, or VML.  
- * 
+ * elements, or VML.
+ *
  * This file contains the YUI3 adapter.
  *
  * Copyright (c) 2010 - 2013 Simon Porritt (http://jsplumb.org)
- * 
+ *
  * http://jsplumb.org
  * http://github.com/sporritt/jsplumb
  * http://code.google.com/p/jsplumb
- * 
+ *
  * Dual licensed under the MIT and GPL2 licenses.
  */
 
@@ -34,7 +34,7 @@
  * getScrollTop			gets an element's scroll top.  TODO: is this actually used?  will it be?
  * getSize				gets an element's size.
  * getUIPosition		gets the position of some element that is currently being dragged, by extracting it from the arguments passed to a drag callback.
- * initDraggable		initializes an element to be draggable 
+ * initDraggable		initializes an element to be draggable
  * initDroppable		initializes an element to be droppable
  * isDragSupported		returns whether or not drag is supported for some element.
  * isDropSupported		returns whether or not drop is supported for some element.
@@ -46,7 +46,7 @@
  * setOffset			sets the offset of some element.
  */
 (function() {
-	
+
 	if (!Array.prototype.indexOf) {
 		Array.prototype.indexOf = function( v, b, s ) {
 			for( var i = +b || 0, l = this.length; i < l; i++ ) {
@@ -55,14 +55,14 @@
 	 		return -1;
 		};
 	}
-	
+
 	var Y;
-	
+
 	YUI().use('node', 'dd', 'dd-constrain', 'anim', 'node-event-simulate', function(_Y) {
-		Y = _Y;	
+		Y = _Y;
 		Y.on("domready", function() { jsPlumb.init(); });
 	});
-	
+
 	/**
 	 * adds the given value to the given list, with the given scope. creates the scoped list
 	 * if necessary.
@@ -75,15 +75,15 @@
 			list[scope] = l;
 		}
 		l.push(value);
-	},	
+	},
 	ddEvents = [ "drag:mouseDown", "drag:afterMouseDown", "drag:mouseup",
 	     "drag:align", "drag:removeHandle", "drag:addHandle", "drag:removeInvalid", "drag:addInvalid",
 	     "drag:start", "drag:end", "drag:drag", "drag:over", "drag:enter",
-	     "drag:exit", "drag:drophit", "drag:dropmiss", "drop:over", "drop:enter", "drop:exit", "drop:hit"	     	               
-	],	
-	animEvents = [ "tween" ],	
+	     "drag:exit", "drag:drophit", "drag:dropmiss", "drop:over", "drop:enter", "drop:exit", "drop:hit"
+	],
+	animEvents = [ "tween" ],
 	/**
-	 * helper function to curry callbacks for some element. 
+	 * helper function to curry callbacks for some element.
 	 */
 	_wrapper = function(fn) {
 		return function() {
@@ -92,7 +92,7 @@
 			}
 			catch (e) { }
 		};
-	},	
+	},
 	/**
 	 * extracts options from the given options object, leaving out event handlers.
 	 */
@@ -100,12 +100,12 @@
 		var o = {};
 		for (var i in options) if (ddEvents.indexOf(i) == -1) o[i] = options[i];
 		return o;
-	},	
+	},
 	/**
 	 * attaches all event handlers found in options to the given dragdrop object, and registering
 	 * the given el as the element of interest.
 	 */
-	_attachListeners = function(dd, options, eventList) {	
+	_attachListeners = function(dd, options, eventList) {
 	    for (var ev in options) {
 	    	if (eventList.indexOf(ev) != -1) {
 	    		var w = _wrapper(options[ev]);
@@ -144,21 +144,21 @@
 	_getElementObject = function(el) {
 		if (el == null) return null;
 		var eee = null;
-        eee = typeof el == 'string' ? Y.one('#' + el) : el._node ? el : Y.one(el);        
+        eee = typeof el == 'string' ? Y.one('#' + el) : el._node ? el : Y.one(el);
         return eee;
 	};
-	
+
 	jsPlumb.CurrentLibrary = {
-			
+
 		addClass : function(el, clazz) {
 			jsPlumb.CurrentLibrary.getElementObject(el).addClass(clazz);
-		},	
-		
+		},
+
 		/**
 		 * animates the given element.
 		 */
 		animate : function(el, properties, options) {
-			var o = _extend({node:el, to:properties}, options),			
+			var o = _extend({node:el, to:properties}, options),
 				id = _getAttribute(el, "id");
 			o["tween"] = jsPlumb.wrap(properties["tween"], function() {
 				// TODO should use a current instance.
@@ -168,42 +168,42 @@
 			_attachListeners(a, o, animEvents);
 			a.run();
 		},
-		
+
 		appendElement : function(child, parent) {
-			_getElementObject (parent).append(child);			
+			_getElementObject (parent).append(child);
 		},
-		
+
 		/**
-		 * event binding wrapper.  
+		 * event binding wrapper.
 		 */
 		bind : function(el, event, callback) {
 			_getElementObject(el).on(event, callback);
 		},
-			
+
 		dragEvents : {
 			"start":"drag:start", "stop":"drag:end", "drag":"drag:drag", "step":"step",
 			"over":"drop:enter", "out":"drop:exit", "drop":"drop:hit"
-		},								
-			
+		},
+
 		extend : _extend,
-		
+
 		getAttribute : _getAttribute,
-		
+
 		getClientXY : function(eventObject) {
 			return [eventObject.clientX, eventObject.clientY];
 		},
-		
+
 		/**
 		 * takes the args passed to an event function and returns you an object representing that which is being dragged.
 		 */
 		getDragObject : function(eventArgs) {
 			// this is a workaround for the unfortunate fact that in YUI3, the 'drop:exit' event does
-			// not contain a reference to the drag that just exited.  single-threaded js to the 
+			// not contain a reference to the drag that just exited.  single-threaded js to the
 			// rescue: we'll just keep it for ourselves.
 			if (eventArgs[0].drag) _lastDragObject = eventArgs[0].drag.el;
 			return _lastDragObject;
 		},
-		
+
 		getDragScope : function(el) {
 			var id = jsPlumb.getId(el),
 				dd = _draggablesById[id];
@@ -213,23 +213,23 @@
 		getDropEvent : function(args) {
 			return args[0];
 		},
-		
+
 		getDropScope : function(el) {
 			var id = jsPlumb.getId(el);
 			return _droppableScopesById[id];
 		},
-		
-		getDOMElement : function(el) { 			
-			if (typeof(el) == "String") 
+
+		getDOMElement : function(el) {
+			if (typeof(el) == "String")
 				return document.getElementById(el);
-			else if (el._node) 
+			else if (el._node)
 				return el._node;
 			else return el;
 		},
-		
+
 		getElementObject : _getElementObject,
-		
-		getOffset : function(el) {			
+
+		getOffset : function(el) {
 			var o = Y.DOM.getXY(el._node);
 			return {left:o[0], top:o[1]};
 		},
@@ -237,34 +237,34 @@
 		getOriginalEvent : function(e) {
 			return e._event;
 		},
-		
+
 		getPageXY : function(eventObject) {
 			return [eventObject.pageX, eventObject.pageY];
 		},
-		
+
 		getParent : function(el) {
 			return jsPlumb.CurrentLibrary.getElementObject(el).get("parentNode");
 		},
-		
+
 		getScrollLeft : function(el) {
-			return 0; 
+			return 0;
 		},
-		
+
 		getScrollTop : function(el) {
 			return 0;
 		},
-		
+
 		getSelector : function(context, spec) {
 			var _convert = function(s) { return s && s ._nodes ? s._nodes : []; };
-            
-            if (arguments.length == 2) {            
+
+            if (arguments.length == 2) {
                 return _convert(jsPlumb.CurrentLibrary.getElementObject(context).all(spec));
             }
             else {
 			     return _convert(Y.all(context));
-            }            
+            }
 		},
-		
+
 		getSize : function(el) {
 			return [ el._node.offsetWidth, el._node.offsetHeight ];
 		},
@@ -273,55 +273,55 @@
             var e = jsPlumb.CurrentLibrary.getElementObject(el);
             return e != null && e._node != null ? e._node.tagName : null;
         },
-		
+
 		getUIPosition : function(args, zoom) {
 			zoom = zoom || 1;
 			var n = args[0].currentTarget.el._node,
 			o = Y.DOM.getXY(n);
 			return {left:o[0] / zoom, top:o[1] / zoom};
-		},		
-		
+		},
+
 		hasClass : function(el, clazz) {
 			return el.hasClass(clazz);
 		},
-				
+
 		initDraggable : function(el, options, isPlumbedComponent, _jsPlumb) {
 			var _opts = _getDDOptions(options),
 				id = _jsPlumb.getId(el);
-			_opts.node = "#" + id;		
-			var dd = new Y.DD.Drag(_opts), 
+			_opts.node = "#" + id;
+			var dd = new Y.DD.Drag(_opts),
                 containment = options.constrain2node || options.containment;
-			dd.el = el;	
-            
+			dd.el = el;
+
             if (containment) {
                 dd.plug(Y.Plugin.DDConstrained, {
                     constrain2node: containment
                 });
             }
-			
+
 			if (isPlumbedComponent) {
 				var scope = options['scope'] || _jsPlumb.Defaults.Scope;
 				dd.scope = scope;
 				_add(_draggablesByScope, scope, dd);
 			}
-			
-			_draggablesById[id] = dd;			
-			
+
+			_draggablesById[id] = dd;
+
 			_attachListeners(dd, options, ddEvents);
 		},
-		
+
 		initDroppable : function(el, options) {
 			var _opts = _getDDOptions(options),
 				id = jsPlumb.getId(el);
-			_opts.node = "#" + id;			
+			_opts.node = "#" + id;
 			var dd = new Y.DD.Drop(_opts);
-			
+
 			_droppableOptions[id] = options;
-			
+
 			options = _extend({}, options);
-			var scope = options['scope'] || jsPlumb.Defaults.Scope;					
+			var scope = options['scope'] || jsPlumb.Defaults.Scope;
 			_droppableScopesById[id] = scope;
-			
+
 			options["drop:enter"] = jsPlumb.wrap(options["drop:enter"], function(e) {
 				if (e.drag.scope !== scope) return true;
 				_checkHover(el, true);
@@ -333,22 +333,22 @@
 				if (e.drag.scope !== scope) return true;
 				_checkHover(el, false);
 			}, true);
-			
+
 			_attachListeners(dd, options, ddEvents);
 		},
-		
+
 		isAlreadyDraggable : function(el) {
 			el = _getElementObject(el);
 			return el.hasClass("yui3-dd-draggable");
 		},
-		
-		isDragSupported : function(el) { return true; },		
-		isDropSupported : function(el) { return true; },										
-		removeClass : function(el, clazz) { 
-			jsPlumb.CurrentLibrary.getElementObject(el).removeClass(clazz); 
-		},		
+
+		isDragSupported : function(el) { return true; },
+		isDropSupported : function(el) { return true; },
+		removeClass : function(el, clazz) {
+			jsPlumb.CurrentLibrary.getElementObject(el).removeClass(clazz);
+		},
 		removeElement : function(el) { _getElementObject(el).remove(); },
-		
+
 		setAttribute : function(el, attributeName, attributeValue) {
 			el.setAttribute(attributeName, attributeValue);
 		},
@@ -356,7 +356,7 @@
 		setDragFilter : function(el, filter) {
 			jsPlumb.log("NOT IMPLEMENTED: setDragFilter")
 		},
-		
+
 		/**
 		 * sets the draggable state for the given element
 		 */
@@ -365,13 +365,13 @@
 				dd = _draggablesById[id];
 			if (dd) dd.set("lock", !draggable);
 		},
-		
+
 		setDragScope : function(el, scope) {
 			var id = jsPlumb.getId(el),
 				dd = _draggablesById[id];
 			if (dd) dd.scope = scope;
 		},
-		
+
 		setOffset : function(el, o) {
 			el = _getElementObject(el);
 			el.set("top", o.top);
@@ -381,22 +381,22 @@
         stopDrag : function() {
             Y.DD.DDM.stopDrag();
         },
-		
+
 		trigger : function(el, event, originalEvent) {
 			originalEvent.stopPropagation();
 			_getElementObject(el).simulate(event, {
-				pageX:originalEvent.pageX, 
-				pageY:originalEvent.pageY, 
-				clientX:originalEvent.clientX, 
+				pageX:originalEvent.pageX,
+				pageY:originalEvent.pageY,
+				clientX:originalEvent.clientX,
 				clientY:originalEvent.clientY
-			});			
+			});
 		},
-		
+
 		/**
-		 * event unbinding wrapper.  
+		 * event unbinding wrapper.
 		 */
 		unbind : function(el, event, callback) {
 			_getElementObject(el).detach(event, callback);
 		}
-	};				
+	};
 })();

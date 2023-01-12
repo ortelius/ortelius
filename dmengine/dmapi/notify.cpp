@@ -31,7 +31,7 @@ Attachment::Attachment(const char *name, OutputStream *stream, bool ownStream)
 Attachment::~Attachment()
 {
 	SAFE_FREE(m_name);
-	if(m_ownStream) { 
+	if(m_ownStream) {
 		SAFE_DELETE(m_stream);
 	} else {
 		m_stream = NULL;	// don't own

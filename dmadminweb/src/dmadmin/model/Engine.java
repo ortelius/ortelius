@@ -37,37 +37,37 @@ public class Engine
 	private String m_hostname;
 	private DMSession m_session;
 	private String m_clientid;	// for SaaS
-	
+
 	public Engine() {
 	}
-	
+
 	public Engine(DMSession sess, int id, String name) {
 		super(sess, id, name);
 		m_session = sess;
 	}
-	
+
 	public String getHostname()  { return m_hostname; }
 	public void setHostname(String hostname)  { m_hostname = hostname; }
-	
+
 	public String getClientID()  { return m_clientid; }
 	public void setClientID(String clientid)  { m_clientid = clientid; }
-	
+
 	public List<Plugin> getPlugins() {
 		return m_session.getPluginsForEngine(this);
 	}
-	
+
 	public DMSession getSession() {
 		return m_session;
 	}
-	
+
 	public List<ConfigEntry> getConfig() {
 		return m_session.getConfigForEngine(this);
 	}
-	
+
 	public List<ProviderDefinition> getProviderDefs() {
 		return m_session.getProviderDefsForEngine(this);
 	}
-	
+
 	@Override
 	public ObjectType getObjectType() {
 		return ObjectType.ENGINE;
@@ -110,17 +110,17 @@ public class Engine
 	public boolean updateSummary(SummaryChangeSet changes) {
 		return m_session.updateEngine(this, changes);
 	}
-	
+
 	public CommandLine startDeployment(
 		Task task, Application app, Environment env, String userName,
 		String sessionid, Map<String,String> cmdline_params)
-	{		
+	{
 		CommandLine cmd = new CommandLine(this)
 			.add("dm")
 			.add("-usr").add(userName)
 			.pw(m_session.getPassword());
 		if(sessionid != null) {
-			cmd.add("-sessionid").add(sessionid);		
+			cmd.add("-sessionid").add(sessionid);
 		}
 		cmd.add("-envid").add(env.getId())
 			.add("-appid").add(app.getId())
@@ -128,7 +128,7 @@ public class Engine
 			.add(cmdline_params);
 		return cmd;
 	}
-	
+
  public CommandLine auditServer(String home, int serverid)
  {
 	 CommandLine cmd = new CommandLine(home + "\\bin\\DeploymentManager.exe").add("-home").add(home).add("-scanserver").add(serverid);
@@ -139,12 +139,12 @@ public class Engine
 		Notify nfy, Application app, Environment env,
 		String userName, List<String> toOtids, String from,
 		int templateid, Map<String,String> cmdline_params)
-	{		
+	{
 		CommandLine cmd = new CommandLine("C:\\Shared\\DM2\\DeploymentManager\\Windows\\Debug\\DeploymentManager.exe");
 		cmd.add("-home").add("C:\\Shared\\DM2\\DeploymentManager\\distrib")
 			.add("-usr").add(userName)
 			.pw(m_session.getPassword())
-			.add("-notify").add(nfy.getId())	
+			.add("-notify").add(nfy.getId())
 			.add("-from").add(from)
 			.add("-template").add(templateid);
 		if(app != null) {
@@ -163,7 +163,7 @@ public class Engine
 		}
 		return ret;
 	}
-	
+
 	public CommandLine doProviderTest(ProviderObject po)
 	{
 		CommandLine ret;
@@ -180,7 +180,7 @@ public class Engine
 		}
 		return ret;
 	}
-	
+
 	public CommandLine doApprove(Task task, Application app, boolean approved, Map<String,String> aps)
 	{
 		return new CommandLine(this)
@@ -193,7 +193,7 @@ public class Engine
 			.add("approve_approved=" + (approved ? 1 : 0))
 			.add(aps);
 	}
-	
+
 	public CommandLine doRunAction(Task task, Map<String,String> aps)
 	{
 		return new CommandLine(this)
@@ -204,7 +204,7 @@ public class Engine
 		.add("-runtask").add(task.getId())
 		.add(aps);
 	}
-	
+
 	public CommandLine doMoveCopyRequest(Task task, Application app, Map<String,String> aps)
 	{
 		return new CommandLine(this)
@@ -216,7 +216,7 @@ public class Engine
 			.add("-appid").add(app.getId())
 			.add(aps);
 	}
-	
+
 	public CommandLine doRemove(Task task, Application app,Environment env, Map<String,String> aps)
 	{
 		return new CommandLine(this)
@@ -229,7 +229,7 @@ public class Engine
 			.add("-remove")
 			.add(aps);
 	}
-	
+
 	public CommandLine doTestServer(Server server)
 	{
 		return new CommandLine(this)
@@ -238,7 +238,7 @@ public class Engine
 			.pw(m_session.getPassword())
 			.add("-checkserver").add(server.getId());
 	}
-	
+
 	public CommandLine doCreateScript()
 	{
 		return new CommandLine(this)
@@ -247,7 +247,7 @@ public class Engine
 			.pw(m_session.getPassword())
 			.add("-importscript");
 	}
-	
+
 	public CommandLine showDMScript(Action action)
 	{
 		return new CommandLine(this)
@@ -256,7 +256,7 @@ public class Engine
 			.pw(m_session.getPassword())
 			.add("-dmscript").add(action.getId());
 	}
-	
+
 	public CommandLine doNewAppVer(Task task, Application app, boolean useLatest, Application pred, Map<String,String> aps)
 	{
 		CommandLine cmd = new CommandLine(this)
@@ -274,7 +274,7 @@ public class Engine
 		cmd.add(aps);
 		return cmd;
 	}
-	
+
 	public CommandLine doUserDefined(Task task, Map<String,String> aps)
 	{
 		return new CommandLine(this)
@@ -285,7 +285,7 @@ public class Engine
 			.add("-runtask").add(new Integer(task.getId()).toString())
 			.add(aps);
 	}
-	
+
 	public CommandLine doUserDefined(Task task,Application app, Map<String,String> aps)
 	{
 		return new CommandLine(this)
@@ -297,7 +297,7 @@ public class Engine
 			.add("-runtask").add(new Integer(task.getId()).toString())
 			.add(aps);
 	}
-	
+
 	public CommandLine doUserDefined(Task task,Component comp, Map<String,String> aps)
 	{
 		return new CommandLine(this)
@@ -309,7 +309,7 @@ public class Engine
 			.add("-runtask").add(new Integer(task.getId()).toString())
 			.add(aps);
 	}
-	
+
 	public CommandLine doUserDefined(Task task,Environment env, Map<String,String> aps)
 	{
 		return new CommandLine(this)
@@ -321,7 +321,7 @@ public class Engine
 			.add("-runtask").add(new Integer(task.getId()).toString())
 			.add(aps);
 	}
-	
+
 	public String ParseProcedure(String procbody)
 	{
 		CommandLine cmd = new CommandLine(this)
@@ -331,7 +331,7 @@ public class Engine
 		cmd.runWithTrilogy(true, procbody);
 		return cmd.getOutput().trim();
 	}
-	
+
 	public String dumpScript(int actionid)
 	{
 		CommandLine cmd = new CommandLine(this)
@@ -343,7 +343,7 @@ public class Engine
 		}
 		throw new RuntimeException(cmd.getOutput());
 	}
-	
+
 
 public String[] splitInParts(String s, int partLength)
 {
@@ -365,7 +365,7 @@ public String[] splitInParts(String s, int partLength)
 
     return parts;
 }
-	
+
  public String encryptValue(String value, String userName)
  {
   if (value.trim().length() == 0)
@@ -386,21 +386,21 @@ public String[] splitInParts(String s, int partLength)
   }
   return String.join("^", encparts);
  }
-	
+
 	public class ConfigEntry
 		implements IJSONSerializable
 	{
 		private String m_name;
 		private String m_value;
-		
+
 		public ConfigEntry(String name, String value) {
 			m_name = name;
 			m_value = value;
 		}
-		
+
 		public String getName()  { return m_name; }
 		public String getValue()  { return m_value; }
-		
+
 		public String getJSON()  {
 			return new JSONObject()
 				.add("name", m_name)

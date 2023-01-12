@@ -59,7 +59,7 @@ import us.springett.cvss.Score;
 public class InitVulns extends HttpServletBase
 {
 	private static final long serialVersionUID = 1L;
-	
+
  String DMHome = null;
 
  private Connection m_conn;
@@ -144,14 +144,14 @@ public class InitVulns extends HttpServletBase
  {
 
  }
- 
+
  public void init()
- { 
+ {
   try (DMSession session = new DMSession(getServletContext()))
   {
- 
+
   int dbtype = InitDBConnection();	// 0 = Postgres, 1 = Oracle
-  
+
   if (dbtype == 1) {
 	  // For Oracle, switch the schema first. This may not work on first install because only the
 	  // base install script creates the schema
@@ -163,14 +163,14 @@ public class InitVulns extends HttpServletBase
 		  System.out.println("Failed to alter session");
 	  }
   }
- 
+
   Thread t = new Thread()
   {
-   public void run() 
+   public void run()
    {
-    while(true) 
+    while(true)
     {
-     updateVulns(); 
+     updateVulns();
      try
      {
       TimeUnit.HOURS.sleep(1);
@@ -187,7 +187,7 @@ public class InitVulns extends HttpServletBase
  }
 
 
-private JsonArray getVulns(String payload) 
+private JsonArray getVulns(String payload)
 {
  JsonArray vulns = new JsonArray();
  String url = "https://api.osv.dev/v1/query";
@@ -215,16 +215,16 @@ private JsonArray getVulns(String payload)
   String output;
   StringBuffer response = new StringBuffer();
 
-  while ((output = in.readLine()) != null) 
+  while ((output = in.readLine()) != null)
    response.append(output);
- 
+
   in.close();
 
   output = response.toString();
   JsonObject jsonObject = new JsonParser().parse(output).getAsJsonObject();
   if (jsonObject.has("vulns"))
     vulns = jsonObject.getAsJsonArray("vulns");
-  
+
   return vulns;
  }
  catch (Exception e)
@@ -246,7 +246,7 @@ private void updateVulns()
   delst = m_conn.createStatement();
   delst.execute("delete from dm.dm_vulns");
   delst.close();
-  
+
   String sql = "select distinct packagename, packageversion, purl from dm.dm_componentdeps where deptype = 'license'";
   PreparedStatement st = m_conn.prepareStatement(sql);
   ResultSet rs = st.executeQuery();
@@ -256,7 +256,7 @@ private void updateVulns()
    String packageversion = rs.getString(2);
    String purl = rs.getString(3);
    String payload = "";
-   
+
    if (packagename.equalsIgnoreCase("PyJWT"))
        System.out.println(packagename);
 
@@ -277,7 +277,7 @@ private void updateVulns()
     String desc = "";
     if (obj.has("summary"))
       desc = obj.get("summary").getAsString();
-    
+
     if (obj.has("aliases"))
     {
      JsonArray aliaslist = obj.getAsJsonArray("aliases");
@@ -286,10 +286,10 @@ private void updateVulns()
        aliases += aliaslist.get(k).getAsString() + " ";
      if (desc.length() > 0)
       desc = aliases + ": " + desc;
-     else 
+     else
       desc = aliases;
     }
-    
+
     String risklevel = "";
     String cvss = "";
     if (obj.has("severity"))
@@ -307,23 +307,23 @@ private void updateVulns()
      else if (base >= 4.0 && base <= 6.9)
       risklevel = "Medium";
      else if (base >= 7.0 && base <= 8.9)
-      risklevel = "High";    
+      risklevel = "High";
      else if (base >= 9.0)
-      risklevel = "Critical";  
+      risklevel = "Critical";
     }
-    
+
     if (risklevel.isEmpty() && obj.has("database_specific"))
     {
      JsonObject sec = obj.get("database_specific").getAsJsonObject();
      if (sec.has("severity"))
       risklevel = sec.get("severity").getAsString();
-     
+
      risklevel=capitalize(risklevel);
-     
+
      if (risklevel.equalsIgnoreCase("MODERATE"))
       risklevel = "Medium";
     }
-    
+
     PreparedStatement ins_st = m_conn.prepareStatement("insert into dm.dm_vulns (packagename, packageversion, purl, id, summary, risklevel, cvss) values (?, ?, ?, ?, ?, ?, ?)");
     ins_st.setString(1, packagename);
     ins_st.setString(2, packageversion);
@@ -376,38 +376,38 @@ public static String capitalize(String str)
  private int InitDBConnection()
  {
    int ret=0;	// Postgres default
-   
+
    //
    // Connect to the database
    //
    DMHome = "";
    ConnectionString = "";
    DriverName = "";
-   
+
    System.out.println("connectToDatabase()");
-   
+
    DMHome = System.getenv("DMHome");
    if (DMHome == null)
     DMHome = getServletContext().getInitParameter("DMHOME");
-   
+
    ConnectionString = System.getenv("DBConnectionString");
    if (ConnectionString == null)
     ConnectionString = getServletContext().getInitParameter("DBConnectionString");
-   
+
    DriverName = System.getenv("DBDriverName");
    if (DriverName == null)
     DriverName = getServletContext().getInitParameter("DBDriverName");
 
    System.out.println("DMHOME="+DMHome);
-   
+
    dUserName = new StringBuilder();
-   
+
    String DBUserName = System.getenv("DBUserName");
    if (DBUserName != null)
     dUserName.append(DBUserName);
-   
+
    dPassword = new StringBuilder();
-   
+
    String DBPassword = System.getenv("DBPassword");
    if (DBPassword != null)
     dPassword.append(DBPassword);
@@ -416,11 +416,11 @@ public static String capitalize(String str)
 	   ret=1;
    }
    System.out.println("DMHOME=" + DMHome);
-   
+
    try
    {
     if (dUserName.length() == 0)
-    { 
+    {
      String base64Original = readFile(DMHome + "/dm.odbc");
      String base64passphrase = readFile(DMHome + "/dm.asc");
 
@@ -442,7 +442,7 @@ public static String capitalize(String str)
        d++;
      }
     }
-    
+
     DriverName = DriverName.replaceAll("com\\.impossibl\\.postgres\\.jdbc\\.PGDriver", "org.postgresql.Driver");
     ConnectionString = ConnectionString.replaceAll("jdbc\\:pgsql", "jdbc:postgresql");
     // DSN is ignored for Postgres Driver
@@ -463,7 +463,7 @@ public static String capitalize(String str)
    }
    return ret;	// database type (1 for Oracle)
  }
- 
+
  private static byte[][] EVP_BytesToKey(int key_len, int iv_len, MessageDigest md, byte[] salt, byte[] data, int count)
  {
   byte[][] both = new byte[2][];
@@ -531,4 +531,3 @@ public static String capitalize(String str)
  }
 
 }
-

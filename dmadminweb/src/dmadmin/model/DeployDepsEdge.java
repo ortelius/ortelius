@@ -26,19 +26,19 @@ public class DeployDepsEdge
 	private String to;
 	private boolean arrow;
 
-	
+
 	public DeployDepsEdge(String from, String to) {
 	 this.from=from;
 	 this.to=to;
 	 this.arrow = false;
 	}
-	
+
  public DeployDepsEdge(String from, String to,boolean arrow) {
   this.from=from;
   this.to=to;
   this.arrow = arrow;
  }
-	
+
 	public IJSONSerializable getJSON() {
 		JSONObject dep = new JSONObject();
 		dep.add("from",from);

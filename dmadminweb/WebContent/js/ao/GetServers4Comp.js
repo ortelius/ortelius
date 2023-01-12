@@ -67,7 +67,7 @@ function LoadSrv4CompData(tablename, objtypeAsInt, objtype, objid, addParams)
   {
    var row = data[a];
 
- 
+
    linkval1 = row.name;
    if (row.deployid == 0)
     linkval2 = "Manually Deployed";

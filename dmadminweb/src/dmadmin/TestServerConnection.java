@@ -35,14 +35,14 @@ public class TestServerConnection extends HttpServletBase
 	private static final long serialVersionUID = 1327862378913381548L;
 	private Domain m_domain;
 	private CommandLine m_cmd;
-	
+
 	public TestServerConnection() {
 	}
 
-	
+
 	public Domain getTargetDomain() { return m_domain; }
 	public void setTargetDomain(Domain domain) { m_domain = domain; }
-	
+
 	@Override
 	public void handleRequest(DMSession session, boolean isPost,
 			HttpServletRequest request, HttpServletResponse response)
@@ -65,7 +65,7 @@ public class TestServerConnection extends HttpServletBase
 		out.println(ret.getJSON());
 	}
 
- 
+
 	public String getOutput() {
 		return m_cmd.getOutput();
 	}

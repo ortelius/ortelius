@@ -35,21 +35,21 @@ function getApplicationVersionMarkup(id,prefix,name,summ,xpos,ypos,suffix)
 }
 
 function avNewApplicationVersion(node)
-{ 
+{
  if (DontSave)
   return;
- 
+
  var tx = (cCurrentMousePos.x) % 20;
  var ty = (cCurrentMousePos.y) % 20;
  if (tx>10) tx=-(20-tx);
  if (ty>10) ty=-(20-ty);
- 
+
  console.log("ScrollTop="+$("#compitem").scrollTop());
  var xpos = (cCurrentMousePos.x - tx) - 60;
  var ypos = ((cCurrentMousePos.y - ty) + $("#compitem").scrollTop()) - 90;
 
  var fanc = "f=nv&isRelease=N&a=" + objid;
- 
+
  $.getJSON("UpdateAttrs", fanc + "&xpos="+xpos+"&ypos="+ypos, function(data) {
   $('#innerappver').append(getApplicationVersionMarkup(data.compid, data.prefix, data.compname, '', xpos, ypos, ''));
 
@@ -62,7 +62,7 @@ function avNewApplicationVersion(node)
    cursor: "-webkit-grab",
    stop: avWindowMoved
   });
-  
+
   avPlumb.addEndpoint("window"+data.compid, targetEndpoint, {
    anchor : "TopCenter",
    uuid : "window"+data.compid+"in"
@@ -71,7 +71,7 @@ function avNewApplicationVersion(node)
    anchor : "BottomCenter",
    uuid : "window"+data.compid+"out"
   });
-  
+
   console.log("Binding context menu menu1 to window #window"+data.compid);
   try {
   $("#window"+data.compid).dmContextMenu(menuContextApplicationVersion, {theme:'xp'});
@@ -87,7 +87,7 @@ function avDeleteNode(node)
 {
  if (DontSave)
   return;
- 
+
  // alert("Detaching all connections");
  avPlumb.detachAllConnections(node.id);
  // alert("Removing all endpoints");
@@ -98,12 +98,12 @@ function avDeleteNode(node)
 
  console.log(node.id);
  console.log(usedApplicationVersions);
- 
+
  var i = usedApplicationVersions.indexOf(node.id);
  if(i != -1) {
   usedApplicationVersions.splice(i, 1);
  }
- 
+
 
  $(currenttree).jstree("delete_node", "#av" + n);
   // Deleting component from application
@@ -117,7 +117,7 @@ function avWindowMoved(event,ui)
 {
  if (DontSave)
   return;
- 
+
  console.log("in WindowMoved, ui.position.top="+ui.position.top);
  var windowid=event.target.id;
  var id = windowid.replace("window","");
@@ -143,13 +143,13 @@ function avDeleteConnector(conn)
 {
  if (DontSave)
   return;
- 
+
  if (conn)
  {
   //
   // Update the DB
   //
-  var fn = conn.sourceId.replace("window",""); 
+  var fn = conn.sourceId.replace("window","");
   var tn = conn.targetId.replace("window","");
   if (fn=="start") fn=0;
   if (tn=="start") tn=0;
@@ -167,12 +167,12 @@ var applicationversionDropOptions = {
   {
    if (DontSave)
     return;
-   
+
    oldid = $(this).attr("id").substr(6);
    newid = ui.draggable.attr("id");
    var newtitle = ui.draggable.text();
    var newsummary = ui.draggable.attr("summary");
-   // Update the fragment window 
+   // Update the fragment window
 
    $("#window"+oldid).html(getApplicationVersionBody(newid, "ap", newtitle, newsummary, ''));
 
@@ -184,7 +184,7 @@ var applicationversionDropOptions = {
    });
   }
  };
- 
+
 
 function avMouseOverLink(val)
 {
@@ -237,7 +237,7 @@ function avFindWindowWithNoOutput(winid)
    }
   }
  });
- 
+
  return swd;
 }
 
@@ -256,7 +256,7 @@ function avStopDrag()
  // Get the old end points and connections
  var fromlist = [];
  var tolist = [];
- 
+
  if (oldid>0 && newid>0) {
   // replacing existing component
   var p = avPlumb.getConnections({source: "startwindow"},true);
@@ -282,7 +282,7 @@ function avStopDrag()
     }
    }
   });
-  
+
   var p = avPlumb.getConnections({source: "window"+oldid},true);
   for (var i=0;i<p.length;i++) {
    console.log("TO: #"+p[i].targetId);
@@ -339,7 +339,7 @@ function SetUpApplicationVersions()
    start : avStartDrag,
    stop : avStopDrag
   });
- 
+
   $("#innerappver").droppable({
   accept : AcceptList,
   // activeClass : "ui-state-highlight",
@@ -347,7 +347,7 @@ function SetUpApplicationVersions()
   {
    if (DontSave)
     return;
-   
+
    var tx = (event.pageX) % 20;
    var ty = (event.pageY) % 20;
    if (tx>10) tx=-(20-tx);
@@ -356,15 +356,15 @@ function SetUpApplicationVersions()
    // var ypos = (event.pageY - ty) - 20;
    console.log("compitem.scrolltop="+$("#compitem").scrollTop());
    var ypos = ((event.pageY) - 124); // - ty) - (ui.offset.top - ui.position.top )) + $("#compitem").scrollTop() - 90;
-   
-   var windowid = ui.draggable.attr("id");  
-   
+
+   var windowid = ui.draggable.attr("id");
+
    if ($.inArray("window" + windowid,usedApplicationVersions) >= 0)
    {
     alert(ui.draggable.text() + " is already defined to the Application Version");
     return;
    }
-     
+
    usedApplicationVersions.push("window" + windowid);;
    $("#innerappver").append(getApplicationVersionMarkup(windowid, "ap", ui.draggable.text(), ui.draggable.attr("summary"), xpos, ypos, ''));
    $("#window"+windowid).dblclick(function() {
@@ -379,7 +379,7 @@ function SetUpApplicationVersions()
      $(this).removeClass("ui-state-highlight");
     }
    );
-   
+
    avPlumb.draggable(avPlumb.getSelector(".applicationbox"), {
     grid : [ 20, 20 ],
     containment: '#innerappver',
@@ -389,7 +389,7 @@ function SetUpApplicationVersions()
    try {
    $('#window'+windowid).dmContextMenu(menuContextApplicationVersion, {theme:'xp'});
    } catch(e) { console.log(e); }
-   
+
    // apps have connectors between the components to indicate deployment order
    avPlumb.addEndpoint("window"+windowid, targetEndpoint, {
     anchor : "TopCenter",
@@ -399,7 +399,7 @@ function SetUpApplicationVersions()
     anchor : "BottomCenter",
     uuid : "window"+windowid+"out"
    });
-   
+
    $.getJSON("UpdateAttrs","f=acvm&isRelease=y&c="+windowid+"&a=" + objid + "&xpos="+xpos+"&ypos="+ypos,
        function(data){
     // Updated DB - safe to add link
@@ -411,14 +411,14 @@ function SetUpApplicationVersions()
      // The connect call will fire the new connection binding which will update the DB
      var connection = avPlumb.connect({uuids:[swd.fuuid, "window"+windowid+"in"], editable:true});
     }
-   });   
+   });
   }
  });
 }
 
 function LoadApplicationVersions()
 {
- CreateTree_Selection("#applicationversionlist","applications",false,"mainframe3");  
+ CreateTree_Selection("#applicationversionlist","applications",false,"mainframe3");
  SetUpApplicationVersions();
 }
 
@@ -426,7 +426,7 @@ function LoadApplicationVersions()
 function LoadApplicationVersionItems()
 {
  var InitialLoad = true;
- 
+
  avPlumb.importDefaults({
   // default drag options
   DragOptions : {
@@ -434,16 +434,16 @@ function LoadApplicationVersionItems()
    zIndex : 2000
   }
  });
- 
+
  avPlumb.bind("contextmenu", function(component, originalEvent) {
         originalEvent.preventDefault();
         return false;
     });
-  
- var menu2 = function(m,t){ 
+
+ var menu2 = function(m,t){
   if (DontSave)
    return;
-  
+
   console.log("in menu2 (contextmenu activated)");
   if (!OverLink)
   {
@@ -454,14 +454,14 @@ function LoadApplicationVersionItems()
   ma.push({'Delete this Connection': {icon:"images/delete.png",onclick:function(menuItem,menu){avMenuDeleteConnector(LastLink);} }});
   return ma;
   };
- 
+
  console.log("Binding default context menu");
- 
+
  try {
  $("#innerappver").dmContextMenu(menu2, {theme:'xp'});
  } catch(e) { console.log(e); }
- 
- 
+
+
  avPlumb.bind("jsPlumbConnection", function(connInfo, originalEvent) {
   console.log("jsPlumbConnection fired - about to call init");
   initApplicationVersion(connInfo.connection);
@@ -475,18 +475,18 @@ function LoadApplicationVersionItems()
   var fn;
   var tn;
   if (FromUUID.indexOf("out")>0) {
-   fn = connInfo.connection.sourceId.replace("window",""); 
-   tn = connInfo.connection.targetId.replace("window",""); 
+   fn = connInfo.connection.sourceId.replace("window","");
+   tn = connInfo.connection.targetId.replace("window","");
   } else {
-   tn = connInfo.connection.sourceId.replace("window",""); 
-   fn = connInfo.connection.targetId.replace("window",""); 
+   tn = connInfo.connection.sourceId.replace("window","");
+   fn = connInfo.connection.targetId.replace("window","");
   }
-  
+
   if (fn == "start") fn=0;
   if (tn == "start") tn=0;
-  
+
   console.log("fn="+fn+" tn="+tn);
-  
+
   if (InitialLoad == false)
   {
    console.log("Updating DB with appid=" + objid + " fn="+fn+" tn="+tn);
@@ -497,7 +497,7 @@ function LoadApplicationVersionItems()
   }
 
  });
- 
+
  avPlumb.bind("connectionDetached", function(connInfo, originalEvent) {
   console.log("DETACHED! connInfo.connection.id = " + connInfo.connection.id);
   avDeleteConnector(connInfo.connection);
@@ -506,16 +506,16 @@ function LoadApplicationVersionItems()
  var MaxWinID=0;
  var s="";
  s="appid=" + objid + "&isRelease=y";
- 
- 
+
+
  $.getJSON('GetComponentLayout',s,function(data){
 	 console.log("data is");
 	 console.log(data);
-  
+
   // Start Window
   yo = 140;
   var w = Math.floor($("#innerappver").width()/2)-63;
-  
+
   $("#innerappver").append( "<div class=\"startcomponent\" id=\"startwindow\" " +
     "style=\"position: absolute; top: 10px; left: " + w + "px \">" +
     "<span style=\"position:relative; top:5px\"><img src=\"css/images/go_16x.png\" style=\"padding-right:5px\">Start</div>");
@@ -524,7 +524,7 @@ function LoadApplicationVersionItems()
    anchor : "BottomCenter",
    uuid : "startwindowout"
   });
-  
+
   //
   // insert the components
   //
@@ -533,9 +533,9 @@ function LoadApplicationVersionItems()
   {
    WindowID = parseInt(data.Nodes[a].nodeid);
    if (WindowID > MaxWinID) MaxWinID = WindowID;
-   
+
    usedApplicationVersions.push("window" + WindowID);
-   
+
    console.log("data.Nodes["+a+"]");
    console.log(data.Nodes[a]);
    console.log("prefix="+data.Nodes[a].prefix);
@@ -556,7 +556,7 @@ function LoadApplicationVersionItems()
      $(this).removeClass("ui-state-highlight");
     }
    );
-   
+
    avPlumb.addEndpoint("window"+WindowID, targetEndpoint, {
     anchor : "TopCenter",
     uuid : "window"+WindowID+"in"
@@ -565,7 +565,7 @@ function LoadApplicationVersionItems()
     anchor : "BottomCenter",
     uuid : "window"+WindowID+"out"
    });
- 
+
    console.log("Binding context menu menu1 to window #window"+WindowID);
    try {
    $("#window"+WindowID).dmContextMenu(menuContextApplicationVersion, {theme:'xp'});
@@ -586,14 +586,14 @@ function LoadApplicationVersionItems()
    console.log("data.Links["+a+"].nodeto="+data.Links[a].nodeto);
    var srcconn;
    if (data.Links[a].nodefrom == 0) {
-    srcconn = "startwindowout"; 
+    srcconn = "startwindowout";
    } else {
     srcconn = "window" + data.Links[a].nodefrom + "out";
    }
    var tgtconn = "window" + data.Links[a].nodeto + "in";
-   
+
    console.log("Connect srcconn="+srcconn+" tgtconn="+tgtconn);
-   
+
    if (avPlumb.getEndpoint(srcconn) != null && avPlumb.getEndpoint(tgtconn) != null)
    {
     var connection = avPlumb.connect({uuids:[srcconn,tgtconn], detachable:true, editable:true});
@@ -606,9 +606,9 @@ function LoadApplicationVersionItems()
    cursor: "-webkit-grab",
    stop: avWindowMoved
   });
-  
+
   InitialLoad = false;
-  
+
   if (data.readOnly) {
 	  $("#innerappver").block({ message: null });
   } else {
@@ -622,10 +622,10 @@ function LoadApplicationVersionItems()
   });
   });
  $("#innerappver").resizable({ handles: "s" });
- 
 
- 
- 
+
+
+
 }
 
 $(document).mousemove(function(event) {
@@ -637,7 +637,7 @@ function avStartMoved(event,ui)
 {
  if (DontSave)
   return;
- 
+
  console.log("Start Moved ypos="+Math.round(ui.offset.left));
  $.getJSON("UpdateAttrs","f=cswm&isRelease=y&a=" + objid + "&xpos="+Math.round(ui.offset.left),
  function(data){
@@ -652,22 +652,22 @@ function LoadApplicationVersionsData()
  usedApplicationVersions = new Array();
 
  cPlumb.reset();
- aPlumb.reset();   
+ aPlumb.reset();
  avPlumb.reset();
  cvPlumb.reset();
  cisplumb.reset();
- wfPlumb.reset();  
- 
+ wfPlumb.reset();
+
  $("#innerversions").html("");
  $("#innercomp").html("");
  $("#innerappver").html("");
  $("#inneritem").html("");
  $("innerworkflow").html("");
  $("#innercompversions").html("");
- 
- 
+
+
  console.log("LoadApplicationVersions");
- 
+
  if ($("#applicationversionlist").hasClass("ui-accordion"))
  {
    $("#applicationversionlist").accordion('destroy');
@@ -678,9 +678,9 @@ function LoadApplicationVersionsData()
  $("#tabs-PackageApplications-data").show();
  $("#innerappver").show();
  $("#tabs-PackageApplications-data > div > div.accordionpanel").show();
- 
+
  LoadApplicationVersions();
  console.log("LoadApplicationVersionItems");
- LoadApplicationVersionItems(); 
+ LoadApplicationVersionItems();
  DontSave = 0;
 }

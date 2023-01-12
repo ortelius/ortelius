@@ -35,7 +35,7 @@ import dmadmin.model.Component;
  */
 public class GetCompVersionLayout extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -43,7 +43,7 @@ public class GetCompVersionLayout extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
@@ -54,9 +54,9 @@ public class GetCompVersionLayout extends HttpServletBase {
 		PrintWriter out = response.getWriter();
 		Component comp = session.getComponent(compid,true);
 		boolean bReadOnly = !comp.isUpdatable();
-		
+
 		List <Component> compvers = session.getComponentVersions(comp);
-		
+
 		JSONArray arr1 = new JSONArray();
 		for(Component c: compvers) {
 			JSONObject vobj = new JSONObject();

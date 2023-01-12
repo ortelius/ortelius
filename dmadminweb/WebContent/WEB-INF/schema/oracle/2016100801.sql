@@ -26,7 +26,7 @@ ALTER TABLE dm.dm_buildhistory add commit varchar2(256);
 
 CREATE TABLE dm.dm_defecthistory(
 datasourceid	integer NOT NULL,
-timestamp		integer NOT NULL, 
+timestamp		integer NOT NULL,
 appid			integer,
 compid			integer,
 open			integer NOT NULL,

@@ -36,7 +36,7 @@ import dmadmin.model.Domain;
  */
 public class GetNewID extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -44,7 +44,7 @@ public class GetNewID extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     @SuppressWarnings("unused")
 	@Override
     public void handleRequest(DMSession session, boolean isPost,
@@ -55,16 +55,16 @@ public class GetNewID extends HttpServletBase {
     	response.setContentType("application/json;charset=UTF-8");
 		PrintWriter out = response.getWriter();
 		String objtype = request.getParameter("objtype");
-		
+
 		System.out.println("objtype=["+objtype+"]");
-		
+
 		int xpos = ServletUtils.getIntParameter(request, "xpos", -1);
 		int ypos = ServletUtils.getIntParameter(request, "ypos", -1);
 		String catstring = request.getParameter("catid");
 		String kindstring = request.getParameter("kindid");
 		int catid = (catstring != null)?Integer.parseInt(catstring):0;
 		int kindid = (kindstring != null)?Integer.parseInt(kindstring):0;
-		
+
 		String rt = objtype;
 		int parid = ServletUtils.getIntParameter(request, "pid");
 		String ptype = request.getParameter("ptype");
@@ -72,7 +72,7 @@ public class GetNewID extends HttpServletBase {
 		String newname = request.getParameter("name");
 		String treeid = request.getParameter("treeid");
 		int domainid=0;
-		
+
 		if (ptype.equalsIgnoreCase("domain") || ptype.equalsIgnoreCase("lifecycle"))
 		{
 			// If we are creating a sub-domain in a lifecycle, display a lifecycle node
@@ -90,16 +90,16 @@ public class GetNewID extends HttpServletBase {
 		}
 		System.out.println("getting newid");
 		newid = session.getID(objtype);
-		
+
 		System.out.println("got newid="+newid);
-		
+
 		if (newname == null || newname.length() == 0 || newname.equalsIgnoreCase("undefined"))
 		 newname=objtype+newid;
-		
+
 		ObjectTypeAndId otid = null;
 		String id = null;
 		JSONObject obj = null;
-  
+
 		if (objtype.equalsIgnoreCase("action"))
 		{
 			String actiontype=request.getParameter("at");
@@ -108,9 +108,9 @@ public class GetNewID extends HttpServletBase {
 			} else if (actiontype.equalsIgnoreCase("P")) {
 				rt = "PROCEDURE";
 			}
-			
+
 			if (newname.indexOf(' ')>=0) {
-				obj = new JSONObject().add("result", false).add("error", rt.substring(0,1)+rt.substring(1).toLowerCase()+" name cannot include spaces");	  
+				obj = new JSONObject().add("result", false).add("error", rt.substring(0,1)+rt.substring(1).toLowerCase()+" name cannot include spaces");
 				out.println(obj.getJSON());
 				System.out.println(obj.getJSON());
 				session.rollback();
@@ -118,14 +118,14 @@ public class GetNewID extends HttpServletBase {
 			}
 			String testname = newname.replaceAll("[0-9A-Za-z_]","");
 			if (testname.length()>0) {
-				obj = new JSONObject().add("result", false).add("error", rt.substring(0,1)+rt.substring(1).toLowerCase()+" name can only include alpha-numeric characters or underscores");	  
+				obj = new JSONObject().add("result", false).add("error", rt.substring(0,1)+rt.substring(1).toLowerCase()+" name can only include alpha-numeric characters or underscores");
 				out.println(obj.getJSON());
 				System.out.println(obj.getJSON());
 				session.rollback();
 				return;
 			}
 			if (newname.charAt(0)>='0' && newname.charAt(0)<='9') {
-				obj = new JSONObject().add("result", false).add("error", rt.substring(0,1)+rt.substring(1).toLowerCase()+" name cannot start with a digit");	  
+				obj = new JSONObject().add("result", false).add("error", rt.substring(0,1)+rt.substring(1).toLowerCase()+" name cannot start with a digit");
 				out.println(obj.getJSON());
 				System.out.println(obj.getJSON());
 				session.rollback();
@@ -135,7 +135,7 @@ public class GetNewID extends HttpServletBase {
 				otid = session.CreateNewAction(actiontype,newname,domainid,parid,newid);
 				session.addToCategory(catid,otid,true);	// action_category
 			} catch(RuntimeException ex) {
-				 obj = new JSONObject().add("result", false).add("error", ex.getMessage());	  
+				 obj = new JSONObject().add("result", false).add("error", ex.getMessage());
 				 out.println(obj.getJSON());
 				 System.out.println(obj.getJSON());
 				 session.rollback();
@@ -144,7 +144,7 @@ public class GetNewID extends HttpServletBase {
 			System.out.println("GetNewID, action created - otid="+otid.toString());
 			id = otid.toString();
 			if (kindid>0) id=id+"-"+kindid;
-			System.out.println("id="+id); 
+			System.out.println("id="+id);
 		}
 		else
 		{
@@ -162,7 +162,7 @@ public class GetNewID extends HttpServletBase {
 					 session.addToCategory(catid,otid,true);
 				 }
 			 } catch(RuntimeException ex) {
-				 obj = new JSONObject().add("result", false).add("error", ex.getMessage());	  
+				 obj = new JSONObject().add("result", false).add("error", ex.getMessage());
 				 out.println(obj.getJSON());
 				 System.out.println(obj.getJSON());
 				 session.rollback();
@@ -171,29 +171,29 @@ public class GetNewID extends HttpServletBase {
 		 }
 		 else
 		 {
-		   obj = new JSONObject().add("result", false).add("error", msg);	  
+		   obj = new JSONObject().add("result", false).add("error", msg);
 		   out.println(obj.getJSON());
 		   System.out.println(obj.getJSON());
 		   session.rollback();
 		   return;
 		 }
 		}
-		
+
 		System.out.println("here rt="+rt);
-		
+
 		if (rt.equalsIgnoreCase("type"))
 		 rt = "SERVERCOMPTYPE";
-		
+
 		if(otid != null) {
 		 DMObject dmobj = session.getObject(otid.getObjectType(), otid.getId());
-		 
+
 		 if (dmobj instanceof Domain)
 		 {
 		  String taskname = "Deploy Version to an Environment";
     int tid = session.getID("task");
 		  session.CreateNewTask(taskname,"Deploy",dmobj.getId(),tid);
 		 }
-		 
+
 			obj = new JSONObject().add("result", true).add("name", newname).add("id", id).add("rt", rt);
 			// Components (and Component Versions), Actions, Procedures and Functions are in
 			// Categories. Need to send the category back to the client so that it can display it in
@@ -233,7 +233,7 @@ public class GetNewID extends HttpServletBase {
 		}
 		out.println(obj.getJSON());
 		System.out.println(obj.getJSON());
-		
+
 		//out.print("{\"name\" : \"" + newname + "\", \"id\" : \"" + newid + "\", \"rt\" : \""+rt+"\"}");
    	}
 }

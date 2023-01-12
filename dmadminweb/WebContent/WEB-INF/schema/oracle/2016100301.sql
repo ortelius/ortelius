@@ -3,7 +3,7 @@ id integer,
 name varchar2(2048),
 domainid integer,
 ownerid integer,
-ogrpid integer, 
+ogrpid integer,
 defid integer,
 summary varchar2(256),
 credid integer,
@@ -43,7 +43,7 @@ CREATE TABLE dm_buildengineaccess
 
 CREATE TABLE dm_buildengineprops
 (
-  builderid integer NOT NULL, 
+  builderid integer NOT NULL,
   name varchar2(256) NOT NULL,
   value varchar2(2048),
   encrypted char(1),

@@ -76,7 +76,7 @@ public class EngineEvent extends HttpServlet
    session = request.getSession();
    session.setAttribute("session", so);
    so.checkConnection(request.getServletContext());
-   
+
    String keys = request.getParameter("getkeys");
    String clientid = request.getParameter("clientid");
    String hostname = request.getParameter("hostname");
@@ -114,7 +114,7 @@ public class EngineEvent extends HttpServlet
 
        if (keys != null)
        {
-        out.println(so.getCryptKeys(clientid));      
+        out.println(so.getCryptKeys(clientid));
        }
        else
        {
@@ -128,7 +128,7 @@ public class EngineEvent extends HttpServlet
           Thread.sleep(500);
           sleepcnt++;
          }
-         
+
          if (sleepcnt > 60)
           break;
         }
@@ -138,7 +138,7 @@ public class EngineEvent extends HttpServlet
         if (sleepcnt > 60)
         {
          ret.add("error", "Y");
-         ret.add("message", "timeout");         
+         ret.add("message", "timeout");
         }
         else
         {

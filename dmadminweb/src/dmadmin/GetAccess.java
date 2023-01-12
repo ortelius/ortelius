@@ -39,7 +39,7 @@ import dmadmin.model.UserGroup;
  */
 public class GetAccess extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -47,7 +47,7 @@ public class GetAccess extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
 	public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
    		throws ServletException, IOException
@@ -59,7 +59,7 @@ public class GetAccess extends HttpServletBase {
 		if(objtype == null) {
 			throw new RuntimeException("Invalid object type " + ot);
 		}
-		
+
 		if (!isPost) {
 			// GET - set session objects and redirect to JSP
 			DMObject obj = session.getObject(objtype, id);
@@ -80,14 +80,14 @@ public class GetAccess extends HttpServletBase {
 			String uaid;
 			String raid;
 			String waid;
-			
-			
+
+
 			Hashtable<Integer, ObjectAccess> acl;
 			int domainid = (objtype == ObjectType.DOMAIN)?id:obj.getDomainId();
-			
+
 			String readtitle=null;
 			String writetitle=null;
-			
+
 			if (din != null && din.equalsIgnoreCase("y")) {
 				// Domain Inheritance
 				System.out.println("getAccessForDomain "+obj.getId());
@@ -111,25 +111,25 @@ public class GetAccess extends HttpServletBase {
 					writetitle=obj.getWriteTitle();
 				}
 			}
-		
+
 			// TODO: Check that we have access to the object
-			
+
 			List<UserGroup> grouplist = session.getGroupsForDomain(domainid);
 			List<UserGroup> viewlist = new ArrayList<UserGroup>();
 			List<UserGroup> updatelist = new ArrayList<UserGroup>();
 			List<UserGroup> readlist = new ArrayList<UserGroup>();
 			List<UserGroup> writelist = new ArrayList<UserGroup>();
-			
+
 			List<UserGroup> inviewlist = new ArrayList<UserGroup>();
 			List<UserGroup> inupdatelist = new ArrayList<UserGroup>();
 			List<UserGroup> inreadlist = new ArrayList<UserGroup>();
 			List<UserGroup> inwritelist = new ArrayList<UserGroup>();
-			
+
 			List<UserGroup> denyviewlist = new ArrayList<UserGroup>();
 			List<UserGroup> denyupdatelist = new ArrayList<UserGroup>();
 			List<UserGroup> denyreadlist = new ArrayList<UserGroup>();
 			List<UserGroup> denywritelist = new ArrayList<UserGroup>();
-			
+
 			Enumeration<Integer> enumKey = acl.keys();
 			while (enumKey.hasMoreElements()) {
 			    Integer groupid = enumKey.nextElement();
@@ -138,7 +138,7 @@ public class GetAccess extends HttpServletBase {
 			    if(group == null) {
 			    	continue;
 			    }
-			    
+
 			    // Update Access
 			    if (oa.isUpdatable()) {
 			    	if (oa.isUpdateInherited()) {
@@ -151,7 +151,7 @@ public class GetAccess extends HttpServletBase {
 			    	inupdatelist.add(group);
 			    	denyupdatelist.add(group);
 			    }
-			    
+
 			    // View Access
 			    if (oa.isViewable()) {
 			    	if (oa.isViewInherited()) {
@@ -159,12 +159,12 @@ public class GetAccess extends HttpServletBase {
 			    	} else {
 			    		viewlist.add(group);
 			    	}
-			    } 
+			    }
 		    	if (oa.isViewDenied() && !oa.isViewInherited()) {
 		    		inviewlist.add(group);
 		    		denyviewlist.add(group);
 		    	}
-		    	
+
 		    	// Write Access
 			    if (oa.isWriteable()) {
 			    	if (oa.isWriteInherited()) {
@@ -180,7 +180,7 @@ public class GetAccess extends HttpServletBase {
 			    	inwritelist.add(group);
 			    	denywritelist.add(group);
 			    }
-			    
+
 			    // Read Access
 			    if (oa.isReadable()) {
 			    	if (oa.isReadInherited()) {
@@ -194,7 +194,7 @@ public class GetAccess extends HttpServletBase {
 			   		denyreadlist.add(group);
 			   	}
 			}
-						
+
 			request.setAttribute("obj", obj);
 			request.setAttribute("grouplist",grouplist);
 			request.setAttribute("viewlist",viewlist);
@@ -209,7 +209,7 @@ public class GetAccess extends HttpServletBase {
 			request.setAttribute("denyupdatelist",denyupdatelist);
 			request.setAttribute("denyreadlist",denyreadlist);
 			request.setAttribute("denywritelist",denywritelist);
-			request.setAttribute("readtitle",readtitle);	
+			request.setAttribute("readtitle",readtitle);
 			request.setAttribute("writetitle",writetitle);
 			request.setAttribute("din",din);
 			request.setAttribute("agid",agid);
@@ -219,13 +219,13 @@ public class GetAccess extends HttpServletBase {
 			request.setAttribute("waid",waid);
 			request.setAttribute("em",updatable);
 	        request.getRequestDispatcher("/WEB-INF/GetAccess.jsp").forward(request, response);
-			
+
 		} else {
 			// POST - Ajax update call from JSP
 			response.setContentType("application/json");
-			
+
 			PrintWriter out = response.getWriter();
-			
+
 			String f = request.getParameter("f");
 			int gid = ServletUtils.getIntParameter(request, "gid");
 			String st = request.getParameter("st");
@@ -239,13 +239,13 @@ public class GetAccess extends HttpServletBase {
 			// t is one of:
 			// "va" (View Access) or "ua" (Update Access) (for the admin interface)
 			//
-			// "ra" (Read Access), "wa" (Write Access) (for the deployment engine) 
+			// "ra" (Read Access), "wa" (Write Access) (for the deployment engine)
 			//
 			if (f.equalsIgnoreCase("ag")) {
 				boolean added;
 				// Adding a group
 				added = session.AddAccess(obj,t,gid,st,DomainInheritance);
-				
+
 				System.out.println("added returned "+(added?"true":"false"));
 				out.println("{\"added\": \"" + (added?"Y":"N") + "\"}");
 			}
@@ -262,6 +262,6 @@ public class GetAccess extends HttpServletBase {
 				out.println("{\"success\": \"Y\"}");
 			}
 		}
-		
+
    	}
 }

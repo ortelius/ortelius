@@ -30,12 +30,12 @@ public class Datasource
 	{
 		super(sess, id, name);
 	}
-	
+
 	@Override
 	public ObjectType getObjectType() {
 		return ObjectType.DATASOURCE;
 	}
-	
+
 	@Override
 	public String getDatabaseTable() {
 		return "dm_datasource";

@@ -29,35 +29,35 @@ import dmadmin.json.LinkField;
 public class Repository extends ProviderObject
 {
 	private static final long serialVersionUID = -1569186922421732870L;
- 
+
 	public Repository(DMSession sess, int id, String name)
 	{
 		super(sess, id, name);
 	}
-	
+
 	public Repository(DMSession sess, int id, String name, int domainid)
 	{
 		super(sess, id, name);
 		this.setDomainId(domainid);
 	}
-	
+
  public String toString()
  {
   Domain d = m_session.getDomain(this.getDomainId());
   String name = m_name;
-  if (d!=null) 
+  if (d!=null)
   {
    String fd = d.getFullDomain();
    if (fd.length()>0) name = fd+"."+m_name;
   }
   return name;
  }
- 
+
 	@Override
 	public ObjectType getObjectType() {
 		return ObjectType.REPOSITORY;
 	}
-	
+
 	@Override
 	public String getDatabaseTable() {
 		return "dm_repository";
@@ -82,7 +82,7 @@ public class Repository extends ProviderObject
 	public String getWriteTitle() {
 		return "Check-in Access";
 	}
-	
+
 	public class TextPattern
 		implements IJSONSerializable
 	{
@@ -90,19 +90,19 @@ public class Repository extends ProviderObject
 		private String m_pattern;
 		private boolean m_isText;
 		private String m_key;
-		
+
 		public TextPattern(String path, String pattern, boolean isText, String key) {
 			m_path = path;
 			m_pattern = pattern;
 			m_isText = isText;
 			m_key = key;
 		}
-		
+
 		public String getKey()
 		{
 			return m_key;
 		}
-		
+
 		public TextPattern(String path, String pattern, boolean isText)
 		{
 			this(path, pattern, isText, "");
@@ -118,7 +118,7 @@ public class Repository extends ProviderObject
 				.add(new JSONBoolean(false))	// deleted
 				.add(m_path)
 				.add(m_pattern)
-				.add(m_isText);		
+				.add(m_isText);
 		}
 
 		@Override
@@ -126,15 +126,15 @@ public class Repository extends ProviderObject
 			return toJSONArray().toString();
 		}
 	}
-	
+
 	public List<TextPattern> getTextPatterns() {
 		return m_session.getRepositoryTextPatterns(this);
 	}
-	
+
 	public boolean updateTextPatterns(ACDChangeSet<TextPattern> changes) {
 		return m_session.updateRepositoryTextPatterns(this, changes);
 	}
-	
+
 	public IJSONSerializable getLinkJSON() {
 		if (getDomainId()==0 && getId()>0) {
 		 // Repository not fully configured

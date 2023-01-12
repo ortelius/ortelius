@@ -40,7 +40,7 @@ import dmadmin.model.TreeObject;
  */
 public class SubDomains extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -48,28 +48,28 @@ public class SubDomains extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
-    
+
+
     @Override
 	public void handleRequest(DMSession session, boolean isPost,
 			HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
 	{
     	int domainid = ServletUtils.getIntParameter(request, "domainid");
-    	
+
     	String sds = request.getParameter("ds");
     	boolean ds = (sds != null && sds.equalsIgnoreCase("y"));
    		List<TreeObject> subdomains = session.getDomains(domainid);
    		PrintWriter out = response.getWriter();
    		JSONArray list = new JSONArray();
-   		
+
    		for (int i=0;i<subdomains.size();i++) {
    			TreeObject sub = subdomains.get(i);
-   			
-   			
+
+
    			if (!session.ValidDomain(sub.getId(),true))
    			 continue;
-   			
+
    			JSONObject o = new JSONObject();
    			o.add("id", sub.getId());
    			o.add("name",sub.getName());
@@ -139,8 +139,8 @@ public class SubDomains extends HttpServletBase {
    			}
    			list.add(o);
    		}
-   		
+
    		out.println(list.toString());
-   		
+
 	}
 }

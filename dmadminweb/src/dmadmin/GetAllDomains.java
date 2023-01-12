@@ -35,7 +35,7 @@ import dmadmin.model.TreeObject;
  */
 public class GetAllDomains extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -43,21 +43,21 @@ public class GetAllDomains extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
-    
+
+
     @Override
 	public void handleRequest(DMSession session, boolean isPost,
 			HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
-	{ 		
+	{
    		PrintWriter out = response.getWriter();
    		ArrayList<JSONObject> list = new ArrayList<JSONObject>();
-  
+
    		RecurseDomains(session,list,"",0);
    		String jsonStr =  list.toString();
    		out.println(jsonStr);
 	}
- 
+
  void RecurseDomains(DMSession session, ArrayList<JSONObject> list,String Parent, int id)
  {
   List<TreeObject> subdomains = session.getDomains(id);
@@ -69,7 +69,7 @@ public class GetAllDomains extends HttpServletBase {
    domain.add("name", newParent);
    domain.add("id", sub.getId());
    domain.add("type", "do");
-   
+
    list.add(domain);
    newParent += ".";
    RecurseDomains(session,list,newParent,sub.getId());

@@ -47,4 +47,3 @@ insert into dm.dm_action_categories select id, 4 from dm.dm_action where id not 
 insert into dm.dm_fragment_categories select id, 4 from dm.dm_fragments where categoryid is NULL;
 
 insert into dm.dm_component_categories select id, 10 from dm.dm_component;
-

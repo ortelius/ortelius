@@ -37,7 +37,7 @@ function SetupWizard()
  SetupCompName = "";
  SetupBuildEngineName = "";
  SetupBuildJobName = "";
- var td = ""; 
+ var td = "";
 
  tdedit3 = "<form id=\"summform\">";
  tdedit3 += "<div id=\"setuppage1\">";
@@ -178,14 +178,14 @@ function SetupWizard()
  tdedit3 += "<td style=\"padding-top:2px;padding-bottom:2px;\"><select id=\"setuptype_val\" name=\"setuptype_val\"></td>";
  tdedit3 += "<td><input type=\"hidden\" name=\"setuptype_field\" value=\"301\"/></td>";
  tdedit3 += "</tr>";
- 
+
  tdedit3 += "<tr><td colspan=\"3\">";
  tdedit3 += "Enter the username and password needed to access the repository. If the repository type is ";
  tdedit3 += "<I>filesystem</I> you may leave these fields blank. If you enter a username and password a ";
  tdedit3 += "<I>credential</I> is created automatically and linked to the repository to allow it to be ";
  tdedit3 += "accessed.";
  tdedit3 += "</td></tr>";
- 
+
  tdedit3 += "<tr id=\"repousernameenc_row\">";
  tdedit3 += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">User Name:</td>";
  tdedit3 += "<td><input name=\"repousernameenc_val\" style='width:24em' type=\"text\" value=\"\"/></td>";
@@ -198,7 +198,7 @@ function SetupWizard()
  tdedit3 += "<td><input type=\"hidden\" name=\"repopasswordenc_field\"  value=\"803\"/></td>";
  tdedit3 += "</tr>";
  tdedit3 += "</table></div>";
- 
+
  tdedit3 += "<div id=\"setuppage16\" style=\"display:none\">"
  tdedit3 += "<img src=\"css/images/dhlogo.png\"><BR><HR>";
  tdedit3 += "<B>Page 5 of 8 - Enter the Repository Attributes</B><BR>";
@@ -227,19 +227,19 @@ function SetupWizard()
  tdedit3 += "<td><input name=\"envname_val\" style='width:24em' type=\"text\" value=\"\"/></td>";
  tdedit3 += "<td><input type=\"hidden\" name=\"envname_field\" value=\"1\"/></td>";
  tdedit3 += "</tr>";
- 
+
  tdedit3 += "<tr>";
  tdedit3 += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">*Endpoint Name:</td>";
  tdedit3 += "<td><input name=\"servername_val\" style='width:24em' type=\"text\" value=\"\"/></td>";
  tdedit3 += "<td><input type=\"hidden\" name=\"servername_field\" value=\"1\"/></td>";
  tdedit3 += "</tr>";
- 
+
  tdedit3 += "<tr><td colspan=\"3\">";
  tdedit3 += "Enter the <I>Hostname</I> for this End-Point. This is the name of the host that DeployHub ";
  tdedit3 += "can use to connect to the End-Point (either via local hosts file or DNS). You can put an ";
  tdedit3 += "IP Address in here if the hostname cannot be resolved from DeployHub.";
  tdedit3 += "</td></tr>";
- 
+
  tdedit3 += "<tr>";
  tdedit3 += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">*Hostname:</td>";
  tdedit3 += "<td><input name=\"hostname_val\" style='width:24em' type=\"text\" value=\"\"/></td>";
@@ -261,7 +261,7 @@ function SetupWizard()
  tdedit3 += "<td><input type=\"hidden\" name=\"serverpasswordenc_field\" value=\"803\"/></td>";
  tdedit3 += "</tr>";
  tdedit3 += "</table></div>";
- 
+
  tdedit3 += "<div id=\"setuppage18\" style=\"display:none\">"
  tdedit3 += "<img src=\"css/images/dhlogo.png\"><BR><HR>";
  tdedit3 += "<B>Page 7 of 8 - Endpoint (part 2)</B><BR>";
@@ -279,7 +279,7 @@ function SetupWizard()
  tdedit3 += "</td>";
  tdedit3 += "<td><input type=\"hidden\" name=\"servertype_field\" value=\"201\"/></td>";
  tdedit3 += "</tr>";
- 
+
  tdedit3 += "<tr>";
  tdedit3 += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">Protocol:</td>";
  tdedit3 += "<td style=\"padding-top:2px;padding-bottom:2px;\"><select name=\"protocol_val\">";
@@ -288,25 +288,25 @@ function SetupWizard()
  tdedit3 += "</td>";
  tdedit3 += "<td><input type=\"hidden\" name=\"protocol_field\" value=\"203\"/></td>";
  tdedit3 += "</tr>";
- 
+
  tdedit3 += "<tr><td colspan=\"3\">";
  tdedit3 += "Enter the <I>Base Directory</I> for this End-Point. This is the directory that file(s) will be ";
  tdedit3 += "deployed into by default."
  tdedit3 += "</td></tr>";
- 
+
  tdedit3 += "<tr>";
  tdedit3 += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">*Base Directory:</td>";
  tdedit3 += "<td><input name=\"basedirectory_val\" style='width:24em' type=\"text\" value=\"\"/></td>";
  tdedit3 += "<td><input type=\"hidden\" name=\"basedirectory_field\" value=\"204\"/></td>";
  tdedit3 += "</tr>";
- 
+
  tdedit3 += "<tr><td colspan=\"3\">";
  tdedit3 += "Now select the component type(s) that this End-Point will accept. If you select a single component ";
  tdedit3 += "type, the component created in the next step will be created with this same type (to allow it to be ";
  tdedit3 += "deployed to this End-Point). If you select multiple Endpoint Types, the component created in the ";
  tdedit3 += "next step will be created with the first selected Endpoint Type.";
  tdedit3 += "</td></tr>";
- 
+
  tdedit3 += "<tr>";
  tdedit3 += "<td style=\"text-align:right;vertical-align:top;padding-right: 5px;white-space: nowrap;\">Endpoint Types:</td>";
  tdedit3 += "<td style=\"padding-top:2px;padding-bottom:2px;\"><select multiple name=\"servercomptype_val\">";
@@ -379,7 +379,7 @@ function SetupWizard()
  tdedit3 += "<tr><td>*Jenkins Project Name</td><td><input name=\"jenkinsproj2_val\" style='width:24em' type=\"text\" value=\"\"/></td></tr>";
  tdedit3 += "<tr><td>*Jenkins Output File Name</td><td><input name=\"jenkinsname2_val\" style='width:24em' type=\"text\" value=\"\"/></td></tr>";
  tdedit3 += "</table>";
- tdedit3 += "</div>"; 
+ tdedit3 += "</div>";
  // Target Server Details - Jenkins WIzard
  tdedit3 += "<div id =\"setuppage25\" style=\"display:none\">";
  tdedit3 += "<img src=\"css/images/dhlogo2.png\"><BR><HR>";
@@ -403,7 +403,7 @@ function SetupWizard()
  tdedit3 += "<option value=\"st7\">OpenVMS</option>";
  tdedit3 += "</td>";
  tdedit3 += "</tr>";
- 
+
  tdedit3 += "<tr>";
  tdedit3 += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">Protocol:</td>";
  tdedit3 += "<td style=\"padding-top:2px;padding-bottom:2px;\"><select name=\"protocol2_val\">";
@@ -411,12 +411,12 @@ function SetupWizard()
  tdedit3 += "<option value=\"win\" selected>WinRM</option>";
  tdedit3 += "</td>";
  tdedit3 += "</tr>";
- 
+
  tdedit3 += "<tr><td colspan=\"3\">";
  tdedit3 += "Enter the <I>Base Directory</I> for this End-Point. This is the directory that the build artifacts ";
  tdedit3 += "pulled from Jenkins will be placed into."
  tdedit3 += "</td></tr>";
- 
+
  tdedit3 += "<tr>";
  tdedit3 += "<td style=\"text-align:right;padding-right: 5px;white-space: nowrap;\">*Base Directory:</td>";
  tdedit3 += "<td><input name=\"basedirectory2_val\" style='width:24em' type=\"text\" value=\"\"/></td>";
@@ -436,8 +436,8 @@ function SetupWizard()
  tdedit3 += "<td><input name=\"serverpasswordenc2_val\" style='width:24em' type=\"password\" /></td>";
  tdedit3 += "</tr>";
  tdedit3 += "</table></div>";
- tdedit3 += "</div>"; 
- 
+ tdedit3 += "</div>";
+
  tdedit3 += "</form>";
  EditSetupButton();
  wtc();
@@ -457,7 +457,7 @@ function wtc()
 		$("#mp").html("8");
 		$("#p3img").attr("src","css/images/dhlogo.png");
 	}
-	
+
 }
 
 function orchecked(rc)
@@ -468,7 +468,7 @@ function orchecked(rc)
 	} else {
 		$("#cirow"+rc).hide();
 	}
-	
+
 }
 
 function ujchecked()
@@ -507,7 +507,7 @@ function EditSetupButton()
 {
  var pageno=1
  var pwd = parent.$("#modal");
- 
+
  var buttons1 = [
                  {
                 	 text : "Next",
@@ -516,7 +516,7 @@ function EditSetupButton()
                 		 pageno++;
                 		 LoadPage(pageno);
                 		 pwd.dialog("option", "buttons", buttons2);
-                		 
+
                 	 }
                  },
                  {
@@ -560,7 +560,7 @@ function EditSetupButton()
                 					 url=summform.jenkinsurl_val.value.trim();
                 					 cf=true;
                 				 }
-	                			 
+
                 			 }
                 			 if (cf) {
 		                		 if (url == "") {
@@ -593,7 +593,7 @@ function EditSetupButton()
                 						 alert(q+" is required");
                 						 return;
                 					 }
-                					 
+
                 				 }
                 			 }
                  		 }
@@ -629,7 +629,7 @@ function EditSetupButton()
                 			 pwd.dialog("option", "buttons", buttons3);
                 		 }
                 	 }
-                 }, 
+                 },
                  {
                 	 text : "Cancel",
                 	 click : function()
@@ -676,7 +676,7 @@ function EditSetupButton()
 
  pwd.empty();
  pwd.html(tdedit3);
- 
+
 
  pwd.dialog(
  {
@@ -684,7 +684,7 @@ function EditSetupButton()
   open : function(event, ui)
   {
    var myform = pwd.find("#summform");
-   
+
    if (myform.find(":input[name=\"owner_val\"]").length > 0)
    {
     $.ajax(
@@ -701,10 +701,10 @@ function EditSetupButton()
       var owner = myform.find(":input[name=\"owner_val\"]");
 
       var userid = save_owner_val;
-      
+
       if (userid == "")
        userid = myuserid;
-    
+
       for (n = 0; n < res.length; n++)
       {
        if (userid == res[n].name)
@@ -712,7 +712,7 @@ function EditSetupButton()
        else
         owner.append('<option id="owner' + n + '" value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
       }
-      
+
       $.ajax(
         {
          url : "GetGroups",
@@ -727,7 +727,7 @@ function EditSetupButton()
           var owner = myform.find(":input[name=\"groupowner_val\"]");
 
           var group = save_groupowner_val;
-       
+
           for (n = 0; n < res.length; n++)
           {
            if (group == res[n].name)
@@ -736,7 +736,7 @@ function EditSetupButton()
             owner.append('<option id="groupowner' + n + '" value=\"' + res[n].type + res[n].id + "\">" + res[n].name + '</option>');
           }
           $("#ownertype_val").change(ToggleOwner);
-          
+
           ToggleOwner();
          },
          error : function(jqxhr, status, err)
@@ -810,8 +810,8 @@ function EditSetupButton()
       console.log(err);
      }
     });
-   } 
-   
+   }
+
 
    if (myform.find(":input[name=\"servercomptype_val\"]").length > 0)
    {
@@ -830,7 +830,7 @@ function EditSetupButton()
       {
         comptype.append('<option id="servercomptype' + n + '" value=\"' + res.data[n].id + "\">" + res.data[n].name + '</option>');
       }
-      
+
       if (cnt == 0)
        comptype.prop('selectedIndex', 0);
      },
@@ -840,16 +840,16 @@ function EditSetupButton()
       console.log(err);
      }
     });
-   } 
- 
+   }
+
    $("#setuptype_val").change(GetSetupProps);
 
    GetSetupProps();
   }
  });
- 
 
- 
+
+
  pwd.dialog("option", "title", "Quick Setup");
  pwd.dialog("option", "height", "660");
  pwd.dialog("option", "width", "600");	// fix width
@@ -858,17 +858,17 @@ function EditSetupButton()
 }
 
 function GetSetupProps()
-{ 
+{
  var pwd = parent.$("#modal");
  var myform = pwd.find("#summform");
  var setuptype = myform.find(":input[name=\"setuptype_val\"]");
  var id = setuptype.val();
- 
+
  if (id == null || id == "")
   id = "pd10";
- 
+
  id = id.substring(2);
- 
+
  $.ajax(
    {
     url : "GetPropertiesData?objtype=8&id=" + id + "&defonly=Y",
@@ -888,20 +888,20 @@ function GetSetupProps()
       var row = res.defs[a];
       if (row.name == "dsn")
        row.name = "data source name";
-      
+
       console.log("propdefs["+row.name+"].reqd="+row.reqd);
-      
+
       propdefs[row.name] =
       {
        "append" : row.append,
        "reqd" : row.reqd,
        "used" : false
       };
-     
+
        var req = "";
        if (row.reqd)
         req = "*";
-        
+
        console.log("idpropval_"+row.name);
        if (row.append)
         td1 += "<tr><td  align=\"center\" id=\"propname_" + rowcnt + "\">" + req+ row.name + "</td><td align=\"center\"><input id=\"idpropval_"+row.name+"\" name=\"propval_" + row.name + "\" /></td><td align=\"center\"><input type=\"checkbox\" name=\"propenc_"  + row.name + "\" /></td><td align=\"center\"><input onclick=\"javascript:orchecked("+rowcnt+");\" type=\"checkbox\" id=\"propoverride_"+rowcnt+"\" name=\"propoverride_" + row.name + "\" /></td><td align=\"center\"><input onclick=\"javascript:apchecked("+rowcnt+");\" type=\"checkbox\" id=\"propappend_"+rowcnt+"\" name=\"propappend_" + row.name + "\" /></td></tr>";
@@ -921,7 +921,7 @@ function GetSetupProps()
     console.log(status);
     console.log(err);
    }
-   }); 
+   });
 }
 
 function GetSetupSummaryData(instance, data, SaveType)
@@ -939,7 +939,7 @@ function GetSetupSummaryData(instance, data, SaveType)
  var view = {};
 
  view["servercomptype_val"] = "";
- 
+
  for ( var i in viewArr)
  {
   if (viewArr[i].name == "servercomptype_val")
@@ -959,7 +959,7 @@ function GetSetupSummaryData(instance, data, SaveType)
 
   console.log('change_801 = ck2');
   data['change_801' ] = 'ck2';
-  
+
   var ownertype = $("#ownertype_val");
   var owt = "User";
 
@@ -967,7 +967,7 @@ function GetSetupSummaryData(instance, data, SaveType)
    owt = ownertype.val();
 
   if (owt == "User")
-  { 
+  {
    console.log('change_' + view.owner_field + ' = ' + view.owner_val);
    data['change_' + view.owner_field] = view.owner_val;
   }
@@ -980,14 +980,14 @@ function GetSetupSummaryData(instance, data, SaveType)
   if (wt==1) {
 	  console.log('change_' + view.repousernameenc_field + ' = ' + view.repousernameenc_val);
 	  data['change_' + view.repousernameenc_field] = view.repousernameenc_val;
-	
+
 	  console.log('change_' + view.repopasswordenc_field + ' = ' + view.repopasswordenc_val);
 	  data['change_' + view.repopasswordenc_field] = view.repopasswordenc_val;
 	  ret = (view.repousernameenc_val!="" || view.repopasswordenc_val!=""); // true if either set, false otherwise
   } else {
 	  console.log('change_' + view.repousernameenc_field + ' = ' + view.repousernameenc2_val);
 	  data['change_' + view.repousernameenc_field] = view.repousernameenc2_val;
-	
+
 	  console.log('change_' + view.repopasswordenc_field + ' = ' + view.repopasswordenc2_val);
 	  data['change_' + view.repopasswordenc_field] = view.repopasswordenc2_val;
 	  ret = (view.repousernameenc2_val!="" || view.repopasswordenc2_val!=""); // true if either set, false otherwise
@@ -1014,7 +1014,7 @@ function GetSetupSummaryData(instance, data, SaveType)
   }
 
   if (owt == "User")
-  { 
+  {
    console.log('change_' + view.owner_field + ' = ' + view.owner_val);
    data['change_' + view.owner_field] = view.owner_val;
   }
@@ -1022,7 +1022,7 @@ function GetSetupSummaryData(instance, data, SaveType)
   {
    console.log('change_' + view.groupowner_field + ' = ' + view.groupowner_val);
    data['change_' + view.groupowner_field] = view.groupowner_val;
-  } 
+  }
 
   ret = true;
  }
@@ -1035,9 +1035,9 @@ function GetSetupSummaryData(instance, data, SaveType)
 
   console.log('change_801 = ck2');
   data['change_801' ] = 'ck2';
-  
+
   if (owt == "User")
-  { 
+  {
    console.log('change_' + view.owner_field + ' = ' + view.owner_val);
    data['change_' + view.owner_field] = view.owner_val;
   }
@@ -1046,23 +1046,23 @@ function GetSetupSummaryData(instance, data, SaveType)
    console.log('change_' + view.groupowner_field + ' = ' + view.groupowner_val);
    data['change_' + view.groupowner_field] = view.groupowner_val;
   }
-  
+
   if (wt==1) {
 	  console.log('change_' + view.serverusernameenc_field + ' = ' + view.serverusernameenc_val);
 	  data['change_' + view.serverusernameenc_field] = view.serverusernameenc_val;
-	  
+
 	  console.log('change_' + view.serverpasswordenc_field + ' = ' + view.serverpasswordenc_val);
 	  data['change_' + view.serverpasswordenc_field] = view.serverpasswordenc_val;
-	  
+
 	  ret = (view.serverusernameenc_val!="" || view.serverpasswordenc_val!=""); // true if either set, false otherwise
-	  
+
   } else {
 	  console.log('change_' + view.serverusernameenc_field + ' = ' + view.serverusernameenc2_val);
 	  data['change_' + view.serverusernameenc_field] = view.serverusernameenc2_val;
-	  
+
 	  console.log('change_' + view.serverpasswordenc_field + ' = ' + view.serverpasswordenc2_val);
 	  data['change_' + view.serverpasswordenc_field] = view.serverpasswordenc2_val;
-	  
+
 	  ret = (view.serverusernameenc2_val!="" || view.serverpasswordenc2_val!=""); // true if either set, false otherwise
   }
  }
@@ -1076,25 +1076,25 @@ function GetSetupSummaryData(instance, data, SaveType)
   if (wt==1) {
 	  console.log('change_' + view.servertype_field + ' = ' + view.servertype_val);
 	  data['change_' + view.servertype_field] = view.servertype_val;
-	
+
 	  console.log('change_' + view.hostname_field + ' = ' + view.hostname_val);
 	  data['change_' + view.hostname_field] = view.hostname_val;
-	
+
 	  console.log('change_' + view.protocol_field + ' = ' + view.protocol_val);
 	  data['change_' + view.protocol_field] = view.protocol_val;
-	
+
 	  console.log('change_' + view.basedirectory_field + ' = ' + view.basedirectory_val);
 	  data['change_' + view.basedirectory_field] = view.basedirectory_val;
   } else {
 	  console.log('change_' + view.servertype_field + ' = ' + view.servertype2_val);
 	  data['change_' + view.servertype_field] = view.servertype2_val;
-	
+
 	  console.log('change_' + view.hostname_field + ' = ' + view.hostname2_val);
 	  data['change_' + view.hostname_field] = view.hostname2_val;
-	
+
 	  console.log('change_' + view.protocol_field + ' = ' + view.protocol2_val);
 	  data['change_' + view.protocol_field] = view.protocol2_val;
-	
+
 	  console.log('change_' + view.basedirectory_field + ' = ' + view.basedirectory2_val);
 	  data['change_' + view.basedirectory_field] = view.basedirectory2_val;
   }
@@ -1105,12 +1105,12 @@ function GetSetupSummaryData(instance, data, SaveType)
    data['change_' + view.servercomptype_field] = view.servercomptype_val;
    ret = true;
   }
-  
+
   console.log('change_205 = ' + SetupServerCredId);
   data['change_205'] = 'cr' + SetupServerCredId;
 
   if (owt == "User")
-  { 
+  {
    console.log('change_' + view.owner_field + ' = ' + view.owner_val);
    data['change_' + view.owner_field] = view.owner_val;
   }
@@ -1118,7 +1118,7 @@ function GetSetupSummaryData(instance, data, SaveType)
   {
    console.log('change_' + view.groupowner_field + ' = ' + view.groupowner_val);
    data['change_' + view.groupowner_field] = view.groupowner_val;
-  } 
+  }
 
   ret = true;
  }
@@ -1130,7 +1130,7 @@ function GetSetupSummaryData(instance, data, SaveType)
   data['change_' + view.envname_field] = view.envname_val;
 
   if (owt == "User")
-  { 
+  {
    console.log('change_' + view.owner_field + ' = ' + view.owner_val);
    data['change_' + view.owner_field] = view.owner_val;
   }
@@ -1138,7 +1138,7 @@ function GetSetupSummaryData(instance, data, SaveType)
   {
    console.log('change_' + view.groupowner_field + ' = ' + view.groupowner_val);
    data['change_' + view.groupowner_field] = view.groupowner_val;
-  } 
+  }
  }
  else if (SaveType == "Application")
  {
@@ -1147,7 +1147,7 @@ function GetSetupSummaryData(instance, data, SaveType)
 	 console.log('change_' + view.appname_field + ' = ' + view.appname_val);
 	 data['change_' + view.appname_field] = view.appname_val;
 	 if (owt == "User")
-	 { 
+	 {
 		 console.log('change_' + view.owner_field + ' = ' + view.owner_val);
 		 data['change_' + view.owner_field] = view.owner_val;
 	 }
@@ -1170,7 +1170,7 @@ function GetSetupSummaryData(instance, data, SaveType)
 	 console.log('change_' + view.comptype_field + ' = ' + comptype);
 	 data['change_' + view.comptype_field] = comptype;
 	 if (owt == "User")
-	 { 
+	 {
 		 console.log('change_' + view.owner_field + ' = ' + view.owner_val);
 		 data['change_' + view.owner_field] = view.owner_val;
 	 }
@@ -1195,7 +1195,7 @@ function GetSetupSummaryData(instance, data, SaveType)
 	 console.log('change_' + view.betype_field + '= "pd21"');
 	 data['change_' + view.betype_field] = "pd21";
 	 if (owt == "User")
-	 { 
+	 {
 		 console.log('change_' + view.owner_field + ' = ' + view.owner_val);
 		 data['change_' + view.owner_field] = view.owner_val;
 	 }
@@ -1240,43 +1240,43 @@ function SaveSetupData(instance)
 
   if (viewArr[i].value == "off")
    viewArr[i].value = "N";
-  
+
   view[viewArr[i].name] = viewArr[i].value;
  }
 
-// Edit Checks - shouldn't be necessary since we've checked on each page next click 
+// Edit Checks - shouldn't be necessary since we've checked on each page next click
  if (wt==1) {
 	 if (view.reponame_val.trim() == "")
 	 {
 	  alert("Repository Name is required");
 	  return;
 	 }
-	 
+
 	 if (view.envname_val.trim() == "")
 	 {
 	  alert("Environment Name is required");
 	  return;
 	 }
-	 
+
 	 if (view.servername_val.trim() == "")
 	 {
 	  alert("Endpoint Name is required");
 	  return;
 	 }
-	 
+
 	 if (view.hostname_val.trim() == "")
 	 {
 	  alert("Hostname is required");
 	  return;
 	 }
-	 
+
 	 if (view.basedirectory_val.trim() == "")
 	 {
 	  alert("Base Directory is required");
 	  return;
 	 }
  }
- 
+
  $.blockUI();
  var domainid = view.domain_val;
  var domainname=$("#domain_val option:selected").text();
@@ -1295,11 +1295,11 @@ function SaveSetupData(instance)
 		 if (wt==1 && view.serverusernameenc_val=="" && view.serverpasswordenc_val=="") continue;
 		 if (wt==2 && view.serverusernameenc2_val=="" && view.serverpasswordenc2_val=="") continue;
 	 }
-	 
+
 	 var parentid=domainid;
 	 if (SaveList[k] == "BuildJob") parentid = SetupBuildEngineId;
 	 if (SaveList[k] == "Server") parentid = SetupEnvId;
-	 
+
 	 SetupNewID(SaveList[k], parentid, view);
 
 	 if (SaveList[k] == "Credentials")
@@ -1363,15 +1363,15 @@ function SaveSetupData(instance)
 				 });
 	 }
  }
- 
+
  // Add properties data for Repository
  console.log("**** adding properties for repository");
  var data =
  {
   objtype : 8,
-  id : SetupRepoId 
+  id : SetupRepoId
  };
- 
+
  if (wt==1) {
 	 for (var x in view)
 	 {
@@ -1396,7 +1396,7 @@ function SaveSetupData(instance)
 			 console.log("data["+key+"]=\""+val+"\"");
 
 			 data[key] = val;
-		 } 
+		 }
 	 }
  } else {
 	 // Jenkins - repository is http
@@ -1407,10 +1407,10 @@ function SaveSetupData(instance)
 	 data["add_server"]="NNN"+view.jenkinsurl2_val;
 	 data["add_version"]="NYN";							// Override
  }
- 
+
  console.log("**** data is:");
  console.log(data);
- 
+
  $.ajax(
    {
     url : "UpdatePropertiesData",
@@ -1422,21 +1422,21 @@ function SaveSetupData(instance)
     {
     }
    });
- 
+
  console.log("**** done adding properties for repository");
- 
+
  // Now do the same thing for Build Engine (if adding)
  if ($("#use_jenkins").is(':checked') || wt==2) {
 	 data = {
 	  objtype: 24,
 	  id: SetupBuildEngineId
 	 };
-	 
+
 	 console.log("Adding Server URL wt="+wt+" view.jenkinsurl2=["+view.jenkinsurl2_val+"]");
 	 data["add_Server URL"] = "NNN" + ((wt==1)?view.jenkinsurl_val:view.jenkinsurl2_val);
-	 
+
 	 console.log(data);
-	 
+
 	 $.ajax(
 	   {
 	    url : "UpdatePropertiesData",
@@ -1456,11 +1456,11 @@ function SaveSetupData(instance)
 	    }
 	 });
  }
- 
- 
+
+
  // Add Server to Environment
  console.log("UpdateAttrs?f=sm&e="+ SetupEnvId + "&s=" + SetupServerId + "&xpos=20&ypos=20");
- 
+
  $.ajax(
   {
    url: "UpdateAttrs?f=sm&e="+ SetupEnvId + "&s=" + SetupServerId + "&xpos=20&ypos=20",
@@ -1471,7 +1471,7 @@ function SaveSetupData(instance)
    {
    }
   });
- 
+
  // Add Component Item to Component
  $.ajax({
 	 url: "UpdateAttrs?f=inv&c="+SetupCompId+"&xpos=360&ypos=80",
@@ -1573,7 +1573,7 @@ function SaveSetupData(instance)
 		 console.log(err);
 	 }
  });
- 
+
  if (wt==2) {
 	 // Add deploy task to specified domain
 	 $.ajax({
@@ -1598,7 +1598,7 @@ function SaveSetupData(instance)
 		 }
 	 });
  }
- 
+
  var pwd = parent.$("#modal");
  pwd.empty();
  var tdedit3 = (wt==1)?"<img src=\"css/images/dhlogo.png\"><BR><HR>":"<img src=\"css/images/dhlogo2.png\"><BR><HR>";
@@ -1623,7 +1623,7 @@ function SaveSetupData(instance)
 	 tdedit3 += "a post-build step. If you wish to perform continuous deployment, set the plug-in to deploy ";
 	 tdedit3 += "application \""+SetupAppName+"\" to environment \""+SetupEnvName+"\".";
  }
- 
+
 // var SetupRepoCredName = "";
 // var SetupServerCredName = "";
  pwd.html(tdedit3);
@@ -1643,10 +1643,10 @@ function SaveSetupData(instance)
 function SetupNewID(ot, parentid, view)
 {
  var objtype = ot;
- 
+
  if (ot == "ServerCredentials")
   objtype = "Credentials";
- 
+
  var name = "";
  var ptype="Domain";
 
@@ -1656,7 +1656,7 @@ function SetupNewID(ot, parentid, view)
  else if (ot == "Repository")
   name  = view.reponame_val;
  else if (ot == "ServerCredentials")
- { 
+ {
   //if (view.reponame_val == view.servername_val)
   // view.servername_val += "_server";
   name  = view.servername_val;
@@ -1676,11 +1676,11 @@ function SetupNewID(ot, parentid, view)
 	 name = "Project "+((wt==1)?view.jenkinsproj_val:view.jenkinsproj2_val);
 	 ptype="BUILDER";
  }
- 
+
  var url = "GetNewID?objtype="+objtype+"&pid="+parentid + "&ptype="+ptype+"&at=&name="+name + "&treeid=";
 
  console.log(url);
- 
+
  $.ajax({
   url: url,
   dataType: 'json',
@@ -1723,8 +1723,4 @@ function SetupNewID(ot, parentid, view)
    }
   }
  });
-} 
-
-
-
-
+}

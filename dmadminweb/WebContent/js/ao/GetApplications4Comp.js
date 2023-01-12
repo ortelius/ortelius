@@ -23,28 +23,28 @@ function LoadApp4CompData(tablename, objtypeAsInt, objtype, objid, addParams)
  summSaveaddParams = addParams;
  var url = "";
  var servlet = "";
- 
+
  servlet = "GetComponentLayout";
  url = "compid=" + objid + "&t=a";
- 
+
  $.getJSON(servlet, url, function(res)
    {
   var td = "";
   var rowcnt = 0;
 
    data = res.data;
-   
+
    for (a = 0; a < data.length; a++)
    {
     var row = data[a];
-    
+
     console.log("row="+row);
-    
+
     if (typeof row[0].type == "undefined")
      continue;
-    
+
     var val = row[3].name;
-    if (typeof row[3].when != "undefined") 
+    if (typeof row[3].when != "undefined")
     {
     	console.log("Passing when "+row[3].when);
      var d = convertDate(row[3].when);
@@ -53,19 +53,18 @@ function LoadApp4CompData(tablename, objtypeAsInt, objtype, objid, addParams)
     } else {
     	val = "<a onClick=\"DisplayDeploy(" + row[3].id + ");\">"+val+"</a> "+row[3].tooltip;
     }
-    
+
     linkval2="<a href='javascript:SwitchDisplay(\""+row[0].type+row[0].id+"\");'>"+row[0].name+"</a>";
     linkval1="<a href='javascript:SwitchDisplay(\""+row[1].type+row[1].id+"\");'>"+row[1].name+"</a>";
-    
+
     if (objid == row[1].id)
     {
      td += "<tr><td id=\"" + row[1].type + row[1].id  +"\">" + linkval2 + "</td></tr>";
      rowcnt++;
-    } 
+    }
    }
 
   $("#" + tablename + " > tbody").html(td);
 
    });
 }
-

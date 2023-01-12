@@ -15,7 +15,7 @@ while (my $file = readdir(DIR)) {
 
 	next if ($file =~ m/^\./);
 	next unless ($file =~ m/\.dll|\.exe$/);
-		
+
 	if (-f "$file")
 	{
 	  my $bin_type = $file =~ /\.exe/ ? "1" : "2";
@@ -28,7 +28,7 @@ while (my $file = readdir(DIR)) {
 	}
 	else
 	{
-	  
+
 	}
 }
 

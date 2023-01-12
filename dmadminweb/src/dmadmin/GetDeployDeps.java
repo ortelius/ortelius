@@ -35,15 +35,15 @@ import dmadmin.model.Environment;
 public class GetDeployDeps extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public GetDeployDeps() {
         super();
     }
-    
-@Override    
+
+@Override
  public IJSONSerializable handleRequest(DMSession session, boolean isPost, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
  {
   response.setContentType("application/json");
@@ -53,24 +53,24 @@ public class GetDeployDeps extends JSONServletBase
   JSONObject data = null;
 
   String envid = request.getParameter("envid");
-  
+
   if (envid != null && appid != null)
   {
    if (envid.isEmpty() || appid.isEmpty())
-   { 
-    data = new JSONObject();   
+   {
+    data = new JSONObject();
     JSONArray nodes = new JSONArray();
     JSONArray edges = new JSONArray();
     data.add("nodes",nodes);
     data.add("edges",edges);
     return data;
    }
-   
+
    Application found = null;
    Application app = session.getApplication(new Integer(appid).intValue(), true);
    Application curr = app;
    Environment env = session.getEnvironment(new Integer(envid).intValue(), false);
-   
+
    while (curr.getParentId() > 0)
    {
     curr = session.getApplication(curr.getParentId(), true);
@@ -78,7 +78,7 @@ public class GetDeployDeps extends JSONServletBase
     {
      found = curr;
      break;
-    } 
+    }
    }
    data = session.getDiffDepsNodesEdges(app, found, env);
   }

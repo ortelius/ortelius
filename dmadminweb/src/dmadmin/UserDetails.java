@@ -37,7 +37,7 @@ import dmadmin.model.UserGroupList;
  */
 public class UserDetails extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -45,7 +45,7 @@ public class UserDetails extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     @Override
    	public void handleRequest(DMSession session, boolean isPost,
    			HttpServletRequest request, HttpServletResponse response)
@@ -73,11 +73,11 @@ public class UserDetails extends HttpServletBase {
     			out.println(jo.toString());
     		} else {
 	    		int uid = ServletUtils.getIntParameter(request,"uid");
-	
+
 	    		User user = session.getUser(uid);
 	    		UserGroupList gl1 = session.getGroupsForUser(uid);
 	    		UserGroupList gl2 = session.getGroupsNotForUser(uid);
-	
+
 	    		if (type.equalsIgnoreCase("Groups4User"))
 	    		{
 	    			JSONObject jo = new JSONObject();
@@ -130,7 +130,7 @@ public class UserDetails extends HttpServletBase {
     		{
     			// adding a user to a group
     			res = session.AddUserToGroup(gid,uid);
-    			
+
     		}
     		else
     		if (func.equalsIgnoreCase("r"))

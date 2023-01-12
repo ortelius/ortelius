@@ -288,7 +288,7 @@ NotifyProviderImpl *TxtLocalNotifyImplFactory::create(
 extern "C" TXTLOCAL_EXPORT int txtlocal_PluginStart(DM &dm)
 {
 	dm.writeToLogFile("TxtLocal plugin V" TXTLOCAL_PLUGIN_VERSION);
-	
+
 	NotifyProviderImplRegistry::instance().registerFactory("txtlocal", new TxtLocalNotifyImplFactory());
 	return 0;
 }

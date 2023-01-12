@@ -35,7 +35,7 @@ public class GetCredentials
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -49,14 +49,14 @@ public class GetCredentials
 		throws ServletException, IOException
 	{
 		List<DMObject> creds = session.getCredentials();
-		
+
 		JSONArray ret = new JSONArray();
 		for(DMObject c : creds) {
-		 
+
 			ret.add(c.getLinkJSON());
 		}
 		return ret;
 	}
-	
+
 
 }

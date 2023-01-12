@@ -79,7 +79,7 @@ int executeAndCapture(
 	char ReadBuffer[8192];
 	//NOT USED: fd_set	ReadDescriptors;
 	//NOT USED: fd_set	WriteDescriptors;
-	
+
 	debug3("ExecuteAndCapture - Enter");
 
 	signal(SIGCHLD,ChildProcessDies);
@@ -230,7 +230,7 @@ int executeAndCapture(
 				{
 					Event=1;
 					(*cd)->appendStandardOut(ReadBuffer, BytesRead);
-					
+
 					// RHT 10/04/2012 - allow DM to show progress
 					if(ShowOutput) {
 						ostr.writeBufferToStdOut(threadId, ReadBuffer, BytesRead);
@@ -257,7 +257,7 @@ int executeAndCapture(
 				{
 					// Nothing read
 					ErrNum=0;
-				} else { 
+				} else {
 					// Read genuine error code
 					Event=1;
 					ChildProgramIsRunning=false;
@@ -273,7 +273,7 @@ int executeAndCapture(
 				{
 					Event=1;
 					(*cd)->appendStandardErr(ReadBuffer, BytesRead);
-					
+
 					// RHT 10/04/2012 - allow DM to show progress
 					if(ShowOutput) {
 						ostr.writeBufferToStdErr(threadId, ReadBuffer, BytesRead);

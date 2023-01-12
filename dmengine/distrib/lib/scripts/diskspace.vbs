@@ -10,4 +10,3 @@ If WScript.Arguments.Count > 0 Then
 	Set d = fso.GetDrive(drive)
 	WScript.Echo d.FreeSpace
 End If
-

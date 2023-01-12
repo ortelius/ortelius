@@ -20,9 +20,9 @@ lineSep = java.lang.System.getProperty('line.separator')
 
 def datasource(cluster,user,password,url,env,jdbc_driver,timeOut,maxConn,minConn,reapTime,unusdTimeout,agedTimeout):
 
-# Declare global variables 
+# Declare global variables
 
-global AdminConfig 
+global AdminConfig
 global AdminControl
 
 
@@ -64,11 +64,11 @@ print "Cluster exist:"+ cluster
 print " ----------------------------------------------------------------------------------------- "
 
 
-## removing old jdbc provider and creating a new jdbc provider 
+## removing old jdbc provider and creating a new jdbc provider
 
-print " Checking for the existence of JDBC Provider :"+ name 
+print " Checking for the existence of JDBC Provider :"+ name
 
-s2 = AdminConfig.getid('/Cell:'+ cell +'/ServerCluster:'+ cluster +'/JDBCProvider:'+ name) 
+s2 = AdminConfig.getid('/Cell:'+ cell +'/ServerCluster:'+ cluster +'/JDBCProvider:'+ name)
 
 if len(s2) > 0:
 
@@ -84,11 +84,11 @@ AdminConfig.save()
 
 print " Saving Configuraion "
 
-print " ----------------------------------------------------------------------------------------- " 
+print " ----------------------------------------------------------------------------------------- "
 
 ## Creating New JDBC Provider ##
 
-print " Creating New JDBC Provider :"+ name 
+print " Creating New JDBC Provider :"+ name
 
 n1 = ["name" , name ]
 
@@ -102,25 +102,25 @@ attrs1 = [n1 , impn , desc , classpath]
 
 jdbc = AdminConfig.create('JDBCProvider' , Serverid , attrs1)
 
-print " New JDBC Provider created :"+ name 
+print " New JDBC Provider created :"+ name
 
 AdminConfig.save()
 
-print " Saving Configuraion " 
+print " Saving Configuraion "
 
 print " ----------------------------------------------------------------------------------------- "
 
-## checking for the existence of JAASAuthData and deleting ## 
+## checking for the existence of JAASAuthData and deleting ##
 
 node = AdminControl.getNode()
 
 alias1 = node +"/"+ env
 
-print " Checking for the existence of JAASAUTHDATA :"+ alias1 
+print " Checking for the existence of JAASAUTHDATA :"+ alias1
 
 jaasAuthDataList = AdminConfig.list("JAASAuthData")
 
-if len(jaasAuthDataList) == 0: 
+if len(jaasAuthDataList) == 0:
 
 print " Creating New JAASAuthData with Alias name :"+ alias1
 
@@ -148,9 +148,9 @@ print " ------------------------------------------------------------------------
 
 else :
 
-matchFound = 0 
+matchFound = 0
 
-jaasAuthDataList = AdminConfig.list("JAASAuthData") 
+jaasAuthDataList = AdminConfig.list("JAASAuthData")
 
 jaasAuthDataList=jaasAuthDataList.split(lineSeparator)
 
@@ -166,11 +166,11 @@ print " Removing JAASAuthData with name :"+ alias1
 
 AdminConfig.remove(jaasAuthId)
 
-print " JAASAuthData removed " 
+print " JAASAuthData removed "
 
 AdminConfig.save()
 
-print " Saving Configuraion " 
+print " Saving Configuraion "
 
 matchFound = 1
 
@@ -203,13 +203,13 @@ attrs = [alias_attr , desc_attr , userid_attr , password_attr ]
 
 authdata = AdminConfig.create('JAASAuthData' , sec , attrs)
 
-print " Created new JASSAuthData with Alias name :"+ alias1 
+print " Created new JASSAuthData with Alias name :"+ alias1
 
 AdminConfig.save()
 
 print " Saving Configuraion "
 
-print " ----------------------------------------------------------------------------------------- " 
+print " ----------------------------------------------------------------------------------------- "
 
 ## DataSource ##
 
@@ -217,7 +217,7 @@ datasource = "DataSource"+ env
 
 print " Name of datasource which will be created on JDBC Provider :"+ name +" is :"+ datasource
 
-ds = AdminConfig.getid('/Cell:'+ cell +'/ServerCluster:'+ cluster +'/JDBCProvider:'+ name) 
+ds = AdminConfig.getid('/Cell:'+ cell +'/ServerCluster:'+ cluster +'/JDBCProvider:'+ name)
 
 name1 = ["name" , datasource]
 
@@ -239,7 +239,7 @@ ds_attr = [name1 , jndi , authentication , st_cachesize , ds_hlpclass ,mapping_a
 
 newds = AdminConfig.create('DataSource' , ds , ds_attr)
 
-print " New DataSource created with name :"+ datasource 
+print " New DataSource created with name :"+ datasource
 
 AdminConfig.save()
 
@@ -268,7 +268,7 @@ rpAttrs = [name3 , type , required , value]
 jrp = AdminConfig.create('J2EEResourceProperty' , propSet , rpAttrs)
 
 
-print " Properties created for DataSource :"+ datasource 
+print " Properties created for DataSource :"+ datasource
 
 AdminConfig.save()
 
@@ -294,11 +294,11 @@ agedtimeout = ["agedTimeout" , agedTimeout]
 
 purgepolicy = ["purgePolicy" , "EntirePool"]
 
-connPoolAttrs = [timeout , maxconn , minconn , reaptime , unusedtimeout , agedtimeout , purgepolicy] 
+connPoolAttrs = [timeout , maxconn , minconn , reaptime , unusedtimeout , agedtimeout , purgepolicy]
 
 AdminConfig.create("ConnectionPool", newds , connPoolAttrs)
 
-print " Connection Pool Setting created for DataSource :"+ datasource 
+print " Connection Pool Setting created for DataSource :"+ datasource
 
 AdminConfig.save()
 
@@ -341,11 +341,11 @@ nodelist = AdminTask.listManagedNodes().split(lineSep)
 
 for nodename in nodelist :
 
-print " Restarting Nodeagent of "+nodename+" node " 
+print " Restarting Nodeagent of "+nodename+" node "
 
-na = AdminControl.queryNames('type=NodeAgent,node='+nodename+',*') 
+na = AdminControl.queryNames('type=NodeAgent,node='+nodename+',*')
 
-AdminControl.invoke(na,'restart','true true') 
+AdminControl.invoke(na,'restart','true true')
 
 print " ----------------------------------------------------------------------------------------- "
 

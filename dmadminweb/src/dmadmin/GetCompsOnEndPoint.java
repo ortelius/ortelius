@@ -32,15 +32,15 @@ import dmadmin.json.JSONArray;
 public class GetCompsOnEndPoint extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public GetCompsOnEndPoint() {
         super();
     }
-    
-@Override    
+
+@Override
 public IJSONSerializable handleRequest(DMSession session, boolean isPost,
       HttpServletRequest request, HttpServletResponse response)
      throws ServletException, IOException
@@ -48,7 +48,7 @@ public IJSONSerializable handleRequest(DMSession session, boolean isPost,
     	response.setContentType("application/json");
 		String servids = request.getParameter("servid");
 		JSONArray data = session.getCompsOnEndPoint(servids);
-		String ret = data.getJSON();	
+		String ret = data.getJSON();
 		System.out.println(ret);
 		return data;
    	}

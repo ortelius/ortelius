@@ -29,7 +29,7 @@ public class ACDChangeSet<T>
 	private List<T> m_added = new ArrayList<T>();
 	private List<T> m_deleted = new ArrayList<T>();
 	private List<T> m_changed = new ArrayList<T>();
-	
+
 	public class IteratorDelegator
 		implements Iterable<T>
 	{
@@ -43,20 +43,20 @@ public class ACDChangeSet<T>
 			return m_iter;
 		}
 	}
-	
+
 	public ACDChangeSet()
 	{}
-	
+
 	public void addAdded(T add)
 	{
 		m_added.add(add);
 	}
-	
+
 	public void addDeleted(T del)
 	{
 		m_deleted.add(del);
 	}
-	
+
 	public void addChanged(T chg)
 	{
 		m_changed.add(chg);
@@ -73,7 +73,7 @@ public class ACDChangeSet<T>
 	public IteratorDelegator changed() {
 		return new IteratorDelegator(m_changed);
 	}
-	
+
 	public boolean isEmpty()
 	{
 		return (m_added.isEmpty() && m_deleted.isEmpty() && m_changed.isEmpty());

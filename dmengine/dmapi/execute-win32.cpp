@@ -28,7 +28,7 @@ typedef unsigned long uint32_t;
 #if 0
 #define TRIDEBUG(x) printf ##x; printf("\n")
 #else
-#define TRIDEBUG(x) 
+#define TRIDEBUG(x)
 #endif
 #define TRIERROR(x) printf ##x; printf("\n")
 
@@ -147,7 +147,7 @@ TRIDEBUG(("StdInThread - Closing handle"));
 				{
 					writeError=GetLastError();
 					TRIDEBUG(("StdInThread - Write failed, error=%ld",writeError));
-					if(writeError==ERROR_BROKEN_PIPE) 
+					if(writeError==ERROR_BROKEN_PIPE)
 					{
 						TRIDEBUG(("StdInThread - Pipe closed"));
 						ErrorCondition=1;
@@ -176,7 +176,7 @@ TRIDEBUG(("StdInThread - Closing handle"));
 			}
 			free(buffer);
 		}
-		
+
 		// end of standard input
 		if (BytesOfInput != 0)
 		{
@@ -220,7 +220,7 @@ unsigned int WINAPI StdOutThread(PVOID arg)
 	DWORD readError;
 
 	int ErrorCondition=0;
-	
+
 	CapturedData* cd = info->cd;
 	HANDLE handle=info->Handle;
 	int client=info->Client;
@@ -309,7 +309,7 @@ unsigned int WINAPI StdErrThread(PVOID arg)
 	//char* bufPtr;
 
 	int ErrorCondition=0;
-	
+
 	CapturedData* cd = info->cd;
 	HANDLE handle=info->Handle;
 	int client=info->Client;
@@ -404,10 +404,10 @@ int executeAndCapture(
 
 	int ErrNum=0;
 
-	
+
 	TRIDEBUG(("ExecuteAndCapture - Enter"));
 
-	// Create new capture object 
+	// Create new capture object
 	*cd = new CapturedData();
 
 	saIn.nLength=sizeof(SECURITY_ATTRIBUTES);
@@ -416,7 +416,7 @@ int executeAndCapture(
 
 	TRIDEBUG(("Execute - Creating StdIn Pipe ..."));
 
-	if(!CreatePipe(&StdIn[0],&StdIn[1],&saIn,0)) 
+	if(!CreatePipe(&StdIn[0],&StdIn[1],&saIn,0))
 	{
 		TRIERROR(("Execute - Couldn't create StdIn pipe"));
 		return -1;
@@ -431,14 +431,14 @@ int executeAndCapture(
 		&ChildStdIn,
 		0,
 		FALSE,
-		DUPLICATE_SAME_ACCESS)) 
+		DUPLICATE_SAME_ACCESS))
 	{
 		TRIERROR(("Execute - Can't duplicate StdIn write handle!"));
 		return -1;
 	}
 
-	// Close the write end of StdIn since we don't want to 
-	// pass this to the child. 
+	// Close the write end of StdIn since we don't want to
+	// pass this to the child.
 	CloseHandle(StdIn[1]);
 
 	saOut.nLength=sizeof(SECURITY_ATTRIBUTES);
@@ -447,7 +447,7 @@ int executeAndCapture(
 
 	TRIDEBUG(("Execute - Creating StdOut Pipe ..."));
 
-	if(!CreatePipe(&StdOut[0],&StdOut[1],&saOut,0)) 
+	if(!CreatePipe(&StdOut[0],&StdOut[1],&saOut,0))
 	{
 		TRIERROR(("Execute - Couldn't create StdOut pipe"));
 		return -1;
@@ -462,13 +462,13 @@ int executeAndCapture(
 		&ChildStdOut,
 		0,
 		FALSE,
-		DUPLICATE_SAME_ACCESS)) 
+		DUPLICATE_SAME_ACCESS))
 	{
 		TRIERROR(("Execute - Can't duplicate StdOut read handle!"));
 		return -1;
 	}
 
-	// This shouldn't be inherited as the child shouldn't read from 
+	// This shouldn't be inherited as the child shouldn't read from
 	// standard OUT
 	CloseHandle(StdOut[0]);
 
@@ -478,7 +478,7 @@ int executeAndCapture(
 
 	TRIDEBUG(("Execute - Creating StdErr Pipe ..."));
 
-	if(!CreatePipe(&StdErr[0],&StdErr[1],&saErr,0)) 
+	if(!CreatePipe(&StdErr[0],&StdErr[1],&saErr,0))
 	{
 		TRIERROR(("Execute - Couldn't create StdErr pipe"));
 		return -1;
@@ -493,13 +493,13 @@ int executeAndCapture(
 		&ChildStdErr,
 		0,
 		FALSE,
-		DUPLICATE_SAME_ACCESS)) 
+		DUPLICATE_SAME_ACCESS))
 	{
 		TRIERROR(("Execute - Can't duplicate StdErr read handle!"));
 		return -1;
 	}
 
-	// This shouldn't be inherited as the child shouldn't read from 
+	// This shouldn't be inherited as the child shouldn't read from
 	// standard Err
 	CloseHandle(StdErr[0]);
 
@@ -509,7 +509,7 @@ int executeAndCapture(
 	si.hStdOutput=StdOut[1]; // Write end of pipe for child StdOut
 	si.hStdError=StdErr[1]; // Write end of pipe for child StdErr
 	si.hStdInput=StdIn[0];  // Read end of pipe for child StdIn
-	
+
 	TRIDEBUG(("Execute - Running process ..."));
 
 	// Transform EnvPtr's array of discrete strings into a single block
@@ -535,36 +535,36 @@ int executeAndCapture(
 	char *CommandLine = cmd.toCommandString();
 
 	BOOL createRet = CreateProcessA(NULL, 	// applicaion name
-      CommandLine,				// command line 
-      NULL,					// process security attributes 
-      NULL,					// primary thread security attributes 
-      TRUE,					// handles are inherited 
-      0,					// creation flags 
-      ep,					// use passed environment 
+      CommandLine,				// command line
+      NULL,					// process security attributes
+      NULL,					// primary thread security attributes
+      TRUE,					// handles are inherited
+      0,					// creation flags
+      ep,					// use passed environment
       cwd,					// cwd or use parent's current directory if NULL
-      &si,					// STARTUPINFO pointer 
-      &pi);					// receives PROCESS_INFORMATION 
+      &si,					// STARTUPINFO pointer
+      &pi);					// receives PROCESS_INFORMATION
 
 	if(ep) {
 		free(ep);
 		ep = NULL;
 	}
 
-	if(!createRet) 
+	if(!createRet)
 	{
 		int res=GetLastError();
 #if defined(WIN32) && defined(_DEBUG)
 		LPVOID lpMsgBuf;
-		FormatMessage( 
-			FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-			FORMAT_MESSAGE_FROM_SYSTEM | 
+		FormatMessage(
+			FORMAT_MESSAGE_ALLOCATE_BUFFER |
+			FORMAT_MESSAGE_FROM_SYSTEM |
 			FORMAT_MESSAGE_IGNORE_INSERTS,
 			NULL,
 			GetLastError(),
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 			(LPTSTR) &lpMsgBuf,
 			0,
-			NULL 
+			NULL
 		);
 		debug1("CreateProcessA failed: %s", lpMsgBuf);
 		LocalFree(lpMsgBuf);
@@ -610,7 +610,7 @@ int executeAndCapture(
 	inThreadInfo.threadId = threadId;
 	outThreadInfo.threadId = threadId;
 	errThreadInfo.threadId = threadId;
-	
+
 	InThread=_beginthreadex(NULL,
 						0,
 						StdInThread,
@@ -658,7 +658,7 @@ int executeAndCapture(
 		debug3("Execute - ErrThread is up and running");
 	}
 
-	
+
 	// Now loop round waiting for the read/write events to occur.
 	// Once these have been serviced then we just check the state of play
 	// and carry on until the process terminates.
@@ -672,19 +672,19 @@ int executeAndCapture(
 	WaitError=GetLastError();
 	debug3("Execute - WaitResult=%ld, LastError=%ld",WaitResult, WaitError);
 
-	if(WaitResult==WAIT_TIMEOUT) 
+	if(WaitResult==WAIT_TIMEOUT)
 	{
 		debug3("Execute - Waiting timed out");
 	} else if(WaitResult==WAIT_ABANDONED) {
 		debug3("Execute - Waiting abandoned on process");
 	}
-	
+
 	debug3("Execute - Getting exit status ...");
 
 	DWORD ExitStatus;
 	if (GetExitCodeProcess(pi.hProcess,&ExitStatus)==0)
 	{
-		debug3("GetExitCodeProcess fails\n");		
+		debug3("GetExitCodeProcess fails\n");
 	}
 	else
 	{

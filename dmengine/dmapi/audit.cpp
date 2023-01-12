@@ -130,7 +130,7 @@ int DatabaseAudit::getDeploymentLog(char *logstr,long buflen)
     strcat(logstr,"<pre><code>");
 	for(res = sql->FetchRow(); (res == SQL_SUCCESS) || (res == SQL_SUCCESS_WITH_INFO); res = sql->FetchRow()) {
 		char *output = NULL_IND(line, NULL);
-		if(output && (strlen(logstr) + strlen(output) < buflen-20)) 
+		if(output && (strlen(logstr) + strlen(output) < buflen-20))
 		  strcat(logstr,output);
 	}
 	strcat(logstr,"</code></pre>");
@@ -211,7 +211,7 @@ int DatabaseAudit::allocateNewDeployId()
 			}
 		}
 	}
-	
+
 	sql->SetAutoCommitMode(true);
 	throw RuntimeError("Select for update failed");
 }
@@ -370,7 +370,7 @@ void DatabaseAudit::recordAction(class Action &action)
 	}
 	sql->CloseSQL();
 	sql = m_odbc.GetSQL();
-	
+
 	res = sql->ExecuteSQL("INSERT INTO dm_deploymentaction("
 		"deploymentid, actionid, runtime, changed, checksum) VALUES("
 		"%d, %d, %s, '%c', '%s')",
@@ -394,7 +394,7 @@ void DatabaseAudit::writevToAuditLog(int stream, long threadId, const char *buff
 	if((temp = (char*) malloc(len+2)) == NULL) {
 		return;
 	}
-	
+
     *temp = '\0';
 	strcpy(temp,buffer);
 	// Append a newline as this is implied

@@ -13,7 +13,7 @@ ingress:
     volumemnt: ""
     sslcert: "ON"
     ssloff: "OFF"
-  type: ssloff # alb, volumemnt, sslcert, ssloff  
+  type: ssloff # alb, volumemnt, sslcert, ssloff
   alb_certificate_arn:
   alb_subnets:
   dnsname: console.ortelius.io

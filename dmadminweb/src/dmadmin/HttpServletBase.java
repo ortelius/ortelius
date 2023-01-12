@@ -31,12 +31,12 @@ public abstract class HttpServletBase
 {
  protected DMSession so = null;
  HttpSession session = null;
- 
+
 	public HttpServletBase()
 	{
 		super();
 	}
-	
+
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
@@ -44,14 +44,14 @@ public abstract class HttpServletBase
 		internalHandleRequest(false, request, response);
 	}
 
-	
+
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException
 	{
 		internalHandleRequest(true, request, response);
 	}
-	
+
 	private void internalHandleRequest(boolean isPost, HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException
 	{
@@ -60,7 +60,7 @@ public abstract class HttpServletBase
   session = request.getSession();
   session.setAttribute("session", so);
 //  so.checkConnection(request.getServletContext());
-  
+
 		if (so == null)  {
 			session.invalidate();
 				String origurl=ServletUtils.GetURL(request);
@@ -69,20 +69,20 @@ public abstract class HttpServletBase
 				request.getRequestDispatcher("Login").forward(request, response);
 			return;
 		}
-		
-  so.setPassword(request); 
+
+  so.setPassword(request);
 
 		response.setHeader("Content-Disposition", "inline");
 		response.setHeader("Cache-Control", "no-cache");
   response.setHeader("Content-Type", "application/json");
-		
+
 		//System.out.println("********************** COOKIES ************************");
 		//Cookie[] cookies = request.getCookies();
 		//for(int i=0; i<cookies.length; i++) {
 		//	System.out.println(cookies[i].getName() +"="+ cookies[i].getValue());
 		//}
 		//System.out.println("****************** END OF COOKIES *********************");
-		
+
 		// record the URL we're going to visit against the mainframe id
 		String ut = ServletUtils.GetCookie(request,"ut");
 		System.out.println("ut (from cookie)="+ut);
@@ -106,13 +106,13 @@ public abstract class HttpServletBase
 			e.printStackTrace();
 		}
   }
-		
+
 	}
 
 	public abstract void handleRequest(DMSession session, boolean isPost,
 			HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException;
-	
+
 	public static int getIntParameter(HttpServletRequest request, String name) {
 		String value = request.getParameter(name);
 		if(value != null) {
@@ -122,7 +122,7 @@ public abstract class HttpServletBase
 		}
 		throw new RuntimeException("Parameter '" + name + "' not specified or invalid value");
 	}
-	
+
 	public static int getIntParameter(HttpServletRequest request, String name, int defaultValue) {
 		String value = request.getParameter(name);
 		if(value != null) {
@@ -132,7 +132,7 @@ public abstract class HttpServletBase
 		}
 		return defaultValue;
 	}
-	
+
 	public static String getStringParameter(HttpServletRequest request, String name, String defaultValue) {
 		String value = request.getParameter(name);
 		return (value != null) ? value : defaultValue;

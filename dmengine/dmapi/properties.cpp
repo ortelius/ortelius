@@ -166,7 +166,7 @@ void PropertyChecker::checkArgs(Context &ctx, StmtList *args, Hashtable<Property
 							break;
 						}
 					}
-					
+
 					if(!isAppendable) {
 						// Property is never appendable, so report on override only
 						if(arg->lineno()) {

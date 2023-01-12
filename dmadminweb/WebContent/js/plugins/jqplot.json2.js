@@ -1,14 +1,14 @@
 /*
     2010-11-01 Chris Leonello
-    
+
     Slightly modified version of the original json2.js to put JSON
     functions under the $.jqplot namespace.
-    
+
     licensing and orignal comments follow:
-    
+
     http://www.JSON.org/json2.js
     2010-08-25
-    
+
     Public Domain.
 
     NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
@@ -160,7 +160,7 @@
     if (!window.JSON) {
         $.jqplot.JSON = {};
     }
-    
+
     function f(n) {
         // Format integers to have at least two digits.
         return n < 10 ? '0' + n : n;

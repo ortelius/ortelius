@@ -34,28 +34,28 @@ public class TaskRemove
 	private Application m_application;
 	private String m_text;
 	private CommandLine m_cmd;
-	
+
 	public TaskRemove() {
 	}
-	
+
 	public TaskRemove(DMSession sess, int id, String name) {
 		super(sess, id, name);
 	}
-	
+
 	public boolean updateTask(Hashtable<String, String> changes) {
 		// TODO Auto-generated method stub
 		return false;
 	}
-	
+
 	public Environment getEnvironment() { return m_environment; }
 	public void setEnvironment(Environment env) { m_environment = env; }
-	
+
 	public Application getApplication() { return m_application; }
 	public void setApplication(Application application) { m_application = application; }
 
 	public String getText()  { return m_text; }
 	public void setText(String text)  { m_text = text; }
-	
+
 	@Override
 	public boolean run()
 	{
@@ -87,7 +87,7 @@ public class TaskRemove
   ds.addProperty(SummaryField.TASK_AVAILABLE_TO_SUBDOMAINS, "Available in SubDomains", new BooleanField(getSubDomains()));
   return ds.getJSON();
  }
- 
+
 	public String getOutput() {
 		return m_cmd.getOutput();
 	}

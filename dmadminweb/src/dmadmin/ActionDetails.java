@@ -36,12 +36,12 @@ public class ActionDetails
 {
 	private static final long serialVersionUID = -226890201780242001L;
 
-	
+
    public ActionDetails() {
         super();
     }
 
-    
+
 	@Override
 	public void handleRequest(DMSession session, boolean isPost,
 			HttpServletRequest request, HttpServletResponse response)
@@ -59,7 +59,7 @@ public class ActionDetails
 		int res = cmd.runWithTrilogy(true, null);
 		response.setContentType("text/plain");
 		PrintWriter out = response.getWriter();
-		
+
 		if (res == 0) {
 			String DMScript = cmd.getOutput();
 	  		out.println(DMScript);

@@ -33,7 +33,7 @@ public class GetFragmentContent extends HttpServlet
   private static final long serialVersionUID = 1L;
   DMSession so = null;
   HttpSession session = null;
-  
+
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException
   {
@@ -59,7 +59,7 @@ public class GetFragmentContent extends HttpServlet
     	System.out.println("dm.Get="+dm.GetObjectType());
     	ObjectType reltype = dm.GetObjectType();
     	String uct = Character.toUpperCase(reltype.toString().charAt(0)) + reltype.toString().substring(1).toLowerCase();
-    	
+
       System.out.println("{\"data\" : \"" + dm.getName() + "\", \"attr\" : { \"id\" : \"fg" + dm.getId() + "\", \"rel\" : \"" + uct + "\" }}");
       out.print("{\"data\" : \"" + dm.getName() + "\", \"attr\" : { \"id\" : \"fg" + dm.getId() + "\", \"rel\" : \"" + uct + "\" }}");
       k++;

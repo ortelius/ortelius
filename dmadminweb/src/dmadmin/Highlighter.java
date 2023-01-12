@@ -33,7 +33,7 @@ import dmadmin.model.Server;
  */
 public class Highlighter extends HttpServletBase {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -41,7 +41,7 @@ public class Highlighter extends HttpServletBase {
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
     @Override
     public void handleRequest(DMSession session, boolean isPost,
     	   		HttpServletRequest request, HttpServletResponse response)
@@ -49,9 +49,9 @@ public class Highlighter extends HttpServletBase {
     {
     	response.setContentType("application/json;charset=UTF-8");
 		String mode = request.getParameter("f");
-		
+
 		PrintWriter out = response.getWriter();
-		
+
 		if (mode.equalsIgnoreCase("swc"))
 		{
 			// Servers with components....
@@ -60,12 +60,12 @@ public class Highlighter extends HttpServletBase {
 			List <Server> sl = session.GetServersWithComponents(e,c);
 			out.print("{");
 			out.println("\"server\": [");
-			
+
 			boolean sep=false;
 			for (Server s: sl)
 			{
 				if (sep) out.println(",");
-				
+
 				out.println("{");
 				out.println("\"id\" : \""       + s.getId() + "\",");
 				out.println("\"name\" : \""     + s.getName() + "\",");

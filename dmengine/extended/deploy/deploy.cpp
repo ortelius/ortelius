@@ -78,7 +78,7 @@ void DeployThread::marryResults(List<TransferResult> &results, IDropzone &dz)
 		}
 		debug1("reldzfn=[%s]",reldzfn);
 		DropzoneFile *dzf = dz.getFile(reldzfn);
-		
+
 		if(dzf) {
 			r->setDropzoneFile(dzf);
 		} else {
@@ -166,7 +166,7 @@ int DeployThread::execute(Context &ctx)
 		// b) When rolling forward, the server list should be those servers with which the
 		//    component is associated but to which it has not yet been deployed.
 		// c) We need to ensure that dep.rollback and dep.rollforward vars are set properly
-		List<Server> *remainingServerList = new List<Server>();	
+		List<Server> *remainingServerList = new List<Server>();
 		ListIterator<Server> iter(ctx.servers());
 		Component *existingcomp = (Component *)0;
 		for(Server *s = iter.first(); s; s = iter.next()) {
@@ -186,7 +186,7 @@ int DeployThread::execute(Context &ctx)
 			}
 		}
 
-		
+
 		if (remainingServerList->size() > 0) {
 			Context customctx(ctx, *remainingServerList);
 			ctx.dm().writeToStdOut("INFO: Deploying Component %s using Custom Action %s",m_comp->name(),m_comp->getCustomAction()->name());
@@ -222,7 +222,7 @@ int DeployThread::execute(Context &ctx)
 			marryResults(*results, m_dropzone);
 			m_parent.recordTransferResults(m_target, *results);
 		}
-		
+
 		// Does this server have a server-specific dropzone?
 		ServerDropzone *sdz = m_dropzone.getServerDropzone(m_target);
 		/* AutoPtr<List<TransferResult> > ssresults; */
@@ -234,13 +234,13 @@ int DeployThread::execute(Context &ctx)
 
 		debug3("After the transfer - getting transfer results");
 
-		
+
 
 
 		// debug3("results = 0x%lx ssresults = 0x%lx", results, ssresults);
 
 		if(results || ssresults) {
-			
+
 			if(results) {
 				ListIterator<TransferResult> iter(*results);
 				for(TransferResult *result = iter.first(); result; result = iter.next()) {
@@ -289,7 +289,7 @@ int DeployThread::execute(Context &ctx)
 					}
 				}
 			}
-			
+
 		}
 	}
 
@@ -350,7 +350,7 @@ int DeployThread::execute(Context &ctx)
 			printf("Caught exception - rethrowing\n");
 			throw;
 		}
-	} 
+	}
 
 	try {
 		debug3("About to executePost");
@@ -427,7 +427,7 @@ void DeployStmtImpl::executePost(
 
 	Scope *postScope = new Scope(POST_SCOPE, NULL, m_parent);
 	ctx.stack().push(postScope);
-	
+
 	// Add these variables to the post scope
 	postScope->set("TRIDM_DEP_TOTAL",   cb.total());
 	postScope->set("TRIDM_DEP_SUCCESS", cb.success());
@@ -523,10 +523,10 @@ void DeployStmtImpl::executeComponentCustom(Component &comp, Context &ctx)
 			ae->start();
 			ExtendedStmt stmt(customAction);
 			stmt.execute(ctx);
-			ae->finish();	
+			ae->finish();
 		} catch(ReturnException &/*e*/) {
 			// Normal return via return statement
-		}	
+		}
 	}
 }
 
@@ -597,7 +597,7 @@ void DeployStmtImpl::createDeployThreads(
 			if(existingcomp && (existingcomp->id() == comp->id()))
 			{
 				// This version of the component is already on the server - skip deployment
-				ctx.writeToStdOut("INFO: Component '%s' is already present on server '%s'", comp->name(), s->name());				
+				ctx.writeToStdOut("INFO: Component '%s' is already present on server '%s'", comp->name(), s->name());
 				continue;
 			}
 		}
@@ -629,7 +629,7 @@ void DeployStmtImpl::createDeployThreads(
 				}
 			}
 		}
-		
+
 
 		// push the repository (if only one) onto the copied stack
 		if(repo) {
@@ -681,8 +681,8 @@ void DeployStmtImpl::startDeployThreads(List<DeployThread> &myThreads)
 	debug1("startDeployThreads");
 	// Start all the threads we have created above, after we are clear of setup exceptions
 	ListIterator<DeployThread> myThreadsIter(myThreads);
-	
-	for(DeployThread *t = myThreadsIter.first(); t; t = myThreadsIter.next()) {	
+
+	for(DeployThread *t = myThreadsIter.first(); t; t = myThreadsIter.next()) {
 		Component *comp = t->getComponent();
 		if (comp && comp->isDeploySequentially()) {
 			// Wait for this thread to complete before executing next thread. This forces
@@ -695,7 +695,7 @@ void DeployStmtImpl::startDeployThreads(List<DeployThread> &myThreads)
 		}
 		debug1("started deploy thread %d", t->id());
 	}
-	for(DeployThread *t = myThreadsIter.first(); t; t = myThreadsIter.next()) {	
+	for(DeployThread *t = myThreadsIter.first(); t; t = myThreadsIter.next()) {
 		Component *comp = t->getComponent();
 		if (comp && comp->isDeploySequentially()) {
 			// Remove reference for dropzone
@@ -738,7 +738,7 @@ void DeployStmtImpl::executeDeployComponent(
 		if (n && m_parent.getArgAsString("target",ctx)) n--;		// "target" is allowed
 		if (n==0) skipComponentItems = false;						// No parameters alongside component except dropzone and target
 	}
-	
+
 	// Add compid to audit entry
 	m_auditEntry->m_compId = comp->id();
 
@@ -783,7 +783,7 @@ void DeployStmtImpl::executeDeployComponent(
 		rollback = erollback ? erollback->toBool() : newctx.isRollback();
 	}
 	debug1("Component '%s' rollback is %s isFirst is %s isLast is %s filterlast is %s parentid is %d",
-		comp->name(), (rollback ? "true" : "false"), 
+		comp->name(), (rollback ? "true" : "false"),
 		(isFirst ? "true" : "false"),
 		(isLast ? "true" : "false"),
 		(filterlast ? "true" : "false"),
@@ -893,7 +893,7 @@ void DeployStmtImpl::executeDeployComponent(
                    if (item->getKind() == NULL || strcmp(item->getKind(),"docker") != 0)
 				   {
 					Repository *repo = item->getRepository();
-					if(repo) 
+					if(repo)
 					{
 					 const char *target = item->getTargetFolder();
 					 debug1("ComponentItem(%d, '%s', '%s')", item->id(), (repo ? repo->name() : "(null)"), (target ? target : "(null)"));
@@ -919,8 +919,8 @@ void DeployStmtImpl::executeDeployComponent(
 				   }
 				   else
 				   {
-					skipComponentItems = false;   
-				   }	
+					skipComponentItems = false;
+				   }
 				}
 			}
 		}
@@ -944,7 +944,7 @@ void DeployStmtImpl::executeDeployComponent(
 			if (dropzoneFiles->count()>0) FilesPulled=true;
 			//printf("doing transfer, FilesPulled=%s\n",FilesPulled?"true":"false");
 			dz.generateDmInfos();
-			
+
 			if (FilesPulled || comp->getCustomAction()) {
 				createDeployThreads(threads, myThreads, dz, NULL, summary, comp, newctx);
 			}
@@ -1093,7 +1093,7 @@ void DeployStmtImpl::executeWithAudit(DMThreadList &threads, Context &ctx)
 				sprintf(vn,"?customcomp%d",comp->id());
 				Variable *t = compscope->get(vn);
 				if (t && t->getString()[0]=='Y') {
-				
+
 					// must be already in custom action for this component.
 					// set comp to NULL so that we drop into executeSingle
 					comp = NULL;

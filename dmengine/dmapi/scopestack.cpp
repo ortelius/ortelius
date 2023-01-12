@@ -113,7 +113,7 @@ Variable::Variable(const char *name, class DateTime *date)
 Variable::Variable(const char *name, class Expr *e)
 	: m_name(DUP_NULL(name)), m_nocase(false)
 {
-	if (e) { 
+	if (e) {
 		switch(e->kind()) {
 		case KIND_BOOL:
 			m_type = vartype_bool;
@@ -390,7 +390,7 @@ char *Variable::flatten()
 				if(*v) {
 					if(*buf) { strcat(buf, " "); }
 					strcat(buf, "\"");
-					char *temp = (*v)->flatten(); 
+					char *temp = (*v)->flatten();
 					strcat(buf, temp);
 					free(temp);
 					strcat(buf, "\"");
@@ -760,7 +760,7 @@ DMArray *Scope::getVars(class Context &ctx) const
 	StringListIterator iter(*keys);
 	for(const char *k = iter.first(); k; k = iter.next()) {
 		// Each Scope will have dep.success etc. That could be very confusing. Don't return them.
-		if (strcmp(k,"dep.success") && strcmp(k,"dep.failed") && strcmp(k,"dep.total") && strcmp(k,"dep.not_proc")) 
+		if (strcmp(k,"dep.success") && strcmp(k,"dep.failed") && strcmp(k,"dep.total") && strcmp(k,"dep.not_proc"))
 		{
 			Variable *v = m_vars->get(k);
 			if (v->m_type == vartype_string && v->getString() != NULL)
@@ -771,7 +771,7 @@ DMArray *Scope::getVars(class Context &ctx) const
 			 ExprPtr etext1 = expandedText1.evaluate(ctx);
 			 stext1 = etext1->stringify();
 			 v = new Variable(v->m_name,stext1);
-			} 
+			}
 			ret->put(k,v);
 		}
 	}
@@ -850,7 +850,7 @@ Variable *Scope::getXML(const char *name, class Context &ctx)
 		//if(obj) {
 		//	return new Variable(NULL, obj);
 		//}
-		
+
 		ExprPtr e = m_obj->getAttribute(name, ctx);
 		return (e ? new Variable(NULL, (Expr*) e) : NULL);
 	}
@@ -1135,7 +1135,7 @@ void Scope::dump(DM &dm)
 void Scope::dump2File(class Context &ctx, FILE *fp)
 {
 	// fprintf(fp, "%s(%c%c):\n", m_name, (m_open ? 'o' : '-'), (m_closed ? 'c' : '-'));
-    
+
 	StringList *vars = m_vars->keys();
 	StringListIterator iter(*vars);
 	for(const char *name = iter.first(); name; name = iter.next())
@@ -1152,7 +1152,7 @@ void Scope::dump2File(class Context &ctx, FILE *fp)
 		 ExprPtr etext1 = expandedText1.evaluate(ctx);
 		 stext1 = etext1->stringify();
 		 var = new Variable(var->m_name,stext1);
-		} 
+		}
 
 		switch(var->m_type)
 		{
@@ -1164,7 +1164,7 @@ void Scope::dump2File(class Context &ctx, FILE *fp)
 		case vartype_string:
 			fprintf(fp,"%s=%s\n", name, (var->m_value ? var->m_value : ""));
 			break;
-		case vartype_array: 
+		case vartype_array:
 			break;
 		case vartype_object:
 			// fprintf(fp,"    <object>");
@@ -1326,7 +1326,7 @@ void ScopeStack::push(Scope *scope)
 	if(!scope) {
 		throw RuntimeError(*this, "push failed: scope was null");
 	}
-  
+
 	if(m_top >= (m_size-1)) {
 		if(m_size >= SCOPE_STACK_MAX_SIZE) {
 			throw RuntimeError(*this, "push failed: scope stack size exceeded");
@@ -1359,7 +1359,7 @@ void ScopeStack::push(Scope *scope)
 	if(m_top < 1) {
 		throw RuntimeError("pop failed: scope stack empty");
 	}
-	
+
 	--m_top;
 	Scope *ret = m_stack[m_top];
 	m_stack[m_top] = NULL;
@@ -1420,7 +1420,7 @@ Variable *ScopeStack::expand(Variable *v)
   if (*value == '$' && *(value+1) == '{')
   {
    strcpy(workVar,value+2);
-	*(workVar + strlen(workVar)-1) = '\0';   
+	*(workVar + strlen(workVar)-1) = '\0';
   }
   else
     strcpy(workVar,value+1);
@@ -1429,9 +1429,9 @@ Variable *ScopeStack::expand(Variable *v)
 
   debug1("RESET3 [%s]", workVar);
 
-  for(int n = m_top-1; n >= 0; n--) 
+  for(int n = m_top-1; n >= 0; n--)
   {
-   if ((ret = m_stack[n]->get(workVar)) != NULL) 
+   if ((ret = m_stack[n]->get(workVar)) != NULL)
 	break;
   }
 
@@ -1440,13 +1440,13 @@ Variable *ScopeStack::expand(Variable *v)
    debug1("RESET %s [%s]", value, ret->getString());
    if (addTicks)
    {
-	sprintf(workVar,"'%s'", ret->getString());  
-	return new Variable(ret->m_name,workVar);  
+	sprintf(workVar,"'%s'", ret->getString());
+	return new Variable(ret->m_name,workVar);
    }
    return new Variable(ret->m_name,ret->getString());
-  }  
- } 
- return v;	 
+  }
+ }
+ return v;
 }
 
 /**
@@ -2158,7 +2158,7 @@ void ScopeStack::dump2File(class Context &ctx)
 		m_stack[n]->dump2File(ctx,fp);
 	 }
 	 fclose(fp);
-	} 
+	}
 }
 
 

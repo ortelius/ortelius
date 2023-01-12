@@ -1,6 +1,6 @@
-alter table dm.dm_action 
+alter table dm.dm_action
   add interpreter character varying(2048);
-  
+
 delete from dm.dm_actionarg where actionid = 1);
 delete from dm.dm_action where id = 1);
 

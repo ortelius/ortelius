@@ -21,7 +21,7 @@ if [ "$1" = "start" ]; then
  tfile="/tmp/$2.PID"
  cd $CWD
  java -DTCNODE="$4" $5 -jar /tmp/webapp-runner.jar --port $2 $3 1>/dev/null 2>/dev/null & s_pid=$!;
- echo $s_pid > $tfile; 
+ echo $s_pid > $tfile;
  echo -n PID=
  cat $tfile
 else

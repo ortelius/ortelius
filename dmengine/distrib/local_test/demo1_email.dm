@@ -20,14 +20,14 @@ action demo1
     echo 'Best regards,';
     echo '';
     echo '     Deployment Manager 2';
-    
+
     attachment(name: 'attachment2.txt', body: $attachment);
 
     attachment(name: 'attachment3.txt')
     {
       echo 'This is the third file attachment';
     }
-    
+
     attachment(name: 'attachment4.txt')
     {
       testactionvbs(arg1: 'hello', arg2: 'world');

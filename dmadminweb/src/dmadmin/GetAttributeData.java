@@ -40,7 +40,7 @@ public class GetAttributeData
 {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
- HttpSession session = null;       
+ HttpSession session = null;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -66,17 +66,17 @@ public class GetAttributeData
 		boolean isArrayRequest = (request.getParameter("arrid") != null);
 		boolean bReadOnly=false;
 		List<DMAttribute> attrs = null;
-		
+
 		if(isArrayRequest) {
 			int arrid = ServletUtils.getIntParameter(request, "arrid");
 			attrs = so.getArrayAttributes(arrid);
-		} else {	 
+		} else {
 			int ot = ServletUtils.getIntParameter(request, "objtype");
 			int id = ServletUtils.getIntParameter(request, "id");
 			ObjectType objtype = ObjectType.fromInt(ot);
 			if(objtype == null) {
 				throw new RuntimeException("Invalid object type " + ot);
-			}			
+			}
 			DMObject dmobj = so.getObject(objtype, id);
 			bReadOnly = !dmobj.isUpdatable();
 			attrs = dmobj.getAttributes();
@@ -86,15 +86,15 @@ public class GetAttributeData
 		for(DMAttribute a: attrs) {
 			arr.add(a);
 		}
-		
+
 		JSONObject obj = new JSONObject();
 		obj.add("readOnly",bReadOnly);
 		obj.add("data", arr);
-		
+
 		String ret = obj.toString();
-		
+
 		out.println(ret);
-		System.out.println(ret);	
+		System.out.println(ret);
   }
 	}
 

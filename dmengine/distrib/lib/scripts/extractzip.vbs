@@ -13,19 +13,19 @@ Sub UnzipFiles(folder, file)
                 i = i + 1
             End If
             If i = 99 Then
-            zCleanup file, i 
+            zCleanup file, i
             i = 1
             End If
         Next
-        If i > 1 Then 
+        If i > 1 Then
             zCleanup file, i
         End If
         ' fso.DeleteFile(folder&file)
 End Sub
 
-Sub zCleanUp(file, count)   
+Sub zCleanUp(file, count)
         Dim i
-        
+
         For i = 1 To count
            If fso.FolderExists(fso.GetSpecialFolder(2) & "\Temporary Directory " & i & " for " & file) = True Then
            text = fso.DeleteFolder(fso.GetSpecialFolder(2) & "\Temporary Directory " & i & " for " & file, True)

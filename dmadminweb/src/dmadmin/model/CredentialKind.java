@@ -24,15 +24,15 @@ public enum CredentialKind {
 	FROM_VARS(4),		// Values taken from variables
 	PPK(5),				// Public Private Key for SSH
 	HARVEST_DFO_IN_FILESYSTEM(10);
-	
+
 	private int m_value;
-	
+
 	private CredentialKind(int value) {
 		m_value = value;
 	}
-	
+
 	public int value()  { return m_value; }
-	
+
 	public static CredentialKind fromInt(int value) {
 		for(CredentialKind ck : CredentialKind.values()) {
 			if(ck.value() == value) {

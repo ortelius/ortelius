@@ -34,7 +34,7 @@ import dmadmin.model.Application;
 public class GetApplicationOptions extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
- HttpSession session = null;      
+ HttpSession session = null;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -49,7 +49,7 @@ public class GetApplicationOptions extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		PrintWriter out = response.getWriter();
-		
+
   try (DMSession so = DMSession.getInstance(request)) {
   session = request.getSession();
   session.setAttribute("session", so);
@@ -57,17 +57,17 @@ public class GetApplicationOptions extends HttpServlet {
 
 		String isRelStr = request.getParameter("isRelease");
 		boolean isRelease = false;
-		
+
 		if (isRelStr.equalsIgnoreCase("Y"))
 		 isRelease = true;
-		 
-		
+
+
 		List<Application> apps = so.GetApplicationsInEnvironment(Integer.parseInt(request.getParameter("envid")),isRelease);
-		
+
 		for (Application a: apps)
 		{
 		 String dname = a.getDomain().getFullDomain();
-		 
+
 			System.out.println("<option value=\""+a.getId()+"\">"+dname + "." + a.getName()+"</option>");
 			out.println("<option value=\""+a.getId()+"\">"+dname + "." + a.getName()+"</option>");
 		}

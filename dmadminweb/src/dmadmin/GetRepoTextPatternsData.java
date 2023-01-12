@@ -36,7 +36,7 @@ public class GetRepoTextPatternsData
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     public GetRepoTextPatternsData() {
         super();
     }
@@ -48,7 +48,7 @@ public class GetRepoTextPatternsData
 	{
 		int repoid = getIntParameter(request, "id");
 		Repository repo = session.getRepository(repoid, false);
-		
+
 		String reason = request.getParameter("reason");
 		if(reason != null) {
 			if(reason.equalsIgnoreCase("save")) {
@@ -56,34 +56,34 @@ public class GetRepoTextPatternsData
 			}
 			throw new RuntimeException("Bad reason \"" + reason + "\"");
 		}
-		
+
 		boolean readOnly = !repo.isUpdatable();
-				
+
 		JSONObject obj = new JSONObject();
 		obj.add("readOnly", readOnly);
 
 		JSONArray arr = new JSONArray();
 		obj.add("data", arr);
-		
+
 		List<TextPattern> patterns = repo.getTextPatterns();
 		for(TextPattern pattern : patterns) {
 			arr.add(pattern);
 		}
-		
+
 		return obj;
 	}
-	
+
 	private IJSONSerializable saveTextPatterns(
 		DMSession session, HttpServletRequest request,
 		HttpServletResponse response, Repository repo)
 	{
 		ACDChangeSet<TextPattern> changes = new ACDChangeSet<TextPattern>();
 		String error = "";
-		
+
 		for(Object oparam : request.getParameterMap().keySet()) {
 			String param = (String) oparam;
 			if(!param.startsWith("chg_") && !param.startsWith("add_") && !param.startsWith("del_")) { continue; }
-			
+
 			String value = request.getParameter(param);
 			System.out.println("value = '" + value + "'");
 			String[] parts = value.split("&");
@@ -94,12 +94,12 @@ public class GetRepoTextPatternsData
 			String path = urlDecode(parts[0]);
 			String pattern = urlDecode(parts[1]);
 			boolean isText = parts[2].equalsIgnoreCase("Y");
-			
+
 			if((path == null) || (path.length() == 0) || (pattern == null) || (pattern.length() == 0)) {
 				error +=  "\nInvalid value " + value + " (2)";
-				continue;				
+				continue;
 			}
-			
+
 			if(param.startsWith("chg_")) {
 				System.out.println("change '" + path + "', '" + pattern + "' = '" + isText + "'");
 				changes.addChanged(repo.new TextPattern(path, pattern, isText,param.substring(4)));
@@ -111,7 +111,7 @@ public class GetRepoTextPatternsData
 				changes.addDeleted(repo.new TextPattern(path, pattern, isText));
 			}
 		}
-		
+
 		if(error.length() > 0) {
 			return new JSONObject().add("saved", false).add("error", error);
 		}

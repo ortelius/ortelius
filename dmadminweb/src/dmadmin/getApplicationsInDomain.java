@@ -36,7 +36,7 @@ import dmadmin.model.Application;
 public class getApplicationsInDomain extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
- HttpSession session = null;      
+ HttpSession session = null;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -50,7 +50,7 @@ public class getApplicationsInDomain extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("application/json;charset=UTF-8");
-		
+
 		PrintWriter out = response.getWriter();
 
   try (DMSession so = DMSession.getInstance(request)) {
@@ -68,7 +68,7 @@ public class getApplicationsInDomain extends HttpServlet {
 		System.out.println("ir = "+((ir != null)?ir:"NULL"));
 		if (ir != null && ir.equalsIgnoreCase("N")) IncludeReleases=false;
 		List <Application> applications = so.getApplicationsInDomain(IncludeVersions,IncludeReleases);
-		
+
 		JSONArray arr1 = new JSONArray();
 		for(Application c: applications) {
 			JSONObject cobj = new JSONObject();
@@ -94,7 +94,7 @@ public class getApplicationsInDomain extends HttpServlet {
 			cobj.add("versions",arr2);
 			arr1.add(cobj);
 		}
-		
+
 		JSONObject obj = new JSONObject();
 		obj.add("Applications", arr1);
 		obj.add("ApplicationCount", applications.size());

@@ -49,9 +49,9 @@ public class About extends HttpServletBase
   request.setAttribute("schemaver", ver);
   request.setAttribute("license", lc);
   request.setAttribute("dbuid", dbuid);
-  
+
   String lickey = request.getParameter("k");
-  
+
   if (lickey != null)
   {
    session.updateLicense(lickey);

@@ -31,13 +31,13 @@ public class GanttDataSet
 		private int m_start;
 		private int m_end;
 		private boolean m_overlaps;
-		
+
 		GanttBar(int start, int end) {
 			m_start = start;
 			m_end = end;
 			m_overlaps = false;
 		}
-		
+
 		/**
 		 * Called first on all bars to make the chart start at zero
 		 * @param start
@@ -46,7 +46,7 @@ public class GanttDataSet
 			m_start -= start;
 			m_end -= start;
 		}
-		
+
 		/**
 		 * Used to trim a server bar so that it fits within the step bar
 		 * @param start
@@ -62,7 +62,7 @@ public class GanttDataSet
 				m_end = bar.m_end;
 			}
 		}
-		
+
 		/**
 		 * Used to trim a server bar so that it fits before the next bar
 		 * @param start
@@ -76,11 +76,11 @@ public class GanttDataSet
 				stepBar.m_overlaps = true;
 			}
 		}
-		
+
 		int getStart() {  return m_start; }
 		// int getEnd() {  return m_end; }
 		boolean isOverlapping()  { return m_overlaps; }
-		
+
 		/**
 		 * Returns the start of a bar as a cumulative value - will make the blank bar in front
 		 * @param start
@@ -90,7 +90,7 @@ public class GanttDataSet
 			int rel = m_start - bar.m_start;
 			return (rel > 0) ? rel : 0;
 		}
-		
+
 		/**
 		 * Returns the length of the bar
 		 * @return
@@ -98,7 +98,7 @@ public class GanttDataSet
 		int getDuration() {
 			return m_end - m_start;
 		}
-		
+
 		/**
 		 * Returns the end of a bar as a cumulative value - will make the blank bar after
 		 * @param end
@@ -109,7 +109,7 @@ public class GanttDataSet
 			return (rel > 0) ? rel : 0;
 		}
 	}
-	
+
 	private List<Integer> m_stepIds = new ArrayList<Integer>();
 	private List<Integer> m_serverIds = new ArrayList<Integer>();
 	private Hashtable<Integer, String> m_steps = new Hashtable<Integer, String>();
@@ -118,10 +118,10 @@ public class GanttDataSet
 	private Hashtable<Integer, Hashtable<Integer, GanttBar>> m_serverData = new Hashtable<Integer, Hashtable<Integer, GanttBar>>();
 	private int m_min = 0;
 	private int m_max = 0;
-	
+
 	public GanttDataSet()
 	{}
-	
+
 	public void addStep(int stepId, String stepName, int start, int end)
 	{
 		System.out.println("addStep(" + stepId + "," + stepName + "," + start + "," + end + ")");
@@ -135,28 +135,28 @@ public class GanttDataSet
 			m_max = end;
 		}
 	}
-	
+
 	public void addServerStep(int stepId, int serverId, String serverName, int start, int end)
-	{	
+	{
 		if(m_servers.get(serverId) == null) {
 			m_servers.put(serverId, serverName);
 			m_serverIds.add(serverId);
 		}
-		
+
 		Hashtable<Integer, GanttBar> data = m_serverData.get(stepId);
 		if(data == null) {
 			data = new Hashtable<Integer, GanttBar>();
 			m_serverData.put(stepId, data);
 		}
-		
+
 		data.put(serverId, new GanttBar(start, end));
 	}
-	
+
 	public int getNumberOfServers()
 	{
 		return m_serverIds.size();
 	}
-	
+
 	private void calculate()
 	{
 		for(GanttBar bar : m_stepData.values()) {
@@ -167,7 +167,7 @@ public class GanttDataSet
 			GanttBar stepBar = m_stepData.get(stepId);
 			for(GanttBar serverBar : serverData.values()) {
 				serverBar.makeRelative(m_min);
-				serverBar.trim(stepBar);				
+				serverBar.trim(stepBar);
 			}
 		}
 		// Find the next step for this server and make sure we don't overlap
@@ -189,12 +189,12 @@ public class GanttDataSet
 			}
 		}
 	}
-	
+
 	public IJSONSerializable getDataJSON() {
 		calculate();
-		
+
 		JSONArray data = new JSONArray();
-		
+
 		// This loops through the steps in time order for the series
 		//for(int n = m_stepIds.size()-1; n >= 0; n--) {
 		for(int n = 0; n < m_stepIds.size(); n++) {
@@ -204,7 +204,7 @@ public class GanttDataSet
 			JSONArray arr1 = new JSONArray();
 			JSONArray arr2 = new JSONArray();
 			JSONArray arr3 = new JSONArray();
-			
+
 			// Server bars
 			Hashtable<Integer, GanttBar> serverData = m_serverData.get(stepId);
 			for(int serverId : m_serverIds) {
@@ -219,9 +219,9 @@ public class GanttDataSet
 					arr1.add(0);
 					arr2.add(0);
 					arr3.add(stepBar.isOverlapping() ? 0 : stepBar.getDuration());
-				}				
+				}
 			}
-			
+
 			// Step bars
 			// This loops through the steps in backwards step order - each step
 			// has only one bar, so we output a blank bar before it to get the
@@ -232,7 +232,7 @@ public class GanttDataSet
 					arr1.add(/*0*/ stepBar.getStart());
 					Object duration = (stepBar.getDuration() == 0) ? new Float(0.01) : new Integer(stepBar.getDuration());
 					arr2.add(duration);
-					arr3.add(0);					
+					arr3.add(0);
 				} else {
 					arr1.add(0);
 					arr2.add(0);
@@ -243,23 +243,23 @@ public class GanttDataSet
 		}
 		return data;
 	}
-	
+
 	public IJSONSerializable getSeriesJSON() {
 		JSONObject o1 = new JSONObject();
 		o1.add("showLine", false);
 		o1.add("fillAlpha", 0.0);
 		o1.add("shadow", false);
-		
+
 		JSONObject o2 = new JSONObject();
 		o2.add("showLine", true);
-		
+
 		JSONArray arr = new JSONArray();
 		for(int n = 0, max = (m_stepIds.size() + m_serverIds.size()); n < max; n++) {
 			arr.add(o1).add(o2).add(o1);
 		}
 		return arr;
 	}
-	
+
 	public IJSONSerializable getTicksJSON() {
 		JSONArray arr = new JSONArray();
 		for(int serverId : m_serverIds) {
@@ -271,7 +271,7 @@ public class GanttDataSet
 		}
 		return arr;
 	}
-	
+
 	public IJSONSerializable getOverlayJSON()
 	{
 		JSONObject ret = new JSONObject();

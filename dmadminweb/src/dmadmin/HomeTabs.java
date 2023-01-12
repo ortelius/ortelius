@@ -25,7 +25,7 @@ public class HomeTabs implements java.io.Serializable {
 	private String m_ExplorerFrame;
 	private String m_FrameID;
 	private String m_TreeViewPage;
-	
+
 	public HomeTabs() {
 		m_TabNumber = 0;
 		m_TabName = "";
@@ -35,7 +35,7 @@ public class HomeTabs implements java.io.Serializable {
 		m_FrameID = "";
 		m_TreeViewPage = "";
     }
-	
+
 	public HomeTabs(int id, boolean admin, String iconName, String tabTitle)
 	{
 		m_TabNumber = 0;
@@ -43,15 +43,15 @@ public class HomeTabs implements java.io.Serializable {
 		m_IconName = iconName;
 		m_TabTitle = tabTitle;
 		m_ExplorerFrame = "explorerframe" + id;
-		m_TreeViewPage = "Explorer?id=" + id;		
+		m_TreeViewPage = "Explorer?id=" + id;
 		m_FrameID = "mainframe" + id;
 	}
-	
-	
+
+
 	public void setTabNumber(int tabno) {
 		m_TabNumber = tabno;
 	}
-	
+
 	public void setTabName(String tabName) {
 		m_TabName = tabName;
 	}
@@ -70,7 +70,7 @@ public class HomeTabs implements java.io.Serializable {
 	public void setFrameID(String frameID) {
 		m_FrameID = frameID;
 	}
-	
+
 	public int getTabNumber() {
 		return m_TabNumber;
 	}

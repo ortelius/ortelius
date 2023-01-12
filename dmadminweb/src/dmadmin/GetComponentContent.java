@@ -35,7 +35,7 @@ public class GetComponentContent extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  DMSession so = null;
  HttpSession session = null;
-      
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -49,26 +49,26 @@ public class GetComponentContent extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("application/json");
-		Integer compid = ServletUtils.getIntParameter(request,"compid"); 
+		Integer compid = ServletUtils.getIntParameter(request,"compid");
 		PrintWriter out = response.getWriter();
-		
+
   try (DMSession so = DMSession.getInstance(request)) {
   session = request.getSession();
   session.setAttribute("session", so);
   so.checkConnection(request.getServletContext());
-  
+
 		Component comp = so.getComponent(compid,false);
 
 		out.print("[");
 
-		if (comp != null) { 
+		if (comp != null) {
 			List<Component> c = so.getComponentVersions(comp);
-	
+
 			boolean subv=false;
 			for (Component xav: c)
 			{
 				if (subv) out.println(",");
-				
+
 				if (xav.getParentId() > 0)
 					out.print("{\"data\" : \"" + xav.getName() + "\", \"attr\" : { \"id\" : \"" + xav.getOtid() + "\", \"rel\" : \"" + ObjectType.COMPVERSION + "\" }}");
 				else

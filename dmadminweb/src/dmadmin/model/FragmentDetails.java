@@ -28,7 +28,7 @@ public class FragmentDetails
 	private int m_fragaction;
 	private int m_exitpoints;
 	private boolean m_drilldown;
-	
+
 	public FragmentDetails() {
 		m_typename="";
 		m_typesummary="";
@@ -39,7 +39,7 @@ public class FragmentDetails
 		m_actionid=0;
 		m_exitpoints=0;
 		m_drilldown=false;
-	}	
+	}
 
 	public String getTypeName() { return m_typename; }
 	public String getTypeSummary() { return m_typesummary; }
@@ -51,8 +51,8 @@ public class FragmentDetails
 	public int getFragmentAction() { return m_fragaction; }
 	public int getWindowId() { return m_windowid; }
 	public int getActionId() { return m_actionid; }
-	
-	
+
+
 
 	public void setTypeName(String typename) { m_typename = typename; }
 	public void setTypeSummary(String typesummary) { m_typesummary = typesummary; }

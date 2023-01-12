@@ -35,14 +35,14 @@ function SaveDetails(id)
 {
  if (DontSave)
   return;
- 
+
  var url="f=csv&c="+id;
  parent.$("#homeatts :input").each(function() {
   url=url+"&"+$(this).attr("id")+"="+$(this).val();
  });
  $.getJSON('UpdateAttrs',url,
      function(data){
-   // Update the fragment window 
+   // Update the fragment window
    console.log("Updating the window for #window"+id);
    $( ".componentbox" ).each(function( index ) {
       console.log(index + ": "+$(this).attr("id"));
@@ -59,21 +59,21 @@ function cClickElement(id)
 
 
 function cNewComponent(node)
-{ 
+{
  if (DontSave)
   return;
- 
+
  var tx = (cCurrentMousePos.x) % 20;
  var ty = (cCurrentMousePos.y) % 20;
  if (tx>10) tx=-(20-tx);
  if (ty>10) ty=-(20-ty);
- 
+
  console.log("ScrollTop="+$("#compitem").scrollTop());
  var xpos = (cCurrentMousePos.x - tx) - 60;
  var ypos = ((cCurrentMousePos.y - ty) + $("#compitem").scrollTop()) - 90;
 
  var fanc = "f=anc&a=" + objid;
- 
+
  $.getJSON("UpdateAttrs", fanc + "&xpos="+xpos+"&ypos="+ypos, function(data) {
   $('#innercomp').append(getComponentMarkup(data.compid, "co", data.compname, '', xpos, ypos, ''));
 
@@ -86,7 +86,7 @@ function cNewComponent(node)
    cursor: "-webkit-grab",
    stop: cWindowMoved
   });
-  
+
   cPlumb.addEndpoint("window"+data.compid, compEndpoint, {
    anchor : "TopCenter",
    uuid : "window"+data.compid+"in"
@@ -95,7 +95,7 @@ function cNewComponent(node)
    anchor : "BottomCenter",
    uuid : "window"+data.compid+"out"
   });
-  
+
   console.log("Binding context menu menu1 to window #window"+data.compid);
   try {
   $("#window"+data.compid).dmContextMenu(menu1, {theme:'xp'});
@@ -122,14 +122,14 @@ function cDeleteNode(node)
 
  if (DontSave)
   return;
- 
+
  cPlumb.detachAllConnections(node.id);
  cPlumb.removeAllEndpoints(node.id);
  $("#"+node.id).detach();
  var n = node.id.substr(6);
  console.log(node.id);
  console.log(usedComponents);
- 
+
  var i = usedComponents.indexOf(node.id);
  if(i != -1) {
   usedComponents.splice(i, 1);
@@ -149,7 +149,7 @@ function cWindowMoved(event,ui)
 {
  if (DontSave)
   return;
- 
+
  console.log("in WindowMoved, ui.position.top="+ui.position.top);
  var windowid=event.target.id;
  var id = windowid.replace("window","");
@@ -175,13 +175,13 @@ function cDeleteConnector(conn)
 {
  if (DontSave)
   return;
- 
+
  if (conn)
  {
   //
   // Update the DB
   //
-  var fn = conn.sourceId.replace("window",""); 
+  var fn = conn.sourceId.replace("window","");
   var tn = conn.targetId.replace("window","");
   if (fn=="start") fn=0;
   if (tn=="start") tn=0;
@@ -200,12 +200,12 @@ var componentDropOptions = {
   {
    if (DontSave)
     return;
-   
+
    oldid = $(this).attr("id").substr(6);
    newid = ui.draggable.attr("id");
    var newtitle = ui.draggable.text();
    var newsummary = ui.draggable.attr("summary");
-   // Update the fragment window 
+   // Update the fragment window
    // NOTE THIS WILL NEED TO SELECT CO or CV dependent on if it's a version or base.
    $("#window"+oldid).html(getComponentBody(newid, 'co', newtitle, newsummary, ''));
 
@@ -218,7 +218,7 @@ var componentDropOptions = {
    });
   }
  };
- 
+
 
 function cMouseOverLink(val)
 {
@@ -271,7 +271,7 @@ function FindWindowWithNoOutput(winid)
    }
   }
  });
- 
+
  return swd;
 }
 
@@ -284,7 +284,7 @@ function LoadComponents()
 function LoadItems()
 {
  var InitialLoad = true;
- 
+
  cPlumb.importDefaults({
   // default drag options
   DragOptions : {
@@ -292,16 +292,16 @@ function LoadItems()
    zIndex : 2000
   }
  });
- 
+
  cPlumb.bind("contextmenu", function(component, originalEvent) {
         originalEvent.preventDefault();
         return false;
     });
-  
- var menu2 = function(m,t){ 
+
+ var menu2 = function(m,t){
   if (DontSave)
    return;
-  
+
   console.log("in menu2 (contextmenu activated)");
   if (!OverLink)
   {
@@ -312,13 +312,13 @@ function LoadItems()
   ma.push({'Delete this Connection': {icon:"images/delete.png",onclick:function(menuItem,menu){cMenuDeleteConnector(LastLink);} }});
   return ma;
   };
- 
+
  console.log("Binding default context menu");
- 
+
  try {
  $("#innercomp").dmContextMenu(menu2, {theme:'xp'});
  } catch(e) { console.log(e); }
- 
+
 
  cPlumb.bind("jsPlumbConnection", function(connInfo, originalEvent) {
   console.log("jsPlumbConnection fired - about to call init");
@@ -333,18 +333,18 @@ function LoadItems()
   var fn;
   var tn;
   if (FromUUID.indexOf("out")>0) {
-   fn = connInfo.connection.sourceId.replace("window",""); 
-   tn = connInfo.connection.targetId.replace("window",""); 
+   fn = connInfo.connection.sourceId.replace("window","");
+   tn = connInfo.connection.targetId.replace("window","");
   } else {
-   tn = connInfo.connection.sourceId.replace("window",""); 
-   fn = connInfo.connection.targetId.replace("window",""); 
+   tn = connInfo.connection.sourceId.replace("window","");
+   fn = connInfo.connection.targetId.replace("window","");
   }
-  
+
   if (fn == "start") fn=0;
   if (tn == "start") tn=0;
-  
+
   console.log("fn="+fn+" tn="+tn);
-  
+
   if (InitialLoad == false)
   {
    console.log("Updating DB with appid=" + objid + " fn="+fn+" tn="+tn);
@@ -355,7 +355,7 @@ function LoadItems()
   }
 
  });
- 
+
  cPlumb.bind("connectionDetached", function(connInfo, originalEvent) {
   console.log("DETACHED! connInfo.connection.id = " + connInfo.connection.id);
   cDeleteConnector(connInfo.connection);
@@ -365,13 +365,13 @@ function LoadItems()
  var MaxWinID=0;
  var s="";
  s="appid=" + objid;
- 
- 
+
+
  $.getJSON('GetComponentLayout',s,function(data){
   // Start Window
   yo = 140;
   var w = Math.floor($("#innercomp").width()/2)-63;
-  
+
   $("#innercomp").append( "<div class=\"startcomponent\" id=\"startwindow\" " +
     "style=\"position: absolute; top: 10px; left: " + w + "px \">" +
     "<span style=\"position:relative; top:5px\"><img src=\"css/images/go_16x.png\" style=\"padding-right:5px\">Start</div>");
@@ -381,7 +381,7 @@ function LoadItems()
    anchor : "BottomCenter",
    uuid : "startwindowout"
   });
-  
+
   //
   // insert the components
   //
@@ -390,7 +390,7 @@ function LoadItems()
   {
    WindowID = parseInt(data.Nodes[a].nodeid);
    if (WindowID > MaxWinID) MaxWinID = WindowID;
-   
+
 //   usedComponents.push("window" + WindowID);
 
    console.log(data.Nodes[a]);
@@ -406,7 +406,7 @@ function LoadItems()
      $(this).removeClass("ui-state-highlight");
     }
    );
-   
+
    cPlumb.addEndpoint("window"+WindowID, compEndpoint, {
     anchor : "TopCenter",
     uuid : "window"+WindowID+"in"
@@ -415,7 +415,7 @@ function LoadItems()
     anchor : "BottomCenter",
     uuid : "window"+WindowID+"out"
    });
- 
+
    console.log("Binding context menu menu1 to window #window"+WindowID);
    try {
    $("#window"+WindowID).dmContextMenu(menu1, {theme:'xp'});
@@ -435,14 +435,14 @@ function LoadItems()
    console.log("data.Links["+a+"].nodeto="+data.Links[a].nodeto);
    var srcconn;
    if (data.Links[a].nodefrom == 0) {
-    srcconn = "startwindowout"; 
+    srcconn = "startwindowout";
    } else {
     srcconn = "window" + data.Links[a].nodefrom + "out";
    }
    var tgtconn = "window" + data.Links[a].nodeto + "in";
-   
+
    console.log("Connect srcconn="+srcconn+" tgtconn="+tgtconn);
-   
+
    if (cPlumb.getEndpoint(srcconn) != null && cPlumb.getEndpoint(tgtconn) != null)
    {
     var connection = cPlumb.connect({uuids:[srcconn,tgtconn], detachable:true, editable:true});
@@ -455,9 +455,9 @@ function LoadItems()
    cursor: "-webkit-grab",
    stop: cWindowMoved
   });
-  
+
   InitialLoad = false;
-  if (data.readOnly) 
+  if (data.readOnly)
     $("#innercomp").block({ message: null });
   else
     $("#innercomp").unblock();
@@ -475,7 +475,7 @@ function StartMoved(event,ui)
 {
  if (DontSave)
   return;
- 
+
  console.log("Start Moved ypos="+Math.round(ui.offset.left));
  $.getJSON("UpdateAttrs","f=cswm&a=" + objid + "&xpos="+Math.round(ui.offset.left),
  function(data){
@@ -488,24 +488,24 @@ function LoadComponentsData()
 {
  DontSave = 1;
  usedComponents = new Array();
- 
+
  cPlumb.reset();
- aPlumb.reset();   
+ aPlumb.reset();
  avPlumb.reset();
  cvPlumb.reset();
  cisplumb.reset();
- wfPlumb.reset();  
- 
+ wfPlumb.reset();
+
  $("#innerversions").html("");
  $("#innercomp").html("");
  $("#innerappver").html("");
  $("#inneritem").html("");
  $("innerworkflow").html("");
  $("#innercompversions").html("");
- 
+
  console.log("LoadComponents");
- 
- 
+
+
  if ($("#componentlist").hasClass("ui-accordion"))
  {
    $("#componentlist").accordion('destroy');
@@ -514,6 +514,6 @@ function LoadComponentsData()
  }
  LoadComponents();
  console.log("LoadItems");
- LoadItems(); 
+ LoadItems();
  DontSave = 0;
 }

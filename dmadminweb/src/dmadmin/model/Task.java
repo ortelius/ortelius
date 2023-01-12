@@ -43,7 +43,7 @@ public class Task
 	private NotifyTemplate m_successTemplate;
 	private NotifyTemplate m_failureTemplate;
 	protected Hashtable<String,String> m_aps;
-	
+
 	public enum TaskType {
 		UNKNOWN       (""),
 		APPROVE       ("Approve"),
@@ -53,11 +53,11 @@ public class Task
 		DEPLOY        ("Deploy"),
 		REQUEST       ("Request"),
 		RUN_ACTION	  ("RunAction");
-		
+
 		private String m_str;
-		
+
 		private TaskType(String str)  { m_str = str; }
-		
+
 		public static TaskType fromString(String str) {
 			for(TaskType tt : TaskType.values()) {
 				if(tt.m_str.equalsIgnoreCase(str)) {
@@ -66,37 +66,37 @@ public class Task
 			}
 			return UNKNOWN;
 		}
-		
+
 		public String getTaskTypeString() {
 			return m_str;
 		}
 	};
-	
+
 	public Task() {
 		m_TaskType="";
 	}
-	
+
 	public Task(DMSession sess, int id, String name) {
 		super(sess, id, name);
 		m_aps=null;
 		m_TaskType="";
 	}
-	
+
 	public void setTaskType(String tasktype)  { m_TaskType = tasktype; }
 	public String getTaskTypeAsString()  { return m_TaskType; }
-	
+
 	public Action getPreAction()  { return m_preAction; }
 	public void setPreAction(Action action)  { m_preAction = action; }
 
 	public Action getPostAction()  { return m_postAction; }
 	public void setPostAction(Action action)  { m_postAction = action; }
-	
+
 	public boolean getShowOutput()  { return m_showOutput; }
 	public void setShowOutput(boolean showOutput)  { m_showOutput = showOutput; }
-	
+
 	public boolean getSubDomains() { System.out.println("getSubDomains returning "+m_subDomains);return m_subDomains; }
 	public void setSubDomains(boolean subDomains) { System.out.println("setSubDomains("+subDomains+")");m_subDomains = subDomains; }
-	
+
 	public TaskType getTaskType()
 	{
 		return TaskType.fromString(m_TaskType);
@@ -104,10 +104,10 @@ public class Task
 
 	public NotifyTemplate getSuccessTemplate()  { return m_successTemplate; }
 	public void setSuccessTemplate(NotifyTemplate template)  { m_successTemplate = template; }
-	
+
 	public NotifyTemplate getFailureTemplate()  { return m_failureTemplate; }
 	public void setFailureTemplate(NotifyTemplate template)  { m_failureTemplate = template; }
-	
+
 	public void setAdditionalParameters(Hashtable<String,String> aps) { m_aps = aps; }
 	public Hashtable<String,String> getAdditionalParameters() { return m_aps; }
 	public String getAddParamsCmdLine() {
@@ -122,7 +122,7 @@ public class Task
 		}
 		return res;
 	}
-	
+
 	@Override
 	public ObjectType getObjectType() {
 		return ObjectType.TASK;
@@ -137,15 +137,15 @@ public class Task
 	public String getForeignKey() {
 		return "taskid";
 	}
-	
+
 	public boolean run() {
 		return false;
 	}
-	
+
 	public String getOutput() {
 		return null;
 	}
-	
+
 	public String getFormattedOutput() {
 		String output = getOutput();
 		if(output != null) {
@@ -177,7 +177,7 @@ public class Task
 		if (m_TaskType.equalsIgnoreCase("move")) {
 			ds.addProperty(SummaryField.SUCCESS_TEMPLATE, "Notify Template",  ((m_successTemplate != null) ? m_successTemplate.getLinkJSON() : null));
 		}
-		ds.addProperty(SummaryField.TASK_SHOWOUTPUT, "Show Output", new BooleanField(m_showOutput));	
+		ds.addProperty(SummaryField.TASK_SHOWOUTPUT, "Show Output", new BooleanField(m_showOutput));
 		ds.addProperty(SummaryField.TASK_AVAILABLE_TO_SUBDOMAINS, "Available in SubDomains", new BooleanField(m_subDomains));
 		return ds.getJSON();
 	}
@@ -187,7 +187,7 @@ public class Task
 		System.out.println("updateSummary called (in Task.java)");
 		return m_session.updateTask(this, changes);
 	}
-	
+
 	@Override
 	public boolean hasReadWrite() {
 		return false;

@@ -36,7 +36,7 @@ public class GetEnginePlugins
 	extends JSONServletBase
 {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -50,17 +50,17 @@ public class GetEnginePlugins
 		throws ServletException, IOException
 	{
 		int engineid = getIntParameter(request, "engid");
-		
+
 		Engine engine = session.getEngine(engineid);
-		
+
 		List<Plugin> plugins = engine.getPlugins();
-		
+
 		JSONArray ret = new JSONArray();
-		
+
 		for(Plugin p : plugins) {
 			ret.add(p);
 		}
-		
+
 		return ret;
 	}
 

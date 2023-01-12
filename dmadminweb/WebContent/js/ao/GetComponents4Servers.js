@@ -35,7 +35,7 @@ function compareName(a, b)
 
 function LoadComp4SrvData(tablename, objtypeAsInt, objtype, objid, addParams)
 {
- $('#comp4srv_header_buttons > button.delete_button').css("color","grey"); 
+ $('#comp4srv_header_buttons > button.delete_button').css("color","grey");
  summSavetablename = tablename;
  summSaveobjtypeAsInt = objtypeAsInt;
  summSaveobjtype = objtype;
@@ -204,17 +204,17 @@ function AddComp4SrvRow(tablename)
 {
  if ($("#" + tablename + "-edit").is(":visible") == false)
    EditComp4SrvRow(tablename);
- 
+
  key = "";
  val = "";
  comp4srv_rowcnt++;
- 
+
  var td = '<tr id="comp4srv_row_' + comp4srv_rowcnt + '">';
  td += '<td><input type="checkbox" id="comp4srv_edit_cb_' + comp4srv_rowcnt + '" onchange="toggleComp4SrvDelete(this);" />&nbsp;</td>';
  td += '<td><select id="comp4srv_key_' + comp4srv_rowcnt + '" value="' + val + '">' + compdropdown + '</select></td>';
  td += "<td><input type=\"hidden\" id=\"comp4srv_oldkey_" + comp4srv_rowcnt + "\" value=\"" + key + "\"\></td>";
  td += "<td><input type=\"hidden\" id=\"comp4srv_oldval_" + comp4srv_rowcnt + "\" value=\"" + val + "\"\></td></tr>";
- 
+
  $("#" + tablename + "-edit > tbody").append(td);
 }
 

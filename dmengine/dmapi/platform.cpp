@@ -104,7 +104,7 @@ void debug2(const char *fmt, ...)
 
 void debug3(const char *fmt, ...)
 {
-	char *msg = NULL;	
+	char *msg = NULL;
 	if(s_debuglevel >= 3) {
 		va_list args;
 		va_start(args, fmt);

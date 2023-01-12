@@ -51,7 +51,7 @@ int ping(const char *servername,char **szad,unsigned long *pRoundTripTime)
     if (ReplyBuffer == NULL) {
         return PING_INTERNAL_ERROR;	// internal error
     }
-	dwRetVal = IcmpSendEcho(hIcmpFile, ipaddr, SendData, sizeof(SendData), 
+	dwRetVal = IcmpSendEcho(hIcmpFile, ipaddr, SendData, sizeof(SendData),
         NULL, ReplyBuffer, ReplySize, 5000);
     if (dwRetVal != 0) {
         PICMP_ECHO_REPLY pEchoReply = (PICMP_ECHO_REPLY)ReplyBuffer;
@@ -71,7 +71,7 @@ int ping(const char *servername,char **szad,unsigned long *pRoundTripTime)
     }
     return PING_OK;
 
-} 
+}
 #else
 #include <arpa/inet.h>
 #include <sys/types.h>
@@ -138,7 +138,7 @@ int ping(const char *servername,char **szad,unsigned long *pRoundTripTime)
 	        *szad = (char *)malloc(16);
 	        sprintf(*szad,"%hd.%hd.%hd.%hd",(unsigned char)ad[0],(unsigned char)ad[1],(unsigned char)ad[2],(unsigned char)ad[3]);
 	}
-	else 
+	else
 	{
 		hp = gethostbyname(servername);
 		if (!hp)
@@ -182,7 +182,7 @@ int ping(const char *servername,char **szad,unsigned long *pRoundTripTime)
 			*pRoundTripTime = atol(rtt);
 			free(rtt);
 		}
-	} 
+	}
 	return (res==0)?PING_OK:PING_NO_REPLY;
 #ifdef THIS_IS_OLD_CODE
 	packlen = datalen + MAXIPLEN + MAXICMPLEN;
@@ -245,16 +245,16 @@ i = sendto(s, (char *)outpack, cc, 0, (struct sockaddr*)&to, (socklen_t)sizeof(s
 			}
 
 			// Check the IP header
-			ip = (struct ip *)((char*)packet); 
-			hlen = sizeof( struct ip ); 
-			if (ret < (hlen + ICMP_MINLEN)) 
+			ip = (struct ip *)((char*)packet);
+			hlen = sizeof( struct ip );
+			if (ret < (hlen + ICMP_MINLEN))
 			{
 			 *pRoundTripTime = 0;
                          return PING_NO_REPLY;
-			} 
+			}
 
-			// Now the ICMP part 
-			icp = (struct icmp *)(packet + hlen); 
+			// Now the ICMP part
+			icp = (struct icmp *)(packet + hlen);
 			if (icp->icmp_type == ICMP_ECHOREPLY)
 			{
 				if (icp->icmp_seq != 12345)
@@ -271,7 +271,7 @@ i = sendto(s, (char *)outpack, cc, 0, (struct sockaddr*)&to, (socklen_t)sizeof(s
 			{
 				continue;
 			}
-	
+
 			gettimeofday(&end, NULL);
 			end_t = 1000000*(end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec);
 
@@ -288,7 +288,7 @@ i = sendto(s, (char *)outpack, cc, 0, (struct sockaddr*)&to, (socklen_t)sizeof(s
 	}
     return PING_OK;
 #endif
-} 
+}
 
 uint16_t in_cksum(uint16_t *addr, unsigned len)
 {

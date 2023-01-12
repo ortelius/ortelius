@@ -63,7 +63,7 @@ public:
 
 	int runScriptOnServer(
 		const char *shell, const char *script, class StringList *params,
-		bool copy, bool useTTY, Context &ctx); 
+		bool copy, bool useTTY, Context &ctx);
 
 	int checkServer(Context &ctx);
 };
@@ -276,14 +276,14 @@ void RtiTransferProviderImpl::deleteFromServer(Component &comp,Context &ctx)
 		if (strcmp(m_target.hostname(),"localhost") ==0)
 		{
 	#ifdef WIN32
-			cmd.add("-protocol").add("win").add("-server").add(m_target.hostname());		
-	#else 
+			cmd.add("-protocol").add("win").add("-server").add(m_target.hostname());
+	#else
 			cmd.add("-protocol").add("sftp").add("-server").add(m_target.hostname());
-	#endif					
+	#endif
 		}
 		else
 		{
- 		cmd.add("-protocol").add(m_protocol).add("-server").add(m_target.hostname());		
+ 		cmd.add("-protocol").add(m_protocol).add("-server").add(m_target.hostname());
 		}
 
 		if (strcmp(m_protocol,"sftp")==0 && m_target.getSSHPort() != 22) {
@@ -317,7 +317,7 @@ void RtiTransferProviderImpl::deleteFromServer(Component &comp,Context &ctx)
 				throw RuntimeError(ctx.stack(), "Credentials kind %d not yet implemented", m_credentials->kind());
 			}
 		}
-		cmd.add("-dellist").add(listfile); 
+		cmd.add("-dellist").add(listfile);
 		// Lock on the hostname of the target server
 		debug1("%s\n",cmd.toCommandString());
 		ctx.dm().writeToStdOut("INFO: Removing Component %s from Server %s",comp.name(),m_target.name());
@@ -375,13 +375,13 @@ List<TransferResult> *RtiTransferProviderImpl::transferToServer(const char *drop
 	if(!basedir && m_tgtenv) {
 		basedir = DUP_NULL(m_tgtenv->basedir());
 	}
-	
+
 
 	if(!basedir) {
 		throw RuntimeError(ctx.stack(), "basedir not specified for server '%s'", m_target.name());
 	}
 
-	
+
 
 	// Now examine the component base directory
 	if(m_comp && m_comp->basedir()) {
@@ -392,7 +392,7 @@ List<TransferResult> *RtiTransferProviderImpl::transferToServer(const char *drop
 		// PathNameImpl *compPath = m_target.createPath(m_comp->basedir());
 		PathNameImpl *compPath = m_target.createPath(compbasedir);
 		if(!compPath) {
-			throw RuntimeError(ctx.stack(), "Failed to create path for server '%s'", m_target.name()); 
+			throw RuntimeError(ctx.stack(), "Failed to create path for server '%s'", m_target.name());
 		}
 		if(compPath->isAbsolute()) {
 			// Component basedir is absolute - override server/env basedir
@@ -402,7 +402,7 @@ List<TransferResult> *RtiTransferProviderImpl::transferToServer(const char *drop
 			// Append the component basedir to server/env basedir
 			AutoPtr<PathNameImpl> basedirPath = m_target.createPath(basedir);
 			if(!basedirPath) {
-				throw RuntimeError(ctx.stack(), "Failed to create path for server '%s'", m_target.name()); 
+				throw RuntimeError(ctx.stack(), "Failed to create path for server '%s'", m_target.name());
 			}
 			AutoPtr<PathNameImpl> appendedPath = basedirPath->append(m_comp->basedir());
 			basedir = DUP_NULL(appendedPath->path());
@@ -414,7 +414,7 @@ List<TransferResult> *RtiTransferProviderImpl::transferToServer(const char *drop
 	if(m_targetPath) {
 		AutoPtr<PathNameImpl> basedirPath = m_target.createPath(basedir);
 		if(!basedirPath) {
-			throw RuntimeError(ctx.stack(), "Failed to create path for server '%s'", m_target.name()); 
+			throw RuntimeError(ctx.stack(), "Failed to create path for server '%s'", m_target.name());
 		}
 		AutoPtr<PathNameImpl> appendedPath = basedirPath->append(m_targetPath);
 		basedir = DUP_NULL(appendedPath->path());
@@ -433,7 +433,7 @@ List<TransferResult> *RtiTransferProviderImpl::transferToServer(const char *drop
 	int len=0;
 
 	if (strcmp(m_target.hostname(),"localhost") ==0)
-	{ 
+	{
 		if (btext3 != NULL)
 		{
 		 #ifdef WIN32
@@ -449,8 +449,8 @@ List<TransferResult> *RtiTransferProviderImpl::transferToServer(const char *drop
 				{
 					if (btext3[i] == '\\')
 						btext3[i] = '/';
-				}				
-			#endif		
+				}
+			#endif
 		}
 	}
 	debug1("basedir for server '%s' is '%s'", m_target.name(),
@@ -465,9 +465,9 @@ List<TransferResult> *RtiTransferProviderImpl::transferToServer(const char *drop
 	{
 #ifdef WIN32
 	 cmd.add("-protocol").add("win").add("-sourcedir").add(dropzone).add("-targetdir").add(btext3);
-#else 
+#else
 	 cmd.add("-protocol").add("sftp").add("-sourcedir").add(dropzone).add("-targetdir").add(btext3);
-#endif					
+#endif
 	}
 	else
 	{
@@ -519,15 +519,15 @@ List<TransferResult> *RtiTransferProviderImpl::transferToServer(const char *drop
 	  case LINE_ENDS_UNIX:    cmd.add("-target").add("win");  debug2("lineends = UNIX"); break;
 	  case LINE_ENDS_WINDOWS: cmd.add("-target").add("win");  debug2("lineends = WIN"); break;
 	  case LINE_ENDS_MAC:     cmd.add("-target").add("mac");  debug2("lineends = MAC"); break;
-	 }	
-#else 
+	 }
+#else
 	  switch(lineends) {
 	  case LINE_ENDS_OFF:     cmd.add("-target").add("off");  debug2("lineends = OFF"); break;
 	  case LINE_ENDS_UNIX:    cmd.add("-target").add("unix"); debug2("lineends = UNIX"); break;
 	  case LINE_ENDS_WINDOWS: cmd.add("-target").add("unix"); debug2("lineends = WIN"); break;
 	  case LINE_ENDS_MAC:     cmd.add("-target").add("mac");  debug2("lineends = MAC"); break;
   }
-#endif					
+#endif
 	}
 	else
 	{
@@ -698,9 +698,9 @@ int RtiTransferProviderImpl::checkServer(Context &ctx)
 	{
 #ifdef WIN32
 	 cmd.add("-protocol").add("win").add("-server").add(m_target.hostname());
-#else 
+#else
 	 cmd.add("-protocol").add("sftp").add("-server").add(m_target.hostname());
-#endif					
+#endif
 	}
 	else
 	{
@@ -728,7 +728,7 @@ int RtiTransferProviderImpl::checkServer(Context &ctx)
 			break;
 		case CREDENTIALS_PRIVATE_KEY: {
 			char *username = m_credentials->getDecryptedUsername(ctx);
-			char *filename = (char *)m_credentials->filename(ctx); 
+			char *filename = (char *)m_credentials->filename(ctx);
 			cmd.add("-user").add(username).add("-keyfile").add(filename);
 			SECURE_FREE(username);
 			SECURE_FREE(filename);
@@ -751,7 +751,7 @@ int RtiTransferProviderImpl::checkServer(Context &ctx)
 		int len=0;
 
 		if (strcmp(m_target.hostname(),"localhost") ==0)
-		{ 
+		{
 			if (btext3 != NULL)
 			{
 			 #ifdef WIN32
@@ -767,8 +767,8 @@ int RtiTransferProviderImpl::checkServer(Context &ctx)
 					{
 						if (btext3[i] == '\\')
 							btext3[i] = '/';
-					}				
-				#endif		
+					}
+				#endif
 			}
 		}
 		cmd.add(btext3);
@@ -801,9 +801,9 @@ int RtiTransferProviderImpl::runScriptOnServer(
 	{
 #ifdef WIN32
  	cmd.add("-protocol").add("win").add("-server").add(m_target.hostname());
-#else 
+#else
  	cmd.add("-protocol").add("sftp").add("-server").add(m_target.hostname());
-#endif					
+#endif
 	}
 	else
 	{
@@ -856,7 +856,7 @@ int RtiTransferProviderImpl::runScriptOnServer(
 		cmd.add("-rshell");
 		cmd.add(shell);
 	}
-	
+
 	cmd.add("-execcmd");
 	cmd.add(script);
 

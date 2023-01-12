@@ -29,29 +29,29 @@ public class LinkField
 	private String m_tooltip;
 	private boolean m_showLink;
 	private ActionKind m_kind;
-	
+
 	// TODO: change showLink to default to false
 	public LinkField(ObjectType type, int objId, String name) {
 		this(type.getTypeString(), objId, name, null, true, ActionKind.UNCONFIGURED);
 	}
-	
+
 	// TODO: change showLink to default to false
 	public LinkField(ObjectType type, int objId, String name, String tooltip) {
 		this(type.getTypeString(), objId, name, tooltip, true, ActionKind.UNCONFIGURED);
 	}
-		
+
 	public LinkField(ObjectType type, int objId, String name, boolean showLink) {
 		this(type.getTypeString(), objId, name, null, showLink, ActionKind.UNCONFIGURED);
 	}
-	
+
 	public LinkField(ObjectType type, int objId, String name, ActionKind kind) {
 		this(type.getTypeString(), objId, name, null, true, kind);
 	}
-	
+
 	public LinkField(ObjectType type, int objId, String name, boolean showLink, ActionKind kind) {
 		this(type.getTypeString(), objId, name, null, showLink, kind);
 	}
-	
+
 	public LinkField(String type, int objId, String name, String tooltip, boolean showLink, ActionKind kind) {
 		if (tooltip == null || tooltip.length()==0) tooltip = name;
 		m_type = type;
@@ -61,13 +61,13 @@ public class LinkField
 		m_showLink = showLink;
 		m_kind = kind;
 	}
-	
+
 	public int getId()
 	{
 	 return m_objId;
 	}
-	
-	
+
+
 	public int getDeploymentid()
  {
   return m_deploymentid;
@@ -82,14 +82,14 @@ public class LinkField
 		m_showLink = showLink;
 		return this;
 	}
-	
+
 	public JSONObject getJSONObject() {
 		JSONObject obj = new JSONObject();
 		obj.add("type", m_type)
 			.add("id", m_objId)
 			.add("name", m_name);
 		if(m_tooltip != null) {
-			obj.add("tooltip", m_tooltip);			
+			obj.add("tooltip", m_tooltip);
 		}
 		if (m_kind != ActionKind.UNCONFIGURED) {
 			obj.add("kind", m_kind.value());

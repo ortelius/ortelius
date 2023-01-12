@@ -29,14 +29,14 @@ public class TaskAction
 	extends Task
 {
 	private static final long serialVersionUID = 1327862378913381548L;
-	
+
 	private String m_text;
 	CommandLine m_cmd;
 	private Action m_action;
-	
+
 	public TaskAction() {
 	}
-	
+
 	public TaskAction(DMSession sess, int id, String name) {
 		super(sess, id, name);
 	}
@@ -58,12 +58,12 @@ public class TaskAction
 	public String getOutput() {
 		return m_cmd.getOutput();
 	}
-	
+
 	public Action getAction() {
 		System.out.println("getAction returns "+m_action);
 		return m_action;
 	}
-	
+
 	public void setAction(Action action) {
 		m_action = action;
 	}

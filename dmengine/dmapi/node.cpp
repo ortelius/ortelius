@@ -355,7 +355,7 @@ Expr *expandIt(const char *str, Context &ctx)
 				// lone $ - pretend we didn't see it
 				continue;
 			}
-			
+
 			tree = tree ? new Node(NODE_CONC, tree, temp) : temp;
 			x = z = y;
 
@@ -428,7 +428,7 @@ Expr *Node::evaluate(Context &ctx, bool stringify /*= false*/)
 		default:         return new Expr(KIND_ERROR, "Unhandled binary operator");
 		}
 		break;
-		}	
+		}
 	case NODE_NEG: {
 		ExprPtr l = m_left->evaluate(ctx);
 		return l->operator_uminus(ctx);	//-(*l);
@@ -604,7 +604,7 @@ void Node::setVariable(
 				break;
 			default:
 				// debug3("set to string detected");
-				kind = SET_STRING;	
+				kind = SET_STRING;
 				val = eval->toString();
 				break;
 			}
@@ -1069,7 +1069,7 @@ Expr *CallFunctionNodeImpl::evaluate(ExprList *args, Context &ctx, bool stringif
 		ListIterator<Expr> eit(*args);
 		Expr *e = eit.first();
 		for(Node *a = ait.first(); a; a = ait.next()) {
-			if(!e) { 
+			if(!e) {
 				throw SyntaxError(m_parent,
 					"Missing argument '%s' to function '%s'", m_parent.name(), a->m_str);
 			}
@@ -1637,7 +1637,7 @@ void ForEachStmt::execute(Context &ctx)
 	ExprPtr eexpr = m_loop->m_value->evaluate(ctx);
 
 	if(eexpr->isNull()) return;
-	
+
 	if(eexpr->kind() == KIND_STR)
 	{
 		char *t = eexpr->toString();
@@ -1766,7 +1766,7 @@ void ForEachStmt::execute(Context &ctx)
 			} else {
 				AutoPtr<ExprList> keys = eexpr->array_keys();
 				ListIterator<Expr> iter(*keys);
-				for(Expr *k = iter.first(); k; k = iter.next()) { 
+				for(Expr *k = iter.first(); k; k = iter.next()) {
 					ConstCharPtr str = k->toString();
 					if (m_iterate) {
 						Variable *v = arr->get(str);
@@ -2146,7 +2146,7 @@ void TryCatchStmt::execute(Context &ctx)
 	}
 	if(m_finally) {
 		m_finally->execute(ctx);
-	}	
+	}
 }
 
 
@@ -2600,7 +2600,7 @@ void ReturnStmt::execute(Context &ctx)
 		Expr *expr = m_exp->evaluate(ctx);
 		throw ReturnException(*this, ctx.stack(), expr);
 	}
-	
+
 	if(!ctx.stack().isAction()) {
 		throw SyntaxError(*this, ctx.stack(), "can only return from an action");
 	}
@@ -2874,7 +2874,7 @@ ExtendedStmtImpl *ExtendedStmt::createImpl(Context &ctx)
 		}
 	}
 
-	
+
 	// Is this a stand-alone function
 	if (m_function) {
 		return new CallFunctionStmtImpl(*this,m_function);
@@ -3124,7 +3124,7 @@ char *ExtendedStmt::getOverridableAppendableArgAsString(
 	if(prop && arg) {
 		// both specified - work out override/append
 		if(arg[0] == absolute) {
-			
+
 			// arg is absolute, so user wants to override
 			if(!prop->overridable()) {
 				SAFE_FREE(arg);

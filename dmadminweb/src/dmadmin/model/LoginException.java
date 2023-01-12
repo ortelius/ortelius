@@ -17,9 +17,9 @@
 package dmadmin.model;
 @SuppressWarnings("serial")
 public class LoginException	extends Exception
-{	
+{
  private String msg;
- 
+
 	public enum LoginExceptionType {
 		LOGIN_OKAY,
 		LOGIN_USER_LOCKED,
@@ -29,14 +29,14 @@ public class LoginException	extends Exception
 		LOGIN_DATABASE_FAILURE,
 		LDAP_ERROR
 	};
-	
+
 	public LoginExceptionType exceptionType;
-	
+
 	public LoginException(LoginExceptionType et, String msg) {
 		exceptionType = et;
 		this.msg = msg;
 	}
-	
+
 	public LoginExceptionType getExceptionType() {
 		return exceptionType;
 	}

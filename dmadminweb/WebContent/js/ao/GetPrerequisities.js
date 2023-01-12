@@ -60,7 +60,7 @@ function LoadPrerequisitiesData()
    {
     disabled : true
    });
-   
+
 
    $("#prereqs_btnAddComp").click(function(evt)
    {
@@ -86,11 +86,11 @@ function LoadPrerequisitiesData()
     tdedit += "<tr>";
     tdedit += "<td style=\"text-align:left;padding-right: 5px;white-space: nowrap;\">Components</td>";
     tdedit += "</tr>";
-    tdedit += "<tr>";    
-    tdedit += "<td style=\"padding-top:2px;padding-bottom:2px;\"><select size=\"10\" name=\"prereqs_comp_val\">";  
+    tdedit += "<tr>";
+    tdedit += "<td style=\"padding-top:2px;padding-bottom:2px;\"><select size=\"10\" name=\"prereqs_comp_val\">";
     tdedit += "</td>";
     tdedit += "</tr></table></form>";
-    
+
     pwd.empty();
     pwd.html(tdedit);
     pwd.dialog(
@@ -127,7 +127,7 @@ function LoadPrerequisitiesData()
     pwd.dialog("option", "width", "auto");
     pwd.dialog("option", "buttons", buttons);
     $("#prereqs_btnAdd").show();
-    $("#prereqs_btnEdit").show();    
+    $("#prereqs_btnEdit").show();
     $("#prereqs_btnDelete").show();
     pwd.dialog('open');
    });
@@ -159,12 +159,12 @@ function GetSavePrerequisitiesCompData(instance, data)
 function SavePrerequisitiesCompData(instance)
 {
  var savedata = {};
- 
+
  savedata = GetSavePrerequisitiesCompData(instance, savedata);
  console.log(savedata.prereqs_comp_val);
  console.log(objtype);
  console.log(objid);
- 
+
  $.ajax({
   url: "GetPrerequisitiesForAppData",
   data: {
@@ -188,5 +188,3 @@ function SavePrerequisitiesCompData(instance)
   }
  });
 }
-
-

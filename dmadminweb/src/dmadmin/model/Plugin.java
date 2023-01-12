@@ -29,17 +29,17 @@ public class Plugin
 	private static final long serialVersionUID = 6700786198966622875L;
 
 	private String m_version;
-	
+
 	public Plugin() {
 	}
-	
+
 	public Plugin(DMSession sess, int id, String library) {
 		super(sess, id, library);
 	}
-	
+
 	public String getVersion()  { return m_version; }
 	public void setVersion(String version)  { m_version = version; }
-	
+
 	@Override
 	public ObjectType getObjectType() {
 		return ObjectType.PLUGIN;

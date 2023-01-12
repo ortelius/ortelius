@@ -27,15 +27,15 @@ public class ServerType
 		UNIX(1),
 		WINDOWS(2),
 		MAC(3);
-		
+
 		private int m_value;
-		
+
 		private LineEndFormat(int value) {
 			m_value = value;
 		}
-		
+
 		public int value()  { return m_value; }
-		
+
 		public static LineEndFormat fromInt(int value) {
 			for(LineEndFormat lef : LineEndFormat.values()) {
 				if(lef.value() == value) {
@@ -45,12 +45,12 @@ public class ServerType
 			return null;
 		}
 	}
-	
+
 	private int m_id;
 	private String m_name;
 	private LineEndFormat m_lineEnds;
 	private String m_pathFormat;
-	
+
 	public ServerType(int id, String name, LineEndFormat lineEnds, String pathFormat)
 	{
 		m_id = id;
@@ -58,12 +58,12 @@ public class ServerType
 		m_lineEnds = lineEnds;
 		m_pathFormat = pathFormat;
 	}
-	
+
 	public int getId()  { return m_id; }
 	public String getName()  { return m_name; }
 	public LineEndFormat getLineEnds()  { return m_lineEnds; }
 	public String getPathFormat()  { return m_pathFormat; }
-	
+
 	public IJSONSerializable getLinkJSON() {
 		return new LinkField(ObjectType.SERVER_TYPE, m_id, m_name);
 	}
