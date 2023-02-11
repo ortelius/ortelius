@@ -12,6 +12,7 @@ COPY --from=builder /workspace/installers/linux/webadmin/webapp-runner.jar webad
 COPY --from=builder /build/dh-ms-general.war webadmin/deployhub-webadmin.war
 COPY --from=builder /workspace/docker/entrypoint.sh .
 RUN sudo pip install --upgrade deployhub
+RUN sudo pip uninstall wheel setuptools pip
 
 WORKDIR /etc/nginx/
 
