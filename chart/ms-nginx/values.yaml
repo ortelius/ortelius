@@ -4,8 +4,8 @@
 replicaCount: 1
 image:
   repository: quay.io/ortelius/ms-nginx
-  tag: svc_cat-v10.0.38-g001acd
-  sha: sha256:68e34e818da5af4671f92eba63992ad4f316ea128736b31d12c069c39a26b4fd
+  tag: svc_cat-v10.0.39-g773c81
+  sha: sha256:146d3045227cb4c0faecbfd5e7f9ac16c90fecabcbe8ca7ea360244846a28273
   pullPolicy: Always
 ingress:
   enum:
