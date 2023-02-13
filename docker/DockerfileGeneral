@@ -7,28 +7,20 @@ RUN /workspace/tgt/build-gen.sh
 
 FROM eclipse-temurin:8-jdk-alpine
 
-ENV DBHome /opt/deployhub/webadmin/
-ENV DBConnectionString jdbc:postgresql://db.ortelius.io:80/postgres
-ENV DBDriverName org.postgresql.Driver
-
-RUN apk add --no-cache openssl nginx sudo perl
-RUN adduser --disabled-password --gecos '' omreleng
-RUN adduser omreleng wheel
-RUN echo '%wheel ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-
-USER omreleng
-
-COPY --from=builder /workspace/dmadminweb/microservice/nginx-onprem.conf  /etc/nginx/nginx.conf
-COPY --from=builder /workspace/dmadminweb/microservice/location/  /etc/nginx/location/
+RUN apk add --no-cache openssl
 
 WORKDIR /opt/deployhub/engine/
 COPY --from=builder /workspace/installers/linux/engine/dm.* .
 
 WORKDIR /opt/deployhub/webadmin/
 
+EXPOSE 8080
+ENV DBHome /opt/deployhub/webadmin/
+ENV DBConnectionString jdbc:postgresql://db.ortelius.io:80/postgres
+ENV DBDriverName org.postgresql.Driver
+
 COPY --from=builder /workspace/installers/linux/webadmin/webapp-runner.jar webapp-runner.jar
 COPY --from=builder /build/dh-ms-general.war  deployhub-webadmin.war
 COPY --from=builder /workspace/docker/entrypoint.sh  entrypoint.sh
 
-EXPOSE 8080
-ENTRYPOINT ["/opt/deployhub/webadmin/entrypoint.sh"]
+ENTRYPOINT /opt/deployhub/webadmin/entrypoint.sh
