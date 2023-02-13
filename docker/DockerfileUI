@@ -4,7 +4,6 @@ WORKDIR /build/
 
 COPY . /workspace
 RUN /workspace/tgt/build-ui.sh
-RUN echo HERE
 
 FROM cgr.dev/chainguard/jdk:latest
 EXPOSE 8080
