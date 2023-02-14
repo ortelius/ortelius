@@ -7,20 +7,16 @@ RUN /workspace/tgt/build-gen.sh
 
 FROM eclipse-temurin:8-jdk-alpine
 
-RUN apk add --no-cache openssl
-
-WORKDIR /opt/deployhub/engine/
-COPY --from=builder /workspace/installers/linux/engine/dm.* .
-
-WORKDIR /opt/deployhub/webadmin/
-
 EXPOSE 8080
-ENV DBHome /opt/deployhub/webadmin/
 ENV DBConnectionString jdbc:postgresql://db.ortelius.io:80/postgres
 ENV DBDriverName org.postgresql.Driver
 
-COPY --from=builder /workspace/installers/linux/webadmin/webapp-runner.jar webapp-runner.jar
-COPY --from=builder /build/dh-ms-general.war  deployhub-webadmin.war
-COPY --from=builder /workspace/docker/entrypoint.sh  entrypoint.sh
+RUN apk add --no-cache openssl
+
+WORKDIR /opt/deployhub
+COPY --from=builder /workspace/installers/linux/engine/dm.* engine/
+COPY --from=builder /workspace/installers/linux/webadmin/webapp-runner.jar webadmin/webapp-runner.jar
+COPY --from=builder /build/dh-ms-general.war  webadmin/deployhub-webadmin.war
+COPY --from=builder /workspace/docker/entrypoint.sh  webadmin/entrypoint.sh
 
 ENTRYPOINT /opt/deployhub/webadmin/entrypoint.sh
