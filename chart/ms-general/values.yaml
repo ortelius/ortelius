@@ -2,7 +2,7 @@ replicaCount: 1
 image:
   pullPolicy: Always
   repository: quay.io/ortelius/ms-general
-  tag: svc_cat-v10.0.42-g884cf0
-  sha: sha256:ffea48bcce05d1ea60eec4568d14864aff53c375075275cf3f64c58d8cc144ac
+  tag: svc_cat-v10.0.43-ge1223f
+  sha: sha256:106ac3842f7abb9b6c5cbff8d80396f1ccbba04ec9f7740f7d731095c5c5a0d7
 internal_nginx: "OFF"
 dbhost: postgresql.ortelius.svc.cluster.local
