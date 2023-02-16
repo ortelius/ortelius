@@ -2,6 +2,8 @@ FROM nginx:alpine
 EXPOSE 80
 EXPOSE 443
 
+# force update
+
 WORKDIR /etc/nginx/
 
 RUN mkdir /etc/nginx/location; \
