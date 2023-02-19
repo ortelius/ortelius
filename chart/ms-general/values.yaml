@@ -5,4 +5,3 @@ image:
   tag: svc_cat-v10.0.45-g12e9b0
   sha: sha256:7d975468b6f4896f1253e7092b18adfc006e65ddfd092a0d97db6758da959739
 internal_nginx: "OFF"
-dbhost: postgresql.ortelius.svc.cluster.local
