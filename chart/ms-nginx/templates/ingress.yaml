@@ -44,7 +44,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: {{ .Values.ingress.dnsname | quote }}
+  - host: {{ .Values.ingress.dnsname | default '' | quote }}
     http:
       paths:
       - path: /
