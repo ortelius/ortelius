@@ -1,7 +1,5 @@
 name: Build/Push Image and Release Charts
 
-# force build
-
 on:
   push:
     branches:
