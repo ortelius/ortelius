@@ -772,6 +772,7 @@ public class InitServer extends HttpServletBase
      {
       try 
       {
+       System.out.println("No DB Connection - Retrying");
        Thread.sleep(30000);
       } 
       catch (InterruptedException ie) 
