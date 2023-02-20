@@ -2122,12 +2122,6 @@ CREATE TABLE dm_servervars (
 COMMENT ON TABLE dm_servervars IS 'Associated variables for dm_server';
 
 
---
--- TOC entry 249 (class 1259 OID 102653)
--- Dependencies: 9
--- Name: dm_tableinfo; Type: TABLE; Schema: dm; Owner: postgres; Tablespace:
---
-
 CREATE TABLE dm_tableinfo (
     schemaver integer NOT NULL
 );
