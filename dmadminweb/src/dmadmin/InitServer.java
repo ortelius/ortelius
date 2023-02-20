@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -179,6 +180,40 @@ public class InitServer extends HttpServletBase
 
  private int getSchemaVersion()
  {
+  
+  boolean dbLoading = true;
+  do
+  {
+   try
+   {
+    try (PreparedStatement st = m_conn.prepareStatement("SELECT EXISTS (SELECT FROM pg_tables WHERE tablename  = 'dm_tableinfo')");
+ 
+    ResultSet rs = st.executeQuery())
+    {
+     if (rs.next())
+     {
+      dbLoading = !rs.getBoolean(1);
+      
+      if (dbLoading)
+      {
+       try
+       {
+        TimeUnit.MINUTES.sleep(1);
+       }
+       catch (InterruptedException e)
+       {
+        e.printStackTrace();
+       }
+      }
+     }
+    }
+   }
+   catch (SQLException e)
+   {
+   }
+  } while (dbLoading);
+
+  
   int res = 0;
 
   try

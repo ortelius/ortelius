@@ -1,35 +1,9 @@
--- Copyright (c) 2021 Linux Foundation
---
--- Licensed under the Apache License, Version 2.0 (the "License");
--- you may not use this file except in compliance with the License.
--- You may obtain a copy of the License at
---
---     http://www.apache.org/licenses/LICENSE-2.0
---
--- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--- See the License for the specific language governing permissions and
--- limitations under the License.
-
---
--- PostgreSQL database dump
---
-
--- Dumped from database version 9.1.4
--- Dumped by pg_dump version 9.1.4
--- Started on 2014-07-15 14:53:27
-
 SET statement_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 
---
--- TOC entry 9 (class 2615 OID 102259)
--- Name: dm; Type: SCHEMA; Schema: -; Owner: postgres
---
 
 CREATE SCHEMA dm;
 
@@ -42,11 +16,6 @@ SET default_tablespace = '';
 
 SET default_with_oids = false;
 
---
--- TOC entry 164 (class 1259 OID 102260)
--- Dependencies: 9
--- Name: dm_action; Type: TABLE; Schema: dm; Owner: postgres; Tablespace:
---
 
 CREATE TABLE dm_action (
     id integer NOT NULL,
