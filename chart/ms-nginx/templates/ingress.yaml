@@ -57,7 +57,7 @@ spec:
 {{ end }}
 ---
 # Setup nginx ingress class and ingress controller for Kind
-{{ if contains "kind" (.Capabilities.KubeVersion.Version | toString) }}
+{{ if .Values.global.ingress-nginx-controller }}
 apiVersion: v1
 kind: Namespace
 metadata:
