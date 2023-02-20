@@ -454,8 +454,27 @@ public static String capitalize(String str)
     System.out.println("USERNAME=" + dUserName.toString());
     System.out.println("PASSWORDNAME=*******");
 
-    m_conn = DriverManager.getConnection(ConnectionString, dUserName.toString(), dPassword.toString());
-    m_conn.setAutoCommit(false);
+    boolean noConnection = true;
+    do
+    {
+     try
+     {
+      m_conn = DriverManager.getConnection(ConnectionString, dUserName.toString(), dPassword.toString());
+      m_conn.setAutoCommit(false);
+      noConnection = false;
+     } 
+     catch (Exception e)
+     {
+      try 
+      {
+       Thread.sleep(30000);
+      } 
+      catch (InterruptedException ie) 
+      {
+       Thread.currentThread().interrupt();
+      }
+     }
+    } while (noConnection);
    }
    catch (Exception e)
    {
