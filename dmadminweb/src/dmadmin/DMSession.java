@@ -8678,11 +8678,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				ret.setDomainId(domainId);
 				String thislabel = getString(rs,6,"");
 				ret.setLabel(thislabel);
-				if (thislabel.length() == 0) {
+/* 				if (thislabel.length() == 0) {
 					// No label for this version
 					String ParentLabel = getParentLabel(0,getInteger(rs,3,0));
 					ret.setParentLabel(ParentLabel);
-				}
+				} */
 				getStatus(rs, 7, ret);
 				ret.setIsRelease(getString(rs, 8, "N"));
 				int dsid = getInteger(rs,9,0);
@@ -9356,11 +9356,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				ret.setDomainId(getInteger(rs,5,0));
 				String thislabel = getString(rs,6,"");
 				ret.setLabel(thislabel);
-				if (thislabel.length() == 0) {
+/* 				if (thislabel.length() == 0) {
 					// No label for this version
 					String ParentLabel = getParentLabel(1,getInteger(rs,3,0));
 					ret.setParentLabel(ParentLabel);
-				}
+				} */
 				getStatus(rs, 7, ret);
 				ret.setRollup(ComponentFilter.fromInt(getInteger(rs, 8, 0)));
 				ret.setRollback(ComponentFilter.fromInt(getInteger(rs, 9, 0)));
