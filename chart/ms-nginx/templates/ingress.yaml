@@ -57,7 +57,7 @@ spec:
 {{ end }}
 ---
 # Setup nginx ingress class and ingress controller for Kind
-{{ if .Values.global.ingress-nginx-controller }}
+{{ if (((.Values.global).nginxController).enabled) }}
 apiVersion: v1
 kind: Namespace
 metadata:
