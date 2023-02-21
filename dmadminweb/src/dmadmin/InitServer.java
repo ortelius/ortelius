@@ -180,41 +180,27 @@ public class InitServer extends HttpServletBase
 
  private int getSchemaVersion()
  {
+  int res = 0;
   
-  boolean dbLoading = true;
-  do
+  try
   {
-   try
+   try (PreparedStatement st = m_conn.prepareStatement("SELECT EXISTS (SELECT FROM pg_tables WHERE tablename  = 'dm_tableinfo')");
+
+   ResultSet rs = st.executeQuery())
    {
-    try (PreparedStatement st = m_conn.prepareStatement("SELECT EXISTS (SELECT FROM pg_tables WHERE tablename  = 'dm_tableinfo')");
- 
-    ResultSet rs = st.executeQuery())
+    if (rs.next())
     {
-     if (rs.next())
-     {
-      dbLoading = !rs.getBoolean(1);
-      
-      if (dbLoading)
-      {
-       try
-       {
-        TimeUnit.MINUTES.sleep(1);
-       }
-       catch (InterruptedException e)
-       {
-        e.printStackTrace();
-       }
-      }
-     }
+     boolean tableExists = rs.getBoolean(1);
+     
+     if (!tableExists)
+       return res;
     }
    }
-   catch (SQLException e)
-   {
-   }
-  } while (dbLoading);
-
-  
-  int res = 0;
+  }
+  catch (SQLException e)
+  {
+   rollback();
+  }
 
   try
   {
