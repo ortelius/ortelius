@@ -1479,8 +1479,29 @@ public class DMSession implements AutoCloseable {
    System.out.println("USERNAME=" + dUserName.toString());
    System.out.println("PASSWORDNAME=********");
 
-   m_conn = DriverManager.getConnection(ConnectionString, dUserName.toString(), dPassword.toString());
-   m_conn.setAutoCommit(false);
+    boolean noConnection = true;
+    do
+    {
+     try
+     {
+      m_conn = DriverManager.getConnection(ConnectionString, dUserName.toString(), dPassword.toString());
+      m_conn.setAutoCommit(false);
+      noConnection = false;
+     } 
+     catch (Exception e)
+     {
+      try 
+      {
+       System.out.println("No DB Connection - Retrying");
+       Thread.sleep(30000);
+      } 
+      catch (InterruptedException ie) 
+      {
+       Thread.currentThread().interrupt();
+      }
+     }
+    } while (noConnection);
+   
   } catch (FileNotFoundException e) {
    res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,e.getMessage());
    e.printStackTrace();
@@ -1490,11 +1511,7 @@ public class DMSession implements AutoCloseable {
   } catch (ClassNotFoundException e) {
    res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,"Class not found for " + e.getMessage());
    e.printStackTrace();
-  } catch (SQLException e) {
-   res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,"SQL Exception " + e.getMessage());
-   e.printStackTrace();
-   rollback();
-  }
+  } 
 	 }
 		return res;
 	}
