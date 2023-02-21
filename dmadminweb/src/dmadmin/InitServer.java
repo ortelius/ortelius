@@ -225,26 +225,23 @@ public class InitServer extends HttpServletBase
 
  private boolean checkProTables()
  {
-  boolean res = true;
-
   try
   {
-   try (PreparedStatement st = m_conn.prepareStatement("SELECT count(*) FROM dm.dm_defects");
+   try (PreparedStatement st = m_conn.prepareStatement("SELECT EXISTS (SELECT FROM pg_tables WHERE tablename  = 'dm_defects')");
 
    ResultSet rs = st.executeQuery())
    {
     if (rs.next())
     {
-     return false;
+     return !rs.getBoolean(1);
     }
    }
   }
   catch (SQLException e)
   {
-   rollback();
   }
 
-  return res;
+  return true;
  }
 
  @Override
