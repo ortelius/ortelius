@@ -64,6 +64,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         if: always()
         with:
+          category: 'ui'
           sarif_file: 'trivy-results.sarif'
 
       - name: UI Generate SBOM
@@ -108,6 +109,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         if: always()
         with:
+          category: 'general'
           sarif_file: 'trivy-results.sarif'
 
       - name: General Generate SBOM
@@ -152,6 +154,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         if: always()
         with:
+          category: 'nginx'
           sarif_file: 'trivy-results.sarif'
 
       - name: Nginx Generate SBOM
