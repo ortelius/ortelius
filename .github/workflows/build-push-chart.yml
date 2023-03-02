@@ -185,7 +185,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Update chart and values
-          push_options: --force
+          token: ${{ secrets.ORTELIUS_CHART_PAT }}
 
       - name: Install Helm
         uses: azure/setup-helm@v3
