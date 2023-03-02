@@ -3,7 +3,7 @@ name: Build/Push Image and Release Charts
 on:
   push:
     branches:
-      - svc_cat
+      - main
     paths-ignore:
       - "chart/**"
 jobs:
