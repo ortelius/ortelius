@@ -14,10 +14,7 @@ jobs:
       DHUSER: ${{ secrets.DHUSER }}
       DHPASS: ${{ secrets.DHPASS }}
       REGISTRY: quay.io
-    permissions:
-      # Give the default GITHUB_TOKEN write permission to commit and push the
-      # added or changed files to the repository.
-      contents: write  
+    permissions: write-all
     steps:
       - name: Checkout
         id: checkout
