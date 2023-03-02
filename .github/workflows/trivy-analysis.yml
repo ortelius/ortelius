@@ -1,0 +1,32 @@
+name: "Code Scanning"
+
+on:
+  push:
+  pull_request:
+    types: [opened, reopened, edited]
+
+jobs:
+  Trivy-Scan:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build an image from Dockerfile
+        run: |
+          docker build . --file docker/Dockerfile --tag localbuild/testimage:${{ github.sha }}
+          
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+         image-ref: localbuild/testimage:${{ github.sha }}
+         format: 'sarif'
+         output: 'trivy-results.sarif'
+         security-checks: 'vuln'
+         timeout: '10m0s'
+         exit-code: '0'
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+         sarif_file: 'trivy-results.sarif'
