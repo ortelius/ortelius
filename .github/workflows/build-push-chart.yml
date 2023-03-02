@@ -185,6 +185,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Update chart and values
+          push_options: --force
 
       - name: Install Helm
         uses: azure/setup-helm@v3
