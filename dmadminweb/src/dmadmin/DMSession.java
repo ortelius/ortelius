@@ -27869,15 +27869,6 @@ return ret;
 
     	 }
      }
-     else
-      {
-       if (url.contains("atlassian"))
-       {
-        credUsername = "steve@deployhub.com";
-        credPassword = "8DcQPxhPutqofPZ4dWFK05C1";
-        credentials = Base64.encodeBase64((credUsername + ":" + credPassword).getBytes(StandardCharsets.UTF_8));
-       }
-      }
 
      final PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
      connManager.setMaxTotal(200);
