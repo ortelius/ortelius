@@ -3,7 +3,7 @@ FROM quay.io/openmake/meister:latest AS builder
 WORKDIR /build/
 
 COPY . /workspace
-RUN /workspace/tgt/build-ui.sh
+RUN /workspace/tgt/build-ui.sh 
 
 FROM cgr.dev/chainguard/jdk:latest
 EXPOSE 8080

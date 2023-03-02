@@ -1,0 +1,21 @@
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9-alpine3.14 as base
+
+LABEL maintainer="Ortelius <request-info@ortelius.io>"
+
+FROM base as builder                                                                                                          
+
+ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1   
+
+WORKDIR /install                                                                                                            
+
+RUN apk update && apk add postgresql-dev build-base python3-dev musl-dev libffi-dev; \
+    pip install --prefix=/install psycopg2==2.9.1 sqlalchemy==1.4.22 PyJWT==2.0.1 cryptography==3.4.8; 
+
+FROM base
+
+#CVEs Fix
+RUN apk update && apk upgrade;
+RUN apk add expat=2.4.3-r0;                                                                                                                                                                                                                                                   
+
+COPY --from=builder /install /usr/local    
+RUN apk --no-cache add libpq;echo > /app/prestart.sh;

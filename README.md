@@ -1,41 +1,37 @@
 # Ortelius
+[![Code Scanning](https://github.com/ortelius/ortelius/actions/workflows/trivy-analysis.yml/badge.svg)](https://github.com/ortelius/ortelius/actions/workflows/trivy-analysis.yml)
 
-Welcome to Ortelius. Ortelius is an open source project that aims to simplify the implementation of microservices. By providing a central catalog of services with their deployment specs, application teams can easily consume and deploy services across cluster. Ortelius tracks application versions based on service updates and maps their service dependencies eliminating confusion and guess work.  Unique to Ortelius is the ability to track your microservice inventory across clusters mapping the differences.  Ortelius serves Site Reliability Engineers and Cloud Architects in their migration to and ongoing management of a microservice implementation. For more information, see the comprehensive documentation at http://docs.ortelius.io
+Welcome to Ortelius. Ortelius is a unified 'evidence store' of supply chain data designed to simplify a decoupled microservices environment. Ortelius builds relationships between service (package) and consuming 'logical' applications. With Ortelius, open-source and API developers can register their services and track their consumers. Enterprise developers register their 'logical' application's base version and are notified when a dependency change causes the creation of a new application version, new SBOM, CVE, and dependency map. By centralizing and tracking detailed supply chain data, Ortelius provides the enterprise open-source consumers and open-source developers a coordinated view of who is using a service, its version, and inventory across all end-points. We are creating a central store for development teams to define provenance, apply zero-trust policies, and eventually score risk factors of both internal common code and open-source packages. In other words, we answer the question, "who is using Log4j." For more information, see the comprehensive documentation at [Ortelius' documentation](http://docs.ortelius.io).
 
 ## Ortelius Mission
 
-Our mission is to simplify the adoption of modern architecture through a world-class microservice management platform driven by a supportive and diverse global open source community.
+Our mission is to simplify the adoption of modern architecture through a world-class microservice governance catalog driven by a supportive and diverse global open source community.
 
 ## Ortelius Value Statements
 
 - We want Members to learn and understand solutions around microservice use and their challenges through a diverse contributor base.
 - We want our members to develop their careers, skills and gain community recognition for their work and expertise.
-- We want our members to have the opportunity to share and reuse open source microservices to further the adoption of a cloud native development.
+- We want our members to have the opportunity to share and reuse open source micro-services to further the adoption of a cloud native development.
 - We want members to learn how to contribute to an open source community and become part of the broader conversation around cloud native architecture.
 
 ## Ortelius Benefits
 
 The benefits of the Ortelius Open Source Project are:
 
-1) Adds automated configuration management of microservices, tracking logical applications and their versions, into the continuous delivery process.
-2) Simplifies the path to adopting cloud native development practices without a major redesign of their CD pipeline.
-3) Give developers the power to control how their software is released across all environments by defining deployment configurations data that is separate from the definition.
-4) Deliver transparency into the continuous delivery process by mapping component and microservice relationships with BOM and Difference Reports across deployed environments (clusters, cloud, physical).  
-5) Serve as a central market place to share microservices with their deployment requirements and versions.
+1) Adds automated supply chain management of microservices and other shared components across application teams
+2) Tracks the 'blast radius' of a single shared component across all consuming applications that are using it. 
+3) Tracks the logical applications and aggregates component SBOM and CVE data to the logical applicaiton level. 
+4) Simplifies the path to adopting cloud native development practices without a major redesign of their CD pipeline.
+5) Performs container versioning and applicaiton pakcage versions. 
+6) Serve as a central market place to share reusable components with their SBOM and CVE information. 
 
-## Ortelius Development Goals for 2021
+## Ortelius Development Goals for 2023
 
-Goals for Q1 and Q2 of 2021
+Goals for Q1 and Q2 of 2023
 
-1) Website redesign to support easy contribution (pull request) (Jenkins as an example)
-2) Improve data graphs and maps
-3) Increase adoption by adding 'scraping' of AWS, GKE, Azure.
-
-Goals for the Q3 and Q4 months of 2021
-
-1) Publish our first global marketplace
-2) Convert DMScript to Python
-
+1) Implementation of XRP Ledger to create immutable SBOMs.
+2) Improve data graphs and maps.
+3) Increase adoption of the catalog.
 
 ## Code of Conduct
 
@@ -51,7 +47,6 @@ Goals for the Q3 and Q4 months of 2021
 
 [Calendar of meetings with times and zoom info.](https://ortelius.io/events/)
 
-[Discord community channel](https://discord.gg/ZtXU74x)
 
 ### CD Environment - Development Infrastructure and Productivity
 
@@ -74,18 +69,16 @@ Contributors:
 - Jimmy Malhan
 - Arvind Singharpuria
 - Interas LLC - Corporate Contributer
-   - Ujwal Yelmareddy
+- Ujwal Yelmareddy
+- Lakshmi Viswanath
+- Hamid Gholami
+- Kingsathurthi
+- Bassem Riahi
+- Arnab Maity
+- Steven Carrato
+  
 
-### Data Science and Visualization
-
-Determine what reports and maps can currently be created and/or enhanced.  Begin looking at what data can be passed back to the CD pipelines for predictive reporting, risk assessment. (Think truth tables).
-
-Contributors:
-
-- Tracy Ragan
-- Tatiana Lazebnyk
-
-### Deployment Integrations
+### CD Integrations
 
 Create integrations with documentation and videos for the following CI/CD Solutions:
 
@@ -108,6 +101,10 @@ Contributors:
 - Zach Jones
 - Aditi Agarwal
 - Jesse Gonzalez
+- Lakshmi Viswanath
+- Kingsathurthi
+- Bassem Riahi
+- Arnab Maity
 
 ### Market Place and Domains
 
@@ -129,6 +126,11 @@ Contributors:
 
 - Tracy Ragan
 - Parijat Kalita
+- Ashutosh Srivastava
+- Poovaraj Thangamariappan
+- Yasaman Khazaie
+- Nik Poputko
+- Anirudh Sharma
 
 ### Documentation
 
@@ -164,6 +166,14 @@ Contributors:
 - Neil Chen
 - Devendran Nehru
 - Arvind Singharpuria
+- Turker Aslan
+- Leniuska Alvarado
+- Ankur Kumar
+- Lakshmi Viswanaths
+- Bassem Riahi
+- Paul Li
+- Joseph Akayesi
+- Christian De Leon
 
 ### Development
 
@@ -188,6 +198,14 @@ Contributors:
 - Avikam Jha
 - Jayesh Srivastava
 - Arvind Singharpuria
+- Aman Saxena
+- Ashutosh Srivastava
+- Leniuska Alvarado
+- Bassem Riahi
+- Paul Li
+- Joseph Akayesi
+- Christian De Leon
+- Akshat Jain
 
 ### Product Management
 
@@ -217,6 +235,7 @@ Contributors:
 - Alok Tanna
 - Arijeet Majumdar
 - Tatiana Lazebnyk
+- Turker Aslan
 
 ### Project Management
 
@@ -231,11 +250,20 @@ Contributors:
 
 Research, define and Automate GitOps with Ortelius
 
-Contributors:
+Contributors,
+
 - Brad McCoy
 - Arvind Singharpuria
 - Amit Dsouza
 - Ayesha Khaliq
+- Saif Ul Islam
+- Kingsathurthi
+- Hamid Gholami
+- Anuja Kumari
+- Vrukshali Torawane
+- Joseph Akayesi
+- Rakesh Arumalla
+- Arnab Maity
 
 ## Installation
 
@@ -243,4 +271,6 @@ Browse through the [Installation and Support Guide](http://docs.ortelius.io/guid
 
 ## Support
 
-https://github.com/ortelius/ortelius/issues
+- [Issues](https://github.com/ortelius/ortelius/issues)
+
+
