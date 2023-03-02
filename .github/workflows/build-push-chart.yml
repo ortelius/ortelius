@@ -14,12 +14,17 @@ jobs:
       DHUSER: ${{ secrets.DHUSER }}
       DHPASS: ${{ secrets.DHPASS }}
       REGISTRY: quay.io
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write  
     steps:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 2
+          token: ${{ secrets.HELM_INDEXER_TOKEN }}
 
       - name: Set Convenience Env Vars and Tools
         id: env
@@ -182,10 +187,9 @@ jobs:
           rm env.sh cyclonedx.json syft
 
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v4.16.0
         with:
           commit_message: Update chart and values
-          token: ${{ secrets.ORTELIUS_CHART_PAT }}
 
       - name: Install Helm
         uses: azure/setup-helm@v3
