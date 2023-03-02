@@ -20,7 +20,8 @@ jobs:
         id: checkout
         uses: actions/checkout@v3
         with:
-          fetch-depth: 2
+          token: ${{ secrets.ORTELIUS_CHART_PAT }}
+          fetch-depth: 0
 
       - name: Set Convenience Env Vars and Tools
         id: env
@@ -186,7 +187,6 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4.16.0
         with:
           commit_message: Update chart and values
-          push_options: --force
 
       - name: Install Helm
         uses: azure/setup-helm@v3
