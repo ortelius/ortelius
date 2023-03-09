@@ -209,7 +209,7 @@ Contributors:
 ### Product Management
 
 - Website, branding, outreach
-- Review messaging, update logo, work on blogs.
+- Review messaging, update logo, submit blogs.
 - Personas, Journey Maps, service maps, roadmaps, Value Canvas, Go-to-Market strategies, product metrics.
 - What problem or opportunity is being explored?
 - How is the solution being framed to tackle this?
