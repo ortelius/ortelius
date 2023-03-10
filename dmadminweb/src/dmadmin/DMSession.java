@@ -1490,6 +1490,7 @@ public class DMSession implements AutoCloseable {
      } 
      catch (Exception e)
      {
+      System.out.println(e.getMessage());
       try 
       {
        System.out.println("No DB Connection - Retrying");
