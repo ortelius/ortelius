@@ -5,7 +5,7 @@ WORKDIR /build/
 COPY . /workspace
 RUN /workspace/tgt/build-ui.sh
 
-FROM cgr.dev/chainguard/jdk:latest
+FROM cgr.dev/chainguard/jdk:openjdk-17
 EXPOSE 8080
 ENV DBHome /tmp
 ENV DBConnectionString jdbc:postgresql://db.ortelius.io:80/postgres

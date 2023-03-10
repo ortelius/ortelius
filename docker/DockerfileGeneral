@@ -5,7 +5,7 @@ WORKDIR /build/
 COPY . /workspace
 RUN /workspace/tgt/build-gen.sh
 
-FROM eclipse-temurin:8-jdk-alpine
+FROM eclipse-temurin:17-jdk-alpine
 
 EXPOSE 8080
 ENV DBConnectionString jdbc:postgresql://db.ortelius.io:80/postgres
