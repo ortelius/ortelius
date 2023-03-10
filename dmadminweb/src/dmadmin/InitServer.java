@@ -788,6 +788,7 @@ public class InitServer extends HttpServletBase
      } 
      catch (Exception e)
      {
+      System.out.println(e.getMessage());
       try 
       {
        System.out.println("No DB Connection - Retrying");
