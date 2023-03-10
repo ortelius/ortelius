@@ -20,7 +20,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jackson-core-2.14.2.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jackson-databind-2.14.2.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jaxb-api-2.4.0.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/postgresql-42.5.2.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/snakeyaml-1.33.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/gson_lib"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gson-2.2.4-javadoc.jar"/>
@@ -35,5 +34,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jna-platform-4.1.0.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-fileupload-1.5.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/fluent-hc-4.5.14.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/postgresql-42.5.4.jar"/>
 	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
 </classpath>
