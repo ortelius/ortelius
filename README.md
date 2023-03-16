@@ -173,6 +173,7 @@ Contributors:
 - Paul Li
 - Joseph Akayesi
 - Christian De Leon
+- Ian Anderson
 
 ### Development
 
