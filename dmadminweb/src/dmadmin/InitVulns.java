@@ -358,7 +358,7 @@ private void updateVulns()
       risklevel = "Medium";
     }
 
-    PreparedStatement ins_st = m_conn.prepareStatement("insert into dm.dm_vulns (packagename, packageversion, purl, id, summary, risklevel, cvss) values (?, ?, ?, ?, ?, ?, ?)");
+    PreparedStatement ins_st = m_conn.prepareStatement("insert into dm.dm_vulns (packagename, packageversion, purl, id, summary, risklevel, cvss) values (?, ?, ?, ?, ?, ?, ?) ON CONFLICT ON CONSTRAINT dm_vulns_pkey DO NOTHING");
     ins_st.setString(1, packagename);
     ins_st.setString(2, packageversion);
     if (purl == null || purl.isEmpty())
