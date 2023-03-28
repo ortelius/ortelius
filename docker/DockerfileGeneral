@@ -11,7 +11,9 @@ EXPOSE 8080
 ENV DBConnectionString jdbc:postgresql://db.ortelius.io:80/postgres
 ENV DBDriverName org.postgresql.Driver
 
-RUN apk add --no-cache openssl
+RUN apk update; \
+    apk add --no-cache openssl; \
+    apk upgrade
 
 WORKDIR /opt/deployhub
 COPY --from=builder /workspace/installers/linux/engine/dm.* engine/
