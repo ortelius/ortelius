@@ -4,8 +4,8 @@
 replicaCount: 1
 image:
   repository: quay.io/ortelius/ms-nginx
-  tag: main-v10.0.86-g3f1f15
-  sha: sha256:d82b3ba8b6fa4598370106cf6c07fe5bec4371268396ed3f4d22da6938a57371
+  tag: main-v10.0.87-g2a4e4f
+  sha: sha256:38dc92909b43ffaba79e32211033a394de58fed3c0985b9c87dba7224e853fb5
   pullPolicy: Always
 ingress:
   enum:
