@@ -46,6 +46,11 @@ Goals for Q1 and Q2 of 2023
 
 [Calendar of meetings with times and zoom info.](https://ortelius.io/events/)
 
+## Ortelius Governing Board
+- [Govering Board Guidelines and Elections](https://ortelius.io/guidelines/)
+- [GB Google Group](https://groups.google.com/g/ortelius-governing-board)
+- [Current Governing Board Members](https://ortelius.io/blog/2022/12/13/ortelius-2023-governing-board/)
+
 
 ### CD Environment - Development Infrastructure and Productivity
 
