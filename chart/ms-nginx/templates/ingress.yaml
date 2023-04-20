@@ -34,7 +34,41 @@ spec:
             name: {{ include "ms-nginx.name" . }}
             port:
               number: 80
-{{ else }}
+{{ end }}
+{{ if eq .Values.ingress.type "glb" }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "ms-nginx.name" . }}
+  annotations:
+    networking.gke.io/managed-certificates: managed-cert-dh-ms-nginx
+    networking.gke.io/v1beta1.FrontendConfig: {{ include "ms-nginx.name" . }}
+spec:
+  defaultBackend:
+    service:
+      name: {{ include "ms-nginx.name" . }}
+      port:
+        number: 80
+---
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: {{ include "ms-nginx.name" . }}
+spec:
+  redirectToHttps:
+    enabled: true
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: managed-cert-dh-ms-nginx
+spec:
+  domains:
+    - console.deployhub.com
+---
+{{ end }}
+{{ if and (ne .Values.ingress.type "glb" ) (ne .Values.ingress.type "alb" ) }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
