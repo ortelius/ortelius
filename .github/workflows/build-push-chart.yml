@@ -1,11 +1,17 @@
 name: Build/Push Image and Release Charts
 
 on:
+  pull_request:
+    paths-ignore:
+      - "chart/**/Chart.yaml"
+      - "chart/**/values.yaml"
   push:
     branches:
       - main
     paths-ignore:
-      - "chart/**"
+      - "chart/**/Chart.yaml"
+      - "chart/**/values.yaml"
+      
 jobs:
   release:
     runs-on: ubuntu-latest
