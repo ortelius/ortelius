@@ -20,12 +20,12 @@
         }
       },
       "properties": {
-        "imageName": "quay.io/ortelius/ms-nginx:main-v10.0.97-ga1e3db",
+        "imageName": "quay.io/ortelius/ms-nginx:main-v10.0.98-g1bdd8e",
         "repoDigests": [
-          "quay.io/ortelius/ms-nginx@sha256:aa5259ba2db350dda157f426780456e8c5a7648fa6ee253ba529863366ed8cc4"
+          "quay.io/ortelius/ms-nginx@sha256:f623905bed9b44bfe669f3d8b8792b2ac75f4d8baadd7bb21d9cdf6d388c9056"
         ],
         "repoTags": [
-          "quay.io/ortelius/ms-nginx:main-v10.0.97-ga1e3db"
+          "quay.io/ortelius/ms-nginx:main-v10.0.98-g1bdd8e"
         ]
       }
     }
