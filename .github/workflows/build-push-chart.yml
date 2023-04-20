@@ -5,8 +5,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - "chart/**/Chart.yaml"
-      - "chart/**/values.yaml"
+      - "chart/**"
       
 jobs:
   release:
