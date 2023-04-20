@@ -10,6 +10,7 @@ image:
 ingress:
   enum:
     alb: "OFF"
+    glb: "OFF"
     volumemnt: ""
     sslcert: "ON"
     ssloff: "OFF"

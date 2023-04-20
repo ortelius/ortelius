@@ -12,7 +12,7 @@ spec:
   template:
     metadata:
       labels:
-        app: ms-nginx
+        app: {{ include "ms-nginx.name" . }}
         tier: frontend
         track: stable
     spec:
