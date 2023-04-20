@@ -9,7 +9,7 @@
           "informationUri": "https://github.com/aquasecurity/trivy",
           "name": "Trivy",
           "rules": [],
-          "version": "0.38.1"
+          "version": "0.40.0"
         }
       },
       "results": [],
@@ -18,6 +18,15 @@
         "ROOTPATH": {
           "uri": "file:///"
         }
+      },
+      "properties": {
+        "imageName": "quay.io/ortelius/ms-nginx:main-v10.0.92-gd6b5cc",
+        "repoDigests": [
+          "quay.io/ortelius/ms-nginx@sha256:4dac63f0ed8beddb8152ad7c79970fb9a1a03fbf57bbad2ffd566f8e15c81da0"
+        ],
+        "repoTags": [
+          "quay.io/ortelius/ms-nginx:main-v10.0.92-gd6b5cc"
+        ]
       }
     }
   ]
