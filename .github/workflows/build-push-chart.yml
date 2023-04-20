@@ -5,7 +5,9 @@ on:
     branches:
       - main
     paths-ignore:
-      - "chart/**"
+      - "chart/**/Chart.yaml"
+      - "chart/**/values.yaml"
+      
 jobs:
   release:
     runs-on: ubuntu-latest
