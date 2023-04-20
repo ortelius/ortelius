@@ -6,7 +6,7 @@ on:
       - main
     paths-ignore:
       - "chart/**"
-      
+
 jobs:
   release:
     runs-on: ubuntu-latest
