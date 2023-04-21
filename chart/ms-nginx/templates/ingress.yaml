@@ -76,7 +76,11 @@ metadata:
   labels:
     app: {{ include "ms-nginx.name" . }}
 spec:
+{{ if eq .Values.ingress.type "k3d" }}
+  ingressClassName: traefik
+{{ else }}
   ingressClassName: nginx
+{{ end }}  
   rules:
   - host: {{ .Values.ingress.dnsname | default "" | quote }}
     http:
