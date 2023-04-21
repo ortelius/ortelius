@@ -11,9 +11,10 @@ ingress:
   enum:
     alb: "OFF"
     glb: "OFF"
+    k3d: "OFF"
     volumemnt: ""
     sslcert: "ON"
     ssloff: "OFF"
-  type: ssloff # alb, volumemnt, sslcert, ssloff
+  type: ssloff
   alb_certificate_arn:
   alb_subnets:
