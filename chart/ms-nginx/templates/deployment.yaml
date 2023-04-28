@@ -16,6 +16,8 @@ spec:
         tier: frontend
         track: stable
     spec:
+      nodeSelector:
+        kubernetes.io/os: linux    
       containers:
         - name: {{ include "ms-nginx.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
