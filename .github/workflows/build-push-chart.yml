@@ -1,6 +1,5 @@
 name: Build/Push Image and Release Charts
 
-
 on:
   push:
     branches:
