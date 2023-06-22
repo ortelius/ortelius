@@ -127,7 +127,7 @@ Contributors:
 Review User Interface and make recommendations for improving with a focus on ease of use. Define test cases with automation.
 
 Contributors:
-
+- David Edelhart
 - Tracy Ragan
 - Parijat Kalita
 - Ashutosh Srivastava
