@@ -7,14 +7,14 @@ WORKDIR /build/
 COPY . /workspace
 RUN /workspace/tgt/build-gen.sh
 
-FROM eclipse-temurin:17-jdk-alpine
+FROM alpine:edge
 
 EXPOSE 8080
 ENV DBConnectionString jdbc:postgresql://db.ortelius.io:80/postgres
 ENV DBDriverName org.postgresql.Driver
 
 RUN apk update; \
-    apk add --no-cache openssl; \
+    apk add --no-cache openjdk17 openssl; \
     apk upgrade
 
 WORKDIR /opt/deployhub

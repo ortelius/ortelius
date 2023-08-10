@@ -2033,15 +2033,7 @@ deployhub-webadmin.classpath : dmadminweb/WebContent/WEB-INF/lib/*.jar \
 	websocket-api.jar \
 		VERSIONINFO  \
 		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-	rt.jar \
-		VERSIONINFO  \
-		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-	jce.jar \
-		VERSIONINFO  \
-		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[5] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[5]
+		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] 
 	FINALTARGET deployhub-webadmin.war
 	TARGET deployhub-webadmin.classpath
 	TGTFILENAME deployhub-webadmin.war.tgt
@@ -2141,15 +2133,7 @@ dh-ms-general.classpath : dmadminweb/WebContent/WEB-INF/lib/*.jar \
 	websocket-api.jar \
 		VERSIONINFO  \
 		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-	rt.jar \
-		VERSIONINFO  \
-		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-	jce.jar \
-		VERSIONINFO  \
-		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[5] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[5]
+		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] 
 	FINALTARGET dh-ms-general.war
 	TARGET dh-ms-general.classpath
 	TGTFILENAME dh-ms-general.war.tgt
@@ -2249,15 +2233,7 @@ dh-ms-init.classpath : dmadminweb/WebContent/WEB-INF/lib/*.jar \
 	websocket-api.jar \
 		VERSIONINFO  \
 		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-	rt.jar \
-		VERSIONINFO  \
-		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-	jce.jar \
-		VERSIONINFO  \
-		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[5] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[5]
+		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] 
 	FINALTARGET dh-ms-init.war
 	TARGET dh-ms-init.classpath
 	TGTFILENAME dh-ms-init.war.tgt
@@ -2357,15 +2333,7 @@ dh-ms-ui.classpath : dmadminweb/WebContent/WEB-INF/lib/*.jar \
 	websocket-api.jar \
 		VERSIONINFO  \
 		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-	rt.jar \
-		VERSIONINFO  \
-		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-	jce.jar \
-		VERSIONINFO  \
-		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[5] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[5]
+		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] 
 	FINALTARGET dh-ms-ui.war
 	TARGET dh-ms-ui.classpath
 	TGTFILENAME dh-ms-ui.war.tgt
@@ -2465,15 +2433,7 @@ dmadminweb.classpath : dmadminweb/WebContent/WEB-INF/lib/*.jar \
 	websocket-api.jar \
 		VERSIONINFO  \
 		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-	rt.jar \
-		VERSIONINFO  \
-		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] \
-	jce.jar \
-		VERSIONINFO  \
-		RELOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[5] \
-		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[5]
+		DEBOPTIONS BTOG(Set Classpath|Build Task Options)[0]{} DT[37] 
 	FINALTARGET dmadminweb.war
 	TARGET dmadminweb.classpath
 	TGTFILENAME dmadminweb.war.tgt
@@ -3256,8 +3216,11 @@ else
 $ClassPath .= $PathDL . $ENV{JAVA_HOME} . $DL . "lib" . $DL . "tools.jar";
 }
 
-push(@CompilerArguments,"arg value=\"-bootclasspath\" /\n");
-push(@CompilerArguments,'arg value="' . $ClassPath . "\" /\n");
+# push(@CompilerArguments,"arg value=\"-bootclasspath\" /\n");
+# push(@CompilerArguments,'arg value="' . $ClassPath . "\" /\n");
+
+push(@CompilerArguments,"arg value=\"--add-exports\" /\n");
+push(@CompilerArguments,'arg value="' . "java.naming/com.sun.jndi.ldap=ALL-UNNAMED" . "\" /\n");
 
 if ($compiler =~ /jikes/i)
 {
