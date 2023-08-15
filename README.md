@@ -2,6 +2,18 @@
 
 Welcome to Ortelius. Ortelius is a unified 'evidence store' of supply chain data designed to simplify a decoupled microservices environment. Ortelius builds relationships between service (package) and consuming 'logical' applications. With Ortelius, open-source and API developers can register their services and track their consumers. Enterprise developers register their 'logical' application's base version and are notified when a dependency change causes the creation of a new application version, new SBOM, CVE, and dependency map. By centralizing and tracking detailed supply chain data, Ortelius provides the enterprise open-source consumers and open-source developers a coordinated view of who is using a service, its version, and inventory across all end-points. We are creating a central store for development teams to define provenance, apply zero-trust policies, and eventually score risk factors of both internal common code and open-source packages. In other words, we answer the question, "who is using Log4j." For more information, see the comprehensive documentation at [Ortelius' documentation](http://docs.ortelius.io).
 
+![Release](https://img.shields.io/github/v/release/ortelius/ortelius?sort=semver)
+![license](https://img.shields.io/github/license/ortelius/ortelius)
+
+![Build](https://img.shields.io/github/actions/workflow/status/ortelius/ortelius/build-push-chart.yml)
+[![MegaLinter](https://github.com/ortelius/ortelius/workflows/MegaLinter/badge.svg?branch=main)](https://github.com/ortelius/ortelius/actions?query=workflow%3AMegaLinter+branch%3Amain)
+![CodeQL](https://github.com/ortelius/ortelius/workflows/CodeQL/badge.svg)
+[![OpenSSF
+-Scorecard](https://api.securityscorecards.dev/projects/github.com/ortelius/ortelius/badge)](https://api.securityscorecards.dev/projects/github.com/ortelius/ortelius)
+
+
+![Discord](https://img.shields.io/discord/722468819091849316)
+
 ## Ortelius Mission
 
 Our mission is to simplify the adoption of modern architecture through a world-class microservice governance catalog driven by a supportive and diverse global open source community.
