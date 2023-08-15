@@ -1,0 +1,39 @@
+---
+name: "CodeQL"
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  schedule:
+    - cron: "30 1 * * *"
+
+permissions: read-all
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@1f99358870fe1c846a3ccba386cc2b2246836776 # v2.2.1
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
+      - name: Checkout repository
+        uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@168b99b3c22180941ae7dbdd5f5c9678ede476ba # v2.2.7
+        with:
+          languages: "python"
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@168b99b3c22180941ae7dbdd5f5c9678ede476ba # v2.2.7
+        with:
+          category: "/language:python"
