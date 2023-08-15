@@ -6,7 +6,6 @@ Welcome to Ortelius. Ortelius is a unified 'evidence store' of supply chain data
 ![license](https://img.shields.io/github/license/ortelius/ortelius)
 
 ![Build](https://img.shields.io/github/actions/workflow/status/ortelius/ortelius/build-push-chart.yml)
-[![MegaLinter](https://github.com/ortelius/ortelius/workflows/MegaLinter/badge.svg?branch=main)](https://github.com/ortelius/ortelius/actions?query=workflow%3AMegaLinter+branch%3Amain)
 ![CodeQL](https://github.com/ortelius/ortelius/workflows/CodeQL/badge.svg)
 [![OpenSSF
 -Scorecard](https://api.securityscorecards.dev/projects/github.com/ortelius/ortelius/badge)](https://api.securityscorecards.dev/projects/github.com/ortelius/ortelius)
