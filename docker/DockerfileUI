@@ -1,4 +1,4 @@
-FROM quay.io/openmake/meister:latest AS builder
+FROM quay.io/openmake/meister:v7_5_1 AS builder
 
 WORKDIR /build/
 
