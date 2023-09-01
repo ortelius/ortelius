@@ -52,7 +52,7 @@ jobs:
 
       - name: UI Build and Push Docker Image
         id: build_ui
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           push: true
           file: docker/DockerfileUI
@@ -97,7 +97,7 @@ jobs:
 
       - name: General Build and Push Docker Image
         id: build_gen
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           push: true
           file: docker/DockerfileGeneral
@@ -142,7 +142,7 @@ jobs:
 
       - name: Nginx Build and Push Docker Image
         id: build_nginx
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           push: true
           file: docker/DockerfileNginx
@@ -197,7 +197,7 @@ jobs:
           version: v3.10.0
 
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.4.1
+        uses: helm/chart-releaser-action@v1.5.0
         with:
           charts_dir: chart
         env:
