@@ -27,5 +27,6 @@
       "automerge": true,
       "autoApprove": true
     }
-  ]
+  ],
+  "pinDigests": true
 }
