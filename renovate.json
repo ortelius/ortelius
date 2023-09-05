@@ -1,9 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:base", "group:all"],
   "ignorePaths": ["chart/**", "requirements.txt"],
-  "schedule": [
-    "every 1 hours every weekday"
-  ],
+  "schedule": ["every 1 hours every weekday"],
   "prHourlyLimit": 4,
   "pip_requirements": {
     "fileMatch": ["(^|/)requirements\\.in$"]
@@ -11,25 +10,20 @@
   "pip-compile": {
     "fileMatch": ["(^|/)requirements\\.in$"]
   },
-  "extends": ["config:base", "group:all"],
-  "docker": {
-    "managerBranchPrefix": "docker-"
-  },
-  "python": {
-    "managerBranchPrefix": "python-"
-  },
-  "github-actions": {
-    "managerBranchPrefix": "github-"
-  },
-  "gomod": {
-    "managerBranchPrefix": "gomod-"
+  "groupName": "all dependencies",
+  "groupSlug": "all",
+  "lockFileMaintenance": {
+    "enabled": false
   },
   "packageRules": [
     {
-      "matchUpdateTypes": ["major", "minor", "patch", "pin", "pinDigest","digest"],
+      "groupName": "all dependencies",
+      "groupSlug": "all",
+      "matchPackagePatterns": [".*"],
       "automerge": true,
       "autoApprove": true
     }
   ],
+  "separateMajorMinor": false,
   "pinDigests": true
 }
