@@ -1,11 +1,11 @@
-FROM quay.io/openmake/meister:v7_5_1 AS builder
+FROM quay.io/openmake/meister:v7_5_1@sha256:f2b363bb9b976c65dab2ae1c1770e971ac989cce208dff323fd0bce8782b977c AS builder
 
 WORKDIR /build/
 
 COPY . /workspace
 RUN /workspace/tgt/build-ui.sh
 
-FROM alpine:edge
+FROM alpine:edge@sha256:f2d1645cd73c7e54584dc225da0b5229d19223412d719669ebda764f41396853
 
 RUN apk update; \
     apk add --no-cache openjdk17 openssl; \
