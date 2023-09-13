@@ -8,7 +8,10 @@
     "fileMatch": ["(^|/)requirements\\.in$"]
   },
   "pip-compile": {
-    "fileMatch": ["(^|/)requirements\\.in$"]
+    "fileMatch": ["(^|/)requirements\\.in$"],
+    "lockFileMaintenance": {
+      "enabled": false
+    }
   },
   "groupName": "all dependencies",
   "groupSlug": "all",
