@@ -91,6 +91,7 @@ Contributors:
 - Bassem Riahi
 - Arnab Maity
 - Steven Carrato
+- Ragha Vema
   
 
 ### CD Integrations
@@ -146,6 +147,7 @@ Contributors:
 - Yasaman Khazaie
 - Nik Poputko
 - Anirudh Sharma
+- Ragha Vema
 
 ### Documentation
 
@@ -222,6 +224,7 @@ Contributors:
 - Joseph Akayesi
 - Christian De Leon
 - Akshat Jain
+- Ragha Vema
 
 ### Product Management
 
