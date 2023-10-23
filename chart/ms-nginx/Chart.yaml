@@ -1,5 +1,5 @@
 apiVersion: v1
-appVersion: '10.0.149'
+appVersion: '10.0.150'
 description: A Helm chart for Kubernetes
 name: ms-nginx
-version: 10.0.149
+version: 10.0.150
