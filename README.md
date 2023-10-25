@@ -92,6 +92,7 @@ Contributors:
 - Arnab Maity
 - Steven Carrato
 - Ragha Vema
+- Priya Kashyap
   
 
 ### CD Integrations
@@ -192,6 +193,7 @@ Contributors:
 - Joseph Akayesi
 - Christian De Leon
 - Ian Anderson
+- Priya Kashyap
 
 ### Development
 
@@ -255,6 +257,7 @@ Contributors:
 - Arijeet Majumdar
 - Tatiana Lazebnyk
 - Turker Aslan
+- Priya Kashyap
 
 ### Project Management
 
@@ -264,6 +267,7 @@ Contributors:
 
 - Tracy Ragan
 - Neetu Jain
+- Priya Kashyap
 
 ## GitOps
 
