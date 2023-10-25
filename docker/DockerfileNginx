@@ -1,4 +1,4 @@
-FROM nginx:alpine-slim@sha256:68e92f1705aaf3f9ff5df66da3fe2a66c2288248f14527ad15b27a218eb3b165
+FROM nginx:alpine-slim@sha256:d45f4c998198583de669cd0ea8ab819ab344d57d6bf42b6f121d0ec097a032e8
 EXPOSE 80
 EXPOSE 443
 
