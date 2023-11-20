@@ -37,11 +37,28 @@ The benefits of the Ortelius Open Source Project are:
 
 ## Ortelius Development Goals for 2023
 
-Goals for Q1 and Q2 of 2023
+Goals for Q3 and Q4 of 2023
 
-1) Implementation of XRP Ledger to create immutable SBOMs.
-2) Improve data graphs and maps.
-3) Increase adoption of the catalog.
+Continue development of Ortelius v11.  See the [Ortelius v11 Project Boards](https://github.com/orgs/ortelius/projects/10) for a list of issues to work on.  Get paid for your work by completing an issue tagged with `Bounty`.
+
+List of v11 Repos:
+* [scec-app-tag](https://github.com/ortelius/scec-app-tag.git)
+* [scec-appver](https://github.com/ortelius/scec-appver.git)
+* [scec-comp-tag](https://github.com/ortelius/scec-comp-tag.git)
+* [scec-compver](https://github.com/ortelius/scec-compver.git)
+* [scec-vulnerability](https://github.com/ortelius/scec-vulnerability.git)
+* [scec-deployment](https://github.com/ortelius/scec-deployment.git)
+* [scec-deppkg](https://github.com/ortelius/scec-deppkg.git)
+* [scec-environment](https://github.com/ortelius/scec-environment.git)
+* [scec-group](https://github.com/ortelius/scec-group.git)
+* [scec-scorecard](https://github.com/ortelius/scec-scorecard.git)
+* [scec-textfile](https://github.com/ortelius/scec-textfile.git)
+* [scec-user](https://github.com/ortelius/scec-user.git)
+* [scec-usergroup](https://github.com/ortelius/scec-usergroup.git)
+* [scec-validate-provenance](https://github.com/ortelius/scec-validate-provenance.git)
+* [scec-validate-signing](https://github.com/ortelius/scec-validate-signing.git)
+* [scec-validate-user](https://github.com/ortelius/scec-validate-user.git)
+
 
 ## Code of Conduct
 
