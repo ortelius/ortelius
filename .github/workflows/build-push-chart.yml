@@ -1,14 +1,10 @@
 name: Build/Push Image and Release Charts
-
-# force build
-
-on:
+'on':
   push:
     branches:
       - main
     paths-ignore:
-      - "chart/**"
-
+      - chart/**
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -17,194 +13,221 @@ jobs:
       DHUSER: ${{ secrets.DHUSER }}
       DHPASS: ${{ secrets.DHPASS }}
       REGISTRY: quay.io
-    permissions: write-all
+    permissions:
+      id-token: write
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
           token: ${{ secrets.ORTELIUS_CHART_PAT }}
           fetch-depth: 0
-
       - name: Set Convenience Env Vars and Tools
         id: env
-        run: |
-          echo "CHART_VERSION=10.0.${{ github.run_number }}" >> $GITHUB_ENV
-          echo "IMAGE_VERSION=10.0.${{ github.run_number }}-g$(echo ${{ github.sha }} | cut -c 1-6)" >> $GITHUB_ENV
-          echo "IMAGE_TAG=${{ github.head_ref || github.ref_name }}-v10.0.${{ github.run_number }}-g$(echo ${{ github.sha }} | cut -c 1-6)" >> $GITHUB_ENV
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b .
+        run: 'echo "CHART_VERSION=10.0.${{ github.run_number }}" >> $GITHUB_ENV
+
+          echo "IMAGE_VERSION=10.0.${{ github.run_number }}-g$(echo ${{ github.sha
+          }} | cut -c 1-6)" >> $GITHUB_ENV
+
+          echo "IMAGE_TAG=${{ github.head_ref || github.ref_name }}-v10.0.${{ github.run_number
+          }}-g$(echo ${{ github.sha }} | cut -c 1-6)" >> $GITHUB_ENV
+
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh
+          | sh -s -- -b .
+
           sudo go install github.com/mikefarah/yq/v4@latest
+
           pip install ortelius-cli
 
+          '
       - name: Configure Git
         id: git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
+        run: 'git config user.name "$GITHUB_ACTOR"
+
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
+          '
       - name: Login to Quay
         id: login
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.QUAY_USERID }}
           password: ${{ secrets.QUAY_PASSWORD }}
-
       - name: UI Build and Push Docker Image
         id: build_ui
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56
         with:
           push: true
           file: docker/DockerfileUI
           tags: ${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }}
-
       - name: UI Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }}
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-
+          format: sarif
+          output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@66b90a5db151a8042fa97405c6cf843bbe433f7b # v2
+        uses: github/codeql-action/upload-sarif@66b90a5db151a8042fa97405c6cf843bbe433f7b
         if: always()
         with:
-          category: 'ui'
-          sarif_file: 'trivy-results.sarif'
-
+          category: ui
+          sarif_file: trivy-results.sarif
       - name: UI Generate SBOM
         id: sbom_ui
-        run: |
-            ./syft packages ${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }} -o cyclonedx-json > cyclonedx.json
+        run: './syft packages ${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG
+          }} -o cyclonedx-json > cyclonedx.json
 
+          '
       - name: UI Update Values and Chart
         id: chart_ui
-        run: |
-            yq e '.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-ui"' -i chart/ms-ui/values.yaml
-            yq e '.image.tag |= "${{ env.IMAGE_TAG }}"' -i chart/ms-ui/values.yaml
-            yq e '.image.sha |= "${{ steps.build_ui.outputs.digest }}"' -i chart/ms-ui/values.yaml
-            yq e '.version |= "${{ env.CHART_VERSION }}"' -i chart/ms-ui/Chart.yaml
-            yq e '.appVersion |= "${{ env.CHART_VERSION }}"' -i chart/ms-ui/Chart.yaml
-            echo "DIGEST=${{ steps.build_ui.outputs.digest }}" >> $GITHUB_ENV
+        run: 'yq e ''.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-ui"'' -i
+          chart/ms-ui/values.yaml
 
+          yq e ''.image.tag |= "${{ env.IMAGE_TAG }}"'' -i chart/ms-ui/values.yaml
+
+          yq e ''.image.sha |= "${{ steps.build_ui.outputs.digest }}"'' -i chart/ms-ui/values.yaml
+
+          yq e ''.version |= "${{ env.CHART_VERSION }}"'' -i chart/ms-ui/Chart.yaml
+
+          yq e ''.appVersion |= "${{ env.CHART_VERSION }}"'' -i chart/ms-ui/Chart.yaml
+
+          echo "DIGEST=${{ steps.build_ui.outputs.digest }}" >> $GITHUB_ENV
+
+          '
       - name: UI Update Compnent
         id: updatecomp_ui
-        run: |
-          export COMPNAME=ms-ui
+        run: 'export COMPNAME=ms-ui
+
           dh envscript --envvars component.toml --envvars_sh env.sh
+
           source env.sh
+
           dh updatecomp --rsp component.toml --deppkg cyclonedx@cyclonedx.json
 
+          '
       - name: General Build and Push Docker Image
         id: build_gen
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56
         with:
           push: true
           file: docker/DockerfileGeneral
           tags: ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }}
-
       - name: General Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }}
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-
+          format: sarif
+          output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@66b90a5db151a8042fa97405c6cf843bbe433f7b # v2
+        uses: github/codeql-action/upload-sarif@66b90a5db151a8042fa97405c6cf843bbe433f7b
         if: always()
         with:
-          category: 'general'
-          sarif_file: 'trivy-results.sarif'
-
+          category: general
+          sarif_file: trivy-results.sarif
       - name: General Generate SBOM
         id: sbom_gen
-        run: |
-            ./syft packages ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }} -o cyclonedx-json > cyclonedx.json
+        run: './syft packages ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG
+          }} -o cyclonedx-json > cyclonedx.json
 
+          '
       - name: General Update Values and Chart
         id: chart_gen
-        run: |
-            yq e '.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-general"' -i chart/ms-general/values.yaml
-            yq e '.image.tag |= "${{ env.IMAGE_TAG }}"' -i chart/ms-general/values.yaml
-            yq e '.image.sha |= "${{ steps.build_gen.outputs.digest }}"' -i chart/ms-general/values.yaml
-            yq e '.version |= "${{ env.CHART_VERSION }}"' -i chart/ms-general/Chart.yaml
-            yq e '.appVersion |= "${{ env.CHART_VERSION }}"' -i chart/ms-general/Chart.yaml
-            echo "DIGEST=${{ steps.build_gen.outputs.digest }}" >> $GITHUB_ENV
+        run: 'yq e ''.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-general"''
+          -i chart/ms-general/values.yaml
 
+          yq e ''.image.tag |= "${{ env.IMAGE_TAG }}"'' -i chart/ms-general/values.yaml
+
+          yq e ''.image.sha |= "${{ steps.build_gen.outputs.digest }}"'' -i chart/ms-general/values.yaml
+
+          yq e ''.version |= "${{ env.CHART_VERSION }}"'' -i chart/ms-general/Chart.yaml
+
+          yq e ''.appVersion |= "${{ env.CHART_VERSION }}"'' -i chart/ms-general/Chart.yaml
+
+          echo "DIGEST=${{ steps.build_gen.outputs.digest }}" >> $GITHUB_ENV
+
+          '
       - name: General Update Compnent
         id: updatecomp_gen
-        run: |
-          export COMPNAME=ms-general
+        run: 'export COMPNAME=ms-general
+
           dh envscript --envvars component.toml --envvars_sh env.sh
+
           source env.sh
+
           dh updatecomp --rsp component.toml --deppkg cyclonedx@cyclonedx.json
 
+          '
       - name: Nginx Build and Push Docker Image
         id: build_nginx
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56
         with:
           push: true
           file: docker/DockerfileNginx
           tags: ${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }}
-
       - name: NGINX Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }}
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-
+          format: sarif
+          output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@66b90a5db151a8042fa97405c6cf843bbe433f7b # v2
+        uses: github/codeql-action/upload-sarif@66b90a5db151a8042fa97405c6cf843bbe433f7b
         if: always()
         with:
-          category: 'nginx'
-          sarif_file: 'trivy-results.sarif'
-
+          category: nginx
+          sarif_file: trivy-results.sarif
       - name: Nginx Generate SBOM
         id: sbom_nginx
-        run: |
-            ./syft packages ${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }} -o cyclonedx-json > cyclonedx.json
+        run: './syft packages ${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG
+          }} -o cyclonedx-json > cyclonedx.json
 
+          '
       - name: Nginx Update Values and Chart
         id: chart_nginx
-        run: |
-            yq e '.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-nginx"' -i chart/ms-nginx/values.yaml
-            yq e '.image.tag |= "${{ env.IMAGE_TAG }}"' -i chart/ms-nginx/values.yaml
-            yq e '.image.sha |= "${{ steps.build_nginx.outputs.digest }}"' -i chart/ms-nginx/values.yaml
-            yq e '.version |= "${{ env.CHART_VERSION }}"' -i chart/ms-nginx/Chart.yaml
-            yq e '.appVersion |= "${{ env.CHART_VERSION }}"' -i chart/ms-nginx/Chart.yaml
-            echo "DIGEST=${{ steps.build_nginx.outputs.digest }}" >> $GITHUB_ENV
+        run: 'yq e ''.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-nginx"''
+          -i chart/ms-nginx/values.yaml
 
+          yq e ''.image.tag |= "${{ env.IMAGE_TAG }}"'' -i chart/ms-nginx/values.yaml
+
+          yq e ''.image.sha |= "${{ steps.build_nginx.outputs.digest }}"'' -i chart/ms-nginx/values.yaml
+
+          yq e ''.version |= "${{ env.CHART_VERSION }}"'' -i chart/ms-nginx/Chart.yaml
+
+          yq e ''.appVersion |= "${{ env.CHART_VERSION }}"'' -i chart/ms-nginx/Chart.yaml
+
+          echo "DIGEST=${{ steps.build_nginx.outputs.digest }}" >> $GITHUB_ENV
+
+          '
       - name: Nginx Update Compnent
         id: updatecomp_nginx
-        run: |
-          export COMPNAME=ms-nginx
+        run: 'export COMPNAME=ms-nginx
+
           dh envscript --envvars component.toml --envvars_sh env.sh
+
           source env.sh
+
           dh updatecomp --rsp component.toml --deppkg cyclonedx@cyclonedx.json
+
           rm -f env.sh cyclonedx.json syft trivy-results.sarif
 
+          '
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@8756aa072ef5b4a080af5dc8fef36c5d586e521d # v5.0.0
+        uses: stefanzweifel/git-auto-commit-action@8756aa072ef5b4a080af5dc8fef36c5d586e521d
         with:
           commit_message: Update chart and values
-
       - name: Install Helm
-        uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3
+        uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78
         with:
           version: v3.10.0
-
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@a917fd15b20e8b64b94d9158ad54cd6345335584 # v1.6.0
+        uses: helm/chart-releaser-action@a917fd15b20e8b64b94d9158ad54cd6345335584
         with:
           charts_dir: chart
         env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-
+          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Trigger Rebuild of Main Chart
-        uses: benc-uk/workflow-dispatch@798e70c97009500150087d30d9f11c5444830385 # v1
+        uses: benc-uk/workflow-dispatch@798e70c97009500150087d30d9f11c5444830385
         with:
           workflow: generate-main-chart.yml
           repo: ortelius/ortelius-charts
