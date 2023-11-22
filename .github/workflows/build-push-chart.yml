@@ -49,7 +49,7 @@ jobs:
           '
       - name: Login to Quay
         id: login
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
+        uses: docker/login-action@3d58c274f17dffee475a5520cbe67f0a882c4dbb
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.QUAY_USERID }}
@@ -68,7 +68,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@66b90a5db151a8042fa97405c6cf843bbe433f7b
+        uses: github/codeql-action/upload-sarif@192ad9bd5f0f28e050b84a9790c483b45e47edc1
         if: always()
         with:
           category: ui
@@ -120,7 +120,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@66b90a5db151a8042fa97405c6cf843bbe433f7b
+        uses: github/codeql-action/upload-sarif@192ad9bd5f0f28e050b84a9790c483b45e47edc1
         if: always()
         with:
           category: general
@@ -172,7 +172,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@66b90a5db151a8042fa97405c6cf843bbe433f7b
+        uses: github/codeql-action/upload-sarif@192ad9bd5f0f28e050b84a9790c483b45e47edc1
         if: always()
         with:
           category: nginx
@@ -213,15 +213,15 @@ jobs:
 
           '
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@8756aa072ef5b4a080af5dc8fef36c5d586e521d
+        uses: stefanzweifel/git-auto-commit-action@e8f94e4dd298db5a6a2aa2d42fe0bcef6f2c9660
         with:
           commit_message: Update chart and values
       - name: Install Helm
-        uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78
+        uses: azure/setup-helm@ac5ee1fca8fba06d82bfc39af726f19ffe037a49
         with:
           version: v3.10.0
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@a917fd15b20e8b64b94d9158ad54cd6345335584
+        uses: helm/chart-releaser-action@6203d709ca237fb26b724837f2c53716f244ee8c
         with:
           charts_dir: chart
         env:
