@@ -244,6 +244,7 @@ Contributors:
 - Christian De Leon
 - Akshat Jain
 - Ragha Vema
+- Kumar A. Anurag
 
 ### Product Management
 
