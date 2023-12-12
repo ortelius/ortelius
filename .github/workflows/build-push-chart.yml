@@ -62,7 +62,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@fe23b5a3e1de4ae7f64965059233ee74e959035e
+        uses: github/codeql-action/upload-sarif@b995212303c9b90cac695cf6c0b558f54fb613f6
         if: always()
         with:
           category: ui
@@ -104,7 +104,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@fe23b5a3e1de4ae7f64965059233ee74e959035e
+        uses: github/codeql-action/upload-sarif@b995212303c9b90cac695cf6c0b558f54fb613f6
         if: always()
         with:
           category: general
@@ -147,7 +147,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@fe23b5a3e1de4ae7f64965059233ee74e959035e
+        uses: github/codeql-action/upload-sarif@b995212303c9b90cac695cf6c0b558f54fb613f6
         if: always()
         with:
           category: nginx
@@ -177,11 +177,11 @@ jobs:
           rm -f env.sh cyclonedx.json syft trivy-results.sarif
 
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@e8f94e4dd298db5a6a2aa2d42fe0bcef6f2c9660
+        uses: stefanzweifel/git-auto-commit-action@29183a25ec7450c8f6fbab7ff22ccd42d8ab7416
         with:
           commit_message: Update chart and values
       - name: Install Helm
-        uses: azure/setup-helm@v3
+        uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3
         with:
           version: v3.11.1
       - name: Run chart-releaser
