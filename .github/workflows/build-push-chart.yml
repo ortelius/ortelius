@@ -74,11 +74,11 @@ jobs:
       - name: UI Update Values and Chart
         id: chart_ui
         run: |
-          yq e ''.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-ui"'' -i chart/ms-ui/values.yaml
-          yq e ''.image.tag |= "${{ env.IMAGE_TAG }}"'' -i chart/ms-ui/values.yaml
-          yq e ''.image.sha |= "${{ steps.build_ui.outputs.digest }}"'' -i chart/ms-ui/values.yaml
-          yq e ''.version |= "${{ env.CHART_VERSION }}"'' -i chart/ms-ui/Chart.yaml
-          yq e ''.appVersion |= "${{ env.CHART_VERSION }}"'' -i chart/ms-ui/Chart.yaml
+          yq e '.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-ui"' -i chart/ms-ui/values.yaml
+          yq e '.image.tag |= "${{ env.IMAGE_TAG }}"' -i chart/ms-ui/values.yaml
+          yq e '.image.sha |= "${{ steps.build_ui.outputs.digest }}"' -i chart/ms-ui/values.yaml
+          yq e '.version |= "${{ env.CHART_VERSION }}"' -i chart/ms-ui/Chart.yaml
+          yq e '.appVersion |= "${{ env.CHART_VERSION }}"' -i chart/ms-ui/Chart.yaml
           echo "DIGEST=${{ steps.build_ui.outputs.digest }}" >> $GITHUB_ENV
 
       - name: UI Update Compnent
@@ -116,11 +116,11 @@ jobs:
       - name: General Update Values and Chart
         id: chart_gen
         run: |
-          yq e ''.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-general"'' -i chart/ms-general/values.yaml
-          yq e ''.image.tag |= "${{ env.IMAGE_TAG }}"'' -i chart/ms-general/values.yaml
-          yq e ''.image.sha |= "${{ steps.build_gen.outputs.digest }}"'' -i chart/ms-general/values.yaml
-          yq e ''.version |= "${{ env.CHART_VERSION }}"'' -i chart/ms-general/Chart.yaml
-          yq e ''.appVersion |= "${{ env.CHART_VERSION }}"'' -i chart/ms-general/Chart.yaml
+          yq e '.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-general"' -i chart/ms-general/values.yaml
+          yq e '.image.tag |= "${{ env.IMAGE_TAG }}"' -i chart/ms-general/values.yaml
+          yq e '.image.sha |= "${{ steps.build_gen.outputs.digest }}"' -i chart/ms-general/values.yaml
+          yq e '.version |= "${{ env.CHART_VERSION }}"' -i chart/ms-general/Chart.yaml
+          yq e '.appVersion |= "${{ env.CHART_VERSION }}"' -i chart/ms-general/Chart.yaml
           echo "DIGEST=${{ steps.build_gen.outputs.digest }}" >> $GITHUB_ENV
 
       - name: General Update Compnent
@@ -159,11 +159,11 @@ jobs:
       - name: Nginx Update Values and Chart
         id: chart_nginx
         run: |
-          yq e ''.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-nginx"'' -i chart/ms-nginx/values.yaml
-          yq e ''.image.tag |= "${{ env.IMAGE_TAG }}"'' -i chart/ms-nginx/values.yaml
-          yq e ''.image.sha |= "${{ steps.build_nginx.outputs.digest }}"'' -i chart/ms-nginx/values.yaml
-          yq e ''.version |= "${{ env.CHART_VERSION }}"'' -i chart/ms-nginx/Chart.yaml
-          yq e ''.appVersion |= "${{ env.CHART_VERSION }}"'' -i chart/ms-nginx/Chart.yaml
+          yq e '.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-nginx"' -i chart/ms-nginx/values.yaml
+          yq e '.image.tag |= "${{ env.IMAGE_TAG }}"' -i chart/ms-nginx/values.yaml
+          yq e '.image.sha |= "${{ steps.build_nginx.outputs.digest }}"' -i chart/ms-nginx/values.yaml
+          yq e '.version |= "${{ env.CHART_VERSION }}"' -i chart/ms-nginx/Chart.yaml
+          yq e '.appVersion |= "${{ env.CHART_VERSION }}"' -i chart/ms-nginx/Chart.yaml
           echo "DIGEST=${{ steps.build_nginx.outputs.digest }}" >> $GITHUB_ENV
 
       - name: Nginx Update Compnent
