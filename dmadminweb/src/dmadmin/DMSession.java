@@ -82,6 +82,7 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
@@ -121,8 +122,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.sun.jndi.ldap.LdapCtxFactory;
-// import com.sun.xml.internal.ws.org.objectweb.asm.Type;
 
 // import dmadmin.API.ApiException;
 import dmadmin.json.CreatedModifiedField;
@@ -1146,7 +1145,8 @@ public class DMSession implements AutoCloseable {
          try
          {
           DirContext context;
-          context = com.sun.jndi.ldap.LdapCtxFactory.getLdapCtxInstance(servername + '/', props2);
+          context = connectLDAP(servername + '/', props2);
+          // context = com.sun.jndi.ldap.LdapCtxFactory.getLdapCtxInstance(servername + '/', props2);
           context.close();
           return true;
          }
@@ -1164,7 +1164,7 @@ public class DMSession implements AutoCloseable {
         	System.out.println("searchbase=["+searchbase+"]");
 
 
-        	Hashtable<String, Object> env = new Hashtable<String, Object>();
+        	Hashtable<String, String> env = new Hashtable<String, String>();
 
         	if (domain != null) {
         		// Domain set - use Active Directory technique
@@ -1175,7 +1175,8 @@ public class DMSession implements AutoCloseable {
 
 	            try {
 	            	System.out.println("Domain is set - Connecting to Active Directory Server ["+servername+"]");
-	            	context =  LdapCtxFactory.getLdapCtxInstance(servername + '/', env);
+	            	context = connectLDAP(servername + '/', env);
+	            	// context =  LdapCtxFactory.getLdapCtxInstance(servername + '/', env);
 	                // No exception - successful authentication
 	            	System.out.println("Successful authentication, finding user object");
 	            	String adSB;
@@ -32092,4 +32093,20 @@ public JSONArray getComp2Endpoints(int compid)
   }
   return arr;
  }
+ 
+ public InitialDirContext connectLDAP(String servername, Hashtable<String, String> env) {
+  InitialDirContext context = null;
+  env.put(Context.PROVIDER_URL, "ldap://" + servername);
+  
+  try {
+      // Create an initial context using standard InitialDirContext
+      context = new InitialDirContext(env);
+      
+      // Perform LDAP operations using the context
+      
+  } catch (NamingException e) {
+      // Handle NamingException
+  } 
+  return context;
+}
 }
