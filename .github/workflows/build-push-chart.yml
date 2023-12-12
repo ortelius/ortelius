@@ -25,30 +25,22 @@ jobs:
           fetch-depth: 0
       - name: Set Convenience Env Vars and Tools
         id: env
-        run: 'echo "CHART_VERSION=10.0.${{ github.run_number }}" >> $GITHUB_ENV
+        run: |
+          echo "CHART_VERSION=10.0.${{ github.run_number }}" >> $GITHUB_ENV
+          echo "IMAGE_VERSION=10.0.${{ github.run_number }}-g$(echo ${{ github.sha }} | cut -c 1-6)" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${{ github.head_ref || github.ref_name }}-v10.0.${{ github.run_number }}-g$(echo ${{ github.sha }} | cut -c 1-6)" >> $GITHUB_ENV
 
-          echo "IMAGE_VERSION=10.0.${{ github.run_number }}-g$(echo ${{ github.sha
-          }} | cut -c 1-6)" >> $GITHUB_ENV
-
-          echo "IMAGE_TAG=${{ github.head_ref || github.ref_name }}-v10.0.${{ github.run_number
-          }}-g$(echo ${{ github.sha }} | cut -c 1-6)" >> $GITHUB_ENV
-
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh
-          | sh -s -- -b .
-
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b .
           sudo go install github.com/mikefarah/yq/v4@latest
-
           pip install ortelius-cli
 
-          '
       - name: Configure Git
         id: git
-        run: 'git config user.name "$GITHUB_ACTOR"
-
+        run: |
+          git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-          '
-      - name: Login to Quay
+          - name: Login to Quay
         id: login
         uses: docker/login-action@3d58c274f17dffee475a5520cbe67f0a882c4dbb
         with:
@@ -76,37 +68,27 @@ jobs:
           sarif_file: trivy-results.sarif
       - name: UI Generate SBOM
         id: sbom_ui
-        run: './syft packages ${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG
-          }} -o cyclonedx-json > cyclonedx.json
+        run: |
+          ./syft packages ${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }} -o cyclonedx-json > cyclonedx.json
 
-          '
       - name: UI Update Values and Chart
         id: chart_ui
-        run: 'yq e ''.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-ui"'' -i
-          chart/ms-ui/values.yaml
-
+        run: |
+          yq e ''.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-ui"'' -i chart/ms-ui/values.yaml
           yq e ''.image.tag |= "${{ env.IMAGE_TAG }}"'' -i chart/ms-ui/values.yaml
-
           yq e ''.image.sha |= "${{ steps.build_ui.outputs.digest }}"'' -i chart/ms-ui/values.yaml
-
           yq e ''.version |= "${{ env.CHART_VERSION }}"'' -i chart/ms-ui/Chart.yaml
-
           yq e ''.appVersion |= "${{ env.CHART_VERSION }}"'' -i chart/ms-ui/Chart.yaml
-
           echo "DIGEST=${{ steps.build_ui.outputs.digest }}" >> $GITHUB_ENV
 
-          '
       - name: UI Update Compnent
         id: updatecomp_ui
-        run: 'export COMPNAME=ms-ui
-
+        run: |
+          export COMPNAME=ms-ui
           dh envscript --envvars component.toml --envvars_sh env.sh
-
           source env.sh
-
           dh updatecomp --rsp component.toml --deppkg cyclonedx@cyclonedx.json
 
-          '
       - name: General Build and Push Docker Image
         id: build_gen
         uses: docker/build-push-action@9f6f8c940b91232557f8699b21341a08624a8dce
@@ -128,37 +110,27 @@ jobs:
           sarif_file: trivy-results.sarif
       - name: General Generate SBOM
         id: sbom_gen
-        run: './syft packages ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG
-          }} -o cyclonedx-json > cyclonedx.json
+        run: |
+          ./syft packages ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }} -o cyclonedx-json > cyclonedx.json
 
-          '
       - name: General Update Values and Chart
         id: chart_gen
-        run: 'yq e ''.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-general"''
-          -i chart/ms-general/values.yaml
-
+        run: |
+          yq e ''.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-general"'' -i chart/ms-general/values.yaml
           yq e ''.image.tag |= "${{ env.IMAGE_TAG }}"'' -i chart/ms-general/values.yaml
-
           yq e ''.image.sha |= "${{ steps.build_gen.outputs.digest }}"'' -i chart/ms-general/values.yaml
-
           yq e ''.version |= "${{ env.CHART_VERSION }}"'' -i chart/ms-general/Chart.yaml
-
           yq e ''.appVersion |= "${{ env.CHART_VERSION }}"'' -i chart/ms-general/Chart.yaml
-
           echo "DIGEST=${{ steps.build_gen.outputs.digest }}" >> $GITHUB_ENV
 
-          '
       - name: General Update Compnent
         id: updatecomp_gen
-        run: 'export COMPNAME=ms-general
-
+        run: |
+          export COMPNAME=ms-general
           dh envscript --envvars component.toml --envvars_sh env.sh
-
           source env.sh
-
           dh updatecomp --rsp component.toml --deppkg cyclonedx@cyclonedx.json
 
-          '
       - name: Nginx Build and Push Docker Image
         id: build_nginx
         uses: docker/build-push-action@9f6f8c940b91232557f8699b21341a08624a8dce
@@ -166,6 +138,7 @@ jobs:
           push: true
           file: docker/DockerfileNginx
           tags: ${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }}
+
       - name: NGINX Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
@@ -180,45 +153,35 @@ jobs:
           sarif_file: trivy-results.sarif
       - name: Nginx Generate SBOM
         id: sbom_nginx
-        run: './syft packages ${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG
-          }} -o cyclonedx-json > cyclonedx.json
+        run: |
+          ./syft packages ${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }} -o cyclonedx-json > cyclonedx.json
 
-          '
       - name: Nginx Update Values and Chart
         id: chart_nginx
-        run: 'yq e ''.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-nginx"''
-          -i chart/ms-nginx/values.yaml
-
+        run: |
+          yq e ''.image.repository |= "${{ env.REGISTRY }}/ortelius/ms-nginx"'' -i chart/ms-nginx/values.yaml
           yq e ''.image.tag |= "${{ env.IMAGE_TAG }}"'' -i chart/ms-nginx/values.yaml
-
           yq e ''.image.sha |= "${{ steps.build_nginx.outputs.digest }}"'' -i chart/ms-nginx/values.yaml
-
           yq e ''.version |= "${{ env.CHART_VERSION }}"'' -i chart/ms-nginx/Chart.yaml
-
           yq e ''.appVersion |= "${{ env.CHART_VERSION }}"'' -i chart/ms-nginx/Chart.yaml
-
           echo "DIGEST=${{ steps.build_nginx.outputs.digest }}" >> $GITHUB_ENV
 
-          '
       - name: Nginx Update Compnent
         id: updatecomp_nginx
-        run: 'export COMPNAME=ms-nginx
-
+        run: |
+          export COMPNAME=ms-nginx
           dh envscript --envvars component.toml --envvars_sh env.sh
-
           source env.sh
-
           dh updatecomp --rsp component.toml --deppkg cyclonedx@cyclonedx.json
-
           rm -f env.sh cyclonedx.json syft trivy-results.sarif
 
-          '
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@e8f94e4dd298db5a6a2aa2d42fe0bcef6f2c9660
         with:
           commit_message: Update chart and values
       - name: Install Helm
         uses: azure/setup-helm@v3
+        with:
           version: v3.11.1
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@6203d709ca237fb26b724837f2c53716f244ee8c
