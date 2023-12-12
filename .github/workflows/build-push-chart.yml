@@ -15,6 +15,7 @@ jobs:
       REGISTRY: quay.io
     permissions:
       id-token: write
+      security-events: write
     steps:
       - name: Checkout
         id: checkout
