@@ -1,0 +1,71 @@
+FROM fedora:34
+
+RUN useradd -ms /bin/bash omreleng;
+
+RUN yum -y update; \
+    yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/F-34-x86_64/pgdg-fedora-repo-latest.noarch.rpm; \
+    yum -y install python python-pip postgresql13 postgresql13-server postgresql13-contrib postgresql13-libs postgresql-odbc unixODBC libzip perl sshpass libiodbc \
+                   procps-ng dos2unix jq git sudo unzip which iputils  openssl openssl-libs openssh-clients libnsl.i686 samba-client python-winrm \
+                   python3-PyYAML python-requests-kerberos krb5-devel krb5-libs krb5-workstation ansible diffutils rsync java-1.8.0-openjdk-devel; 
+RUN /usr/bin/python --version; 
+RUN /usr/bin/pip --version; 
+RUN /usr/bin/pip install cryptography==3.3.2 requests-credssp pywinrm[credssp] deployhub python-jenkins; 
+RUN curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.py -o /usr/lib/python3.9/site-packages/ansible/modules/windows/win_zip.py; 
+RUN curl -sL https://raw.githubusercontent.com/DeployHubProject/win_zip/master/ansible/win_zip.ps1 -o /usr/lib/python3.9/site-packages/ansible/modules/windows/win_zip.ps1; 
+
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
+    unzip awscliv2.zip; \
+    ./aws/install -i /usr/local/aws -b /usr/local/bin; 
+
+RUN curl -sL -o /tmp/gcloud_install.sh https://sdk.cloud.google.com; \
+    chmod 777 /tmp/gcloud_install.sh; \
+    /tmp/gcloud_install.sh --disable-prompts --install-dir=/usr/local; \
+    /usr/local/google-cloud-sdk/bin/gcloud components install kubectl docker-credential-gcr; 
+
+RUN curl -sL -o /tmp/helm_install.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get; \
+    chmod 777 /tmp/helm_install.sh; \
+    /tmp/helm_install.sh; \
+    mv /usr/local/bin/helm /usr/local/bin/helm2
+
+RUN curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; \
+    chmod 777 /tmp/get_helm.sh; \
+    /tmp/get_helm.sh
+
+RUN curl -skL -X GET https://releases.hashicorp.com/terraform/0.12.17/terraform_0.12.17_linux_amd64.zip -o /tmp/terraform_0.12.17_linux_amd64.zip; \
+    cd /tmp; \
+    unzip -q terraform_0.12.17_linux_amd64.zip; \
+    chmod +x terraform; \
+    mv terraform /usr/local/bin/
+
+RUN yum -y install yum-utils; \
+    yum-config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo; \
+    yum -y install gh
+    
+RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc;
+RUN echo -e "\
+[azure-cli] \n\
+name=Azure CLI \n\
+baseurl=https://packages.microsoft.com/yumrepos/azure-cli \n\
+enabled=1 \n\
+gpgcheck=1 \n\
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc \
+" > /etc/yum.repos.d/azure-cli.repo
+RUN yum -y install azure-cli
+
+RUN yum -y clean all; \
+    rm -rf /var/cache/yum; \
+    mkdir -p /winshares; \
+    chmod -R 775 /winshares; \
+    chmod -R 777  /var/lib/samba/private; \
+    chmod -R 777  /var/lib/samba/lock; \   
+    chown -R omreleng:omreleng /winshares; \
+    mkdir -p /home/omreleng/.ssh; \
+    mkdir -p /root/.ssh; \
+    chown -R omreleng:omreleng /home/omreleng; \
+    echo 'omreleng       ALL=(ALL)       NOPASSWD: ALL' >> /etc/sudoers; \
+    chmod 4755 /usr/bin/ping
+
+EXPOSE 8080
+USER omreleng
+ENV PATH "${PATH}:/usr/local/google-cloud-sdk/bin"
+ENTRYPOINT /bin/sh
