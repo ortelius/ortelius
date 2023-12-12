@@ -218,9 +218,8 @@ jobs:
         with:
           commit_message: Update chart and values
       - name: Install Helm
-        uses: azure/setup-helm@ac5ee1fca8fba06d82bfc39af726f19ffe037a49
-        with:
-          version: v3.10.0
+        uses: azure/setup-helm@v3
+          version: v3.11.1
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@6203d709ca237fb26b724837f2c53716f244ee8c
         with:
