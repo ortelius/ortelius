@@ -40,7 +40,7 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-          - name: Login to Quay
+      - name: Login to Quay
         id: login
         uses: docker/login-action@3d58c274f17dffee475a5520cbe67f0a882c4dbb
         with:
