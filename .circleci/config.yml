@@ -15,7 +15,7 @@
 version: 2.1
 
 orbs:
-  orb-tools: circleci/orb-tools@12.0.4
+  orb-tools: circleci/orb-tools@12.1.0
 
 workflows:
   btd:
