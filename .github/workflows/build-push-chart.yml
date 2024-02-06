@@ -62,7 +62,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@39cc02b1d9c54094b4cdbc06cec937d19c16ef3b
+        uses: github/codeql-action/upload-sarif@cf7e9f23492505046de9a37830c3711dd0f25bb3
         if: always()
         with:
           category: ui
@@ -104,7 +104,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@39cc02b1d9c54094b4cdbc06cec937d19c16ef3b
+        uses: github/codeql-action/upload-sarif@cf7e9f23492505046de9a37830c3711dd0f25bb3
         if: always()
         with:
           category: general
@@ -147,7 +147,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@39cc02b1d9c54094b4cdbc06cec937d19c16ef3b
+        uses: github/codeql-action/upload-sarif@cf7e9f23492505046de9a37830c3711dd0f25bb3
         if: always()
         with:
           category: nginx
