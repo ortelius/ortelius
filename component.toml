@@ -1,6 +1,4 @@
-Domain = "GLOBAL.ortelius.saas"
-Application = "${Domain}.ortelius"
-Application_Version = "10.0.0"
+Domain = "GLOBAL.Open Source.Linux Foundation.OpenSSF.Ortelius"
 
 Name = "${Domain}.${COMPNAME}"
 Variant = "${GIT_BRANCH}"
