@@ -313,5 +313,3 @@ Browse through the [Installation and Support Guide](http://docs.ortelius.io/guid
 ## Support
 
 - [Issues](https://github.com/ortelius/ortelius/issues)
-
-
