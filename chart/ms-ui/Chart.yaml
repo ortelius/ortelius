@@ -1,5 +1,5 @@
 apiVersion: v1
-appVersion: '10.0.245'
+appVersion: '10.0.246'
 description: A Helm chart for Kubernetes
 name: ms-ui
-version: 10.0.245
+version: 10.0.246
