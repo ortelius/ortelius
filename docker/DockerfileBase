@@ -1,4 +1,4 @@
-FROM fedora:40@sha256:22612832a0af4990b79cc6fb3c8b88d5ea70a0f30b3f87d83a0ae5efe30a7a65
+FROM fedora:41@sha256:cd58e01738fe9d281934c71e47c8e4e605a008bb233436c356bbcbe478149a74
 
 RUN useradd -ms /bin/bash omreleng;
 
