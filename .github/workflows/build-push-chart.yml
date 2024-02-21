@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@df0bcddf6d6823307c716b56a7ef9c3b25078874
+        uses: actions/checkout@aadec899646c8e0f34c52d9219c2faac36626b55
         with:
           token: ${{ secrets.ORTELIUS_CHART_PAT }}
           fetch-depth: 0
