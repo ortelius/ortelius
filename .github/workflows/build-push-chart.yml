@@ -43,14 +43,14 @@ jobs:
 
       - name: Login to Quay
         id: login
-        uses: docker/login-action@83a00bc1ab5ded6580f31df1c49e6aaa932d840d
+        uses: docker/login-action@5139682d94efc37792e6b54386b5b470a68a4737
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.QUAY_USERID }}
           password: ${{ secrets.QUAY_PASSWORD }}
       - name: UI Build and Push Docker Image
         id: build_ui
-        uses: docker/build-push-action@62d8db0960c97201f2ae1563702b458b5c216a38
+        uses: docker/build-push-action@b3eddbb94c4146a0988a620b01720afe50639271
         with:
           push: true
           file: docker/DockerfileUI
@@ -62,7 +62,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@a74dcdb05605be65a53209dbd6e62ee4ae1e3cc5
+        uses: github/codeql-action/upload-sarif@905ae4af531685eaee37e94f46845bf4c420dc62
         if: always()
         with:
           category: ui
@@ -92,7 +92,7 @@ jobs:
 
       - name: General Build and Push Docker Image
         id: build_gen
-        uses: docker/build-push-action@62d8db0960c97201f2ae1563702b458b5c216a38
+        uses: docker/build-push-action@b3eddbb94c4146a0988a620b01720afe50639271
         with:
           push: true
           file: docker/DockerfileGeneral
@@ -104,7 +104,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@a74dcdb05605be65a53209dbd6e62ee4ae1e3cc5
+        uses: github/codeql-action/upload-sarif@905ae4af531685eaee37e94f46845bf4c420dc62
         if: always()
         with:
           category: general
@@ -134,7 +134,7 @@ jobs:
 
       - name: Nginx Build and Push Docker Image
         id: build_nginx
-        uses: docker/build-push-action@62d8db0960c97201f2ae1563702b458b5c216a38
+        uses: docker/build-push-action@b3eddbb94c4146a0988a620b01720afe50639271
         with:
           push: true
           file: docker/DockerfileNginx
@@ -147,7 +147,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@a74dcdb05605be65a53209dbd6e62ee4ae1e3cc5
+        uses: github/codeql-action/upload-sarif@905ae4af531685eaee37e94f46845bf4c420dc62
         if: always()
         with:
           category: nginx
