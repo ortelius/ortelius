@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@aadec899646c8e0f34c52d9219c2faac36626b55
+        uses: actions/checkout@b32f140b0c872d58512e0a66172253c302617b90
         with:
           token: ${{ secrets.ORTELIUS_CHART_PAT }}
           fetch-depth: 0
@@ -50,7 +50,7 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
       - name: UI Build and Push Docker Image
         id: build_ui
-        uses: docker/build-push-action@4976231911ebf5f32aad765192d35f942aa48cb8
+        uses: docker/build-push-action@62d8db0960c97201f2ae1563702b458b5c216a38
         with:
           push: true
           file: docker/DockerfileUI
@@ -62,7 +62,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@982d9346add1ff0ac9db3b764aa5d1007496e9f8
+        uses: github/codeql-action/upload-sarif@a74dcdb05605be65a53209dbd6e62ee4ae1e3cc5
         if: always()
         with:
           category: ui
@@ -92,7 +92,7 @@ jobs:
 
       - name: General Build and Push Docker Image
         id: build_gen
-        uses: docker/build-push-action@4976231911ebf5f32aad765192d35f942aa48cb8
+        uses: docker/build-push-action@62d8db0960c97201f2ae1563702b458b5c216a38
         with:
           push: true
           file: docker/DockerfileGeneral
@@ -104,7 +104,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@982d9346add1ff0ac9db3b764aa5d1007496e9f8
+        uses: github/codeql-action/upload-sarif@a74dcdb05605be65a53209dbd6e62ee4ae1e3cc5
         if: always()
         with:
           category: general
@@ -134,7 +134,7 @@ jobs:
 
       - name: Nginx Build and Push Docker Image
         id: build_nginx
-        uses: docker/build-push-action@4976231911ebf5f32aad765192d35f942aa48cb8
+        uses: docker/build-push-action@62d8db0960c97201f2ae1563702b458b5c216a38
         with:
           push: true
           file: docker/DockerfileNginx
@@ -147,7 +147,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@982d9346add1ff0ac9db3b764aa5d1007496e9f8
+        uses: github/codeql-action/upload-sarif@a74dcdb05605be65a53209dbd6e62ee4ae1e3cc5
         if: always()
         with:
           category: nginx
@@ -177,7 +177,7 @@ jobs:
           rm -f env.sh cyclonedx.json syft trivy-results.sarif
 
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@4d160c5e4d67c62e67f03ae49aa38359e964139a
+        uses: stefanzweifel/git-auto-commit-action@e040c596f0a65570b339c60818081175bcf82d11
         with:
           commit_message: Update chart and values
       - name: Install Helm
