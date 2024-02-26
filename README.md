@@ -2,6 +2,7 @@
 
 Welcome to Ortelius. The goal of the Ortelius community is to expose weak links and security compliance in the software supply chain by continuously gathering and analyzing software supply chain intelligence introduced across the DevOps pipeline. Generating security insights like SBOMs is not enough to harden your software supply chain. Consumption and analysis of the data is needed to rapidly respond to supply chain threats. IT teams struggle to respond to threats when critical security intelligence is fragmented across tools and managed at the container level. Ortelius gathers and aggregates security and DevOps intelligence, tracking open-source inventory and vulnerabilities at the higher organizational levels, including logical applications, runtime environments, and organizational domains. With Ortelius, you can easily answer the question, “Where is Log4J running?” For more information, see the comprehensive documentation at [Ortelius' documentation](http://docs.ortelius.io).
 
+
 ![Release](https://img.shields.io/github/v/release/ortelius/ortelius?sort=semver)
 ![license](https://img.shields.io/github/license/ortelius/ortelius)
 
