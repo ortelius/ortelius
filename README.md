@@ -1,6 +1,7 @@
 # Ortelius
 
-Welcome to Ortelius. The mission of the Ortelius community is to expose weak links in the software supply chain by continuously gathering and analyzing software supply chain intelligence introduced across the DevOps pipeline. Generating security insights like SBOMs is not enough to harden your software supply chain. Consumption and analysis of the data is needed to rapidly respond to supply chain threats. IT teams struggle to respond to threats when critical security intelligence is fragmented across tools and managed at the container level. Ortelius gathers and aggregates security and DevOps intelligence, tracking open-source inventory and vulnerabilities at the higher organizational levels including logical applications, runtime environments and organizational domains. With Ortelius, you can easily answer the question, “where is Log4J running?” For more information, see the comprehensive documentation at [Ortelius' documentation](http://docs.ortelius.io).
+Welcome to Ortelius. The goal of the Ortelius community is to expose weak links and security compliance in the software supply chain by continuously gathering and analyzing software supply chain intelligence introduced across the DevOps pipeline. Generating security insights like SBOMs is not enough to harden your software supply chain. Consumption and analysis of the data is needed to rapidly respond to supply chain threats. IT teams struggle to respond to threats when critical security intelligence is fragmented across tools and managed at the container level. Ortelius gathers and aggregates security and DevOps intelligence, tracking open-source inventory and vulnerabilities at the higher organizational levels, including logical applications, runtime environments, and organizational domains. With Ortelius, you can easily answer the question, “Where is Log4J running?” For more information, see the comprehensive documentation at [Ortelius' documentation](http://docs.ortelius.io).
+
 
 ![Release](https://img.shields.io/github/v/release/ortelius/ortelius?sort=semver)
 ![license](https://img.shields.io/github/license/ortelius/ortelius)
@@ -15,29 +16,28 @@ Welcome to Ortelius. The mission of the Ortelius community is to expose weak lin
 
 ## Ortelius Mission
 
-Our mission is to simplify the adoption of modern architecture through a world-class microservice governance catalog driven by a supportive and diverse global open source community.
+Our mission is to build a federated DevOps and Supply Chain Security evidence store designed to provide real-time insights and feedback on the security aspects of software development, deployment, and operations within a DevSecOps environment. 
 
 ## Ortelius Value Statements
 
-- We want Members to learn and understand solutions around microservice use and their challenges through a diverse contributor base.
+- We want Members to learn and understand solutions around software security, DevOps, and cloud-native environments through a diverse contributor base.
 - We want our members to develop their careers, skills and gain community recognition for their work and expertise.
-- We want our members to have the opportunity to share and reuse open source microservices to further the adoption of a cloud native development.
 - We want members to learn how to contribute to an open source community and become part of the broader conversation around cloud native architecture.
 
 ## Ortelius Benefits
 
 The benefits of the Ortelius Open Source Project are:
 
-1) Adds automated supply chain management of microservices and other shared components across application teams
-2) Tracks the 'blast radius' of a single shared component across all consuming applications that are using it. 
-3) Tracks the logical applications and aggregates component SBOM and CVE data to the logical applicaiton level. 
-4) Simplifies the path to adopting cloud native development practices without a major redesign of their CD pipeline.
-5) Performs container versioning and applicaiton pakcage versions. 
+1) Federates supply chain and DevOps intelligence across organizational silos.
+2) Tracks component versions 'blast radius' and their vulnerabilities across all consuming applications for rapid response.
+3) Tracks the logical applications and aggregates component SBOM and CVE data to the logical application level. 
+4) Integrates open-source security tooling into the CI/CD pipeline.
+5) Performs software supply chain versioning and builds historical trends, the basis for threat modeling and remediation.
 6) Serve as a central market place to share reusable components with their SBOM and CVE information. 
 
 ## Ortelius Development Goals for 2023
 
-Goals for Q3 and Q4 of 2023
+Goals for Q1 and Q2 of 2024
 
 Continue development of Ortelius v11.  See the [Ortelius v11 Project Boards](https://github.com/orgs/ortelius/projects/10) for a list of issues to work on.  Get paid for your work by completing an issue tagged with `Bounty`.
 
