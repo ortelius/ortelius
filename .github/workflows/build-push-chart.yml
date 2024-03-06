@@ -50,7 +50,7 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
       - name: UI Build and Push Docker Image
         id: build_ui
-        uses: docker/build-push-action@831ca179d3cf91cf0c90ca465a408fa61e2129a2
+        uses: docker/build-push-action@00ae31ab6ef216583e63647d8865f52da6b99a13
         with:
           push: true
           file: docker/DockerfileUI
@@ -62,7 +62,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@5fa9b09edf501866f122250d904d3d0eabc3a0ff
+        uses: github/codeql-action/upload-sarif@83a02f7883b12e0e4e1a146174f5e2292a01e601
         if: always()
         with:
           category: ui
@@ -92,7 +92,7 @@ jobs:
 
       - name: General Build and Push Docker Image
         id: build_gen
-        uses: docker/build-push-action@831ca179d3cf91cf0c90ca465a408fa61e2129a2
+        uses: docker/build-push-action@00ae31ab6ef216583e63647d8865f52da6b99a13
         with:
           push: true
           file: docker/DockerfileGeneral
@@ -104,7 +104,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@5fa9b09edf501866f122250d904d3d0eabc3a0ff
+        uses: github/codeql-action/upload-sarif@83a02f7883b12e0e4e1a146174f5e2292a01e601
         if: always()
         with:
           category: general
@@ -134,7 +134,7 @@ jobs:
 
       - name: Nginx Build and Push Docker Image
         id: build_nginx
-        uses: docker/build-push-action@831ca179d3cf91cf0c90ca465a408fa61e2129a2
+        uses: docker/build-push-action@00ae31ab6ef216583e63647d8865f52da6b99a13
         with:
           push: true
           file: docker/DockerfileNginx
@@ -147,7 +147,7 @@ jobs:
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@5fa9b09edf501866f122250d904d3d0eabc3a0ff
+        uses: github/codeql-action/upload-sarif@83a02f7883b12e0e4e1a146174f5e2292a01e601
         if: always()
         with:
           category: nginx
