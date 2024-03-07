@@ -50,7 +50,7 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
       - name: UI Build and Push Docker Image
         id: build_ui
-        uses: docker/build-push-action@00ae31ab6ef216583e63647d8865f52da6b99a13
+        uses: docker/build-push-action@af5a7ed5ba88268d5278f7203fb52cd833f66d6e
         with:
           push: true
           file: docker/DockerfileUI
@@ -92,7 +92,7 @@ jobs:
 
       - name: General Build and Push Docker Image
         id: build_gen
-        uses: docker/build-push-action@00ae31ab6ef216583e63647d8865f52da6b99a13
+        uses: docker/build-push-action@af5a7ed5ba88268d5278f7203fb52cd833f66d6e
         with:
           push: true
           file: docker/DockerfileGeneral
@@ -134,7 +134,7 @@ jobs:
 
       - name: Nginx Build and Push Docker Image
         id: build_nginx
-        uses: docker/build-push-action@00ae31ab6ef216583e63647d8865f52da6b99a13
+        uses: docker/build-push-action@af5a7ed5ba88268d5278f7203fb52cd833f66d6e
         with:
           push: true
           file: docker/DockerfileNginx
@@ -181,7 +181,7 @@ jobs:
         with:
           commit_message: Update chart and values
       - name: Install Helm
-        uses: azure/setup-helm@29960d0f5f19214b88e1d9ba750a9914ab0f1a2f # v4
+        uses: azure/setup-helm@b7246b12e77f7134dc2d460a3d5bad15bbe29390 # v4
         with:
           version: v3.11.1
       - name: Run chart-releaser
