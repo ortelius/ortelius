@@ -271,10 +271,10 @@ jobs:
           charts_dir: chart
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Trigger Rebuild of Main Chart
-        uses: benc-uk/workflow-dispatch@798e70c97009500150087d30d9f11c5444830385
+
+      - name: Trigger Rebuild of ortelius/ortelius-charts
+        uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3.0.0
         with:
-          workflow: generate-main-chart.yml
-          repo: ortelius/ortelius-charts
-          ref: refs/heads/main
-          token: ${{ secrets.HELM_INDEXER_TOKEN }}
+          event-type: generate-main-chart
+          repository: ortelius/ortelius-charts
+          token: ${{ secrets.HELM_INDEXER_TOKEN }}   
