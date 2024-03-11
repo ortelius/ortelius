@@ -18,12 +18,24 @@ jobs:
       security-events: write
       contents: write
     steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@e1523de7571e31dbe865fd2e80c5c7c23ae71eb4 # v3.4.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3
+        with:
+          version: v0.13.0-rc1
+
       - name: Checkout
         id: checkout
-        uses: actions/checkout@b32f140b0c872d58512e0a66172253c302617b90
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           token: ${{ secrets.ORTELIUS_CHART_PAT }}
           fetch-depth: 0
+
       - name: Set Convenience Env Vars and Tools
         id: env
         run: |
@@ -48,29 +60,53 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.QUAY_USERID }}
           password: ${{ secrets.QUAY_PASSWORD }}
+
       - name: UI Build and Push Docker Image
         id: build_ui
-        uses: docker/build-push-action@831ca179d3cf91cf0c90ca465a408fa61e2129a2
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           push: true
           file: docker/DockerfileUI
           tags: ${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }}
+          platforms: linux/amd64,linux/arm64
+          attests: type=provenance,type=sbom
+          
+      - name: Sign the images
+        run: |
+          cosign sign --yes ${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }}@${{ steps.build_ui.outputs.digest }}
+        env:
+          COSIGN_EXPERIMENTAL: 1
+
+      - name: Verify the pushed tags
+        run: |
+          cosign verify ${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }}@${{ steps.build_ui.outputs.digest }} --certificate-identity-regexp '.*' --certificate-oidc-issuer-regexp '.*' | jq "."
+        env:
+          COSIGN_EXPERIMENTAL: 1
+
       - name: UI Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }}
           format: sarif
           output: trivy-results.sarif
+
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@baf3361f3137806df1a78c598d1256f83cb89a23
         if: always()
         with:
           category: ui
           sarif_file: trivy-results.sarif
+
       - name: UI Generate SBOM
         id: sbom_ui
         run: |
-          ./syft packages ${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }} -o cyclonedx-json > cyclonedx.json
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+          if [ "$(docker buildx imagetools inspect "${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }}" --raw | jq -r '.manifests | map(select(.platform.architecture != "unknown")) | length')" -eq 1 ]; then
+            docker buildx imagetools inspect "${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }}" --format "{{ json .SBOM.SPDX }}" > /tmp/spdx.json
+          else
+            docker buildx imagetools inspect "${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }}" --format '{{ json (index .SBOM "linux/amd64").SPDX}}' > /tmp/spdx.json
+          fi
+          syft convert /tmp/spdx.json -o cyclonedx-json=/tmp/cyclonedx.json        
 
       - name: UI Update Values and Chart
         id: chart_ui
@@ -88,31 +124,54 @@ jobs:
           export COMPNAME=ms-ui
           dh envscript --envvars component.toml --envvars_sh env.sh
           source env.sh
-          dh updatecomp --rsp component.toml --deppkg cyclonedx@cyclonedx.json
+          dh updatecomp --rsp component.toml --deppkg cyclonedx@/tmp/cyclonedx.json
 
       - name: General Build and Push Docker Image
         id: build_gen
-        uses: docker/build-push-action@831ca179d3cf91cf0c90ca465a408fa61e2129a2
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           push: true
           file: docker/DockerfileGeneral
           tags: ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }}
+          platforms: linux/amd64,linux/arm64
+          attests: type=provenance,type=sbom   
+          
+      - name: Sign the images
+        run: |
+          cosign sign --yes ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }}@${{ steps.build_gen.outputs.digest }}
+        env:
+          COSIGN_EXPERIMENTAL: 1
+  
+      - name: Verify the pushed tags
+        run: |
+          cosign verify ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }}@${{ steps.build_gen.outputs.digest }} --certificate-identity-regexp '.*' --certificate-oidc-issuer-regexp '.*' | jq "."
+        env:
+          COSIGN_EXPERIMENTAL: 1          
+
       - name: General Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }}
           format: sarif
           output: trivy-results.sarif
+
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@baf3361f3137806df1a78c598d1256f83cb89a23
         if: always()
         with:
           category: general
           sarif_file: trivy-results.sarif
+
       - name: General Generate SBOM
         id: sbom_gen
         run: |
-          ./syft packages ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }} -o cyclonedx-json > cyclonedx.json
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+          if [ "$(docker buildx imagetools inspect "${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }}" --raw | jq -r '.manifests | map(select(.platform.architecture != "unknown")) | length')" -eq 1 ]; then
+            docker buildx imagetools inspect "${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }}" --format "{{ json .SBOM.SPDX }}" > /tmp/spdx.json
+          else
+            docker buildx imagetools inspect "${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }}" --format '{{ json (index .SBOM "linux/amd64").SPDX}}' > /tmp/spdx.json
+          fi
+          syft convert /tmp/spdx.json -o cyclonedx-json=/tmp/cyclonedx.json            
 
       - name: General Update Values and Chart
         id: chart_gen
@@ -130,15 +189,29 @@ jobs:
           export COMPNAME=ms-general
           dh envscript --envvars component.toml --envvars_sh env.sh
           source env.sh
-          dh updatecomp --rsp component.toml --deppkg cyclonedx@cyclonedx.json
+          dh updatecomp --rsp component.toml --deppkg cyclonedx@/tmp/cyclonedx.json
 
       - name: Nginx Build and Push Docker Image
         id: build_nginx
-        uses: docker/build-push-action@831ca179d3cf91cf0c90ca465a408fa61e2129a2
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           push: true
           file: docker/DockerfileNginx
           tags: ${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }}
+          platforms: linux/amd64,linux/arm64
+          attests: type=provenance,type=sbom         
+
+      - name: Sign the images
+        run: |
+          cosign sign --yes ${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }}@${{ steps.build_nginx.outputs.digest }}
+        env:
+          COSIGN_EXPERIMENTAL: 1
+
+      - name: Verify the pushed tags
+        run: |
+          cosign verify ${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }}@${{ steps.build_nginx.outputs.digest }} --certificate-identity-regexp '.*' --certificate-oidc-issuer-regexp '.*' | jq "."
+        env:
+          COSIGN_EXPERIMENTAL: 1    
 
       - name: NGINX Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -146,16 +219,24 @@ jobs:
           image-ref: ${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }}
           format: sarif
           output: trivy-results.sarif
+
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@baf3361f3137806df1a78c598d1256f83cb89a23
         if: always()
         with:
           category: nginx
           sarif_file: trivy-results.sarif
+
       - name: Nginx Generate SBOM
         id: sbom_nginx
         run: |
-          ./syft packages ${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }} -o cyclonedx-json > cyclonedx.json
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+          if [ "$(docker buildx imagetools inspect "${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }}" --raw | jq -r '.manifests | map(select(.platform.architecture != "unknown")) | length')" -eq 1 ]; then
+            docker buildx imagetools inspect "${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }}" --format "{{ json .SBOM.SPDX }}" > /tmp/spdx.json
+          else
+            docker buildx imagetools inspect "${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }}" --format '{{ json (index .SBOM "linux/amd64").SPDX}}' > /tmp/spdx.json
+          fi
+          syft convert /tmp/spdx.json -o cyclonedx-json=/tmp/cyclonedx.json           
 
       - name: Nginx Update Values and Chart
         id: chart_nginx
@@ -173,7 +254,7 @@ jobs:
           export COMPNAME=ms-nginx
           dh envscript --envvars component.toml --envvars_sh env.sh
           source env.sh
-          dh updatecomp --rsp component.toml --deppkg cyclonedx@cyclonedx.json
+          dh updatecomp --rsp component.toml --deppkg cyclonedx@/tmp/cyclonedx.json
           rm -f env.sh cyclonedx.json syft trivy-results.sarif
 
       - name: Commit changes
