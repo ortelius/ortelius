@@ -91,7 +91,7 @@ jobs:
           output: trivy-results.sarif
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@5e882999f16c45611816b3a14843ecd5485274b5
+        uses: github/codeql-action/upload-sarif@f195496548957c1f7a1d04d9fc2fbd0b1dd1e099
         if: always()
         with:
           category: ui
@@ -156,7 +156,7 @@ jobs:
           output: trivy-results.sarif
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@5e882999f16c45611816b3a14843ecd5485274b5
+        uses: github/codeql-action/upload-sarif@f195496548957c1f7a1d04d9fc2fbd0b1dd1e099
         if: always()
         with:
           category: general
@@ -221,7 +221,7 @@ jobs:
           output: trivy-results.sarif
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@5e882999f16c45611816b3a14843ecd5485274b5
+        uses: github/codeql-action/upload-sarif@f195496548957c1f7a1d04d9fc2fbd0b1dd1e099
         if: always()
         with:
           category: nginx
@@ -266,7 +266,7 @@ jobs:
         with:
           version: v3.11.1
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@6203d709ca237fb26b724837f2c53716f244ee8c
+        uses: helm/chart-releaser-action@13fe82a5149cf0b212e16453d25b3c59f2b4d3ef
         with:
           charts_dir: chart
         env:
