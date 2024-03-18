@@ -5,7 +5,7 @@ WORKDIR /build/
 COPY . /workspace
 RUN /workspace/tgt/build-ui.sh
 
-FROM alpine:edge@sha256:9f867dc20de5aa9690c5ef6c2c81ce35a918c0007f6eac27df90d3166eaa5cc0
+FROM alpine:edge@sha256:67b8a3c4c19bbdd43de723881bc536758f5e780f8d32ef8f5ef2b72f769a3e78
 
 RUN apk update; \
     apk add --no-cache openjdk17 openssl; \
