@@ -7,7 +7,7 @@ WORKDIR /build/
 COPY . /workspace
 RUN /workspace/tgt/build-gen.sh
 
-FROM alpine:edge@sha256:67b8a3c4c19bbdd43de723881bc536758f5e780f8d32ef8f5ef2b72f769a3e78
+FROM alpine:edge@sha256:d81baec21ea8f039866c659d5633b77b0138faa9d4aaee26151dd03c65e09d27
 
 EXPOSE 8080
 ENV DBConnectionString jdbc:postgresql://db.ortelius.io:80/postgres
