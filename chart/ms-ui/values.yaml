@@ -1,6 +1,6 @@
 replicaCount: 1
 image:
   repository: quay.io/ortelius/ms-ui
-  tag: main-v10.0.287-gbd4a3f
-  sha: sha256:3dc71e505dad922cf8b82ed318df880199be6e640d86ff179044d8439fed67ad
+  tag: main-v10.0.288-geaf152
+  sha: sha256:db2615324d537bf51498f353963c12751be049fd5622b66dc244d89d790711fc
 internal_nginx: "OFF"
