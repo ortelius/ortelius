@@ -2,6 +2,15 @@ apiVersion: v1
 entries:
   ms-general:
   - apiVersion: v1
+    appVersion: 10.0.292
+    created: "2024-04-11T05:09:47.310287683Z"
+    description: A Helm chart for Kubernetes
+    digest: c9b109102b1be0d04780006d4a189e340ec96873e9a90061c36cc4ca5df73948
+    name: ms-general
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-general-10.0.292/ms-general-10.0.292.tgz
+    version: 10.0.292
+  - apiVersion: v1
     appVersion: 10.0.291
     created: "2024-04-10T05:47:32.516903801Z"
     description: A Helm chart for Kubernetes
@@ -1883,6 +1892,15 @@ entries:
     - https://github.com/ortelius/ortelius/releases/download/ms-general-10.0.5/ms-general-10.0.5.tgz
     version: 10.0.5
   ms-nginx:
+  - apiVersion: v1
+    appVersion: 10.0.292
+    created: "2024-04-11T05:09:47.400799286Z"
+    description: A Helm chart for Kubernetes
+    digest: 2be38d198328068f9f00a762babb6e3bdf66d7965dc6c9f358573308027fa4e2
+    name: ms-nginx
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-nginx-10.0.292/ms-nginx-10.0.292.tgz
+    version: 10.0.292
   - apiVersion: v1
     appVersion: 10.0.291
     created: "2024-04-10T05:47:32.599519517Z"
@@ -3766,6 +3784,15 @@ entries:
     version: 10.0.5
   ms-ui:
   - apiVersion: v1
+    appVersion: 10.0.292
+    created: "2024-04-11T05:09:47.50893278Z"
+    description: A Helm chart for Kubernetes
+    digest: b35458a906430fbf5c97dc365963af8d40275b222357b1ad4265a94fcf85ee6a
+    name: ms-ui
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.292/ms-ui-10.0.292.tgz
+    version: 10.0.292
+  - apiVersion: v1
     appVersion: 10.0.291
     created: "2024-04-10T05:47:32.703588432Z"
     description: A Helm chart for Kubernetes
@@ -5646,4 +5673,4 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.5/ms-ui-10.0.5.tgz
     version: 10.0.5
-generated: "2024-04-10T05:47:32.706103525Z"
+generated: "2024-04-11T05:09:47.510420875Z"
