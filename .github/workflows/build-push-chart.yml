@@ -258,7 +258,7 @@ jobs:
           rm -f env.sh cyclonedx.json syft trivy-results.sarif
 
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@896cc0d2253902339fdc3309717e76c7aed4983a
+        uses: stefanzweifel/git-auto-commit-action@4b8a201e31cadd9829df349894b28c54e6c19fe6
         with:
           commit_message: Update chart and values
       - name: Install Helm
