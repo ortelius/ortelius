@@ -2,6 +2,6 @@ replicaCount: 1
 image:
   pullPolicy: Always
   repository: quay.io/ortelius/ms-general
-  tag: main-v10.0.299-gc1083b
-  sha: sha256:3765c57929b5a9c8bb59049bc98815b6d211e753c30e2f1cf130a25e0d758ffe
+  tag: main-v10.0.300-g8e8374
+  sha: sha256:746eb50bbca699bfbbeafd3ad9f10f8b11c9f3961205e177291a733f7ccd1c30
 internal_nginx: "OFF"
