@@ -266,7 +266,7 @@ jobs:
         with:
           version: v3.11.1
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@95930dc2bf5d353ff79972cb5c878a9a1289a79b
+        uses: helm/chart-releaser-action@45af99f369889d20f904e42dbad98118e80ff194
         with:
           charts_dir: chart
         env:
