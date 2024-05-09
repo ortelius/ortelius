@@ -1,4 +1,4 @@
-Domain = "GLOBAL.Open Source.Linux Foundation.OpenSSF.Ortelius"
+Domain = "GLOBAL.Open Source.Linux Foundation.CDF.Ortelius"
 
 Name = "${Domain}.${COMPNAME}"
 Variant = "${GIT_BRANCH}"
