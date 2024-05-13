@@ -4,7 +4,7 @@ Welcome to Ortelius. The goal of the Ortelius community is to expose weak links 
 
 
 ![Release](https://img.shields.io/github/v/release/ortelius/ortelius?sort=semver)
-![license](https://img.shields.io/github/license/ortelius/ortelius)
+![license](https://img.shields.io/github/license/ortelius/.github)
 
 ![Build](https://img.shields.io/github/actions/workflow/status/ortelius/ortelius/build-push-chart.yml)
 ![CodeQL](https://github.com/ortelius/ortelius/workflows/CodeQL/badge.svg)
