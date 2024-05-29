@@ -1,19 +1,16 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base", "group:all"],
-  "ignorePaths": ["chart/**"],
+  "ignorePaths": ["chart/**", "requirements.txt"],
   "schedule": ["every 1 hours every weekday"],
   "prHourlyLimit": 4,
   "pip_requirements": {
     "fileMatch": ["(^|/)requirements\\.in$"]
   },
-  "pip-compile": {
-    "fileMatch": ["(^|/)requirements\\.in$"]
-  },
   "groupName": "all dependencies",
   "groupSlug": "all",
   "lockFileMaintenance": {
-    "enabled": true
+    "enabled": false
   },
   "packageRules": [
     {
@@ -22,6 +19,15 @@
       "matchPackagePatterns": [".*"],
       "automerge": true,
       "autoApprove": true
+    },
+    {
+      "matchFiles": ["(^|/)requirements\\.in$"],
+      "postUpgradeTasks": {
+        "commands": [
+          "pip-compile --generate-hashes --resolver=backtracking requirements.in"
+        ],
+        "fileFilters": ["requirements.txt"]
+      }
     }
   ],
   "separateMajorMinor": false,
