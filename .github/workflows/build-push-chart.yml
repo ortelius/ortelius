@@ -31,7 +31,7 @@ jobs:
 
       - name: Checkout
         id: checkout
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           token: ${{ secrets.ORTELIUS_CHART_PAT }}
           fetch-depth: 0
@@ -91,7 +91,7 @@ jobs:
           output: trivy-results.sarif
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@81b81437fd03037e055e63cc5f2e19f1e6e18429
+        uses: github/codeql-action/upload-sarif@c36b5fc54fb5e6fdd2c4942bcfa424f685b214a8
         if: always()
         with:
           category: ui
@@ -156,7 +156,7 @@ jobs:
           output: trivy-results.sarif
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@81b81437fd03037e055e63cc5f2e19f1e6e18429
+        uses: github/codeql-action/upload-sarif@c36b5fc54fb5e6fdd2c4942bcfa424f685b214a8
         if: always()
         with:
           category: general
@@ -221,7 +221,7 @@ jobs:
           output: trivy-results.sarif
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@81b81437fd03037e055e63cc5f2e19f1e6e18429
+        uses: github/codeql-action/upload-sarif@c36b5fc54fb5e6fdd2c4942bcfa424f685b214a8
         if: always()
         with:
           category: nginx
