@@ -125,6 +125,8 @@ jobs:
           dh envscript --envvars component.toml --envvars_sh env.sh
           source env.sh
           dh updatecomp --rsp component.toml --deppkg cyclonedx@/tmp/cyclonedx.json
+        env:
+          IMAGE_REPO: quay.io/ortelius/ms-ui
 
       - name: General Build and Push Docker Image
         id: build_gen
@@ -190,6 +192,8 @@ jobs:
           dh envscript --envvars component.toml --envvars_sh env.sh
           source env.sh
           dh updatecomp --rsp component.toml --deppkg cyclonedx@/tmp/cyclonedx.json
+        env:
+          IMAGE_REPO: quay.io/ortelius/ms-general
 
       - name: Nginx Build and Push Docker Image
         id: build_nginx
@@ -256,6 +260,8 @@ jobs:
           source env.sh
           dh updatecomp --rsp component.toml --deppkg cyclonedx@/tmp/cyclonedx.json
           rm -f env.sh cyclonedx.json syft trivy-results.sarif
+        env:
+          IMAGE_REPO: quay.io/ortelius/ms-nginx          
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@7d0ca8f849305c56d36f992cfb1519b1af5b33f8
