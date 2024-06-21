@@ -80,7 +80,7 @@ spec:
   ingressClassName: traefik
 {{ else }}
   ingressClassName: nginx
-{{ end }}  
+{{ end }}
   rules:
   - host: {{ .Values.ingress.dnsname | default "" | quote }}
     http:

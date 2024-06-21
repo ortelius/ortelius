@@ -181,7 +181,7 @@ public class InitServer extends HttpServletBase
  private int getSchemaVersion()
  {
   int res = 0;
-  
+
   try
   {
    try (PreparedStatement st = m_conn.prepareStatement("SELECT EXISTS (SELECT FROM pg_tables WHERE tablename  = 'dm_tableinfo')");
@@ -191,7 +191,7 @@ public class InitServer extends HttpServletBase
     if (rs.next())
     {
      boolean tableExists = rs.getBoolean(1);
-     
+
      if (!tableExists)
        return res;
     }
@@ -785,16 +785,16 @@ public class InitServer extends HttpServletBase
       m_conn = DriverManager.getConnection(ConnectionString, dUserName.toString(), dPassword.toString());
       m_conn.setAutoCommit(false);
       noConnection = false;
-     } 
+     }
      catch (Exception e)
      {
       System.out.println(e.getMessage());
-      try 
+      try
       {
        System.out.println("No DB Connection - Retrying");
        Thread.sleep(30000);
-      } 
-      catch (InterruptedException ie) 
+      }
+      catch (InterruptedException ie)
       {
        Thread.currentThread().interrupt();
       }

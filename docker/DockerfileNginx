@@ -10,7 +10,7 @@ RUN mkdir /etc/nginx/location; \
     mkdir /var/www;
 RUN apk update; \
     apk upgrade
-    
+
 COPY dmadminweb/microservice/nginx.conf  /etc/nginx/
 COPY dmadminweb/microservice/nginx-ssl.conf  /etc/nginx/
 COPY dmadminweb/microservice/nginx-nossl.conf  /etc/nginx/

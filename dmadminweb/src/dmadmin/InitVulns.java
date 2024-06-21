@@ -245,13 +245,13 @@ private void updateVulns()
    try
    {
     try (PreparedStatement st = m_conn.prepareStatement("SELECT EXISTS (SELECT FROM pg_tables WHERE tablename  = 'dm_componentdeps')");
- 
+
     ResultSet rs = st.executeQuery())
     {
      if (rs.next())
      {
       dbLoading = !rs.getBoolean(1);
-      
+
       if (dbLoading)
       {
        try
@@ -271,8 +271,8 @@ private void updateVulns()
    }
   } while (dbLoading);
 
-  
-  
+
+
   delst = m_conn.createStatement();
   delst.execute("delete from dm.dm_componentdeps where deptype = 'cve'");
   delst.close();
@@ -496,14 +496,14 @@ public static String capitalize(String str)
       m_conn = DriverManager.getConnection(ConnectionString, dUserName.toString(), dPassword.toString());
       m_conn.setAutoCommit(false);
       noConnection = false;
-     } 
+     }
      catch (Exception e)
      {
-      try 
+      try
       {
        Thread.sleep(30000);
-      } 
-      catch (InterruptedException ie) 
+      }
+      catch (InterruptedException ie)
       {
        Thread.currentThread().interrupt();
       }

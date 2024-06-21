@@ -7,7 +7,7 @@ spec:
   template:
     spec:
       nodeSelector:
-        kubernetes.io/os: linux    
+        kubernetes.io/os: linux
       containers:
         - name: db-load
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

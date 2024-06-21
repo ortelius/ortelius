@@ -16,7 +16,7 @@ Welcome to Ortelius. The goal of the Ortelius community is to expose weak links 
 
 ## Ortelius Mission
 
-Our mission is to build a federated DevOps and Supply Chain Security evidence store designed to provide real-time insights and feedback on the security aspects of software development, deployment, and operations within a DevSecOps environment. 
+Our mission is to build a federated DevOps and Supply Chain Security evidence store designed to provide real-time insights and feedback on the security aspects of software development, deployment, and operations within a DevSecOps environment.
 
 ## Ortelius Value Statements
 
@@ -30,10 +30,10 @@ The benefits of the Ortelius Open Source Project are:
 
 1) Federates supply chain and DevOps intelligence across organizational silos.
 2) Tracks component versions 'blast radius' and their vulnerabilities across all consuming applications for rapid response.
-3) Tracks the logical applications and aggregates component SBOM and CVE data to the logical application level. 
+3) Tracks the logical applications and aggregates component SBOM and CVE data to the logical application level.
 4) Integrates open-source security tooling into the CI/CD pipeline.
 5) Performs software supply chain versioning and builds historical trends, the basis for threat modeling and remediation.
-6) Serve as a central market place to share reusable components with their SBOM and CVE information. 
+6) Serve as a central market place to share reusable components with their SBOM and CVE information.
 
 ## Ortelius Development Goals for 2023
 
@@ -110,7 +110,7 @@ Contributors:
 - Steven Carrato
 - Ragha Vema
 - Priya Kashyap
-  
+
 
 ### CD Integrations
 

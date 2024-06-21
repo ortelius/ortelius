@@ -70,7 +70,7 @@ jobs:
           tags: ${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }}
           platforms: linux/amd64,linux/arm64
           attests: type=provenance,type=sbom
-          
+
       - name: Sign the images
         run: |
           cosign sign --yes ${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }}@${{ steps.build_ui.outputs.digest }}
@@ -106,7 +106,7 @@ jobs:
           else
             docker buildx imagetools inspect "${{ env.REGISTRY }}/ortelius/ms-ui:${{ env.IMAGE_TAG }}" --format '{{ json (index .SBOM "linux/amd64").SPDX}}' > /tmp/spdx.json
           fi
-          syft convert /tmp/spdx.json -o cyclonedx-json=/tmp/cyclonedx.json        
+          syft convert /tmp/spdx.json -o cyclonedx-json=/tmp/cyclonedx.json
 
       - name: UI Update Values and Chart
         id: chart_ui
@@ -136,19 +136,19 @@ jobs:
           file: docker/DockerfileGeneral
           tags: ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }}
           platforms: linux/amd64,linux/arm64
-          attests: type=provenance,type=sbom   
-          
+          attests: type=provenance,type=sbom
+
       - name: Sign the images
         run: |
           cosign sign --yes ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }}@${{ steps.build_gen.outputs.digest }}
         env:
           COSIGN_EXPERIMENTAL: 1
-  
+
       - name: Verify the pushed tags
         run: |
           cosign verify ${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }}@${{ steps.build_gen.outputs.digest }} --certificate-identity-regexp '.*' --certificate-oidc-issuer-regexp '.*' | jq "."
         env:
-          COSIGN_EXPERIMENTAL: 1          
+          COSIGN_EXPERIMENTAL: 1
 
       - name: General Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -173,7 +173,7 @@ jobs:
           else
             docker buildx imagetools inspect "${{ env.REGISTRY }}/ortelius/ms-general:${{ env.IMAGE_TAG }}" --format '{{ json (index .SBOM "linux/amd64").SPDX}}' > /tmp/spdx.json
           fi
-          syft convert /tmp/spdx.json -o cyclonedx-json=/tmp/cyclonedx.json            
+          syft convert /tmp/spdx.json -o cyclonedx-json=/tmp/cyclonedx.json
 
       - name: General Update Values and Chart
         id: chart_gen
@@ -203,7 +203,7 @@ jobs:
           file: docker/DockerfileNginx
           tags: ${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }}
           platforms: linux/amd64,linux/arm64
-          attests: type=provenance,type=sbom         
+          attests: type=provenance,type=sbom
 
       - name: Sign the images
         run: |
@@ -215,7 +215,7 @@ jobs:
         run: |
           cosign verify ${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }}@${{ steps.build_nginx.outputs.digest }} --certificate-identity-regexp '.*' --certificate-oidc-issuer-regexp '.*' | jq "."
         env:
-          COSIGN_EXPERIMENTAL: 1    
+          COSIGN_EXPERIMENTAL: 1
 
       - name: NGINX Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -240,7 +240,7 @@ jobs:
           else
             docker buildx imagetools inspect "${{ env.REGISTRY }}/ortelius/ms-nginx:${{ env.IMAGE_TAG }}" --format '{{ json (index .SBOM "linux/amd64").SPDX}}' > /tmp/spdx.json
           fi
-          syft convert /tmp/spdx.json -o cyclonedx-json=/tmp/cyclonedx.json           
+          syft convert /tmp/spdx.json -o cyclonedx-json=/tmp/cyclonedx.json
 
       - name: Nginx Update Values and Chart
         id: chart_nginx
@@ -261,7 +261,7 @@ jobs:
           dh updatecomp --rsp component.toml --deppkg cyclonedx@/tmp/cyclonedx.json
           rm -f env.sh cyclonedx.json syft trivy-results.sarif
         env:
-          IMAGE_REPO: quay.io/ortelius/ms-nginx          
+          IMAGE_REPO: quay.io/ortelius/ms-nginx
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@7d0ca8f849305c56d36f992cfb1519b1af5b33f8
@@ -283,4 +283,4 @@ jobs:
         with:
           event-type: generate-main-chart
           repository: ortelius/ortelius-charts
-          token: ${{ secrets.HELM_INDEXER_TOKEN }}   
+          token: ${{ secrets.HELM_INDEXER_TOKEN }}
