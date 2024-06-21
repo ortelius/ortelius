@@ -63,7 +63,7 @@ jobs:
 
       - name: UI Build and Push Docker Image
         id: build_ui
-        uses: docker/build-push-action@f6010ea70151369b06f0194be1051fbbdff851b2 # v6.0.2
+        uses: docker/build-push-action@31159d49c0d4756269a0940a750801a1ea5d7003 # v6.1.0
         with:
           push: true
           file: docker/DockerfileUI
@@ -130,7 +130,7 @@ jobs:
 
       - name: General Build and Push Docker Image
         id: build_gen
-        uses: docker/build-push-action@f6010ea70151369b06f0194be1051fbbdff851b2 # v6.0.2
+        uses: docker/build-push-action@31159d49c0d4756269a0940a750801a1ea5d7003 # v6.1.0
         with:
           push: true
           file: docker/DockerfileGeneral
@@ -197,7 +197,7 @@ jobs:
 
       - name: Nginx Build and Push Docker Image
         id: build_nginx
-        uses: docker/build-push-action@f6010ea70151369b06f0194be1051fbbdff851b2 # v6.0.2
+        uses: docker/build-push-action@31159d49c0d4756269a0940a750801a1ea5d7003 # v6.1.0
         with:
           push: true
           file: docker/DockerfileNginx
