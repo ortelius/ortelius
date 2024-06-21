@@ -203,13 +203,13 @@
     "url": "/dmadminweb/ReportsData?type=AppList",
     "error": function (jqXHR, textStatus, errorThrown) {
       var token=GetCookie("token");
-      
+
       if (token != null && token != "")
       {
         alert("Connection failed. A logout will be performed to reset your session.");
         window.location = "/dmadminweb/Logout";
       }
-    },    
+    },
     "type": "GET"
   },
   "order": [[ 1, "asc" ]],

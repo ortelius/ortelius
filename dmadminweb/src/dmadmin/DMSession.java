@@ -1488,22 +1488,22 @@ public class DMSession implements AutoCloseable {
       m_conn = DriverManager.getConnection(ConnectionString, dUserName.toString(), dPassword.toString());
       m_conn.setAutoCommit(false);
       noConnection = false;
-     } 
+     }
      catch (Exception e)
      {
       System.out.println(e.getMessage());
-      try 
+      try
       {
        System.out.println("No DB Connection - Retrying");
        Thread.sleep(30000);
-      } 
-      catch (InterruptedException ie) 
+      }
+      catch (InterruptedException ie)
       {
        Thread.currentThread().interrupt();
       }
      }
     } while (noConnection);
-   
+
   } catch (FileNotFoundException e) {
    res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,e.getMessage());
    e.printStackTrace();
@@ -1513,7 +1513,7 @@ public class DMSession implements AutoCloseable {
   } catch (ClassNotFoundException e) {
    res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,"Class not found for " + e.getMessage());
    e.printStackTrace();
-  } 
+  }
 	 }
 		return res;
 	}
@@ -32093,20 +32093,20 @@ public JSONArray getComp2Endpoints(int compid)
   }
   return arr;
  }
- 
+
  public InitialDirContext connectLDAP(String servername, Hashtable<String, String> env) {
   InitialDirContext context = null;
   env.put(Context.PROVIDER_URL, "ldap://" + servername);
-  
+
   try {
       // Create an initial context using standard InitialDirContext
       context = new InitialDirContext(env);
-      
+
       // Perform LDAP operations using the context
-      
+
   } catch (NamingException e) {
       // Handle NamingException
-  } 
+  }
   return context;
 }
 }
