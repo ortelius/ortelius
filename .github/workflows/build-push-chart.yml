@@ -91,7 +91,7 @@ jobs:
           output: trivy-results.sarif
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@7adf9ac915317792cbeaf8d9c9fa80f2dbacfd48
+        uses: github/codeql-action/upload-sarif@064a406de026ea27990a5b507b56911401ca2f95
         if: always()
         with:
           category: ui
@@ -158,7 +158,7 @@ jobs:
           output: trivy-results.sarif
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@7adf9ac915317792cbeaf8d9c9fa80f2dbacfd48
+        uses: github/codeql-action/upload-sarif@064a406de026ea27990a5b507b56911401ca2f95
         if: always()
         with:
           category: general
@@ -225,7 +225,7 @@ jobs:
           output: trivy-results.sarif
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@7adf9ac915317792cbeaf8d9c9fa80f2dbacfd48
+        uses: github/codeql-action/upload-sarif@064a406de026ea27990a5b507b56911401ca2f95
         if: always()
         with:
           category: nginx
@@ -264,7 +264,7 @@ jobs:
           IMAGE_REPO: quay.io/ortelius/ms-nginx
 
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@55a82ca24f1c4585f348f92fa0de24650ecae7a2
+        uses: stefanzweifel/git-auto-commit-action@be823a7e51f116fecebc222b8307716921375992
         with:
           commit_message: Update chart and values
       - name: Install Helm
