@@ -116,12 +116,14 @@ Contributors:
 
 Create integrations with documentation and videos for the following CI/CD Solutions:
 
+- Argo
+- CircleCI
 - Jenkins: 90% work completed
 - Jenkins X
 - Screwdriver
-- Tekton (Tekton Catalog)
 - Spinnaker
-- Argo
+- Tekton (Tekton Catalog)
+
 
 Contributors:
 
@@ -139,6 +141,7 @@ Contributors:
 - Kingsathurthi
 - Bassem Riahi
 - Arnab Maity
+- Eddie Webbinaro
 
 ### Market Place and Domains
 
