@@ -143,10 +143,10 @@ public enum SummaryField
 
 	// Server Component Type
 	DATABASE  (1401,ObjectType.BOOLEAN),
- 	DELETEDIR (1402,ObjectType.BOOLEAN),
+ DELETEDIR (1402,ObjectType.BOOLEAN),
 
- 	// Build Engines
- 	PROJECTNAME (1501,		"Project Name",		null),
+ // Build Engines
+ PROJECTNAME (1501,		"Project Name",		null),
 
  // Container Component Item Details
  DOCKER_BUILDID (1601, "Build Id",  null),
@@ -175,7 +175,30 @@ public enum SummaryField
  PAGERDUTY_SERVICE_URL (1624, "PagerDuty Service Url", null),
  PAGERDUTY_BUSINESS_URL (1625, "PagerDuty Business Service Url", null),
  COMP_SWAGGER (1626, "Swagger", null),
- SERVICE_OWNER_ID (1627, "Service Owner Id", null);
+ SERVICE_OWNER_ID (1627, "Service Owner Id", null),
+ PURL(1650, "Purl", null),
+ SCORECARD_SCORECARD_PINNED (1700, "OpenSSF ScoreCard Pinned to Commit", null),
+ SCORECARD_SCORE(1701, "OpenSSF ScoreCard Score", null),
+ SCORECARD_MAINTAINED(1702, "Maintained", null),
+ SCORECARD_CODEREVIEW(1703, "Code Review", null),
+ SCORECARD_CIIBESTPRACTICES(1704, "CII Best Practices", null),
+ SCORECARD_LICENSE(1705, "License", null),
+ SCORECARD_SIGNEDRELEASE(1706, "Signed Releases", null),
+ SCORECARD_DANGEROUSWORKFLOW(1707, "Dangerous Workflow", null),
+ SCORECARD_PACKAGING(1708, "Packaging", null),
+ SCORECARD_TOKENPERMISSIONS(1709,"Token Permissions", null),
+ SCORECARD_BRANCHPROTECTION(1710,"Branch Protection", null),
+ SCORECARD_BINARYARTIFACTS(1711,"Binary Artifacts", null),
+ SCORECARD_PINNEDEPENDENCIES(1712,"Pinned Dependencies", null),
+ SCORECARD_SECURITYPOLICY(1713, "Security Policy", null),
+ SCORECARD_FUZZING(1714,"Fuzzing", null),
+ SCORECARD_SAST(1715, "SAST", null),
+ SCORECARD_VULNERABILITES(1716, "Vulnerabilities", null),
+ SCORECARD_CITESTS(1717, "CITests", null),
+ SCORECARD_CONTRIBUTORS(1718, "Contributors", null),
+ SCORECARD_DEPENDENCYUPDATETOOL(1719, "DependencyUpdateTool", null),
+ SCORECARD_SBOM(1720, "SBOM", null),
+ SCORECARD_WEBHOOOKS(1721, "Webhooks", null);
 
 	private final int m_value;
 	private final ObjectType m_type;

@@ -30,6 +30,16 @@ if [ ! -e /opt/deployhub/keys/id_rsa ]; then
   openssl pkey -in /opt/deployhub/keys/id_rsa -pubout -out /opt/deployhub/keys/id_rsa.pub
 fi
 
+if [ "${SamlIdpMetadata}" != "" ]; then
+  export SamlIdpMetadataPath=/tmp/idp_metadata.xml
+  export SamlKeystorePath=/tmp/trust.keystore
+  export SamlKeystorePassword=$(openssl rand -base64 12)
+  export SamlPrivateKeyPassword=${SamlKeystorePassword}
+  export SamlKeystoreAlias=saml
+  echo "${SamlIdpMetadata}" > "${SamlIdpMetadataPath}"
+  keytool -genkey -keyalg RSA -alias "${SamlKeystoreAlias}" -keypass "${SamlPrivateKeyPassword}" -keystore "${SamlKeystorePath}" -storepass "${SamlKeystorePassword}" -dname "cn=U
+nknown, ou=Unknown, o=Unknown, c=Unknown" -validity 365
+fi
 
 echo Running DeployHub Processes
 java -jar /opt/deployhub/webadmin/webapp-runner.jar --path /dmadminweb /opt/deployhub/webadmin/deployhub-webadmin.war  2>&1

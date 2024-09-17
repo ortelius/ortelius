@@ -100,7 +100,7 @@ public class DomainDetails extends HttpServletBase {
     			String taskname = tasktype;
 
     			if (tasktype.equalsIgnoreCase("Approve"))
-     			 taskname = "Approve Verision for move to next pipeline stage";
+     			 taskname = "Approve Version for move to next pipeline stage";
     			else if (tasktype.equalsIgnoreCase("Move"))
     			  taskname = "Move Version to the next or previous stage in the pipeline";
     			else if (tasktype.equalsIgnoreCase("Remove"))

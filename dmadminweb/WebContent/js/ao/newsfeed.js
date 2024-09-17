@@ -223,12 +223,6 @@ function addToHistoryFeed($feed, item, otid, prepend, $after)
 
  newsid++;
 
- if(subsid != '') {
-    subs = ((item.subs == 'true')? '<a href="#" id="newssub_' + newsid + ':' + subsid + '"class="newssubscribe newssub_' + subsid + '" isunsub="1">Unsubscribe</a>'
-    : '<a href="#" id="newssub_' + newsid + ':' + subsid + '"class="newssubscribe newssub_' + subsid + '" isunsub="0">Subscribe</a>')
-    + ' | ';
- }
-
  if (item.kind == 'bu')
  {
 	 cmntlink = '<a href="#" id="newscomment_' + newsid + ':' + dbid + '" class="newscomment">' + cmnt + '</a> | ';
@@ -429,7 +423,7 @@ function addNewsCallbacks($feed)
        + ' <div style="width:90%">' + '  <textarea id="cmnttxt_' + newsid
           + '" style="width:90%;height:25px;color:#777;">Say something?</textarea>'
        + '</div>'
-          + '<div style="height: 42px; font-size: 10px;"><button disabled id="cmntbut_' + newsid
+          + '<div style="height: 42px;"><button disabled id="cmntbut_' + newsid
              + '" style="float: left">Comment</button>'
           + '</div>'
    + '</div>');
@@ -532,37 +526,6 @@ function addNewsCallbacks($feed)
   }
  });
 
- $feed.off('click', '.newssubscribe');
-
- $feed.on('click', '.newssubscribe', function(event)
- {
-  event.stopPropagation() ;
-  var $newssub = $(this);
-  var ID = $newssub.attr('id');
-  var sid = ID.split('newssub_');
-  var ids = sid[1].split(':');
-  var newsid = ids[0];
-  var subsid = ids[1];
-  var isunsub = $(this).attr('isunsub');
-  console.log('news id = ' + newsid);
-
-  $.ajax(
-  {
-   url : 'NewsFeed?reason=' + ((isunsub == 1) ? 'unsubscribe' : 'subscribe') + '&otid=' + subsid,
-   dataType : 'json',
-   type : 'GET',
-   async : false
-  });
-
-  if (isunsub == 1)
-  {
-   $('.newssub_' + subsid).attr('isunsub', 0).html('Subscribe');
-  }
-  else
-  {
-   $('.newssub_' + subsid).attr('isunsub', 1).html('Unsubscribe');
-  }
- });
 
  $feed.on('mouseenter', '.tooltip-follows', function()
  {
@@ -596,7 +559,7 @@ $.fn.createNewsMessageBox = function createNewsMessageBox(/* boxid, */feedid, te
 {
 	$(this).css("class", "ui-widget-content").prepend(
    '<form id="messageForm">'
-	 + '<div id="messageOuter" style="height:70px;width:90%;overflow:d;">'
+	 + '<div id="messageOuter" style="height:70px;width:100%;overflow:d;">'
        + '<div style="background-color:white;border:gray solid 1px;">'
          + '<textarea id="messageText" name="text" style="width:98%;height:100%;color:#777;border:none;">' + text + '</textarea>'
        + '</div>'
@@ -607,7 +570,7 @@ $.fn.createNewsMessageBox = function createNewsMessageBox(/* boxid, */feedid, te
              + '<div class="progress-percent">0%</div>'
            + '</div>'
          + '</div>'
-         + '<div style="float:left; height:30px;width:100%;font-size:10px;overflow:auto;">'
+         + '<div style="float:left; height:30px;width:100%;overflow:auto;">'
             + '<div style="float:left;height:30px;">'
                + '<button id="addMessage" disabled>Add Message</button>'
                + '<img id="messageAttachButton" src="images/attachment.png" style="opacity:1;padding:4px;margin-right:2px;">'
@@ -615,7 +578,7 @@ $.fn.createNewsMessageBox = function createNewsMessageBox(/* boxid, */feedid, te
             + '<div id="messageAttachments" style="float:left;height:100%;overflow:hidden;"></div>'
          + '</div>'
        + '</div>'
-       + '<input id="messageAttach" name="attachments[]" type="file" style="font-size:50px;height:100%;width:100%;position:relative;top:-80px;left:0px;opacity:0.1;filter:alpha(opacity:0.1);display:none;" multiple>'
+       + '<input id="messageAttach" name="attachments[]" type="file" style="height:100%;width:100%;position:relative;top:-80px;left:0px;opacity:0.1;filter:alpha(opacity:0.1);display:none;" multiple>'
      + '</div></form>');
 
 

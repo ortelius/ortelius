@@ -35,16 +35,6 @@ function wfDrillDown(x)
 	}
 	console.log("odl="+odl);
 
-	if (HighlightFooterLink("ac"+objid+"_"+windowid)) {
-		 AddToFooter(
-			"<div id=\"fac"+objid+"_"+windowid+"\" style=\"float:left; cursor: pointer; background-image:"
-		   	+"url("+imageurl+")"
-		   	+";background-repeat: no-repeat;background-position:0px 2px;padding:0px 3px 3px 16px;\">"
-		   	+"<a href=\"javascript:void(0);\" "
-		   	+"onClick=\"Navigate('" + currenttree + "','" + objtype + objid + "','" + windowid + "','" + odl + "')\;\">"+FragmentName+"|</a></div>"
-		 );
-	}
-
 	ddwinid = windowid;
 	console.log("LoadWorkflowsData("+windowid+")");
 	LoadWorkflowsData(windowid);
@@ -64,7 +54,6 @@ function Navigate(tree,node,windowid,odl)
     console.log("highlighting #"+node);
 	$(tree).jstree("select_node","#"+node);
 	LoadWorkflowsData(windowid);
-	HighlightFooterLink(node+"_"+windowid)
 }
 
 function wfViewAction(x)

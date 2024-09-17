@@ -52,9 +52,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.codec.binary.Base64;
-
 import dmadmin.json.JSONObject;
+import dmadmin.pro.AutoDeploy;
+import dmadmin.pro.TimedTask;
 
 public class InitServer extends HttpServletBase
 {
@@ -184,26 +184,6 @@ public class InitServer extends HttpServletBase
 
   try
   {
-   try (PreparedStatement st = m_conn.prepareStatement("SELECT EXISTS (SELECT FROM pg_tables WHERE tablename  = 'dm_tableinfo')");
-
-   ResultSet rs = st.executeQuery())
-   {
-    if (rs.next())
-    {
-     boolean tableExists = rs.getBoolean(1);
-
-     if (!tableExists)
-       return res;
-    }
-   }
-  }
-  catch (SQLException e)
-  {
-   rollback();
-  }
-
-  try
-  {
    try (PreparedStatement st = m_conn.prepareStatement("SELECT schemaver FROM dm.dm_tableinfo");
 
    ResultSet rs = st.executeQuery())
@@ -225,23 +205,26 @@ public class InitServer extends HttpServletBase
 
  private boolean checkProTables()
  {
+  boolean res = true;
+
   try
   {
-   try (PreparedStatement st = m_conn.prepareStatement("SELECT EXISTS (SELECT FROM pg_tables WHERE tablename  = 'dm_defects')");
+   try (PreparedStatement st = m_conn.prepareStatement("SELECT count(*) FROM dm.dm_defects");
 
    ResultSet rs = st.executeQuery())
    {
     if (rs.next())
     {
-     return !rs.getBoolean(1);
+     return false;
     }
    }
   }
   catch (SQLException e)
   {
+   rollback();
   }
 
-  return true;
+  return res;
  }
 
  @Override
@@ -557,7 +540,6 @@ public class InitServer extends HttpServletBase
      }
 
      st.close();
-
      m_conn.commit();
 
     }
@@ -569,6 +551,17 @@ public class InitServer extends HttpServletBase
     e.printStackTrace();
    }
   }
+
+  m_timer = new Timer(); // Instantiate Timer Object
+  TimedTask tt = new TimedTask(getServletContext());
+  System.out.println("About to start the timer");
+  m_timer.schedule(tt, 0, TimeUnit.MINUTES.toMillis(1));	// Now then every 1 mins
+
+  Timer m_autodeploy_timer = new Timer(); // Instantiate Timer Object
+  AutoDeploy ad = new AutoDeploy(getServletContext());
+  System.out.println("About to start the timer");
+  m_autodeploy_timer.schedule(ad, 0, TimeUnit.MINUTES.toMillis(1)); // Now then every 1 mins
+
   }
 
   // Exit everything
@@ -579,37 +572,13 @@ public class InitServer extends HttpServletBase
   }
  }
 
- public static String readFileAsString(String filename)
- {
-  String newString = "";
-  try
-  {
-   String nextLine = "";
-   BufferedReader br;
-   br = new BufferedReader(new FileReader(filename));
-   StringBuffer sb = new StringBuffer();
-   while ((nextLine = br.readLine()) != null)
-   {
-      sb.append(nextLine + "\n");
-   }
-   br.close();
-   newString = sb.toString();
-  }
-  catch (IOException e)
-  {
-   // TODO Auto-generated catch block
-   e.printStackTrace();
-  }
-
-  return newString;
- }
 
  public void cleanAttrs()
  {
   ArrayList<String> kw = new ArrayList<>(Arrays.asList("buildid", "buildurl", "chart", "operator", "builddate",
 				"dockersha", "gitcommit", "gitrepo", "gittag", "giturl", "chartversion", "chartnamespace", "dockertag",
 				"chartrepo", "chartrepourl", "serviceowner", "serviceowneremail", "serviceownerphone", "slackchannel",
-				"discordchannel", "hipchatchannel", "pagerdutyurl", "pagerdutybusinessurl"));
+				"discordchannel", "hipchatchannel", "pagerdutyurl", "pagerdutybusinessurl", "purl"));
 
   try
   {
@@ -788,7 +757,6 @@ public class InitServer extends HttpServletBase
      }
      catch (Exception e)
      {
-      System.out.println(e.getMessage());
       try
       {
        System.out.println("No DB Connection - Retrying");

@@ -65,6 +65,29 @@ public class ComponentItem
 	private String HipChatChannel = "";
 	private String PagerDutyServiceUrl = "";
 	private String PagerDutyBusinessServiceUrl = "";
+	private String ScoreCardPinned = "";
+	private String Score = "";
+	private String Maintained = "";
+	private String CodeReview = "";
+	private String CIIBestPractices = "";
+	private String License = "";
+	private String SignedReleases = "";
+	private String DangerousWorkflow = "";
+	private String Packaging = "";
+	private String TokenPermissions = "";
+	private String BranchProtection = "";
+	private String BinaryArtifacts = "";
+	private String PinnedDependencies = "";
+	private String SecurityPolicy = "";
+	private String Fuzzing = "";
+	private String SAST = "";
+	private String Vulnerabilities = "";
+ private String CITests = "";
+ private String Contributors = "";
+ private String DependencyUpdateTool = "";
+ private String SBOM = "";
+ private String Webhooks = "";
+ private String Purl = "";
 
 	public ComponentItem() {
         super.setId(0);
@@ -243,6 +266,16 @@ public class ComponentItem
 
 
 
+ public String getPurl()
+ {
+  return Purl;
+ }
+
+ public void setPurl(String purl)
+ {
+  Purl = purl;
+ }
+
  public String getOperator()
  {
   return Operator;
@@ -413,6 +446,24 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
    ds.addProperty(SummaryField.DOCKER_BUILDID, "Build Id", getBuildId());
    ds.addProperty(SummaryField.DOCKER_BUILDURL, "Build URL", getBuildUrl());
    ds.addProperty(SummaryField.DOCKER_BUILDDATE, "Build Date", getBuildDate());
+   ds.addProperty(SummaryField.PURL, "Purl", getPurl());
+   ds.addProperty(SummaryField.SCORECARD_SCORECARD_PINNED, "OpenSSF ScoreCard Pinned to Commit", getScoreCardPinned());
+   ds.addProperty(SummaryField.SCORECARD_SCORE,"OpenSSF ScoreCard Score", getScore());
+   ds.addProperty(SummaryField.SCORECARD_MAINTAINED,"Maintained", getMaintained());
+   ds.addProperty(SummaryField.SCORECARD_CODEREVIEW, "Code Review", getCodeReview());
+   ds.addProperty(SummaryField.SCORECARD_CIIBESTPRACTICES, "CII Best Practices", getCIIBestPractices());
+   ds.addProperty(SummaryField.SCORECARD_LICENSE, "License", getLicense());
+   ds.addProperty(SummaryField.SCORECARD_SIGNEDRELEASE, "Signed Releases", getSignedReleases());
+   ds.addProperty(SummaryField.SCORECARD_DANGEROUSWORKFLOW, "Dangerous Workflow", getDangerousWorkflow());
+   ds.addProperty(SummaryField.SCORECARD_PACKAGING, "Packaging", getPackaging());
+   ds.addProperty(SummaryField.SCORECARD_TOKENPERMISSIONS,"Token Permissions", getTokenPermissions());
+   ds.addProperty(SummaryField.SCORECARD_BRANCHPROTECTION,"Branch Protection", getBranchProtection());
+   ds.addProperty(SummaryField.SCORECARD_BINARYARTIFACTS,"Binary Artifacts", getBinaryArtifacts());
+   ds.addProperty(SummaryField.SCORECARD_PINNEDEPENDENCIES,"Pinned Dependencies", getPinnedDependencies());
+   ds.addProperty(SummaryField.SCORECARD_SECURITYPOLICY, "Security Policy", getSecurityPolicy());
+   ds.addProperty(SummaryField.SCORECARD_FUZZING,"Fuzzing", getFuzzing());
+   ds.addProperty(SummaryField.SCORECARD_SAST, "SAST", getSAST());
+   ds.addProperty(SummaryField.SCORECARD_VULNERABILITES, "Vulnerabilities", getVulnerabilities());
   }
   if (getItemkind() == ComponentItemKind.DOCKER)
   {
@@ -530,14 +581,11 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
   obj.add("XPos", getXpos());
   obj.add("YPos", getYpos());
 
-  if (getItemkind() == ComponentItemKind.DATABASE || getItemkind() == ComponentItemKind.FILE)
-  {
-   obj.add("Target Directory", getTargetDir());
-   if (getRepository() == null)
+  obj.add("Target Directory", getTargetDir());
+  if (getRepository() == null)
     obj.add("Repository", "");
-   else
+  else
     obj.add( "Repository", getRepository().getName());
-  }
 
   if (getItemkind() == ComponentItemKind.DOCKER)
   {
@@ -557,6 +605,7 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
    obj.add("Git Repo", getGitRepo());
    obj.add("Git Tag", getGitTag());
    obj.add("Git URL", getGitUrl());
+   obj.add("Purl", getPurl());
    obj.add("Service Owner", getServiceOwner());
    obj.add("Service Owner Email", getServiceOwnerEmail());
    obj.add("Service Owner Phone", getServiceOwnerPhone());
@@ -565,6 +614,28 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
    obj.add("HipChat Channel", getHipChatChannel());
    obj.add("Pager Duty Service Url", getPagerDutyServiceUrl());
    obj.add("Pager Duty Business Service Url", getPagerDutyBusinessServiceUrl());
+   obj.add("OpenSSF ScoreCard Pinned to Commit", getScoreCardPinned());
+   obj.add("OpenSSF ScoreCard Score", getScore());
+   obj.add("Maintained", getMaintained());
+   obj.add("Code Review", getCodeReview());
+   obj.add("CII Best Practices", getCIIBestPractices());
+   obj.add("License", getLicense());
+   obj.add("Signed Releases", getSignedReleases());
+   obj.add("Dangerous Workflow", getDangerousWorkflow());
+   obj.add("Packaging", getPackaging());
+   obj.add("Token Permissions", getTokenPermissions());
+   obj.add("Branch Protection", getBranchProtection());
+   obj.add("Binary Artifacts", getBinaryArtifacts());
+   obj.add("Pinned Dependencies", getPinnedDependencies());
+   obj.add("Security Policy", getSecurityPolicy());
+   obj.add("Fuzzing", getFuzzing());
+   obj.add("SAST", getSAST());
+   obj.add("CI Tests", getCITests());
+   obj.add("Contributors", getContributors());
+   obj.add("DependencyUpdateTool", getDependencyUpdateTool());
+   obj.add("SBOM", getSBOM());
+   obj.add("Webhooks", getWebhooks());
+   obj.add("Vulnerabilities", getVulnerabilities());
   }
 
   return obj;
@@ -578,5 +649,225 @@ public void setPagerDutyBusinessServiceUrl(String pagerDutyBusinessServiceUrl) {
  public String getDockerTag()
  {
   return DockerTag;
+ }
+
+ public String getScoreCardPinned()
+ {
+  return ScoreCardPinned;
+ }
+
+ public void setScoreCardPinned(String scoreCardPinned)
+ {
+  ScoreCardPinned = scoreCardPinned;
+ }
+
+ public String getScore()
+ {
+  return Score;
+ }
+
+ public void setScore(String score)
+ {
+  Score = score;
+ }
+
+ public String getCodeReview()
+ {
+  return CodeReview;
+ }
+
+ public void setCodeReview(String codeReview)
+ {
+  CodeReview = codeReview;
+ }
+
+ public String getCIIBestPractices()
+ {
+  return CIIBestPractices;
+ }
+
+ public void setCIIBestPractices(String cIIBestPractices)
+ {
+  CIIBestPractices = cIIBestPractices;
+ }
+
+ public String getLicense()
+ {
+  return License;
+ }
+
+ public void setLicense(String license)
+ {
+  License = license;
+ }
+
+ public String getSignedReleases()
+ {
+  return SignedReleases;
+ }
+
+ public void setSignedReleases(String signedReleases)
+ {
+  SignedReleases = signedReleases;
+ }
+
+ public String getDangerousWorkflow()
+ {
+  return DangerousWorkflow;
+ }
+
+ public void setDangerousWorkflow(String dangerousWorkflow)
+ {
+  DangerousWorkflow = dangerousWorkflow;
+ }
+
+ public String getTokenPermissions()
+ {
+  return TokenPermissions;
+ }
+
+ public void setTokenPermissions(String tokenPermissions)
+ {
+  TokenPermissions = tokenPermissions;
+ }
+
+ public String getBranchProtection()
+ {
+  return BranchProtection;
+ }
+
+ public void setBranchProtection(String branchProtection)
+ {
+  BranchProtection = branchProtection;
+ }
+
+ public String getBinaryArtifacts()
+ {
+  return BinaryArtifacts;
+ }
+
+ public void setBinaryArtifacts(String binaryArtifacts)
+ {
+  BinaryArtifacts = binaryArtifacts;
+ }
+
+ public String getPinnedDependencies()
+ {
+  return PinnedDependencies;
+ }
+
+ public void setPinnedDependencies(String pinnedDependencies)
+ {
+  PinnedDependencies = pinnedDependencies;
+ }
+
+ public String getSecurityPolicy()
+ {
+  return SecurityPolicy;
+ }
+
+ public void setSecurityPolicy(String securityPolicy)
+ {
+  SecurityPolicy = securityPolicy;
+ }
+
+ public String getFuzzing()
+ {
+  return Fuzzing;
+ }
+
+ public void setFuzzing(String fuzzing)
+ {
+  Fuzzing = fuzzing;
+ }
+
+ public String getSAST()
+ {
+  return SAST;
+ }
+
+ public void setSAST(String sAST)
+ {
+  SAST = sAST;
+ }
+
+ public String getVulnerabilities()
+ {
+  return Vulnerabilities;
+ }
+
+ public void setVulnerabilities(String vulnerabilities)
+ {
+  Vulnerabilities = vulnerabilities;
+ }
+
+ public String getMaintained()
+ {
+  return Maintained;
+ }
+
+ public void setMaintained(String maintained)
+ {
+  Maintained = maintained;
+ }
+
+ public String getPackaging()
+ {
+  return Packaging;
+ }
+
+ public void setPackaging(String packaging)
+ {
+  Packaging = packaging;
+ }
+
+ public String getCITests()
+ {
+  return CITests;
+ }
+
+ public void setCITests(String cITests)
+ {
+  CITests = cITests;
+ }
+
+ public String getContributors()
+ {
+  return Contributors;
+ }
+
+ public void setContributors(String contributors)
+ {
+  Contributors = contributors;
+ }
+
+ public String getDependencyUpdateTool()
+ {
+  return DependencyUpdateTool;
+ }
+
+ public void setDependencyUpdateTool(String dependencyUpdateTool)
+ {
+  DependencyUpdateTool = dependencyUpdateTool;
+ }
+
+ public String getSBOM()
+ {
+  return SBOM;
+ }
+
+ public void setSBOM(String sBOM)
+ {
+  SBOM = sBOM;
+ }
+
+ public String getWebhooks()
+ {
+  return Webhooks;
+ }
+
+ public void setWebhooks(String webhooks)
+ {
+  Webhooks = webhooks;
  }
 }

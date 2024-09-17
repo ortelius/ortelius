@@ -335,6 +335,24 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
      summSaveBTDS = "";
      var allocate_terminal_shown=false;
 
+     var isGlobalDomain = false;
+
+     if (summSaveobjtype == "do")
+     {
+      for (var r = 0; r < res.data.length; r++)
+      {
+	   var row = res.data[r];
+	   var label = row[3];
+       var val = row[4];
+
+       if (label == "Name" && val == "GLOBAL")
+       {
+         isGlobalDomain = true;
+         break;
+       }
+      }
+     }
+
 
      for (var r = 0; r < res.data.length; r++)
      {
@@ -348,22 +366,189 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       var oldval = "";
       var linkval = null;
 
+      if (label == "Notifier")
+      {
+	   td += "<tr id=\"contact_details_row\">";
+       td += "<td id=\"contact_details_title\">";
+       td += "<h2>Details</h2>";
+       td += "</td>";
+       td += "<td><div id=\"summ_header_buttons\">";
+       td += "<button class=\"edit_button\" onClick=\"javascript:EditSummaryButton(false,'')\">";
+       td += "<i class=\"fal fa-pencil\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Edit";
+       td += "</button>";
+       td += "<button class=\"save_button\" onClick=\"javascript:summOK(false,'')\">";
+       td += "<i class=\"fal fa-save\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Save";
+       td += "</button>";
+       td += "<button class=\"cancel_button\" onClick=\"javascript:summCancel('')\">";
+       td += "<i class=\"fal fa-times-circle\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Cancel";
+       td += "</button>";
+       td += "</div></td></tr>";
+
+       tdedit += "<tr id=\"contact_details_row\">";
+       tdedit += "<td id=\"contact_details_title\">";
+       tdedit += "<h2>Details</h2>";
+       tdedit += "</td>";
+       tdedit += "<td><div id=\"summ_header_buttons\">";
+       tdedit += "<button class=\"edit_button\" onClick=\"javascript:EditSummaryButton(false,'')\">";
+       tdedit += "<i class=\"fal fa-pencil\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Edit";
+       tdedit += "</button>";
+       tdedit += "<button class=\"save_button\" onClick=\"javascript:summOK(false,'')\">";
+       tdedit += "<i class=\"fal fa-save\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Save";
+       tdedit += "</button>";
+       tdedit += "<button class=\"cancel_button\" onClick=\"javascript:summCancel('')\">";
+       tdedit += "<i class=\"fal fa-times-circle\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Cancel";
+       tdedit += "</button>";
+       tdedit += "</div></td></tr>";
+ 	  }
+
       // Add in domain to summary page
       if (label == "Full Domain")
       {
+	   if (objtype == "co" || objtype == "cv")
+	   {
+	   td += "<tr id=\"contact_details_row\">";
+       td += "<td id=\"contact_details_title\">";
+       td += "<h2>Component Details</h2>";
+       td += "</td>";
+       td += "<td><div id=\"summ_header_buttons\">";
+       td += "<button class=\"edit_button\" onClick=\"javascript:EditSummaryButton(false,'')\">";
+       td += "<i class=\"fal fa-pencil\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Edit";
+       td += "</button>";
+       td += "<button class=\"save_button\" onClick=\"javascript:summOK(false,'')\">";
+       td += "<i class=\"fal fa-save\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Save";
+       td += "</button>";
+       td += "<button class=\"cancel_button\" onClick=\"javascript:summCancel('')\">";
+       td += "<i class=\"fal fa-times-circle\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Cancel";
+       td += "</button>";
+       td += "<button class=\"test_button\" onClick=\"javascript:TestServer('servstat',objtypeAsInt,objid)\">";
+       td += "<i class=\"fad fa-alien\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Test Connection";
+       td += "</button>";
+       td += "<button class=\"add_button\" onClick=\"javascript:AddDomain(objtypeAsInt,objid)\">";
+       td += "<i class=\"fal fa-plus\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Add Subdomain";
+       td += "</button>";
+       td += "<button class=\"delete_button\" onClick=\"javascript:DeleteDomain(objtypeAsInt,objid)\">";
+       td += "<i class=\"fal fa-trash\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Delete Domain";
+       td += "</button>";
+       td += "</div></td></tr>";
+
+       tdedit += "<tr id=\"contact_details_row\">";
+       tdedit += "<td id=\"contact_details_title\">";
+       tdedit += "<h2>Component Details</h2>";
+       tdedit += "</td>";
+       tdedit += "<td><div id=\"summ_header_buttons\">";
+       tdedit += "<button class=\"edit_button\" onClick=\"javascript:EditSummaryButton(false,'')\">";
+       tdedit += "<i class=\"fal fa-pencil\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Edit";
+       tdedit += "</button>";
+       tdedit += "<button class=\"save_button\" onClick=\"javascript:summOK(false,'')\">";
+       tdedit += "<i class=\"fal fa-save\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Save";
+       tdedit += "</button>";
+       tdedit += "<button class=\"cancel_button\" onClick=\"javascript:summCancel('')\">";
+       tdedit += "<i class=\"fal fa-times-circle\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Cancel";
+       tdedit += "</button>";
+       tdedit += "<button class=\"test_button\" onClick=\"javascript:TestServer('servstat',objtypeAsInt,objid)\">";
+       tdedit += "<i class=\"fad fa-alien\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Test Connection";
+       tdedit += "</button>";
+       tdedit += "<button class=\"add_button\" onClick=\"javascript:AddDomain(objtypeAsInt,objid)\">";
+       tdedit += "<i class=\"fal fa-plus\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Add Subdomain";
+       tdedit += "</button>";
+       tdedit += "<button class=\"delete_button\" onClick=\"javascript:DeleteDomain(objtypeAsInt,objid)\">";
+       tdedit += "<i class=\"fal fa-trash\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Delete Domain";
+       tdedit += "</button>";
+       tdedit += "</div></td></tr>";
+       }
+       else
+       {
+	   td += "<tr id=\"contact_details_row\">";
+       td += "<td id=\"contact_details_title\">";
+       td += "Details";
+       td += "</td>";
+       td += "<td><div id=\"summ_header_buttons\">";
+       td += "<button class=\"edit_button\" onClick=\"javascript:EditSummaryButton(false,'')\">";
+       td += "<i class=\"fal fa-pencil\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Edit";
+       td += "</button>";
+       td += "<button class=\"save_button\" onClick=\"javascript:summOK(false,'')\">";
+       td += "<i class=\"fal fa-save\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Save";
+       td += "</button>";
+       td += "<button class=\"cancel_button\" onClick=\"javascript:summCancel('')\">";
+       td += "<i class=\"fal fa-times-circle\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Cancel";
+       td += "</button>";
+       if (objtype == "sv")
+       {
+        td += "<button class=\"test_button\" onClick=\"javascript:TestServer('servstat',objtypeAsInt,objid)\">";
+        td += "<i class=\"fad fa-alien\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Test Connection";
+        td += "</button>";
+       } else if (objtype == "do")
+       {
+        td += "<button class=\"add_button\" onClick=\"javascript:AddDomain(objtypeAsInt,objid)\">";
+        td += "<i class=\"fal fa-plus\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Add Subdomain";
+        td += "</button>";
+        td += "<button class=\"delete_button\" onClick=\"javascript:DeleteDomain(objtypeAsInt,objid)\">";
+        td += "<i class=\"fal fa-trash\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Delete Domain";
+        td += "</button>";
+       }
+       td += "</div></td></tr>";
+
+       tdedit += "<tr id=\"contact_details_row\">";
+       tdedit += "<td id=\"contact_details_title\">";
+       tdedit += "Details";
+       tdedit += "</td>";
+       tdedit += "<td><div id=\"summ_header_buttons\">";
+       tdedit += "<button class=\"edit_button\" onClick=\"javascript:EditSummaryButton(false,'')\">";
+       tdedit += "<i class=\"fal fa-pencil\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Edit";
+       tdedit += "</button>";
+       tdedit += "<button class=\"save_button\" onClick=\"javascript:summOK(false,'')\">";
+       tdedit += "<i class=\"fal fa-save\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Save";
+       tdedit += "</button>";
+       tdedit += "<button class=\"cancel_button\" onClick=\"javascript:summCancel('')\">";
+       tdedit += "<i class=\"fal fa-times-circle\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Cancel";
+       tdedit += "</button>";
+       if (objtype == "sv")
+       {
+       tdedit += "<button class=\"test_button\" onClick=\"javascript:TestServer('servstat',objtypeAsInt,objid)\">";
+       tdedit += "<i class=\"fad fa-alien\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Test Connection";
+       tdedit += "</button>";
+       }
+       else if (objtype == "do")
+       {
+       tdedit += "<button class=\"add_button\" onClick=\"javascript:AddDomain(objtypeAsInt,objid)\">";
+       tdedit += "<i class=\"fal fa-plus\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Add Subdomain";
+       tdedit += "</button>";
+       tdedit += "<button class=\"delete_button\" onClick=\"javascript:DeleteDomain(objtypeAsInt,objid)\">";
+       tdedit += "<i class=\"fal fa-trash\" aria-hidden=\"true\"  style=\"padding-right:5px\"></i>Delete Domain";
+       tdedit += "</button>";
+       }
+       tdedit += "</div></td></tr>";
+	   }
+
        // label = "Domain";
        if (summSaveobjtype == "do")
          label = "Parent Domain";
-       tdedit += "<tr>";
-       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Full Domain:</td>";
-       tdedit += "<td ><select name=\"fulldomain_val\">";
-       save_fulldomain_val = val;
-       tdedit += "</select>";
-       tdedit += "</td>";
-       tdedit += "<td><input type=\"hidden\" name=\"fulldomain_field\" value=\"" + field + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"fulldomain_callback\" value=\"" + callback + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"fulldomain_oldval\" value=\"" + val + "\"/></td>";
-       tdedit += "</tr>";
+
+       if (isGlobalDomain)
+       {
+        tdedit += "<tr>";
+        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Full Domain:</td>";
+        tdedit += "<td >" + val;
+        save_fulldomain_val = val;
+        tdedit += "</td>";
+        tdedit += "<td><input type=\"hidden\" name=\"fulldomain_field\" value=\"" + field + "\"/></td>";
+        tdedit += "<td><input type=\"hidden\" name=\"fulldomain_callback\" value=\"" + callback + "\"/></td>";
+        tdedit += "<td><input type=\"hidden\" name=\"fulldomain_oldval\" value=\"" + val + "\"/></td>";
+        tdedit += "</tr>";
+       }
+       else
+       {
+        tdedit += "<tr>";
+        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">Full Domain:</td>";
+        tdedit += "<td ><select name=\"fulldomain_val\">";
+        save_fulldomain_val = val;
+        tdedit += "</select>";
+        tdedit += "</td>";
+        tdedit += "<td><input type=\"hidden\" name=\"fulldomain_field\" value=\"" + field + "\"/></td>";
+        tdedit += "<td><input type=\"hidden\" name=\"fulldomain_callback\" value=\"" + callback + "\"/></td>";
+        tdedit += "<td><input type=\"hidden\" name=\"fulldomain_oldval\" value=\"" + val + "\"/></td>";
+        tdedit += "</tr>";
+	   }
 
        // td += "<tr id='fulldomain_sumrow_desc'><td id=\"fulldomain_summ_desc\" class=\"summlabel\">";
        // td += "Domain:";
@@ -413,13 +598,27 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        if (summSaveobjtype == "do")
          label = "Domain Name";
        objName = val;
-       tdedit += "<tr>";
-       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-       tdedit += "<td><input name=\"name_val\" autocomplete=\"off\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"name_field\" value=\"" + field + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"name_callback\" value=\"" + callback + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"name_oldval\" value=\"" + val + "\"/></td>";
-       tdedit += "</tr>";
+
+       if (isGlobalDomain)
+       {
+        tdedit += "<tr>";
+        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+        tdedit += "<td>" + val + "<input type=\"hidden\" name=\"name_val\" autocomplete=\"off\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+        tdedit += "<td><input type=\"hidden\" name=\"name_field\" value=\"" + field + "\"/></td>";
+        tdedit += "<td><input type=\"hidden\" name=\"name_callback\" value=\"" + callback + "\"/></td>";
+        tdedit += "<td><input type=\"hidden\" name=\"name_oldval\" value=\"" + val + "\"/></td>";
+        tdedit += "</tr>";
+       }
+       else
+       {
+        tdedit += "<tr>";
+        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+        tdedit += "<td><input name=\"name_val\" autocomplete=\"off\" style='width:100%' type=\"text\" value=\"" + val + "\"/></td>";
+        tdedit += "<td><input type=\"hidden\" name=\"name_field\" value=\"" + field + "\"/></td>";
+        tdedit += "<td><input type=\"hidden\" name=\"name_callback\" value=\"" + callback + "\"/></td>";
+        tdedit += "<td><input type=\"hidden\" name=\"name_oldval\" value=\"" + val + "\"/></td>";
+        tdedit += "</tr>";
+	   }
       }
       else if (label == "Availability")
       {
@@ -585,6 +784,8 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Protocol")
       {
+	   if (hideOption())
+		  continue;
        tdedit += "<tr>";
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
        tdedit += "<td ><select onChange=\"ProtocolChanged()\"; name=\"protocol_val\" id=\"protocol_val\">";
@@ -660,6 +861,9 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Endpoint Types")
       {
+ 	   if (hideOption())
+ 		  continue;
+
        if (comptypedone == false)
        {
         tdedit += "<tr>";
@@ -732,8 +936,10 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Base Directory")
       {
-       if (isDocker)
-        continue;
+	   if (hideOption())
+		  continue;
+ //      if (isDocker)
+ //       continue;
 
        tdedit += "<tr>";
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
@@ -1029,29 +1235,8 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "LifeCycle Domain")
       {
-       var domain = val;
-       val = domain.value;
-       tdedit += "<tr>";
-       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">All Subdomains are Lifecycles:</td>";
-       if (val)
-       {
-        summSaveisLifeCycle = true;
-        isLifeCycle = true;
-        tdedit += "<td><span id=\"lifecycledomain_txt\" style=\"display:none\">Yes</span><input name=\"lifecycledomain_val\" id=\"lifecycledomain_val\" onClick=\"javascript:ToggleLifeCycle();\" type=\"checkbox\" checked /></td>";
-       }
-       else
-       {
-        summSaveisLifeCycle = false;
-        isLifeCycle = false;
-        tdedit += "<td><span id=\"lifecycledomain_txt\" style=\"display:none\">Yes</span><input name=\"lifecycledomain_val\" id=\"lifecycledomain_val\" onClick=\"javascript:ToggleLifeCycle();\" type=\"checkbox\"/></td>";
-       }
-       tdedit += "<td><input type=\"hidden\" name=\"lifecycledomain_field\" value=\"" + field + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"lifecycledomain_callback\" value=\"" + callback + "\"/></td>";
-       if (val)
-        tdedit += "<td><input type=\"hidden\" name=\"lifecycledomain_oldval\" value=\"on\"/></td>";
-       else
-        tdedit += "<td><input type=\"hidden\" name=\"lifecycledomain_oldval\" value=\"false\"/></td>";
-       tdedit += "</tr>";
+	   continue;
+
       }
       else if (label == "Result Is Expr")
       {
@@ -1201,9 +1386,12 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Endpoint Type" && summSaveobjtype != "se")
       {
+	   if (hideOption())
+		  continue;
+
 	   if (objid === -1)
         val = "";
-       tdedit += "<tr>";
+       tdedit += "<tr id=\"endpointtype_row_edit\">";
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
        tdedit += "<td ><select name=\"comptype_val\" id=\"comptype_val\" onChange=\"CompTypeChanged()\">";
        tdedit += "</td>";
@@ -1387,7 +1575,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
        val = "st" + st.id;
        label = "Endpoint Operating System";
 
-       tdedit += "<tr>";
+       tdedit += "<tr id=\"servertype_row_edit\">";
        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
        tdedit += "<td ><select name=\"servertype_val\">";
        if (val == "st3")
@@ -1469,6 +1657,9 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label.toLowerCase() == "Pre-Action".toLowerCase() && summSaveobjtype != "rl")
       {
+	   if (hideOption())
+	     continue;
+
        if (isDocker)
         continue;
 
@@ -1502,6 +1693,9 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label.toLowerCase() == "Post-Action".toLowerCase() && summSaveobjtype != "rl")
       {
+	   if (hideOption())
+	     continue;
+
        if (isDocker)
         continue;
 
@@ -1534,6 +1728,8 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Custom Action" && summSaveobjtype != "rl")
       {
+	   if (hideOption())
+	     continue;
        var action = val;
        var oldval;
        if (typeof action.name == "undefined")
@@ -1566,6 +1762,9 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Credential")
       {
+	   if (hideOption())
+		  continue;
+
        var cred = val;
        var oldval;
        if (typeof cred.name == "undefined")
@@ -1921,16 +2120,18 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 
        if (kind.id != "6")
        {
-       tdedit += "<tr>";
-       tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
-       tdedit += "<td>" + val + "</td>"
-       tdedit += "<td ><input type=\"hidden\" name=\"kind_val\" value=\"" + oldval + "\"/>";
+ // No longer distinguishing between different types of components
+ //
+ //        tdedit += "<tr id=\"componenttype_row_edit\">";
+ //        tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
+ //        tdedit += "<td>" + val + "</td>"
+ //        tdedit += "<td ><input type=\"hidden\" name=\"kind_val\" value=\"" + oldval + "\"/>";
        save_kind_val = val;
-       tdedit += "</td>";
-       tdedit += "<td><input type=\"hidden\" name=\"kind_field\" value=\"" + field + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" name=\"kind_callback\" value=\"" + callback + "\"/></td>";
-       tdedit += "<td><input type=\"hidden\" id=\"kind_oldval\" name=\"kind_oldval\" value=\"\"/></td>";
-       tdedit += "</tr>";
+ //        tdedit += "</td>";
+ //        tdedit += "<td><input type=\"hidden\" name=\"kind_field\" value=\"" + field + "\"/></td>";
+ //        tdedit += "<td><input type=\"hidden\" name=\"kind_callback\" value=\"" + callback + "\"/></td>";
+ //        tdedit += "<td><input type=\"hidden\" id=\"kind_oldval\" name=\"kind_oldval\" value=\"\"/></td>";
+ //        tdedit += "</tr>";
        }
 
        console.log("save_kind_id="+save_kind_id+" objid="+objid);
@@ -1939,6 +2140,7 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
 
        console.log("kind.id="+kind.id);
        objkind = kind.id;
+       continue;  // skip dsiplaying it
       }
       else if (label == "Created")
       {
@@ -2183,6 +2385,9 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else if (label == "Endpoint Types" )
       {
+ 	   if (hideOption())
+ 		  continue;
+
         var myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
 
         if (comptypelabeldone == false)
@@ -2369,6 +2574,8 @@ function FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams)
      } else {
       tdedit += "</table></form>";
       $("#" + tablename + " > tbody").html(td);
+      $("#summtab > tbody").html(tdedit);
+
 
       HideFields();
 
@@ -2397,7 +2604,10 @@ function LoadDomNav()
  var vb = $("#verttab_domain");
  vb.addClass("active");
 
- $("#right_panel_header").html("<h1 class=\"domain\">Domains</h1>");
+ $("#header_icon").html("<h1 class=\"domain\">Domains</h1>");
+
+ if ($('#domlist').length > 0)
+ 	$('#domlist').empty();
 
  objid = userdomid;
  objtypeAsInt = 3;
@@ -2751,9 +2961,12 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        }
        else if (label == "Endpoint Types")
        {
+ 	   if (hideOption())
+ 		  continue;
+
         if (comptypedone == false)
         {
-         task_tdedit += "<tr>";
+         task_tdedit += "<tr id=\"servercomptype_row_edit\">";
          task_tdedit += "<td style=\"text-align:left;vertical-align:top;padding-right: 5px;white-space: nowrap;\">" + label + ":</td>";
          task_tdedit += "<td ><select multiple name=\"servercomptype_val\">";
          var parts = val.split(";");
@@ -3259,7 +3472,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        {
         if (objid === -1)
         	val = "";
-        task_tdedit += "<tr>";
+        task_tdedit += "<tr id=\"endpointtype_row_edit\">";
         task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
         task_tdedit += "<td ><select name=\"comptype_val\" id=\"comptype_val\" onChange=\"CompTypeChanged()\">";
         task_tdedit += "</td>";
@@ -3430,7 +3643,7 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
         val = "st" + st.id;
         label = "Endpoint Operating System";
 
-        task_tdedit += "<tr>";
+        task_tdedit += "<tr id=\"servertype_row_edit\">";
         task_tdedit += "<td style=\"text-align:left; white-space: nowrap;\">" + label + ":</td>";
         task_tdedit += "<td ><select name=\"servertype_val\">";
         if (val == "st3")
@@ -3518,6 +3731,9 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        }
        else if (label.toLowerCase() == "Pre-Action".toLowerCase() && summSaveobjtype != "rl")
        {
+	    if (hideOption())
+	     continue;
+
         var action = val;
         console.log("Pre-Action seen");
         console.log(val);
@@ -3548,6 +3764,9 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        }
        else if (label.toLowerCase() == "Post-Action".toLowerCase() && summSaveobjtype != "rl")
        {
+	   if (hideOption())
+	     continue;
+
         var action = val;
         var oldval;
         if (typeof action.name == "undefined")
@@ -3577,6 +3796,9 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        }
        else if (label == "Custom Action" && summSaveobjtype != "rl")
        {
+	   if (hideOption())
+	     continue;
+
         var action = val;
         var oldval;
         if (typeof action.name == "undefined")
@@ -4127,6 +4349,9 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
        }
        else if (label == "Endpoint Types" )
        {
+		if (hideOption())
+ 		  continue;
+
          var myid = label.toLocaleLowerCase().replace(/ /g, "") + "_sumrow";
 
          if (comptypelabeldone == false)
@@ -4229,7 +4454,8 @@ function LoadTaskSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
       }
       else
         $("#" + prevcb).prop("checked", true);
-     },
+
+	 },
      error : function(jqxhr, status, err)
      {
       console.log(status);
@@ -4257,7 +4483,6 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   var href = window.location.href;
   href = href.replace("#dhmain","");
   href = href.replace("#dhnav", "");
-  $("#row-10-right-panel > #summ_title > h2").html("Component Details");
 
   window.history.pushState('dhnav', null, href + '#dhmain#dhnav');
 
@@ -4265,6 +4490,8 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
  $("#summ_data").show();
  $('.save_button').css("color","grey");
  $('.cancel_button').css("color","grey");
+
+ $("#engine_details_row_edit").show();
 
  if (objid < 0 && (objtype == "co" || objtype == "cv"))
   addParams += "&comptype=" + addcomptype
@@ -4274,32 +4501,20 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
  if (objtype == "co" || objtype == "cv")
  {
   $("#summ_header_buttons").hide();
-  $("#tabs-General-left").css('margin-right','0px');
-  $("#row-10-right-panel").css('margin-left','0px');
-  $("#summ_title").html("<h2>Component Overview</h2>");
-  $("#tabs-General-left").css("border-right-width","0");
-  $("#row-10-right-panel").css("border-left-width","0");
+  $("#row-10-right-panel").show();
  }
  else
  {
   $("#compowner_summ_title").hide();
-  $("#compowner_summ_header_buttons").hide();
-  $("#tabs-General-left").css('margin-right','8px');
-  $("#row-10-right-panel").css('margin-left','8px');
-  $("#summ_title").html("<h2>Details</h2>");
-  $("#tabs-General-left").css("border-right-width","1px");
-  $("#row-10-right-panel").css("border-left-width","1px");
+  $("#summ_header_buttons").hide();
  }
 
- if (objtype != "do")
- {
   $("#summ_header_buttons > button.add_button").hide();
   $("#summ_header_buttons > button.delete_button").hide();
-  $("#compowner_summ_header_buttons > button.add_button").hide();
-  $("#compowner_summ_header_buttons > button.delete_button").hide();
-  $("#domnav-panel").hide();
- }
- else
+
+ $("#domnav-panel").hide();
+
+ if (objtype != "do" && objtype != "us" && objtype != "gr")
  {
   $("#summ_header_buttons > button.add_button").show();
   $("#summ_header_buttons > button.delete_button").show();
@@ -4351,16 +4566,24 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   $("#task-panel").hide();
   $("#tabs-General-right").hide();
   $("#row-10-right-panel").hide();
-  $("#row-10-access").hide();
   $("#row-10b-access").hide();
-  $("#row-10-audit").hide();
+  $("#tabs-General-row-9").hide();
+  $("#tabs-General-row-9a").hide();
+  $("#tabs-General-row-9b").hide();
+  $("#tabs-General-row-9c").hide();
   $("#tabs-General-right-15").hide();
   $("#tabs-General-right-20").hide();
+  $("#tabs-General-row-lic").hide();
   $("#tabs-General-row-12").hide();
+  $("#tabs-General-row-12-0").hide();
   $("#tabs-General-row-12a").hide();
+  $("#tabs-General-row-12b").hide();
   $("#licensemd-panel").hide();
+  $("#tabs-Calendar-data").hide();
   $("#cr-panel-20").hide();
+  $("#tabs-General-row-14").hide();
   $("#tabs-General-row-15").hide();
+  $("#tabs-General-row-15a").hide();
   $("#appcomp-data").hide();
   $("#tabs-General-row-20").hide();
   $("#tabs-General-row-25").hide();
@@ -4368,40 +4591,44 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   $("#tabs-General-row-30").hide();
   $("#tabs-General-row-32").hide();
   $("#tabs-General-row-35").hide();
+  $("#tabs-General-row-35a").hide();
   $("#tabs-General-row-40").hide();
   $("#tabs-General-row-50").hide();
+  $("#tabs-General-row-51").hide();
+  $("#tabs-General-row-scorecard").hide();
+  $("#tabs-General-row-lic").hide();
  }
 
   FetchSummary(tablename, objtypeAsInt, objtype, objid, addParams);
 
   if (objtype == "ap" || objtype == "av")
   {
+   $("#devops-details").html("Application with DevOps Details");
+   $("#bookmark-DevOps-Details > u").html("Application with DevOps Details");
    $("#trends-panel").show();
    $("#logs-panel").show();
    $("#attrs-panel").show();
    $("#tabs-General-right").show();
-   $("#row-10-right-panel").show();
+   $("#tabs-General-row-9").show();
    $("#tabs-General-row-12a").show();
+   $("#tabs-General-row-12b").show();
+   $("#tabs-General-row-14").show();
    $("#tabs-General-row-15").show();
+   $("#tabs-General-row-15a").show();
    $("#tabs-General-right-15").show();
    $("#tabs-General-row-20").show();
    $("#tabs-General-row-25").show();
    $("#feedback-panel").show();
-   $("#tabs-General-row-28").show();
-   $("#tabs-General-row-30").show();
    $("#tabs-General-row-35").show();
+   $("#tabs-General-row-35a").show();
    $("#tabs-General-row-40").show();
-   $("#defect-panel").show();
+ //  $("#defect-panel").show();
    AppMap();
    LoadAttributesData("attrib",objtypeAsInt, objtype, objid);
 
    $("#appcomp-data").show();
    $("#row-10-right-panel > #summ_title > h2").html("Dependencies");
    getAppCompList("list");
-
-   $("#tabs-General-right-20").show();
-   $("#trends-panel").show();
-   ReplotReports(objtype);
 
    LoadAppLogList("loghist",objtypeAsInt, objtype, objid);
    LoadDeployedEnv4AppData("deployedenv4app", objtypeAsInt, objtype, objid, addParams);
@@ -4427,6 +4654,9 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   }
   else if (objtype == "co" || objtype == "cv")
   {
+   $("#devops-details").html("Component with DevOps Details");
+   $("#bookmark-DevOps-Details > u").html("Component with DevOps Details");
+
    $("#app4comp-panel").show();
    $("#srv4comp-panel").show();
    $("#attrs-panel").show();
@@ -4435,19 +4665,26 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#compowner_summ_data").show();
    $("#compitem_data").show();
    $("#row-10-right-panel").show();
+   $("#tabs-General-row-lic").show();
    $("#tabs-General-row-12").show();
+   $("#tabs-General-row-12-0").show();
    $("#tabs-General-row-12a").show();
+   $("#tabs-General-row-12b").show();
+   $("#tabs-General-row-scorecard").show();
    $("#licensemd-panel").show();
    $("#cr-panel-20").show();
+   $("#tabs-General-row-14").show();
    $("#tabs-General-row-15").show();
+   $("#tabs-General-row-15a").show();
    $("#tabs-General-right-15").show();
  //  $("#feedback-panel").show();      // SBT remove for components 11/4/21
  //  $("#tabs-General-row-28").show(); // SBT remove for components 11/4/21
    $("#tabs-General-row-30").show();
    $("#tabs-General-row-32").show();
    $("#tabs-General-row-35").show();
+   $("#tabs-General-row-35a").show();
    $("#tabs-General-row-40").show();
-   $("#defect-panel").show();
+ //  $("#defect-panel").show();
 
    LoadReadme(objid);
    LoadSwagger(objid);
@@ -4455,8 +4692,8 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    LoadComponentItems(objid);
    CompMap();
    LoadAttributesData("attrib",objtypeAsInt, objtype, objid);
-   LoadApp4CompData("app4comp", objtypeAsInt, objtype, objid, addParams);
-   LoadSrv4CompData("srv4comp", objtypeAsInt, objtype, objid, "");
+   getApps4Comp("list");
+ //  LoadSrv4CompData("srv4comp", objtypeAsInt, objtype, objid, "");
    getLicenseList("list");
    getCVEList("list");
 
@@ -4475,6 +4712,8 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   }
   else if (objtype == "te")
   {
+   $("#devops-details").html("Details");
+   $("#bookmark-DevOps-Details > u").html("Details");
    $("#row-10-right-panel").show();
    $("#emailto-panel").show();
    $("#emailhelp-panel").show();
@@ -4483,9 +4722,12 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   }
   else if (objtype == "no")
   {
-   $("#row-10-right-panel").show();
-   $("#row-10-access").show();
-   LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
+   $("#devops-details").html("Details");
+   $("#bookmark-DevOps-Details > u").html("Details");
+   $("#tabs-General-row-35").show();
+   $("#tabs-General-row-35a").show();
+   $("#row-35-access").show();
+   LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
 
    $("#props_data").show();
    $("#props_data_edit").hide();
@@ -4493,25 +4735,36 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   }
   else if (objtype == "ct")
   {
-   $("#row-10-access").show();
-   LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
+   $("#devops-details").html("Details");
+   $("#bookmark-DevOps-Details > u").html("Details");
+   $("#tabs-General-row-35").show();
+   $("#tabs-General-row-35a").show();
+   $("#row-35-access").show();
+   LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
   }
   else if (objtype == "cr")
   {
-   $("#row-10-right-panel").show();
-   $("#row-10-access").show();
-   LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
+   $("#devops-details").html("Details");
+   $("#bookmark-DevOps-Details > u").html("Details");
+   $("#tabs-General-row-35").show();
+   $("#tabs-General-row-35a").show();
+   $("#row-35-access").show();
+   LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
+   createNewsFeed("audit35", objtype, objid, false);
   }
   else if (objtype == "ac")
   {
-   $("#row-10-right-panel").show();
-   $("#row-10-access").show();
-   LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
+   $("#devops-details").html("Details");
+   $("#bookmark-DevOps-Details > u").html("Details");
+   $("#tabs-General-row-35").show();
+   $("#tabs-General-row-35a").show();
+   $("#row-35-access").show();
+   LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
+   createNewsFeed("audit35", objtype, objid, false);
 
-   $("#row-10-audit").show();
-   createNewsFeed("audit10", objtype, objid, false);
-
+   $("#tabs-General-row-14").show();
    $("#tabs-General-row-15").show();
+   $("#tabs-General-row-15a").show();
    $("#outerworkflow").show();
    $("#pickproc").show();
    $("#cmdline-panel").show();
@@ -4519,50 +4772,69 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   }
   else if (objtype == "us")
   {
+   $("#devops-details").html("Details");
+   $("#bookmark-DevOps-Details > u").html("Details");
    $("#groupmembership-panel").show();
    LoadGroupMembershipData("groupmembership", objtypeAsInt, objtype, objid, "");
 
    $("#row-10-right-panel").show();
-   $("#row-10-audit").show();
-   createNewsFeed("audit10", objtype, objid, false);
+   $("#tabs-General-row-35").show();
+   $("#tabs-General-row-35a").show();
+   $("#row-35-access").show();
+   LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
+   createNewsFeed("audit35", objtype, objid, false);
   }
   else if (objtype == "gr")
   {
+   $("#devops-details").html("Details");
+   $("#bookmark-DevOps-Details > u").html("Details");
    $("#usermembership-panel").show();
    LoadUserMembershipData("usermembership", objtypeAsInt, objtype, objid, "");
    LoadAdminRightsData(objtypeAsInt, objtype, objid);
 
    $("#row-10-right-panel").show();
-   $("#row-10-audit").show();
-   createNewsFeed("audit10", objtype, objid, false);
+   $("#tabs-General-row-35").show();
+   $("#tabs-General-row-35a").show();
+   $("#row-35-access").show();
+   LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
+   createNewsFeed("audit35", objtype, objid, false);
   }
   else if (objtype == "ds")
   {
+   $("#devops-details").html("Details");
+   $("#bookmark-DevOps-Details > u").html("Details");
    $("#props_data").show();
    $("#props_data_edit").hide();
    LoadPropertiesData("propstab", objtypeAsInt, objtype, objid, "");
 
-   $("#row-10-right-panel").show();
-   $("#row-10-access").show();
-   LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
+
+   $("#tabs-General-row-35").show();
+   $("#tabs-General-row-35a").show();
+   $("#row-35-access").show();
+   LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
+   createNewsFeed("audit35", objtype, objid, false);
   }
   else if (objtype == "re")
   {
+   $("#devops-details").html("Details");
+   $("#bookmark-DevOps-Details > u").html("Details");
    $("#props_data").show();
    $("#props_data_edit").hide();
    LoadPropertiesData("propstab", objtypeAsInt, objtype, objid, "");
 
    $("#tabs-General-right-15").show();
 
-   $("#row-10-right-panel").show();
-   $("#row-10-access").show();
-   LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
 
-   $("#row-10-audit").show();
-   createNewsFeed("audit10", objtype, objid, false);
+   $("#tabs-General-row-35").show();
+   $("#tabs-General-row-35a").show();
+   $("#row-35-access").show();
+   LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
+   createNewsFeed("audit35", objtype, objid, false);
   }
   else if (objtype == "rl" || objtype == "rv")
   {
+   $("#devops-details").html("Details");
+   $("#bookmark-DevOps-Details > u").html("Details");
    $("#trends-panel").show();
    $("#logs-panel").show();
    $("#row-10-right-panel").show();
@@ -4571,36 +4843,37 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    $("#attrs10-panel").show();
    LoadAttributesData("attrib10",objtypeAsInt, objtype, objid);
 
-   $("#row-10-access").show();
-   LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
-
-   $("#row-10-audit").show();
-   createNewsFeed("audit10", objtype, objid, false);
-
-   $("#tabs-General-right-20").show();
-   $("#trends-panel").show();
-   ReplotReports(objtype);
+   $("#tabs-General-row-35").show();
+   $("#tabs-General-row-35a").show();
+   $("#row-35-access").show();
+   LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
+   createNewsFeed("audit35", objtype, objid, false);
 
    hookSummary(tablename, objtypeAsInt, objtype, objid, addParams);
 
    $("#planning-panel").show();
    $("#planningtimeline").show();
-   $("#tabs-General-row-30").show();
    LoadTimeline4App("planningtimeline", objtypeAsInt, objtype, objid);
   }
   else if (objtype == "en")
   {
-   $("#row-10-access").show();
-   LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
+   $("#devops-details").html("Details");
+   $("#bookmark-DevOps-Details > u").html("Details");
 
-   $("#row-10-audit").show();
-   createNewsFeed("audit10", objtype, objid, false);
+   $("#tabs-General-row-35").show();
+   $("#tabs-General-row-35a").show();
+   $("#row-35-access").show();
+   $("#tabs-Calendar-data").show();
+   CreateCalendar(objid);
+   LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
+   createNewsFeed("audit35", objtype, objid, false);
 
    $("#app4env-panel").show();
    LoadApp4EnvData("app4env", objtypeAsInt, objtype, objid, addParams);
    $("#row-10-right-panel").show();
 
    $("#tabs-General-row-15").show();
+   $("#tabs-General-row-15a").show();
    $("#attrs-panel").show();
    LoadAttributesData("attrib",objtypeAsInt, objtype, objid);
 
@@ -4608,9 +4881,6 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
    LoadSrv4EnvData("srv4env",objtypeAsInt, objtype, objid);
 
    $("#tabs-General-row-20").show();
-   $("#tabs-General-right-20").show();
-   $("#trends-panel").show();
-   ReplotReports(objtype);
 
    $("#tabs-General-row-28").show();
    $("#feedback-panel").show();
@@ -4624,74 +4894,93 @@ function LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams)
   }
   else if (objtype == "pr" || objtype == "fn")
   {
+   $("#devops-details").html("Details");
+   $("#bookmark-DevOps-Details > u").html("Details");
+   $("#tabs-General-row-14").show();
    $("#tabs-General-row-15").show();
+   $("#tabs-General-row-15a").show();
    $("#inputparams-panel").show();
    $("#tabs-General-row-20").show();
 
-   $("#row-10-right-panel").show();
-   $("#row-10-access").show();
-   LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
-
-   $("#row-10-audit").show();
-   createNewsFeed("audit10", objtype, objid, false);
+   $("#tabs-General-row-35").show();
+   $("#tabs-General-row-35a").show();
+   $("#row-35-access").show();
+   LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
+   createNewsFeed("audit35", objtype, objid, false);
 
    $("#switchargs-panel").show();
    $("#inputparams-panel").show();
    $("#cmdline-panel").show();
+   $("#tabs-General-row-9a").show();
+   $("#tabs-General-row-9b").show();
+   $("#tabs-General-row-9c").show();
    LoadArgsData("inputparams", objtypeAsInt, objtype, objid, objkind, addParams);
   }
   else if (objtype == "se")
   {
-   $("button.test_button").show();
-   $("#servstat_data").show();
-   LoadServerStatusData("servstat", objtypeAsInt,objid);
+   $("#devops-details").html("Details");
+   $("#bookmark-DevOps-Details > u").html("Details");
+   if (!hideOption())
+   {
+    $("button.test_button").show();
+    $("#servstat_data").show();
+    LoadServerStatusData("servstat", objtypeAsInt,objid);
+   }
 
    $("#attrs10-panel").show();
    LoadAttributesData("attrib10",objtypeAsInt, objtype, objid);
 
-   $("#row-10-access").show();
-   LoadAccess("row-10-access-data", objtypeAsInt, objtype, objid, "");
-
-   $("#row-10-audit").show();
-   createNewsFeed("audit10", objtype, objid, false);
+   $("#tabs-General-row-35").show();
+   $("#tabs-General-row-35a").show();
+   $("#row-35-access").show();
+   LoadAccess("row-35-access-data", objtypeAsInt, objtype, objid, "");
+   createNewsFeed("audit35", objtype, objid, false);
 
    $("#row-10-right-panel").show();
 
    $("#tabs-General-row-20").show();
-   $("#tabs-General-right-20").show();
-   $("#trends-panel").show();
-   ReplotReports(objtype);
 
-   $("#tabs-General-row-30").show();
    $("#comp4srv-panel").show();
    LoadComp4SrvData("comp4srv", objtypeAsInt, objtype, objid, "");
   }
   else if (objtype == "do" )
   {
-   if (!$("#domnav-panel").is(":visible"))
-   {
-    $("#tabs-General-row-10").show();
-    $("#domnav-panel").show();
-    DomNav();
-   }
+   $("#tabs-General-row-10").show();
+   $("#domnav-panel").show();
+   DomNav();
 
    $("#row-10b-access").show();
    LoadAccess("row-10b-access-data", objtypeAsInt, objtype, objid, "");
 
-   $("#tabs-General-row-50").show();
-   $("#task-panel").show();
-   LoadTasks("taskstab", objtypeAsInt, objtype, objid, "");
-
+   if (!hideOption())
+   {
+   	$("#tabs-General-row-50").show();
+    $("#tabs-General-row-51").show();
+    $("#task-panel").show();
+    LoadTasks("taskstab", objtypeAsInt, objtype, objid, "");
+   }
   }
 }
 
 function LoadAccess(parentdiv, objtypeAsInt, objtype, objid, addParams)
 {
- console.log("GetAccess?objtype=" + objtypeAsInt + "&id=" + objid);
+ var url = "GetAccess?objtype=" + objtypeAsInt + "&id=" + objid + "&din=";
+
  if (objtype == "do")
-  $("#" + parentdiv).load("GetAccess?objtype=" + objtypeAsInt + "&id=" + objid + "&din=Y");
- else
-  $("#" + parentdiv).load("GetAccess?objtype=" + objtypeAsInt + "&id=" + objid + "&din=");
+  url = "GetAccess?objtype=" + objtypeAsInt + "&id=" + objid + "&din=Y";
+
+
+ console.log(url);
+
+  $.ajax(
+    {
+     url : url,
+     type : 'GET',
+     success : function(res)
+     {
+	  $("#" + parentdiv).html(res);
+     }
+   });
 }
 
 function LoadComponentItems(objid)
@@ -4887,6 +5176,8 @@ function endsWith(str, suffix) {
 
 function summOK(isProfile, prefix)
 {
+ event.preventDefault();
+
  $('.edit_button').css("color","#3367d6");
 
  var dom_summSavetablename = summSavetablename;
@@ -5103,6 +5394,7 @@ function summOK(isProfile, prefix)
 
 function summCancel(prefix)
 {
+ // event.preventDefault();
  var pwd = parent.$("#" + prefix + "summ_data_edit");
 
  if (summSaveobjid < 0)
@@ -5160,12 +5452,15 @@ function EditSummaryButton(userDialog, prefix)
 
  console.log($('.edit_button').css("color"));
 
+ $("#engine_details_row_edit").hide();
+
  if ($('.edit_button').css("color") == "rgb(128, 128, 128)")
    return;
 
  $('.edit_button').css("color","grey");
  $('.save_button').css("color","#3367d6");
  $('.cancel_button').css("color","#3367d6");
+
 
  isProfile = userDialog;
 
@@ -5240,7 +5535,7 @@ function EditSummaryButton(userDialog, prefix)
 	   console.log("About to GetActions");
     $.ajax(
     {
-     url : "GetActions?reason=actonly&objid="+summSaveobjtype+summSaveobjid+"&domid="+summSavedomid,
+     url : "GetActions?reason=dropdown&objid="+summSaveobjtype+summSaveobjid+"&domid="+summSavedomid,
      dataType : 'json',
      type : 'GET',
      success : function(res)
@@ -5260,7 +5555,10 @@ function EditSummaryButton(userDialog, prefix)
 
       for (n = 0; n < res.length; n++)
       {
-       var action = res[n].action;
+       var action = res[n];
+
+       action.type = action.id.substring(0, 2);
+       action.id = action.id.substring(2);
 
        if (action.type == "ac" && !(action.id in actionids))
        {
@@ -7339,18 +7637,10 @@ function GetSaveTargetData(instance)
 
 function ChangeSummaryName(newname)
 {
- var heading = parent.$("#right_panel_header > h1");
+ var heading = parent.$("#header_icon");
  var html = heading.html();
  var parts = html.split(':');
  html = parts[0] + ": " + newname;
-
- if (parts[0] == 'Domain')
- {
-    html = '<button class="scorecard_button" onClick="javascript:ScorecardDomain(objid)">' +
-					'<i class="fa-light fa-table-columns aria-hidden="true"  style="padding-right:5px"></i>Scorecard</button>' +
-					'<h1 style="display:inline-block">Domain: ' + newname + '</h1>';
-	heading = parent.$("#right_panel_header");
- }
 
  heading.html(html);
  RefreshName(currenttree, newname);
@@ -7473,7 +7763,7 @@ function SaveSummaryData(instance, tablename, objtypeAsInt, objtype, objid, addP
       SaveAdminRightsData();
       SaveSummaryItemData(instance, tablename, objtypeAsInt, objtype, objid, addParams);
       LoadSummaryData(tablename, objtypeAsInt, objtype, objid, addParams);
-      if (summSaveobjtype == "do" && 'change_1' in savedata)
+      if (summSaveobjtype == "do" && ('change_1' in savedata || 'change_1002' in savedata))
       {
        lookupDom = savedata.newname;
        LoadDomNav();

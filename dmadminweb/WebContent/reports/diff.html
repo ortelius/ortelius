@@ -1,0 +1,49 @@
+<html style="background-color:white">
+<head>
+<!-- Stylesheet -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css" />
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css" />
+<link rel="stylesheet" type="text/css" href="/dmadminweb/css/devops_frydesign.css" />
+
+<!-- Javascripts -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous"></script>
+<script>
+
+$( document ).ready(function() {
+ var url = window.location.href.replace("reports/diff.html","API2/diff");
+
+ $.get(url, function(data, status){
+    const diffString = data['result'];
+  if (diffString == "")
+   $("#myDiffElement").html("<H1>Versions are identical");
+  else
+  {
+   const targetElement = document.getElementById('myDiffElement');
+   const configuration = { inputFormat: 'json', drawFileList: false, matching: 'lines', highlight: false, outputFormat: 'side-by-side' };
+   const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+   diff2htmlUi.draw();
+  }
+  });
+});
+
+</script>
+</head>
+<body style="background-color:white">
+<div id="header">
+  <div class="omlogo"></div>
+   <div id="positiondevopsmenu">
+	<div class="moduletable_menu">
+      <ul class="menu_menu">
+      </ul>
+	</div>
+   </div>
+  <div class="clear"></div>
+</div>
+<div id="myDiffElement" style="margin-top:48px">
+<div id="loading" style="position: fixed;top: 50%;left: 50%;transform: translate(-50%, -50%); font-size:4em;">
+<h3>Loading....</h3>
+</div>
+</div>
+</body>
+</html>

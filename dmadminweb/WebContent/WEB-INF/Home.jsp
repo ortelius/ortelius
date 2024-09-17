@@ -19,147 +19,147 @@
 
 <html>
 <head>
-<title>Ortelius</title>
+<title>DeployHub</title>
+<meta name="robots" content="noindex, nofollow" />
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 
 <link rel="icon" href="favicon.ico">
-<link rel='stylesheet' type="text/css" href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,600,400,700,800'>
-<link rel="stylesheet" type="text/css" href="css/cupertino/jquery-ui-min.css" />
+<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,600,400,700,800'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/cupertino/jquery-ui.min.css" integrity="sha512-9SEz2+WNpf9iyTy855xgweUvhu8Rz9BnU4d/MBFSFSh4kaAFeCA+/Otj5/NaB9PiMpjO1ajRNbplQTXa182X9A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/cupertino/theme.min.css" integrity="sha512-+Ai9V7NStMKCL1dF/876OSoFPtHzP0zEmPsv4pSqflcnghjeleMeOuCcleYQ2WSn1G+VIY3aYDCBKqmrV8yvAA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/jquery.jqplot.min.css" integrity="sha512-x1sYGOeCnohzDAuU02Ecjrjcyiy3iYTGGQjuiFenhGpoQsEtK2V+/ELYnOGFjFY7LDx609Ndm6O01CzRBkZsxA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" integrity="sha512-8OVtKyemDe8Koi/74dnSJughhkwnzqq217zUtUumyvx0Z0kF6H0YYFobH2kEYjKMNq2xNQyN64dnleqecTSL0A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-ui-timepicker-addon/1.6.3/jquery-ui-timepicker-addon.min.css" integrity="sha512-LT9fy1J8pE4Cy6ijbg96UkExgOjCqcxAC7xsnv+mLJxSvftGVmmc236jlPTZXPcBRQcVOWoK1IJhb1dAjtb4lQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.css" integrity="sha512-0V10q+b1Iumz67sVDL8LPFZEEavo6H/nBSyghr7mm9JEQkOAm91HNoZQRvQdjennBb/oEuW+8oZHVpIKq+d25g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" integrity="sha512-LEcCbgUWPBUGbPctNaH+oxZRo415/rpwfqUQXcT4gS+gZyUTb8OIBV288vKAPLqbqsskLKQxgXOz4fr794XZhg==" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.6/css/buttons.dataTables.min.css" integrity="sha512-CcNusIkGgfUxM0NVvaVf61WMPiopR/PWjXHjKrDG54v8B/KsK+sePEwc7UAH+13BI4/NDtIgiNCheqO56q1hnw==" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css" integrity="sha512-UaJaTZ9jEmxC/slDMtUmSWExaVsOAfbDnBqu32JnAf21+l6v7Pr5wPDRMv7bgtTK+n2LoPsacuxdLWQ/bsd+mA==" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.0/css/select.dataTables.min.css" integrity="sha512-VYZZbVQ9p1e1QAj0p6N09j9nAB6RZANnRApDMY1EEg0Fc5m4BNhwJHVLzrW9mnkvlTkJu1GZiJ7uoQl2EIrAHQ==" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.datatables.net/rowgroup/1.1.3/css/rowGroup.dataTables.min.css" integrity="sha512-mAkv8Z2O8S7IwSg+9DrxF5jlp5D1D/tYSXMpGnwdbw7CC3sDYPTBS2dMGkc/kOb+2cW3zC2wxgcxbhm7oFBjig==" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css" integrity="sha512-bpSf9l8verc/pxnDZMoMS2dZ57O7PJ0vaIvajQ1g8jxXVtUnzqTuxEVIDJYrPr/wAAwJ0P9+XPBwoYIOmKBrTA==" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.2.0/swagger-ui.min.css" integrity="sha512-ACiaHGAf7OAAY0wf7bnPVobNBsqh8oAf9hn5VHFQvbL6f0yfV8jXGEv+PYQZgEQLrrjcM4GSRDNIV3BG1XobfA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <link rel="stylesheet" type="text/css" href="css/jquery.dmcontextmenu.css" />
-<link rel="stylesheet" type="text/css" href="css/jquery.jqplot.css" />
 <link rel="stylesheet" type="text/css" href="css/calendar.css" />
 <link rel="stylesheet" type="text/css" href="css/calendar-print.css" media="print" />
-<link rel="stylesheet" type="text/css" href="css/vis.min.css" />
 <link rel="stylesheet" type="text/css" href="css/visualsearch-datauri.css" />
-<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" type="text/css" />
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.6/css/buttons.dataTables.min.css" />
-<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css" />
-<link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.0/css/select.dataTables.min.css" />
-<link rel="stylesheet" href="https://cdn.datatables.net/rowgroup/1.1.3/css/rowGroup.dataTables.min.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.6.0/swagger-ui.css">
 <link rel="stylesheet" type="text/css" href="css/devops_frydesign.css" />
 
-<script type="text/javascript" src="js/jquery.min.js"></script>
-<script type="text/javascript" src="js/jquery-ui.js"></script>
-<script type="text/javascript" src="jquery.jstree.js"></script>
-<script type="text/javascript" src="js/jquery.cookie.js"></script>
-<script type="text/javascript" src="js/jquery.ui.widget.js"></script>
-<script type="text/javascript" src="js/underscore-1.5.2.js"></script>
-<script type="text/javascript" src="js/backbone-1.1.0.js"></script>
-<script type="text/javascript" src="js/visualsearch.js"></script>
-<script type="text/javascript" src="js/cookies.js"></script>
-<script type="text/javascript" src="js/jquery.blockUI.js"></script>
-<script type="text/javascript" src="js/jquery.sessionTimeout.js"></script>
-<script type="text/javascript" src="js/jsPlumb-util.js"></script>
-<script type="text/javascript" src="js/jsPlumb-dom-adapter.js"></script>
-<script type="text/javascript" src="js/jsPlumb-drag.js"></script>
-<script type="text/javascript" src="js/jsPlumb.js"></script>
-<script type="text/javascript" src="js/jsPlumb-endpoint.js"></script>
-<script type="text/javascript" src="js/jsPlumb-connection.js"></script>
-<script type="text/javascript" src="js/jsPlumb-anchors.js"></script>
-<script type="text/javascript" src="js/jsPlumb-defaults.js"></script>
-<script type="text/javascript" src="js/jsPlumb-connectors-statemachine.js"></script>
-<script type="text/javascript" src="js/jsPlumb-connectors-flowchart.js"></script>
-<script type="text/javascript" src="js/jsPlumb-renderers-svg.js"></script>
-<script type="text/javascript" src="js/jsPlumb-renderers-canvas.js"></script>
-<script type="text/javascript" src="js/jsPlumb-renderers-vml.js"></script>
-<script type="text/javascript" src="js/jquery.jsPlumb.js"></script>
-<script type="text/javascript" src="js/selectenter.js"></script>
-<script type="text/javascript" src="js/jquery.jqplot.min.js"></script>
-<script type="text/javascript" src="js/plugins/jqplot.barRenderer.min.js"></script>
-<script type="text/javascript" src="js/plugins/jqplot.pieRenderer.min.js"></script>
-<script type="text/javascript" src="js/plugins/jqplot.canvasTextRenderer.min.js"></script>
-<script type="text/javascript" src="js/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
-<script type="text/javascript" src="js/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
-<script type="text/javascript" src="js/plugins/jqplot.canvasOverlay.min.js"></script>
-<script type="text/javascript" src="js/plugins/jqplot.categoryAxisRenderer.min.js"></script>
-<script type="text/javascript" src="js/plugins/jqplot.highlighter.min.js"></script>
-<script type="text/javascript" src="js/plugins/jqplot.cursor.min.js"></script>
-<script type="text/javascript" src="js/plugins/jqplot.json2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js" integrity="sha512-57oZ/vW8ANMjR/KQ6Be9v/+/h6bq9/l3f0Oc7vn6qMqyhvPd1cvKBRWWpzu0QoneImqr2SkmO4MSqU+RpHom3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js" integrity="sha512-3j3VU6WC5rPQB4Ld1jnLV7Kd5xr+cq9avvhwqzbH/taCRNURoeEpoPBK9pDyeukwSxwRPJ8fDgvYXd6SkaZ2TA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/jquery.jqplot.min.js" integrity="sha512-FQKKXM+/7s6LVHU07eH2zShZHunHqkBCIcDqodXfdV/NNXW165npscG8qOHdxVsOM4mJx38Ep1oMBcNXGB3BCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/plugins/jqplot.barRenderer.min.js" integrity="sha512-3bSkTDeICvspsuOVk5OoL165Cw/+7/9l2dBLQfSxdEni9mqsU8bClh1jE6qkoP77m21dfNU3Nh7hpYo3XPNEEw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/plugins/jqplot.pieRenderer.min.js" integrity="sha512-aTgJc5LAZwVJGYScGUq8unQx1qYLrqtrTBAVFaLQoJ00sFc3rPrgFbeQzO5POMW19QE+qqjF78tuPF7H/FtRTA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/plugins/jqplot.canvasTextRenderer.min.js" integrity="sha512-MhByCYIQAHIXcGKYOOp8owMra95/Vzf657UXZ4X6znKLvaGdPJ4qx/9C0fMHImVDXAIn5zbHSJEjdUdARNhksQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/plugins/jqplot.canvasAxisLabelRenderer.min.js" integrity="sha512-jyWWi85r3j7GnE61AF6IHvTcwsqNC++XaC8HpzQzUs930S/ndGKo1uMx3YuGWqgtomnp3HdrQc/NN9AbNYK1HQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/plugins/jqplot.canvasAxisTickRenderer.min.js" integrity="sha512-iqILh+eW3DUTi36x3sGv2Cs4FJiU0UBUqo57zE5uZKIdoUMa7XvU5P4zolR5qyTl9B0mpIAKLoBqjW8aU9+z2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/plugins/jqplot.canvasOverlay.min.js" integrity="sha512-AyCAP71iNwLJyBSGWNSWAslW1oeNhDEhe2av+hZWgtKAvKEIU6E1qkNectO+W+AvE9VVke4/zlVZwiJlrhtsXQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/plugins/jqplot.categoryAxisRenderer.min.js" integrity="sha512-G30pMFO9qn/AoGm7+TgY5oenrdWSCK4Z/2r94O7ytbOfBJsbbIW+pUfHfaVD/fo/QRLeutbTAW/wFFks0ojVhQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/plugins/jqplot.highlighter.min.js" integrity="sha512-TR38mFALO4a3kHTCbtQIZvn0qtemTauEJx5rnuXQsHaRLAHyHEQdV+KVC81GZ6hgNqGNukESKnsrkQfTj6uUGg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/plugins/jqplot.cursor.min.js" integrity="sha512-PZeegvZIGsxY47yfPXMap/rdwTmcRAFKFXWaMk7clCGbN2qH7aIh981TpZQXfZVv+JjJ2TzTFghGkuMFpwvE7w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/plugins/jqplot.json2.min.js" integrity="sha512-qDiBj83PaDXcDn22Lz3R+vVJ2JbSgCt5e5rWJgel30lblsJDauDya1mf8O+NQ46oegtSDpfUcxu0XTmYmUeWbg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-json/2.6.0/jquery.json.min.js" integrity="sha512-QE2PMnVCunVgNeqNsmX6XX8mhHW+OnEhUhAWxlZT0o6GFBJfGRCfJ/Ut3HGnVKAxt8cArm7sEqhq2QdSF0R7VQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-ui-timepicker-addon/1.6.3/jquery-ui-timepicker-addon.min.js" integrity="sha512-s5u/JBtkPg+Ff2WEr49/cJsod95UgLHbC00N/GglqdQuLnYhALncz8ZHiW/LxDRGduijLKzeYb7Aal9h3codZA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js" integrity="sha512-XHDcSyqhOoO2ocB7sKOCJEkUjw/pQCJViP1ynpy+EGh/LggzrP6U/V3a++LQTnZT7sCQKeHRyWHfhN2afjXjCg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/oauth-io/0.6.2/oauth.min.js" integrity="sha512-7vvcd3FgS/LUBJakuT2J5LsNx4FbBN0sJvqIpZlMhQZlbCuQrAHPwP99ksbr01eFHwfnHJxxjCDjXVbNlD7FSg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js" integrity="sha512-YUkaLm+KJ5lQXDBdqBqk7EVhJAdxRnVdT2vtCzwPHSweCzyMgYV/tgGF4/dCyqtCC2eCphz0lRQgatGVdfR0ww==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.fileDownload/1.4.2/jquery.fileDownload.min.js" integrity="sha512-MZrUNR8jvUREbH8PRcouh1ssNRIVHYQ+HMx0HyrZTezmoGwkuWi1XoaRxWizWO8m0n/7FXY2SSAsr2qJXebUcA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.js" integrity="sha512-zP5W8791v1A6FToy+viyoyUUyjCzx+4K8XZCKzW28AnCoepPNIXecxh9mvGuy3Rt78OzEsU+VCvcObwAMvBAww==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.2.0/swagger-ui-bundle.min.js" integrity="sha512-m8Q0/9O6zc8UvJfyorpxEF/mpWLRngRfG4mKb/wuH9cPVlJqhEh4NjcyUv4dSOvhtnfYj8Y9B5vWqPjg85kbZA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.2.0/swagger-ui-standalone-preset.min.js" integrity="sha512-x3AkGS1eF0Jm7aCPsIaHZEL64/K0esWlWZtVVEjNdHOudMeBgD5RXu2JoJjsoQY/wiXISPLp2z4M7U/0mGb5lQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js" integrity="sha512-LhccdVNGe2QMEfI3x4DVV3ckMRe36TfydKss6mJpdHjNFiV07dFpS2xzeZedptKZrwxfICJpez09iNioiSZ3hA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js" integrity="sha512-M7nHCiNUOwFt6Us3r8alutZLm9qMt4s9951uo8jqO4UwJ1hziseL6O3ndFyigx6+LREfZqnhHxYjKRJ8ZQ69DQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha512-a9NgEEK7tsCvABL7KqtUTQjl69z7091EVPpw5KxPlZ93T141ffe1woLtbXTX+r2/8TtTvRX/v4zTL2UlMUPgwg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.min.js" integrity="sha512-P0bOMePRS378NwmPDVPU455C/TuxDS+8QwJozdc7PGgN8kLqR4ems0U/3DeJkmiE31749vYWHvBOtR+37qDCZQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.6/underscore.min.js" integrity="sha512-Gie1sDqmIXWPoOz5rFFWtxIBSNsfe730tZCEauATECxvglm3nbKKZlnDf7/V47LEIe0vkFw0UkbUOm9tqtZS4A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.4.1/backbone.min.js" integrity="sha512-qxgXCtVclzwNBXcgoQDGsSQe00qExwniiHm+HO4qejaOeXj4/2MGJl7XS+TjiHZ000D1mKRW9oUiQauxSnr80A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/globalize/0.1.1/globalize.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/globalize/0.1.1/cultures/globalize.culture.de-DE.min.js" integrity="sha512-SOY5OqimmQnWQzzFHK6DL0NVogejB/3FT9G00ljZW6SepTTPjecq5zwrOMaJRzWxl48KYMl7ym02UD9DD18Bng==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/globalize/0.1.1/cultures/globalize.culture.en-GB.min.js" integrity="sha512-8ybmpqPRVcqtjOq5cys2bWCEyDGRiBq/J9M3AKoRXR33vN4QNHY1/vEtLyrM3fZ2OLXmWg0099HX/MVAz7b1IA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/globalize/0.1.1/cultures/globalize.culture.en-US.min.js" integrity="sha512-roQ/+rEc/Ff1mBdALXauOMxhtmGql/UPUZh/WHUXhSssVNQkjJIx4O8r5iAAPj3kS3bJi0yZ0eA1mr4cdmf2Bg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-sessiontimeout@1.1.0/jquery.sessionTimeout.min.js" integrity="sha256-Ix6ZTtVH5vyqTz11X8KSxjCLVTGUh2IDlojbdRCwouM=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.ui.widget@1.10.3/jquery.ui.widget.js" integrity="sha512-fnhNgCpE8JcF8xvsRU+wgA2DSOHyr6+ZkmV5PybH71Y+IsvZLnmUXEwI+shkzfRGseG7Z6KcdE421pdRxfqvug==" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-blockui@2.7.0/jquery.blockUI.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js" integrity="sha512-c2bQrjZ1iFm8q28SJKvX+A/H6ItQ+jumpms8XGVRkpc2lWxiNl1WcoI4pf0g5/1tDfcShv7oTwzWF3qizR03ZQ==" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/buttons/1.5.6/js/dataTables.buttons.min.js" integrity="sha512-uT8p7/mpKoahsdDmAnB3SnJ2K+nra0rZdMbnDleK43bysgLjq1L8tSsP1cBb+DZJSeY2himH/gF4MsWcMZ1DSg==" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.flash.min.js" integrity="sha512-OXWGUAvUDZVkoYTlDDWSeyxp3lMSCBhQtLyUOizHQtusq/krTINZ1OWwzrf+8qQW3Ng0f89UhOdBt1wddwEQKA==" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.html5.min.js" integrity="sha512-i6U13L2Z182HBSt5k9d+Pcm1vpPIqAGymKzEhfCMFjDJLmm6kW7OQqcZdBE168mZbvRs08jjp9ED995fPg1JFw==" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.print.min.js" integrity="sha512-M2WF3C4rL4Nx73w0Re+xGQK7eoj7y59vhqXBbMJXuDpwYrg3QJcRrv8H+8g/UfqsKrkw8mgZ3eIQ8Cymg62oxw==" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js" integrity="sha512-naOcVQyv76gYEkC4g/L6b9qFZJimq0gkU4SdxbXbhDDDlXMJn2ipgGzEQRdSWwwq2sh3FO7HA+d6Rh+HfWRXyQ==" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.19/features/pageResize/dataTables.pageResize.min.js" integrity="sha512-lm6XtgbWCr+hUK7GbJnwtxA/5ZFEXpftTCeUkqcwt+Ay6A8eSbi+2MLnUbEhsiN84IW4dAwypqG7GzlYRndpsQ==" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/select/1.3.0/js/dataTables.select.min.js" integrity="sha512-Rcp9jIWdjsuXBccmHAsYqphw8cn+JdkLyEL1CcVLW6ezIly3mx7M5TtbLJ80dRIRIHsfhNEvBGb5YOnpU+Y3iQ==" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.min.js" integrity="sha512-HSgcWBJ9EaK1pFsEashSxcXf4k02zYPPOBjshULtM2HmTctGODi6smeN4Y+1a0Ho5Ts5EzoLSjuQyMGAZ/JH1w==" crossorigin="anonymous"></script>
 <script src="https://kit.fontawesome.com/ba98665da8.js" crossorigin="anonymous"></script>
+<script src="js/jquery.jstree.js"></script>
+<script src="js/visualsearch.js"></script>
+<script src="js/fullcalendar.min.js"></script>
+<script src="js/date.format.js"></script>
+<script src="js/jsPlumb-util.js"></script>
+<script src="js/jsPlumb-dom-adapter.js"></script>
+<script src="js/jsPlumb-drag.js"></script>
+<script src="js/jsPlumb.js"></script>
+<script src="js/jsPlumb-endpoint.js"></script>
+<script src="js/jsPlumb-connection.js"></script>
+<script src="js/jsPlumb-anchors.js"></script>
+<script src="js/jsPlumb-defaults.js"></script>
+<script src="js/jsPlumb-connectors-statemachine.js"></script>
+<script src="js/jsPlumb-connectors-flowchart.js"></script>
+<script src="js/jsPlumb-renderers-svg.js"></script>
+<script src="js/jsPlumb-renderers-canvas.js"></script>
+<script src="js/jsPlumb-renderers-vml.js"></script>
+<script src="js/jquery.jsPlumb.js"></script>
+<script src="js/selectenter.js"></script>
+<script src="js/edit_area/edit_area_full.js"></script>
 
-<script type="text/javascript" src="js/fullcalendar.min.js"></script>
-<script type="text/javascript" src="js/date.format.js"></script>
-<script type="text/javascript" src="js/jquery.json-2.4.min.js"></script>
-<script type="text/javascript" src="js/globalize.js"></script>
-<script type="text/javascript" src="js/jquery-ui-timepicker-addon.js"></script>
-<script type="text/javascript" src='js/cultures/globalize.culture.de-DE.js'></script>
-<script type="text/javascript" src='js/cultures/globalize.culture.en-GB.js'></script>
-<script type="text/javascript" src='js/cultures/globalize.culture.en-US.js'></script>
-<script type="text/javascript" src="js/vis.min.js"></script>
-<script type="text/javascript" src="js/oauth.min.js"></script>
-<script type="text/javascript" src="js/jquery.form.js"></script>
-<script type="text/javascript" src="js/jquery.fileDownload.js"></script>
-<script type="text/javascript" src="js/edit_area/edit_area_full.js"></script>
-
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.6.0/swagger-ui-bundle.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.6.0/swagger-ui-standalone-preset.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/dataTables.buttons.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.flash.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.html5.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.print.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.19/features/pageResize/dataTables.pageResize.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/select/1.3.0/js/dataTables.select.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
-<script src="https://d3js.org/d3.v5.min.js"></script>
-
-<script type="text/javascript" src="js/ao/prototypes.js"></script>
-<script type="text/javascript" src="js/ao/ao_list.js"></script>
-<script type="text/javascript" src="js/ao/createtree.js"></script>
-<script type="text/javascript" src="js/ao/createtree_selection.js"></script>
-<script type="text/javascript" src="js/ao/GlobalVars.js"></script>
-<script type="text/javascript" src="js/ao/Setup.js"></script>
-<script type="text/javascript" src="js/ao/GetSummary.js"></script>
-<script type="text/javascript" src="js/ao/GetAttributes.js"></script>
-<script type="text/javascript" src="js/ao/GetPrerequisities.js"></script>
-<script type="text/javascript" src="js/ao/GetComponents.js"></script>
-<script type="text/javascript" src="js/ao/GetComponentItems.js"></script>
-<script type="text/javascript" src="js/ao/GetVersionsOfApp.js"></script>
-<script type="text/javascript" src="js/ao/GetVersionsOfComp.js"></script>
-<script type="text/javascript" src="js/ao/GetApplicationVersions.js"></script>
-<script type="text/javascript" src="js/ao/newsfeed.js"></script>
-<script type="text/javascript" src="js/ao/GetReports.js"></script>
-<script type="text/javascript" src="js/ao/GetDeployReports.js"></script>
-<script type="text/javascript" src="js/ao/GetServers4Env.js"></script>
-<script type="text/javascript" src="js/ao/GetServers4Comp.js"></script>
-<script type="text/javascript" src="js/ao/GetComponents4Servers.js"></script>
-<script type="text/javascript" src="js/ao/GetApplications4Comp.js"></script>
-<script type="text/javascript" src="js/ao/GetApps4Env.js"></script>
-<script type="text/javascript" src="js/ao/GetEnv4Apps.js"></script>
-<script type="text/javascript" src="js/ao/About.js"></script>
-<script type="text/javascript" src="js/ao/Home.js"></script>
-<script type="text/javascript" src="js/ao/GetGroupMembership.js"></script>
-<script type="text/javascript" src="js/ao/GetUserMembership.js"></script>
-<script type="text/javascript" src="js/ao/GetAdminRights.js"></script>
-<script type="text/javascript" src="js/ao/GetArgs.js"></script>
-<script type="text/javascript" src="js/ao/GetWorkflow.js"></script>
-<script type="text/javascript" src="js/ao/GetProperties.js"></script>
-<script type="text/javascript" src="js/ao/GetNewsDetails.js"></script>
-<script type="text/javascript" src="js/ao/GetEmailTo.js"></script>
-<script type="text/javascript" src="js/ao/jquery.dmcontextmenu.js"></script>
-<script type="text/javascript" src="js/ao/TestServer.js"></script>
-<script type="text/javascript" src="js/ao/GetTemplateBody.js"></script>
-<script type="text/javascript" src="js/ao/DomNav.js"></script>
-<script type="text/javascript" src="js/ao/ao_hook.js"></script>
-<script type="text/javascript" src="js/ao/ao_main.js"></script>
+<script src="js/ao/cookies.js"></script>
+<script src="js/ao/prototypes.js"></script>
+<script src="js/ao/ao_list.js"></script>
+<script src="js/ao/createtree.js"></script>
+<script src="js/ao/createtree_selection.js"></script>
+<script src="js/ao/GlobalVars.js"></script>
+<script src="js/ao/Setup.js"></script>
+<script src="js/ao/GetSummary.js"></script>
+<script src="js/ao/GetAttributes.js"></script>
+<script src="js/ao/GetPrerequisities.js"></script>
+<script src="js/ao/GetComponents.js"></script>
+<script src="js/ao/GetComponentItems.js"></script>
+<script src="js/ao/GetVersionsOfApp.js"></script>
+<script src="js/ao/GetVersionsOfComp.js"></script>
+<script src="js/ao/GetApplicationVersions.js"></script>
+<script src="js/ao/newsfeed.js"></script>
+<script src="js/ao/GetReports.js"></script>
+<script src="js/ao/GetDeployReports.js"></script>
+<script src="js/ao/GetServers4Env.js"></script>
+<script src="js/ao/GetServers4Comp.js"></script>
+<script src="js/ao/GetComponents4Servers.js"></script>
+<script src="js/ao/GetApps4Env.js"></script>
+<script src="js/ao/GetEnv4Apps.js"></script>
+<script src="js/ao/About.js"></script>
+<script src="js/ao/Home.js"></script>
+<script src="js/ao/GetGroupMembership.js"></script>
+<script src="js/ao/GetUserMembership.js"></script>
+<script src="js/ao/GetAdminRights.js"></script>
+<script src="js/ao/GetArgs.js"></script>
+<script src="js/ao/GetWorkflow.js"></script>
+<script src="js/ao/GetProperties.js"></script>
+<script src="js/ao/GetNewsDetails.js"></script>
+<script src="js/ao/GetEmailTo.js"></script>
+<script src="js/ao/jquery.dmcontextmenu.js"></script>
+<script src="js/ao/TestServer.js"></script>
+<script src="js/ao/GetTemplateBody.js"></script>
+<script src="js/ao/DomNav.js"></script>
+<script src="js/ao/ao_hook.js"></script>
+<script src="js/ao/ao_main.js"></script>
 
 </head>
 <body>
 <div id="container">
 
  <div id="header">
-  <div class="omlogo"><img alt="Ortelius" src="images/logo.png" style="margin-top:4px"></div>
+  <div class="omlogo"></div>
    <div id="positiondevopsmenu">
 	<div class="moduletable_menu">
       <ul class="menu_menu">
@@ -170,11 +170,10 @@
    <div id="positiondevopsmenu_right">
     <div class="moduletable_menu">
       <ul class="menu_menu">
-        <li id="rproxy_menu" onclick="ShowHome(true,false);">Warning: 0 of 1 Reverse Proxy Online !</li>
-        <li id="about_menu" onclick="ShowAbout()"><i class="fal fa-info-circle fa-2x" aria-hidden="true"  style="padding-right:5px"></i></li>
-        <li id="user_menu" onclick="LoadUserProfile()" ><i class="fal fa-user fa-2x" aria-hidden="true"  style="padding-right:5px"></i></li>
-        <li id="help_menu"><a class="menu_icon" href="https://docs.deployhub.com" target="_blank" ><i class="fal fa-question-circle fa-2x" aria-hidden="true"  style="padding-right:5px"></i></a></li>
-        <li id="logout_menu"><a class="menu_icon" href="Logout" ><i class="fal fa-sign-out fa-2x" aria-hidden="true"  style="padding-right:5px"></i></a></li>
+        <li id="about_menu" onclick="ShowAbout()"><i class="fal fa-info-circle fa-xl" aria-hidden="true"  style="padding-right:5px"></i></li>
+        <li id="user_menu" onclick="LoadUserProfile()" ><i class="fal fa-user fa-xl" aria-hidden="true"  style="padding-right:5px"></i></li>
+        <li id="help_menu"><a class="menu_icon" href="https://docs.ortelius.io/guides/userguide/" target="_blank" ><i class="fal fa-question-circle fa-xl" aria-hidden="true"  style="padding-right:5px"></i></a></li>
+        <li id="logout_menu"><a class="menu_icon" href="Logout" ><i class="fal fa-sign-out fa-xl" aria-hidden="true"  style="padding-right:5px"></i></a></li>
       </ul>
 	 </div>
     </div>
@@ -188,43 +187,46 @@
        <button id="verttab_domain" class="tablinks verttab_domain" onclick="LoadDomNav()">Domains</button>
        <button id="verttab_environment" class="tablinks verttab_env" onclick="openList(event, 'environment')">Environments</button>
        <button id="verttab_endpoint" class="tablinks verttab_endpoint" onclick="openList(event, 'endpoint')">Endpoints</button>
+       <button id="verttab_user" class="tablinks verttab_user" onclick="openList(event, 'user')">Users</button>
+       <button id="verttab_group" class="tablinks verttab_group" onclick="openList(event, 'group')">Groups</button>
+       <button id="verttab_setup" class="tablinks verttab_setup" onclick="toggleSetup(event, 'setup')">Advanced Features<i class="fad fa-chevron-double-down fa-lg" aria-hidden="true" style="padding-left:10px"></i></button>
        <button id="verttab_action" class="tablinks verttab_action" onclick="openList(event, 'action')">Actions</button>
        <button id="verttab_procedure" class="tablinks verttab_procedure" onclick="openList(event, 'procedure')">Func/Procs</button>
        <button id="verttab_servercomptype" class="tablinks verttab_servercomptype" onclick="openList(event, 'servercomptype')">Customize Types</button>
-       <button id="verttab_setup" class="tablinks verttab_setup" onclick="toggleSetup(event, 'setup')">Setup<i class="fad fa-chevron-double-down fa-lg" aria-hidden="true" style="padding-left:50%;"></i></button>
        <button id="verttab_credential" class="tablinks verttab_credential" onclick="openList(event, 'credential')">Credentials</button>
        <button id="verttab_repository" class="tablinks verttab_repository" onclick="openList(event, 'repository')">Repositories</button>
        <button id="verttab_datasource" class="tablinks verttab_datasource" onclick="openList(event, 'datasource')">Data Sources</button>
        <button id="verttab_notifier" class="tablinks verttab_notifier" onclick="openList(event, 'notifier')">Notifiers</button>
        <button id="verttab_template" class="tablinks verttab_template" onclick="openList(event, 'template')">Notifier Templates</button>
-       <button id="verttab_user" class="tablinks verttab_user" onclick="openList(event, 'user')">Users</button>
-       <button id="verttab_group" class="tablinks verttab_group" onclick="openList(event, 'group')">Groups</button>
      </div>
 	</div>
 	<div id="panel_container_right_list" class="right" style="display:none;">
      <div id="applist_pane">
-        <div id="applist_pane_title" style="display:inline-block;"><H2>Applications</H2></div>
+       <div class="list_bar">
+          <div id="applist_pane_title" style="display:inline-block;">Latest Versions</div>
           <div id="applist_buttons" style="display:inline-block;">
          	 <button class="title_buttons" onclick="openList(event, 'application')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
-             <button class="title_buttons" onclick="addRow(event, 'application')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Base</button>
-             <button class="title_buttons" onclick="addRow(event, 'appversion')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Version</button>
+             <button class="title_buttons" onclick="addRow(event, 'application')" style="display:none;"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Base</button>
+             <button class="title_buttons" onclick="addRow(event, 'appversion')" style="display:none;"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Version</button>
              <button class="title_buttons" onclick="delRow(event, 'application')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
              <div class="dropdown_menu">
                <button class="title_buttons taskMenuButton" onclick="taskMenu()"><i class="fal fa-tasks" aria-hidden="true" style="padding-right:5px;"></i>Tasks<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
-               <div class="dropdown_menu-content">
+               <div id="apptask_buttons" class="dropdown_menu-content">
                </div>
              </div>
-             <button class="title_buttons" onclick="openList(event, 'application')"><i class="fal fa-list" aria-hidden="true" style="padding-right:5px;"></i>List</button>
-          	 <button class="title_buttons" onclick="openMap(event, 'application')"><i class="fal fa-map-signs" aria-hidden="true" style="padding-right:5px;"></i>Map</button>
-          	 <button class="title_buttons" onclick="openDiff(event, 'application')"><i class="fal fa-equals" aria-hidden="true" style="padding-right:5px;"></i>Compare</button>
           	 <button class="title_buttons" onclick="openPkgSearch()"><i class="fa-light fa-magnifying-glass" aria-hidden="true" style="padding-right:5px;"></i>Package Search</button>
-
+             <div class="dropdown_menu">
+               <button class="title_buttons taskMenuButton" onclick="rptMenu()"><i class="fal fa-file-lines" aria-hidden="true" style="padding-right:5px;"></i>Reports<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <div id="rptlist_buttons" class="dropdown_menu-content">
+               </div>
+             </div>
           </div>
+       </div>
           <div id="applist_filter_area" style="height:25px;">
-                  <div id="app_search_box_container"></div>
+                <div id="app_search_box_container"></div>
           </div>
         <div id="applist_list">
-		  <table id="applist" class="hover row-border nowrap" height="100%" width="100%">
+		  <table id="applist" class="stripe hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
@@ -234,9 +236,8 @@
                 </th>
 				<th style="text-align: left;">Version</th>
 				<th style="text-align: left;">Domain</th>
-				<th style="text-align: left;">Parent</th>
 				<th style="text-align: left;">Environment</th>
-				<th style="text-align: left;">Last Deployment to Environment</th>
+				<th style="text-align: left;">Deployment Log</th>
 				<th style="text-align: left;">Completed</th>
 				<th style="text-align: left;">Result</th>
 				<th style="text-align: left;">domainid</th>
@@ -248,28 +249,29 @@
         <div id="applist_map" height="100%" width="100%"></div>
       </div>
      <div id="complist_pane">
-        <div id="complist_pane_title" style="display:inline-block;"><H2>Components</H2></div>
+      <div class="list_bar">
+        <div id="complist_pane_title" style="display:inline-block;">Latest Versions</div>
           <div id="complist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'component')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
              <div class="dropdown_menu">
-               <button class="title_buttons addMenuButton" onclick="compMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Base<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <button class="title_buttons addMenuButton" onclick="compMenu()" style="color: white;display:none;"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Base<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
                <div class="dropdown_menu-content" style="display: none;">
                    <a onclick="addRow(event,'docker');">Container</a>
                    <a onclick="addRow(event,'file');">Application File</a>
                    <a onclick="addRow(event,'database');">Database</a>
                </div>
              </div>
-             <button class="title_buttons" onclick="addRow(event, 'compversion')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Version</button>
+             <button class="title_buttons" onclick="addRow(event, 'compversion')" style="display:none;"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Version</button>
              <button class="title_buttons" onclick="delRow(event, 'component')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
-             <button class="title_buttons" onclick="openList(event, 'component')"><i class="fal fa-list" aria-hidden="true" style="padding-right:5px;"></i>List</button>
-          	 <button class="title_buttons" onclick="openMap(event, 'component')"><i class="fal fa-map-signs" aria-hidden="true" style="padding-right:5px;"></i>Map</button>
-          	 <button class="title_buttons" onclick="openDiff(event, 'component')"><i class="fal fa-equals" aria-hidden="true" style="padding-right:5px;"></i>Compare</button>
+          	 <button class="title_buttons" onclick="openDiffDlg(event, objtype, objid)"><i class="fal fa-equals" aria-hidden="true" style="padding-right:5px;"></i>Compare</button>
+          	 <button class="title_buttons" onclick="exportCompSBOM(event, objtype, objid)"><i class="fal fa-equals" aria-hidden="true" style="padding-right:5px;"></i>Export SBOM</button>
           </div>
+         </div>
           <div id="complist_filter_area" style="height:25px;">
              <div id="comp_search_box_container"></div>
           </div>
          <div id="complist_list">
-		  <table id="complist" class="hover row-border nowrap" height="100%" width="100%">
+		  <table class="stripe" id="complist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
@@ -279,9 +281,8 @@
                 </th>
 				<th style="text-align: left;">Version</th>
 				<th style="text-align: left;">Domain</th>
-				<th style="text-align: left;">Parent</th>
 				<th style="text-align: left;">Environment</th>
-				<th style="text-align: left;">Last Deployment</th>
+				<th style="text-align: left;">Last Deployment Log</th>
 				<th style="text-align: left;">Completed</th>
 				<th style="text-align: left;">Result</th>
 				<th style="text-align: left;">domainid</th>
@@ -293,24 +294,28 @@
         <div id="complist_map" height="100%" width="100%"></div>
       </div>
       <div id="envlist_pane">
-        <div id="envlist_pane_title" style="display:inline-block;"><H2>Environments</H2></div>
+       <div class="list_bar">
+        <div id="envlist_pane_title" style="display:inline-block;">Environments</div>
           <div id="envlist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'environmet')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
              <button class="title_buttons" onclick="addRow(event, 'environment')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add</button>
              <button class="title_buttons" onclick="delRow(event, 'environment')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
              <div class="dropdown_menu">
-               <button class="title_buttons envRptMenuButton" onclick="envRptMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-file-contract" aria-hidden="true" style="padding-right:5px;"></i>Reports<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <button class="title_buttons envRptMenuButton" onclick="envRptMenu()" style="color: white;"><i class="fal fa-file-contract" aria-hidden="true" style="padding-right:5px;"></i>Reports<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
                <div class="dropdown_menu-content" style="display: none;">
                    <a href="/dmadminweb/reports/EnvSuccessFail.html" target="_blank">Success/Failed Deployments per Environment Report</a>
                </div>
+               <div id="envsbomrpt" class="dropdown_menu-content">
+
+               </div>
              </div>
-             <button class="title_buttons" onclick="openDiff(event, 'environment')"><i class="fal fa-equals" aria-hidden="true" style="padding-right:5px;"></i>Compare</button>
            </div>
+        </div>
            <div id="envlist_filter_area" style="height:25px;">
                   <div id="env_search_box_container"></div>
           </div>
          <div id="envlist_list">
-		  <table id="envlist" class="hover row-border nowrap" height="100%" width="100%">
+		  <table class="stripe" id="envlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
@@ -328,17 +333,19 @@
         </div>
       </div>
       <div id="endpointlist_pane">
-        <div id="endpointlist_pane_title" style="display:inline-block;"><H2>Endpoints</H2></div>
+       <div class="list_bar">
+        <div id="endpointlist_pane_title" style="display:inline-block;">Endpoints</div>
           <div id="endpointlist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'endpoint')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
              <button class="title_buttons" onclick="addRow(event, 'endpoint')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add</button>
              <button class="title_buttons" onclick="delRow(event, 'endpoint')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
            </div>
+       </div>
            <div id="endpointlist_filter_area" style="height:25px;">
                   <div id="endpoint_search_box_container"></div>
           </div>
          <div id="endpointlist_list">
-		  <table id="endpointlist" class="hover row-border nowrap" height="100%" width="100%">
+		  <table class="stripe" id="endpointlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
@@ -356,17 +363,19 @@
         </div>
       </div>
       <div id="actionlist_pane">
-        <div id="actionlist_pane_title" style="display:inline-block;"><H2>Actions</H2></div>
+       <div class="list_bar">
+        <div id="actionlist_pane_title" style="display:inline-block;">Actions</div>
           <div id="actionlist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'action')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
              <button class="title_buttons" onclick="addRow(event, 'action')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add</button>
              <button class="title_buttons" onclick="delRow(event, 'action')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
            </div>
+       </div>
            <div id="actionlist_filter_area" style="height:25px;">
                   <div id="action_search_box_container"></div>
           </div>
          <div id="actionlist_list">
-		  <table id="actionlist" class="hover row-border nowrap" height="100%" width="100%">
+		  <table class="stripe" id="actionlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
@@ -384,11 +393,12 @@
         </div>
       </div>
       <div id="procedurelist_pane">
-        <div id="procedurelist_pane_title" style="display:inline-block;"><H2>Func/Procs</H2></div>
+       <div class="list_bar">
+        <div id="procedurelist_pane_title" style="display:inline-block;">Func/Procs</div>
           <div id="procedurelist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'procedure')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
              <div class="dropdown_menu">
-               <button class="title_buttons addProcButton" onclick="procMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Procedure<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <button class="title_buttons addProcButton" onclick="procMenu()" style="color: white;"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Procedure<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
                <div class="dropdown_menu-content" style="display: none;">
                    <a onclick="addRow(event,'procedure-ak2');">DMScript in database</a>
                    <a onclick="addRow(event,'procedure-ak3');">Local Script</a>
@@ -396,7 +406,7 @@
                </div>
               </div>
              <div class="dropdown_menu">
-               <button class="title_buttons addFuncButton" onclick="funcMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Function<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <button class="title_buttons addFuncButton" onclick="funcMenu()" style="color: white;"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add Function<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
                <div class="dropdown_menu-content" style="display: none;">
                    <a onclick="addRow(event,'function-ak2');">DMScript in database</a>
                    <a onclick="addRow(event,'function-ak3');">Local Script</a>
@@ -407,11 +417,12 @@
              <button class="title_buttons" onclick="exportFuncProc()"><i class="fal fa-download" aria-hidden="true" style="padding-right:5px;"></i>Export</button>
              <button class="title_buttons" onclick="importProc()"><i class="fal fa-upload" aria-hidden="true" style="padding-right:5px;"></i>Import</button>
            </div>
+        </div>
            <div id="procedurelist_filter_area" style="height:25px;">
                   <div id="procedure_search_box_container"></div>
           </div>
          <div id="procedurelist_list">
-		  <table id="procedurelist" class="hover row-border nowrap" height="100%" width="100%">
+		  <table class="stripe" id="procedurelist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
@@ -430,11 +441,12 @@
         </div>
       </div>
       <div id="notifierlist_pane">
-        <div id="notifierlist_pane_title" style="display:inline-block;"><H2>Notifiers</H2></div>
+       <div class="list_bar">
+        <div id="notifierlist_pane_title" style="display:inline-block;">Notifiers</div>
           <div id="notifierlist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'notifier')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
           	 <div class="dropdown_menu">
-               <button class="title_buttons addMenuButton" onclick="notifierMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <button class="title_buttons addMenuButton" onclick="notifierMenu()" style="color: white;"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
                <div class="dropdown_menu-content" style="display: none;">
                    <a onclick="addRow(event,'hipchat');">HipChat</a>
                    <a onclick="addRow(event,'slack');">Slack</a>
@@ -444,11 +456,12 @@
              </div>
              <button class="title_buttons" onclick="delRow(event, 'notifier')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
            </div>
+         </div>
            <div id="notifierlist_filter_area" style="height:25px;">
                   <div id="notifier_search_box_container"></div>
           </div>
          <div id="notifierlist_list">
-		  <table id="notifierlist" class="hover row-border nowrap" height="100%" width="100%">
+		  <table class="stripe" id="notifierlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
@@ -466,11 +479,12 @@
         </div>
       </div>
       <div id="repositorylist_pane">
-        <div id="repositorylist_pane_title" style="display:inline-block;"><H2>Repositories</H2></div>
+       <div class="list_bar">
+        <div id="repositorylist_pane_title" style="display:inline-block;">Repositories</div>
           <div id="repositorylist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'repository')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
           	 <div class="dropdown_menu">
-               <button class="title_buttons addMenuButton" onclick="repoMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <button class="title_buttons addMenuButton" onclick="repoMenu()" style="color: white;"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
                <div class="dropdown_menu-content" style="display: none;">
                    <a onclick="addRow(event,'filesystem');">File System</a>
                    <a onclick="addRow(event,'http');">Http</a>
@@ -480,11 +494,12 @@
               </div>
              <button class="title_buttons" onclick="delRow(event, 'repository')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
            </div>
+        </div>
            <div id="repositorylist_filter_area" style="height:25px;">
                   <div id="repository_search_box_container"></div>
           </div>
          <div id="repositorylist_list">
-		  <table id="repositorylist" class="hover row-border nowrap" height="100%" width="100%">
+		  <table class="stripe" id="repositorylist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
@@ -502,11 +517,12 @@
         </div>
       </div>
       <div id="datasourcelist_pane">
-        <div id="datasourcelist_pane_title" style="display:inline-block;"><H2>Data Sources</H2></div>
+       <div class="list_bar">
+        <div id="datasourcelist_pane_title" style="display:inline-block;">Data Sources</div>
           <div id="datasourcelist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'datasource')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
           	 <div class="dropdown_menu">
-               <button class="title_buttons addMenuButton" onclick="datasourceMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <button class="title_buttons addMenuButton" onclick="datasourceMenu()" style="color: white;"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
                <div class="dropdown_menu-content" style="display: none;">
                    <a onclick="addRow(event,'github');">GitHub</a>
                    <a onclick="addRow(event,'jira');">Jira</a>
@@ -517,11 +533,12 @@
               </div>
              <button class="title_buttons" onclick="delRow(event, 'datasource')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
            </div>
+        </div>
            <div id="datasourcelist_filter_area" style="height:25px;">
                   <div id="datasource_search_box_container"></div>
           </div>
          <div id="datasourcelist_list">
-		  <table id="datasourcelist" class="hover row-border nowrap" height="100%" width="100%">
+		  <table class="stripe" id="datasourcelist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
@@ -539,11 +556,12 @@
         </div>
       </div>
       <div id="credentiallist_pane">
-        <div id="credentiallist_pane_title" style="display:inline-block;"><H2>Credentials</H2></div>
+       <div class="list_bar">
+        <div id="credentiallist_pane_title" style="display:inline-block;">Credentials</div>
           <div id="credentiallist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'credential')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
           	 <div class="dropdown_menu">
-               <button class="title_buttons addMenuButton" onclick="credMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+               <button class="title_buttons addMenuButton" onclick="credMenu()" style="color: white;"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
                <div class="dropdown_menu-content" style="display: none;">
                    <a onclick="addRow(event,'ck2');">Encrypted in Database</a>
                    <a onclick="addRow(event,'ck5');">Private Key</a>
@@ -551,11 +569,12 @@
              </div>
              <button class="title_buttons" onclick="delRow(event, 'credential')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
            </div>
+          </div>
            <div id="credentiallist_filter_area" style="height:25px;">
                   <div id="credential_search_box_container"></div>
           </div>
          <div id="credentiallist_list">
-		  <table id="credentiallist" class="hover row-border nowrap" height="100%" width="100%">
+		  <table class="stripe" id="credentiallist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
@@ -573,17 +592,19 @@
         </div>
       </div>
       <div id="userlist_pane">
-        <div id="userlist_pane_title" style="display:inline-block;"><H2>Users</H2></div>
+       <div class="list_bar">
+        <div id="userlist_pane_title" style="display:inline-block;">Users</div>
           <div id="userlist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'user')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
              <button class="title_buttons" onclick="addRow(event, 'user')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add</button>
              <button class="title_buttons" onclick="delRow(event, 'user')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
            </div>
+         </div>
            <div id="userlist_filter_area" style="height:25px;">
                   <div id="user_search_box_container"></div>
           </div>
          <div id="userlist_list">
-		  <table id="userlist" class="hover row-border nowrap" height="100%" width="100%">
+		  <table class="stripe" id="userlist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
@@ -601,15 +622,17 @@
         </div>
       </div>
       <div id="grouplist_pane">
-        <div id="grouplist_pane_title" style="display:inline-block;"><H2>Groups</H2></div>
+       <div class="list_bar">
+        <div id="grouplist_pane_title" style="display:inline-block;">Groups</div>
           <div id="grouplist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'group')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
            </div>
+       </div>
            <div id="grouplist_filter_area" style="height:25px;">
                   <div id="group_search_box_container"></div>
           </div>
          <div id="grouplist_list">
-		  <table id="grouplist" class="hover row-border nowrap" height="100%" width="100%">
+		  <table class="stripe" id="grouplist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
@@ -627,17 +650,19 @@
         </div>
       </div>
       <div id="servercomptypelist_pane">
-        <div id="servercomptypelist_pane_title" style="display:inline-block;"><H2>Types</H2></div>
+       <div class="list_bar">
+        <div id="servercomptypelist_pane_title" style="display:inline-block;">Types</div>
           <div id="servercomptypelist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'servercomptype')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
              <button class="title_buttons" onclick="addRow(event, 'servercomptype')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add</button>
              <button class="title_buttons" onclick="delRow(event, 'servercomptype')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
            </div>
+        </div>
            <div id="servercomptypelist_filter_area" style="height:25px;">
                   <div id="servercomptype_search_box_container"></div>
           </div>
          <div id="servercomptypelist_list">
-		  <table id="servercomptypelist" class="hover row-border nowrap" height="100%" width="100%">
+		  <table class="stripe" id="servercomptypelist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
@@ -655,17 +680,19 @@
         </div>
       </div>
       <div id="templatelist_pane">
-        <div id="templatelist_pane_title" style="display:inline-block;"><H2>Notifiers Templates</H2></div>
+       <div class="list_bar">
+        <div id="templatelist_pane_title" style="display:inline-block;">Notifiers Templates</div>
           <div id="templatelist_buttons" style="display:inline-block;">
           	 <button class="title_buttons" onclick="openList(event, 'template')"><i class="fal fa-refresh" aria-hidden="true" style="padding-right:5px;"></i>Refresh</button>
              <button class="title_buttons" onclick="addRow(event, 'template')"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add</button>
              <button class="title_buttons" onclick="delRow(event, 'template')"><i class="fal fa-trash" aria-hidden="true" style="padding-right:5px;"></i>Delete</button>
            </div>
+       </div>
            <div id="templatelist_filter_area" style="height:25px;">
                   <div id="template_search_box_container"></div>
           </div>
          <div id="templatelist_list">
-		  <table id="templatelist" class="hover row-border nowrap" height="100%" width="100%">
+		  <table class="stripe" id="templatelist" class="hover row-border nowrap" height="100%" width="100%">
            <thead>
             <tr>
                 <th>
@@ -684,64 +711,602 @@
      </div>
 	<div id="dashboard_panel">
 	<div id="panel_container_right" class="right" style="display:none" >
-	 <div id="right_panel_header"></div>
+	 <div id="right_panel_header">
+       <div id="header_icon"></div>
+	 </div>
 	 <div id="right_panel_tabs">
 	  <div class="tabrow_tabmenu">
 	   <div class="moduletable_tabmenu">
 	    <ul>
-	      <li id="tabs-General" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">General</li>
-          <li id="tabs-PackageComponents" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Package Components</li>
-          <li id="tabs-apps2s" onclick="AppS2S(objid)" style="display:none">Application Service Hierarchy Bundle</li>
-          <li id="tabs-DeliveryPipeline" onclick="SubTabBreadCrumb(this.id);ActivateSubTabs()" style="display:none">Delivery Pipeline</li>
+	      <li id="tabs-General" onclick="ActivateSubTabs()" style="display:none">General</li>
+          <li id="tabs-PackageComponents" onclick="ActivateSubTabs()" style="display:none">Package Components</li>
+          <li id="tabs-DeliveryPipeline" onclick="ActivateSubTabs()" style="display:none">Delivery Pipeline</li>
+          <li id="bookmark-Security-Posture" onclick="Scroll2Bookmark('security-posture')" style="display:none"><u>Security Posture</u></li>
+          <li id="bookmark-Impact-Assessment" onclick="Scroll2Bookmark('impact-assessment')" style="display:none"><u>Impact Assessment</u></li>
+          <li id="bookmark-Proc-Definition" onclick="Scroll2Bookmark('proc-definition')" style="display:none"><u>Function/Procedure Definition</u></li>
+          <li id="bookmark-DevOps-Details" onclick="Scroll2Bookmark('devops-details')" style="display:none"><u>Component with DevOps Details</u></li>
+          <li id="bookmark-Calendar" onclick="Scroll2Bookmark('calendar-section')" style="display:none"><u>Calendar</u></li>
+          <li id="bookmark-Audit-Access" onclick="Scroll2Bookmark('audit-access')" style="display:none"><u>Audit & Access</u></li>
         </ul>
 	   </div>
 	  </div>
 	 </div>
 	 <div id="right_panel_main">
-	  <div id="right_panel_title_area" class="right_panel_title_area"></div>
+	  <div id="right_panel_title_area" class="right_panel_title_area" style="display:none"></div>
 	  <div id="title_icon" class="title_icon"></div>
         <div id="tabs-General-data" class="div_scroll" style="display:none">
-            <div id="tabs-General-row-10">
+           <div id="security-posture">Security Posture</div>
+           <div id="tabs-General-row-12b">
+           	<div id="license-panel">
+           	  <div id="license_title" style="text-align:left"">
+                     <h2>Software Bill of Materials (SBOM)</h2>
+                 </div>
+                 <div id="license-data">
+                    <div id="licenselist_list" style="width:96%;height:100px;display:inline"></div>
+                       <table class="stripe" id="licenselist" width="100%">
+                           <thead>
+                               <tr>
+                                   <th>Package</th>
+                                   <th>Version</th>
+                                   <th>License</th>
+                                   <th>Component</th>
+                                   <th>Url</th>
+                                   <th style="word-wrap: break-word">OSSF Scorecard</th>
+                               </tr>
+                           </thead>
+                           <tbody></tbody>
+                       </table>
+                 </div>
+             </div>
+           </div>
+           <div id="tabs-General-row-12a">
+           	<div id="cve-panel">
+           	  <div id="cve_title" style="text-align:left"">
+                     <h2>Vulnerabilities</h2>
+                 </div>
+                 <div id="cve-data">
+                    <div id="cvelist_list" style="width:96%;height:100px;display:inline"></div>
+                       <table class="stripe" id="cvelist" width="100%">
+                           <thead>
+                               <tr>
+                                   <th style="padding:0;">&nbsp;</th>
+                                   <th>Package</th>
+                                   <th>Version</th>
+                                   <th>ID</th>
+                                   <th>Url</th>
+                                   <th>Summary</th>
+                                   <th>Component</th>
+                               </tr>
+                           </thead>
+                           <tbody></tbody>
+                       </table>
+                 </div>
+                </div>
+             </div>
+            <div id="tabs-General-row-scorecard">
+           		<div id="scorecard-panel">
+           	  		<div id="scorecard_title" style="text-align:left"">
+                     	<h2>OpenSSF Scorecard</h2>
+                 	</div>
+                 <div id="scorecard-data">
+                    <div id="scorecardlist_list" style="width:90%;height:150px;display:inline"></div>
+                       <table class="stripe" id="scorecardlist" width="100%">
+                           <thead>
+                               <tr>
+                                <th>Risk Level</th>
+                             	<th>Score</th>
+                                <th style="text-align:left">Check</th>
+                               </tr>
+                           </thead>
+                           <tbody></tbody>
+                       </table>
+                 </div>
+             	</div>
+             </div>
+             <div id="tabs-General-row-12-0">
+               <div id="readme-panel">
+            	  <div id="readme_header">
+	            	  <div id="readme_title" style="text-align:left"">
+	                      <h2>Readme</h2>
+	                  </div>
+	                  <div id="readme_header_buttons">
+                       	<button class="add_button" id="upload_readme"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Upload</button>
+	                  </div>
+                  </div>
+                  <div id="readme-data">
+                  </div>
+            	</div>
+             </div>
+	          <div id="tabs-General-row-lic">
+	            <div id="licensemd-panel">
+          		   <div id="licensemd_header">
+	            	  <div id="licensemd_title" style="text-align:left"">
+	                     <h2>License</h2>
+	                  </div>
+	                  <div id="licensemd_header_buttons">
+                       	<button class="add_button" id="upload_licensemd"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Upload</button>
+	                  </div>
+                  </div>
+                  <div id="licensemd-data">
+                  </div>
+            	</div>
+	          </div>
+            </div>
+            <div id="impact-assessment">Impact Assessment</div>
+                        <div id="tabs-General-row-20">
+                <div id="tabs-General-right-20">
+                    <div id="trends-panel">
+                        <div id="trends_title" style="text-align:left"">
+                            <h2>Trends</h2>
+                        </div>
+                        <div id="reports-data" style="display:inline-block">
+                            <div id="plot1resizable" style="float:left;height:200px;width:400px">
+                                <div id="timetodeploylinechart" style="height:96%;width:96%;"></div>
+                            </div>
+                            <div id="plot2resizable" style="float:left;height:200px;width:200px">
+                                <div id="applicationsuccesspiechart" style="height:96%;width:96%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="steps-panel">
+                        <div id="steps_title" style="text-align:left"">
+                            <h2>Current Step Duration</h2>
+                        </div>
+                        <div id="steps-data" style="display:inline-block">
+     						<div id="plot4resizable" style="float:left;height:200px;width:200px">
+     						<div id="deploymenttimebystep4" style="height:96%;width:96%;"></div>
+     					</div>
+                        </div>
+                </div>
+                <div id="comp4srv-panel">
+                  <div id="comp4srv-panel-header">
+                    <div id="comp4srv_title">
+                        <h2>Deployed Components</h2>
+                    </div>
+                  </div>
+                    <div id="comp4srv-data">
+                        <table id="comp4srv" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Current Version</th>
+                                    <th>Deployment</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="comp4srv-edit" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Current Version</th>
+                                    <th>Deployment</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="env4app-panel">
+                  <div id="env4app-panel-header">
+                    <div id="envs_title">
+                        <h2>Assigned Environments</h2>
+                    </div>
+                    <div id="env4app_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddEnv4AppRow('env4app')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditEnv4AppRow('env4app')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteEnv4AppRow('env4app')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveEnv4AppRow('env4app')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelEnv4AppRow('env4app')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                    </div>
+                  </div>
+                    <div>
+                        <table id="env4app" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Environment</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="env4app-edit" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Environment</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                 </div>
+
+                 <div id="deployedenv4app-panel">
+                  <div id="deployedenv4app-panel-header">
+                    <div id="deployed_envs_title">
+                        <h2>Deployed Environments</h2>
+                    </div>
+                  </div>
+                    <div id="deployedenv4app-data">
+                        <table id="deployedenv4app" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>Environment</th>
+                                    <th>Deployment Log</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                 </div>
+
+                 <div id="app4env-panel">
+                  <div id="app4env-panel-header">
+                    <div id="app4env_title">
+                        <h2>Assigned Applications</h2>
+                    </div>
+                  </div>
+                    <div>
+                        <table id="app4env" class="dev_table">
+                            <thead>
+                                <tr>
+                                    <th>Application</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                 </div>
+                <div id="defect-panel-20">
+                        <div id="defects_title">
+                            <h2>Change Requests</h2>
+                        </div>
+                         <div id="defect_header_buttons_20">
+                        </div>
+                        <div id="defect-20-data">
+                        <table id="defect-20" class="cb_dev_table">
+                            <thead>
+                                <tr>
+                                    <th>CR</th>
+                                    <th>Summary</th>
+                                    <th>Component</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                 </div>
+            </div>
+            <div id="tabs-General-row-30">
+          		<div id="apps4comp-panel">
+            	  <div id="apps4comp_title" style="text-align:left"">
+                      <h2>Consuming Applications</h2>
+                  </div>
+                  <div id="apps4comp-data">
+                     <div id="apps4complist_list" style="width:96%;height:100px;display:inline"></div>
+                       <table class="stripe" id="apps4complist" width="100%">
+                           <thead>
+                               <tr>
+                                   <th style="text-align:left">Application</th>
+                                   <th style="text-align:left">Domain</th>
+                                   <th style="text-align:left">Environment</th>
+                                   <th style="text-align:left">Deployment Log</th>
+                                   <th style="text-align:left">Completed</th>
+                                   <th style="text-align:left">Result</th>
+                                   <th style="text-align:left">Id</th>
+                               </tr>
+                           </thead>
+                           <tbody></tbody>
+                       </table>
+                  </div>
+                </div>
+          		<div id="planning-panel">
+                        <div id="planning_title" style="text-align:left"">
+                            <h2>Applications scheduled for this Release</h2>
+                        </div>
+          		        <div id="planningtimeline">
+          		        </div>
+               </div>
+            </div>
+            <div id="tabs-General-row-9">
+               <div id="appcomp-panel">
+                 <div id="appcomp_title" style="text-align:left"">
+                     <h2>Component Dependencies</h2>
+                 </div>
+                 <div id="appcomp-data">
+                     <div id="appcomplist_list" style="width:96%;height:100px;display:inline"></div>
+                        <table class="stripe" id="appcomplist" width="100%">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left">Component</th>
+                                    <th style="text-align:left">Domain</th>
+                                    <th style="text-align:left">Id</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                 </div>
+               </div>
+             </div>
+            <div id="tabs-General-row-40">
+	                <div id="defect-panel" style="display:none">
+	                    <div id="defects_title">
+	                        <h2>Change Requests</h2>
+	                    </div>
+	                     <div id="defect_header_buttons">
+	                    	<button class="add_button" onClick="javascript:AddDefectRow('defect')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+	                    	<button class="edit_button" onClick="javascript:EditDefectRow('defect')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+	                    	<button class="delete_button" onClick="javascript:DeleteDefectRow('defect')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+	                    	<button class="save_button" onClick="javascript:SaveDefectRow('defect')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+	                    	<button class="cancel_button" onClick="javascript:CancelDefectRow('defect')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+	                    </div>
+	                    <div id="defect-data">
+	                    <table id="defect" class="cb_dev_table">
+	                        <thead>
+	                            <tr>
+	                                <th>&nbsp;</th>
+	                                <th>CR</th>
+	                                <th>Summary</th>
+	                                <th>Component</th>
+	                                <th>Status</th>
+	                            </tr>
+	                        </thead>
+	                        <tbody></tbody>
+	                    </table>
+	                    <table id="defect-edit" class="cb_dev_table">
+	                        <thead>
+	                            <tr>
+	                                <th>&nbsp;</th>
+	                                <th>CR</th>
+	                                <th>Summary</th>
+	                                <th>Component</th>
+	                                <th>Status</th>
+	                            </tr>
+	                        </thead>
+	                        <tbody></tbody>
+	                    </table>
+	                </div>
+	             </div>
+	             <div id="tabs-General-right">
+	                <div id="tabs-General-right-header">
+	                    <h2>Blast Radius</h2>
+	                </div>
+	                <div id="tabs-General-map"></div>
+	            </div>
+            </div>
+            <div id="tabs-General-row-12">
+	            	<div id="swagger-panel">
+	            	  <div id="swagger_header">
+		            	  <div id="swagger_title" style="text-align:left"">
+		                            <h2>Swagger</h2>
+		                  </div>
+		                  <div id="swagger_header_buttons">
+	                       	<button class="add_button" id="upload_swagger"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Upload</button>
+		                  </div>
+	                  </div>
+	                  <div id="swagger-data">
+	                  </div>
+	            	</div>
+		    </div>
+            <div id="tabs-General-row-15a"  >
+                <div id="outerworkflow" class="versionsandinformation">
+     	 			<div class="versions">
+	     				<div id="innerworkflow" style="height:600px;width:100%;">
+		 				</div>
+	    			</div>
+       			</div>
+    			<div id="pickproc" class="accordionpanel">
+	     			<h4>Function/Procedure</h4>
+   	     			 <div id="fragmentlist" align="left"></div>
+        		</div>
+               <div id="srv4env-panel">
+                 	<div id="srv4env-header">
+                     	<div id="srv4env_title">
+                      	  <h2>Assigned Endpoints</h2>
+                    	</div>
+                    	<div id="srv4env_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddSrv4EnvRow('srv4env')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditSrv4EnvRow('srv4env')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteSrv4EnvRow('srv4env')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveSrv4EnvRow('srv4env')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelSrv4EnvRow('srv4env')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                    	</div>
+                    </div>
+                    <div id="srv4env-data">
+                        <table id="srv4env" class="cb_dev_table" width="100%" >
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Name</th>
+                                    <th>Hostname</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="srv4env-edit" class="cb_dev_table" width="100%" >
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Name</th>
+                                    <th>Hostname</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+              <div id="emailhelp-panel" style="display:none">
+                <div id="emailhelp_title">
+                      	  <h2>Using Variables</h2>
+                </div>
+                <div id="emailhelp_data">
+          When constructing the subject line and message body for a template, you can use
+          <I>Variables</I>. These variables are automatically expanded when the notification
+          is issued.<br><br>
+          Variables can be either <I>Object Methods</I> (such as \${application.name}) or
+          <I>Scalar Variables</I> that are set by DeployHub during specific operations
+          (such as $SERVER_STATUS during a periodic server scan).<br><br>Object Methods can be used for
+          any object that is available to DeployHub during the operation. For example, you could
+          use \${application.id} to get the internal application id or \${application.domain.name} to get
+          the current domain for the application.<br><br>
+          The table below shows which variables are set during specific operations.<br><br>
+          <table id="emailhelptab" class="dev_table" style="white-space:nowrap">
+          <thead>
+          <tr><th>Variable Name</th><th>Description</th><th>Operation</th></tr>
+          </thead>
+          <tbody>
+          <tr ><td>\${application.name}</td><td>The name of the current application</td><td>Any DeployHub task operating on an Application (such as <i>Deploy, Move, Approve</i> etc)</td></tr>
+ 	 	  <tr><td>\${environment.name}</td><td>The name of the target environment</td><td>Any DeployHub task operating on an Environment (such as <i>Deploy</i> etc)</td></tr>
+		  <tr ><td>\${user.name}</td><td>The name of the invoking user</td><td>Any DeployHub task.</td></tr>
+		  <tr><td>\$DEPLOY_ID</td><td>The Deployment ID Number</td><td>Set during a Deploy task.</td></tr>
+          <tr ><td>\$SERVER_NAME</td><td>Endpoint Name</td><td>The name of the end point during an automatic periodic scan (AutoPing or AutoMD5). Use this variable in a Ping or MD5 template.</td></tr>
+          <tr><td>\$SERVER_HOSTNAME</td><td>Endpoint hostname</td><td>The hostname of the end point during an automatic periodic scan (AutoPing or AutoMD5). Use this variable in a Ping or MD5 template.</td></tr>
+          <tr ><td>\$SERVER_STATUS</td><td>OK or FAILED</td><td>The status of the server during an automatic periodic scan (AutoPing). Use this variable in a Ping template.
+          Note this variable is always OK in an MD5 template since MD5 scans are only performed if the ping check succeeds.</td></tr>
+          <tr><td>\$NAME_RESOLUTION</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of resolution of hostname. Use this variable in a Ping template.</td></tr>
+          <tr ><td>\$PING</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the ping to the server. Use this variable in a Ping template.</td></tr>
+          <tr><td>\$CONNECTION</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the connection attempt to the server using the associated credentials. Use this variable in a Ping template.</td></tr>
+          <tr ><td>\$BASEDIR</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the attempt to switch to the server's base directory. Use this variable in a Ping template.</td></tr>
+          <tr><td>\$MD5_FILELIST</td><td>A list of files (one per line)</td><td>Set during an automatic periodic scan (AutoMD5). Lists all the files whose MD5 checksum differs from that calculated during the last deployment to the server. Use this variable in a MD5 template.</td></tr>
+          <tr ><td>\$SRCDOMAIN</td><td>The name of the Source Domain</td><td>Set during a <I>Move</I> or <I>Approve</I> task. The name of the Domain the application is being moved <I>from</I> (for a move) or its current domain (for an approve).</td></tr>
+          <tr><td>\$TGTDOMAIN</td><td>The name of the Target Domain</td><td>Set during a <I>Move</I> or <I>Approve</I> task. The name of the Domain the application is being moved <I>to</I> or approved <I>for</I>.</td></tr>
+          <tr ><td>\$NOTES</td><td>Free Text</td><td>Set during a <I>Move, Approve</I> or <I>Request</I> task. The notes that were entered (if any) by the user when the task was run.</td></tr>
+          <tr><td>\$TASKNAME</td><td>The name of the Requested Task</td><td>Set during a <I>Request</I> task. The name of the task being requested to be run.</td></tr>
+          <tr ><td>\$ERROR_TEXT</td><td>Last Endpoint Error</td><td>Set during an automatic periodic scan (AutoPing). The last error detected during the connection attempt.</td></tr>
+          </tbody>
+          </table>
+               </div>
+              </div>
+            </div>
+            <div id="tabs-General-row-25">
+            </div>
+            <div id="tabs-General-row-28">
+                 <div id="feedback-panel">
+                    <div id="feedback-panel-header">
+                        <div id="feedback_title" style="text-align:left"">
+                            <h2>Last Deployment Difference based on Environment:</h2>
+                        </div>
+                    </div>
+                    <div id="feedback-data">
+                    </div>
+                </div>
+            </div>
+            <div id="tabs-General-row-32">
+                <div id="provides-panel" style="display:none">
+                   <div id="provides_title" style="text-align:left"">
+                        <h2>Providing API End Points</h2>
+                    </div>
+                     <div id="provides_list">
+					  <table id="provideslist" class="hover row-border nowrap" height="100%" width="100%">
+			           <thead>
+			            <tr>
+							<th style="text-align: left;">Verb</th>
+							<th style="text-align: left;">API End Point</th>
+			            </tr>
+			          </thead>
+			         </table>
+			        </div>
+          		</div>
+          		<div id="consumes-panel" style="display:none">
+                        <div id="consumes_title" style="text-align:left"">
+                            <h2>Consuming API End Points</h2>
+                        </div>
+                     <div id="consumes_list">
+					  <table id="consumeslist" class="hover row-border nowrap" height="100%" width="100%">
+			           <thead>
+			            <tr>
+							<th style="text-align: left;">Verb</th>
+							<th style="text-align: left;">API End Point</th>
+							<th style="text-align: left;">Component</th>
+			            </tr>
+			          </thead>
+			         </table>
+			        </div>
+               </div>
+             </div>
+            <div id="proc-definition">Function/Procedure Definition</div>
+            <div id="tabs-General-row-9a">
+               <div id="inputparams-panel">
+                  <div id="inputparams-panel-header">
+                    <div id="inputparams_title">
+                    	<h2>Input Parameters</h2>
+                    </div>
+                    <div id="inputparams_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddInputParamsRow('inputparams')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditInputParamsRow('inputparams')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteInputParamsRow('inputparams')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveInputParamsRow('inputparams')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelInputParamsRow('inputparams')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                     </div>
+                   </div>
+                  	<table id="inputparams" class="cb_dev_table" width="100%" >
+           				<thead>
+            				<tr><th>&nbsp;<th>Name</th><th>Type</th><th>Format</th><th>Missing</th><th>Padding</th><th>Required</th><th>Pos</th></tr>
+           				</thead>
+           				<tbody>
+           				</tbody>
+          			</table>
+          			<table id="inputparams-edit" class="cb_dev_table" width="100%" >
+           				<thead>
+            				<tr><th>&nbsp;<th>Name</th><th>Type</th><th>Format</th><th>Missing</th><th>Padding</th><th>Required</th><th>Pos</th></tr>
+           				</thead>
+           				<tbody>
+           				</tbody>
+          			</table>
+                </div>
+            </div>
+            <div id="tabs-General-row-9b">
+              <div id="switchargs-panel">
+                  <div id="switchargs-panel-header">
+                    <div id="switchargs_title">
+                    	<h2>Command Line Switches</h2>
+                    </div>
+                    <div id="switchargs_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddSwitchArgsRow('switchargs')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditSwitchArgsRow('switchargs')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteSwitchArgsRow('switchargs')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveSwitchArgsRow('switchargs')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelSwitchArgsRow('switchargs')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                     </div>
+                   </div>
+                   <table id="switchargs" class="cb_dev_table" width="100%" >
+           				<thead>
+            				<tr><th>&nbsp;</th><th>Name</th></tr>
+           				</thead>
+           				<tbody>
+           				</tbody>
+          			</table>
+          			<table id="switchargs-edit" class="cb_dev_table" width="100%" >
+           				<thead>
+            				<tr><th>&nbsp;</th><th>Name</th></tr>
+           				</thead>
+           				<tbody>
+           				</tbody>
+          			</table>
+                </div>
+            </div>
+            <div id="tabs-General-row-9c">
+              <div id="cmdline-panel">
+                 <div id="dragtextdiv" style="margin:10px">Drag the arguments from here onto the command line below to assemble the command. Use the table above to add and configure the switches/arguments.</div>
+                 <div id="argsoutputpane"></div>
+              </div>
+              <div id="procbody-panel">
+                 <div id="ProcBodyMainFrame" style="height:100%;width:100%;">
+                    <textarea id='editproc' cols='400' wrap='off' spellcheck='false' style='width:100%;height:600px;font-family:courier;white-space: pre; overflow: auto;'></textarea>
+                 </div>
+              </div>
+            </div>
+            <div id="devops-details">Component with DevOps Details</div>
+              <div id="tabs-General-row-10">
             	 <div id="domnav-panel">
      			</div>
                 <div id="tabs-General-left">
                     <div id="tabs-General-left-header">
-                        <div id="compowner_summ_title">
-                            <h2>Component Owner</h2>
-                        </div>
-                        <div id="compowner_summ_data">
-                          <table id="compowner_summ" class="dev_table">
-                            <tbody></tbody>
-                          </table>
-                        </div>
-                        <div id="compowner_summ_data_edit" style="display:none";>
-                          <table id="compowner_summtab" class="dev_table">
-                            <tbody></tbody>
-                          </table>
-                        </div>
-                        <div id="summ_title">
-                            <h2>Details</h2>
-                        </div>
-                        <div id="summ_header_buttons">
-                            <button class="edit_button" onClick="javascript:EditSummaryButton(false,'')">
-                                <i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit
-                            </button>
-                            <button class="save_button" onClick="javascript:summOK(false,'')">
-                                <i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save
-                            </button>
-                            <button class="cancel_button" onClick="javascript:summCancel('')">
-                                <i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel
-                            </button>
-                            <button class="test_button" onClick="javascript:TestServer('servstat',objtypeAsInt,objid)">
-                                <i class="fad fa-alien" aria-hidden="true"  style="padding-right:5px"></i>Test Connection
-                            </button>
-                            <button class="add_button" onClick="javascript:AddDomain(objtypeAsInt,objid)">
-                                <i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add Subdomain
-                            </button>
-                            <button class="delete_button" onClick="javascript:DeleteDomain(objtypeAsInt,objid)">
-                                <i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete Domain
-                            </button>
-                        </div>
                     </div>
                     <div id="summ_data">
                         <table id="summ" class="dev_table">
@@ -753,6 +1318,26 @@
                             <tbody></tbody>
                         </table>
                     </div>
+                    <div id="compowner_summ_data">
+                          <table id="compowner_summ" class="dev_table">
+                            <tbody></tbody>
+                          </table>
+                     </div>
+                     <div id="compowner_summ_data_edit" style="display:none";>
+                          <table id="compowner_summtab" class="dev_table">
+                            <tbody></tbody>
+                          </table>
+                    </div>
+                    <div id="compitem_data">
+	                    <table id="compitem" class="dev_table">
+	                       <tbody></tbody>
+	                    </table>
+               		</div>
+	                <div id="compitem_data_edit" style="display:none";>
+	                   <table id="compitemtab" class="dev_table">
+	                      <tbody></tbody>
+	                   </table>
+	               	</div>
                     <div id="emailbody_data">
                         <table id="emailbody" class="dev_table">
                             <tbody></tbody>
@@ -797,52 +1382,8 @@
                       </div>
                    </div>
                 </div>
+              </div>
               <div id="row-10-right-panel">
-                <div id="summ_title">
-                    <h2>Component Details</h2>
-                </div>
-                  <div id="appcomp-data">
-                     <div id="appcomplist_list" style="width:96%;height:100px;display:inline"></div>
-                        <table id="appcomplist" width="100%">
-                            <thead>
-                                <tr>
-                                    <th style="text-align:left">Component</th>
-                                    <th style="text-align:left">Domain</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                  </div>
-                <div id="compowner_summ_header_buttons">
-                            <button class="edit_button" onClick="javascript:EditSummaryButton(false,'')">
-                                <i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit
-                            </button>
-                            <button class="save_button" onClick="javascript:summOK(false,'')">
-                                <i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save
-                            </button>
-                            <button class="cancel_button" onClick="javascript:summCancel('')">
-                                <i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel
-                            </button>
-                            <button class="test_button" onClick="javascript:TestServer('servstat',objtypeAsInt,objid)">
-                                <i class="fad fa-alien" aria-hidden="true"  style="padding-right:5px"></i>Test Connection
-                            </button>
-                            <button class="add_button" onClick="javascript:AddDomain(objtypeAsInt,objid)">
-                                <i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add Subdomain
-                            </button>
-                            <button class="delete_button" onClick="javascript:DeleteDomain(objtypeAsInt,objid)">
-                                <i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete Domain
-                            </button>
-                </div>
-                <div id="compitem_data">
-                    <table id="compitem" class="dev_table">
-                       <tbody></tbody>
-                    </table>
-                </div>
-                <div id="compitem_data_edit" style="display:none";>
-                   <table id="compitemtab" class="dev_table">
-                      <tbody></tbody>
-                   </table>
-               	</div>
                 <div id="emailto-panel">
                   <div id="emailto-panel-header">
                     <div id="emailto_title" style="text-align:left"">
@@ -970,648 +1511,9 @@
                         </table>
                     </div>
                 </div>
-                <div id="row-10-access">
-                    <div id="row-10-access_title" style="text-align:left"">
-                            <h2>Access Control</h2>
-                    </div>
-                    <div id="row-10-access-data">
-                    </div>
-                </div>
-                <div id="row-10-audit">
-                        <div id="audit10_title" style="text-align:left"">
-                            <h2>Audit Trail</h2>
-                        </div>
-                        <div id="audit10-data">
-                          <div id="audit10-historyadd" style="width:96%;height:100px;display:inline""></div>
-                          <table id="audit10-histfeed" class="dev_table" style="display:none;">
-                               <tbody></tbody>
-                          </table>
-                        <table id="audit10" class="dev_table" width="100%">
-                            <thead>
-                                <tr>
-                                    <th>Event</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                        </div>
-                </div>
             </div>
-           </div>
-           <div id="tabs-General-row-12">
-            	<div id="readme-panel">
-            	  <div id="readme_header">
-	            	  <div id="readme_title" style="text-align:left"">
-	                            <h2>Readme</h2>
-	                  </div>
-	                  <div id="readme_header_buttons">
-                       	<button class="add_button" id="upload_readme"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Upload</button>
-	                  </div>
-                  </div>
-                  <div id="readme-data">
-                  </div>
-            	</div>
-            	<div id="swagger-panel">
-            	  <div id="swagger_header">
-	            	  <div id="swagger_title" style="text-align:left"">
-	                            <h2>Swagger</h2>
-	                  </div>
-	                  <div id="swagger_header_buttons">
-                       	<button class="add_button" id="upload_swagger"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Upload</button>
-	                  </div>
-                  </div>
-                  <div id="swagger-data">
-                  </div>
-            	</div>
-            </div>
-            <div id="tabs-General-row-12a">
-            	<div id="cve-panel">
-            	  <div id="cve_title" style="text-align:left"">
-                      <h2>Vulnerabilities</h2>
-                  </div>
-                  <div id="cve-data">
-                     <div id="cvelist_list" style="width:96%;height:100px;display:inline"></div>
-                        <table id="cvelist" width="100%">
-                            <thead>
-                                <tr>
-                                    <th style="padding:0;">&nbsp;</th>
-                                    <th>Package</th>
-                                    <th>Version</th>
-                                    <th>ID</th>
-                                    <th>Url</th>
-                                    <th>Summary</th>
-                                    <th>Component</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                  </div>
-                 </div>
-            	<div id="license-panel">
-            	  <div id="license_title" style="text-align:left"">
-                      <h2>Software Bill of Materials (SBOM)</h2>
-                  </div>
-                  <div id="license-data">
-                     <div id="licenselist_list" style="width:96%;height:100px;display:inline"></div>
-                        <table id="licenselist" width="100%">
-                            <thead>
-                                <tr>
-                                    <th>Package</th>
-                                    <th>Version</th>
-                                    <th>License</th>
-                                    <th>Url</th>
-                                    <th>Component</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                  </div>
-                  </div>
-            	</div>
-            </div>
-            <div id="tabs-General-row-15"  >
-                <div id="logs-panel">
-                        <div id="logs_title" style="text-align:left"">
-                            <h2>Log History</h2>
-                        </div>
-                        <div id="logs-data">
-                        <table id="loghist" class="dev_table" width="100%">
-                            <thead>
-                                <tr>
-                                    <th>Deployment</th>
-                                    <th>Result</th>
-                                    <th>Date</th>
-                                    <th>Environment</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                        </div>
-                </div>
-                                <div id="attrs-panel">
-                 	<div id="attrs-header">
-                     	<div id="attrs_title">
-                      	  <h2>Key Value Configuration</h2>
-                    	</div>
-                    	<div id="attrs_header_buttons">
-                        	<button class="add_button" onClick="javascript:AddAttrRow('attrib')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
-                        	<button class="edit_button" onClick="javascript:EditAttrRow('attrib')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
-                        	<button class="delete_button" onClick="javascript:DeleteAttrRow('attrib')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
-                        	<button class="save_button" onClick="javascript:SaveAttrRow('attrib')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
-                        	<button class="cancel_button" onClick="javascript:CancelAttrRow('attrib')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
-                    	</div>
-                    </div>
-                    <div id="attrib-data">
-                        <table id="attrib" class="cb_dev_table" width="100%" >
-                            <thead>
-                                <tr>
-                                    <th>&nbsp;</th>
-                                    <th>Name</th>
-                                    <th>Value</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                        <table id="attrib-edit" class="cb_dev_table" width="100%">
-                            <thead>
-                                <tr>
-                                    <th>&nbsp;</th>
-                                    <th>Name</th>
-                                    <th>Value</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-          		<div id="licensemd-panel">
-          		   <div id="licensemd_header">
-	            	  <div id="licensemd_title" style="text-align:left"">
-	                     <h2>License</h2>
-	                  </div>
-	                  <div id="licensemd_header_buttons">
-                       	<button class="add_button" id="upload_licensemd"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Upload</button>
-	                  </div>
-                  </div>
-                  <div id="licensemd-data">
-                  </div>
-            	</div>
-                <div id="outerworkflow" class="versionsandinformation">
-     	 			<div class="versions">
-	     				<div id="innerworkflow" style="height:600px;width:100%;">
-		 				</div>
-	    			</div>
-       			</div>
-    			<div id="pickproc" class="accordionpanel">
-	     			<h4>Function/Procedure</h4>
-   	     			 <div id="fragmentlist" align="left"></div>
-        		</div>
-                <div id="inputparams-panel">
-                  <div id="inputparams-panel-header">
-                    <div id="inputparams_title">
-                    	<h2>Input Parameters</h2>
-                    </div>
-                    <div id="inputparams_header_buttons">
-                        	<button class="add_button" onClick="javascript:AddInputParamsRow('inputparams')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
-                        	<button class="edit_button" onClick="javascript:EditInputParamsRow('inputparams')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
-                        	<button class="delete_button" onClick="javascript:DeleteInputParamsRow('inputparams')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
-                        	<button class="save_button" onClick="javascript:SaveInputParamsRow('inputparams')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
-                        	<button class="cancel_button" onClick="javascript:CancelInputParamsRow('inputparams')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
-                     </div>
-                   </div>
-                  	<table id="inputparams" class="cb_dev_table" width="100%" >
-           				<thead>
-            				<tr><th>&nbsp;<th>Name</th><th>Type</th><th>Format</th><th>Missing</th><th>Padding</th><th>Required</th><th>Pos</th></tr>
-           				</thead>
-           				<tbody>
-           				</tbody>
-          			</table>
-          			<table id="inputparams-edit" class="cb_dev_table" width="100%" >
-           				<thead>
-            				<tr><th>&nbsp;<th>Name</th><th>Type</th><th>Format</th><th>Missing</th><th>Padding</th><th>Required</th><th>Pos</th></tr>
-           				</thead>
-           				<tbody>
-           				</tbody>
-          			</table>
-                </div>
-                <div id="switchargs-panel">
-                  <div id="switchargs-panel-header">
-                    <div id="switchargs_title">
-                    	<h2>Command Line Switches</h2>
-                    </div>
-                    <div id="switchargs_header_buttons">
-                        	<button class="add_button" onClick="javascript:AddSwitchArgsRow('switchargs')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
-                        	<button class="edit_button" onClick="javascript:EditSwitchArgsRow('switchargs')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
-                        	<button class="delete_button" onClick="javascript:DeleteSwitchArgsRow('switchargs')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
-                        	<button class="save_button" onClick="javascript:SaveSwitchArgsRow('switchargs')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
-                        	<button class="cancel_button" onClick="javascript:CancelSwitchArgsRow('switchargs')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
-                     </div>
-                   </div>
-                   <table id="switchargs" class="cb_dev_table" width="100%" >
-           				<thead>
-            				<tr><th>&nbsp;</th><th>Name</th></tr>
-           				</thead>
-           				<tbody>
-           				</tbody>
-          			</table>
-          			<table id="switchargs-edit" class="cb_dev_table" width="100%" >
-           				<thead>
-            				<tr><th>&nbsp;</th><th>Name</th></tr>
-           				</thead>
-           				<tbody>
-           				</tbody>
-          			</table>
-                </div>
-               <div id="srv4env-panel">
-                 	<div id="srv4env-header">
-                     	<div id="srv4env_title">
-                      	  <h2>Assigned Endpoints</h2>
-                    	</div>
-                    	<div id="srv4env_header_buttons">
-                        	<button class="add_button" onClick="javascript:AddSrv4EnvRow('srv4env')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
-                        	<button class="edit_button" onClick="javascript:EditSrv4EnvRow('srv4env')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
-                        	<button class="delete_button" onClick="javascript:DeleteSrv4EnvRow('srv4env')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
-                        	<button class="save_button" onClick="javascript:SaveSrv4EnvRow('srv4env')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
-                        	<button class="cancel_button" onClick="javascript:CancelSrv4EnvRow('srv4env')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
-                    	</div>
-                    </div>
-                    <div id="srv4env-data">
-                        <table id="srv4env" class="cb_dev_table" width="100%" >
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>Name</th>
-                                    <th>Hostname</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                        <table id="srv4env-edit" class="cb_dev_table" width="100%" >
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>Name</th>
-                                    <th>Hostname</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-              <div id="emailhelp-panel" style="display:none">
-                <div id="emailhelp_title">
-                      	  <h2>Using Variables</h2>
-                </div>
-                <div id="emailhelp_data">
-          When constructing the subject line and message body for a template, you can use
-          <I>Variables</I>. These variables are automatically expanded when the notification
-          is issued.<br><br>
-          Variables can be either <I>Object Methods</I> (such as \${application.name}) or
-          <I>Scalar Variables</I> that are set by DeployHub during specific operations
-          (such as $SERVER_STATUS during a periodic server scan).<br><br>Object Methods can be used for
-          any object that is available to DeployHub during the operation. For example, you could
-          use \${application.id} to get the internal application id or \${application.domain.name} to get
-          the current domain for the application.<br><br>
-          The table below shows which variables are set during specific operations.<br><br>
-          <table id="emailhelptab" class="dev_table" style="white-space:nowrap">
-          <thead>
-          <tr><th>Variable Name</th><th>Description</th><th>Operation</th></tr>
-          </thead>
-          <tbody>
-          <tr ><td>\${application.name}</td><td>The name of the current application</td><td>Any DeployHub task operating on an Application (such as <i>Deploy, Move, Approve</i> etc)</td></tr>
- 	 	  <tr><td>\${environment.name}</td><td>The name of the target environment</td><td>Any DeployHub task operating on an Environment (such as <i>Deploy</i> etc)</td></tr>
-		  <tr ><td>\${user.name}</td><td>The name of the invoking user</td><td>Any DeployHub task.</td></tr>
-		  <tr><td>\$DEPLOY_ID</td><td>The Deployment ID Number</td><td>Set during a Deploy task.</td></tr>
-          <tr ><td>\$SERVER_NAME</td><td>Endpoint Name</td><td>The name of the end point during an automatic periodic scan (AutoPing or AutoMD5). Use this variable in a Ping or MD5 template.</td></tr>
-          <tr><td>\$SERVER_HOSTNAME</td><td>Endpoint hostname</td><td>The hostname of the end point during an automatic periodic scan (AutoPing or AutoMD5). Use this variable in a Ping or MD5 template.</td></tr>
-          <tr ><td>\$SERVER_STATUS</td><td>OK or FAILED</td><td>The status of the server during an automatic periodic scan (AutoPing). Use this variable in a Ping template.
-          Note this variable is always OK in an MD5 template since MD5 scans are only performed if the ping check succeeds.</td></tr>
-          <tr><td>\$NAME_RESOLUTION</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of resolution of hostname. Use this variable in a Ping template.</td></tr>
-          <tr ><td>\$PING</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the ping to the server. Use this variable in a Ping template.</td></tr>
-          <tr><td>\$CONNECTION</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the connection attempt to the server using the associated credentials. Use this variable in a Ping template.</td></tr>
-          <tr ><td>\$BASEDIR</td><td>OK or FAILED</td><td>Set during an automatic periodic scan (AutoPing). Reflects the success or failure of the attempt to switch to the server's base directory. Use this variable in a Ping template.</td></tr>
-          <tr><td>\$MD5_FILELIST</td><td>A list of files (one per line)</td><td>Set during an automatic periodic scan (AutoMD5). Lists all the files whose MD5 checksum differs from that calculated during the last deployment to the server. Use this variable in a MD5 template.</td></tr>
-          <tr ><td>\$SRCDOMAIN</td><td>The name of the Source Domain</td><td>Set during a <I>Move</I> or <I>Approve</I> task. The name of the Domain the application is being moved <I>from</I> (for a move) or its current domain (for an approve).</td></tr>
-          <tr><td>\$TGTDOMAIN</td><td>The name of the Target Domain</td><td>Set during a <I>Move</I> or <I>Approve</I> task. The name of the Domain the application is being moved <I>to</I> or approved <I>for</I>.</td></tr>
-          <tr ><td>\$NOTES</td><td>Free Text</td><td>Set during a <I>Move, Approve</I> or <I>Request</I> task. The notes that were entered (if any) by the user when the task was run.</td></tr>
-          <tr><td>\$TASKNAME</td><td>The name of the Requested Task</td><td>Set during a <I>Request</I> task. The name of the task being requested to be run.</td></tr>
-          <tr ><td>\$ERROR_TEXT</td><td>Last Endpoint Error</td><td>Set during an automatic periodic scan (AutoPing). The last error detected during the connection attempt.</td></tr>
-          </tbody>
-          </table>
-               </div>
-              </div>
-            </div>
-            <div id="tabs-General-row-20">
-                <div id="tabs-General-right-20">
-                    <div id="trends-panel">
-                        <div id="trends_title" style="text-align:left"">
-                            <h2>Trends</h2>
-                        </div>
-                        <div id="reports-data" style="display:inline-block">
-                            <div id="plot1resizable" style="float:left;height:200px;width:400px">
-                                <div id="timetodeploylinechart" style="height:96%;width:96%;"></div>
-                            </div>
-                            <div id="plot2resizable" style="float:left;height:200px;width:200px">
-                                <div id="applicationsuccesspiechart" style="height:96%;width:96%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="steps-panel">
-                        <div id="steps_title" style="text-align:left"">
-                            <h2>Current Step Duration</h2>
-                        </div>
-                        <div id="steps-data" style="display:inline-block">
-     						<div id="plot4resizable" style="float:left;height:200px;width:200px">
-     						<div id="deploymenttimebystep4" style="height:96%;width:96%;"></div>
-     					</div>
-                        </div>
-                </div>
-                <div id="comp4srv-panel">
-                  <div id="comp4srv-panel-header">
-                    <div id="comp4srv_title">
-                        <h2>Deployed Components</h2>
-                    </div>
-                  </div>
-                    <div id="comp4srv-data">
-                        <table id="comp4srv" class="cb_dev_table">
-                            <thead>
-                                <tr>
-                                    <th>&nbsp;</th>
-                                    <th>Current Version</th>
-                                    <th>Deployment</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                        <table id="comp4srv-edit" class="cb_dev_table">
-                            <thead>
-                                <tr>
-                                    <th>&nbsp;</th>
-                                    <th>Current Version</th>
-                                    <th>Deployment</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div id="env4app-panel">
-                  <div id="env4app-panel-header">
-                    <div id="envs_title">
-                        <h2>Assigned Environments</h2>
-                    </div>
-                    <div id="env4app_header_buttons">
-                        	<button class="add_button" onClick="javascript:AddEnv4AppRow('env4app')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
-                        	<button class="edit_button" onClick="javascript:EditEnv4AppRow('env4app')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
-                        	<button class="delete_button" onClick="javascript:DeleteEnv4AppRow('env4app')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
-                        	<button class="save_button" onClick="javascript:SaveEnv4AppRow('env4app')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
-                        	<button class="cancel_button" onClick="javascript:CancelEnv4AppRow('env4app')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
-                    </div>
-                  </div>
-                    <div>
-                        <table id="env4app" class="cb_dev_table">
-                            <thead>
-                                <tr>
-                                    <th>&nbsp;</th>
-                                    <th>Environment</th>
-                                    <th>Details</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                        <table id="env4app-edit" class="cb_dev_table">
-                            <thead>
-                                <tr>
-                                    <th>&nbsp;</th>
-                                    <th>Environment</th>
-                                    <th>Details</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                 </div>
 
-                 <div id="deployedenv4app-panel">
-                  <div id="deployedenv4app-panel-header">
-                    <div id="deployed_envs_title">
-                        <h2>Deployed Environments</h2>
-                    </div>
-                  </div>
-                    <div id="deployedenv4app-data">
-                        <table id="deployedenv4app" class="cb_dev_table">
-                            <thead>
-                                <tr>
-                                    <th>Environment</th>
-                                    <th>Details</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                 </div>
-
-                 <div id="app4env-panel">
-                  <div id="app4env-panel-header">
-                    <div id="app4env_title">
-                        <h2>Assigned Applications</h2>
-                    </div>
-                  </div>
-                    <div>
-                        <table id="app4env" class="dev_table">
-                            <thead>
-                                <tr>
-                                    <th>Application</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                 </div>
-                <div id="cmdline-panel">
-                   <div id="dragtextdiv" style="margin:10px">Drag the arguments from here onto the command line below to assemble the command. Use the table above to add and configure the switches/arguments.</div>
-                   <div id="argsoutputpane"></div>
-                </div>
-                <div id="defect-panel-20">
-                        <div id="defects_title">
-                            <h2>Change Requests</h2>
-                        </div>
-                         <div id="defect_header_buttons_20">
-                        </div>
-                        <div id="defect-20-data">
-                        <table id="defect-20" class="cb_dev_table">
-                            <thead>
-                                <tr>
-                                    <th>CR</th>
-                                    <th>Summary</th>
-                                    <th>Component</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                 </div>
-            </div>
-            <div id="tabs-General-row-25">
-            </div>
-            <div id="tabs-General-row-30">
-                <div id="app4comp-panel">
-                        <div id="app4comp_title" style="text-align:left"">
-                            <h2>Consuming Applications</h2>
-                        </div>
-                      	<table id="app4comp" class="dev_table" width="100%">
-           					<thead>
-           					</thead>
-           					<tbody>
-           					</tbody>
-          			  	</table>
-          		</div>
-               <div id="srv4comp-panel">
-                  <div id="srv4comp-panel-header">
-                    <div id="srv4comp_title">
-                        <h2>Endpoints</h2>
-                    </div>
-                    <div id="srv4comp_header_buttons">
-                        	<button class="add_button" onClick="javascript:AddSrv4CompRow('srv4comp')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
-                        	<button class="edit_button" onClick="javascript:EditSrv4CompRow('srv4comp')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
-                        	<button class="delete_button" onClick="javascript:DeleteSrv4CompRow('srv4comp')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
-                        	<button class="save_button" onClick="javascript:SaveSrv4CompRow('srv4comp')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
-                        	<button class="cancel_button" onClick="javascript:CancelSrv4CompRow('srv4comp')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
-                     </div>
-                  </div>
-                  <div>
-                   	<table id="srv4comp" class="cb_dev_table" width="100%" >
-           				<thead>
-            				<tr><th>&nbsp;</th><th>Endpoint</th><th>Deployment</th></tr>
-           				</thead>
-           				<tbody>
-           				</tbody>
-          			</table>
-          			<table id="srv4comp-edit" class="cb_dev_table" width="100%" >
-           				<thead>
-            				<tr><th>&nbsp;</th><th>Endpoint</th><th>Deployment</th></tr>
-           				</thead>
-           				<tbody>
-           				</tbody>
-          			</table>
-          		 </div>
-                </div>
-          		<div id="planning-panel">
-                        <div id="planning_title" style="text-align:left"">
-                            <h2>Applications scheduled for this Release</h2>
-                        </div>
-          		        <div id="planningtimeline">
-          		        </div>
-               </div>
-            </div>
-            <div id="tabs-General-row-28">
-                 <div id="feedback-panel">
-                    <div id="feedback-panel-header">
-                        <div id="feedback_title" style="text-align:left"">
-                            <h2>Last Deployment Difference based on Environment:</h2>
-                        </div>
-                        <div id="feedback-env"><select id="feedback-env-sel" onchange="updateDeployDiff(this);"></select></div>
-                        <div id="feedback-label"></div>
-                    </div>
-                    <div id="feedback-data">
-                    </div>
-                </div>
-                <div id="procbody-panel">
-                 <div id="ProcBodyMainFrame" style="height:100%;width:100%;">
-                    <textarea id='editproc' cols='400' wrap='off' spellcheck='false' style='width:100%;height:600px;font-size:14px;font-family:courier;white-space: pre; overflow: auto;'></textarea>
-                 </div>
-                </div>
-            </div>
-            <div id="tabs-General-row-32">
-                <div id="provides-panel">
-                   <div id="provides_title" style="text-align:left"">
-                        <h2>Providing API End Points</h2>
-                    </div>
-                     <div id="provides_list">
-					  <table id="provideslist" class="hover row-border nowrap" height="100%" width="100%">
-			           <thead>
-			            <tr>
-							<th style="text-align: left;">Verb</th>
-							<th style="text-align: left;">API End Point</th>
-			            </tr>
-			          </thead>
-			         </table>
-			        </div>
-          		</div>
-          		<div id="consumes-panel">
-                        <div id="consumes_title" style="text-align:left"">
-                            <h2>Consuming API End Points</h2>
-                        </div>
-                     <div id="consumes_list">
-					  <table id="consumeslist" class="hover row-border nowrap" height="100%" width="100%">
-			           <thead>
-			            <tr>
-							<th style="text-align: left;">Verb</th>
-							<th style="text-align: left;">API End Point</th>
-							<th style="text-align: left;">Component</th>
-			            </tr>
-			          </thead>
-			         </table>
-			        </div>
-               </div>
-             </div>
-               <div id="tabs-General-row-35">
-                <div id="row-35-audit">
-                        <div id="audit35_title" style="text-align:left"">
-                            <h2>Audit Trail</h2>
-                        </div>
-                        <div id="audit35-data">
-                          <div id="audit35-historyadd" style="width:96%;height:100px;display:inline""></div>
-                          <table id="audit35-histfeed" class="dev_table" style="display:none"">
-                               <tbody></tbody>
-                          </table>
-                        <table id="audit35" class="dev_table" width="100%">
-                            <thead>
-                                <tr>
-                                    <th>Event</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                        </div>
-                </div>
-                <div id="row-35-access">
-                    <div id="row-35-access_title" style="text-align:left"">
-                            <h2>Access Control</h2>
-                    </div>
-                    <div id="row-35-access-data">
-                    </div>
-                </div>
-               </div>
-                <div id="tabs-General-row-40">
-                    <div id="defect-panel">
-                        <div id="defects_title">
-                            <h2>Change Requests</h2>
-                        </div>
-                         <div id="defect_header_buttons">
-                        	<button class="add_button" onClick="javascript:AddDefectRow('defect')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
-                        	<button class="edit_button" onClick="javascript:EditDefectRow('defect')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
-                        	<button class="delete_button" onClick="javascript:DeleteDefectRow('defect')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
-                        	<button class="save_button" onClick="javascript:SaveDefectRow('defect')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
-                        	<button class="cancel_button" onClick="javascript:CancelDefectRow('defect')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
-                        </div>
-                        <div id="defect-data">
-                        <table id="defect" class="cb_dev_table">
-                            <thead>
-                                <tr>
-                                    <th>&nbsp;</th>
-                                    <th>CR</th>
-                                    <th>Summary</th>
-                                    <th>Component</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                        <table id="defect-edit" class="cb_dev_table">
-                            <thead>
-                                <tr>
-                                    <th>&nbsp;</th>
-                                    <th>CR</th>
-                                    <th>Summary</th>
-                                    <th>Component</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                    </div>
-                 <div id="tabs-General-right">
-                    <div id="tabs-General-right-header">
-                        <h2>Dependency Map</h2>
-                    </div>
-                    <div id="tabs-General-map"></div>
-                </div>
-                </div>
-             <div id="tabs-General-row-50">
+            <div id="tabs-General-row-50">
 		       <div id="panel_container_taskspaneltop">
 				<div id="tasks-panel">
 				  <div id="tasks-header">
@@ -1620,10 +1522,8 @@
                     	</div>
                     	<div id="tasks_header_buttons">
                         	<div class="dropdown_menu">
-                              <button class="title_buttons addMenuButton" onclick="addTaskMenu()" style="color: rgb(51, 103, 214);"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
+                              <button class="title_buttons addMenuButton" onclick="addTaskMenu()" style="color:rgb(51, 103, 214)"><i class="fal fa-plus" aria-hidden="true" style="padding-right:5px;"></i>Add<i class="fal fa-caret-down fa-lg" aria-hidden="true" style="padding-left:5px;"></i></button>
                                 <div class="dropdown_menu-content" style="display: none;">
-                                  <a onclick="AddTaskRow('taskstab','Approve');">Approve Verision for move to next pipeline stage</a>
-                                  <a onclick="AddTaskRow('taskstab','Move');">Move Version to the next or previous stage in the pipeline</a>
                                   <a onclick="AddTaskRow('taskstab','Deploy');">Deploy Version to an Environment</a>
                                   <a onclick="AddTaskRow('taskstab','Request');">Request Calendar entry for deployment to an Environment</a>
                                   <a onclick="AddTaskRow('taskstab','RunAction');">Mannually trigger Action to be executed</a>
@@ -1673,28 +1573,121 @@
                     </div>
 				</div>
 			</div>
-		<div id="panel_container_taskspanelbottom">
-			<div id="sub_panel_bottomleft">
-			  <div class="panel_container_title_area tasks"><h1 class="taskpanels">Group Access for Task</h1></div>
-			   <div class="deploy_sub_panel_container">
-			    <ul class="subpanel" id="tasks_assigned_groups">
- 			    </ul>
- 			   </div>
-			</div>
-			<div id="sub_panel_bottommiddle">
-			 	<div class="panel_container_title_area"><h1 class="taskpanels">Available Groups for Task</h1></div>
-			 	<div class="deploy_sub_panel_container">
-			 		<ul class="subpanel" id="tasks_available_groups">
- 					</ul>
- 				</div>
- 			</div>
- 			<div id="sub_panel_bottomright">
- 			    <div class="panel_container_title_area"><h1 class="taskpanels">Task Parameters</h1></div>
-			 	<div id="task_params"></div>
-			 	<div id="task_param_content"></div>
- 			</div>
 		</div>
+		<div id="tabs-General-row-51">
+			<div id="panel_container_taskspanelbottom">
+				<div id="sub_panel_bottomleft">
+				  <div class="panel_container_title_area tasks"><h4 class="taskpanels">Group Access for Task</h4></div>
+				   <div class="deploy_sub_panel_container">
+				    <ul class="subpanel" id="tasks_assigned_groups">
+	 			    </ul>
+	 			   </div>
+				</div>
+				<div id="sub_panel_bottommiddle">
+				 	<div class="panel_container_title_area"><h4 class="taskpanels">Available Groups for Task</h4></div>
+				 	<div class="deploy_sub_panel_container">
+				 		<ul class="subpanel" id="tasks_available_groups">
+	 					</ul>
+	 				</div>
+	 			</div>
+	 			<div id="sub_panel_bottomright">
+	 			    <div class="panel_container_title_area"><h4 class="taskpanels">Task Parameters</h4></div>
+				 	<div id="task_params"></div>
+				 	<div id="task_param_content"></div>
+	 			</div>
+			 </div>
 		</div>
+
+           <div id="tabs-General-row-14">
+              <div id="logs-panel">
+                 <div id="logs_title" style="text-align:left"">
+                     <h2>Log History</h2>
+                 </div>
+                 <div id="logs-data">
+                 <table id="loghist" class="dev_table" width="100%">
+                     <thead>
+                         <tr>
+                             <th>Deployment</th>
+                             <th>Result</th>
+                             <th>Date</th>
+                             <th>Environment</th>
+                         </tr>
+                     </thead>
+                     <tbody></tbody>
+                 </table>
+                 </div>
+              </div>
+           </div>
+           <div id="tabs-General-row-15">
+              <div id="attrs-panel">
+                 	<div id="attrs-header">
+                     	<div id="attrs_title">
+                      	  <h2>Key Value Configuration</h2>
+                    	</div>
+                    	<div id="attrs_header_buttons">
+                        	<button class="add_button" onClick="javascript:AddAttrRow('attrib')"><i class="fal fa-plus" aria-hidden="true"  style="padding-right:5px"></i>Add</button>
+                        	<button class="edit_button" onClick="javascript:EditAttrRow('attrib')"><i class="fal fa-pencil" aria-hidden="true"  style="padding-right:5px"></i>Edit</button>
+                        	<button class="delete_button" onClick="javascript:DeleteAttrRow('attrib')"><i class="fal fa-trash" aria-hidden="true"  style="padding-right:5px"></i>Delete</button>
+                        	<button class="save_button" onClick="javascript:SaveAttrRow('attrib')"><i class="fal fa-save" aria-hidden="true"  style="padding-right:5px"></i>Save</button>
+                        	<button class="cancel_button" onClick="javascript:CancelAttrRow('attrib')"><i class="fal fa-times-circle" aria-hidden="true"  style="padding-right:5px"></i>Cancel</button>
+                    	</div>
+                    </div>
+                    <div id="attrib-data">
+                        <table id="attrib" class="cb_dev_table" width="100%" >
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="attrib-edit" class="cb_dev_table" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+      <div id="audit-access">Audit and Access</div>
+           <div id="tabs-General-row-35">
+                <div id="row-35-audit">
+                        <div id="audit35_title" style="text-align:left"">
+                            <h2>Audit Trail</h2>
+                        </div>
+                        <div id="audit35-data">
+                          <div id="audit35-historyadd" style="width:96%;height:100px;display:inline""></div>
+                          <table id="audit35-histfeed" class="dev_table" style="display:none"">
+                               <tbody></tbody>
+                          </table>
+                        <table id="audit35" class="dev_table" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        </div>
+                </div>
+          </div>
+               <div id="tabs-General-row-35a">
+                <div id="row-35-access">
+                    <div id="row-35-access_title" style="text-align:left"">
+                            <h2>Access Control</h2>
+                    </div>
+                    <div id="row-35-access-data">
+                    </div>
+                </div>
+               </div>
+          </div>
                     </div>
                 </div>
 
@@ -1750,9 +1743,5 @@
     	<img src="css/images/dog.gif" style="height:80px;border-radius: 25px;" />
     	<p style="position:relative;left:-7px;">Sit tight....</p>
 	</div>
- <footer class="footer">
-	<div id="footer_container">
-	</div>
- </footer>
 </body>
 </html>

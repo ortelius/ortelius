@@ -27,7 +27,7 @@
 	padding: 0px;
 }
 </style>
- <div id="tasktabs" style="height: 100%; font-size: 12px;overflow:auto">
+ <div id="tasktabs" style="height: 100%;overflow:auto">
   <ul>
    <li><a href="#tasktabs-Task">Task</a></li>
    <li><a href="#tasktabs-Output">Output</a></li>

@@ -36,6 +36,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 import javax.crypto.BadPaddingException;
@@ -239,46 +241,8 @@ private void updateVulns()
  Statement delst;
  try
  {
-  boolean dbLoading = true;
-  do
-  {
-   try
-   {
-    try (PreparedStatement st = m_conn.prepareStatement("SELECT EXISTS (SELECT FROM pg_tables WHERE tablename  = 'dm_componentdeps')");
-
-    ResultSet rs = st.executeQuery())
-    {
-     if (rs.next())
-     {
-      dbLoading = !rs.getBoolean(1);
-
-      if (dbLoading)
-      {
-       try
-       {
-        TimeUnit.MINUTES.sleep(1);
-       }
-       catch (InterruptedException e)
-       {
-        e.printStackTrace();
-       }
-      }
-     }
-    }
-   }
-   catch (SQLException e)
-   {
-   }
-  } while (dbLoading);
-
-
-
   delst = m_conn.createStatement();
   delst.execute("delete from dm.dm_componentdeps where deptype = 'cve'");
-  delst.close();
-
-  delst = m_conn.createStatement();
-  delst.execute("delete from dm.dm_vulns");
   delst.close();
 
   String sql = "select distinct packagename, packageversion, purl from dm.dm_componentdeps where deptype = 'license'";
@@ -302,7 +266,14 @@ private void updateVulns()
      purl = purl.split("\\?")[0];
     payload = "{\"package\": {\"purl\": \"" + purl.toLowerCase() + "\"}}";
    }
+   DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+   LocalDateTime now = LocalDateTime.now();
+
+//   System.out.print(dtf.format(now) + " - ");
+//   System.out.println(payload);
    JsonArray vulns = getVulns(payload);
+//   System.out.print(dtf.format(now) + " - ");
+//   System.out.println(vulns.toString());
 
    for (int i = 0; i < vulns.size(); i++)
    {
@@ -358,20 +329,28 @@ private void updateVulns()
       risklevel = "Medium";
     }
 
-    PreparedStatement ins_st = m_conn.prepareStatement("insert into dm.dm_vulns (packagename, packageversion, purl, id, summary, risklevel, cvss) values (?, ?, ?, ?, ?, ?, ?) ON CONFLICT ON CONSTRAINT dm_vulns_pkey DO NOTHING");
-    ins_st.setString(1, packagename);
-    ins_st.setString(2, packageversion);
-    if (purl == null || purl.isEmpty())
-     ins_st.setNull(3, Types.VARCHAR);
-    else
-     ins_st.setString(3, purl);
-    ins_st.setString(4, id);
-    ins_st.setString(5, desc);
-    ins_st.setString(6, risklevel);
-    ins_st.setString(7, cvss);
-    ins_st.execute();
-    ins_st.close();
-    m_conn.commit();
+    try
+    {
+        PreparedStatement ins_st = m_conn.prepareStatement("insert into dm.dm_vulns (packagename, packageversion, purl, id, summary, risklevel, cvss) values (?, ?, ?, ?, ?, ?, ?) ON CONFLICT ON CONSTRAINT dm_vulns_pkey DO NOTHING");
+        ins_st.setString(1, packagename);
+        ins_st.setString(2, packageversion);
+        if (purl == null || purl.isEmpty())
+         ins_st.setNull(3, Types.VARCHAR);
+        else
+         ins_st.setString(3, purl);
+        ins_st.setString(4, id);
+        ins_st.setString(5, desc);
+        ins_st.setString(6, risklevel);
+        ins_st.setString(7, cvss);
+        ins_st.execute();
+        ins_st.close();
+        m_conn.commit();
+    }
+    catch (SQLException e)
+    {
+     System.out.println("Duplicate Vuln:" + packagename + "," + packageversion +"," + id + "," + desc + "," + risklevel + "," + cvss);
+//     m_conn.rollback();
+    }
    }
   }
   rs.close();
@@ -501,6 +480,7 @@ public static String capitalize(String str)
      {
       try
       {
+       System.out.println("No DB Connection - Retrying");
        Thread.sleep(30000);
       }
       catch (InterruptedException ie)

@@ -37,8 +37,8 @@ foreach $zone (@zones)
 		$dhport = $parts[1];
 		$val = $parts[2];
 
-		$dhhost = "ao-$key.$zone.svc.cluster.local";
-		$backend = "ao-$key-backend";
+		$dhhost = "$key.$zone.svc.cluster.local";
+		$backend = "$key-backend";
 
 	 $loc = "location /dmadminweb/$val {\n".
 	       "   proxy_http_version 1.1;\n" .
@@ -238,7 +238,7 @@ foreach $zone (@zones)
 
 		if ($key !~ /ms-init/)
 		{
-	  open(FPLOC,">$outputdir/location/ao-$key-" . $val . ".conf");
+	  open(FPLOC,">$outputdir/location/$key-" . $val . ".conf");
 	  print FPLOC $loc;
 	  close(FPLOC);
 		}
@@ -307,12 +307,12 @@ foreach $key (keys %mapping)
 
 	$pwd = cwd();
 
-	my @folders = split /\//, $outputdir . "/ao-$key";
+	my @folders = split /\//, $outputdir . "/$key";
 	$folders[0] = '/';
 	map { mkdir $_; chdir $_; } @folders;
 	chdir $pwd;
 
-	open(FP,">$outputdir/ao-$key/web.xml");
+	open(FP,">$outputdir/$key/web.xml");
 	print FP '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 	print FP '<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:web="http://java.sun.com/xml/ns/javaee" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">' . "\n";
 	print FP $outxml;
@@ -322,12 +322,12 @@ foreach $key (keys %mapping)
 	@lines = <FP>;
 	close(FP);
 
-	open(FP,">$tgt/ao-$key.war.tgt");
+	open(FP,">$tgt/$key.war.tgt");
 	foreach $line (@lines)
 	{
 		$line =~ s/ \</\</g;
-		$line =~ s/deployhub-webadmin/ao-$key/g;
-		$line =~ s/dmadminweb\/WebContent\/WEB-INF\/web.xml/dmadminweb\/microservice\/ao-$key\/web.xml/g;
+		$line =~ s/deployhub-webadmin/$key/g;
+		$line =~ s/dmadminweb\/WebContent\/WEB-INF\/web.xml/dmadminweb\/microservice\/$key\/web.xml/g;
 		print FP "$line";
 	}
 	close(FP);

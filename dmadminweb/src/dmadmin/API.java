@@ -17,6 +17,7 @@
 package dmadmin;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,10 +26,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.DomainLoadStoreParameter;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -43,6 +46,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Formatter;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +77,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
+import dmadmin.API.ApiException;
 // import oracle.net.aso.i;
 import dmadmin.json.JSONArray;
 import dmadmin.json.JSONObject;
@@ -110,6 +115,7 @@ import dmadmin.model.Server;
 import dmadmin.model.ServerType;
 import dmadmin.model.Task;
 import dmadmin.model.Task.TaskType;
+import dmadmin.pro.DMSessionPro;
 import dmadmin.model.TaskApprove;
 import dmadmin.model.TaskCreateVersion;
 import dmadmin.model.TaskDeploy;
@@ -995,6 +1001,60 @@ public class API extends HttpServlet
   }
  }
 
+ private void internalModUser(DMSession so, User moduser, HashMap<String, String> params) throws ApiException
+ {
+  Datasource ldap = null;
+  SummaryChangeSet changes = new SummaryChangeSet();
+  boolean bcpw = false;
+  boolean blocked = false;
+  String realname = params.get("realname");
+  String ldapname = params.get("ldap");
+  if (ldapname != null)
+  {
+   ldap = getDatasourceFromNameOrID(so, ldapname);
+  }
+  String tel = params.get("tel");
+  String email = params.get("email");
+  String pw = params.get("pw");
+  String cpw = params.get("cpw");
+  String locked = params.get("locked");
+
+  if (cpw != null)
+   bcpw = (cpw.equalsIgnoreCase("y"));
+  if (locked != null)
+   blocked = (locked.equalsIgnoreCase("y"));
+  if (realname != null)
+   changes.add(SummaryField.USER_REALNAME, realname);
+  if (ldap != null)
+   changes.add(SummaryField.USER_DATASOURCE, ldap);
+  if (tel != null)
+   changes.add(SummaryField.USER_PHONE, tel);
+  if (email != null)
+   changes.add(SummaryField.USER_EMAIL, email);
+  if (pw != null)
+   changes.add(SummaryField.USER_PASSWORD, pw);
+  if (cpw != null)
+   changes.add(SummaryField.USER_CHNG_PASS, bcpw);
+  if (locked != null)
+   changes.add(SummaryField.USER_LOCKED, blocked);
+  if (!changes.isEmpty())
+  {
+   so.updateUser(moduser, changes);
+  }
+  else
+  {
+   try
+   {
+    so.GetConnection().commit();
+   }
+   catch (SQLException e)
+   {
+    // TODO Auto-generated catch block
+    e.printStackTrace();
+   }
+  }
+ }
+
  private void internalModUser(DMSession so, User moduser, HttpServletRequest request) throws ApiException
  {
   Datasource ldap = null;
@@ -1699,7 +1759,7 @@ public class API extends HttpServlet
   return toHexString(mac.doFinal(data.getBytes()));
  }
 
- private void createDomains4Obj(DMSession so, String objname)
+ public void createDomains4Obj(DMSession so, String objname)
  {
   if (!objname.contains("."))
    return;
@@ -1708,7 +1768,7 @@ public class API extends HttpServlet
   if (parts != null && !parts.isEmpty())
    parts.remove(parts.size()-1);
 
-  Domain tgtdomain;
+  Domain tgtdomain = null;
   try
   {
    tgtdomain = getDomainFromNameOrID(so, parts.get(0));
@@ -1719,24 +1779,23 @@ public class API extends HttpServlet
   }
 
   String domStr = parts.get(0);
-  boolean newDom = false;
 
   for (int i = 1; i < parts.size(); i++)
   {
+   Domain exists_domain = null;
    String domain = parts.get(i);
-   newDom = false;
 
    domStr += "." + domain;
    try
    {
-    tgtdomain = getDomainFromNameOrID(so, domStr);
+    exists_domain = getDomainFromNameOrID(so, domStr);
+    tgtdomain = exists_domain;
    }
    catch (Exception e)
    {
-    newDom = true;
    }
 
-   if (newDom)
+   if (tgtdomain != null && exists_domain == null)
    {
     int newid = so.getID("domain");
     so.CreateNewObject("domain", domain, tgtdomain.getId(), tgtdomain.getId(), newid, 0, 0, "domains", true);
@@ -2437,9 +2496,23 @@ public class API extends HttpServlet
   // API/buildid/<compname>/<buildid>
   // API/buildnotify/buildurl=<url>
 
+  String path = request.getPathInfo();
+  if (path.length() > 1 && (path.charAt(0) == '/'))
+  {
+   path = path.substring(1);
+  }
+
+  String[] elements = path.split("/");
+  // System.out.println("elements[0] = " + elements[0]);
+  for (int i = 1; i < elements.length; i++)
+  {
+   System.out.println("Before elements[" + i + "]=[" + elements[i] + "]");
+   elements[i] = java.net.URLDecoder.decode(elements[i], "UTF-8");
+   System.out.println("After elements[" + i + "]=[" + elements[i] + "]");
+  }
+
   try (DMSession so = DMSession.getInstance(request))
   {
-
    JSONObject obj = new JSONObject();
 
    int deploymentid = 0; // for deployments
@@ -2448,25 +2521,22 @@ public class API extends HttpServlet
    if (!request.getPathInfo().contains("helmchart"))
     out = response.getWriter();
 
+   if (elements[0].equals("doms4user"))
+   {
+    String[] parts = path.split("/");
+    String username = parts[parts.length-1];
+
+    JSONArray doms = so.getDomains4User(username);
+
+    obj.add("domains", doms);
+    out.write(doms.getJSON());
+    return;
+   }
+
    boolean delop = false;
 
    try
    {
-    String path = request.getPathInfo();
-    if (path.length() > 1 && (path.charAt(0) == '/'))
-    {
-     path = path.substring(1);
-    }
-
-    String[] elements = path.split("/");
-    // System.out.println("elements[0] = " + elements[0]);
-    for (int i = 1; i < elements.length; i++)
-    {
-     System.out.println("Before elements[" + i + "]=[" + elements[i] + "]");
-     elements[i] = java.net.URLDecoder.decode(elements[i], "UTF-8");
-     System.out.println("After elements[" + i + "]=[" + elements[i] + "]");
-    }
-
     if (elements.length < 1)
     {
      throw new ApiException("Invalid request path");
@@ -2483,7 +2553,11 @@ public class API extends HttpServlet
 
     boolean authorized = false;
     if (user == null)
+    {
      user = ServletUtils.GetCookie(request,"p1");
+     if (user != null)
+      user = URLDecoder.decode(user);
+    }
 
     String jwt = ServletUtils.GetCookie(request, "token");
     if (jwt != null && jwt.trim().length() > 0)
@@ -2541,7 +2615,11 @@ public class API extends HttpServlet
 
       HttpSession session = request.getSession();
       session.setAttribute("session", so);
-      Cookie loggedinUser = new Cookie("p1", user);
+
+      if (user == null)
+       user = "";
+
+      Cookie loggedinUser = new Cookie("p1", URLEncoder.encode(user));
       Cookie loggedinPw = new Cookie("p2", "");
       Cookie loggedinTime = new Cookie("p3", new Long(new Date().getTime()).toString());
       Cookie jwt_token = new Cookie("token", jwt);
@@ -2573,7 +2651,7 @@ public class API extends HttpServlet
       throw new ApiException("Login failed");
      }
     }
-    if (elements[0].equals("provides"))
+    else if (elements[0].equals("provides"))
     {
       String[] parts = path.split("/");
       String compstr = parts[parts.length-1];
@@ -2606,6 +2684,79 @@ public class API extends HttpServlet
 
       JSONArray arr = so.getAppEdgeBundle(appid, request, response);
       obj.add("data", arr);
+    }
+    else if (elements[0].equals("appfilter"))
+    {
+      String[] parts = path.split("/");
+      String filter = parts[parts.length-1];
+
+      obj.add("data",so.getApplicationFilter(filter));
+    }
+    else if (elements[0].equals("compfilter"))
+    {
+      String[] parts = path.split("/");
+      String filter = parts[parts.length-1];
+
+      obj.add("data",so.getComponentFilter(filter));
+    }
+    else if (elements[0].equals("envfilter"))
+    {
+      String[] parts = path.split("/");
+      String filter = parts[parts.length-1];
+
+      obj.add("data",so.getEnvironmentFilter(filter));
+    }
+    else if (elements[0].equals("versionlist"))
+    {
+     JSONArray arr = new JSONArray();
+      String[] parts = path.split("/");
+      String objid = parts[parts.length-1];
+
+      if (objid.startsWith("ap") || objid.startsWith("av"))
+      {
+       Application app = this.getApplicationFromNameOrID(so, objid.substring(2));
+       String parentid = String.valueOf(app.getParentId());
+
+       if (app.getParentId() == 0)
+        parentid = String.valueOf(app.getId());
+
+       app = this.getApplicationFromNameOrID(so, parentid);
+       app = so.getApplication(app.getId(), true);
+       arr = so.getApplicationVersionsDropDown(app);
+       }
+      else
+      {
+       Component comp = this.getComponentFromNameOrID(so, objid.substring(2));
+       String parentid = String.valueOf(comp.getParentId());
+
+       if (comp.getParentId() == 0)
+         parentid = String.valueOf(comp.getId());
+
+       comp = this.getComponentFromNameOrID(so, parentid);
+       ArrayList<Component> versions = (ArrayList<Component>) so.getComponentVersions(comp);
+
+       JSONObject o = new JSONObject();
+       o.add("id", comp.getOtid().toString());
+       o.add("name", comp.getName());
+
+       arr.add(o);
+       for (int i=0;i<versions.size(); i++)
+       {
+        Component ver = versions.get(i);
+        o = new JSONObject();
+        o.add("id", ver.getOtid().toString());
+        o.add("name", ver.getName());
+        arr.add(o);
+       }
+      }
+      obj.add("data", arr);
+    }
+    else if (elements[0].equals("apps4comp"))
+    {
+     String[] parts = path.split("/");
+     int compid = Integer.valueOf(parts[parts.length-1]);
+     JSONArray arr = so.getApps4Comp(compid);
+     obj.add("data", arr);
     }
     else if (elements[0].equals("deploy"))
     {
@@ -2749,6 +2900,23 @@ public class API extends HttpServlet
       }
       obj.add("result", result);
      }
+    }
+    else if (elements[0].equals("compids"))
+    {
+     if (elements.length == 1)
+     {
+      System.out.println("length is 1");
+      int appid = Integer.parseInt(request.getParameter("appid"));
+      JSONObject result = new JSONObject();
+
+       List<Component> comps = so.getComponents(ObjectType.APPLICATION, appid, false);
+       System.out.println("component list is size " + comps.size());
+       for (Component c : comps)
+       {
+        result.add(Integer.toString(c.getId()), c.getFullName());
+       }
+       obj.add("result", result);
+      }
     }
     else if (elements[0].equals("basecomponent"))
     {
@@ -4709,32 +4877,10 @@ public class API extends HttpServlet
   }
   else if (path.contains("/signup"))
   {
-   try (DMSession so = DMSession.getInstance(request))
-   {
-    so.internalLogin(request.getServletContext());
-
-    String userid = request.getParameter("userid");
-    String domname = request.getParameter("domname");
-    String clientid = UUID.randomUUID().toString();
-
-    JSONObject obj = new JSONObject();
-
-    String err = so.SignUp(domname, userid);
-
-    if (err.isEmpty())
-    {
-      AddClientId(domname, so, request, userid, clientid);
-      obj.add("err", "");
-    }
-    else
-     obj.add("err", err);
-
-    PrintWriter out = response.getWriter();
-    out.write(obj.getJSON());
-   }
+   Signup(request, response);
    return;
   }
-  if (path.contains("/adddemo"))
+  else if (path.contains("/adddemo"))
   {
    try (DMSession so = DMSession.getInstance(request))
    {
@@ -4751,8 +4897,22 @@ public class API extends HttpServlet
     JSONObject obj = new JSONObject();
     Domain engineDomain = so.getDomainByName(domname);
 
-    so.createSaaSClient(clientid, engineDomain, lictype, liccnt, provider, providerid, request);
+    String jsonpath="/WEB-INF/schema";
+    System.out.println("Taking json scripts from "+jsonpath);
+    String installpath = request.getServletContext().getRealPath(jsonpath);
+
+    so.createSaaSClient(clientid, engineDomain, lictype, liccnt, provider, providerid, installpath);
     obj.add("err", "");
+    PrintWriter out = response.getWriter();
+    out.write(obj.getJSON());
+    return;
+   }
+  }
+  else if (path.contains("/getscore"))
+  {
+   try (DMSession so = new DMSession(request.getServletContext()))
+   {
+    JSONObject obj = so.getScore4Purl(request, response);
     PrintWriter out = response.getWriter();
     out.write(obj.getJSON());
     return;
@@ -5274,14 +5434,37 @@ public class API extends HttpServlet
 
    String requestData = request.getReader().lines().collect(Collectors.joining());
    JsonObject obj  = new JsonParser().parse(requestData).getAsJsonObject();
-   String envname  = (obj.get("environment") != null) ? obj.get("environment").getAsString() : "";
    String appname  = (obj.get("application") != null) ? obj.get("application").getAsString() : "";
-   String imagetag  = (obj.get("imagetag") != null) ? obj.get("imagetag").getAsString() : "";
-   String digest  = (obj.get("digest") != null) ? obj.get("digest").getAsString() : "";
+   JsonArray imagetags  = (obj.get("imagetags") != null) ? obj.get("imagetags").getAsJsonArray() : new JsonArray();
    JsonArray compnames = (obj.get("compversion") != null) ? obj.get("compversion").getAsJsonArray() : new JsonArray();
    String rc = (obj.get("rc") != null) ? obj.get("rc").getAsString() : "-1";
    String log = (obj.get("log") != null) ? obj.get("log").getAsString() : "";
    String skipdeploy = (!(obj.get("skipdeploy") instanceof JsonNull))  ? obj.get("skipdeploy").getAsString() : "N";
+
+   ArrayList<String> endpoints = new ArrayList<String>();
+
+   JsonElement environmentElement = obj.get("environment");
+
+   String envname = "";
+   if (environmentElement.isJsonPrimitive())
+   {
+    envname  = (obj.get("environment") != null) ? obj.get("environment").getAsString() : "";
+   }
+   else if (environmentElement.isJsonObject())
+   {
+    // environment is a dictionary
+    JsonObject environmentObject = environmentElement.getAsJsonObject();
+    Map.Entry<String, JsonElement> firstEntry = environmentObject.entrySet().iterator().next();
+    envname = firstEntry.getKey();
+
+    for (JsonElement element : environmentObject.getAsJsonArray(envname))
+    {
+     endpoints.add(element.getAsString());
+    }
+   }
+
+   if (endpoints.size() == 0)
+    endpoints.add(envname);
 
    int exitcode = 0;
 
@@ -5295,7 +5478,7 @@ public class API extends HttpServlet
     return;
    }
 
-   if (appname.length() == 0 && compnames.size() == 0  && imagetag.length() == 0 && digest.length() == 0)
+   if (appname.length() == 0 && compnames.size() == 0  && imagetags.size() == 0)
    {
     ret.add("errormsg", "Application or Component Names required");
     out.println(ret.getJSON());
@@ -5382,21 +5565,108 @@ public class API extends HttpServlet
     return;
    }
 
+   for (int j=0;j < endpoints.size();j++)
+   {
+    String endpoint = endpoints.get(j);
+
+    shortname = "";
+    parts = new ArrayList<String>(Arrays.asList(endpoint.split("\\.")));
+    if (parts != null && !parts.isEmpty())
+    {
+     shortname = parts.get(parts.size()-1);
+     parts.remove(parts.size()-1);
+    }
+
+    try
+    {
+     tgtdomain = getDomainFromNameOrID(so, parts.get(0));
+    }
+    catch (ApiException e1)
+    {
+     tgtdomain = null;
+    }
+
+    domStr = parts.get(0);
+    newDom = false;
+
+    for (int i = 1; i < parts.size(); i++)
+    {
+     String domain = parts.get(i);
+     newDom = false;
+
+     domStr += "." + domain;
+     try
+     {
+      tgtdomain = getDomainFromNameOrID(so, domStr);
+     }
+     catch (Exception e)
+     {
+      newDom = true;
+     }
+
+     if (newDom)
+     {
+      int newid = so.getID("domain");
+      so.CreateNewObject("domain", domain, tgtdomain.getId(), tgtdomain.getId(), newid, 0, 0, "domains", true);
+
+      tgtdomain = so.getDomain(newid);
+
+      if (tgtdomain == null)
+      {
+       ret.add("saved", false);
+       ret.add("error", "Failed to create domain" + domain);
+       String result = ret.getJSON();
+       System.out.println(result);
+       out.println(result);
+       return;
+      }
+     }
+    }
+
+    Server srv = null;
+
+    try
+    {
+     srv = this.getServerFromNameOrID(so, endpoint);
+    }
+    catch (ApiException e)
+    {
+     int newid = so.getID("server");
+     so.CreateNewObject("server", shortname, tgtdomain.getId(), tgtdomain.getId(), newid, 0, 0, "servers", true);
+     try
+     {
+      srv = this.getServerFromNameOrID(so, "" + newid);
+     }
+     catch (ApiException e1)
+     {
+     }
+    }
+
+    if (srv != null)
+     so.MoveServer(env.getId(), srv.getId(), 0, 0);
+   }
+
    // find component image tag or digest
 
    if (compnames.size() == 0)
    {
     int compid = -1;
-    if (digest != null)
-     compid = so.getComp4Digest(so, digest);
-
-    if (compid < 0 && imagetag != null)
-     compid = so.getComp4Tag(so, imagetag);
-
-    if (compid > 0)
+    if (imagetags != null)
     {
-     Component comp = so.getComponent(compid, true);
-     compnames.add(new JsonPrimitive(comp.getFullName()));
+     for (int k=0; k < imagetags.size(); k++)
+     {
+      String tag = imagetags.get(k).getAsString();
+      compid = so.getComp4Digest(so, tag);
+
+      if (compid < 0)
+       compid = so.getComp4Tag(so, tag);
+
+      if (compid > 0)
+      {
+       Component comp = so.getComponent(compid, true);
+       compnames.add(new JsonPrimitive(comp.getFullName()));
+      }
+     }
     }
    }
 
@@ -6436,6 +6706,253 @@ public class API extends HttpServlet
    System.err.print(e.getMessage());
    e.printStackTrace();
    return;
+  }
+
+  String from = System.getenv("SMTP_USER");
+  String to = request.getParameter("email");
+  String companyname = request.getParameter("companyname");
+  String projectname = request.getParameter("projectname");
+  String firstname = request.getParameter("firstname");
+  String lastname = request.getParameter("lastname");
+  String tel = request.getParameter("tel");
+  String subject = "DeployHub Access";
+  String password = System.getenv("SMTP_PASS");
+  String msg = "";
+
+  msg += "<html xmlns=\"http://www.w3.org/1999/xhtml\" dir=\"ltr\" lang=\"en-US\">\n";
+  msg += "<head>\n";
+  msg += "<title>DeployHub Access</title>\n";
+  msg += "</head>\n";
+  msg += "<body>\n";
+  msg += "<h2>Thank you for becoming a DeployHub Team User!</h2>\n";
+  msg += "<p >You're part of a growing group of cloud native specialists who understand the need for cataloging, versioning, configuring and deploying microservices. To get started access the DeployHub console from the following address: <a href=\"https://console.deployhub.com/dmadminweb/Home\">https://console.deployhub.com</a></p>\n";
+  msg += "<p >Your userid is: " + userid + "</p>\n";
+  msg += "<p >Your CLIENTID is <strong>" + clientid + "</strong> and will be needed when you install your DeployHub Reverse Proxy. See below.</p>\n";
+  msg += "<h2>DeployHub Sample Hipster Store</h2>\n";
+  msg += "<p >Once you have logged in, review the <a href=\"https://docs.ortelius.io/guides/userguide/\" target=\"_blank\">Hipster Store sample application</a> to take a test drive.</p>\n";
+  msg += "<h2>Your own POC</h2>\n";
+  msg += "<p >To setup DeployHub for your organization, review <a href=\"https://docs.ortelius.io/guides/userguide/first-steps/\" target=\"_blank\">the First Steps Guide.</a></p>\n";
+  msg += "<p >If you would like to chat one-on-one, book some time with our team.<a href=\"https://go.oncehub.com/SteveTaylor\" target=\"_blank\"> Just choose a time from the calendar.</a></p>\n";
+  msg += "<p >DeployHub Team is based on the <a href=\"https://www.ortelius.io\" target=\"_blank\">Ortelius Open Source project</a>. Post questions, issues or comments to the <a href=\"https://github.com/ortelius/ortelius/issues\" target=\"_blank\">Ortelius GitHub Issues Page</a>. You can also join the <a href=\"https://discord.gg/mUtF8w\" target=_blank>Ortelius Discord Chatroom to start a conversation on any topic.</a>    </p>\n";
+  msg += "<p >We look forward to working with you on making microservices easy. </p>\n";
+  msg += "<p >Sincerely, DeployHub Support Team</p>\n";
+  msg += "</body>\n";
+  msg += "</html>\n";
+
+  String details = "";
+  details += "<html xmlns=\"http://www.w3.org/1999/xhtml\" dir=\"ltr\" lang=\"en-US\">\n";
+  details += "<head>\n";
+  details += "<title>New DeployHub User</title>\n";
+  details += "</head>\n";
+  details += "<body>\n";
+  details += "<p >Company Name: " + companyname + "</p>\n";
+  details += "<p >Project Name: " + projectname + "</p>\n";
+  details += "<p >First Name: " + firstname + "</p>\n";
+  details += "<p >Last Name: " + lastname + "</p>\n";
+  details += "<p >Email: " + to + "</p>\n";
+  details += "<p >Phone: " + tel + "</p>\n";
+  details += "<p >Userid: " + userid + "</p>\n";
+  details += "</body>\n";
+  details += "</html>\n";
+
+  SendMail sendmsg = new SendMail(from, password, to, subject, msg, details);
+  sendmsg.start();
+ }
+
+ public void Signup(HttpServletRequest request, HttpServletResponse response)
+ {
+  try
+  {
+   DMSession so = new DMSession(request.getSession().getServletContext());
+   request.getSession().setAttribute("session", so);
+   so.internalLogin(request.getServletContext());
+
+   StringBuilder stringBuilder = new StringBuilder();
+   BufferedReader bufferedReader = null;
+
+   try
+   {
+    bufferedReader = request.getReader();
+    String line;
+    while ((line = bufferedReader.readLine()) != null)
+    {
+     stringBuilder.append(line);
+    }
+   }
+   finally
+   {
+    if (bufferedReader != null)
+    {
+     bufferedReader.close();
+    }
+   }
+
+   HashMap<String, String> params = new HashMap<String, String>();
+
+   // Split on "&" to get individual key-value pairs
+   String[] pairs = stringBuilder.toString().split("&");
+
+   // Split each pair on "=" and add to the HashMap
+   for (String pair : pairs)
+   {
+    String[] keyValue = pair.split("=");
+    if (keyValue.length == 2)
+    {
+     String key = keyValue[0];
+     String value = keyValue[1];
+     // You may want to URL decode the value if needed
+     value = java.net.URLDecoder.decode(value, "UTF-8");
+     params.put(key, value);
+    }
+   }
+
+   // Iterate through the parameter map
+   for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet())
+   {
+    String paramName = entry.getKey();
+    String[] paramValues = entry.getValue();
+
+    // For simplicity, assume a single value for each parameter
+    if (paramValues != null && paramValues.length > 0)
+    {
+     // Store the first value in the map
+     params.put(paramName, java.net.URLDecoder.decode(paramValues[0]));
+    }
+   }
+
+   String companyname = params.get("companyname");
+   String projectname = params.get("projectname");
+
+   companyname = companyname.replaceAll("[^a-zA-Z0-9\\s]", "");
+   projectname = projectname.replaceAll("[^a-zA-Z0-9\\s]", "");
+
+   String username = params.get("user-name");
+   String password = params.get("user-password");
+   String firstname = params.get("firstname");
+   String lastname = params.get("lastname");
+
+   params.put("username", username);
+   params.put("password", password);
+   params.put("pw", password);
+   params.put("realname", firstname + " " + lastname);
+
+   String domname = "GLOBAL." + companyname + "." + projectname;
+
+   String msg = null;
+
+   Domain tgtdomain = null;
+
+   boolean duplicateDomain = so.checkDomainByName(domname);
+   boolean duplicateUser = so.checkUserName(username);
+
+   if (duplicateDomain)
+     msg = "Domain " + domname + " already exists and must be unique.";
+
+   if (duplicateUser)
+    msg = "User " + username + "already exists and must be unique.";
+
+   if (duplicateDomain && duplicateUser)
+    msg = "Domain " + domname + " and User " + username + "already exists and both must be unique.";
+
+   if (!duplicateDomain && !duplicateUser)
+   {
+    // Create userid is Open Source Domain
+    int newid = so.getID("user");
+    User newuser = null;
+    try
+    {
+     tgtdomain = so.getDomainByName("GLOBAL.Open Source");
+     so.CreateNewObject("user", username, tgtdomain.getId(), tgtdomain.getId(), newid, -1, -1, "", false);
+     newuser = so.getUser(newid);
+    }
+    catch (Exception e)
+    {
+     msg = e.getMessage();
+    }
+
+    if (newuser != null)
+    {
+     try
+     {
+      internalModUser(so, newuser, params);
+     }
+     catch (ApiException e)
+     {
+      msg = e.getMessage();
+      e.printStackTrace();
+     }
+    }
+
+    createDomains4Obj(so, domname + "." + username);
+
+    tgtdomain = so.getDomainByName(domname);
+
+    if (msg == null)
+    {
+     newid = so.getID("user");
+     newuser = null;
+     try
+     {
+      so.CreateNewObject("user", username, tgtdomain.getId(), tgtdomain.getId(), newid, -1, -1, "", false);
+      newuser = so.getUser(newid);
+     }
+     catch (Exception e)
+     {
+      msg = e.getMessage();
+     }
+
+     if (newuser != null)
+     {
+      try
+      {
+       internalModUser(so, newuser, params);
+       String pw = params.get("password");
+       so.Login(username, pw, null);
+
+       HttpSession hs = request.getSession();
+
+       hs.setAttribute("logininfo", "Login OK");
+
+       UserGroup admingrp = so.getGroupByName("GLOBAL.Administrators");
+       so.AddUserToGroup(admingrp.getId(), newid);
+
+       so.setUserId(newid);
+       String jwt = so.authUser();
+
+       if (username == null)
+        username = "";
+
+       String redirect = "/dmadminweb/Logout";
+
+       response.sendRedirect(redirect);
+
+       return;
+      }
+      catch (ApiException e)
+      {
+       msg = e.getMessage();
+       e.printStackTrace();
+      }
+     }
+    }
+   }
+
+   String redirect = "https://www.deployhub.com/deployhub-team-signup/?msg=" + java.net.URLDecoder.decode(msg, "UTF-8");
+   response.getWriter().write("<html>");
+   response.getWriter().write("<head>");
+   response.getWriter().write("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js\" integrity=\"sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+   response.getWriter().write("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js\" integrity=\"sha512-57oZ/vW8ANMjR/KQ6Be9v/+/h6bq9/l3f0Oc7vn6qMqyhvPd1cvKBRWWpzu0QoneImqr2SkmO4MSqU+RpHom3Q==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+   response.getWriter().write("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js\" integrity=\"sha512-3j3VU6WC5rPQB4Ld1jnLV7Kd5xr+cq9avvhwqzbH/taCRNURoeEpoPBK9pDyeukwSxwRPJ8fDgvYXd6SkaZ2TA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+   response.getWriter().write("<script type=\"text/javascript\" src=\"https://console.deployhub.com/dmadminweb/js/ao/cookies.js\"></script>\n");
+   response.getWriter().write("</head>");
+   response.getWriter().write("<body onload=\"DeleteCookies('" + redirect + "')\">\n");
+   response.getWriter().write(msg);
+   response.getWriter().write("</body>");
+   response.getWriter().write("</html>");
+  }
+  catch (Exception e)
+  {
+
   }
  }
 }

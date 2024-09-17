@@ -53,17 +53,8 @@ public class GetFullDomains extends JSONServletBase {
 	  HashMap<String, Integer> doms = new HashMap<String, Integer>();
    JSONArray ret = new JSONArray();
 	  String domlist = session.getDomainList();
-	  String parts[] = domlist.split(",");
 
-	  if (parts != null)
-	  {
-	   for (int i=0;i<parts.length;i++)
-	   {
-	    int domainid = new Integer(parts[i]).intValue();
-	    Domain dom = session.getDomain(domainid);
-	    doms.put(dom.getFullDomain(), new Integer(dom.getId()));
-	   }
-	  }
+	  session.getFullDomain(domlist, doms);
 
 	  List<String> sortedKeys=new ArrayList<String>(doms.keySet());
 	  Collections.sort(sortedKeys);

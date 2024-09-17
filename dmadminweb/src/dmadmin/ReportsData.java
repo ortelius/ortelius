@@ -215,6 +215,13 @@ public class ReportsData extends HttpServletBase
   {
    String pkgname = request.getParameter("pkgname");
    String pkgver = request.getParameter("pkgversion");
+   String userid = request.getParameter("userid");
+
+   if (userid != null && !userid.isEmpty())
+   {
+    int id = Integer.valueOf(userid);
+    session.GetDomains(id);
+   }
 
    if (pkgname != null)
    {
@@ -237,6 +244,7 @@ public class ReportsData extends HttpServletBase
     {
      Component c = comps.get(i);
      JSONObject obj = new JSONObject();
+     obj.add("id", c.getOtid().toString());
      obj.add("name", c.getName());
      obj.add("domain", c.getDomain().getFullDomain());
      arr.add(obj);

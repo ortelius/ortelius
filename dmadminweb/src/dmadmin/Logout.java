@@ -43,14 +43,22 @@ public class Logout extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession();
-    	session.removeAttribute("session");
-		session.invalidate();
+
+		String redirect = System.getenv("SamlLogoutRedirect");
+
+		if (redirect == null)
+		 redirect = "";
+
+  session.removeAttribute("session");
+  session.invalidate();
+  response.setContentType("text/html");
+
 		//
 		// Delete all user cookies
 		// This will remove the cookies used by jstree to restore its last position plus
 		// the DM cookies specifying selected tab(s) etc.
 		//
-		response.setContentType("text/html");
+
 //		Cookie[] cookies = request.getCookies();
 //		String srv = "console.deployhub.com";
 //
@@ -66,14 +74,14 @@ public class Logout extends HttpServlet {
 //		}
 		response.getWriter().write("<html>");
 		response.getWriter().write("<head>");
-		response.getWriter().write("<script type=\"text/javascript\" src=\"js/jquery.min.js\"></script>\n");
-		response.getWriter().write("<script type=\"text/javascript\" src=\"js/jquery-ui.js\"></script>\n");
-		response.getWriter().write("<script type=\"text/javascript\" src=\"jquery.jstree.js\"></script>\n");
-		response.getWriter().write("<script type=\"text/javascript\" src=\"js/jquery.cookie.js\"></script>\n");
-		response.getWriter().write("<script type=\"text/javascript\" src=\"js/cookies.js\"></script>\n");
+  response.getWriter().write("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js\" integrity=\"sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+  response.getWriter().write("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js\" integrity=\"sha512-57oZ/vW8ANMjR/KQ6Be9v/+/h6bq9/l3f0Oc7vn6qMqyhvPd1cvKBRWWpzu0QoneImqr2SkmO4MSqU+RpHom3Q==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+  response.getWriter().write("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js\" integrity=\"sha512-3j3VU6WC5rPQB4Ld1jnLV7Kd5xr+cq9avvhwqzbH/taCRNURoeEpoPBK9pDyeukwSxwRPJ8fDgvYXd6SkaZ2TA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+
+		response.getWriter().write("<script type=\"text/javascript\" src=\"js/ao/cookies.js\"></script>\n");
 //		response.getWriter().write("<meta http-equiv=\"refresh\" content=\"1;URL=Home\">");
 		response.getWriter().write("</head>");
-		response.getWriter().write("<body onload=\"DeleteCookies()\">\n");
+		response.getWriter().write("<body onload=\"DeleteCookies('" + redirect + "')\">\n");
 		response.getWriter().write("You have been logged out.");
 		response.getWriter().write("</body>");
 		response.getWriter().write("</html>");

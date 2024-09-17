@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,14 +29,19 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.Signature;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ParameterMetaData;
@@ -173,6 +179,7 @@ import dmadmin.model.ProviderDefinition;
 import dmadmin.model.ProviderObject;
 import dmadmin.model.Repository;
 import dmadmin.model.SaasClient;
+import dmadmin.model.ScoreCard;
 // import dmadmin.model.SearchResult;
 import dmadmin.model.Server;
 import dmadmin.model.ServerLink;
@@ -200,6 +207,7 @@ import dmadmin.model.UserGroupList;
 import dmadmin.model.UserList;
 import dmadmin.model.UserPermissions;
 import dmadmin.model.ldapfastbind;
+import dmadmin.pro.DMCalendarEvent;
 import dmadmin.util.CommandLine;
 import dmadmin.util.DynamicQueryBuilder;
 import dmadmin.util.DynamicQueryBuilder.Null;
@@ -372,6 +380,11 @@ public class DMSession implements AutoCloseable {
 		return finalkey.replaceAll("-", "");
 	}
 
+	private String binaryStr(short s)
+	{
+	 return String.format("%16s", Integer.toBinaryString(0xFFFF & s)).replaceAll(" ", "0");
+	}
+
 	private long DecryptLong(String ed,int rcc)
 	{
 		// Turns a 7 character encrypted long back into long
@@ -384,10 +397,36 @@ public class DMSession implements AutoCloseable {
 		int c6 = (ed.charAt(5)>='0' && ed.charAt(5)<='9')?(ed.charAt(5)-'0')+25:(ed.charAt(5)-'A');
 		int c7 = (ed.charAt(6)>='0' && ed.charAt(6)<='9')?(ed.charAt(6)-'0')+25:(ed.charAt(6)-'A');
 
+  char x1 = (char) ((c1 >=25 && c1 <= 34)?(char)(c1-25) + '0':(char)('A' + c1));
+  char x2 = (char) ((c2 >=25 && c2 <= 34)?(char)(c2-25) + '0':(char)('A' + c2));
+  char x3 = (char) ((c3 >=25 && c3 <= 34)?(char)(c3-25) + '0':(char)('A' + c3));
+  char x4 = (char) ((c4 >=25 && c4 <= 34)?(char)(c4-25) + '0':(char)('A' + c4));
+  char x5 = (char) ((c5 >=25 && c5 <= 34)?(char)(c5-25) + '0':(char)('A' + c5));
+  char x6 = (char) ((c6 >=25 && c6 <= 34)?(char)(c6-25) + '0':(char)('A' + c6));
+  char x7 = (char) ((c7 >=25 && c7 <= 34)?(char)(c7-25) + '0':(char)('A' + c7));
+
+
 		ip[0] = (short) ((c1 << 3) | ((c2 & 0x1c) >> 2));
 		ip[1] = (short) (((c2 & 0x03) << 6) | (c3 << 1) | ((c4 & 80) >> 4));
 		ip[2] = (short) (((c4 & 0x0f) << 4) | ((c5 & 0x1e) >> 1));
 		ip[3] = (short) (((c5 & 0x01) << 7) | (c6 << 2) | (c7 & 0x03));
+
+  short w1_0 = (short)((ip[0] & (0xffff << 3)) >> 3);
+  short w2_0 = (short)(((ip[0] & (0xffff >> 13)) << 2) | 0x02);
+
+  String full = binaryStr(ip[1]);
+  String left = binaryStr((short) ((c2 & 0x03) << 6));
+  String right = binaryStr((short)((c3 << 1) | ((c4 & 80) >> 4)));
+  String right2 = binaryStr((short)((c3 << 1)));
+  String leftmask = binaryStr((short)(0xffff << 7));
+  String rightmask = binaryStr((short)(0xffff >> 9));
+
+  short w2_1 = (short)(((ip[1] & (0xffff << 6)) >> 6) | 0x1e);
+  short work = (short)(ip[1] & (0xffff >> 10));
+  short w3_1 = (short)(((work  & (0xffff << 1)) >> 1));
+
+  short w4_2 = (short)(((ip[2] & (0xffff << 4)) >> 4) | 0x0f);
+  short w5_2 = (short)(((ip[2] & (0xffff >> 12)) << 1) | 0x06);
 
 		sgenrand(89771+rcc);	// random-ish seed
 
@@ -432,6 +471,109 @@ public class DMSession implements AutoCloseable {
 		}
 		return -1;
 	}
+
+
+ public String verifyLicense(String licenseCombinedBase64) {
+  // Decode the Base64 encoded license_combined.bin content
+  byte[] licenseCombined = base64ToByteArray(licenseCombinedBase64);
+
+  // Extract the first 64 bytes (the signature)
+  byte[] signature = new byte[64];
+  System.arraycopy(licenseCombined, 0, signature, 0, 64);
+
+  // Extract the remaining bytes (the JSON data)
+  byte[] jsonDataBytes = new byte[licenseCombined.length - 64];
+  System.arraycopy(licenseCombined, 64, jsonDataBytes, 0, jsonDataBytes.length);
+  String jsonData = new String(jsonDataBytes, StandardCharsets.UTF_8);
+
+  // Fetch the public key from the environment variable "PUBLIC_KEY"
+  String publicKeyUrl = System.getenv("PUBLIC_KEY");
+  if (publicKeyUrl == null || publicKeyUrl.isEmpty()) {
+      return "";
+  }
+
+  // Fetch the public key from the website
+  String publicKeyPem;
+  try
+  {
+   publicKeyPem = fetchPublicKey(publicKeyUrl);
+
+   // Convert the PEM public key to a PublicKey object
+   PublicKey publicKey = importPublicKey(publicKeyPem);
+
+   // Verify the signature against the JSON data
+   boolean isValid = verifySignature(publicKey, signature, jsonData);
+   JsonObject licJson = parseJson(jsonData);
+
+   return isValid ?  licJson.get("lictype").getAsString(): "";
+  }
+  catch (Exception e)
+  {
+   System.out.println(e.getMessage());
+   return "";
+  }
+}
+
+private byte[] base64ToByteArray(String base64) {
+  return Base64.decodeBase64(base64);
+}
+
+private static String fetchPublicKey(String publicKeyUrl) throws Exception
+{
+ StringBuilder response = new StringBuilder();
+
+ if (new File(publicKeyUrl).isFile())
+ {
+  BufferedReader in = new BufferedReader(new FileReader(publicKeyUrl));
+
+  String inputLine;
+  while ((inputLine = in.readLine()) != null)
+  {
+   response.append(inputLine).append("\n");
+  }
+  in.close();
+ }
+ else
+ {
+  URL url = new URL(publicKeyUrl);
+
+  HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+  conn.setRequestMethod("GET");
+
+  BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+  String inputLine;
+  while ((inputLine = in.readLine()) != null)
+  {
+   response.append(inputLine).append("\n");
+  }
+  in.close();
+ }
+ return response.toString();
+}
+
+private static PublicKey importPublicKey(String pem) throws Exception {
+  String pemHeader = "-----BEGIN PUBLIC KEY-----";
+  String pemFooter = "-----END PUBLIC KEY-----";
+  String base64Key = pem.replace(pemHeader, "").replace(pemFooter, "").replaceAll("\\s+", "");
+
+  byte[] keyBytes =  Base64.decodeBase64(base64Key);
+  X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+  KeyFactory keyFactory = KeyFactory.getInstance("Ed25519");
+  return keyFactory.generatePublic(keySpec);
+}
+
+private static boolean verifySignature(PublicKey publicKey, byte[] signature, String jsonData) throws Exception {
+  Signature sig = Signature.getInstance("Ed25519");
+  sig.initVerify(publicKey);
+  sig.update(jsonData.getBytes(StandardCharsets.UTF_8));
+
+  return sig.verify(signature);
+}
+
+private static JsonObject parseJson(String jsonData) {
+  return JsonParser.parseString(jsonData).getAsJsonObject();
+}
 
 	private void initSession(ServletContext context)
 	{
@@ -509,6 +651,10 @@ public class DMSession implements AutoCloseable {
   }
 
   String username = ServletUtils.GetCookie(request,"p1");
+
+  if (username != null)
+    username = URLDecoder.decode(username);
+
 		String password = ServletUtils.GetCookie(request,"p2");
 		String logintime = ServletUtils.GetCookie(request,"p3");
 
@@ -584,7 +730,36 @@ public class DMSession implements AutoCloseable {
 
  public String getLicType()
  {
-  return m_license_type;
+  String ret = m_license_type;
+
+  if (ret == null)
+   ret = "";
+
+  Domain dom = getUserDomain();
+  String domname = dom.getFullDomain() + ".%";
+
+  String sql = "select installtype, length(fullname) from dm.dm_domain where (fullname like ? or fullname = ?) and installtype is not null order by 2 desc";
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setString(1, domname);
+   stmt.setString(2, dom.getFullDomain());
+
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    ret = rs.getString(1);
+    ret = verifyLicense(ret);
+    break;
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  }
+  return ret;
  }
 
  public int getLicCnt()
@@ -822,6 +997,7 @@ public class DMSession implements AutoCloseable {
 				    m_domainlist = StringUtils.stripStart(m_domainlist, ",");
 				    m_domainlist = StringUtils.stripEnd(m_domainlist, ",");
 				}
+
 				System.out.println("domainlist="+m_domainlist);
 			}
 		}
@@ -1146,7 +1322,7 @@ public class DMSession implements AutoCloseable {
          {
           DirContext context;
           context = connectLDAP(servername + '/', props2);
-          // context = com.sun.jndi.ldap.LdapCtxFactory.getLdapCtxInstance(servername + '/', props2);
+    //      context = com.sun.jndi.ldap.LdapCtxFactory.getLdapCtxInstance(servername + '/', props2);
           context.close();
           return true;
          }
@@ -1176,7 +1352,7 @@ public class DMSession implements AutoCloseable {
 	            try {
 	            	System.out.println("Domain is set - Connecting to Active Directory Server ["+servername+"]");
 	            	context = connectLDAP(servername + '/', env);
-	            	// context =  LdapCtxFactory.getLdapCtxInstance(servername + '/', env);
+	     //       	context =  LdapCtxFactory.getLdapCtxInstance(servername + '/', env);
 	                // No exception - successful authentication
 	            	System.out.println("Successful authentication, finding user object");
 	            	String adSB;
@@ -1480,30 +1656,8 @@ public class DMSession implements AutoCloseable {
    System.out.println("USERNAME=" + dUserName.toString());
    System.out.println("PASSWORDNAME=********");
 
-    boolean noConnection = true;
-    do
-    {
-     try
-     {
-      m_conn = DriverManager.getConnection(ConnectionString, dUserName.toString(), dPassword.toString());
-      m_conn.setAutoCommit(false);
-      noConnection = false;
-     }
-     catch (Exception e)
-     {
-      System.out.println(e.getMessage());
-      try
-      {
-       System.out.println("No DB Connection - Retrying");
-       Thread.sleep(30000);
-      }
-      catch (InterruptedException ie)
-      {
-       Thread.currentThread().interrupt();
-      }
-     }
-    } while (noConnection);
-
+   m_conn = DriverManager.getConnection(ConnectionString, dUserName.toString(), dPassword.toString());
+   m_conn.setAutoCommit(false);
   } catch (FileNotFoundException e) {
    res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,e.getMessage());
    e.printStackTrace();
@@ -1513,6 +1667,10 @@ public class DMSession implements AutoCloseable {
   } catch (ClassNotFoundException e) {
    res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,"Class not found for " + e.getMessage());
    e.printStackTrace();
+  } catch (SQLException e) {
+   res = new LoginException(LoginExceptionType.LOGIN_DATABASE_FAILURE,"SQL Exception " + e.getMessage());
+   e.printStackTrace();
+   rollback();
   }
 	 }
 		return res;
@@ -2168,12 +2326,12 @@ public class DMSession implements AutoCloseable {
 			{
 				if (isSaaS(m_conn)) {
 					// In SaaS version user names are allowed to be non-unique as long as they're in different domains.
-					cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_user WHERE name=? AND domainid=? AND status='N'");
+					cs = m_conn.prepareStatement("select cast(exists (select 1 from dm.dm_user WHERE name=? AND domainid=? AND status='N') as int)");
 					cs.setString(1,objname);
 					cs.setInt(2,domainid);
 				} else {
 					// In the on-prem version, user names have to be unique across the system.
-					cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_user WHERE name=? AND status='N'");
+					cs = m_conn.prepareStatement("select cast(exists (select 1 from dm.dm_user WHERE name=? AND status='N') as int)");
 					cs.setString(1,objname);
 				}
 				st = m_conn.prepareStatement("INSERT INTO dm.dm_user(id,name,domainid,creatorid,modifierid,created,modified,locked,status) VALUES(?,?,?,?,?,?,?,'N','N')");
@@ -2189,7 +2347,7 @@ public class DMSession implements AutoCloseable {
 			else
 			if (objtype.equalsIgnoreCase("release"))
 			{
-				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_application WHERE name=? AND domainid=? AND status='N'");
+				cs = m_conn.prepareStatement("select cast(exists (select 1 from dm.dm_application WHERE name=? AND domainid=? AND status='N') as int)");
 				st = m_conn.prepareStatement("INSERT INTO dm.dm_application(id,name,domainid,ownerid,creatorid,modifierid,created,modified,status,isRelease) VALUES(?,?,?,?,?,?,?,?,'N','Y')");
 				st.setInt(1, id);
 				st.setString(2,objname);
@@ -2206,7 +2364,7 @@ public class DMSession implements AutoCloseable {
 			else
 			if (objtype.equalsIgnoreCase("application"))
 			{
-				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_application WHERE name=? AND domainid=? AND status='N'");
+				cs = m_conn.prepareStatement("select cast(exists (select 1 from dm.dm_application WHERE name=? AND domainid=? AND status='N') as int)");
 				st = m_conn.prepareStatement("INSERT INTO dm.dm_application(id,name,domainid,ownerid,creatorid,modifierid,created,modified,status,isRelease) VALUES(?,?,?,?,?,?,?,?,'N','N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
@@ -2223,7 +2381,7 @@ public class DMSession implements AutoCloseable {
 			else
 			if (objtype.equalsIgnoreCase("appversion"))
 			{
-				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_application WHERE name=? AND domainid=? AND status='N'");
+				cs = m_conn.prepareStatement("select cast(exists (select 1 from dm.dm_application WHERE name=? AND domainid=? AND status='N') as int)");
 				st = m_conn.prepareStatement("INSERT INTO dm.dm_application(id,name,domainid,ownerid,creatorid,modifierid,created,modified,parentid,predecessorid,status,isRelease) VALUES(?,?,?,?,?,?,?,?,?,?,'N','N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
@@ -2242,7 +2400,7 @@ public class DMSession implements AutoCloseable {
 			else
 			if (objtype.equalsIgnoreCase("relversion"))
 			{
-				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_application WHERE name=? AND domainid=? AND status='N'");
+				cs = m_conn.prepareStatement("select cast(exists (select 1 from dm.dm_application WHERE name=? AND domainid=? AND status='N') as int)");
 				st = m_conn.prepareStatement("INSERT INTO dm.dm_application(id,name,domainid,ownerid,creatorid,modifierid,created,modified,parentid,predecessorid,status,isRelease) VALUES(?,?,?,?,?,?,?,?,?,?,'N','Y')");
 				st.setInt(1, id);
 				st.setString(2,objname);
@@ -2273,7 +2431,7 @@ public class DMSession implements AutoCloseable {
 			}
 			else if(objtype.equalsIgnoreCase("credentials"))
 			{
-				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_credentials WHERE name=? AND domainid=? AND status='N'");
+				cs = m_conn.prepareStatement("select cast(exists (select 1 from dm.dm_credentials WHERE name=? AND domainid=? AND status='N') as int)");
 				st = m_conn.prepareStatement("INSERT INTO dm.dm_credentials(id,name,domainid,kind,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,?,'N')");	// ,status ,'N'
 				st.setInt(1, id);
 				st.setString(2, objname);
@@ -2291,7 +2449,7 @@ public class DMSession implements AutoCloseable {
 					|| objtype.equalsIgnoreCase("datasource") || objtype.equalsIgnoreCase("buildengine"))
 			{
 				// TODO: Status should be 'U' for unconfigured - can only do this when we have a mechanism to test it and change status to Normal
-				cs = m_conn.prepareStatement("SELECT count(*) FROM dm.dm_"+objtype+" WHERE name=? AND domainid=?");
+				cs = m_conn.prepareStatement("select cast(exists (select 1 FROM dm.dm_"+objtype+" WHERE name=? AND domainid=?) as int)");
 				st = m_conn.prepareStatement("INSERT INTO dm.dm_"+objtype+"(id,name,domainid,ownerid,defid,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,?,?,'N')");
 				st.setInt(1, id);
 				st.setString(2, objname);
@@ -2312,7 +2470,7 @@ public class DMSession implements AutoCloseable {
 			}
 			else if (objtype.equalsIgnoreCase("template"))
 			{
-				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_template WHERE name=? AND notifierid=? AND status='N'");
+				cs = m_conn.prepareStatement("select cast(exists (select 1 from dm.dm_template WHERE name=? AND notifierid=? AND status='N') as int)");
 				st = m_conn.prepareStatement("INSERT INTO dm.dm_template(id,name,notifierid,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,'N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
@@ -2331,7 +2489,7 @@ public class DMSession implements AutoCloseable {
 			}
 			else if (objtype.equalsIgnoreCase("component"))
 			{
-				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_component WHERE name=? AND domainid=? AND status='N'");
+				cs = m_conn.prepareStatement("select cast(exists (select 1 from dm.dm_component WHERE name=? AND domainid=? AND status='N') as int)");
 				st = m_conn.prepareStatement("INSERT INTO dm.dm_component(id,name,domainid,ownerid,creatorid,modifierid,created,modified,status,filteritems,deployalways) VALUES(?,?,?,?,?,?,?,?,'N','Y','N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
@@ -2347,7 +2505,7 @@ public class DMSession implements AutoCloseable {
 			}
 			else if (objtype.equalsIgnoreCase("buildjob"))
 			{
-				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_buildjob WHERE name=? AND builderid=? AND status='N'");
+				cs = m_conn.prepareStatement("select cast(exists (select 1 from dm.dm_buildjob WHERE name=? AND builderid=? AND status='N') as int)");
 				st = m_conn.prepareStatement("INSERT INTO dm.dm_buildjob(id,name,builderid,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,'N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
@@ -2366,7 +2524,7 @@ public class DMSession implements AutoCloseable {
 			}
    else if (objtype.equalsIgnoreCase("engine"))
    {
-    cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_engine WHERE name=? AND domainid=? AND status='N'");
+    cs = m_conn.prepareStatement("select cast(exists (select 1 from dm.dm_engine WHERE name=? AND domainid=? AND status='N') as int)");
     st = m_conn.prepareStatement("INSERT INTO dm.dm_engine(id,name,domainid,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,'N')");
     st.setInt(1, id);
     st.setString(2,objname);
@@ -2381,7 +2539,7 @@ public class DMSession implements AutoCloseable {
    }
    else  if (objtype.equalsIgnoreCase("task"))
    {
-    cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_"+objtype+" WHERE name=? AND domainid=?");
+    cs = m_conn.prepareStatement("select cast(exists (select 1 from dm.dm_"+objtype+" WHERE name=? AND domainid=?) as int)");
     st = m_conn.prepareStatement("INSERT INTO dm.dm_"+objtype+"(id,name,domainid,ownerid,creatorid,modifierid,created,modified) VALUES(?,?,?,?,?,?,?,?)");
     st.setInt(1, id);
     st.setString(2,objname);
@@ -2401,7 +2559,7 @@ public class DMSession implements AutoCloseable {
    }
 			else
 			{
-				cs = m_conn.prepareStatement("SELECT count(*) from dm.dm_"+objtype+" WHERE name=? AND domainid=? AND status='N'");
+				cs = m_conn.prepareStatement("select cast(exists (select 1 from dm.dm_"+objtype+" WHERE name=? AND domainid=? AND status='N') as int)");
 				st = m_conn.prepareStatement("INSERT INTO dm.dm_"+objtype+"(id,name,domainid,ownerid,creatorid,modifierid,created,modified,status) VALUES(?,?,?,?,?,?,?,?,'N')");
 				st.setInt(1, id);
 				st.setString(2,objname);
@@ -2450,6 +2608,10 @@ public class DMSession implements AutoCloseable {
 			if (okToCreate) {
 				// An object with this name does not exist in this domain
 				st.execute();	// execute the insert
+
+				if (commit)
+				 m_conn.commit();
+
 				int rowCount = st.getUpdateCount();
 				if (rowCount != 1) {
 					if (cs != null) {
@@ -2463,6 +2625,9 @@ public class DMSession implements AutoCloseable {
 				cs.close();
 			}
 			st.close();
+
+   if (objtype.equalsIgnoreCase("domain"))
+    this.updateFullDomainName(id);
 
 			if (objtype.equalsIgnoreCase("server") && !treeid.contains("servers"))
 			{
@@ -2581,7 +2746,7 @@ public class DMSession implements AutoCloseable {
 		default:
 			break;
 		}
-		String csql = "SELECT count(*) FROM dm."+cattab+" WHERE id=? AND categoryid=?";
+		String csql = "select cast(exists (select 1 FROM dm."+cattab+" WHERE id=? AND categoryid=?) as int)";
 		String isql = "INSERT INTO dm."+cattab+"(id,categoryid) VALUES(?,?)";
 		try {
 			PreparedStatement cstmt = m_conn.prepareStatement(csql);
@@ -2620,7 +2785,7 @@ public class DMSession implements AutoCloseable {
 		ObjectTypeAndId ret = null;
 		try
 		{
-			String csql = "SELECT count(*) FROM dm.dm_action WHERE name=? AND domainid=?";
+			String csql = "select cast(exists (select 1 FROM dm.dm_action WHERE name=? AND domainid=?) as int)";
 			String sql1="INSERT INTO dm.dm_action(id,name,domainid,ownerid,\"function\",graphical,status,"
 					+ "creatorid,created,modifierid,modified,kind) VALUES(?,?,?,?,?,?,'N',?,?,?,?,?)";
 			String sql2="INSERT INTO dm.dm_action(id,name,domainid,ownerid,\"function\",graphical,status,"
@@ -3115,39 +3280,56 @@ public class DMSession implements AutoCloseable {
 		return GetUserName(m_userID);
 	}
 
-	public String getDomainName(int domainid)
-	{
-		String res = "";
-//		if (ValidDomain(domainid))
-//		{
-			try
-			{
-				PreparedStatement st = m_conn.prepareStatement("select name,domainid from dm.dm_domain where id=?");
-				st.setInt(1, domainid);
-				ResultSet rs = st.executeQuery();
-				if (rs.next())
-				{
-					res = rs.getString(1);
-					int parentDomainId = getInteger(rs, 2, 0);
-					if(parentDomainId != 0) {
-						String ParentDomains = getDomainName(parentDomainId);
-						if (ParentDomains != "")
-						{
-							res = ParentDomains + "." + res;
-						}
-					}
-				}
-				rs.close();
-				st.close();
-				m_conn.commit();
-			}
-			catch (Exception e)
-		    {
-				e.printStackTrace();
-		    }
-//		}
-		return res;
-	}
+ public String getDomainName(int domainid)
+ {
+  String res = "";
+  //// if (ValidDomain(domainid))
+  //// {
+  // try
+  // {
+  // PreparedStatement st = m_conn.prepareStatement("select name,domainid from dm.dm_domain where id=?");
+  // st.setInt(1, domainid);
+  // ResultSet rs = st.executeQuery();
+  // if (rs.next())
+  // {
+  // res = rs.getString(1);
+  // int parentDomainId = getInteger(rs, 2, 0);
+  // if(parentDomainId != 0) {
+  // String ParentDomains = getDomainName(parentDomainId);
+  // if (ParentDomains != "")
+  // {
+  // res = ParentDomains + "." + res;
+  // }
+  // }
+  // }
+  // rs.close();
+  // st.close();
+  // m_conn.commit();
+  // }
+  // catch (Exception e)
+  // {
+  // e.printStackTrace();
+  // }
+  //// }
+
+  try
+  {
+   PreparedStatement st = m_conn.prepareStatement("select fullname from dm.dm_domain where id=?");
+   st.setInt(1, domainid);
+   ResultSet rs = st.executeQuery();
+   if (rs.next())
+   {
+    res = rs.getString(1);
+   }
+   rs.close();
+   st.close();
+  }
+  catch (Exception e)
+  {
+   e.printStackTrace();
+  }
+  return res;
+ }
 
 	private boolean userIsReferenced(int id)
 	{
@@ -3193,7 +3375,7 @@ public class DMSession implements AutoCloseable {
 	public boolean envIsReferenced(int envid)
 	{
 		String sql[] = {
-				"SELECT count(*) FROM dm.dm_deployment WHERE envid=?"
+				"select cast(exists (select 1 FROM dm.dm_deployment WHERE envid=?) as int)"
 		 };
 		 return CheckObjects(sql,envid);
 	}
@@ -3205,21 +3387,21 @@ public class DMSession implements AutoCloseable {
 		if (forMenu) {
 			if (isRelease) {
 				String sql[] = {
-					"SELECT count(*) FROM dm.dm_applicationcomponent WHERE childappid=?",
-					"SELECT count(*) FROM dm.dm_compsallowedonserv WHERE compid=?"
+					"select cast(exists (select 1 FROM dm.dm_applicationcomponent WHERE childappid=?) as int)",
+					"select cast(exists (select 1 FROM dm.dm_compsallowedonserv WHERE compid=?) as int)"
 				};
 				return CheckObjects(sql,compid);
 			} else {
 				if (isRelease) {
 					String sql[] = {
-						"SELECT count(*) FROM dm.dm_applicationcomponent WHERE childappid=?",
-						"SELECT count(*) FROM dm.dm_compsallowedonserv WHERE compid=?"
+						"select cast(exists (select 1 FROM dm.dm_applicationcomponent WHERE childappid=?) as int)",
+						"select cast(exists (select 1 FROM dm.dm_compsallowedonserv WHERE compid=?) as int)"
 					};
 					return CheckObjects(sql,compid);
 				} else {
 					String sql[] = {
-					"SELECT count(*) FROM dm.dm_applicationcomponent WHERE compid=?",
-					"SELECT count(*) FROM dm.dm_compsallowedonserv WHERE compid=?"
+					"select cast(exists (select 1 FROM dm.dm_applicationcomponent WHERE compid=?) as int)",
+					"select cast(exists (select 1 FROM dm.dm_compsallowedonserv WHERE compid=?) as int)"
 					};
 					return CheckObjects(sql,compid);
 				}
@@ -3227,18 +3409,18 @@ public class DMSession implements AutoCloseable {
 		} else {
 			if (isRelease) {
 				String sql[] = {
-					"SELECT count(*) FROM dm.dm_applicationcomponent WHERE childappid=?",
-					"SELECT count(*) FROM dm.dm_compsallowedonserv WHERE compid=?",
-					"SELECT count(*) FROM dm.dm_compsonserv WHERE compid=?",
-					"SELECT count(*) FROM dm.dm_deploymentxfer WHERE componentid=?"
+					"select cast(exists (select 1 FROM dm.dm_applicationcomponent WHERE childappid=?) as int)",
+					"select cast(exists (select 1 FROM dm.dm_compsallowedonserv WHERE compid=?) as int)",
+					"select cast(exists (select 1 FROM dm.dm_compsonserv WHERE compid=?) as int)",
+					"select cast(exists (select 1 FROM dm.dm_deploymentxfer WHERE componentid=?) as int)"
 				};
 				return CheckObjects(sql,compid);
 			} else {
 				String sql[] = {
-				"SELECT count(*) FROM dm.dm_applicationcomponent WHERE compid=?",
-				"SELECT count(*) FROM dm.dm_compsallowedonserv WHERE compid=?",
-				"SELECT count(*) FROM dm.dm_compsonserv WHERE compid=?",
-				"SELECT count(*) FROM dm.dm_deploymentxfer WHERE componentid=?"
+				"select cast(exists (select 1 FROM dm.dm_applicationcomponent WHERE compid=?) as int)",
+				"select cast(exists (select 1 FROM dm.dm_compsallowedonserv WHERE compid=?) as int)",
+				"select cast(exists (select 1 FROM dm.dm_compsonserv WHERE compid=?) as int)",
+				"select cast(exists (select 1 FROM dm.dm_deploymentxfer WHERE componentid=?) as int)"
 				};
 				return CheckObjects(sql,compid);
 			}
@@ -3248,7 +3430,7 @@ public class DMSession implements AutoCloseable {
  public boolean serverIsReferenced(int servid) {
 
     String sql[] = {
-   "SELECT count(*) FROM dm.dm_serversinenv a, dm.dm_server b WHERE serverid=? and b.status <> 'D' and a.serverid = b.id"
+   "select cast(exists (select 1 FROM dm.dm_serversinenv a, dm.dm_server b WHERE serverid=? and b.status <> 'D' and a.serverid = b.id) as int)"
     };
     return CheckObjects(sql,servid);
  }
@@ -3256,21 +3438,21 @@ public class DMSession implements AutoCloseable {
  public boolean procfuncIsReferenced(int id) {
 
   String sql[] = {
- "SELECT count(*) FROM dm.dm_actionfrags a, dm.dm_fragments b WHERE b.id=a.typeid and ? in (b.actionid,b.functionid)"
+ "select cast(exists (select 1 FROM dm.dm_actionfrags a, dm.dm_fragments b WHERE b.id=a.typeid and ? in (b.actionid,b.functionid)) as int)"
   };
   return CheckObjects(sql,id);
 }
 
  public boolean actionIsReferenced(int id) {
   String sql[] = {
- "SELECT count(*) FROM dm.dm_deploymentaction where actionid=?"
+ "select cast(exists (select 1 FROM dm.dm_deploymentaction where actionid=?) as int)"
   };
   return CheckObjects(sql,id);
  }
 
  public boolean notifierIsReferenced(int id) {
   String sql[] = {
-  "SELECT count(*) FROM dm.dm_template x WHERE x.notifierid=? AND x.id IN "
+  "select cast(exists (select 1 FROM dm.dm_template x WHERE x.notifierid=? AND x.id IN "
   +"(SELECT successtemplateid FROM dm.dm_application WHERE successtemplateid=x.id "
   +"UNION "
   +"SELECT failuretemplateid FROM dm.dm_application WHERE failuretemplateid=x.id "
@@ -3278,17 +3460,17 @@ public class DMSession implements AutoCloseable {
   +"SELECT successtemplateid FROM dm.dm_task WHERE successtemplateid=x.id "
   +"UNION "
   +"SELECT failuretemplateid FROM dm.dm_task WHERE failuretemplateid=x.id "
-  + ")"
+  + ")) as int)"
   };
   return CheckObjects(sql,id);
  }
 
  public boolean templateIsReferenced(int id) {
 	  String sql[] = {
-	  "SELECT count(*) FROM dm.dm_application where successtemplateid=?",
-	  "SELECT count(*) FROM dm.dm_application where failuretemplateid=?",
-	  "SELECT count(*) FROM dm.dm_task where successtemplateid=?",
-	  "SELECT count(*) FROM dm.dm_task where failuretemplateid=?"
+	  "select cast(exists (select 1 FROM dm.dm_application where successtemplateid=?) as int)",
+	  "select cast(exists (select 1 FROM dm.dm_application where failuretemplateid=?) as int)",
+	  "select cast(exists (select 1 FROM dm.dm_task where successtemplateid=?) as int)",
+	  "select cast(exists (select 1 FROM dm.dm_task where failuretemplateid=?) as int)"
 	  };
 	  return CheckObjects(sql,id);
  }
@@ -3296,12 +3478,12 @@ public class DMSession implements AutoCloseable {
  public boolean datasourceIsReferenced(int id,boolean checkDefects) {
 	 System.out.println("datasourceisReferenced, id="+id+" checkDefects="+checkDefects);
 	 String sql1[] = {
-	  "SELECT count(*) FROM dm.dm_component where datasourceid=?",
-	  "SELECT count(*) FROM dm.dm_application where datasourceid=?",
-	  "SELECT count(*) FROM dm.dm_user where datasourceid=?"
+	  "select cast(exists (select 1 FROM dm.dm_component where datasourceid=?) as int)",
+	  "select cast(exists (select 1 FROM dm.dm_application where datasourceid=?) as int)",
+	  "select cast(exists (select 1 FROM dm.dm_user where datasourceid=?) as int)"
 	 };
 	 String sql2[] = {
-	  "SELECT count(*) FROM dm.dm_defects where datasourceid=?"
+	  "select cast(exists (select 1 FROM dm.dm_defects where datasourceid=?) as int)"
 	 };
 	 return CheckObjects(checkDefects?sql2:sql1,id);
  }
@@ -3309,8 +3491,8 @@ public class DMSession implements AutoCloseable {
  public boolean comptypeIsReferenced(int id) {
 
   String sql[] = {
- "SELECT count(*) FROM dm.dm_servercomptype a WHERE  a.comptypeid =?",
- "SELECT count(*) FROM dm.dm_component a WHERE  a.comptypeid =?"
+ "select cast(exists (select 1 FROM dm.dm_servercomptype a WHERE  a.comptypeid =?) as int)",
+ "select cast(exists (select 1 FROM dm.dm_component a WHERE  a.comptypeid =?) as int)"
   };
   return CheckObjects(sql,id);
 }
@@ -3318,9 +3500,9 @@ public class DMSession implements AutoCloseable {
  public boolean repositoryIsReferenced(int id) {
 
   String sql[] = {
-   "SELECT count(*) FROM dm.dm_componentitem a WHERE repositoryid=? and a.status <> 'D'",
-   "SELECT count(*) FROM dm.dm_action a WHERE repositoryid=? and a.status <> 'D'",
-   "SELECT count(*) FROM dm.dm_deploymentxfer WHERE repoid=?"
+   "select cast(exists (select 1 FROM dm.dm_componentitem a WHERE repositoryid=? and a.status <> 'D') as int)",
+   "select cast(exists (select 1 FROM dm.dm_action a WHERE repositoryid=? and a.status <> 'D') as int)",
+   "select cast(exists (select 1 FROM dm.dm_deploymentxfer WHERE repoid=?) as int)"
   };
   return CheckObjects(sql,id);
 }
@@ -3328,11 +3510,11 @@ public class DMSession implements AutoCloseable {
  public boolean credentialIsReferenced(int id) {
 
   String sql[] = {
-   "SELECT count(*) FROM dm.dm_server a WHERE credid=? and a.status <> 'D'",
-   "SELECT count(*) FROM dm.dm_datasource d WHERE credid=? AND d.status <> 'D'",
-   "SELECT count(*) FROM dm.dm_repository r WHERE credid=? AND r.status <> 'D'",
-   "SELECT count(*) FROM dm.dm_notify WHERE credid=? AND status <> 'D'",
-   "SELECT count(*) FROM dm.dm_environment e WHERE credid=? and e.status <> 'D'",
+   "select cast(exists (select 1 FROM dm.dm_server a WHERE credid=? and a.status <> 'D') as int)",
+   "select cast(exists (select 1 FROM dm.dm_datasource d WHERE credid=? AND d.status <> 'D') as int)",
+   "select cast(exists (select 1 FROM dm.dm_repository r WHERE credid=? AND r.status <> 'D') as int)",
+   "select cast(exists (select 1 FROM dm.dm_notify WHERE credid=? AND status <> 'D') as int)",
+   "select cast(exists (select 1 FROM dm.dm_environment e WHERE credid=? and e.status <> 'D') as int)",
   };
   return CheckObjects(sql,id);
 }
@@ -3340,10 +3522,10 @@ public class DMSession implements AutoCloseable {
  public boolean applicationIsReferenced(int id) {
 
   String sql[] = {
-   "SELECT count(*) FROM dm.dm_applicationcomponent a WHERE appid=?",
-   "SELECT count(*) FROM dm.dm_appsallowedinenv a WHERE appid=?",
-   "SELECT count(*) FROM dm.dm_appsinenv a WHERE appid=?",
-   "SELECT count(*) FROM dm.dm_deployment a WHERE appid=?"
+   "select cast(exists (select 1 FROM dm.dm_applicationcomponent a WHERE appid=?) as int)",
+   "select cast(exists (select 1 FROM dm.dm_appsallowedinenv a WHERE appid=?) as int)",
+   "select cast(exists (select 1 FROM dm.dm_appsinenv a WHERE appid=?) as int)",
+   "select cast(exists (select 1 FROM dm.dm_deployment a WHERE appid=?) as int)"
   };
   return CheckObjects(sql,id);
 }
@@ -3352,7 +3534,7 @@ public class DMSession implements AutoCloseable {
 	private int DeleteFromTable(String TableName,String ColName,int id) throws SQLException
 	{
 		PreparedStatement stmt = m_conn.prepareStatement("DELETE FROM "+TableName+" where "+ColName+"=?");
-		System.out.println("DELETE FROM "+TableName+" where "+ColName+"=?" + id);
+		System.out.println("DELETE FROM "+TableName+" where "+ColName+"=" + id);
 
 		stmt.setInt(1,id);
 		stmt.execute();
@@ -3767,7 +3949,7 @@ public class DMSession implements AutoCloseable {
 			// Check if the server is already associated with the target environment. If so, reject the move
 			//
 			String res = "";
-			PreparedStatement ck = m_conn.prepareStatement("SELECT count(*) FROM dm.dm_serversinenv WHERE serverid=? AND envid=?");
+			PreparedStatement ck = m_conn.prepareStatement("select cast(exists (select 1 FROM dm.dm_serversinenv WHERE serverid=? AND envid=?) as int)");
 			ck.setInt(1,id);
 			ck.setInt(2,TargetEnvironment);
 			ResultSet rs = ck.executeQuery();
@@ -4376,7 +4558,7 @@ public class DMSession implements AutoCloseable {
 
 	public void AddGroupToTask(int taskid,int groupid)
 	{
-		String csql = "select count(*) from dm.dm_taskaccess where taskid=? and usrgrpid=?";
+		String csql = "select cast(exists (select 1 from dm.dm_taskaccess where taskid=? and usrgrpid=?) as int)";
 		String sql= "insert into dm.dm_taskaccess(taskid,usrgrpid) values(?,?)";
 		try
 		{
@@ -4673,7 +4855,7 @@ public class DMSession implements AutoCloseable {
 	{
 		System.out.println("AddUserToGroup, gid="+gid+" uid="+uid);
 
-		String exists = "select count(*) from dm.dm_usersingroup where userid = ? and groupid = ?";
+		String exists = "select cast(exists (select 1 from dm.dm_usersingroup where userid = ? and groupid = ?) as int)";
 
 		String sql="insert into dm.dm_usersingroup(userid,groupid) values(?,?)";
 		try
@@ -4808,17 +4990,17 @@ public class DMSession implements AutoCloseable {
 		// Returns true if domain has objects has associated with it, false otherwise
 		boolean res=false;
 		String sql[] = {
-				"SELECT count(*) FROM dm.dm_environment WHERE domainid=? and status <> 'D'",
-				"SELECT count(*) FROM dm.dm_domain WHERE domainid=? and status <> 'D'",
-				"SELECT count(*) FROM dm.dm_user WHERE domainid=? and status <> 'D'",
-				"SELECT count(*) FROM dm.dm_credentials WHERE domainid=? and status <> 'D'",
-				"SELECT count(*) FROM dm.dm_application WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_action WHERE domainid=? and status <> 'D' and graphical = 'Y'",
-    "SELECT count(*) FROM dm.dm_action WHERE domainid=? and status <> 'D' and function = 'Y'",
-    "SELECT count(*) FROM dm.dm_action WHERE domainid=? and status <> 'D' and function <> 'Y' and graphical <> 'Y'",
-				"SELECT count(*) FROM dm.dm_usergroup WHERE domainid=? and status <> 'D'",
-	   "SELECT count(*) FROM dm.dm_datasource WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_repository WHERE domainid=? and status <> 'D'"
+				"select cast(exists (select 1 FROM dm.dm_environment WHERE domainid=? and status <> 'D') as int)",
+				"select cast(exists (select 1 FROM dm.dm_domain WHERE domainid=? and status <> 'D') as int)",
+				"select cast(exists (select 1 FROM dm.dm_user WHERE domainid=? and status <> 'D') as int)",
+				"select cast(exists (select 1 FROM dm.dm_credentials WHERE domainid=? and status <> 'D') as int)",
+				"select cast(exists (select 1 FROM dm.dm_application WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_action WHERE domainid=? and status <> 'D' and graphical = 'Y') as int)",
+    "select cast(exists (select 1 FROM dm.dm_action WHERE domainid=? and status <> 'D' and function = 'Y') as int)",
+    "select cast(exists (select 1 FROM dm.dm_action WHERE domainid=? and status <> 'D' and function <> 'Y' and graphical <> 'Y') as int)",
+				"select cast(exists (select 1 FROM dm.dm_usergroup WHERE domainid=? and status <> 'D') as int)",
+	   "select cast(exists (select 1 FROM dm.dm_datasource WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_repository WHERE domainid=? and status <> 'D') as int)"
 		};
 		String msg[] = {
 		  "Environments",
@@ -4836,7 +5018,7 @@ public class DMSession implements AutoCloseable {
 
 		try
 		{
-		 AssociatedMsg = "The following are associated to the Domain:,";
+		 AssociatedMsg = "The following are associated to the Domain: ";
 
 			for (int i=0;i<sql.length;i++) {
 				PreparedStatement stmt = m_conn.prepareStatement(sql[i]);
@@ -4876,32 +5058,32 @@ public class DMSession implements AutoCloseable {
   // Returns true if object has children, false otherwise
   boolean res=false;
   String sql[] = {
-    "SELECT count(*) FROM dm.dm_serversinenv a, dm.dm_server b WHERE envid=? and b.status <> 'D' and a.serverid = b.id",
-    "SELECT count(*) FROM dm.dm_domain WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_application a WHERE a.parentid=? and a.status <> 'D' AND a.domainid=(select b.domainid from dm.dm_application b where b.id=a.parentid)",
-    "SELECT count(*) FROM dm.dm_component WHERE parentid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_action WHERE parentid=? AND status = 'A'",
-    "SELECT count(*) FROM dm.dm_buildjob WHERE builderid=? AND status = 'N'"
+    "select cast(exists (select 1 FROM dm.dm_serversinenv a, dm.dm_server b WHERE envid=? and b.status <> 'D' and a.serverid = b.id) as int)",
+    "select cast(exists (select 1 FROM dm.dm_domain WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_application a WHERE a.parentid=? and a.status <> 'D' AND a.domainid=(select b.domainid from dm.dm_application b where b.id=a.parentid)) as int)",
+    "select cast(exists (select 1 FROM dm.dm_component WHERE parentid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_action WHERE parentid=? AND status = 'A') as int)",
+    "select cast(exists (select 1 FROM dm.dm_buildjob WHERE builderid=? AND status = 'N') as int)"
   };
 
   String sql2[] = {
-    "SELECT count(*) FROM dm.dm_environment WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_user WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_credentials WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_application WHERE domainid=? and status <> 'D' and isRelease <> 'Y'",
-    "SELECT count(*) FROM dm.dm_action WHERE domainid=? and status <> 'D' and graphical = 'Y'",
-    "SELECT count(*) FROM dm.dm_usergroup WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_datasource WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_server WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_notify WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_action WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_component WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_credentials WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_repository WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_application WHERE domainid=? and status <> 'D' and isRelease = 'Y'",
-    "SELECT count(*) FROM dm.dm_action WHERE domainid=? and status <> 'D' and graphical <> 'Y'",
-    "SELECT count(*) FROM dm.dm_type WHERE domainid=? and status <> 'D'",
-    "SELECT count(*) FROM dm.dm_buildengine WHERE domainid=? and status <> 'D'"
+    "select cast(exists (select 1 FROM dm.dm_environment WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_user WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_credentials WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_application WHERE domainid=? and status <> 'D' and isRelease <> 'Y') as int)",
+    "select cast(exists (select 1 FROM dm.dm_action WHERE domainid=? and status <> 'D' and graphical = 'Y') as int)",
+    "select cast(exists (select 1 FROM dm.dm_usergroup WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_datasource WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_server WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_notify WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_action WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_component WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_credentials WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_repository WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_application WHERE domainid=? and status <> 'D' and isRelease = 'Y') as int)",
+    "select cast(exists (select 1 FROM dm.dm_action WHERE domainid=? and status <> 'D' and graphical <> 'Y') as int)",
+    "select cast(exists (select 1 FROM dm.dm_type WHERE domainid=? and status <> 'D') as int)",
+    "select cast(exists (select 1 FROM dm.dm_buildengine WHERE domainid=? and status <> 'D') as int)"
   };
 
   System.out.println("objhaschildren, ObjectType="+node.GetObjectType()+" id="+id);
@@ -5032,14 +5214,14 @@ public class DMSession implements AutoCloseable {
   // Returns true if domain has objects has associated with it, false otherwise
   boolean res=false;
   String sql[] = {
-    "SELECT count(*) FROM dm.dm_environment WHERE domainid=?",
-    "SELECT count(*) FROM dm.dm_domain WHERE domainid=?",
-    "SELECT count(*) FROM dm.dm_user WHERE domainid=?",
-    "SELECT count(*) FROM dm.dm_credentials WHERE domainid=?",
-    "SELECT count(*) FROM dm.dm_application WHERE domainid=?",
-    "SELECT count(*) FROM dm.dm_action WHERE domainid=?",
-    "SELECT count(*) FROM dm.dm_usergroup WHERE domainid=?",
-    "SELECT count(*) FROM dm.dm_datasource WHERE domainid=?"
+    "select cast(exists (select 1 FROM dm.dm_environment WHERE domainid=?) as int)",
+    "select cast(exists (select 1 FROM dm.dm_domain WHERE domainid=?) as int)",
+    "select cast(exists (select 1 FROM dm.dm_user WHERE domainid=?) as int)",
+    "select cast(exists (select 1 FROM dm.dm_credentials WHERE domainid=?) as int)",
+    "select cast(exists (select 1 FROM dm.dm_application WHERE domainid=?) as int)",
+    "select cast(exists (select 1 FROM dm.dm_action WHERE domainid=?) as int)",
+    "select cast(exists (select 1 FROM dm.dm_usergroup WHERE domainid=?) as int)",
+    "select cast(exists (select 1 FROM dm.dm_datasource WHERE domainid=?) as int)"
   };
 
   try
@@ -5073,6 +5255,8 @@ public class DMSession implements AutoCloseable {
 
 	public String getAssociatedMsg()
  {
+	 AssociatedMsg = AssociatedMsg.replaceAll(",$", "");
+
   return AssociatedMsg;
  }
 
@@ -5270,6 +5454,9 @@ public class DMSession implements AutoCloseable {
 			m_conn.commit();
 			update.close();
 			m_domainhash.remove(dom.getId());	// in case it's cached.
+
+			updateFullDomainName(dom.getId());
+
 			return true;
 		} catch(SQLException e) {
 			e.printStackTrace();
@@ -5278,7 +5465,25 @@ public class DMSession implements AutoCloseable {
 		return false;
 	}
 
-	public void updateDomainOrder(String [] domorder) {
+ private void updateFullDomainName(int id)
+ {
+  String sql = "UPDATE dm.dm_domain SET fullname = fulldomain(id) where id = ?";
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, id);
+   stmt.execute();
+   stmt.close();
+   m_conn.commit();
+  }
+  catch (SQLException e)
+  {
+   e.printStackTrace();
+   rollback();
+  }
+ }
+
+ public void updateDomainOrder(String [] domorder) {
 		String sql="UPDATE dm.dm_domain SET position=? WHERE id=?";
 		try {
 			PreparedStatement stmt = m_conn.prepareStatement(sql);
@@ -5468,31 +5673,31 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   switch (ot) {
   case APPLICATION:
    sql = "select a.id, a.name from dm.dm_application a where a.domainid=? and a.predecessorid is null and a.status='N' and a.isRelease <> 'Y'";
-   sql_access = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case RELEASE:
    sql = "select a.id, a.name from dm.dm_application a where a.domainid=? and a.predecessorid is null and a.status='N' and a.isRelease='Y'";
-   sql_access = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case RELVERSION:
    sql = "select a.id, a.name from dm.dm_application a where a.isRelease='Y' and a.status='N' and a.domainid=? and "
      + "exists (select x.id from dm.dm_application x where x.id=a.parentid and x.domainid <> a.domainid) order by name";
-   sql_access = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case APPVERSION:
    sql = "select a.id, a.name from dm.dm_application a where a.isRelease<> 'Y' and a.status='N' and a.domainid=? and "
      + "exists (select x.id from dm.dm_application x where x.id=a.parentid and x.domainid <> a.domainid and x.status='N') order by name";
-   sql_access = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_applicationaccess where appid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
@@ -5548,39 +5753,39 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
      + "left outer join  dm.dm_componentaccess b on a.id=b.compid "
      + " where    a.status='N' and a.domainid=? and predecessorid >= 0 order by a.name ";
    // sql = "select id,name from dm.dm_component where status='N' and domainid=? and predecessorid >= 0 order by name";
-   sql_access = "select count(*) from dm.dm_componentaccess where compid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_componentaccess where compid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_componentaccess where compid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_componentaccess where compid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    newQuery=true;
    break;
   case CREDENTIALS:
    sql =  "select id,name from dm.dm_credentials where status='N' and domainid=? order by name";
-   sql_access = "select count(*) from dm.dm_credentialsaccess where credid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_credentialsaccess where credid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_credentialsaccess where credid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_credentialsaccess where credid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case ACTION: // Graphical actions
    sql =  "select a.id,a.name from dm.dm_action a,dm.dm_action_categories b,  dm.dm_category c where status='N' and a.id = b.id and b.categoryid = c.id and a.domainid=? and c.id=? and a.kind="+ActionKind.GRAPHICAL.value()+" order by a.name";
-   sql_access = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    stmt.setInt(2, catid);
    break;
   case SERVERCOMPTYPE:
    sql =  "select id,name from dm.dm_type where status='N' and domainid=? order by name";
-   sql_access = "select count(*) from dm.dm_typeaccess where comptypeid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_typeaccess where comptypeid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_typeaccess where comptypeid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_typeaccess where comptypeid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case PROCEDURE:
   case FUNCTION:
    // sql =  "select id,name,kind from dm.dm_action where status='N' and domainid=? and NOT kind="+ActionKind.GRAPHICAL.value()+" and function=? order by name";
-   // sql_access = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N'";
-   // sql_hasaccess = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   // sql_access = "select cast(exists (select 1 from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   // sql_hasaccess = "select cast(exists (select 1 from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    System.out.println("Opening category "+catid+" domain="+domainID);
    sql =  	"select a.id,a.name,b.usrgrpid,b.viewaccess,a.kind   "
      +   		"from     			dm.dm_action a   "
@@ -5600,15 +5805,15 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   case COMP_CATEGORY:
    System.out.println("Retrieving COMP_CATEGORY for domain "+domainID);
    sql =  "select distinct c.id,c.name from dm.dm_component a, dm.dm_component_categories b,  dm.dm_category c where a.status='N' and a.domainid=? and predecessorid is null and a.id = b.id and b.categoryid = c.id order by c.name";
-   sql_access = "select count(*) from dm.dm_componentaccess where compid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_componentaccess where compid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_componentaccess where compid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_componentaccess where compid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case ACTION_CATEGORY:
    sql =  "select distinct c.id,c.name from dm.dm_action a, dm.dm_action_categories b,  dm.dm_category c where a.status='N' and a.domainid=? and kind="+ActionKind.GRAPHICAL.value()+" and a.id = b.id and b.categoryid = c.id order by c.name";
-   sql_access = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
@@ -5621,8 +5826,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
    if (domainID != 1 || nobuiltins != null)
     sql = "select distinct c.id,c.name from dm.dm_fragments f, dm.dm_action a, dm.dm_fragment_categories b,  dm.dm_category c where a.status='N' and a.domainid=? and a.kind != "+ActionKind.GRAPHICAL.value()+" and a.id in (f.actionid,f.functionid) and f.id = b.id and b.categoryid = c.id order by c.name";
 
-   sql_access = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    if (domainID != 1 || nobuiltins != null)
     stmt.setInt(1, domainID);
@@ -5635,8 +5840,8 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
     sql = "select distinct f.id, f.name, f.actionid, f.functionid from dm.dm_fragments f, dm.dm_action a, dm.dm_fragment_categories b,  dm.dm_category c  where a.status='N' and a.domainid=? and a.kind != "+ActionKind.GRAPHICAL.value()+" and a.id in (f.actionid,f.functionid)  and  f.id = b.id and b.categoryid = c.id and c.id = ? ";
 
    //  sql =  "select distinct a.id,a.name, a.actionid,a.functionid from dm.dm_fragments a, dm.dm_fragment_categories b where a.id = b.id and b.categoryid = ? order by name";
-   // sql_access = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N'";
-   // sql_hasaccess = "select count(*) from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   // sql_access = "select cast(exists (select 1 from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   // sql_hasaccess = "select cast(exists (select 1 from dm.dm_actionaccess where actionid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    stmt.setInt(2, catid);
@@ -5654,22 +5859,22 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
    break;
   case USERGROUP:
    sql = "select a.id,a.name from dm.dm_usergroup a where a.status='N' and a.domainid=? order by a.name";
-   sql_access = "select count(*) from dm.dm_usergroupaccess where usergroupid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_usergroupaccess where usergroupid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_usergroupaccess where usergroupid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_usergroupaccess where usergroupid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case USER:
    sql = "select a.id,a.name from dm.dm_user a where a.status='N' and a.domainid=? order by a.name";
-   sql_access = "select count(*) from dm.dm_useraccess where userid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_useraccess where userid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_useraccess where userid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_useraccess where userid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case DATASOURCE:
    sql = "select a.id,a.name from dm.dm_datasource a where a.status='N' and a.domainid=? order by a.name";
-   sql_access = "select count(*) from dm.dm_datasourceaccess where datasourceid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_datasourceaccess where datasourceid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_datasourceaccess where datasourceid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_datasourceaccess where datasourceid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
@@ -5698,29 +5903,29 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
    break;
   case NOTIFY:
    sql = "select a.id,a.name from dm.dm_notify a where a.status='N' and a.domainid=? order by a.name";
-   sql_access = "select count(*) from dm.dm_notifyaccess where notifyid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_notifyaccess where notifyid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_notifyaccess where notifyid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_notifyaccess where notifyid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case REPOSITORY:
    sql = "select a.id,a.name from dm.dm_repository a where a.status='N' and a.domainid=? order by a.name";
-   sql_access = "select count(*) from dm.dm_repositoryaccess where repositoryid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_repositoryaccess where repositoryid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_repositoryaccess where repositoryid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_repositoryaccess where repositoryid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case SERVER:
    sql = "select a.id,a.name from dm.dm_server a where a.status='N' and a.domainid=? order by a.name";
-   sql_access = "select count(*) from dm.dm_serveraccess where serverid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_serveraccess where serverid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_serveraccess where serverid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_serveraccess where serverid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
   case RPROXY:
    sql =  "select id, hostname from dm.dm_engine where status='N' and domainid=? order by name";
-   sql_access = "select count(*) from dm.dm_engineaccess where engineid = ? and usrgrpid = ? and viewaccess = 'N'";
-   sql_hasaccess = "select count(*) from dm.dm_engineaccess where engineid = ? and usrgrpid = ? and viewaccess = 'Y'";
+   sql_access = "select cast(exists (select 1 from dm.dm_engineaccess where engineid = ? and usrgrpid = ? and viewaccess = 'N') as int)";
+   sql_hasaccess = "select cast(exists (select 1 from dm.dm_engineaccess where engineid = ? and usrgrpid = ? and viewaccess = 'Y') as int)";
    stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1, domainID);
    break;
@@ -6778,9 +6983,19 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		{
 			Statement st = m_conn.createStatement();
 			ResultSet rs = st.executeQuery(
-					"SELECT	a.id, a.name, a.target, a.xpos, a.ypos, a.predecessorid, a.summary, a.rollup, a.rollback, a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace, a.chartrepo, a.chartrepourl, a.operator, a.builddate, a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl			" +
-					"FROM	dm.dm_componentitem		a			" +
-					"WHERE	a.compid="+compid + " order by a.rollup desc");
+					"SELECT	a.id, a.name, a.target, a.xpos, a.ypos, a.predecessorid, a.summary, a.rollup, a.rollback, "
+					+ "a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace, a.chartrepo, a.chartrepourl, a.operator, a.builddate, "
+					+ "a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl,	"
+					+ "a.ScoreCardPinned, a.Score, a.Maintained, a.CodeReview, a.CIIBestPractices, a.License, a.SignedReleases, "
+					+ "a.DangerousWorkflow, a.Packaging, a.TokenPermissions, a.BranchProtection, a.BinaryArtifacts, a.PinnedDependencies, "
+					+ "a.SecurityPolicy, a.Fuzzing, a.SAST, a.Vulnerabilities, a.Purl, "
+					+ "a.CITests, "
+					+ "a.Contributors, "
+					+ "a.DependencyUpdateTool, "
+					+ "a.SBOM, "
+					+ "a.Webhooks "
+					+ "FROM	dm.dm_componentitem		a			"
+					+ "WHERE	a.compid="+compid + " order by a.rollup desc");
 			while (rs.next())
 			{
 				ComponentItem ci = new ComponentItem();
@@ -6819,6 +7034,30 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
     ci.setGitRepo(rs.getString(24));
     ci.setGitTag(rs.getString(25));
     ci.setGitUrl(rs.getString(26));
+
+    ci.setScoreCardPinned(Boolean.valueOf(rs.getBoolean(27)).toString());
+    ci.setScore(Float.valueOf(rs.getFloat(28)).toString());
+    ci.setMaintained(Float.valueOf(rs.getFloat(29)).toString());
+    ci.setCodeReview(Float.valueOf(rs.getFloat(30)).toString());
+    ci.setCIIBestPractices(Float.valueOf(rs.getFloat(31)).toString());
+    ci.setLicense(Float.valueOf(rs.getFloat(32)).toString());
+    ci.setSignedReleases(Float.valueOf(rs.getFloat(33)).toString());
+    ci.setDangerousWorkflow(Float.valueOf(rs.getFloat(34)).toString());
+    ci.setPackaging(Float.valueOf(rs.getFloat(35)).toString());
+    ci.setTokenPermissions(Float.valueOf(rs.getFloat(36)).toString());
+    ci.setBranchProtection(Float.valueOf(rs.getFloat(37)).toString());
+    ci.setBinaryArtifacts(Float.valueOf(rs.getFloat(38)).toString());
+    ci.setPinnedDependencies(Float.valueOf(rs.getFloat(39)).toString());
+    ci.setSecurityPolicy(Float.valueOf(rs.getFloat(40)).toString());
+    ci.setFuzzing(Float.valueOf(rs.getFloat(41)).toString());
+    ci.setSAST(Float.valueOf(rs.getFloat(42)).toString());
+    ci.setVulnerabilities(Float.valueOf(rs.getFloat(43)).toString());
+    ci.setPurl(rs.getString(44));
+    ci.setCITests(Float.valueOf(rs.getFloat(45)).toString());
+    ci.setContributors(Float.valueOf(rs.getFloat(46)).toString());
+    ci.setDependencyUpdateTool(Float.valueOf(rs.getFloat(47)).toString());
+    ci.setSBOM(Float.valueOf(rs.getFloat(48)).toString());
+    ci.setWebhooks(Float.valueOf(rs.getFloat(49)).toString());
 
 				ret.add(ci);
 			}
@@ -6983,9 +7222,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		return false;
 	}
 
-	public List <Application> GetApplicationsInEnvironment(int envid, boolean isRelease)
+	public ArrayList<String> GetApplicationsInEnvironment(int envid, boolean isRelease)
 	{
-		List <Application> ret = new ArrayList<Application>();
+		ArrayList<String> ret = new ArrayList<String>();
 
 		Environment env = this.getEnvironment(envid, true);
 		String domainlist = "";
@@ -7014,11 +7253,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 
 		String sql;
 		if (isRelease) {
-			sql = "SELECT a.id,a.name,a.domainid FROM dm.dm_application a "
-				+ "WHERE a.isRelease = 'Y' and a.domainid in (" + domainlist + ") AND a.status='N' ORDER BY 2";
+			sql = "SELECT a.id, b.fullname || '.' || a.name FROM dm.dm_application a, dm.dm_domain b "
+				+ "WHERE a.isRelease = 'Y' and a.domainid in (" + domainlist + ") AND a.status='N' and a.domainid = b.id ORDER BY 2";
 		} else {
-			sql = "SELECT a.id,a.name,a.domainid FROM dm.dm_application a, dm.dm_appsallowedinenv b "
-				+ "WHERE b.envid=? AND (a.id=b.appid OR a.parentid=b.appid) AND a.isRelease <> 'Y' and a.domainid in (" + domainlist + ") AND a.status='N' ORDER BY 2";
+			sql = "SELECT a.id, c.fullname || '.' || a.name FROM dm.dm_application a, dm.dm_appsallowedinenv b,  dm.dm_domain c "
+				+ "WHERE b.envid=? AND (a.id=b.appid OR a.parentid=b.appid) AND a.isRelease <> 'Y' and a.domainid = c.id and a.domainid in (" + domainlist + ") AND a.status='N' ORDER BY 2";
 		}
 
 		System.out.println("sql="+sql);
@@ -7028,13 +7267,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 			if (!isRelease)	stmt.setInt(1,envid);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
-				Application app = getApplication(rs.getInt(1),true);
-				System.out.println("got app "+app.getName());
-				//ce.setId(rs.getInt(1));
-				//ce.setName(rs.getString(2));
-				//Domain d2 = getDomain(rs.getInt(3));
-				//ce.setDomain(d2);
-				ret.add(app);
+			 int id = rs.getInt(1);
+			 String name = rs.getString(2);
+			 ret.add(("<option value=\""+id+"\">" + name +"</option>"));
 			}
 			rs.close();
 			stmt.close();
@@ -7153,11 +7388,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		else
 		{
 			String sql;
-			if (m_domainlist == "") {
-				sql = "SELECT id from dm.dm_domain where name=? and status = 'N'";
-			} else {
-				sql = "SELECT id from dm.dm_domain where status = 'N' and id in (" + m_domainlist + ") and name=?";
-			}
+			sql = "SELECT id from dm.dm_domain where name=? and status = 'N'";
 			if (parent > 0) {
 				sql = sql + " AND domainid=?";
 			}
@@ -7173,6 +7404,15 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				if (rs.next()) {
 					// got at least one row.
 					domid = rs.getInt(1);
+
+
+					if (m_domainlist != "")
+					{
+					  String check_domlist = m_domainlist + ",";
+					  if (!check_domlist.contains(domid + ","))
+					    domid=DOMAIN_NOT_FOUND;
+					}
+
 					// Check we're unique
 					if (rs.next()) {
 						// Not unique
@@ -7413,7 +7653,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 	{
 		Task t = (Task)getObjectByName(ObjectType.TASK,taskName);
 		// Now check we have execute access to the task, otherwise throw exception
-		String sql = "SELECT count(*) FROM dm.dm_taskaccess a,dm.dm_usersingroup b WHERE a.taskid=? and b.userid=? and a.usrgrpid in (b.groupid,1)";
+		String sql = "select cast(exists (select 1 FROM dm.dm_taskaccess a,dm.dm_usersingroup b WHERE a.taskid=? and b.userid=? and a.usrgrpid in (b.groupid,1)) as int)";
 		try {
 			System.out.println("checking execute permissions for task "+t.getId()+" for user "+m_userID);
 			PreparedStatement stmt = m_conn.prepareStatement(sql);
@@ -7497,7 +7737,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		System.out.println("getTaskByType tt="+tt);
 		String sql1 = "SELECT id FROM dm.dm_tasktypes WHERE name=?";
 		String sql2 = "SELECT id,subdomains FROM dm.dm_task WHERE typeid=? AND domainid=?";
-		String sql3 = "SELECT COUNT(*) FROM dm.dm_taskaccess a,dm.dm_usersingroup b WHERE a.taskid=? AND b.userid=? and a.usrgrpid in (b.groupid,1)";
+		String sql3 = "select cast(exists (select 1 FROM dm.dm_taskaccess a,dm.dm_usersingroup b WHERE a.taskid=? AND b.userid=? and a.usrgrpid in (b.groupid,1)) as int)";
 		try {
 			PreparedStatement stmt1 = m_conn.prepareStatement(sql1);
 			PreparedStatement stmt2 = m_conn.prepareStatement(sql2);
@@ -8094,7 +8334,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 			int row = 0;
 			long now = timeNow();
 			System.out.println("timeNow="+now);
-			String csql = "SELECT count(*) FROM dm.dm_appsinenv WHERE envid=? AND appid=?";
+			String csql = "select cast(exists (select 1 FROM dm.dm_appsinenv WHERE envid=? AND appid=?) as int)";
 			PreparedStatement cstmt = m_conn.prepareStatement(csql);
 			while(rs.next()) {
 				System.out.println(row+") got application "+rs.getString(2)+" (id "+rs.getInt(1)+")");
@@ -8255,7 +8495,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 	{
 		System.out.println("addToAppsAllowedInEnv - " + env.getId() + ", " + app.getId());
 		int pappid = app.getParentId();
-		String sql1 = "SELECT count(*) FROM dm.dm_appsallowedinenv WHERE envid=? AND appid=?";
+		String sql1 = "select cast(exists (select 1 FROM dm.dm_appsallowedinenv WHERE envid=? AND appid=?) as int)";
 		String sql2 = "INSERT INTO dm.dm_appsallowedinenv(envid, appid) VALUES(?,?)";
 		boolean ret=false;
 		try {
@@ -8697,11 +8937,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				ret.setDomainId(domainId);
 				String thislabel = getString(rs,6,"");
 				ret.setLabel(thislabel);
-/* 				if (thislabel.length() == 0) {
-					// No label for this version
-					String ParentLabel = getParentLabel(0,getInteger(rs,3,0));
-					ret.setParentLabel(ParentLabel);
-				} */
+//				if (thislabel.length() == 0) {
+//					// No label for this version
+//					String ParentLabel = getParentLabel(0,getInteger(rs,3,0));
+//					ret.setParentLabel(ParentLabel);
+//				}
 				getStatus(rs, 7, ret);
 				ret.setIsRelease(getString(rs, 8, "N"));
 				int dsid = getInteger(rs,9,0);
@@ -8919,7 +9159,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   boolean needed = false;
 
   try {
-   String sql = "SELECT count(*) FROM dm_taskapprove WHERE approvaldomain=?";
+   String sql = "select cast(exists (select 1 FROM dm_taskapprove WHERE approvaldomain=?) as int)";
    PreparedStatement stmt = m_conn.prepareStatement(sql);
    stmt.setInt(1,tgtdomain);
    ResultSet rs = stmt.executeQuery();
@@ -9312,9 +9552,125 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		return false;
 	}
 
+ public Component getComponentDetail(int compid)
+ {
+  if (compid < 0)
+  {
+   Component ret = new Component(this, compid, "");
+   ret.setName("");
+   ret.setSummary("");
+   ret.setRollup(ComponentFilter.OFF);
+   ret.setRollback(ComponentFilter.OFF);
+   ret.setAlwaysDeploy(false);
+   ret.setDeploySequentially(false);
+   ret.setBaseDirectory("");
+   ret.setFilterItems(true);
+   ret.setPreAction(new Action(this, 0, ""));
+   ret.setPostAction(new Action(this, 0, ""));
+   ret.setCustomAction(new Action(this, 0, ""));
+   ret.setLastBuildNumber(0);
+   return ret;
+  }
+
+  String sql = null;
+
+  sql = "SELECT a.name, a.summary, a.predecessorid, a.parentid, a.domainid, a.branch, a.status, " + "  a.rollup, a.rollback, a.filteritems, a.deployalways,a.deploysequentially, a.basedir, a.datasourceid, a.buildjobid, a.lastbuildnumber, " + "  uc.id, uc.name, uc.realname, a.created, " // 17 - 20
+    + "  um.id, um.name, um.realname, a.modified, " // 21 - 24
+    + "  uo.id, uo.name, uo.realname, g.id, g.name, " // 25 - 29
+    + "  a1.id, a1.name, a1.domainid, a2.id, a2.name, a2.domainid, " // 30 - 35
+    + "  a3.id, a3.name, a3.domainid, " // 36 - 38
+    + "  a.xpos, a.ypos, t.id, t.name, " // 39 - 42
+    + "  c.id, c.name " + "FROM dm.dm_component a " + "LEFT OUTER JOIN dm.dm_user uc ON a.creatorid = uc.id " // creator
+    + "LEFT OUTER JOIN dm.dm_user um ON a.modifierid = um.id " // modifier
+    + "LEFT OUTER JOIN dm.dm_user uo ON a.ownerid = uo.id " // owner user
+    + "LEFT OUTER JOIN dm.dm_usergroup g ON a.ogrpid = g.id " // owner group
+    + "LEFT OUTER JOIN dm.dm_action a1 ON a.preactionid = a1.id " // pre-action
+    + "LEFT OUTER JOIN dm.dm_action a2 ON a.postactionid = a2.id " // post-action
+    + "LEFT OUTER JOIN dm.dm_action a3 ON a.actionid = a3.id " // custom action
+    + "LEFT OUTER JOIN dm.dm_type t ON t.id = a.comptypeid " // Component Types
+    + "LEFT OUTER JOIN dm.dm_component_categories fc on a.id = fc.id " + "LEFT OUTER JOIN dm.dm_category c ON c.id = fc.categoryid " // category
+    + "WHERE  a.status = 'N' and a.id = ?";
+
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, compid);
+   ResultSet rs = stmt.executeQuery();
+   Component ret = null;
+   if (rs.next())
+   {
+    ret = new Component(this, compid, rs.getString(1));
+    ret.setSummary(getString(rs, 2, ""));
+    ret.setPredecessorId(getInteger(rs, 3, 0));
+    ret.setParentId(getInteger(rs, 4, 0));
+    ret.setDomainId(getInteger(rs, 5, 0));
+    String thislabel = getString(rs, 6, "");
+    ret.setLabel(thislabel);
+    // if (thislabel.length() == 0) {
+    // // No label for this version
+    // String ParentLabel = getParentLabel(1,getInteger(rs,3,0));
+    // ret.setParentLabel(ParentLabel);
+    // }
+    getStatus(rs, 7, ret);
+    ret.setRollup(ComponentFilter.fromInt(getInteger(rs, 8, 0)));
+    ret.setRollback(ComponentFilter.fromInt(getInteger(rs, 9, 0)));
+    ret.setFilterItems(getBoolean(rs, 10, false));
+    ret.setAlwaysDeploy(getBoolean(rs, 11, false));
+    ret.setDeploySequentially(getBoolean(rs, 12, false));
+    ret.setBaseDirectory(getString(rs, 13, ""));
+    int dsid = getInteger(rs, 14, 0);
+    if (dsid > 0)
+    {
+     Datasource ds = getDatasource(dsid, true);
+     ret.setDatasource(ds);
+    }
+
+    int lastbuildid = getInteger(rs, 16, 0);
+    ret.setLastBuildNumber(lastbuildid);
+
+    getCreatorModifierOwner(rs, 17, ret);
+    getPreAndPostActions(rs, 30, ret);
+    int custactionid = getInteger(rs, 36, 0);
+    if (custactionid != 0)
+    {
+     Action ca = getAction(custactionid, true);
+     ret.setCustomAction(ca);
+    }
+    ret.setXpos(getInteger(rs, 39, 0));
+    ret.setYpos(getInteger(rs, 40, 0));
+    ret.setComptypeId(getInteger(rs, 41, 0));
+    ret.setComptype(getString(rs, 42, ""));
+    Category cat = new Category(getInteger(rs, 43, 0), getString(rs, 44, ""));
+    ret.setCategory(cat);
+
+    List<ComponentItem> items = this.getComponentItems(compid);
+
+    if (items.size() > 0)
+    {
+     ComponentItemKind kind = items.get(0).getItemkind();
+     ret.setKind(kind);
+    }
+   }
+   rs.close();
+   stmt.close();
+   if (ret != null)
+   {
+    return ret;
+   }
+  }
+  catch (SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+  // throw new RuntimeException("Unable to retrieve component " + compid + " from database");
+  return null;
+ }
 
 	public Component getComponent(int compid, boolean detailed)
 	{
+	 detailed = false;
+
 		if (compid < 0) {
 			Component ret = new Component(this, compid, "");
 			ret.setName("");
@@ -9375,11 +9731,11 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				ret.setDomainId(getInteger(rs,5,0));
 				String thislabel = getString(rs,6,"");
 				ret.setLabel(thislabel);
-/* 				if (thislabel.length() == 0) {
-					// No label for this version
-					String ParentLabel = getParentLabel(1,getInteger(rs,3,0));
-					ret.setParentLabel(ParentLabel);
-				} */
+//				if (thislabel.length() == 0) {
+//					// No label for this version
+//					String ParentLabel = getParentLabel(1,getInteger(rs,3,0));
+//					ret.setParentLabel(ParentLabel);
+//				}
 				getStatus(rs, 7, ret);
 				ret.setRollup(ComponentFilter.fromInt(getInteger(rs, 8, 0)));
 				ret.setRollback(ComponentFilter.fromInt(getInteger(rs, 9, 0)));
@@ -9784,7 +10140,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		System.out.println("getComponentItem, ciid="+ciid);		// +" compid="+compid
 
 		if(detailed) {
-			sql = "SELECT a.name, a.summary, b.domainid, a.rollup, a.rollback, a.predecessorid, a.status, a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace,  a.chartrepo, a.chartrepourl, a.operator, a.builddate, a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl, "
+			sql = "SELECT a.name, a.summary, b.domainid, a.rollup, a.rollback, a.predecessorid, a.status, a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace,  a.chartrepo, a.chartrepourl, a.operator, a.builddate, a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl, a.purl, "
 				+ "  a.compid, a.repositoryid, a.target, "
 				+ "  uc.id, uc.name, uc.realname, a.created, "
 				+ "  um.id, um.name, um.realname, a.modified, "
@@ -9795,7 +10151,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				+ "LEFT OUTER JOIN dm.dm_component b ON a.compid=b.id "			// domain
 				+ "WHERE a.id = ?";		//  AND a.compid=?
 		} else {
-			sql = "SELECT a.name, a.summary, b.domainid, a.rollup, a.rollback, a.predecessorid, a.status, a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace,  a.chartrepo, a.chartrepourl, a.operator, a.builddate, a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl "
+			sql = "SELECT a.name, a.summary, b.domainid, a.rollup, a.rollback, a.predecessorid, a.status, a.kind, a.buildid, a.buildurl, a.chart,  a.chartversion, a.chartnamespace,  a.chartrepo, a.chartrepourl, a.operator, a.builddate, a.dockerrepo, a.dockersha, a.dockertag, a.gitcommit, a.gitrepo, a.gittag, a.giturl, a.purl "
 				+ "FROM dm.dm_componentitem a "
 				+ "LEFT OUTER JOIN dm.dm_component b ON a.compid=b.id "			// domain
 				+ "WHERE a.id = ?";		//  AND a.compid=?
@@ -9843,20 +10199,21 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 				ret.setGitRepo(rs.getString(22));
 				ret.setGitTag(rs.getString(23));
 				ret.setGitUrl(rs.getString(24));
+    ret.setPurl(rs.getString(25));
 
 				if(detailed) {
-					int compid = getInteger(rs, 25, 0);
+					int compid = getInteger(rs, 26, 0);
 					if(compid != 0) {
 						ret.setParent(getComponent(compid, false));
 					}
-					int repoid = getInteger(rs, 26, 0);
+					int repoid = getInteger(rs, 27, 0);
 					if(repoid != 0) {
 						ret.setRepository(getRepository(repoid, false));
 					}
-					ret.setTargetDir(rs.getString(27));
-					getCreatorModifier(rs, 28, ret);
-					ret.setXpos(getInteger(rs, 36, 0));
-					ret.setYpos(getInteger(rs, 37, 0));
+					ret.setTargetDir(rs.getString(28));
+					getCreatorModifier(rs, 29, ret);
+					ret.setXpos(getInteger(rs, 37, 0));
+					ret.setYpos(getInteger(rs, 38, 0));
 				}
 			} else {
 				System.out.println("No rows retrieved");
@@ -10126,6 +10483,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
     }
     break;
 
+    case PURL:
+    {
+     String str = (String) changes.get(field);
+     update.add(", purl = ?", (str != null) ? str : Null.STRING);
+    }
+    break;
+
     case SLACK_CHANNEL:
     {
      String str = (String) changes.get(field);
@@ -10288,20 +10652,156 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 	}
 
 
+ public JSONArray getApplicationVersionsDropDown(Application app)
+ {
+  JSONArray arr = new JSONArray();
+
+  String sql = "SELECT id, name, isRelease FROM dm.dm_application WHERE parentid=? and status='N' UNION SELECT id, name, isRelease FROM dm.dm_application WHERE id=? and status='N'";
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setInt(1, app.getId());
+   stmt.setInt(2, app.getId());
+   ResultSet rs = stmt.executeQuery();
+   while (rs.next()) {
+    JSONObject o = new JSONObject();
+    int id = rs.getInt(1);
+
+    if (id == app.getId())
+     o.add("id", "ap" + id);
+    else
+     o.add("id", "av" + id);
+
+    o.add("name", rs.getString(2));
+    arr.add(o);
+   }
+   rs.close();
+   stmt.close();
+  }
+  catch(SQLException ex)
+  {
+   ex.printStackTrace();
+  }
+  return arr;
+ }
+
+ public JSONArray getApplicationFilter(String name)
+ {
+  JSONArray arr = new JSONArray();
+
+  String sql = "select b.id, b.parentid, fullname || '.' || b.name from dm.dm_domain a, dm.dm_application b " +
+               "where a.id = b.domainid and fullname || '.' || b.name like ? and b.domainid in (" + m_domainlist + ") " +
+               "order by 3";
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   name = "%" + name + "%";
+   stmt.setString(1, name);
+   ResultSet rs = stmt.executeQuery();
+   while (rs.next()) {
+    JSONObject o = new JSONObject();
+    int id = rs.getInt(1);
+    int parentid = rs.getInt(2);
+
+    if (parentid == 0)
+     o.add("id", "ap" + id);
+    else
+     o.add("id", "av" + id);
+
+    o.add("name", rs.getString(3));
+    arr.add(o);
+   }
+   rs.close();
+   stmt.close();
+  }
+  catch(SQLException ex)
+  {
+   ex.printStackTrace();
+  }
+  return arr;
+ }
+
+ public JSONArray getComponentFilter(String name)
+ {
+  JSONArray arr = new JSONArray();
+
+  String sql = "select b.id, b.parentid, fullname || '.' || b.name from dm.dm_domain a, dm.dm_component b " +
+    "where a.id = b.domainid and fullname || '.' || b.name like ? and b.domainid in (" + m_domainlist + ") " +
+    "order by 3";
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   name = "%" + name + "%";
+   stmt.setString(1, name);
+   ResultSet rs = stmt.executeQuery();
+   while (rs.next()) {
+    JSONObject o = new JSONObject();
+    int id = rs.getInt(1);
+    int parentid = rs.getInt(2);
+
+    if (parentid == 0)
+     o.add("id", "co" + id);
+    else
+     o.add("id", "cv" + id);
+
+    o.add("name", rs.getString(3));
+    arr.add(o);
+   }
+   rs.close();
+   stmt.close();
+  }
+  catch(SQLException ex)
+  {
+   ex.printStackTrace();
+  }
+  return arr;
+ }
+
+ public JSONArray getEnvironmentFilter(String name)
+ {
+  JSONArray arr = new JSONArray();
+
+  String sql = "select b.id, fullname || '.' || b.name from dm.dm_domain a, dm.dm_environment b " +
+    "where a.id = b.domainid and fullname || '.' || b.name like ? and b.domainid in (" + m_domainlist + ") " +
+    "order by 2";
+  try
+  {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   name = "%" + name + "%";
+   stmt.setString(1, name);
+   ResultSet rs = stmt.executeQuery();
+   while (rs.next()) {
+    JSONObject o = new JSONObject();
+    int id = rs.getInt(1);
+
+    o.add("id", "en" + id);
+
+    o.add("name", rs.getString(2));
+    arr.add(o);
+   }
+   rs.close();
+   stmt.close();
+  }
+  catch(SQLException ex)
+  {
+   ex.printStackTrace();
+  }
+  return arr;
+ }
+
 	private void addApplicationVersions(Application app,List<Application> applist)
 	{
-		String sql = "SELECT id, isRelease FROM dm.dm_application WHERE predecessorid=? and status='N'";
+		String sql = "SELECT id, isRelease FROM dm.dm_application WHERE parentid=? and status='N' UNION SELECT id, isRelease FROM dm.dm_application WHERE id=? and status='N'";
 		try
 		{
 			PreparedStatement stmt = m_conn.prepareStatement(sql);
 			stmt.setInt(1, app.getId());
+			stmt.setInt(2, app.getId());
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
-				Application a = getApplication(rs.getInt(1),true);
+				Application a = getApplication(rs.getInt(1),false);
 				a.setIsRelease(getString(rs,2,"N"));
 				applist.add(a);
-				// Recurse
-				addApplicationVersions(a,applist);
 			}
 			rs.close();
 			stmt.close();
@@ -10508,7 +11008,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 			}
 
 			int numApplications=0;	// for releases
-			String sqlc = "SELECT count(*) FROM dm.dm_applicationcomponentflows WHERE appid=?";
+			String sqlc = "select cast(exists (select 1 FROM dm.dm_applicationcomponentflows WHERE appid=?) as int)";
 			String sql2;
 			if (!isRelease) {
 				sql2 = "SELECT DISTINCT e.id, e.name, e.summary "
@@ -12511,6 +13011,13 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 						item.addProperty("icon", "request");
 					} else {
 						int calid = getInteger(rs, 10, 0);
+						if(calid != 0) {
+							DMCalendarEvent evt = new DMCalendarEvent();
+							evt.setID(calid);
+							evt.setEventTitle(rs.getString(11));
+							item.addProperty("obj", evt.getLinkJSON());
+							item.addProperty("icon", "calendar");
+						}
 					}
 				} else {
 					// Other parts of a future union will go here
@@ -15035,6 +15542,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 
   if (table.equalsIgnoreCase("dm_component"))
   {
+   String GitUrl = "";
+   String GitCommit = "";
+
    List<ComponentItem> compitems = this.getComponentItems(id);
    List<DMAttribute> found = new ArrayList<DMAttribute>();
 
@@ -15046,8 +15556,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
      for (int i=0;i<compitems.size();i++)
      {
       ComponentItem ci = compitems.get(i);
-      if (ci.getItemkind() == ComponentItemKind.DOCKER)
-      {
+
        for(DMAttribute a : changes.deleted())
        {
         if (a.getName().equalsIgnoreCase("BuildId"))
@@ -15173,6 +15682,14 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
         else if (a.getName().equalsIgnoreCase("GitUrl"))
         {
          PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set giturl = null where id = ?");
+         stmt.setInt(1, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+        }
+        else if (a.getName().equalsIgnoreCase("Purl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set purl = null where id = ?");
          stmt.setInt(1, ci.getId());
          stmt.execute();
          stmt.close();
@@ -15372,6 +15889,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
          stmt.execute();
          stmt.close();
          found.add(a);
+         GitCommit = a.getValue();
         }
         else if (a.getName().equalsIgnoreCase("GitRepo"))
         {
@@ -15394,6 +15912,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
         else if (a.getName().equalsIgnoreCase("GitUrl"))
         {
          PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set giturl = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+         GitUrl = a.getValue();
+        }
+        else if (a.getName().equalsIgnoreCase("Purl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set purl = ? where id = ?");
          stmt.setString(1, a.getValue());
          stmt.setInt(2, ci.getId());
          stmt.execute();
@@ -15481,10 +16009,77 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
          stmt.close();
          found.add(a);
         }
-
+       else if (a.getName().equalsIgnoreCase("purl"))
+       {
+        PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set purl=? where id = ?");
+        stmt.setString(1, a.getValue());
+        stmt.setInt(2, ci.getId());
+        stmt.execute();
+        stmt.close();
+        found.add(a);
        }
+      }
+
+       if (GitUrl != "" && GitCommit != "")
+       {
+        ScoreCard sc = ScoreCard.getSecurityScore(GitUrl, GitCommit);
+
+        PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set "
+          + "Score=?, "
+          + "Maintained=?, "
+          + "CodeReview=?, "
+          + "CIIBestPractices=?, "
+          + "License=?, "
+          + "SignedReleases=?, "
+          + "DangerousWorkflow=?, "
+          + "Packaging=?, "
+          + "TokenPermissions=?, "
+          + "BranchProtection=?, "
+          + "BinaryArtifacts=?, "
+          + "PinnedDependencies=?, "
+          + "SecurityPolicy=?, "
+          + "Fuzzing=?, "
+          + "SAST=?, "
+          + "Vulnerabilities=?, "
+          + "ScoreCardPinned=?, "
+          + "CITests=?, "
+          + "Contributors=?, "
+          + "DependencyUpdateTool=?, "
+          + "SBOM=?, "
+          + "Webhooks=? "
+          + "where id = ?");
+        stmt.setFloat(1, sc.Score);
+        stmt.setFloat(2, sc.Maintained);
+        stmt.setFloat(3, sc.CodeReview);
+        stmt.setFloat(4, sc.CIIBestPractices);
+        stmt.setFloat(5, sc.License);
+        stmt.setFloat(6, sc.SignedReleases);
+        stmt.setFloat(7, sc.DangerousWorkflow);
+        stmt.setFloat(8, sc.Packaging);
+        stmt.setFloat(9, sc.TokenPermissions);
+        stmt.setFloat(10, sc.BranchProtection);
+        stmt.setFloat(11, sc.BinaryArtifacts);
+        stmt.setFloat(12, sc.PinnedDependencies);
+        stmt.setFloat(13, sc.SecurityPolicy);
+        stmt.setFloat(14, sc.Fuzzing);
+        stmt.setFloat(15, sc.SAST);
+        stmt.setFloat(16, sc.Vulnerabilities);
+        stmt.setBoolean(17, sc.pinned);
+        stmt.setFloat(18, sc.CITests);
+        stmt.setFloat(19, sc.Contributors);
+        stmt.setFloat(20, sc.DependencyUpdateTool);
+        stmt.setFloat(21, sc.SBOM);
+        stmt.setFloat(22, sc.Webhooks);
+        stmt.setInt(23, ci.getId());
+        stmt.execute();
+        stmt.close();
+       }
+
        changes.removeAllUpdated(found);
        found.clear();
+
+       GitUrl = "";
+       GitCommit = "";
 
        for(DMAttribute a : changes.added())
        {
@@ -15604,6 +16199,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
          stmt.execute();
          stmt.close();
          found.add(a);
+         GitCommit = a.getValue();
         }
         else if (a.getName().equalsIgnoreCase("GitRepo"))
         {
@@ -15626,6 +16222,16 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
         else if (a.getName().equalsIgnoreCase("GitUrl"))
         {
          PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set giturl = ? where id = ?");
+         stmt.setString(1, a.getValue());
+         stmt.setInt(2, ci.getId());
+         stmt.execute();
+         stmt.close();
+         found.add(a);
+         GitUrl = a.getValue();
+        }
+        else if (a.getName().equalsIgnoreCase("Purl"))
+        {
+         PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set purl = ? where id = ?");
          stmt.setString(1, a.getValue());
          stmt.setInt(2, ci.getId());
          stmt.execute();
@@ -15714,10 +16320,64 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
          found.add(a);
         }
        }
+
+       if (GitUrl != "" && GitCommit != "")
+       {
+        ScoreCard sc = ScoreCard.getSecurityScore(GitUrl, GitCommit);
+
+        PreparedStatement stmt = m_conn.prepareStatement("update dm.dm_componentitem set "
+          + "Score=?, "
+          + "Maintained=?, "
+          + "CodeReview=?, "
+          + "CIIBestPractices=?, "
+          + "License=?, "
+          + "SignedReleases=?, "
+          + "DangerousWorkflow=?, "
+          + "Packaging=?, "
+          + "TokenPermissions=?, "
+          + "BranchProtection=?, "
+          + "BinaryArtifacts=?, "
+          + "PinnedDependencies=?, "
+          + "SecurityPolicy=?, "
+          + "Fuzzing=?, "
+          + "SAST=?, "
+          + "Vulnerabilities=?, "
+          + "ScoreCardPinned=?, "
+          + "CITests=?, "
+          + "Contributors=?, "
+          + "DependencyUpdateTool=?, "
+          + "SBOM=?, "
+          + "Webhooks=? "
+          + "where id = ?");
+        stmt.setFloat(1, sc.Score);
+        stmt.setFloat(2, sc.Maintained);
+        stmt.setFloat(3, sc.CodeReview);
+        stmt.setFloat(4, sc.CIIBestPractices);
+        stmt.setFloat(5, sc.License);
+        stmt.setFloat(6, sc.SignedReleases);
+        stmt.setFloat(7, sc.DangerousWorkflow);
+        stmt.setFloat(8, sc.Packaging);
+        stmt.setFloat(9, sc.TokenPermissions);
+        stmt.setFloat(10, sc.BranchProtection);
+        stmt.setFloat(11, sc.BinaryArtifacts);
+        stmt.setFloat(12, sc.PinnedDependencies);
+        stmt.setFloat(13, sc.SecurityPolicy);
+        stmt.setFloat(14, sc.Fuzzing);
+        stmt.setFloat(15, sc.SAST);
+        stmt.setFloat(16, sc.Vulnerabilities);
+        stmt.setBoolean(17, sc.pinned);
+        stmt.setFloat(18, sc.CITests);
+        stmt.setFloat(19, sc.Contributors);
+        stmt.setFloat(20, sc.DependencyUpdateTool);
+        stmt.setFloat(21, sc.SBOM);
+        stmt.setFloat(22, sc.Webhooks);
+        stmt.setInt(23, ci.getId());
+        stmt.execute();
+        stmt.close();
+       }
        changes.removeAllAdded(found);
        found.clear();
       }
-     }
     }
     catch (Exception e)
     {
@@ -19950,9 +20610,9 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		for (ComponentItem ci: cis)
 		{
    String sql = "INSERT INTO dm.dm_componentitem(id,name,summary,compid,repositoryid,target,"
-     +  "predecessorid,xpos,ypos,creatorid,created,modifierid,modified,status,rollup,rollback, dockerrepo, kind, buildid, buildurl, chart, operator, builddate, dockersha, dockertag, gitcommit, gitrepo, gittag, giturl, chartversion, chartnamespace, chartrepo, chartrepourl) "
+     +  "predecessorid,xpos,ypos,creatorid,created,modifierid,modified,status,rollup,rollback, dockerrepo, kind, buildid, buildurl, chart, operator, builddate, dockersha, dockertag, gitcommit, gitrepo, gittag, giturl, chartversion, chartnamespace, chartrepo, chartrepourl, purl) "
      +  "SELECT ?,name,summary,?,repositoryid,target,"
-     + "?,xpos,ypos,?,?,?,?,'N', rollup, rollback, dockerrepo, kind, buildid, buildurl, chart, operator, builddate, dockersha, dockertag, gitcommit, gitrepo, gittag, giturl, chartversion, chartnamespace, chartrepo, chartrepourl "
+     + "?,xpos,ypos,?,?,?,?,'N', rollup, rollback, dockerrepo, kind, buildid, buildurl, chart, operator, builddate, dockersha, dockertag, gitcommit, gitrepo, gittag, giturl, chartversion, chartnamespace, chartrepo, chartrepourl, purl "
      + "FROM dm.dm_componentitem "
      +  "WHERE id=? AND status='N'";
 
@@ -21423,7 +22083,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 		throw new RuntimeException("Failed to create category");
 	}
 
- public void createSaaSClient(String clientid, Domain domain, String lictype, int liccnt, String provider, String providerid, HttpServletRequest request)
+ public void createSaaSClient(String clientid, Domain domain, String lictype, int liccnt, String provider, String providerid, String installpath)
  {
   int count = -1;
   int domainid = domain.getId();
@@ -21484,7 +22144,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
     m_conn.commit();
     Domain dom = getDomain(domainid);
     Domain parent = dom.getDomain();
-    RunDomainImport("GLOBAL.Online Store Company", parent.getFullName() + ".Online Store Company", request);
+    RunDomainImport("GLOBAL.Online Store Company", parent.getFullName() + ".Online Store Company", installpath);
     return;
    }
    else // engine not found for domain
@@ -21543,7 +22203,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
 
     Domain dom = getDomain(domainid);
     Domain parent = dom.getDomain();
-    RunDomainImport("GLOBAL.Online Store Company", parent.getFullName() + ".Online Store Company", request);
+    RunDomainImport("GLOBAL.Online Store Company", parent.getFullName() + ".Online Store Company", installpath);
 
     return;
    }
@@ -21557,15 +22217,12 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   throw new RuntimeException("Failed to create saas client");
  }
 
- void RunDomainImport(String fromdomain, String todomain, HttpServletRequest request)
+ void RunDomainImport(String fromdomain, String todomain, String installpath)
  {
-  String jsonpath="/WEB-INF/schema";
-  System.out.println("Taking json scripts from "+jsonpath);
-
   String user = System.getenv("dhuser");
   String password = System.getenv("dhpass");
 
-  String absoluteDiskPath = request.getServletContext().getRealPath(jsonpath) + "/vintage_llc.json";
+  String absoluteDiskPath = installpath + "/vintage_llc.json";
 
   List<String> commands = new ArrayList<String>();
   commands.add("/usr/local/bin/dh");
@@ -21615,7 +22272,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
    while (rs1.next())
    {
     String compname = rs1.getString(1);
-    LoadCompFiles(request, compname);
+    LoadCompFiles(installpath, compname);
    }
    rs1.close();
    st1.close();
@@ -21626,19 +22283,17 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   }
  }
 
- private void LoadCompFiles(HttpServletRequest request, String compname)
+ private void LoadCompFiles(String installpath, String compname)
  {
-  String jsonpath="/WEB-INF/schema";
-  System.out.println("Taking json scripts from "+jsonpath);
 
   String user = System.getenv("dhuser");
   String password = System.getenv("dhpass");
 
-  String safety = request.getServletContext().getRealPath(jsonpath) + "/safety.json";
-  String cyclone = request.getServletContext().getRealPath(jsonpath) + "/cyclonedx.json";
-  String readme = request.getServletContext().getRealPath(jsonpath) + "/README.md";
-  String swagger = request.getServletContext().getRealPath(jsonpath) + "/swagger.json";
-  String license = request.getServletContext().getRealPath(jsonpath) + "/LICENSE.md";
+  String safety = installpath + "/safety.json";
+  String cyclone = installpath + "/cyclonedx.json";
+  String readme = installpath + "/README.md";
+  String swagger = installpath + "/swagger.json";
+  String license = installpath + "/LICENSE.md";
 
   String[] parts = compname.split(";");
   String compversion = "";
@@ -25382,7 +26037,7 @@ public List<TreeObject> getTreeObjects(ObjectType ot, int domainID, int catid, S
   if (!objtype.equalsIgnoreCase("application"))
    return null;
 
-  if (isSaaS(m_conn))
+  if (!isSaaS(m_conn))
   {
    liccnt = m_license_cnt;
   }
@@ -25788,48 +26443,56 @@ return ret;
  }
 
 
- public JSONArray getAppList()
+ public JSONArray getApps4Comp(int compid)
  {
   HashMap<Integer,String> fulldoms = new HashMap<Integer,String>();
 
   String sql = "select b.id, b.name, c.name, a.deploymentid, a.finishts, a.exitcode, b.domainid, b.predecessorid, f.name "
-    + "from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c, dm.dm_application f "
+    + "from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c, dm.dm_application f, dm.dm_applicationcomponent g  "
     + "where b.status = 'N' "
     + "and b.isrelease = 'N' "
     + "and b.predecessorid = f.id "
     + "and a.appid = b.id "
     + "and a.envid = c.id  "
+    + "and b.id = g.appid "
+    + "and g.compid = " + compid + " "
     + "and (a.appid, a.envid, a.deploymentid) in (select appid, envid, max(deploymentid) from dm.dm_deployment group by appid, envid)  "
     + "and  b.domainid in (" + m_domainlist + ") "
     + "union "
     + "select b.id, b.name, '', -99,  NOW()::timestamp, -1, b.domainid, b.predecessorid, f.name "
-    + "from dm.dm_application b, dm.dm_application f "
+    + "from dm.dm_application b, dm.dm_application f, dm.dm_applicationcomponent g "
     + "where b.status = 'N' "
     + "and  b.isrelease = 'N' "
     + "and b.predecessorid = f.id "
+    + "and b.id = g.appid "
+    + "and g.compid = " + compid + " "
     + "and  b.id not in "
     + "(SELECT appid FROM dm.dm_deployment where finishts is not NULL) "
     + "and  b.domainid in (" + m_domainlist + ") "
     + "union "
     + "select b.id, b.name, c.name, a.deploymentid, a.finishts, a.exitcode, b.domainid, b.predecessorid, null "
-    + "from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c "
+    + "from dm.dm_deployment a, dm.dm_application b, dm.dm_environment c, dm.dm_applicationcomponent g "
     + "where b.status = 'N' "
     + "and b.isrelease = 'N' "
     + "and b.predecessorid is null "
     + "and a.appid = b.id "
     + "and a.envid = c.id  "
+    + "and b.id = g.appid "
+    + "and g.compid = " + compid + " "
     + "and (a.appid, a.envid, a.deploymentid) in (select appid, envid, max(deploymentid) from dm.dm_deployment group by appid, envid)  "
     + "and  b.domainid in (" + m_domainlist + ") "
     + "union "
     + "select b.id, b.name, '', -99,  NOW()::timestamp, -1, b.domainid, b.predecessorid, null "
-    + "from dm.dm_application b "
+    + "from dm.dm_application b, dm.dm_applicationcomponent g "
     + "where b.status = 'N' "
     + "and  b.isrelease = 'N' "
     + "and b.predecessorid is null "
+    + "and b.id = g.appid "
+    + "and g.compid = " + compid + " "
     + "and  b.id not in "
     + "(SELECT appid FROM dm.dm_deployment where finishts is not NULL) "
     + "and  b.domainid in (" + m_domainlist + ") "
-    + "order by 2,4";
+    + "order by 2 desc,4 desc";
 
   JSONArray ret = new JSONArray();
 
@@ -25967,47 +26630,187 @@ return ret;
   return ret;
  }
 
+ public JSONArray getAppList()
+ {
+  JSONArray ret = new JSONArray();
+
+  if (this.getDomainList() == "")
+   return ret;
+
+  String sql = "WITH ranked_applist AS ( "
+    + "SELECT "
+    + "   id, "
+    + "   name, "
+    + "   created, "
+    + "   parentid, "
+    + "   predecessorid, "
+    + "   environment_name, "
+    + "   deploymentid, "
+    + "   finishts,   "
+    + "   exitcode, "
+    + "   domainid, "
+    + "   predecessor_name, "
+    + "   fullname, "
+    + "   ROW_NUMBER() OVER (PARTITION BY parentid ORDER BY created DESC) AS rn "
+    + "FROM "
+    + "   dm_applist "
+    + "WHERE  domainid in (" + this.getDomainList() + ") "
+    + " ) "
+    + "SELECT "
+    + "   id, "
+    + "   name, "
+    + "   environment_name, "
+    + "   deploymentid, "
+    + "   finishts, "
+    + "   exitcode, "
+    + "   domainid, "
+    + "   predecessorid, "
+    + "   predecessor_name, "
+    + "   created, "
+    + "   parentid, "
+    + "   fullname "
+    + "FROM "
+    + "   ranked_applist "
+    + "WHERE "
+    + "   rn = 1 "
+    + "order by 2,4";
+
+  try {
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    JSONObject obj = new JSONObject();
+
+    int notDeployed = rs.getInt(4);
+
+    if (notDeployed == -99)
+    {
+     Integer parentid = rs.getInt(11);
+     String id = Integer.valueOf(rs.getInt(1)).toString();
+     String parent = rs.getString(9);
+
+     if (parentid == 0)
+      id = "ap" + id;
+     else
+      id = "av" + id;
+
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));
+
+     Integer domainid = rs.getInt(7);
+
+     String dom = rs.getString(12);
+
+     obj.add("domain", dom);
+     obj.add("domainid", domainid);
+     if (parentid > 0)
+      obj.add("parent", parent);
+     else
+       obj.add("parent", "-");
+     obj.add("environment", "-");
+     obj.add("deployid", "Never Deployed");
+     obj.add("finished", "-");
+     obj.add("exitcode","-");
+
+     ret.add(obj);
+    }
+    else
+    {
+     Integer parentid = rs.getInt(11);
+     String id = Integer.valueOf(rs.getInt(1)).toString();
+
+     if (parentid == 0)
+      id = "ap" + id;
+     else
+      id = "av" + id;
+
+     obj.add("id", id);
+     obj.add("name", rs.getString(2));
+
+     Integer domainid = rs.getInt(7);
+     String parent = rs.getString(9);
+     String dom = rs.getString(12);
+
+     int deployid = rs.getInt(4);
+
+     obj.add("domain", dom);
+     obj.add("domainid", domainid);
+     if (parentid > 0)
+      obj.add("parent", parent);
+     else
+       obj.add("parent", "-");
+     obj.add("environment", rs.getString(3));
+     obj.add("deployid", deployid);
+
+     int ec = rs.getInt(6);
+     String exitcode = "Failed";
+     if (ec == 0)
+      exitcode = "Success";
+
+     Timestamp ts = rs.getTimestamp(5);
+     if (ts != null)
+       obj.add("finished", ts.toString());
+     else
+     {
+      obj.add("finished","-");
+      exitcode = "-";
+     }
+
+     obj.add("exitcode",exitcode);
+     ret.add(obj);
+    }
+   }
+   rs.close();
+   stmt.close();
+   return ret;
+  } catch (SQLException e) {
+   e.printStackTrace();
+  }
+  return ret;
+ }
+
  public JSONArray getCompList()
  {
   HashMap<Integer,String> fulldoms = new HashMap<Integer,String>();
 
-  String sql = "select distinct d.id, d.name, e.name, a.deploymentid, a.finishts, a.exitcode, d.domainid, d.predecessorid, f.name "
-    + "from dm.dm_deployment a, dm.dm_deploymentcomps c, dm.dm_application b, "
-    + "dm.dm_component d, dm.dm_environment e, dm.dm_component f "
-    + "where a.appid = b.id "
-    + "and a.deploymentid = c.deploymentid "
-    + "and c.compid = d.id "
-    + "and d.status = 'N' "
-    + "and e.id = a.envid "
-    + "and d.predecessorid = f.id "
-    + "and d.domainid in (" + this.getDomainList() + ") "
-    + "and (a.envid, c.compid, a.deploymentid) in (SELECT envid, b.compid, MAX(x.deploymentid) as deploymentid FROM dm.dm_deployment x, dm.dm_deploymentcomps b where x.deploymentid = b.deploymentid GROUP BY x.envid, b.compid) "
-    + "union "
-    + "select distinct d.id, d.name, '', -99, now()::timestamp, 0, d.domainid, d.predecessorid, f.name "
-    + "from dm.dm_component d, dm.dm_component f "
-    + "where  d.status = 'N' "
-    + "and d.predecessorid = f.id "
-    + "and d.domainid in (" + this.getDomainList() + ") "
-    + "and d.id not in (select compid from dm.dm_deploymentcomps) "
-    + "union "
-    + "select distinct d.id, d.name, e.name, a.deploymentid, a.finishts, a.exitcode, d.domainid, d.predecessorid, null "
-    + "from dm.dm_deployment a, dm.dm_deploymentcomps c, dm.dm_application b, dm.dm_component d, dm.dm_environment e "
-    + "where a.appid = b.id "
-    + "and a.deploymentid = c.deploymentid "
-    + "and c.compid = d.id "
-    + "and d.status = 'N' "
-    + "and e.id = a.envid "
-    + "and d.predecessorid is null "
-    + "and d.domainid in (" + this.getDomainList() + ") "
-    + "and (a.envid, c.compid, a.deploymentid) in (SELECT envid, b.compid, MAX(x.deploymentid) as deploymentid FROM dm.dm_deployment x, dm.dm_deploymentcomps b where x.deploymentid = b.deploymentid GROUP BY x.envid, b.compid) "
-    + "union "
-    + "select distinct d.id, d.name, '', -99, now()::timestamp, 0, d.domainid, d.predecessorid, null "
-    + "from dm.dm_component d "
-    + "where  d.status = 'N' "
-    + "and d.predecessorid is null "
-    + "and d.domainid in (" + this.getDomainList() + ") "
-    + "and d.id not in (select compid from dm.dm_deploymentcomps)";
-
+  String sql = "WITH ranked_complist AS ("
+    + "    SELECT "
+    + "        id, "
+    + "        name, "
+    + "        created, "
+    + "        parentid, "
+    + "        predecessorid,"
+    + "        environment_name, "
+    + "        deploymentid, "
+    + "        finishts, "
+    + "        exitcode, "
+    + "        domainid, "
+    + "        predecessor_name,"
+    + "        fullname,"
+    + "        ROW_NUMBER() OVER (PARTITION BY parentid ORDER BY created DESC) AS rn"
+    + "    FROM "
+    + "        dm_complist"
+    + "    WHERE domainid in (" + this.getDomainList() + ")"
+    + ")"
+    + " SELECT "
+    + "    id, "
+    + "    name, "
+    + "    environment_name, "
+    + "    deploymentid, "
+    + "    finishts, "
+    + "    exitcode, "
+    + "    domainid, "
+    + "    predecessorid,"
+    + "    predecessor_name, "
+    + "    created, "
+    + "    parentid, "
+    + "    fullname "
+    + " FROM "
+    + "    ranked_complist "
+    + " WHERE "
+    + "    rn = 1";
 
   JSONArray ret = new JSONArray();
 
@@ -26026,6 +26829,7 @@ return ret;
      int parentid = rs.getInt(8);
      String id = rs.getString(1);
      String parent = rs.getString(9);
+     String fullname = rs.getString(12);
 
      if (parentid == 0)
       id = "co" + id;
@@ -26037,26 +26841,7 @@ return ret;
 
      Integer domainid = rs.getInt(7);
 
-     String dom = fulldoms.get(domainid);
-
-     if (dom == null)
-     {
-      Domain domain  = this.getDomain(domainid);
-      dom = "";
-
-      if (domain != null)
-      {
-       dom = domain.getFullDomain();
-       fulldoms.put(domainid, dom);
-      }
-      else
-      {
-       System.out.println("Invalid domain for:" + id + " - " + rs.getString(2));
-       continue;
-      }
-     }
-
-     obj.add("domain", dom);
+     obj.add("domain", fullname);
      obj.add("domainid", domainid);
      if (parentid > 0)
        obj.add("parent", parent);
@@ -26075,6 +26860,7 @@ return ret;
      Integer parentid = rs.getInt(8);
      String id = rs.getString(1);
      String parent = rs.getString(9);
+     String fullname = rs.getString(12);
 
      if (parentid == 0)
       id = "co" + id;
@@ -26086,26 +26872,7 @@ return ret;
 
      Integer domainid = rs.getInt(7);
 
-     String dom = fulldoms.get(domainid);
-
-     if (dom == null)
-     {
-      Domain domain  = this.getDomain(domainid);
-      dom = "";
-
-      if (domain != null)
-      {
-       dom = domain.getFullDomain();
-       fulldoms.put(domainid, dom);
-      }
-      else
-      {
-       System.out.println("Invalid domain for:" + id + " - " + rs.getString(2));
-       continue;
-      }
-     }
-
-     obj.add("domain", dom);
+     obj.add("domain", fullname);
      obj.add("domainid", domainid);
      if (parentid > 0)
       obj.add("parent", parent);
@@ -27871,6 +28638,15 @@ return ret;
 
     	 }
      }
+     else
+      {
+       if (url.contains("atlassian"))
+       {
+        credUsername = "steve@deployhub.com";
+        credPassword = "8DcQPxhPutqofPZ4dWFK05C1";
+        credentials = Base64.encodeBase64((credUsername + ":" + credPassword).getBytes(StandardCharsets.UTF_8));
+       }
+      }
 
      final PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
      connManager.setMaxTotal(200);
@@ -28090,6 +28866,8 @@ private String readUrl(String urlString) throws Exception
     rs2.close();
     st.close();
    }
+
+   updateFullDomainName(domainid);
   }
   catch (SQLException e)
   {
@@ -28139,6 +28917,7 @@ public void SyncAnsible(ServletContext context)
      }
      rs2.close();
      st.close();
+     updateFullDomainName(domainid);
     }
     catch (SQLException e)
     {
@@ -30416,8 +31195,8 @@ public JSONArray getComp2Endpoints(int compid)
 
   deployid++;
 
-  if (skipdeploy.equalsIgnoreCase("Y"))
-   deployid = -1;
+//  if (skipdeploy.equalsIgnoreCase("Y"))
+//   deployid = -1;
 
   ret.add("deployid", deployid);
 
@@ -30762,7 +31541,7 @@ public JSONArray getComp2Endpoints(int compid)
     app = latestapp;
   }
 
-  if (skipdeploy.equalsIgnoreCase("N"))
+  if (deployid > 0)
   {
    try
    {
@@ -31460,65 +32239,6 @@ public JSONArray getComp2Endpoints(int compid)
   return data;
  }
 
- public String SignUp(String domname, String username)
- {
-  Domain dom = null;
-  try
-  {
-   String[] parts = domname.split("\\.");
-   parts = Arrays.copyOf(parts, parts.length - 1);
-   String name = String.join(".", parts);
-   dom = getDomainByName(name);
-  }
-  catch (RuntimeException e)
-  {
-  }
-
-  if (dom != null)
-   return("Company already exist");
-
-  dom = null;
-  try
-  {
-   dom = getDomainByName(domname);
-  }
-  catch (RuntimeException e)
-  {
-  }
-
-  if (dom != null)
-   return("Company and Project already exist");
-
-  User user = null;
-
-  try
-  {
-   user = getUserByName(domname + "." + username);
-  }
-  catch (RuntimeException e)
-  {
-
-  }
-
-  if (user != null)
-   return("Username already exist");
-
-  user = null;
-  try
-  {
-   user = getUserByName(username);
-  }
-  catch (RuntimeException e)
-  {
-
-  }
-
-  if (user != null)
-   return("Username is already in use");
-
-  return "";
- }
-
  public int getComp4Tag(DMSession so, String image_tag)
  {
   int compid = -1;
@@ -31771,21 +32491,146 @@ public JSONArray getComp2Endpoints(int compid)
   return gitcommit;
  }
 
- public JSONArray getApps4PackageList(String pkgname, String pkgver)
+ public void fetchAndInsertData(String deppkgUrl, String pkgname, String pkgversion)
  {
-  String sql = "select distinct c.id, c.domainid, fulldomain(c.domainid, c.name), fulldomain(a.domainid, a.name), b.packagename, b.packageversion "
-    + "from dm.dm_component a, dm.dm_componentdeps b, dm.dm_application c, dm.dm_applicationcomponent d "
-    + "where a.id = b.compid  "
-    + "and b.compid = d.compid "
-    + "and c.id = d.appid "
-    + "and b.packagename like '%" + pkgname + "%' ";
+  if (deppkgUrl != null && !deppkgUrl.isEmpty())
+  {
+    String url = deppkgUrl + "?pkgname=" + pkgname;
 
-  if (pkgver != null)
-   sql +=  "and b.packageversion like '%" + pkgver + "%'";
+    if (!pkgversion.isEmpty())
+      url += "&pkgversion=" + pkgversion;
+
+    JsonObject data = fetchData(url);
+    if (data != null)
+    {
+     insertSbomData(data.getAsJsonArray("data"));
+    }
+  }
+ }
+
+ private JsonObject fetchData(String urlString)
+ {
+  try
+  {
+  URL url = new URL(urlString);
+  HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+  conn.setRequestMethod("GET");
+  conn.setConnectTimeout(20000);
+  conn.setReadTimeout(20000);
+
+  int status = conn.getResponseCode();
+  if (status != 200)
+  {
+   return null;
+  }
+
+  BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+  String inputLine;
+  StringBuilder content = new StringBuilder();
+  while ((inputLine = in.readLine()) != null)
+  {
+   content.append(inputLine);
+  }
+  in.close();
+  conn.disconnect();
+  JsonObject json = new JsonParser().parse(content.toString()).getAsJsonObject();
+  return json;
+  }
+  catch (Exception e)
+  {
+  }
+  return null;
+ }
+
+ private void insertSbomData(JsonArray rows)
+ {
+  String sql = "INSERT INTO dm_sbom (compid, packagename, packageversion, name, url, summary, purl, pkgtype) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+  try (PreparedStatement pstmt = m_conn.prepareStatement(sql))
+  {
+   for (int i = 0; i < rows.size(); i++)
+   {
+    JsonObject row = rows.get(i).getAsJsonObject();
+    pstmt.setInt(1, row.get("key").getAsInt());
+    pstmt.setString(2, row.get("packagename").getAsString());
+    pstmt.setString(3, row.get("packageversion").getAsString());
+    pstmt.setString(4, row.get("name").getAsString());
+    pstmt.setString(5, row.get("url").getAsString());
+    pstmt.setString(6, row.get("summary").getAsString());
+    pstmt.setString(7, "");
+    pstmt.setString(8, row.get("pkgtype").getAsString());
+    pstmt.addBatch();
+   }
+   pstmt.executeBatch();
+  }
+  catch (SQLException e)
+  {
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  }
+ }
+
+ public JSONArray getApps4PackageList(String pkgname, String pkgversion)
+ {
+  String deppkgUrl = System.getenv("SCEC_DEPPKG_URL");
+  if (deppkgUrl == null || deppkgUrl.isEmpty()) {
+      String deppkgHost = System.getenv("SCEC_DEPPKG_SERVICE_HOST");
+      if (deppkgHost == null || deppkgHost.isEmpty()) {
+          deppkgHost = "127.0.0.1";
+      }
+      try {
+          InetAddress hostAddress = InetAddress.getByName(deppkgHost);
+          String host = hostAddress.getHostName();
+          String port = System.getenv("SCEC_DEPPKG_SERVICE_PORT");
+          if (port == null || port.isEmpty()) {
+              port = "80";
+          }
+          deppkgUrl = "http://" + host + ":" + port + "/msapi/packages";
+      } catch (UnknownHostException e) {
+
+      }
+  }
 
   JSONArray ret = new JSONArray();
 
   try {
+   String sqlStmt = "CREATE TEMPORARY TABLE IF NOT EXISTS dm_sbom (compid INTEGER NOT NULL, packagename VARCHAR(1024) NOT NULL, packageversion VARCHAR(256) NOT NULL, name VARCHAR(1024), url VARCHAR(1024), summary VARCHAR(8096), purl VARCHAR(1024), pkgtype VARCHAR(80))";
+   Statement c_stmt = m_conn.createStatement();
+   c_stmt.execute(sqlStmt);
+   c_stmt.close();
+
+   fetchAndInsertData(deppkgUrl, pkgname, pkgversion);
+
+   String sql = "select distinct c.id, c.domainid, fulldomain(c.domainid, c.name), fulldomain(a.domainid, a.name), b.packagename, b.packageversion "
+     + "from dm.dm_component a, dm.dm_componentdeps b, dm.dm_application c, dm.dm_applicationcomponent d "
+     + "where a.id = b.compid  "
+     + "and b.compid = d.compid "
+     + "and c.id = d.appid "
+     + "and b.packagename like '%" + pkgname + "%' "
+     + "UNION "
+     + "select distinct c.id, c.domainid, fulldomain(c.domainid, c.name), fulldomain(a.domainid, a.name), b.packagename, b.packageversion "
+     + "from dm.dm_component a, dm_sbom b, dm.dm_application c, dm.dm_applicationcomponent d "
+     + "where a.id = b.compid  "
+     + "and b.compid = d.compid "
+     + "and c.id = d.appid "
+     + "and b.packagename like '%" + pkgname + "%' ";
+
+   if (pkgversion != null && !pkgversion.isEmpty())
+    sql = "select distinct c.id, c.domainid, fulldomain(c.domainid, c.name), fulldomain(a.domainid, a.name), b.packagename, b.packageversion "
+      + "from dm.dm_component a, dm.dm_componentdeps b, dm.dm_application c, dm.dm_applicationcomponent d "
+      + "where a.id = b.compid  "
+      + "and b.compid = d.compid "
+      + "and c.id = d.appid "
+      + "and b.packagename like '%" + pkgname + "%' "
+      + "and b.packageversion like '%" + pkgversion + "%' "
+      + "UNION "
+      + "select distinct c.id, c.domainid, fulldomain(c.domainid, c.name), fulldomain(a.domainid, a.name), b.packagename, b.packageversion "
+      + "from dm.dm_component a, dm_sbom b, dm.dm_application c, dm.dm_applicationcomponent d "
+      + "where a.id = b.compid  "
+      + "and b.compid = d.compid "
+      + "and c.id = d.appid "
+      + "and b.packagename like '%" + pkgname + "%' "
+      + "and b.packageversion like '%" + pkgversion + "%' ";
+
    PreparedStatement stmt = m_conn.prepareStatement(sql);
    ResultSet rs = stmt.executeQuery();
 
@@ -31793,21 +32638,55 @@ public JSONArray getComp2Endpoints(int compid)
 
    while (rs.next())
    {
-    JSONObject obj = new JSONObject();
-
     String id = "ap" + rs.getInt(1);
     int appDom = rs.getInt(2);
 
     if (!domlist.contains("," + appDom + ","))
      continue;
 
-    obj.add("id", id);
-    obj.add("appname", rs.getString(3));
-    obj.add("compname", rs.getString(4));
-    obj.add("packagename", rs.getString(5));
-    obj.add("packageversion", rs.getString(6));
+    String appname = rs.getString(3);
+    String compname = rs.getString(4);
+    String packagename = rs.getString(5);
+    String packageversion = rs.getString(6);
+    ObjectTypeAndId otid = new ObjectTypeAndId(id);
 
-    ret.add(obj);
+    JSONArray arr = getApplicationDeployments(otid);
+
+    JsonArray deployments = new JsonParser().parse(arr.getJSON()).getAsJsonArray();
+
+    if (deployments.size() > 0)
+    {
+     for (int i=0;i<deployments.size();i++)
+     {
+      JsonObject row = deployments.get(i).getAsJsonObject();
+
+      String environemt = row.get("env").getAsString();
+      String deployid = row.get("id").getAsString();
+
+      JSONObject obj = new JSONObject();
+      obj.add("id", id);
+      obj.add("appname",appname);
+      obj.add("compname", compname);
+      obj.add("packagename", packagename);
+      obj.add("packageversion", packageversion);
+      obj.add("environment", environemt);
+      obj.add("deployid", deployid);
+
+      ret.add(obj);
+     }
+    }
+    else
+    {
+     JSONObject obj = new JSONObject();
+     obj.add("id", id);
+     obj.add("appname",appname);
+     obj.add("compname", compname);
+     obj.add("packagename", packagename);
+     obj.add("packageversion", packageversion);
+     obj.add("environment", "Not Deployed");
+     obj.add("deployid", "");
+     ret.add(obj);
+    }
    }
    rs.close();
    stmt.close();
@@ -31817,6 +32696,8 @@ public JSONArray getComp2Endpoints(int compid)
   }
   return ret;
  }
+
+
 
  public void setCompProvides(int compid, HttpServletRequest request, HttpServletResponse response)
  {
@@ -31863,6 +32744,149 @@ public JSONArray getComp2Endpoints(int compid)
    e.printStackTrace();
   }
  }
+
+ public String getComponentPackages(int compid)
+ {
+  String ret = "\tSBOM\n";
+  String sql = "SELECT packagename, packageversion, name FROM dm_componentdeps where compid = ? order by 1, 2, 3";
+  PreparedStatement stmt;
+  try
+  {
+   stmt = m_conn.prepareStatement(sql);
+
+   stmt.setInt(1, compid);
+   stmt.execute();
+
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    String packagename = rs.getString(1);
+    String packageversion = rs.getString(2);
+    String license = rs.getString(3);
+
+    ret += "\t\t" + packagename + "@" + packageversion + " - " + license + "\n";
+   }
+
+   rs.close();
+   stmt.close();
+  }
+  catch (SQLException e)
+  {
+  }
+  return ret;
+ }
+
+ public String getComponentCVEs(int compid)
+ {
+  String ret = "\tCVE\n";
+
+    String sql = "select distinct b.packagename, b.packageversion, a.id from dm.dm_vulns a, dm.dm_componentdeps b "
+      + "where ((b.purl is not NULL and a.purl = b.purl) or (a.packagename = b.packagename and a.packageversion = b.packageversion)) and b.compid = ? "
+      + "order by 1, 2, 3";
+
+    PreparedStatement stmt;
+    try
+    {
+     stmt = m_conn.prepareStatement(sql);
+
+     stmt.setInt(1, compid);
+     stmt.execute();
+
+     ResultSet rs = stmt.executeQuery();
+
+     while (rs.next())
+     {
+      String packagename = rs.getString(1);
+      String packageversion = rs.getString(2);
+      String id = rs.getString(3);
+
+      ret += "\t\t" + packagename + "@" + packageversion + " - " + id + "\n";
+     }
+
+     rs.close();
+     stmt.close();
+    }
+    catch (SQLException e)
+    {
+    }
+    return ret;
+ }
+
+
+ public String getApplicationPackages(int appid)
+ {
+  String ret = "\tSBOM\n";
+  String sql = "SELECT packagename, packageversion, a.name, c.name FROM dm_componentdeps a, dm_applicationcomponent b, dm_component c "
+    + "where a.compid = b.compid and b.compid = c.id and b.appid = ? order by 1, 2, 3, 4";
+  PreparedStatement stmt;
+  try
+  {
+   stmt = m_conn.prepareStatement(sql);
+
+   stmt.setInt(1, appid);
+   stmt.execute();
+
+   ResultSet rs = stmt.executeQuery();
+
+   while (rs.next())
+   {
+    String packagename = rs.getString(1);
+    String packageversion = rs.getString(2);
+    String license = rs.getString(3);
+    String compname = rs.getString(4);
+
+    ret += "\t\t" + packagename + "@" + packageversion + " - " + license + " for " + compname + "\n";
+   }
+
+   rs.close();
+   stmt.close();
+  }
+  catch (SQLException e)
+  {
+  }
+  return ret;
+ }
+
+ public String getApplicationCVEs(int appid)
+ {
+  String ret = "\tCVE\n";
+
+    String sql = "select b.packagename, b.packageversion, a.id, c.name from dm.dm_vulns a, dm.dm_componentdeps b, dm.dm_component c "
+      + "where ((b.purl is not NULL and a.purl = b.purl) or (a.packagename = b.packagename and a.packageversion = b.packageversion)) "
+      + "and b.compid = c.id and b.compid in (select compid from dm.dm_applicationcomponent where appid = ?)"
+      + "order by 1, 2, 3, 4";
+
+    PreparedStatement stmt;
+    try
+    {
+     stmt = m_conn.prepareStatement(sql);
+
+     stmt.setInt(1, appid);
+     stmt.execute();
+
+     ResultSet rs = stmt.executeQuery();
+
+     while (rs.next())
+     {
+      String packagename = rs.getString(1);
+      String packageversion = rs.getString(2);
+      String id = rs.getString(3);
+      String compname = rs.getString(4);
+
+      ret += "\t\t" + packagename + "@" + packageversion + " - " + id + " for " + compname + "\n";
+     }
+
+     rs.close();
+     stmt.close();
+    }
+    catch (SQLException e)
+    {
+    }
+    return ret;
+ }
+
+
 
  public void setCompConsumes(int compid, HttpServletRequest request, HttpServletResponse response)
  {
@@ -32094,6 +33118,29 @@ public JSONArray getComp2Endpoints(int compid)
   return arr;
  }
 
+ public void getFullDomain(String domlist, HashMap<String, Integer> doms)
+ {
+  try
+  {
+   String sql = "select id, fullname from dm.dm_domain where id in (" + domlist + ")";
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   ResultSet rs = stmt.executeQuery();
+   while (rs.next())
+   {
+    int id = rs.getInt(1);
+    String name = rs.getString(2);
+
+    doms.put(name,id);
+   }
+   rs.close();
+  }
+  catch (SQLException ex)
+  {
+   ex.printStackTrace();
+   rollback();
+  }
+ }
+
  public InitialDirContext connectLDAP(String servername, Hashtable<String, String> env) {
   InitialDirContext context = null;
   env.put(Context.PROVIDER_URL, "ldap://" + servername);
@@ -32109,4 +33156,118 @@ public JSONArray getComp2Endpoints(int compid)
   }
   return context;
 }
+
+ public JSONArray getDomains4User(String username)
+ {
+  JSONArray arr = new JSONArray();
+
+  try
+  {
+   String sql = "select fullname from dm.dm_user a, dm.dm_domain b where a.name = ? and a.domainid = b.id";
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setString(1, username);
+   ResultSet rs = stmt.executeQuery();
+   while (rs.next())
+   {
+    arr.add(rs.getString(1));
+   }
+   rs.close();
+  }
+  catch (SQLException ex)
+  {
+  }
+
+  return arr;
+ }
+
+ public boolean checkDomainByName(String domname)
+ {
+  boolean duplicate = false;
+  try
+  {
+   String sql = "select distinct 1 from dm.dm_domain where fullname = ?";
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setString(1, domname);
+   ResultSet rs = stmt.executeQuery();
+   while (rs.next())
+   {
+    duplicate = true;
+   }
+   rs.close();
+  }
+  catch (SQLException ex)
+  {
+  }
+
+  return duplicate;
+ }
+
+ public boolean checkUserName(String username)
+ {
+  boolean duplicate = false;
+  try
+  {
+   String sql = "select distinct 1 from dm.dm_user where name = ?";
+   PreparedStatement stmt = m_conn.prepareStatement(sql);
+   stmt.setString(1, username);
+   ResultSet rs = stmt.executeQuery();
+   while (rs.next())
+   {
+    duplicate = true;
+   }
+   rs.close();
+  }
+  catch (SQLException ex)
+  {
+  }
+
+  return duplicate;
+ }
+
+ public JSONObject getScore4Purl(HttpServletRequest request, HttpServletResponse response)
+ {
+  JSONObject obj = new JSONObject();
+  try
+  {
+   String requestData = request.getReader().lines().collect(Collectors.joining());
+   JsonArray purls = new JsonParser().parse(requestData).getAsJsonArray();
+
+   ArrayList<String> purlList = new ArrayList<String>();
+   try
+   {
+    // loop and insert
+    Iterator<JsonElement> it = purls.iterator();
+    while (it.hasNext())
+    {
+     String purl  = (String)it.next().getAsString();
+     purl = purl.replace("%40", "@");
+     purlList.add("'" + purl + "'");
+    }
+
+    if (purlList.size() > 0)
+    {
+     String sql = "select purl, score from dm.dm_componentitem where purl in (" + String.join(",", purlList) + ")";
+     PreparedStatement stmt = m_conn.prepareStatement(sql);
+     ResultSet rs = stmt.executeQuery();
+     while (rs.next())
+     {
+      String purl = rs.getString(1);
+      Float score = rs.getFloat(2);
+      obj.add(purl, score);
+     }
+     rs.close();
+    }
+   }
+   catch (Exception e)
+   {
+    System.out.print(e.getMessage());
+   }
+  }
+  catch (IOException e)
+  {
+   e.printStackTrace();
+  }
+
+  return obj;
+ }
 }

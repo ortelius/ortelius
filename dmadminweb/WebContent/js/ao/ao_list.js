@@ -18,8 +18,8 @@
 
  function applist_table_resize(){
   var h = $("#panel_container_menu").height();
-  $("#applist_list").height(h-60);
-  $(".dataTables_scrollBody").css('max-height', (h-144) + "px");
+ // $("#applist_list").height(h-100);
+  $(".dataTables_scrollBody").css('max-height', (h-150) + "px");
  }
 
  function getAppList(displaytype)
@@ -170,10 +170,18 @@
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
-  $("#applist_buttons > button:nth-child(3)").css("color", "lightgrey");
-  $("#applist_buttons > button:nth-child(4)").css("color", "lightgrey");
-  $("#applist_buttons > button:nth-child(8)").css("color", "lightgrey");
-  $(".taskMenuButton").css("color", "lightgrey");
+
+  $("#applist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
+  $("#applist_buttons > button:nth-child(4)").addClass("title_buttons_disabled");
+
+   if (hideOption())
+    $("#applist_buttons > div:nth-child(5) > button").hide();
+   else
+    $("#applist_buttons > div:nth-child(5) > button").show();
+
+  $("#applist_buttons > button:nth-child(6)").show();
+  $("#applist_buttons > button:nth-child(8)").addClass("title_buttons_disabled");
+  $(".taskMenuButton").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -184,7 +192,7 @@
     applist_table = null;
    }
    var h = $(document).height();
-   $("#applist_list").height(h-160);
+ //  $("#applist_list").height(h-8);
 
    $("#applist_list").show();
    $("#applist_map").hide();
@@ -194,6 +202,7 @@
    select:  true,
    ordering: true,
    scrollCollapse: true,
+   scrollResize: true,
    scrollY: "60vh",
    scroller: true,
    pageLength: 25,
@@ -202,22 +211,28 @@
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=AppList",
     "error": function (jqXHR, textStatus, errorThrown) {
-      var token=GetCookie("token");
+		var token=GetCookie("token");
+		console.log(token);
 
-      if (token != null && token != "")
-      {
-        alert("Connection failed. A logout will be performed to reset your session.");
-        window.location = "/dmadminweb/Logout";
-      }
+		if (token != null && token != "")
+		{
+         alert("Connection failed. Resetting your session.");
+         window.location = "/dmadminweb/Logout";
+        }
     },
     "type": "GET"
+  },
+  "rowCallback": function (row, data) {
+	  		if (data.deployid == "Never Deployed")
+			  $('td:eq(4)', row).html(data.deployid);
+			else
+  			  $('td:eq(4)', row).html("<a href=\"javascript:void(0);\" onclick=\"DisplayDeploy(" + data.deployid + ")\">#" + data.deployid + "</a>");
   },
   "order": [[ 1, "asc" ]],
   "columns": [
               { "data": null},
        { "data": "name" },
        { "data": "domain" },
-       { "data": "parent" },
        { "data": "environment" },
        { "data": "deployid" },
        { "data": "finished" },
@@ -238,11 +253,11 @@
        "type": "objname",
      },
                  {
-                  "targets": [ 8 ],
+                  "targets": [ 7 ],
                   "visible": false
                  },
                  {
-                  "targets": [ 9 ],
+                  "targets": [ 8 ],
                   "visible": false
                  }
                 ] ,
@@ -321,24 +336,24 @@
       objid = objid.substr(0,objid.indexOf("-"));
      }
     }
-    $("#applist_buttons > button:nth-child(3)").css("color", "#3367d6");
-    $("#applist_buttons > button:nth-child(4)").css("color", "#3367d6");
-    $(".taskMenuButton").css("color", "#3367d6");
+    $("#applist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
+    $("#applist_buttons > button:nth-child(4)").removeClass("title_buttons_disabled");
+    $(".taskMenuButton").removeClass("title_buttons_disabled");
 
     if (data != null && data.length == 2)
     {
-     $("#applist_buttons > button:nth-child(8)").css("color", "#3367d6");
+     $("#applist_buttons > button:nth-child(8)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   applist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#applist_buttons > button:nth-child(3)").css("color", "lightgrey");
-    $("#applist_buttons > button:nth-child(4)").css("color", "lightgrey");
-    $(".taskMenuButton").css("color", "lightgrey");
+    $("#applist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
+    $("#applist_buttons > button:nth-child(4)").addClass("title_buttons_disabled");
+    $(".taskMenuButton").addClass("title_buttons_disabled");
 
-    $("#applist_buttons > button:nth-child(8)").css("color", "lightgrey");
+    $("#applist_buttons > button:nth-child(8)").addClass("title_buttons_disabled");
 
 	if (dt.rows({selected: true}).count() === 0) {
 	  $('#applist_checkall i').attr('class', 'far fa-square');
@@ -570,9 +585,10 @@
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
-  $("#complist_buttons > button:nth-child(3)").css("color", "lightgrey");
-  $("#complist_buttons > button:nth-child(4)").css("color", "lightgrey");
-  $("#complist_buttons > button:nth-child(7)").css("color", "lightgrey");
+  $("#complist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
+  $("#complist_buttons > button:nth-child(4)").addClass("title_buttons_disabled");
+  $("#complist_buttons > button:nth-child(5)").hide();
+  $("#complist_buttons > button:nth-child(6)").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -602,12 +618,17 @@
     "url": "/dmadminweb/ReportsData?type=CompList",
     "type": "GET"
   },
+    "rowCallback": function (row, data) {
+			if (data.deployid == "Never Deployed")
+			  $('td:eq(4)', row).html(data.deployid);
+			else
+  			  $('td:eq(4)', row).html("<a href=\"javascript:void(0);\" onclick=\"DisplayDeploy(" + data.deployid + ")\">#" + data.deployid + "</a>");
+  },
   "order": [[ 1, "asc" ]],
   "columns": [
               { "data": null},
        { "data": "name" },
        { "data": "domain" },
-       { "data": "parent" },
        { "data": "environment" },
        { "data": "deployid" },
        { "data": "finished" },
@@ -629,11 +650,11 @@
        		   "type": "objname",
      		  },
                  {
-                  "targets": [ 8 ],
+                  "targets": [ 7 ],
                   "visible": false
                  },
                  {
-                  "targets": [ 9 ],
+                  "targets": [ 8 ],
                   "visible": false
                  }
                 ],
@@ -710,22 +731,23 @@
       objid = objid.substr(0,objid.indexOf("-"));
      }
     }
-    $("#complist_buttons > button:nth-child(3)").css("color", "#3367d6");
-    $("#complist_buttons > button:nth-child(4)").css("color", "#3367d6");
+    $("#complist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
+    $("#complist_buttons > button:nth-child(4)").removeClass("title_buttons_disabled");
+    $("#complist_buttons > button:nth-child(6)").removeClass("title_buttons_disabled");
 
     if (data != null && data.length == 2)
     {
-     $("#complist_buttons > button:nth-child(7)").css("color", "#3367d6");
+     $("#complist_buttons > button:nth-child(6)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   complist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#complist_buttons > button:nth-child(3)").css("color", "lightgrey");
-    $("#complist_buttons > button:nth-child(4)").css("color", "lightgrey");
+    $("#complist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
+    $("#complist_buttons > button:nth-child(4)").addClass("title_buttons_disabled");
 
-    $("#complist_buttons > button:nth-child(7)").css("color", "lightgrey");
+    $("#complist_buttons > button:nth-child(6)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -919,8 +941,9 @@
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
-  $("#envlist_buttons > button:nth-child(3)").css("color", "lightgrey");
-  $("#envlist_buttons > button:nth-child(5)").css("color", "lightgrey");
+  $("#envlist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
+  $("#envlist_buttons > button:nth-child(5)").addClass("title_buttons_disabled");
+  $("#envlist_buttons > button:nth-child(5)").show();
 
   if (displaytype == "list")
   {
@@ -1045,11 +1068,11 @@
       objkind=objid.substr(objid.indexOf("-")+1);
       objid = objid.substr(0,objid.indexOf("-"));
      }
-     $("#envlist_buttons > button:nth-child(3)").css("color", "#3367d6");
+     $("#envlist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
 
      if (data != null && data.length == 2)
      {
-      $("#envlist_buttons > button:nth-child(5)").css("color", "#3367d6");
+      $("#envlist_buttons > button:nth-child(5)").removeClass("title_buttons_disabled");
      }
     }
    }
@@ -1057,8 +1080,8 @@
 
   envlist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#envlist_buttons > button:nth-child(3)").css("color", "lightgrey");
-    $("#envlist_buttons > button:nth-child(5)").css("color", "lightgrey");
+    $("#envlist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
+    $("#envlist_buttons > button:nth-child(5)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -1188,7 +1211,7 @@
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
-  $("#endpointlist_buttons > button:nth-child(3)").css("color", "lightgrey");
+  $("#endpointlist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -1315,14 +1338,14 @@
       objkind=objid.substr(objid.indexOf("-")+1);
       objid = objid.substr(0,objid.indexOf("-"));
      }
-     $("#endpointlist_buttons > button:nth-child(3)").css("color", "#3367d6");
+     $("#endpointlist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   endpointlist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#endpointlist_buttons > button:nth-child(3)").css("color", "lightgrey");
+    $("#endpointlist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -1452,7 +1475,7 @@ endpointlist_table_resize();
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
-  $("#buildenglist_buttons > button:nth-child(3)").css("color", "lightgrey");
+  $("#buildenglist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -1579,14 +1602,14 @@ endpointlist_table_resize();
       objkind=objid.substr(objid.indexOf("-")+1);
       objid = objid.substr(0,objid.indexOf("-"));
      }
-     $("#buildenglist_buttons > button:nth-child(3)").css("color", "#3367d6");
+     $("#buildenglist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   buildenglist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#buildenglist_buttons > button:nth-child(3)").css("color", "lightgrey");
+    $("#buildenglist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -1715,7 +1738,7 @@ endpointlist_table_resize();
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
-  $("#actionlist_buttons > button:nth-child(3)").css("color", "lightgrey");
+  $("#actionlist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -1842,14 +1865,14 @@ endpointlist_table_resize();
       objkind=objid.substr(objid.indexOf("-")+1);
       objid = objid.substr(0,objid.indexOf("-"));
      }
-     $("#actionlist_buttons > button:nth-child(3)").css("color", "#3367d6");
+     $("#actionlist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   actionlist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#actionlist_buttons > button:nth-child(3)").css("color", "lightgrey");
+    $("#actionlist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -2017,8 +2040,8 @@ actionlist_table_resize();
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
-  $("#procedurelist_buttons > button:nth-child(4)").css("color", "lightgrey");
-  $("#procedurelist_buttons > button:nth-child(5)").css("color", "lightgrey");
+  $("#procedurelist_buttons > button:nth-child(4)").addClass("title_buttons_disabled");
+  $("#procedurelist_buttons > button:nth-child(5)").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -2146,16 +2169,16 @@ actionlist_table_resize();
       objkind=objid.substr(objid.indexOf("-")+1);
       objid = objid.substr(0,objid.indexOf("-"));
      }
-     $("#procedurelist_buttons > button:nth-child(4)").css("color", "#3367d6");
-     $("#procedurelist_buttons > button:nth-child(5)").css("color", "#3367d6");
+     $("#procedurelist_buttons > button:nth-child(4)").removeClass("title_buttons_disabled");
+     $("#procedurelist_buttons > button:nth-child(5)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   procedurelist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#procedurelist_buttons > button:nth-child(4)").css("color", "lightgrey");
-    $("#procedurelist_buttons > button:nth-child(5)").css("color", "lightgrey");
+    $("#procedurelist_buttons > button:nth-child(4)").addClass("title_buttons_disabled");
+    $("#procedurelist_buttons > button:nth-child(5)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -2284,7 +2307,7 @@ actionlist_table_resize();
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
-  $("#notifierlist_buttons > button:nth-child(3)").css("color", "lightgrey");
+  $("#notifierlist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -2411,14 +2434,14 @@ actionlist_table_resize();
       objkind=objid.substr(objid.indexOf("-")+1);
       objid = objid.substr(0,objid.indexOf("-"));
      }
-     $("#notifierlist_buttons > button:nth-child(3)").css("color", "#3367d6");
+     $("#notifierlist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   notifierlist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#notifierlist_buttons > button:nth-child(3)").css("color", "lightgrey");
+    $("#notifierlist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -2547,7 +2570,7 @@ actionlist_table_resize();
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
-  $("#repositorylist_buttons > button:nth-child(3)").css("color", "lightgrey");
+  $("#repositorylist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -2675,14 +2698,14 @@ actionlist_table_resize();
       objkind=objid.substr(objid.indexOf("-")+1);
       objid = objid.substr(0,objid.indexOf("-"));
      }
-     $("#repositorylist_buttons > button:nth-child(3)").css("color", "#3367d6");
+     $("#repositorylist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   repositorylist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#repositorylist_buttons > button:nth-child(3)").css("color", "lightgrey");
+    $("#repositorylist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -2811,7 +2834,7 @@ actionlist_table_resize();
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
-  $("#datasourcelist_buttons > button:nth-child(3)").css("color", "lightgrey");
+  $("#datasourcelist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -2938,14 +2961,14 @@ actionlist_table_resize();
       objkind=objid.substr(objid.indexOf("-")+1);
       objid = objid.substr(0,objid.indexOf("-"));
      }
-     $("#datasourcelist_buttons > button:nth-child(3)").css("color", "#3367d6");
+     $("#datasourcelist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   datasourcelist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#datasourcelist_buttons > button:nth-child(3)").css("color", "lightgrey");
+    $("#datasourcelist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -3074,7 +3097,7 @@ datasourcelist_table_resize();
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
-  $("#credentiallist_buttons > button:nth-child(3)").css("color", "lightgrey");
+  $("#credentiallist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -3201,14 +3224,14 @@ datasourcelist_table_resize();
       objkind=objid.substr(objid.indexOf("-")+1);
       objid = objid.substr(0,objid.indexOf("-"));
      }
-     $("#credentiallist_buttons > button:nth-child(3)").css("color", "#3367d6");
+     $("#credentiallist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   credentiallist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#credentiallist_buttons > button:nth-child(3)").css("color", "lightgrey");
+    $("#credentiallist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -3337,7 +3360,7 @@ datasourcelist_table_resize();
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
-  $("#userlist_buttons > button:nth-child(3)").css("color", "lightgrey");
+  $("#userlist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -3464,14 +3487,14 @@ datasourcelist_table_resize();
       objkind=objid.substr(objid.indexOf("-")+1);
       objid = objid.substr(0,objid.indexOf("-"));
      }
-     $("#userlist_buttons > button:nth-child(3)").css("color", "#3367d6");
+     $("#userlist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   userlist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#userlist_buttons > button:nth-child(3)").css("color", "lightgrey");
+    $("#userlist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -3600,7 +3623,7 @@ datasourcelist_table_resize();
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
-  $("#grouplist_buttons > button:nth-child(3)").css("color", "lightgrey");
+  $("#grouplist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -3728,14 +3751,14 @@ datasourcelist_table_resize();
       objkind=objid.substr(objid.indexOf("-")+1);
       objid = objid.substr(0,objid.indexOf("-"));
      }
-     $("#grouplist_buttons > button:nth-child(3)").css("color", "#3367d6");
+     $("#grouplist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   grouplist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#grouplist_buttons > button:nth-child(3)").css("color", "lightgrey");
+    $("#grouplist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -3863,7 +3886,7 @@ datasourcelist_table_resize();
   $("#grouplist_pane").hide();
   $("#servercomptypelist_pane").show();
   $("#rellist_pane").hide();
-  $("#servercomptypelist_buttons > button:nth-child(3)").css("color", "lightgrey");
+  $("#servercomptypelist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -3990,14 +4013,14 @@ datasourcelist_table_resize();
       objkind=objid.substr(objid.indexOf("-")+1);
       objid = objid.substr(0,objid.indexOf("-"));
      }
-     $("#servercomptypelist_buttons > button:nth-child(3)").css("color", "#3367d6");
+     $("#servercomptypelist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   servercomptypelist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#servercomptypelist_buttons > button:nth-child(3)").css("color", "lightgrey");
+    $("#servercomptypelist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -4126,7 +4149,7 @@ datasourcelist_table_resize();
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").show();
   $("#rellist_pane").hide();
-  $("#templatelist_buttons > button:nth-child(3)").css("color", "lightgrey");
+  $("#templatelist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -4248,14 +4271,14 @@ datasourcelist_table_resize();
       objkind=objid.substr(objid.indexOf("-")+1);
       objid = objid.substr(0,objid.indexOf("-"));
      }
-     $("#templatelist_buttons > button:nth-child(3)").css("color", "#3367d6");
+     $("#templatelist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   templatelist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#templatelist_buttons > button:nth-child(3)").css("color", "lightgrey");
+    $("#templatelist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -4384,7 +4407,7 @@ datasourcelist_table_resize();
   $("#servercomptypelist_pane").hide();
   $("#templatelist_pane").hide();
   $("#rellist_pane").hide();
-  $("#buildjoblist_buttons > button:nth-child(3)").css("color", "lightgrey");
+  $("#buildjoblist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
 
   if (displaytype == "list")
   {
@@ -4506,14 +4529,14 @@ datasourcelist_table_resize();
       objkind=objid.substr(objid.indexOf("-")+1);
       objid = objid.substr(0,objid.indexOf("-"));
      }
-     $("#buildjoblist_buttons > button:nth-child(3)").css("color", "#3367d6");
+     $("#buildjoblist_buttons > button:nth-child(3)").removeClass("title_buttons_disabled");
     }
    }
   });
 
   buildjoblist_table.on( 'deselect', function ( e, dt, type, indexes ) {
    if ( type === 'row' ) {
-    $("#buildjoblist_buttons > button:nth-child(3)").css("color", "lightgrey");
+    $("#buildjoblist_buttons > button:nth-child(3)").addClass("title_buttons_disabled");
    }
 
 	if (dt.rows({selected: true}).count() === 0) {
@@ -4637,11 +4660,110 @@ datasourcelist_table_resize();
   {
    var url = "";
 
-   if (objtype == "ap" || objtype == "av")
-     url = "/msapi/deppkg?deptype=license&appid=" + objid;
-   else
-     url = "/msapi/deppkg?deptype=license&compid=" + objid;
+	var data = {};
 
+    $.ajax({
+        url: "/msapi/sbomtype",
+        type: "GET",
+        async: false,
+        dataType: "json",
+        success: function(response) {
+            data = response;
+        },
+        error: function(xhr, status, error) {
+        }
+    });
+
+   console.log(data);
+
+   if (data.SBOMType == "fullfile")
+   {
+    if (objtype == "ap" || objtype == "av")
+      url = "/msapi/package?deptype=license&appid=" + getCompIds4App(objid);
+    else
+      url = "/msapi/package?deptype=license&compid=" + objid;
+
+    var saveData = [];
+
+    $.ajax({
+        url: url,
+        type: "GET",
+        dataType: "json",
+        async: false,
+        success: function(response) {
+            saveData = response.data;
+        },
+        error: function(xhr, status, error) {
+        }
+    });
+
+    purls = []
+	for (let i = 0; i < saveData.length; i++) {
+		if (saveData[i].purl != "" && saveData[i].purl != null)
+	    	purls.push(saveData[i].purl);
+	}
+
+	$.ajax({
+        url: "/dmadminweb/API/getscore",
+        type: "POST",
+        dataType: "json",
+        data: JSON.stringify(purls),
+        async: false,
+        success: function(response) {
+			 var data = response;
+             for (let i = 0; i < saveData.length; i++) {
+				if (saveData[i].purl != null && saveData[i].purl != "" && saveData[i].purl in data)
+				 {
+					saveData[i].score = data[saveData[i].purl];
+	    		 }
+			}
+        },
+        error: function(xhr, status, error) {
+        }
+    });
+
+    if (objtype == "ap" || objtype == "av")
+      url = "/msapi/deppkg?deptype=license&appid=" + objid;
+    else
+      url = "/msapi/deppkg?deptype=license&compid=" + objid;
+
+    $.ajax({
+        url: url,
+        type: "GET",
+        dataType: "json",
+        success: function(response) {
+            var data2 = response.data;
+            var rows =  saveData.concat(data2);
+            displayLicTable(rows);
+        },
+        error: function(xhr, status, error) {
+        }
+    });
+   }
+   else
+   {
+    if (objtype == "ap" || objtype == "av")
+      url = "/msapi/deppkg?deptype=license&appid=" + objid;
+    else
+      url = "/msapi/deppkg?deptype=license&compid=" + objid;
+
+    $.ajax({
+        url: url,
+        type: "GET",
+        dataType: "json",
+        success: function(response) {
+            rows = response.data;
+            displayLicTable(rows);
+        },
+        error: function(xhr, status, error) {
+        }
+    });
+   }
+  }
+ }
+
+ function displayLicTable(data)
+ {
    if (typeof licenselist_table != "undefined" && licenselist_table != null)
    {
     licenselist_table.clear();
@@ -4653,27 +4775,37 @@ datasourcelist_table_resize();
 
    $("#licenselist_list").show();
 
+   for (let i = 0; i < data.length; i++)
+   {
+    const row = data[i];
+    if ('key' in row)
+    	row['fullcompname'] = getCompName(row['key']);
+    delete row.key;
+   }
+
   licenselist_table =$('#licenselist').DataTable( {
    lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
    select:  true,
    ordering: true,
    scrollCollapse: true,
    scrollY: "30vh",
+   scrollX: true,
    scroller: true,
    pageLength: -1,
    destroy: true,
    sDom: 't',
-   "ajax": {
-    "url": url,
-    "type": "GET"
-  },
-  "order": [[ 1, "asc" ], [2, "asc"]],
+   data: data,
+   "language": {
+      "emptyTable": "No package details available."
+    },
+  "order": [[ 0, "asc" ], [1, "asc"]],
   "columns": [
        { "data": "packagename" },
        { "data": "packageversion"},
        { "data": "name" },
-       { "data": "url" },
-	   { "data": "fullcompname"}],
+	   { "data": "fullcompname"},
+	   { "data": "url" },
+	   { "data": "score" }],
    "columnDefs": [
                  {
                   "targets": [ 0 ],
@@ -4685,30 +4817,137 @@ datasourcelist_table_resize();
                   "targets": [ 2 ],
 				  "className": "dt-nowrap",
 		          "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-						if (oData.name.length > 0)
+						if (oData.url.length > 0 && oData.name.length > 0)
             	     	   $(nTd).html("<a href='"+oData.url+"' target=_blank >"+oData.name +"</a>");
+            	     	else if (oData.name.length > 0)
+            	     	   $(nTd).html(+oData.name);
                         else
                            $(nTd).html("No License");
                    }
                  },
                  {
                   "targets": [ 3 ],
-				  "visible": false
                  },
                  {
                   "targets": [ 4 ],
-                 }
-                ]
+                  "visible": false,
+                 },
+                 {
+                  "targets": [ 5 ],
+                   "width": "25px",
+                 },
+                ],
+                'rowCallback': function(row, data, index){
+					var score = parseFloat(data.score)
+
+					 if (score < 0)
+					   score = 0
+
+					 base = round(10 - score,1);
+
+				     var risklevel = "";
+				     if (base >= 0 && base <= 3.9)
+				      risklevel = "risklevel_low";
+				     else if (base >= 4.0 && base <= 6.9)
+				      risklevel = "risklevel_medium";
+				     else if (base >= 7.0 && base <= 8.9)
+				      risklevel = "risklevel_high";
+				     else if (base >= 9.0)
+				      risklevel = "risklevel_critical";
+
+				     $(row).find('td:nth-child(5)').addClass("dt-center");
+				     if (risklevel != '')
+	         	  		$(row).find('td:nth-child(5)').addClass(risklevel);
+            		}
    });
-  }
 
   if (objtype == "cv" || objtype == "co")
-   licenselist_table.column(4).visible(false);
+   licenselist_table.column(3).visible(false);
   else
-   licenselist_table.column(4).visible(true);
+   licenselist_table.column(3).visible(true);
+
+ }
+
+ function round(value, precision) {
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
+}
+
+ function getCompIds4App(objid)
+ {
+    $.ajax({
+        url: "/dmadminweb/API/compids?appid=" + objid,
+        type: "GET",
+        async: false,
+        dataType: "json",
+        success: function(data) {
+            compid2Name = data.result;
+        },
+        error: function(xhr, status, error) {
+        }
+    });
+
+    return Object.keys(compid2Name).join(',');
  }
 
 /***** End License List  *****/
+
+/***** Start Scorecard List ******/
+function displayScorecardTable(data)
+ {
+   if (typeof scorecardlist_table != "undefined" && scorecardlist_table != null)
+   {
+    scorecardlist_table.clear();
+    scorecardlist_table.destroy();
+    scorecardlist_table = null;
+   }
+   var h = $(document).height();
+   $("#scorecardlist_list").height(h-160);
+
+   $("#scorecardlist_list").show();
+
+  scorecardlist_table =$('#scorecardlist').DataTable( {
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  false,
+   ordering: false,
+   pageLength: -1,
+   destroy: true,
+   sDom: 't',
+   data: data,
+   "language": {
+      "emptyTable": "No scorecard details available."
+    },
+  "columns": [
+	   { "data": "risklevel" },
+	   { "data": "score"},
+       { "data": "check" }],
+   "columnDefs": [
+	             {
+                  "targets": [ 0 ],
+                  "visible": false,
+                 },
+                 {
+                  "targets": [ 1 ],
+                  "width": "15px",
+                 },
+                 {
+                  "targets": [ 2 ],
+                 }
+                ],
+                'rowCallback': function(row, data, index){
+
+				     var risklevel = data.risklevel;
+
+				     $(row).find('td:nth-child(1)').addClass("dt-center");
+				     if (risklevel != '')
+	         	  		$(row).find('td:nth-child(1)').addClass(risklevel);
+            		}
+   });
+ }
+
+
+/***** End Scorecard List ******/
+
 /***** Start CVE List *****/
 
  function getCVEList(displaytype)
@@ -4717,11 +4956,86 @@ datasourcelist_table_resize();
   {
    var url = "";
 
-   if (objtype == "ap" || objtype == "av")
-     url = "/msapi/deppkg?deptype=cve&appid=" + objid;
-   else
-     url = "/msapi/deppkg?deptype=cve&compid=" + objid;
+	var data = {};
 
+    $.ajax({
+        url: "/msapi/sbomtype",
+        type: "GET",
+        async: false,
+        dataType: "json",
+        success: function(response) {
+            data = response;
+        },
+        error: function(xhr, status, error) {
+        }
+    });
+
+   console.log(data);
+
+   if (data.SBOMType == "fullfile")
+   {
+    if (objtype == "ap" || objtype == "av")
+      url = "/msapi/package?deptype=cve&appid=" + getCompIds4App(objid);
+    else
+      url = "/msapi/package?deptype=cve&compid=" + objid;
+
+    var saveData = [];
+
+    $.ajax({
+        url: url,
+        type: "GET",
+        dataType: "json",
+        async: false,
+        success: function(response) {
+            saveData = response.data;
+        },
+        error: function(xhr, status, error) {
+        }
+    });
+
+	if (objtype == "ap" || objtype == "av")
+	  url = "/msapi/deppkg?deptype=cve&appid=" + objid;
+	else
+	  url = "/msapi/deppkg?deptype=cve&compid=" + objid;
+
+	$.ajax({
+	    url: url,
+	    type: "GET",
+	    dataType: "json",
+	    success: function(response) {
+	        var data2 = response.data;
+	        var rows =  saveData.concat(data2);
+	        displayCVETable(rows);
+	    },
+	    error: function(xhr, status, error) {
+	    }
+	});
+   }
+   else
+   {
+    if (objtype == "ap" || objtype == "av")
+      url = "/msapi/deppkg?deptype=cve&appid=" + objid;
+    else
+      url = "/msapi/deppkg?deptype=cve&compid=" + objid;
+
+    $.ajax({
+        url: url,
+        type: "GET",
+        dataType: "json",
+        success: function(response) {
+            rows = response.data;
+            displayCVETable(rows);
+        },
+        error: function(xhr, status, error) {
+        }
+    });
+   }
+  }
+ }
+
+
+function displayCVETable(data)
+{
    if (typeof cvelist_table != "undefined" && cvelist_table != null)
    {
     cvelist_table.clear();
@@ -4743,20 +5057,26 @@ datasourcelist_table_resize();
     return 0;
   };
 
+  for (let i = 0; i < data.length; i++)
+  {
+   const row = data[i];
+   if ('key' in row)
+     row['fullcompname'] = getCompName(row['key']);
+   delete row.key;
+  }
+
   cvelist_table =$('#cvelist').DataTable( {
    lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
    select:  true,
    ordering: true,
    scrollCollapse: true,
    scrollY: "30vh",
+   scrollX: true,
    scroller: true,
    pageLength: -1,
    destroy: true,
    sDom: 't',
-   "ajax": {
-    "url": url,
-    "type": "GET"
-  },
+   data: data,
   "language": {
       "emptyTable": "Congratulations, no CVE issues found."
     },
@@ -4789,7 +5109,7 @@ datasourcelist_table_resize();
                   "targets": [ 3 ],
 				  "className": "dt-nowrap",
 		          "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-            	     	$(nTd).html("<a href='"+oData.url+"' target=_blank >"+oData.name +"</a>");
+            	     	$(nTd).html("<a href='https://osv.dev/vulnerability/"+oData.name+"' target=_blank >"+oData.name +"</a>");
                    }
                  },
                  {
@@ -4833,10 +5153,7 @@ datasourcelist_table_resize();
    cvelist_table.column(6).visible(false);
   else
    cvelist_table.column(6).visible(true);
-  }
- }
-
-
+}
 
 /***** End CVE List  *****/
 
@@ -4870,24 +5187,110 @@ datasourcelist_table_resize();
    sDom: 't',
    "ajax": {
     "url": "/dmadminweb/ReportsData?type=appcompList&appid=" + objid,
-    "type": "GET"
+    "type": "GET",
+    "async": false
   },
+  "rowCallback": function (row, data) {
+            $('td:eq(0)', row).html("<a href=\"javascript:void(0);\" onclick=\"jump2Comp('" + data.id + "','" + data.name + "')\">" + data.name + "</a>");
+        },
   "columns": [
        { "data": "name" },
-       { "data": "domain" }],
+       { "data": "domain" },
+       { "data": "id"}],
    "columnDefs": [
                  {
                   "targets": [ 0 ]
                  },
                  {
                   "targets": [ 1 ]
+                 },
+                 {
+                  "targets": [ 2 ],
+                  "visible": false
                  }
                 ]
    });
   }
- }
+}
 
 /***** End AppComp List  *****/
+
+/***** Start Apps4Comp List *****/
+
+ function getApps4Comp(displaytype)
+ {
+  if (displaytype == "list")
+  {
+   if (typeof apps4complist_table != "undefined" && apps4complist_table != null)
+   {
+    apps4complist_table.clear();
+    apps4complist_table.destroy();
+    apps4complist_table = null;
+   }
+   var h = $(document).height();
+   $("#apps4complist_list").height(h-160);
+
+   $("#apps4complist_list").show();
+
+  apps4complist_table =$('#apps4complist').DataTable( {
+   lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+   select:  true,
+   ordering: true,
+   scrollCollapse: true,
+   scrollY: "40vh",
+   scroller: true,
+   pageLength: -1,
+   paging: false,
+   destroy: true,
+   sDom: 't',
+   "ajax": {
+    "url": "/dmadminweb/API/apps4comp/" + objid,
+    "type": "GET",
+    "async": false
+  },
+  "rowCallback": function (row, data) {
+            $('td:eq(0)', row).html("<a href=\"javascript:void(0);\" onclick=\"jump2App('" + data.id + "','" + data.name + "')\">" + data.name + "</a>");
+  			$('td:eq(3)', row).html("<a href=\"javascript:void(0);\" onclick=\"DisplayDeploy(" + data.deployid + ")\">#" + data.deployid + "</a>");
+  },
+  "order": [[ 0, "desc" ],  [ 3, "desc" ]],
+  "columns": [
+       { "data": "name" },
+       { "data": "domain" },
+       { "data": "environment" },
+       { "data": "deployid" },
+       { "data": "finished" },
+       { "data": "exitcode" },
+       { "data": "id"}],
+   "columnDefs": [
+                 {
+                  "targets": [ 0 ]
+                 },
+                 {
+                  "targets": [ 1 ]
+                 },
+                 {
+                  "targets": [ 2 ]
+                 },
+                 {
+                  "targets": [ 3 ]
+                 },
+                 {
+                  "targets": [ 4 ]
+                 },
+                 {
+                  "targets": [ 5 ]
+                 },
+                 {
+                  "targets": [ 6 ],
+                  "visible": false
+                 }
+                ],
+       });
+  }
+}
+
+/***** End Apps4Comp List  *****/
+
 
  function HideSetup()
  {
@@ -4896,8 +5299,10 @@ datasourcelist_table_resize();
   $("#verttab_datasource").hide();
   $("#verttab_notifier").hide();
   $("#verttab_template").hide();
-  $("#verttab_user").hide();
-  $("#verttab_group").hide();
+  $("#verttab_action").hide();
+  $("#verttab_release").hide();
+  $("#verttab_procedure").hide();
+  $("#verttab_servercomptype").hide();
  }
 
  function toggleSetup()
@@ -4906,25 +5311,29 @@ datasourcelist_table_resize();
   {
    $("#verttab_setup > i").removeClass("fa-chevron-double-up");
    $("#verttab_setup > i").addClass("fa-chevron-double-down");
+   $("#verttab_action").hide();
+   $("#verttab_release").hide();
+   $("#verttab_procedure").hide();
+   $("#verttab_servercomptype").hide();
    $("#verttab_credential").hide();
    $("#verttab_repository").hide();
    $("#verttab_datasource").hide();
    $("#verttab_notifier").hide();
    $("#verttab_template").hide();
-   $("#verttab_user").hide();
-   $("#verttab_group").hide();
   }
   else
   {
    $("#verttab_setup > i").addClass("fa-chevron-double-up");
    $("#verttab_setup > i").removeClass("fa-chevron-double-down");
+   $("#verttab_action").show();
+   $("#verttab_release").show();
+   $("#verttab_procedure").show();
+   $("#verttab_servercomptype").show();
    $("#verttab_credential").show();
    $("#verttab_repository").show();
    $("#verttab_datasource").show();
    $("#verttab_notifier").show();
    $("#verttab_template").show();
-   $("#verttab_user").show();
-   $("#verttab_group").show();
   }
  }
 
@@ -4933,7 +5342,7 @@ datasourcelist_table_resize();
     return !isNaN(num) && !isNaN(parseFloat(num));
 }
 
- $.fn.dataTable.ext.type.order['objname-pre'] = function ( data ) {
+ $.fn.dataTable.ext.type.order['objname-pre'] = function(data, settings) {
     var parts = data.split(';')
 
     for (var k=0;k<parts.length;k++)
@@ -4941,14 +5350,14 @@ datasourcelist_table_resize();
      var version = parts[k].trim();
 
      if (isNumeric(version))
-      parts[k] = 100000 + Number(version);
+      parts[k] = 100000 - Number(version);
      else if (version.includes("_g"))
      {
       var schemantic_git = version.split("_g");
       var schemantic = schemantic_git[0].replace(/^v|V/, '');
       var verparts = schemantic.split('_')
       for (var i=0;i<verparts.length;i++)
-       verparts[i] = 100000 + Number(verparts[i]);
+       verparts[i] = 100000 - Number(verparts[i]);
 
       parts[k] = "v" + verparts.join('_') + schemantic_git[1]
      }
@@ -4958,13 +5367,22 @@ datasourcelist_table_resize();
       for (var i=0;i<verparts.length;i++)
       {
        var verpart = verparts[i].replace(/^v|V/, '');
-       verparts[i] = 100000 + Number(verpart);
+       verparts[i] = 100000 - Number(verpart);
       }
       parts[k] = "v" + verparts.join('_');
      }
     }
 
     var result = parts.join(";");
-    console.log(result);
     return result;
 };
+
+
+function getCompName(id)
+{
+  var res = compid2Name[id];
+
+  if (res)
+    return res;
+  return "";
+}

@@ -32,6 +32,8 @@ var servercomptypelist_filter_keywords = {"Server Comp Type":true,"Domain":true}
 var templatelist_filter_keywords = {"Template":true,"Notifier":true};
 var buildjoblist_filter_keywords = {"Build Job":true,"Build Engine":true};
 
+var compid2Name = {};
+
 var notifiertype = "";
 var credtype = "";
 var dstype = "";
@@ -85,6 +87,7 @@ var userdom = "";
 var userdomid = "";
 var parenttype = "";
 var appcomplist_table = undefined;
+var apps4complist_table = undefined;
 var applist_table = undefined;
 var rellist_table = undefined;
 var complist_table = undefined;
@@ -105,6 +108,37 @@ var servercomptypelist_table = undefined;
 var provideslist_table = undefined;
 var consumeslist_table = undefined;
 var licenselist_table = undefined;
+var scroecardlist_table = undefined;
+
+var versiondd_list = [];
+var scorecard_data = [];
+
+var scorecard_desc = {};
+
+scorecard_desc["Maintained"] = {"risk": "High (possibly unpatched vulnerabilities)", "desc": "This check determines whether the project is actively maintained. If the project is archived, it receives the lowest score. If there is at least one commit per week during the previous 90 days, the project receives the highest score. If there is activity on issues from users who are collaborators, members, or owners of the project, the project receives a partial score."};
+scorecard_desc["Code Review"] = {"risk": "High (unintentional vulnerabilities or possible injection of malicious code)", "desc": "This check determines whether the project requires human code review before pull requests (merge requests) are merged."};
+scorecard_desc["CII Best Practices"] = {"risk": "Low (possibly not following security best practices)", "desc": "This check determines whether the project has earned an OpenSSF (formerly CII) Best Practices Badge at the passing, silver, or gold level. The OpenSSF Best Practices badge indicates whether or not that the project uses a set of security-focused best development practices for open source software. The check uses the URL for the Git repo and the OpenSSF Best Practices badge API."};
+scorecard_desc["License"] = {"risk": "Low (possible impediment to security review)", "desc": "This check tries to determine if the project has published a license. It works by using either hosting APIs or by checking standard locations for a file named according to common conventions for licenses."};
+scorecard_desc["Signed Releases"] = {"risk": "High (possibility of installing malicious releases)", "desc": "This check tries to determine if the project cryptographically signs release artifacts. It is currently limited to repositories hosted on GitHub, and does not support other source hosting repositories (i.e., Forges)."};
+scorecard_desc["Dangerous Workflow"] = {"risk": "Critical (vulnerable to repository compromise)", "desc": "This check determines whether the project's GitHub Action workflows has dangerous code patterns. Some examples of these patterns are untrusted code checkouts, logging github context and secrets, or use of potentially untrusted inputs in scripts."};
+scorecard_desc["Packaging"] = {"risk": "Medium (users possibly missing security updates)", "desc": "This check tries to determine if the project is published as a package. It is currently limited to repositories hosted on GitHub, and does not support other source hosting repositories (i.e., Forges)."};
+scorecard_desc["Token Permissions"] = {"risk": "High (vulnerable to malicious code additions)", "desc": "This check determines whether the project's automated workflows tokens follow the principle of least privilege. This is important because attackers may use a compromised token with write access to, for example, push malicious code into the project."};
+scorecard_desc["Branch Protection"] = {"risk": "High (vulnerable to intentional malicious code injection)", "desc": "This check determines whether a project's default and release branches are protected with GitHub's branch protection or repository rules settings. Branch protection allows maintainers to define rules that enforce certain workflows for branches, such as requiring review or passing certain status checks before acceptance into a main branch, or preventing rewriting of public history."};
+scorecard_desc["Binary Artifacts"] = {"risk": "High (non-reviewable code)", "desc": "This check determines whether the project has generated executable (binary) artifacts in the source repository."};
+scorecard_desc["Pinned Dependencies"] = {"risk": "Medium (possible compromised dependencies)", "desc": "This check tries to determine if the project pins dependencies used during its build and release process. A \"pinned dependency\" is a dependency that is explicitly set to a specific hash instead of allowing a mutable version or range of versions. It is currently limited to repositories hosted on GitHub, and does not support other source hosting repositories (i.e., Forges)."};
+scorecard_desc["Security Policy"] = {"risk": "Medium (possible insecure reporting of vulnerabilities)", "desc": "This check tries to determine if the project has published a security policy. It works by looking for a file named SECURITY.md (case-insensitive) in a few well-known directories."};
+scorecard_desc["Fuzzing"] = {"risk": "Medium (possible vulnerabilities in code)", "desc": "This check tries to determine if the project uses fuzzing."};
+scorecard_desc["SAST"] = {"risk": "Medium (possible unknown bugs)", "desc": "This check tries to determine if the project uses Static Application Security Testing (SAST), also known as static code analysis. It is currently limited to repositories hosted on GitHub, and does not support other source hosting repositories (i.e., Forges)."};
+scorecard_desc["CI Tests"] = {"risk": "Low (possible unknown vulnerabilities)", "desc": "This check tries to determine if the project runs tests before pull requests are merged. It is currently limited to repositories hosted on GitHub, and does not support other source hosting repositories (i.e., Forges)."};
+scorecard_desc["Vulnerabilities"] = {"risk": "High (known vulnerabilities)", "desc": "This check determines whether the project has open, unfixed vulnerabilities in its own codebase or its dependencies using the OSV (Open Source Vulnerabilities) service. An open vulnerability is readily exploited by attackers and should be fixed as soon as possible."};
+scorecard_desc["Contributors"] = {"risk": "Low (lower number of trusted code reviewers)", "desc": "This check tries to determine if the project has recent contributors from multiple organizations (e.g., companies). It is currently limited to repositories hosted on GitHub, and does not support other source hosting repositories (i.e., Forges)."};
+scorecard_desc["Dependency Update Tool"] = {"risk": "High (possibly vulnerable to attacks on known flaws)", "desc": "This check tries to determine if the project uses a dependency update tool."};
+scorecard_desc["SBOM"] = {"risk": "Medium (possible inaccurate reporting of dependencies/vulnerabilities)", "desc": "This check tries to determine if the project maintains a Software Bill of Materials (SBOM) either as a file in the source or a release artifact."};
+scorecard_desc["Webhooks"] = {"risk": "Critical (service possibly accessible to third parties)", "desc": "This check determines whether the webhook defined in the repository has a token configured to authenticate the origins of requests."};
+scorecard_desc["OpenSSF ScoreCard Score"] = {"risk": "Weight-based average of the individual checks weighted by risk", "desc": "Each individual check returns a score of 0 to 10, with 10 representing the best possible score. Scorecard also produces an aggregate score, which is a weight-based average of the individual checks weighted by risk."};
+scorecard_desc["OpenSSF ScoreCard Pinned to Commit"] = {"risk": "Scoring pinned to commit", "desc": "Score values are pinned to the corresponding commit, otherwise the last Scorecard run is represented."};
+
+
 
 var defectdropdown = "";
 var envdropdown = "";
@@ -147,7 +181,6 @@ var connFlasher = false;
 var domFlasher = false;
 var uagFlasher = false;
 var homeFlasher = false;
-var breadcrumbFlasher = false;
 var ShowingInitialHelp = false;
 var HelpPageNumber=1;
 var myuid = "";
@@ -776,9 +809,7 @@ var canView = {  "#applications_tree": true,
   "#types_tree": true,
   "#groups_tree": true};
 
-var appTabs = { "#applications_tree":["#tabs-General",
-            "#tabs-PackageComponents",
-			"#tabs-apps2s"],
+var appTabs = { "#applications_tree":["#tabs-General"],
     "#components_tree":["#tabs-General"],
     "#releases_tree":["#tabs-General",
                       "#tabs-PackageApplications"],
@@ -882,6 +913,29 @@ compitem_colmap.set('targetdirectory', ["705", false, "", "Target Directory"]);
 compitem_colmap.set('xpos', ["714", false, "", "xpos"]);
 compitem_colmap.set('ypos', ["715", false, "", "ypos"]);
 
+compitem_colmap.set('purl', ["1650", false, "", "Purl"]);
+compitem_colmap.set('scorecardpinned', ["1700",false, "", "OpenSSF ScoreCard Pinned to Commit"]);
+compitem_colmap.set('scorecardscore', ["1701", false, "", "OpenSSF ScoreCard Score"]);
+compitem_colmap.set('maintained', ["1702", false, "", "Maintained"]);
+compitem_colmap.set('codereview', ["1703", false, "", "Code Review"]);
+compitem_colmap.set('ciibestpractices', ["1704", false, "", "CII Best Practices"]);
+compitem_colmap.set('license', ["1705", false, "", "License"]);
+compitem_colmap.set('signedreleases', ["1706", false, "", "Signed Releases"]);
+compitem_colmap.set('dangerousworkflow', ["1707", false, "", "Dangerous Workflow"]);
+compitem_colmap.set('packaging', ["1708", false, "", "Packaging"]);
+compitem_colmap.set('tokenpermissions' ["1709", false, "", "Token Permissions"]);
+compitem_colmap.set('brancprotection' ["1710", false, "", "Branch Protection"]);
+compitem_colmap.set('binaryartifacts', ["1711", false, "", "Binary Artifacts"]);
+compitem_colmap.set('pinneddepndencies', ["1712", false, "", "Pinned Dependencies"]);
+compitem_colmap.set('securitypolicy', ["1713", false, "", "Security Policy"]);
+compitem_colmap.set('fuzzing', ["1714", false, "", "Fuzzing"]);
+compitem_colmap.set('sast', ["1715", false, "", "SAST"]);
+compitem_colmap.set('valunerabilities', ["1716", false, "", "Vulnerabilities"]);
+compitem_colmap.set('citests', ["1717", false, "", "CI Tests"]);
+compitem_colmap.set('contributors', ["1718", false, "", "Contributors"]);
+compitem_colmap.set('dependencyupdatetooll', ["1719", false, "", "Dependency Update Tool"]);
+compitem_colmap.set('sbom', ["1720", false, "", "SBOM"]);
+compitem_colmap.set('webhooks', ["1721,", false, "", "Webhooks"]);
 
 function getLocaleDateString(){
 

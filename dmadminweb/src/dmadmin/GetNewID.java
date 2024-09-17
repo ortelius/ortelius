@@ -149,7 +149,7 @@ public class GetNewID extends HttpServletBase {
 		else
 		{
 			System.out.println("Not an action");
-		 String msg = session.CheckLicense(objtype,parid);
+		 String msg = null; // session.CheckLicense(objtype,parid);
 		 if (msg == null)
 		 {
 			 try {

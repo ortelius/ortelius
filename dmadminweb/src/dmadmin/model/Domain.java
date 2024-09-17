@@ -114,10 +114,10 @@ public class Domain
 		Domain parent = this.getDomain();
 		if (parent != null) {
 			if (!parent.m_lifecycle) {
-				ds.addProperty(SummaryField.DOMAIN_LIFECYCLE, "LifeCycle Domain", new BooleanField(m_lifecycle));
+				ds.addProperty(SummaryField.DOMAIN_LIFECYCLE, "LifeCycle Domain", new BooleanField(false));  // remove lifecyle domains BooleanField(m_lifecycle) so everything is a plain domain
 			}
 		} else {
-			ds.addProperty(SummaryField.DOMAIN_LIFECYCLE, "LifeCycle Domain", new BooleanField(m_lifecycle));
+			ds.addProperty(SummaryField.DOMAIN_LIFECYCLE, "LifeCycle Domain", new BooleanField(false));  // remove lifecyle domains BooleanField(m_lifecycle) so everything is a plain domai
 		}
 		return ds.getJSON();
 	}

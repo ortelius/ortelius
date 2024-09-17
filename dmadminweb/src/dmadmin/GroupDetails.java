@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import dmadmin.json.JSONArray;
 import dmadmin.json.JSONObject;
+import dmadmin.model.User;
 import dmadmin.model.UserGroup;
 import dmadmin.model.UserList;
 import dmadmin.model.UserPermissions;
@@ -111,6 +112,9 @@ public class GroupDetails extends HttpServletBase {
     			boolean acloverride = session.getAclOverride();
     			boolean readonly = !acloverride;
     			System.out.println("acloverride="+acloverride+" readonly="+readonly);
+    			User myuser = session.getUser(session.GetUserID());
+    			int mydom = myuser.getDomainId();
+
     			if (ul1 != null) {
     				for (int i=0;i<ul1.size();i++) {
     					JSONObject o = new JSONObject();
@@ -121,9 +125,15 @@ public class GroupDetails extends HttpServletBase {
     						System.out.println("in group - isUpdatable="+grp.isUpdatable());
     						readonly =!grp.isUpdatable();
     					}
-    					o.add("id", x);
-    					o.add("name", ul1.get(i).getDomain().getFullDomain() + "." + ul1.get(i).getName());
-    					js.add(o);
+    					User usr = ul1.get(i);
+    					int domid = usr.getDomainId();
+    					String domname = session.getDomainName(domid);
+    					if (domid == mydom)
+    					{
+    					 o.add("id", x);
+    					 o.add("name", domname + "." + usr.getName());
+    					 js.add(o);
+    					}
     				}
     			}
     			if (gid==1) readonly=true;	// Everyone (gid=1) should not be amendable by ANYONE!
@@ -134,11 +144,20 @@ public class GroupDetails extends HttpServletBase {
     		} else if (type.equalsIgnoreCase("AvailUsers4Group")) {
     			JSONArray js = new JSONArray();
     			if (ul2 != null) {
+        User myuser = session.getUser(session.GetUserID());
+        String mydoms = session.getDomainList();
+
     				for (int i=0;i<ul2.size();i++) {
     					JSONObject o = new JSONObject();
-    					o.add("id", ul2.get(i).getId());
-    					o.add("name", ul2.get(i).getDomain().getFullDomain() + "." + ul2.get(i).getName());
-    					js.add(o);
+         User usr = ul2.get(i);
+         int domid = usr.getDomainId();
+         String domname = session.getDomainName(domid);
+         if (mydoms.contains(Integer.valueOf(domid).toString()))
+         {
+          o.add("id", usr.getId());
+          o.add("name", domname + "." + usr.getName());
+          js.add(o);
+         }
     				}
     			}
     			PrintWriter out = response.getWriter();

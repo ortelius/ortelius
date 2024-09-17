@@ -1,8 +1,6 @@
-FROM nginx:alpine-slim@sha256:2be9e698d136d4d9be33d1852b1259bc1b80e20aed0c964cbcd6086da7fad5c7
+FROM nginx:alpine@sha256:a5127daff3d6f4606be3100a252419bfa84fd6ee5cd74d0feaca1a5068f97dcf
 EXPOSE 80
 EXPOSE 443
-
-# force update
 
 WORKDIR /etc/nginx/
 

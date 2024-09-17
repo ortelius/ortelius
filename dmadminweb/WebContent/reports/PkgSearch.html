@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<!--
+ Copyright (c) 2021 Linux Foundation
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<html lang="en">
+<head>
+    <title id="Description">Package Search</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.6/css/buttons.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="../css/devops_frydesign.css" />
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.flash.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.12/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.12/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.print.min.js"></script>
+    <script type="text/javascript">
+
+    function getParameterByName( name ) {
+     var regexS = "[\\?&]"+name+"=([^&#]*)",
+     regex = new RegExp( regexS ),
+     results = regex.exec( window.location.search );
+     if( results == null ){
+       return "";
+     } else{
+       return decodeURIComponent(results[1].replace(/\+/g, " "));
+     }
+   }
+
+        $(document).ready(function () {
+       		var pkgname = getParameterByName('pkgname');
+       		var pkgversion = getParameterByName('pkgversion');
+       		var userid = getParameterByName('userid');
+
+              $('#reports').DataTable( {
+               lengthMenu: [[15, 25, 50, -1], [15, 25, 50, "All"]],
+               ordering: true,
+               select: true,
+               scrollY: "80vh",
+               scroller: true,
+               pageLength: -1,
+               sDom: 't<"bottom"liprB>',
+               "ajax": {
+                "url": "/dmadminweb/ReportsData?type=apps4package&pkgname=" + pkgname + "&pkgversion=" + pkgversion + "&userid=" + userid,
+                "type": "GET"
+              },
+              "searching": false,
+
+              "columns": [
+                          {"data": "packagename"},
+                          {"data": "packageversion"},
+                          {"data": "compname"},
+                          {"data": "appname"},
+                          {"data": "environment"},
+                          {"data": "deployid"}
+                         ],
+               buttons: [
+                        'csv', 'excel', 'pdf', 'print'
+                        ]
+         } );
+        });
+
+    </script>
+</head>
+<body class='default'>
+     <div style="text-align:center;"><H2 class="reports">Package Consumption by Components and Application Versions</H2><p></div>
+     <div id="dataTable"></div>
+       <div style='margin-top: 20px;'>
+        <div style='float: left;'>
+		<table id="reports" class="display nowrap" style="width:100%">
+        <thead>
+            <tr>
+				<th>Package</th>
+				<th>Package Version</th>
+				<th>Component</th>
+				<th>Application</th>
+				<th>Environment</th>
+				<th>Deployment</th>
+            </tr>
+        </thead>
+        </table>
+        </div>
+    </div>
+</body>
+</html>
