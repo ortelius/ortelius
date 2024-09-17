@@ -1,0 +1,16 @@
+[Unit]
+Description=DeployHub Web Admin Interface
+After=syslog.target network.target remote-fs.target nss-lookup.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=omreleng
+WorkingDirectory=/opt/deployhub/webadmin
+ExecStart=/usr/bin/java -server -jar webapp-runner.jar --path /dmadminweb deployhub-webadmin.war
+Environment="LD_LIBRARY_PATH=/opt/deployhub/engine/bin:/opt/deployhub/engine/lib"
+Restart=on-failure
+LimitNOFILE=10000
+
+[Install]
+WantedBy=multi-user.target

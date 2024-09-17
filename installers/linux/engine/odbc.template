@@ -1,0 +1,23 @@
+[ODBC Data Sources]
+dm=DeployHub
+
+[dm]
+Description=PostgreSQL connection to DeployHub DB
+Driver=/usr/lib64/psqlodbc.so
+Database=postgres
+DSN=dm
+Servername=localhost
+UserName=postgres
+Password=postgres
+Port=5432
+Trace=0
+TraceFile=/tmp/odbc.trace
+Debug=0
+DebugFile=/tmp/odbc.debug
+CommLog=0
+
+[Default]
+Driver=/usr/lib64/psqlodbc.so
+
+[ODBC]
+InstallDir=/usr/lib64/libiodbc.so
