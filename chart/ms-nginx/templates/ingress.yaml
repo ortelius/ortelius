@@ -42,7 +42,7 @@ kind: Ingress
 metadata:
   name: {{ include "ms-nginx.name" . }}
   annotations:
-    networking.gke.io/managed-certificates: managed-cert-dh-ms-nginx
+    networking.gke.io/managed-certificates: managed-cert-ms-nginx
     networking.gke.io/v1beta1.FrontendConfig: {{ include "ms-nginx.name" . }}
 spec:
   defaultBackend:
@@ -62,7 +62,7 @@ spec:
 apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
 metadata:
-  name: managed-cert-dh-ms-nginx
+  name: managed-cert-ms-nginx
 spec:
   domains:
     - console.deployhub.com
