@@ -1,0 +1,28 @@
+#!/bin/sh
+todir="."
+branch="HEAD"
+
+if [ "$2" != "" ]; then
+ branch="$2"
+fi
+
+if [ "$3" != "" ]; then
+  todir="$3"
+fi
+
+mkdir $todir 2>/dev/null 1>/dev/null
+chmod -R 777 $todir
+cd $todir
+rm -rf *
+rm -rf .git
+
+if ! [[ $branch =~ ^([0-9a-fA-F]{7})$ ]]; then
+ echo git clone $1 --branch $branch --depth 1 --single-branch $todir
+ git clone $1 --branch $branch --depth 1 --single-branch $todir 2>&1
+else
+ echo git clone $1 $todir
+ git clone $1 $todir 2>&1
+
+ echo git checkout $branch
+ git checkout $brach
+fi

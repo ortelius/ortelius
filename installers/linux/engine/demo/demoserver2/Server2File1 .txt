@@ -1,0 +1,5 @@
+This is Server 2 File 1
+-----------------------
+
+It was included in the zip file demo2.zip
+It has been delivered to server2 as part of the deployment
