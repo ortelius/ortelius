@@ -20,7 +20,7 @@ RUN apk update; \
 WORKDIR /opt/deployhub
 COPY --from=builder /workspace/installers/linux/engine/dm.* engine/
 COPY --from=builder /workspace/installers/linux/webadmin/webapp-runner.jar webadmin/webapp-runner.jar
-COPY --from=builder /build/dh-ms-general.war  webadmin/deployhub-webadmin.war
+COPY --from=builder /build/ms-general.war  webadmin/deployhub-webadmin.war
 COPY --from=builder /workspace/docker/entrypoint.sh  webadmin/entrypoint.sh
 
 ENTRYPOINT /opt/deployhub/webadmin/entrypoint.sh

@@ -19,6 +19,6 @@ ENV DBDriverName org.postgresql.Driver
 WORKDIR /tmp
 
 COPY --from=builder /workspace/installers/linux/webadmin/webapp-runner.jar webapp-runner.jar
-COPY --from=builder /build/dh-ms-ui.war  dh-ms-ui.war
+COPY --from=builder /build/ms-ui.war  ms-ui.war
 
-ENTRYPOINT /usr/bin/java -jar /tmp/webapp-runner.jar --path /dmadminweb /tmp/dh-ms-ui.war 2>&1
+ENTRYPOINT /usr/bin/java -jar /tmp/webapp-runner.jar --path /dmadminweb /tmp/ms-ui.war 2>&1
