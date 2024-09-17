@@ -1,4 +1,4 @@
-FROM quay.io/openmake/meister:v7_5_1@sha256:f2b363bb9b976c65dab2ae1c1770e971ac989cce208dff323fd0bce8782b977c AS builder
+FROM quay.io/openmake/meister:v7_5_1@sha256:f2b363bb9b976c65dab2ae1c1770e971ac989cce208dff323fd0bce8782b977c  AS builder
 
 WORKDIR /build/
 

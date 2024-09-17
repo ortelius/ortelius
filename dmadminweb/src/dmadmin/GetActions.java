@@ -56,7 +56,13 @@ public class GetActions extends JSONServletBase {
 		if (reason.equalsIgnoreCase("getrefs")) {
 			String actionid = request.getParameter("actionid").replaceAll("-.*$","");
 			return session.GetActionReferences(Integer.parseInt(actionid));
-		} else {
+		}
+		else if (reason.equalsIgnoreCase("dropdown"))
+		{
+   ret = session.getActionList();
+   return ret;
+		}
+		else {
 			String objid = request.getParameter("objid");
 			String domstr = request.getParameter("domid");
 			int domid = 0;

@@ -72,6 +72,16 @@
   </servlet-mapping>
   <servlet>
     <description></description>
+    <display-name>SSO</display-name>
+    <servlet-name>SSO</servlet-name>
+    <servlet-class>dmadmin.SSO</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>SSO</servlet-name>
+    <url-pattern>/sso</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
     <display-name>Engine</display-name>
     <servlet-name>Engine</servlet-name>
     <servlet-class>dmadmin.Engine</servlet-class>
@@ -254,7 +264,7 @@
     <description></description>
     <display-name>GetCalendarData</display-name>
     <servlet-name>GetCalendarData</servlet-name>
-    <servlet-class>dmadmin.GetCalendarData</servlet-class>
+    <servlet-class>dmadmin.pro.GetCalendarData</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>GetCalendarData</servlet-name>
@@ -264,7 +274,7 @@
     <description></description>
     <display-name>AddEvent</display-name>
     <servlet-name>AddEvent</servlet-name>
-    <servlet-class>dmadmin.AddEvent</servlet-class>
+    <servlet-class>dmadmin.pro.AddEvent</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>AddEvent</servlet-name>
@@ -294,7 +304,7 @@
     <description></description>
     <display-name>ModifyEvent</display-name>
     <servlet-name>ModifyEvent</servlet-name>
-    <servlet-class>dmadmin.ModifyEvent</servlet-class>
+    <servlet-class>dmadmin.pro.ModifyEvent</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>ModifyEvent</servlet-name>
@@ -629,6 +639,16 @@
   <servlet-mapping>
     <servlet-name>API</servlet-name>
     <url-pattern>/API/*</url-pattern>
+  </servlet-mapping>
+   <servlet>
+    <description></description>
+    <display-name>API2</display-name>
+    <servlet-name>API2</servlet-name>
+    <servlet-class>dmadmin.pro.APIv2</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>API2</servlet-name>
+    <url-pattern>/API2/*</url-pattern>
   </servlet-mapping>
   <servlet>
     <description></description>

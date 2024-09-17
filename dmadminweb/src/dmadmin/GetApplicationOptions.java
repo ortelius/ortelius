@@ -62,14 +62,11 @@ public class GetApplicationOptions extends HttpServlet {
 		 isRelease = true;
 
 
-		List<Application> apps = so.GetApplicationsInEnvironment(Integer.parseInt(request.getParameter("envid")),isRelease);
+		List<String> apps = so.GetApplicationsInEnvironment(Integer.parseInt(request.getParameter("envid")),isRelease);
 
-		for (Application a: apps)
+		for (String a: apps)
 		{
-		 String dname = a.getDomain().getFullDomain();
-
-			System.out.println("<option value=\""+a.getId()+"\">"+dname + "." + a.getName()+"</option>");
-			out.println("<option value=\""+a.getId()+"\">"+dname + "." + a.getName()+"</option>");
+			out.println(a);
 		}
   }
 	}

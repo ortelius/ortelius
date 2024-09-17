@@ -386,6 +386,7 @@ function LoadItems()
   // insert the components
   //
   console.log("in insert block");
+  console.log(data);
   for (a=0;a<data.NodeCount;a++)
   {
    WindowID = parseInt(data.Nodes[a].nodeid);

@@ -67,7 +67,7 @@ $.getJSON('GetPendingEnvData', "appid=" + objid, function(res) {
 					 var btotal = dom.bopen + dom.bclosed;
 					 dom.content =	"<table style=\"width:100%;height:65px;\" border=\"0\"><tr>"+
 					 				"<td><a onClick=\"javascript:SwitchDisplay('"+dom.type+dom.id+"');\">"+dom.content+"</a></td>"+
-					 				"<td style=\"width:65px;border-left:1px;border-left-style:solid;\"><div style=\"height:65px;width:65px;\" id=\"btdiv"+dom.id+"\"></div><div align=\"center\" style=\"font-size:10px;\">"+bclosed+"/"+btotal+"</div></td></tr></table>";
+					 				"<td style=\"width:65px;border-left:1px;border-left-style:solid;\"><div style=\"height:65px;width:65px;\" id=\"btdiv"+dom.id+"\"></div><div align=\"center\">"+bclosed+"/"+btotal+"</div></td></tr></table>";
 				 }
 				 domains.push(dom);
 		     }
@@ -186,7 +186,7 @@ function LoadDeployedEnv4AppData(tablename, objtypeAsInt, objtype, objid, addPar
 
  for (env in deployedenvs)
   {
-   td += '<tr><td></td><td>' + env + '</td><td>#' + deployedenvs[env] + '</td></tr>';
+   td += '<tr><td></td><td>' + env + '</td><td><a href="javascript:void(0);" onclick="DisplayDeploy(' + deployedenvs[env] + ')">#' + deployedenvs[env] + '</a></td></tr>';
   }
 
   $("#" + tablename + " > tbody").empty().append(td);
@@ -245,11 +245,6 @@ function LoadEnv4AppData(tablename, objtypeAsInt, objtype, objid, addParams)
   if (!('data' in res))
    return;
 
-  $("#feedback-env-sel").show();
-  $("#feedback-label").show();
-
-
-  var feedbackenv = {};
 
   for (a = 0; a < res['data'].length; a++)
   {
@@ -262,7 +257,6 @@ function LoadEnv4AppData(tablename, objtypeAsInt, objtype, objid, addParams)
    if (typeof data.id == "undefined")
     continue;
 
-   feedbackenv[data.id] = data.name;
 
    var linkval2="";
    if (lastapp != "") {
@@ -342,15 +336,6 @@ function LoadEnv4AppData(tablename, objtypeAsInt, objtype, objid, addParams)
    id = $("#env4app_oldval_" + rowcnt).val();
    $("#env4app_key_" + rowcnt + " option[value=\"" + id + "\"]").attr('selected', true);
   }
-
-  var sel = "";
-  for (envid in feedbackenv)
-  {
-   sel += "<option value=\"en" + envid + "\">" + feedbackenv[envid] + "</option>";
-  }
-  $("#feedback-env-sel").html(sel);
-  $("#feedback-env-sel").prop('selectedIndex', 0);
-  $("#feedback-env-sel").change();
 
   if (objtype == "av")
   {

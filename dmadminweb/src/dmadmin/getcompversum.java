@@ -66,8 +66,8 @@ public class getcompversum extends HttpServletBase {
     	out.println("<table border=\"0\">");
     	out.println(" <tr>");
     	out.println(" <td><img src=\"images/component-large" + comp.getIconSuffix() + ".png\"></td>");
-    	out.println("  <td><span style=\"font-family:Helvetica,Arial; font-size:20px\">" + comp.getName() + "</span><br>");
-    	out.println("<span style=\"font-family:Helvetica,Arial; font-size:14px\">" + comp.getSummary() + "</span></td>");
+    	out.println("  <td><span >" + comp.getName() + "</span><br>");
+    	out.println("<span >" + comp.getSummary() + "</span></td>");
     	out.println(" </tr>");
     	out.println("</table>");
     	out.println("<hr>");

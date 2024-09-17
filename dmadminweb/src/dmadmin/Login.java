@@ -17,8 +17,11 @@
 package dmadmin;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URLEncoder;
 import java.util.Date;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 // import javax.servlet.http.Cookie;
@@ -27,6 +30,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.pac4j.core.config.Config;
+import org.pac4j.core.context.WebContext;
+import org.pac4j.core.context.session.SessionStore;
+import org.pac4j.core.profile.ProfileManager;
+import org.pac4j.core.util.FindBest;
+import org.pac4j.jee.context.JEEContextFactory;
+import org.pac4j.jee.context.session.JEESessionStore;
+import org.pac4j.saml.client.SAML2Client;
+
+import dmadmin.json.JSONArray;
 import dmadmin.model.Domain;
 import dmadmin.model.JWTGenerateValidateRSA;
 import dmadmin.model.LoginException;
@@ -39,6 +52,8 @@ import io.jsonwebtoken.Jws;
  */
 public class Login extends HttpServlet
 {
+ private final SAML2ClientBuilder saml2ClientBuilder = new SAML2ClientBuilder();
+
  private static final long serialVersionUID = 1L;
 
  /**
@@ -56,12 +71,37 @@ public class Login extends HttpServlet
  {
   try (DMSession so = DMSession.getInstance(request))
   {
+
    // Enumeration<String> parameterNames = request.getParameterNames();
    // while (parameterNames.hasMoreElements()) {
    // String paramName = parameterNames.nextElement();
    // String value = request.getParameter(paramName);
    // System.out.println("XXX");
    // }
+   String IdpMetadata = System.getenv("SamlIdpMetadata");
+   ProfileManager profileManager = null;
+
+   if (IdpMetadata != null)
+   {
+    String dhurl = saml2ClientBuilder.getCurrentUrl(request);
+    SAML2Client client = saml2ClientBuilder.build(dhurl);
+    Config config = new Config(client);
+    SessionStore bestSessionStore = FindBest.sessionStore(null, config, JEESessionStore.INSTANCE);
+
+    WebContext context = FindBest.webContextFactory(null, config, JEEContextFactory.INSTANCE).newContext(request, response);
+
+    profileManager = new ProfileManager(context, bestSessionStore);
+   }
+
+   if (IdpMetadata != null && !IdpMetadata.trim().isEmpty() && profileManager != null && !profileManager.isAuthenticated())
+   {
+    HttpSession session = request.getSession();
+    session.setAttribute("redirecturl", request.getRequestURL().toString());
+    RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/sso");
+    dispatcher.forward(request, response);
+    return;
+   }
+
    request.setAttribute("firstinstall", so.firstInstall());
    request.getRequestDispatcher("/WEB-INF/Home.jsp").forward(request, response);
   }
@@ -86,7 +126,7 @@ public class Login extends HttpServlet
    if (provider == null)
     provider = "";
 
-   // Cookie loggedinUser = new Cookie("p1",username);
+   // Cookie loggedinUser = new Cookie("p1",URLEncoder.encode(username));
    // Cookie loggedinPw = new Cookie("p2",password);
    //
    // loggedinUser.setDomain("deployhub.com"); loggedinUser.setPath("/");
@@ -177,7 +217,7 @@ public class Login extends HttpServlet
      // Set the "loggedin" cookie
      // Cookie loggedinCookie = new Cookie("loggedin","Y");
      // Cookie loggedinSession = new Cookie("session",so.GetSessionId());
-     // loggedinUser = new Cookie("p1",username);
+     // loggedinUser = new Cookie("p1", URLEncoder.encode(username));
      // loggedinPw = new Cookie("p2",password);
      // String srv = "console.deployhub.com";
      //
@@ -201,7 +241,10 @@ public class Login extends HttpServlet
      hs.setAttribute("logininfo", "Login OK");
 
      jwt = so.authUser();
-     Cookie loggedinUser = new Cookie("p1", username);
+     if (username == null)
+      username = "";
+
+     Cookie loggedinUser = new Cookie("p1", URLEncoder.encode(username));
      Cookie loggedinPw = new Cookie("p2", "");
      Cookie loggedinTime = new Cookie("p3", new Long(new Date().getTime()).toString());
      Cookie jwt_token = new Cookie("token", jwt);
@@ -220,13 +263,13 @@ public class Login extends HttpServlet
      {
       // Administrator login
       response.getWriter().write("{\"token\": \"" + jwt + "\", \"Msg\": \"Login Admin\", \"domainid\": \"" + userdomid + "\", \"domain\": \"" + userdom + "\", \"datefmt\": \"" + userdatefmt + "\", \"timefmt\": \"" + usertimefmt + "\", \"issaas\": \"" + isSaas + "\", \"lictype\": \""
-        + so.getLicType() + "\", \"liccnt\": \"" + so.getLicCnt() + "\", \"newuser\": \"" + so.getNewUser() + "\", \"domlist\": \"" + so.getDomainList() + "\"}");
+        + so.getLicType() + "\", \"liccnt\": \"" + so.getLicCnt() + "\", \"newuser\": \"" + so.getNewUser() + "\", \"domlist\": \"" + so.getDomainList() + "\", \"userid\": \"" + userid +"\"}");
      }
      else
      {
       // Normal (non admin) login
       response.getWriter().write("{\"token\": \"" + jwt + "\", \"Msg\": \"Login OK\", \"domainid\": \"" + userdomid + "\", \"domain\": \"" + userdom + "\",\"datefmt\": \"" + userdatefmt + "\", \"timefmt\": \"" + usertimefmt + "\", \"issaas\": \"" + isSaas + "\", \"lictype\": \"" + so.getLicType()
-        + "\", \"liccnt\": \"" + so.getLicCnt() + "\", \"newuser\": \"" + so.getNewUser() + "\", \"domlist\": \"" + so.getDomainList() + "\"}");
+        + "\", \"liccnt\": \"" + so.getLicCnt() + "\", \"newuser\": \"" + so.getNewUser() + "\", \"domlist\": \"" + so.getDomainList() + "\", \"userid\": \"" + userid +"\"}");
      }
      break;
     case LOGIN_BAD_PASSWORD:

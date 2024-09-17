@@ -127,7 +127,7 @@ public IJSONSerializable handleRequest(DMSession session, boolean isPost,
 		// Component locations - either servers or applications
 		int compid = Integer.parseInt(szCompID);
 		String t = request.getParameter("t");
-		Component comp = session.getComponent(compid,true);
+		Component comp = session.getComponentDetail(compid);
 		JSONObject obj = new JSONObject();
 		TableDataSet data = null;
 		data = session.getComponentLocations(comp,t,isRelease);

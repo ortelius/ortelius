@@ -20,4 +20,3 @@ UNION ALL
     dm_deployment b,
     dm_environment d
   WHERE a.id = b.appid AND a.parentid IS NULL AND b.envid = d.id;
-  

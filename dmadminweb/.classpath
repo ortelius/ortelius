@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry exported="true" kind="lib" path="WebContent/WEB-INF/lib/jstl.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jstl.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/standard.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/javax.mail.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jjwt-api-0.10.0.jar"/>
@@ -10,7 +10,48 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jjwt-jackson-0.10.0.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jjwt-orgjson-0.10.0.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cvss-calculator-1.4.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jaxb-api-2.4.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-fileupload-1.5.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gson-2.8.9.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/joda-time-2.9.9.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/metrics-core-3.1.2.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-lang-2.4.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-collections-3.2.2.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/xmlsectool-3.0.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/guava-32.1.1-jre.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/java-support-8.0.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-codec-1.16.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-storage-api-4.0.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-soap-impl-4.0.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-core-5.3.29.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-jcl-5.3.29.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cryptacular-1.2.5.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/slf4j-api-2.0.7.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/velocity-engine-core-2.3.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/pac4j-core-5.7.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/pac4j-javaee-5.7.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/pac4j-saml-5.7.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-core-4.2.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-messaging-api-4.2.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-messaging-impl-4.2.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-profile-api-4.2.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-profile-impl-4.2.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-saml-api-4.2.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-saml-impl-4.2.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-security-api-4.2.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-security-impl-4.2.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-soap-api-4.2.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-storage-impl-4.2.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-xmlsec-api-4.2.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/opensaml-xmlsec-impl-4.2.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/postgresql-42.7.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/gson_lib"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-lang3-3.4.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jna-4.1.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jna-platform-4.1.0.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-io-2.11.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/fluent-hc-4.5.14.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/httpclient-4.5.14.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/httpclient-cache-4.5.14.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/httpcore-4.4.16.jar"/>
@@ -18,20 +59,13 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jackson-annotations-2.14.2.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jackson-core-2.14.2.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jackson-databind-2.14.2.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jaxb-api-2.4.0.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/json-20231013.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/postgresql-42.7.2.jar"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/gson_lib"/>
-	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.eclipse.jst.server.tomcat.runtimeTarget/Apache Tomcat v7.0"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="WebContent/WEB-INF/lib/commons-codec-1.10.jar"/>
-	<classpathentry exported="true" kind="lib" path="WebContent/WEB-INF/lib/commons-lang3-3.4.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-logging-1.2.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jna-4.1.0.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jna-platform-4.1.0.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-fileupload-1.5.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/fluent-hc-4.5.14.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/snakeyaml-2.0.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gson-2.8.9.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.eclipse.jst.server.tomcat.runtimeTarget/Apache Tomcat v7.0"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/bcprov-jdk18on-1.78.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/logback-classic-1.5.6.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/logback-core-1.5.6.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/json-20240303.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/xmlsec-4.0.2.jar"/>
 	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
 </classpath>

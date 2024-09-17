@@ -67,7 +67,7 @@ h4 {
 <body>
 <c:if test="${run == null}">
 <h4 class="ui-widget-header">${task.name}</h4>
-<div id="tasktabs" style="height: 100%; font-size: 12px;overflow:auto">
+<div id="tasktabs" style="height: 100%;overflow:auto">
 	<ul>
 		<li><a href="#tasktabs-General">General</a></li>
 		<li><a href="#tasktabs-Target">Requested Task</a></li>

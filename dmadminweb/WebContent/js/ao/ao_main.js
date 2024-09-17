@@ -40,8 +40,6 @@ function Stack()
   }
 }
 
-var breadcrumbs = new Stack();
-
  function getDialogButton(dialog_selector, button_name)
  {
   var buttons = $(dialog_selector + ' .ui-dialog-buttonpane button');
@@ -70,6 +68,15 @@ $(document).click(function (e) {
 
  $(document).ready(function()
  {
+  if (window.location.href.indexOf("console.deployhub.com") != -1 || window.location.href.indexOf("localhost") != -1)
+  {
+	$(".omlogo").append("<img alt=\"Ortelius\" src=\"images/ortelius-hostedby.png\" style=\"margin-top:-4px !important\" width=\"260px\">");
+  }
+  else
+  {
+	$(".omlogo").append("<img alt=\"Ortelius\" src=\"images/logo.png\"  style=\"margin-top:4px\">");
+  }
+
   cPlumb = jsPlumb.getInstance();
   aPlumb = jsPlumb.getInstance();
   avPlumb = jsPlumb.getInstance();
@@ -165,6 +172,7 @@ $(document).click(function (e) {
        usertimefmt = data.timefmt;
        userdom = data.domain;
        userdomid = data.domainid;
+       myuserid = data.userid;
        domlist = data.domlist.split(',');
        isSaas = data.issaas;
        licType = data.lictype;
@@ -173,14 +181,19 @@ $(document).click(function (e) {
         hideOSS = "Y";
        else
         hideOSS = "N";
+
+       if (!hideOption())
+		 $("#verttab_setup").show();
+	   else
+	     $("#verttab_setup").hide();
      } else if (data.Msg.toLowerCase() == "Login Admin".toLowerCase()) {
-      console.log("1) admin login");
        loggedin = 'Y';
        admin = 'Y';
        userdatefmt = data.datefmt;
        usertimefmt = data.timefmt;
        userdom = data.domain;
        userdomid = data.domainid;
+       myuserid = data.userid;
        domlist = data.domlist.split(',');
        isSaas = data.issaas;
        licType = data.lictype;
@@ -189,6 +202,11 @@ $(document).click(function (e) {
         hideOSS = "Y";
        else
         hideOSS = "N";
+
+       if (!hideOption())
+		 $("#verttab_setup").show();
+	   else
+	     $("#verttab_setup").hide();
     }
      SetCookie("admin",admin);
   });
@@ -198,13 +216,9 @@ $(document).click(function (e) {
    // some basic information to get started
    var l = "<div id=\"firstinstall\">";
    l+="<table border=\"0\"><tr><td valign=\"top\"><img src=\"css/images/setupdog.png\"></td><td valign=\"top\">";
-   l+="<h2>Set Admin Password</h2>Welcome to DeployHub Pro. The first thing you need to do is to set the password for the \"admin\" user account. ";
-   l+="Once this is done, you will be logged in as the \"admin\" user and you will be able to create more user accounts ";
-   l+="and set up the objects which will allow you to automate your deployments with ease.<br><br>";
-   //l+="Once you've set the \"admin\" user account password and logged in, you'll be identified as a first-time user. As such ";
-   //l+="you'll be given an overview of how DeployHub works and how to navigate the UI.<BR><HR><BR>";
-   //l+="Please enter the password for the \"admin\" user account. Make sure you remember it because it will not be possible ";
-   //l+="to recover the password should you forget it.<BR><BR>"
+   l+="<h2>Set Admin Password</h2>Welcome. The first thing you need to do is to set the password for the \"admin\" user account. ";
+   l+="Once this is done, you will be logged in as the \"admin\" user and you will be able to create more user accounts. ";
+   l+="<br><br>";
    l+="<form id=\"firstinstallform\">";
    l+="<table style=\"width:100%;\" border=\"0\">";
    l+="<tr>";
@@ -255,7 +269,7 @@ $(document).click(function (e) {
   else
   if (loggedin != "Y")
   {
-   var l = "<img src=\"images/splash.png\" alt=\"\"  style=\"height:86px\" class=\"logindialog\" />"
+   var l = "<div style=\"background-color: #5a4475\"><img src=\"images/splash.png\" alt=\"\"  style=\"height:86px\" class=\"logindialog\" /></div>"
    l += "<div id=\"loginset\">";
    l += "  <form id=\"loginform\">";
    l += "<table id=\"logintab\" style=\"width: 100%;\" border=\"0\">";
@@ -301,6 +315,8 @@ $(document).click(function (e) {
     dialogClass : "logindialog"
    });
 
+   $("#login_container_dialog").css("padding", "0");
+
    $("#login_container_dialog").dialog(
    {
     draggable : false
@@ -318,6 +334,31 @@ $(document).click(function (e) {
     {
      DoLogin(this);
     }
+   },
+   {
+    id: "signup",
+    text : "Sign Up",
+    click : function()
+    {
+	 window.location = 'https://www.deployhub.com/deployhub-team-signup/';
+     // DoSignUp(this);
+    }
+   },
+   {
+    id: "oksignup",
+    text : "OK",
+    click : function()
+    {
+     DoOKSignUp(this);
+    }
+   },
+    {
+     id: "cancelsignup",
+     text : "Cancel",
+     click : function()
+     {
+      DoCancelSignUp(this);
+     }
    },
 /*   {
     id: "google",
@@ -380,6 +421,8 @@ $(document).click(function (e) {
    $("#github").addClass("login_hide");
    $("#deployhub").addClass("login_hide");
    $("#login").removeClass("login_hide");
+   $("#oksignup").addClass("login_hide");
+   $("#cancelsignup").addClass("login_hide");
    $("#logindlg_user").show();
    $("#logindlg_pw").show();
 
@@ -387,6 +430,9 @@ $(document).click(function (e) {
 //   $("#login").addClass("login_hide");
    $("#newpassword").on("keyup", VerifyPW);
    $("#newpasswordagain").on("keyup", VerifyPW);
+
+   if (window.location.hostname != "localhost" && window.location.hostname != "console.deployhub.com")
+      $("#signup").attr("style", "display: none !important");
   }
   else
   {
@@ -397,8 +443,6 @@ $(document).click(function (e) {
     if (parts[x].indexOf("username=") >= 0)
      myuserid = parts[x].substring(9);
    }
-
-   breadcrumbs.push("#applications_tree");
 
    EnableTabs("application_menu");
   }
@@ -427,7 +471,7 @@ $(document).click(function (e) {
       dataType: "json",
       success: function (res)
       {
-       $("#rproxy_menu").text(res.runningcnt + " of " + res.totalcnt + " Reverse Proxy running");
+ //      $("#rproxy_menu").text(res.runningcnt + " of " + res.totalcnt + " Reverse Proxy running");
       }
     });
 
@@ -439,26 +483,61 @@ $(document).click(function (e) {
 
   document.getElementById('upload_readme').addEventListener('click', getReadme);
   document.getElementById('upload_swagger').addEventListener('click', getSwagger);
+  if (!hideOption())
+	$("#verttab_setup").show();
+  else
+    $("#verttab_setup").hide();
 
  });
 
-  async function getReadme()
-  {
+
+function ActivateMenuItems()
+{
+ if (hideOption())
+ {
+  $("#verttab_setup").hide();
+  $("#verttab_release").hide();
+  $("#verttab_action").hide();
+  $("#verttab_procedure").hide();
+  $("#verttab_servercomptype").hide();
+  $("#verttab_credential").hide();
+  $("#verttab_repository").hide();
+  $("#verttab_datasource").hide();
+  $("#verttab_notifier").hide();
+  $("#verttab_template").hide();
+ }
+ else
+ {
+  $("#verttab_setup").show();
+  $("#verttab_release").show();
+  $("#verttab_action").show();
+  $("#verttab_procedure").show();
+  $("#verttab_servercomptype").show();
+  $("#verttab_credential").show();
+  $("#verttab_repository").show();
+  $("#verttab_datasource").show();
+  $("#verttab_notifier").show();
+  $("#verttab_template").show();
+ }
+}
+
+async function getReadme()
+{
 	 let fileHandle;
      [fileHandle] = await window.showOpenFilePicker();
      const file = await fileHandle.getFile();
      const contents = await file.text();
      AddCompFile(contents, 'readme');
-  };
+}
 
-  async function getSwagger()
-  {
+async function getSwagger()
+{
 	let fileHandle;
      [fileHandle] = await window.showOpenFilePicker();
      const file = await fileHandle.getFile();
      const contents = await file.text();
      AddCompFile(contents, 'swagger');
-  };
+}
 
  function VerifyPW()
  {
@@ -569,6 +648,12 @@ $(document).click(function (e) {
     hideOSS = "Y";
    else
     hideOSS = "N";
+
+  if (!hideOption())
+    $("#verttab_setup").show();
+  else
+    $("#verttab_setup").hide();
+
 //   SetCookie("p1",newUser);
 //   SetCookie("p2",newpw);
    SetCookie("admin",isAdmin);
@@ -592,6 +677,12 @@ $(document).click(function (e) {
     hideOSS = "Y";
    else
     hideOSS = "N";
+
+  if (!hideOption())
+    $("#verttab_setup").show();
+  else
+    $("#verttab_setup").hide();
+
 //   SetCookie("p1",newUser);
 //   SetCookie("p2",newpw);
    SetCookie("admin",isAdmin);
@@ -609,7 +700,6 @@ $(document).click(function (e) {
        redirUrl : "Logout",
        keepAliveUrl : "KeepAlive"
      });
-     breadcrumbs.push("#applications_tree");
 //     SetCookie("logindata",loginformData);
      EnableTabs("application_menu");
      openList(event, 'application');
@@ -620,12 +710,129 @@ $(document).click(function (e) {
   });
  }
 
+
+ function DoSignUp(dlg)
+ {
+  console.log("DoLogin");
+   var logindlg = parent.$("#login_container_dialog");
+   var form = logindlg.find("#loginform");
+   var mypw = "";
+   var l = "";
+
+   l += "  <tr id=\"companyname_row\">";
+   l += "   <td class=\"login_label\" align=\"right\">Company Name:</td>";
+   l += "   <td align=\"left\"><input class=\"inputbox\" type=\"text\" id=\"companyname\" name=\"companyname\" /></td>";
+   l += "  </tr>";
+   l += "  <tr id=\"projectname_row\">";
+   l += "   <td class=\"login_label\" align=\"right\">Project Name:</td>";
+   l += "   <td align=\"left\"><input class=\"inputbox\" type=\"text\" id=\"projectname\" name=\"projectname\" /></td>";
+   l += "  </tr>";
+   l += "  <tr id=\"firstname_row\">";
+   l += "   <td class=\"login_label\" align=\"right\">First Name:</td>";
+   l += "   <td align=\"left\"><input class=\"inputbox\" type=\"text\" id=\"firstname\" name=\"firstname\" /></td>";
+   l += "  </tr>";
+   l += "  <tr id=\"lastname_row\">";
+   l += "   <td class=\"login_label\" align=\"right\">Last Name:</td>";
+   l += "   <td align=\"left\"><input class=\"inputbox\" type=\"text\" id=\"lastname\" name=\"lastname\" /></td>";
+   l += "  </tr>";
+   l += "  <tr id=\"email_row\">";
+   l += "   <td class=\"login_label\" align=\"right\">Email:</td>";
+   l += "   <td align=\"left\"><input class=\"inputbox\" type=\"text\" id=\"email\" name=\"email\" /></td>";
+   l += "  </tr>";
+   l += "  <tr id=\"phone_row\">";
+   l += "   <td class=\"login_label\" align=\"right\">Phone:</td>";
+   l += "   <td align=\"left\"><input class=\"inputbox\" type=\"text\" id=\"phone\" name=\"phone\" /></td>";
+   l += "  </tr>";
+
+   $("#logindlg_user").before(l);
+   $("#login_container_dialog").height(660);
+   $("#oksignup").removeClass("login_hide");
+   $("#cancelsignup").removeClass("login_hide");
+   $("#logindlg_newpw").removeClass("login_hide");
+   $("#logindlg_newpwagain").removeClass("login_hide");
+   $("#logindlg_pw").addClass("login_hide");
+   $("#login").addClass("login_hide");
+   $("#signup").addClass("login_hide");
+
+ }
+
+ function DoCancelSignUp()
+ {
+  location.href = location.protocol + '//' + location.host + location.pathname.replace('Home', 'Login');
+ }
+
+ function DoOKSignUp()
+ {
+  $("#login_err").html("");
+  VerifyField("companyname");
+  VerifyField("projectname");
+  VerifyRequired("firstname");
+  VerifyRequired("lastname");
+  VerifyEmail("email");
+  VerifyUserName("username");
+  VerifyPassword("newpassword");
+  VerifyPassword("newpasswordagain");
+
+  var err = $("#login_err").text();
+
+  if (err == "")
+  {
+   data = {};
+   data['companyname'] = $("#companyname").val();
+   data['projectname'] = $("#projectname").val();
+   data['domname'] = "GLOBAL." + $("#companyname").val() + "." + $("#projectname").val();
+   data['firstname'] = $("#firstname").val();
+   data['lastname'] = $("#lastname").val();
+   data['realname'] = $("#firstname").val() + " " + $("#lastname").val();
+   data['email'] = $("#email").val();
+   data['tel'] = $("#phone").val();
+   data['userid'] = $("#username").val();
+   data['pw'] = $("#newpassword").val();
+
+   $.ajax({
+      type : "POST",
+      dataType : 'json',
+      data: data,
+      url : "API/signup"
+     }).done(function(res) {
+      if (res['err'] != "")
+      {
+       $("#login_err").html(res.err);
+       return;
+      }
+      parent.$("#login_container_dialog").dialog("close");
+      $.unblockUI();
+      $.confirm({
+       boxWidth: '30%',
+       useBootstrap: false,
+       title: 'Sign-up Complete',
+       content: 'Please login with your new userid and password.<br><br>The Hipster Store Sample application will take a few minutes to provision into your domain.',
+       buttons: {
+           ok: function () {
+            location.href = location.protocol + '//' + location.host + location.pathname.replace('Home', 'Login');
+           }
+         }
+      });
+      console.log(res);
+      $.ajax({
+       type : "POST",
+       dataType : 'json',
+       data: data,
+       url : "API/adddemo"
+      }).done(function(data) {
+       console.log(data);
+      });
+     });
+  }
+ }
+
  function DoLogin(dlg)
  {
   console.log("DoLogin");
    var logindlg = parent.$("#login_container_dialog");
    var form = logindlg.find("#loginform");
    var mypw = "";
+   var myuserid  = "";
    loginformData = form.serialize();
 
    var parts = loginformData.split("&");
@@ -685,7 +892,7 @@ $(document).click(function (e) {
              redirUrl : "Logout",
              keepAliveUrl : "KeepAlive"
             });
-            breadcrumbs.push("#applications_tree");
+
             EnableTabs("application_menu");
   //          SetCookie("logindata",loginformData);
             openList(event, 'application');
@@ -699,82 +906,210 @@ $(document).click(function (e) {
        }
       });
     } else {
-     $.post("Login", loginformData, null, "json").done(function(data) {
-      console.log("data=");
-      console.log(data);
-      if (data.Msg.toLowerCase() == "Login OK".toLowerCase()) {
-       console.log("Normal login");
-       loggedin="Y";
-       admin="N";
-       isAdmin="N";
-       newUser=data.newuser;
-       console.log("datefmt="+data.datefmt);
-       userdatefmt = data.datefmt;
-       usertimefmt = data.timefmt;
-       userdom = data.domain;
-       userdomid = data.domainid;
-       domlist = data.domlist.split(',');
-       isSaas = data.issaas;
-       licType = data.lictype;
-       licCnt  = data.liccnt;
-       if (isSaas == 'Y' && licType == "OSS")
-        hideOSS = "Y";
-       else
-        hideOSS = "N";
-//       SetCookie("p1",myuserid);
-//       SetCookie("p2",mypw);
-       SetCookie("admin",isAdmin);
-       SetCookie("loggedin",loggedin);
-      } else if (data.Msg.toLowerCase() == "Login Admin".toLowerCase()) {
-       console.log("2) admin login");
-       loggedin="Y";
-       admin="Y";
-       isAdmin="Y";
-       newUser=data.newuser;
-       console.log("datefmt="+data.datefmt);
-       userdatefmt = data.datefmt;
-       usertimefmt = data.timefmt;
-       userdom = data.domain;
-       userdomid = data.domainid;
-       domlist = data.domlist.split(',');
-       isSaas = data.issaas;
-       licType = data.lictype;
-       licCnt  = data.liccnt;
-       if (isSaas == 'Y' && licType == "OSS")
-        hideOSS = "Y";
-       else
-        hideOSS = "N";
-//       SetCookie("p1",myuserid);
-//       SetCookie("p2",mypw);
-       SetCookie("admin",isAdmin);
-       SetCookie("loggedin",loggedin);
-      }
-      if (loggedin=="Y") {
-//       SetCookie("p1",myuserid);
-//       SetCookie("p2",mypw);
-       SetCookie("admin",isAdmin);
-       SetCookie("loggedin",loggedin);
-        parent.$("#login_container_dialog").dialog("close");
-        $.sessionTimeout({
-          logoutUrl : "Logout",
-          redirUrl : "Logout",
-          keepAliveUrl : "KeepAlive"
-        });
-        breadcrumbs.push("#applications_tree");
-        EnableTabs("application_menu");
- //       SetCookie("logindata",loginformData);
-        openList(event, 'application');
-      } else {
-        if (data.Msg == "Password must be changed") {
-         newUser=data.newuser;
-          forcepwchange = true;
-         $(".ui-dialog-buttonpane button:contains('Login')").button('disable');
-          parent.$("#login_container_dialog").dialog("option", "height", 450);
-          $("#logintab").find("tr.newpw").show();
-        }
-        $("#login_err").html(data.Msg);
-      }
-     });
+	    $.ajax({
+	     url : "API/doms4user/" + myuserid,
+	     dataType : 'json',
+	     type : 'GET',
+	     success : function(res)
+	     {
+		  if (res.length > 1)
+		  {
+		  html = "<div id=\"select-domain\" style=\"list-style:none\">";
+		  for (i=0;i<res.length;i++)
+		  {
+		   html += "<li class=\"ui-widget-content\">" + res[i] + "</li>";
+		  }
+
+		  html += "</div>";
+
+		  $("#modal").html(html);
+
+		  $("#select-domain").selectable();
+
+		  $("#modal").dialog({
+		      autoOpen: false,
+		      modal: true,
+      		  height: 200,
+      		  title: "Select Domain",
+		      buttons: {
+		        "OK": function() {
+		          var selectedItems = $("#select-domain .ui-selected").map(function() {
+		            return $(this).text();
+		          }).get().join(", ");
+
+		          loginformData = loginformData.replace("username=", "username=" + encodeURIComponent(selectedItems) + ".");
+		          $(this).dialog("close");
+		          $.post("Login", loginformData, null, "json").done(function(data) {
+				      console.log("data=");
+				      console.log(data);
+				      if (data.Msg.toLowerCase() == "Login OK".toLowerCase()) {
+				       console.log("Normal login");
+				       loggedin="Y";
+				       admin="N";
+				       isAdmin="N";
+				       newUser=data.newuser;
+				       console.log("datefmt="+data.datefmt);
+				       userdatefmt = data.datefmt;
+				       usertimefmt = data.timefmt;
+				       userdom = data.domain;
+				       userdomid = data.domainid;
+				       domlist = data.domlist.split(',');
+				       isSaas = data.issaas;
+				       licType = data.lictype;
+				       licCnt  = data.liccnt;
+				       if (isSaas == 'Y' && licType == "OSS")
+				        hideOSS = "Y";
+				       else
+				        hideOSS = "N";
+				//       SetCookie("p1",myuserid);
+				//       SetCookie("p2",mypw);
+				       SetCookie("admin",isAdmin);
+				       SetCookie("loggedin",loggedin);
+				      } else if (data.Msg.toLowerCase() == "Login Admin".toLowerCase()) {
+				       console.log("2) admin login");
+				       loggedin="Y";
+				       admin="Y";
+				       isAdmin="Y";
+				       newUser=data.newuser;
+				       console.log("datefmt="+data.datefmt);
+				       userdatefmt = data.datefmt;
+				       usertimefmt = data.timefmt;
+				       userdom = data.domain;
+				       userdomid = data.domainid;
+				       domlist = data.domlist.split(',');
+				       isSaas = data.issaas;
+				       licType = data.lictype;
+				       licCnt  = data.liccnt;
+				       if (isSaas == 'Y' && licType == "OSS")
+				        hideOSS = "Y";
+				       else
+				        hideOSS = "N";
+				//       SetCookie("p1",myuserid);
+				//       SetCookie("p2",mypw);
+				       SetCookie("admin",isAdmin);
+				       SetCookie("loggedin",loggedin);
+				      }
+				      if (loggedin=="Y") {
+				//       SetCookie("p1",myuserid);
+				//       SetCookie("p2",mypw);
+				       SetCookie("admin",isAdmin);
+				       SetCookie("loggedin",loggedin);
+				        parent.$("#login_container_dialog").dialog("close");
+				        $.sessionTimeout({
+				          logoutUrl : "Logout",
+				          redirUrl : "Logout",
+				          keepAliveUrl : "KeepAlive"
+				        });
+
+				        EnableTabs("application_menu");
+				 //       SetCookie("logindata",loginformData);
+				        openList(event, 'application');
+				      } else {
+				        if (data.Msg == "Password must be changed") {
+				         newUser=data.newuser;
+				          forcepwchange = true;
+				         $(".ui-dialog-buttonpane button:contains('Login')").button('disable');
+				          parent.$("#login_container_dialog").dialog("option", "height", 450);
+				          $("#logintab").find("tr.newpw").show();
+				        }
+				        $("#login_err").html(data.Msg);
+				      }
+				     });
+		        },
+		        "Cancel": function() {
+		          $(this).dialog("close");
+		        }
+		      }
+		    });
+
+		   $("#modal").dialog("open");
+	      }
+	     else
+	     {
+		     $.post("Login", loginformData, null, "json").done(function(data) {
+		      console.log("data=");
+		      console.log(data);
+		      if (data.Msg.toLowerCase() == "Login OK".toLowerCase()) {
+		       console.log("Normal login");
+		       loggedin="Y";
+		       admin="N";
+		       isAdmin="N";
+		       newUser=data.newuser;
+		       console.log("datefmt="+data.datefmt);
+		       userdatefmt = data.datefmt;
+		       usertimefmt = data.timefmt;
+		       userdom = data.domain;
+		       userdomid = data.domainid;
+		       domlist = data.domlist.split(',');
+		       isSaas = data.issaas;
+		       licType = data.lictype;
+		       licCnt  = data.liccnt;
+		       if (isSaas == 'Y' && licType == "OSS")
+		        hideOSS = "Y";
+		       else
+		        hideOSS = "N";
+		//       SetCookie("p1",myuserid);
+		//       SetCookie("p2",mypw);
+		       SetCookie("admin",isAdmin);
+		       SetCookie("loggedin",loggedin);
+		      } else if (data.Msg.toLowerCase() == "Login Admin".toLowerCase()) {
+		       console.log("2) admin login");
+		       loggedin="Y";
+		       admin="Y";
+		       isAdmin="Y";
+		       newUser=data.newuser;
+		       console.log("datefmt="+data.datefmt);
+		       userdatefmt = data.datefmt;
+		       usertimefmt = data.timefmt;
+		       userdom = data.domain;
+		       userdomid = data.domainid;
+		       domlist = data.domlist.split(',');
+		       isSaas = data.issaas;
+		       licType = data.lictype;
+		       licCnt  = data.liccnt;
+		       if (isSaas == 'Y' && licType == "OSS")
+		        hideOSS = "Y";
+		       else
+		        hideOSS = "N";
+		//       SetCookie("p1",myuserid);
+		//       SetCookie("p2",mypw);
+		       SetCookie("admin",isAdmin);
+		       SetCookie("loggedin",loggedin);
+		      }
+		      if (loggedin=="Y") {
+		//       SetCookie("p1",myuserid);
+		//       SetCookie("p2",mypw);
+		       SetCookie("admin",isAdmin);
+		       SetCookie("loggedin",loggedin);
+		        parent.$("#login_container_dialog").dialog("close");
+		        $.sessionTimeout({
+		          logoutUrl : "Logout",
+		          redirUrl : "Logout",
+		          keepAliveUrl : "KeepAlive"
+		        });
+
+		        EnableTabs("application_menu");
+		 //       SetCookie("logindata",loginformData);
+		        openList(event, 'application');
+		      } else {
+		        if (data.Msg == "Password must be changed") {
+		         newUser=data.newuser;
+		          forcepwchange = true;
+		         $(".ui-dialog-buttonpane button:contains('Login')").button('disable');
+		          parent.$("#login_container_dialog").dialog("option", "height", 450);
+		          $("#logintab").find("tr.newpw").show();
+		        }
+		        $("#login_err").html(data.Msg);
+		      }
+		     });
+		   }
+		 }
+	    });
+
+	// Display List dialog
+	// on OK - combine domain with userid and perform login
+
+
    }
 
  }
@@ -861,7 +1196,7 @@ $(document).click(function (e) {
       redirUrl : "Logout",
       keepAliveUrl : "KeepAlive"
     });
-    breadcrumbs.push("#applications_tree");
+
     EnableTabs("application_menu");
 //    SetCookie("logindata",loginformData);
     openList(event, 'application');
@@ -871,11 +1206,20 @@ $(document).click(function (e) {
 
  function ActivateSubTabs()
  {
+
+//  $("#bookmark-Security-Posture").hide();
+//  $("#bookmark-Impact-Assessment").hide();
+//  $("#bookmark-DevOps-Details").hide();
+//  $("#bookmark-Calendar").hide();
+//  $("#bookmark-Audit-Access").hide();
+
   if (displaySubTabs == "N")
   {
    $("#panel_container_right").hide();
    return;
   }
+
+  $("#scorecard_dd").hide();
 
   if (parent.$('#summ_data_edit').is(':visible') && !msgbox_showing)
   {
@@ -902,7 +1246,7 @@ $(document).click(function (e) {
   }
 
   $("#panel_container_right_list").hide();
-   $("#panel_container_right").css('left', '274px');
+  $("#panel_container_right").css('left', '278px');
 
 
   console.log("ActivateSubTabs()");
@@ -981,7 +1325,6 @@ $(document).click(function (e) {
 
   classname = hookActivateSubTabs();
 
-  console.log(breadcrumbs);
   console.log(currentSubTabsSelection);
 
   var tabIdNode = currentSubTabsSelection[currenttree];
@@ -1015,7 +1358,6 @@ $(document).click(function (e) {
    {
     $("#panel_container_right").show();
     $("#tabs-Servers").hide();
-    $("#tabs-Calendar").hide();
     $("#tabs-Applications").hide();
     $("#tabs-Reports").hide();
     $("#tabs-ServerStatus").hide();
@@ -1063,7 +1405,6 @@ $(document).click(function (e) {
   {
    $("#panel_container_right").show();
    $("#tabs-Servers").hide();
-   $("#tabs-Calendar").show();
    $("#tabs-Applications").hide();
    $("#tabs-Reports").hide();
   }
@@ -1174,26 +1515,49 @@ $(document).click(function (e) {
   {
   case "tabs-General":
    {
-    console.log("doing general - objtype="+objtype+" currenttree="+currenttree);
-    $("#panel_container_right").show();
-    if (objtype == "ap" || objtype == "co")
-    {
-     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-     parent.$("#right_panel_header").html("<h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
+	var vercnt = 0;
+	versiondd_list = [];
+
+	if (objtype == "co" || objtype == "cv" || objtype == "ap" || objtype == "av")
+	{
+		$.ajax({
+	     url : "/dmadminweb/API/versionlist/" + objtype + objid,
+	     dataType : 'json',
+	     type : 'GET',
+	     async: false,
+	     success : function(res)
+	     {
+		  versiondd_list = res.data;
+		  vercnt = versiondd_list.length;
+	     }
+	   	});
+
+
+	    console.log("doing general - objtype="+objtype+" currenttree="+currenttree);
+	    $("#panel_container_right").show();
+	    if (objtype == "ap" || objtype == "co")
+	    {
+		 var button_html = '<button id="versions" class="versions ui-button ui-corner-all ui-widget" onclick="openVersionDlg(event, objtype, objid)"><svg aria-hidden="true" focusable="false" role="img" class="octicon octicon-history" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" style="display: inline-block; user-select: none; vertical-align: text-bottom; overflow: visible;"><path d="m.427 1.927 1.215 1.215a8.002 8.002 0 1 1-1.6 5.685.75.75 0 1 1 1.493-.154 6.5 6.5 0 1 0 1.18-4.458l1.358 1.358A.25.25 0 0 1 3.896 6H.25A.25.25 0 0 1 0 5.75V2.104a.25.25 0 0 1 .427-.177ZM7.75 4a.75.75 0 0 1 .75.75v2.992l2.028.812a.75.75 0 0 1-.557 1.392l-2.5-1A.751.751 0 0 1 7 8.25v-3.5A.75.75 0 0 1 7.75 4Z"></path></svg>&nbsp;' + vercnt + ' Versions</button>';
+	     button_html += '<button class="compare ui-button ui-corner-all ui-widget" onclick="openDiffDlg(event, objtype, objid)"><i class="fal fa-equals" aria-hidden="true" style="padding-right:5px;"></i>Compare</button>';
+
+	     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
+	     parent.$("#header_icon").html("<h1 style=\"display:inline;\">" + objtypeName + ":  " + objName + "</h1>" + button_html);
+	    }
+	    else
+	    {
+		 var button_html = '<button id="versions" class="versions ui-button ui-corner-all ui-widget" onclick="openVersionDlg(event, objtype, objid)"><svg aria-hidden="true" focusable="false" role="img" class="octicon octicon-history" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" style="display: inline-block; user-select: none; vertical-align: text-bottom; overflow: visible;"><path d="m.427 1.927 1.215 1.215a8.002 8.002 0 1 1-1.6 5.685.75.75 0 1 1 1.493-.154 6.5 6.5 0 1 0 1.18-4.458l1.358 1.358A.25.25 0 0 1 3.896 6H.25A.25.25 0 0 1 0 5.75V2.104a.25.25 0 0 1 .427-.177ZM7.75 4a.75.75 0 0 1 .75.75v2.992l2.028.812a.75.75 0 0 1-.557 1.392l-2.5-1A.751.751 0 0 1 7 8.25v-3.5A.75.75 0 0 1 7.75 4Z"></path></svg>&nbsp;' + vercnt + ' Versions</button>';
+	     button_html += '<button class="compare ui-button ui-corner-all ui-widget" onclick="openDiffDlg(event, objtype, objid)"><i class="fal fa-equals" aria-hidden="true" style="padding-right:5px;"></i>Compare</button>';
+
+	     parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
+	     parent.$("#header_icon").html("<h1 style=\"display:inline;\">" + objtypeName + ": " + objName + "</h1>"  + button_html);
+	    }
     }
     else
     {
+	 $("#versions").hide();
      parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-     if (objtypeName == 'Domain')
-     {
-	    html = '<button class="scorecard_button" onClick="javascript:ScorecardDomain(objid)">' +
-						'<i class="fa-light fa-table-columns aria-hidden="true"  style="padding-right:5px"></i>Scorecard</button>' +
-						'<h1 style="display:inline-block">Domain: ' + objName + '</h1>';
-		parent.$("#right_panel_header").html(html);
-     }
-     else
-      parent.$("#right_panel_header").html("<h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-    }
+     parent.$("#header_icon").html("<h1 style=\"display:inline;\">" + objtypeName + ": " + objName + "</h1>");
+	}
     parent.$("#title_icon").html("");
 
     reset_html = '<tbody></tbody>';
@@ -1239,34 +1603,43 @@ $(document).click(function (e) {
     if ((objtype == "av" || objtype == "ap") && currenttree == "#applications_tree")
     {
      $("#tabs-General-row-15").hide();
+     $("#tabs-General-row-15b").hide();
      $("#tabs-General-row-20").hide();
      $("#tabs-General-row-30").hide();
      $("#tabs-General-row-32").hide();
      $("#tabs-General-row-28").hide();
+     $("#audit-access").hide();
      $("#tabs-General-row-35").hide();
+     $("#tabs-General-row-35a").hide();
      $("#tabs-General-row-40").hide();
+     $("#tabs-General-row-lic").hide();
+     $("#row-10-right-panel").hide();
     }
     else
     {
   //   $("#tabs-General-row-15").show();
+    //   $("#tabs-General-row-15a").show();
      $("#tabs-General-row-20").show();
      $("#tabs-General-row-30").show();
      $("#tabs-General-row-32").show();
+     $("#audit-access").show();
      $("#tabs-General-row-35").show();
+     $("#tabs-General-row-35a").show();
      $("#tabs-General-row-40").show();
+     $("#tabs-General-row-lic").show();
     }
 
     $("#panel_container_right").show();
     if (objtype == "ap" || objtype == "co")
     {
      parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-     parent.$("#right_panel_header").html("<h1 class=\"" + classname + "\">" + objtypeName + "  Base Version:  " + objName + "</h1>");
+     parent.$("#header_icon").html("<h1 class=\"" + classname + "\">" + objtypeName + ":  " + objName + "</h1>");
     }
-       else
-       {
+    else
+    {
      parent.$("#right_panel_title_area").html("<div id=\"right_panel_buttons\"></div>");
-     parent.$("#right_panel_header").html("<h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
-       }
+     parent.$("#header_icon").html("<h1 class=\"" + classname + "\">" + objtypeName + ": " + objName + "</h1>");
+    }
     parent.$("#title_icon").html("");
     console.log("GetComponents?appid=" + objid);
     LoadComponentsData();
@@ -1446,13 +1819,75 @@ $(document).click(function (e) {
    displayhome=false;
    console.log($("#panel_container_right show HOME"));
   }
+
+  $("#tabs-General").hide();
+  $("#bookmark-Security-Posture").hide();
+  $("#bookmark-Impact-Assessment").hide();
+  $("#bookmark-Proc-Definition").hide();
+  $("#bookmark-Calendar").hide();
+  $("#security-posture").hide();
+  $("#impact-assessment").hide();
+  $("#calendar-section").hide();
+  $("#proc-definition").hide();
+
+
+  $("#bookmark-DevOps-Details").show();
+  $("#devops-details").show();
+  $("#bookmark-Audit-Access").show();
+  $("#audit-access").show();
+  $("#right_panel_tabs").css("top", "-20px");
+
+  if (objtype == "co" || objtype == "cv" || objtype == "ap" || objtype == "av")
+  {
+	$("#bookmark-Security-Posture").show();
+    $("#bookmark-Impact-Assessment").show();
+    $("#security-posture").show();
+    $("#impact-assessment").show();
+  }
+  else if (objtype == "en")
+  {
+	$("#bookmark-Impact-Assessment").show();
+    $("#bookmark-Calendar").show();
+    $("#calendar-section").show();
+    $("#impact-assessment").show();
+  }
+  else if (objtype == "se")
+  {
+	$("#bookmark-Impact-Assessment").show();
+    $("#impact-assessment").show();
+  }
+  else if (objtype == "te")
+  {
+    $("#bookmark-Audit-Access").hide();
+    $("#audit-access").hide();
+  }
+  else if (objtype == "fn" || objtype == "pr")
+  {
+   $("#bookmark-Proc-Definition").show();
+   $("#proc-definition").show();
+  }
+  else if (objtype == "do")
+  {
+   $("#bookmark-DevOps-Details").hide();
+   $("#devops-details").hide();
+   $("#bookmark-Audit-Access").hide();
+   $("#audit-access").hide();
+  }
+ }
+
+ function Scroll2Bookmark(bookmarkId)
+ {
+  const container = document.getElementById("right_panel_main");
+  const bookmark = document.getElementById(bookmarkId);
+
+bookmark.scrollIntoView({behavior: 'smooth'});
  }
 
  function SetActiveMenu(menuname)
  {
 
   console.log("SetActiveMenu("+menuname+")");
-  if ($("#" + oldmenu).length > 0)
+  if (oldmenu.length > 0 && $("#" + oldmenu).length > 0)
   {
    $("#" + oldmenu).removeClass('current');
    $("#" + oldmenu).removeClass('active');
@@ -1534,11 +1969,8 @@ $(document).click(function (e) {
   console.log("Calling CreateTree(\""+currenttree+"\",\""+itemname+"\",\""+admin+"\", \"mainframe3\"");
   CreateTree(currenttree, itemname, admin, "mainframe3");
 
-  // $("#footer_container").html("");
-
   ActivateSubTabs();
 
-  breadcrumbs.push(currenttree);
   oldtreename = currenttree;
  }
 
@@ -2040,41 +2472,6 @@ $(document).click(function (e) {
 
   console.log("id="+objid+" objtype="+objtype + " objtypeAsInt=" + objtypeAsInt + " objtypeName=" + objtypeName + " objName=" + objName + " objkind=" + objkind+ " oldmenu=" + oldmenu + " currenttree=" + currenttree);
 
-  crumb = currentSubTabsSelection[currenttree];
-  console.log(crumb);
-  if (typeof crumb != "undefined") {
-   crumb[1] = lastSelectedNode;
-  }
-  console.log("currentSubTabsSelection[" + currenttree + "]="+crumb);
-  currentSubTabsSelection[currenttree] = crumb;
-
-  var cs=(objtype=="cc" || objtype=="cp" || objtype=="cy");
-  if (objName.length>0) {
-   var image = "";
-   var odl = "";
-     var ctab = "";
-
-     var tld = menuForType[objtype];
-
-     if (tld != null)
-     {
-      ctab = tld.t;
-      image = "background-image:url('" + tld.image + "');background-repeat: no-repeat;background-position:0px 2px;";
-     }
-
-    console.log("image="+image);
-    var addLink=HighlightFooterLink(lastSelectedNode);
-    if (addLink) {
-     AddToFooter(
-     "<div id=\"f" + lastSelectedNode + "\" style=\"float:left; cursor: pointer;"
-       +image
-       +"padding:3px 3px 3px 26px;\" "
-       +"<a href=\"javascript:void(0);\" "
-       +"onClick='chgsel({t: \""+ctab+"\", id: \""+lastSelectedNode+"\", odl: \""+odl+"\", tm: \""+currentmenu+"\", name: \""+objName+"\"})'>"+objName+"|</a></div>"
-     );
-    }
-  }
-
   displaySubTabs = "Y";
   ActivateSubTabs();
 
@@ -2096,6 +2493,16 @@ $(document).click(function (e) {
  function addTaskMenu()
  {
   var pwd = parent.$("#tasks_header_buttons > div > div");
+
+  if (pwd.is(":visible"))
+    pwd.hide();
+  else
+    pwd.show();
+ }
+
+ function addRptMenu()
+ {
+  var pwd = parent.$("#rpts_header_buttons > div > div");
 
   if (pwd.is(":visible"))
     pwd.hide();
@@ -2143,6 +2550,17 @@ $(document).click(function (e) {
     pwd.show();
  }
 
+ function scorecardMenu()
+ {
+  var pwd = parent.$("#scorecard_dd > div");
+
+  if (pwd.is(":visible"))
+    pwd.hide();
+  else
+    pwd.show();
+ }
+
+
  function envRptMenu()
  {
   var pwd = parent.$("#envlist_buttons > div > div");
@@ -2151,6 +2569,30 @@ $(document).click(function (e) {
     pwd.hide();
   else
     pwd.show();
+
+   var data = envlist_table.rows({selected:  true}).data();
+
+   if (data != null && data.length > 0)
+   {
+	var envname = data[0].parent;
+
+	if (envname == "-")
+	 envname = data[0].name;
+
+    var newhtml = "<a href=\"/dmadminweb/reports/EnvSuccessFail.html\" target=\"_blank\">Success/Failed Deployments per Environment Report</a>";
+
+
+    url = "/msapi/sbom?envid=" + encodeURIComponent(data[0].id);
+    newhtml += "<a onclick='window.open(\"" + url + "\", \"_blank\");'>Export SBOM</a>";
+	pwd.html(newhtml);
+    dropdownShowing = true;
+   }
+   else
+   {
+    var newhtml = "<a href=\"/dmadminweb/reports/EnvSuccessFail.html\" target=\"_blank\">Success/Failed Deployments per Environment Report</a>";
+	pwd.html(newhtml);
+    dropdownShowing = false;
+   }
  }
 
  function endpointRptMenu()
@@ -2216,8 +2658,8 @@ $(document).click(function (e) {
        var tmo = {};
        console.log("key2="+key2+" val2="+val2);
        newhtml += "<a onclick='callback(\"" + currenttree + "\",\"" + key2 + "\",\"" + val2 + "\",this);'>" + key2 + '</a>';
-       $("#applist_buttons > div > div").html(newhtml);
-       $("#applist_buttons > div > div").css({display: "block"});
+       $("#apptask_buttons").html(newhtml);
+       $("#apptask_buttons").css({display: "block"});
        dropdownShowing = true;
       });
      });
@@ -2225,7 +2667,7 @@ $(document).click(function (e) {
   }
   else
   {
-   $("#applist_buttons > div > div").css({display: "none"});
+   $("#apptask_buttons").css({display: "none"});
    dropdownShowing = false;
   }
  }
@@ -2233,9 +2675,107 @@ $(document).click(function (e) {
   hookTaskMenu(currenttree);
 }
 
-function AppS2S(objid)
+function rptMenu()
+ {
+  if (currenttree == "#applications_tree")
+  {
+   var data = applist_table.rows({selected:  true}).data();
+
+   if (!dropdownShowing && data != null && data.length > 0)
+   {
+	var appname = data[0].parent;
+
+	if (appname == "-")
+	 appname = data[0].name;
+
+    var newhtml = "";
+
+    url = "/reports/scorecard.html?appid=" + data[0].id.substring(2);
+    newhtml += "<a onclick='window.open(\"" + url + "\", \"_blank\");'>Compliance Summary</a>";
+
+    url = "/reports/frequency.html?appname=" + encodeURIComponent(appname);
+    newhtml += "<a onclick='window.open(\"" + url + "\", \"_blank\");'>Deployment Frequency</a>";
+
+    url = "/reports/lag.html?appname=" + encodeURIComponent(appname);
+    newhtml += "<a onclick='window.open(\"" + url + "\", \"_blank\");'>Lead Time for Changes</a>";
+
+    url = "/msapi/sbom?appid=" + encodeURIComponent(data[0].id);
+    newhtml += "<a onclick='window.open(\"" + url + "\", \"_blank\");'>Export SBOM</a>";
+
+    $("#rptlist_buttons").html(newhtml);
+    $("#rptlist_buttons").css({display: "block"});
+    dropdownShowing = true;
+   }
+   else
+   {
+    $("#rptlist_buttons").css({display: "none"});
+    dropdownShowing = false;
+   }
+  }
+  else if (currenttree == "#environments_tree")
+  {
+   var data = envlist_table.rows({selected:  true}).data();
+
+   if (!dropdownShowing && data != null && data.length > 0)
+   {
+	var envname = data[0].parent;
+
+	if (envname == "-")
+	 envname = data[0].name;
+
+    var newhtml = "";
+
+    url = "/msapi/sbom?envid=" + encodeURIComponent(data[0].id);
+    newhtml += "<a onclick='window.open(\"" + url + "\", \"_blank\");'>Export SBOM</a>";
+    $("#comp_rptlist_buttons").html(newhtml);
+    $("#comp_rptlist_buttons").css({display: "block"});
+    dropdownShowing = true;
+   }
+   else
+   {
+    $("#comp_rptlist_buttons").css({display: "none"});
+    dropdownShowing = false;
+   }
+  }
+  else
+  {
+   $("#rptlist_buttons").css({display: "none"});
+   dropdownShowing = false;
+  }
+}
+
+function hideOption()
 {
- window.open('/dmadminweb/hier-bundle.html?appid=' + objid,'_blank');
+	if (licType != "" && licType != "OSS")
+	 return false;
+	else
+	 return true;
+}
+
+function wrapWithAnchor(val) {
+    const urlPattern = /(http:\/\/|https:\/\/)/i; // case-insensitive regex to check for http or https
+    if (urlPattern.test(val)) {
+        return `<a href="${val}" target="_blank" style="color:#4990e2">${val}</a>`;
+    }
+    return val;
+}
+
+function exportCompSBOM(event, objtype, objid)
+{
+	url = "/msapi/sbom?compid=" + encodeURIComponent(objtype + objid);
+	window.open(url, "_blank");
+}
+
+function jump2Comp(id, name)
+{
+  var data = {id: id, name: name}
+  eventOpenRow("components",isAdmin,data);
+}
+
+function jump2App(id, name)
+{
+  var data = {id: id, name: name}
+  eventOpenRow("applications",isAdmin,data);
 }
 
 function AddCompFile(file_data, filetype)
@@ -2288,7 +2828,7 @@ function openPkgSearch()
    pwd.html(tdedit);
    pwd.dialog("option", "title", "Package Search");
    pwd.dialog("option", "height", "auto");
-   pwd.dialog("option", "width", "300px");
+   pwd.dialog("option", "width", "400px");
    pwd.dialog("option", "buttons", buttons);
    pwd.dialog('open');
 }
@@ -2299,5 +2839,62 @@ function LaunchPkgSearch(dlg)
  var pkgname = $("#pkgname").val();
  var pkgversion = $("#pkgversion").val();
 
- window.open("/dmadminweb/reports/PkgSearch.html?pkgname=" + pkgname + "&pkgversion=" + pkgversion, '_blank');
+ window.open("/dmadminweb/reports/PkgSearch.html?pkgname=" + pkgname + "&pkgversion=" + pkgversion + "&userid=" + myuserid, '_blank');
+
+}
+
+function openVersionDlg(event, objname, objid) {
+	  var pwd = parent.$("#modal");
+
+  var buttons =
+    [
+          { text: "Ok",     click: function() { openComponent($(this)); } },
+          { text: "Cancel", click: function() { $( this ).dialog("close"); } }
+       ];
+
+   var tdedit = "<form><table border=0 width=\"100%\" ><tr><td ><select name=\"version_val\" id=\"version_val\" size=\"" + versiondd_list.length + "\" style=\"width:100%;padding-right:40px;max-height:200px\">";
+
+   for (i=0;i<versiondd_list.length;i++)
+   {
+	var val = versiondd_list[i];
+	tdedit += "<option value=\"" + val.id + "\">" + val.name + "</option>";
+   }
+
+   tdedit += "</select></td></tr></table></form>";
+
+   pwd.dialog({ resizable: false, modal: true, dialogClass: "aboutsDialog", open: null });
+   pwd.empty();
+   pwd.html(tdedit);
+   pwd.dialog("option", "title", "Choose Version");
+   pwd.dialog("option", "height", "auto");
+   pwd.dialog("option", "width", "auto");
+   pwd.dialog("option", "buttons", buttons);
+   pwd.dialog('open');
+}
+
+function openComponent(dlg) {
+  dlg.dialog("close");
+
+  lastSelectedNode = $('#version_val option:selected').val();
+
+  console.log("selected node = "+lastSelectedNode);
+  objid = lastSelectedNode.substr(2); //OTID, first two chars are Object Type
+  objtype = lastSelectedNode.substr(0,2);
+  objkind="";
+
+  console.log("*** SelectNode objtype="+objtype+" objid="+objid);
+    if (objtype == "pr" || objtype == "fn") {
+     objkind=objid.substr(objid.indexOf("-")+1);
+     objid = objid.substr(0,objid.indexOf("-"));
+    }
+   objtypeAsInt = obj2Int[objtype][0];
+   objtypeName = obj2Int[objtype][1];
+   objName = $('#version_val option:selected').text();
+
+   console.log("LoadSummaryData, objtypeAsInt="+objtypeAsInt+" objtype="+objtype);
+
+   data["id"] = lastSelectedNode;
+   data["name"] = objName;
+
+   eventOpenRow("components",isAdmin,data);
 }

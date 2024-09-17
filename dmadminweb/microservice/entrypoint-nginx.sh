@@ -16,6 +16,8 @@ fi
 
 if [ "$POD_NAMESPACE" != "" ]; then
  sed -i.bak "s/default.svc.cluster.local/$POD_NAMESPACE.svc.cluster.local/" /etc/nginx/nginx.conf
+ for file in /etc/nginx/location/*.conf; do echo "Processing file: $file"; sed -i.bak "s/default.svc.cluster.local/$POD_NAMESPACE.svc.cluster.local/" "$file"; done
+ find /etc/nginx -name "*.bak" -exec rm {} \;
 fi
 
 nginx -g 'daemon off;'

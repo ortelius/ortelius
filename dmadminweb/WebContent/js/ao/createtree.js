@@ -1499,29 +1499,13 @@ function eventSelectNode(frameid,admin,data)
  jsSelectNode(frameid,admin,NodeType,objid, objtypeAsInt);
 
  console.log("data.inst.get_container().attr(\"id\")="+data.inst.get_container().attr("id"));
- crumb = currentSubTabsSelection["#" + data.inst.get_container().attr("id")];
- console.log(crumb);
- if (typeof crumb != "undefined") {
-	 crumb[1] = lastSelectedNode;
- }
- console.log("currentSubTabsSelection[#"+data.inst.get_container().attr("id")+"]="+crumb);
- currentSubTabsSelection["#" + data.inst.get_container().attr("id")] = crumb;
 
  ActivateSubTabs();
  console.log("gotoDate="+gotoDate);
- if (gotoDate != null) $("#tabs-Calendar").click();	// Switch to Calendar Tab
  if ((objtype=="do" || objtype=="cp" || objtype=="cy" || objtype=="cc") && oldmenu != "domains_menu") displayhome=true;
  ShowHome(false,ShowingInitialHelp);
  displayhome=false;
 }
-
-function SubTabBreadCrumb(id)
-{
-	console.log("SubTabBreadCrumb("+id+")");
- crumb = currentSubTabsSelection[currenttree];
- crumb[0] = id;
- currentSubTabsSelection[currenttree] = crumb;
- }
 
 function jsRemoveNode(frameid,admin,data)
 {
@@ -1554,14 +1538,6 @@ function jsRemoveNode(frameid,admin,data)
 	    				   console.log("Removing category #"+d.remcat);
 	    				   $(currenttree).jstree("remove","#"+d.remcat);
 	    			   }
-	    			   console.log("Deleting record from breadcrumb list");
-	    			   $("#footer_container").children().each(function(i){
-	    				   console.log("id="+this.id);
-	    			    	if (this.id == "f"+data.rslt.obj.attr("id")) {
-	    			    		console.log("Found "+this.id+": removing");
-	    			    		$(this).remove();
-	    			    	}
-	    			   });
 	    			   console.log("node deleted");
 	    		   }
 	    	   }
@@ -1609,14 +1585,7 @@ function MoveNode(data)
 	                	  alert(d.errtext);
 	                	  $.jstree.rollback(data.rlbk);
 	                  } else {
-	                	  // Successful move - remove from breadcrumb
-	                	  $("#footer_container").children().each(function(i){
-		    				   console.log("id="+this.id);
-		    			    	if (this.id == "f"+data.rslt.o[0].id) {
-		    			    		console.log("Found "+this.id+": removing");
-		    			    		$(this).remove();
-		    			    	}
-		    			  });
+	                	  // Successful move
 	                	  if (catname != null) {
 		                	  console.log("Looking for "+newcat+" in "+currenttree);
 		                	  var n = $(currenttree).find("#"+newcat).length;
@@ -1783,48 +1752,10 @@ function SwitchToCalendar(calid)
 			  gotoDate = String(d.getYear()+1900)+"/"+String(d.getMonth())+"/"+String(d.getDate());
 			  gotoDateEnvId = otid.substr(2);
 			  chgsel(tld);
-			  $("#tabs-Calendar").click();	// Switch to Calendar Tab
 		}
 	});
 }
 
-function AddToFooter(t)
-{
-	var cbcl = $("#footer_container").html();
-	var lastd=null;
-	var pw=$("#footer_container").width();
-	do {
-		  $("#footer_container").html(cbcl + t);
-		  var tw=0;
-		  $("#footer_container").children().each(function(i){
-			 tw=tw+$(this).width()+20;	// 20px padding around each div
-			 lastd=this;
-		  });
-		  if (tw>(pw-50)) {
-			  var ed = cbcl.indexOf("</div>");
-			  cbcl = cbcl.substr(ed+6);
-		  }
-	} while (tw>(pw-50));
-	if (lastd) $(lastd).addClass('ui-breadcrumb-highlight');
-}
-
-function HighlightFooterLink(id)
-{
-	console.log("HighlightFooterLink("+id+")");
-	var addLink=true;
-	$("#footer_container").children().each(function(i){
-		console.log("this.id="+this.id);
-    	if (this.id == "f"+id) {
-    		console.log("match, adding highlight");
-    		$(this).addClass("ui-breadcrumb-highlight");
-    		addLink=false;
-    	} else {
-    		$(this).removeClass("ui-breadcrumb-highlight");
-    	}
-      });
-	console.log("HighlightFooterLink exits with "+addLink);
-	return addLink;
-}
 
 scrollit=false;
 
@@ -2205,16 +2136,6 @@ function CreateTree(nodename,typestr,admin,frameid)
     	  var image = $("#" + id + " > a > ins.jstree-icon").css("background-image");
     	  if (image) image=image.replace(/"/g,"'");
     	  console.log("image="+image);
-    	  var addLink=HighlightFooterLink(id);
-    	  if (addLink) {
-    		  AddToFooter(
-    				"<div id=\"f"+otid+"\" style=\"float:left; cursor: pointer; background-image:"
-  		    		+image
-  		    		+";background-repeat: no-repeat;background-position:0px 2px;padding:0px 3px 3px 16px;\" "
-  		    		+"<a href=\"javascript:void(0);\" "
-  		    		+"onClick='chgsel({t: \""+ct+"\", id: \""+otid+"\", odl: \""+odl+"\", tm: \""+currentmenu+"\"})'>"+selection+"|</a></div>"
-    		  );
-    	  }
     	}
     	console.log("select_node exits (id="+id+")");
       });
@@ -2332,9 +2253,4 @@ function RefreshName(nodename,newname)
 	if (ExplorerRefreshing) {
 		$(nodename).jstree('set_text',"#" + sel,newname);
 	}
-	$("#footer_container").children().each(function(i){
-    	if (this.id == "f"+sel) {
-    		$(this).text(newname);
-    	}
-      });
 }

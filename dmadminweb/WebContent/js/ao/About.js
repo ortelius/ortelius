@@ -44,7 +44,7 @@ function ShowAbout()
    pwd.dialog({ resizable: false, modal: true, dialogClass: "aboutsDialog", open: null });
    pwd.empty();
    pwd.html(tdedit);
-   pwd.dialog("option", "title", "About DeployHub Pro");
+   pwd.dialog("option", "title", "About Ortelius");
    pwd.dialog("option", "height", "auto");
    pwd.dialog("option", "width", "300px");
    pwd.dialog("option", "buttons", buttons);

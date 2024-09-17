@@ -28,6 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import dmadmin.model.Domain;
 import dmadmin.model.TreeObject;
+import dmadmin.pro.DMCalendarEvent;
+import dmadmin.pro.DMSessionPro;
 
 public class GetDomainContent extends HttpServletBase
 {
@@ -685,8 +687,10 @@ public class GetDomainContent extends HttpServletBase
     out.println("]");
   }
 
-  public void handleRequest(DMSession session, boolean isPost, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+  public void handleRequest(DMSession so, boolean isPost, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
   {
+   try (DMSessionPro session = new DMSessionPro(so))
+   {
     long startTime = System.nanoTime();
 
     PrintWriter out = response.getWriter();
@@ -702,6 +706,14 @@ public class GetDomainContent extends HttpServletBase
       response.setContentType("text/plain");
 
       String otid = request.getParameter("otid");
+      String calid = request.getParameter("calid");
+      if (calid != null)
+      {
+        DMCalendarEvent cal = session.getCalendarEvent(Integer.parseInt(calid));
+        int st = cal.getStart();
+        otid = "en" + cal.getEnvID();
+        out.print(st + "," + otid + ",");
+      }
       String res = session.getParentDomainsForObject(otid);
       out.println(res);
     } else {
@@ -763,4 +775,5 @@ public class GetDomainContent extends HttpServletBase
     long endTime = System.nanoTime();
     System.out.println("GetDomainContent exits, total time taken =" + (endTime - startTime) + " nanosecs");
   }
+ }
 }

@@ -300,8 +300,6 @@ function CreateCurrentEnv2Comps(objid)
 {
 
  $("#feedback_title").html("<h2>Deployed Environments for Component</h2>");
- $("#feedback-env-sel").hide();
- $("#feedback-label").hide();
 
 $.ajax({
  url: "GetDeployDeps?compid="+objid,
@@ -348,8 +346,6 @@ function CreateCurrentComp2Envs(objid)
 {
 
  $("#feedback_title").html("<h2>Deployed Components for Environment</h2>");
- $("#feedback-env-sel").hide();
- $("#feedback-label").hide();
 
 $.ajax({
  url: "GetDeployDeps?envid="+objid,
@@ -393,9 +389,6 @@ $.ajax({
 
 function CreateDeployDeps(deployid)
 {
-
- $("#feedback-env-sel").hide();
- $("#feedback-label").hide();
 
  console.log('Setup RESIZE');
  console.log($('#displaylog'));

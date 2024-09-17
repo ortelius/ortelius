@@ -1,10 +1,14 @@
 {
+  "baseBranches": ["svccat"],
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base", "group:all"],
-  "ignorePaths": ["chart/**"],
+  "ignorePaths": ["chart/**", "requirements.txt"],
   "schedule": ["every 1 hours every weekday"],
   "prHourlyLimit": 4,
   "pip_requirements": {
+    "fileMatch": ["(^|/)requirements\\.in$"]
+  },
+  "pip-compile": {
     "fileMatch": ["(^|/)requirements\\.in$"]
   },
   "groupName": "all dependencies",

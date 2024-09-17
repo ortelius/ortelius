@@ -22,7 +22,7 @@ UNION ALL
     dm_deployment b,
     dm_environment d
   WHERE a.id = b.appid AND a.parentid IS NULL AND b.envid = d.id;
-  
+
 DROP VIEW dm.dm_app_scorecard;
 
 CREATE OR REPLACE VIEW dm.dm_app_scorecard
@@ -45,7 +45,7 @@ UNION ALL
     dm_deployment b,
     dm_environment d
   WHERE a.id = b.appid AND a.parentid IS NULL AND b.envid = d.id;
-  
+
 DROP VIEW dm.dm_scorecard_nv;
 
 CREATE OR REPLACE VIEW dm.dm_scorecard_nv
