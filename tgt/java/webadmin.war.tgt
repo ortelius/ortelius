@@ -870,11 +870,6 @@
         <ParentOptionGroup>Web-Inf</ParentOptionGroup>
     </Dependency>
     <Dependency>
-        <Name>dmadminweb/WebContent/WEB-INF/schema/*.md</Name>
-        <Type>37</Type>
-        <ParentBuildTask>Ant War</ParentBuildTask>
-        <ParentOption
-    <Dependency>
         <Name>dmadminweb/WebContent/WEB-INF/*.tld</Name>
         <Type>5</Type>
         <ParentBuildTask>Ant War</ParentBuildTask>

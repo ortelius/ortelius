@@ -1911,7 +1911,7 @@ private static JsonObject parseJson(String jsonData) {
 			if (!m_parentdomains.isEmpty())
 			 domlist += "," + m_parentdomains;
 
-			m_license_type = "PRO";
+			m_license_type = "OSS";
 			m_license_cnt  = 9999999;
 
    PreparedStatement sta = m_conn.prepareStatement("SELECT distinct license_type, license_cnt FROM dm.dm_domain where id in (" + domlist + ") and license_type is not null");
@@ -30764,7 +30764,7 @@ public JSONArray getComp2Endpoints(int compid)
   			if (!m_parentdomains.isEmpty())
   			 domlist += "," + m_parentdomains;
 
-  			m_license_type = "PRO";
+  			m_license_type = "OSS";
   			m_license_cnt  = 9999999;
 
      PreparedStatement sta = m_conn.prepareStatement("SELECT distinct license_type, license_cnt FROM dm.dm_domain where id in (" + domlist + ") and license_type is not null");

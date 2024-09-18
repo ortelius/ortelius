@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OMTarget>
    <Version>6.3</Version>
-   <Name>ao-ms-init.war</Name>
+   <Name>ms-ui.war</Name>
    <Project>DEPLOY-PLUS</Project>
-   <TargetDefinitionFile>ao-ms-init.tgt</TargetDefinitionFile>
+   <TargetDefinitionFile>ms-ui.tgt</TargetDefinitionFile>
    <OSPlatform>Java</OSPlatform>
    <BuildType>Java War</BuildType>
    <IntDirectory></IntDirectory>
@@ -92,7 +92,7 @@
            </Option>
            <Option>
                <Flag>webxml=</Flag>
-               <Parameter>"dmadminweb/microservice/ao-ms-init/web.xml"</Parameter>
+               <Parameter>"dmadminweb/microservice/ms-ui/web.xml"</Parameter>
                <Description>The name of the deployment descriptor for the final target .war file. It is renamed web.xml and placed in the WEB-INF directory.</Description>
                <Type>379</Type>
            </Option>
@@ -365,11 +365,11 @@
        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
    </Dependency>
    <Dependency>
-      <Name>dmadminweb/src/dmadmin/pro/*.java</Name>
-      <Type>5</Type>
-      <ParentBuildTask>Ant Javac</ParentBuildTask>
-      <ParentOptionGroup>Build Task Options</ParentOptionGroup>
-  </Dependency>
+       <Name>dmadminweb/src/dmadmin/pro/*.java</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant Javac</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
    <Dependency>
        <Name>dmadminweb/src/dmadmin/json/*.java</Name>
        <Type>37</Type>
@@ -545,10 +545,10 @@
        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
    </Dependency>
    <Dependency>
-      <Name>dmadminweb/WebContent/Home/*.html</Name>
-      <Type>37</Type>
-      <ParentBuildTask>Ant War</ParentBuildTask>
-      <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+       <Name>dmadminweb/WebContent/Home/*.html</Name>
+       <Type>37</Type>
+       <ParentBuildTask>Ant War</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
    </Dependency>
    <Dependency>
        <Name>dmadminweb/WebContent/js/_demo/*.html</Name>
@@ -851,7 +851,7 @@
        <ParentOptionGroup>Web-Inf</ParentOptionGroup>
    </Dependency>
    <Dependency>
-       <Name>dmadminweb/microservice/ao-ms-init/web.xml</Name>
+       <Name>dmadminweb/microservice/ms-ui/web.xml</Name>
 
        <Type>5</Type>
        <ParentBuildTask>Ant War</ParentBuildTask>
@@ -859,12 +859,6 @@
    </Dependency>
    <Dependency>
        <Name>dmadminweb/WebContent/WEB-INF/schema/*.sql</Name>
-       <Type>37</Type>
-       <ParentBuildTask>Ant War</ParentBuildTask>
-       <ParentOptionGroup>Web-Inf</ParentOptionGroup>
-   </Dependency>
-   <Dependency>
-       <Name>dmadminweb/WebContent/WEB-INF/schema/*.json</Name>
        <Type>37</Type>
        <ParentBuildTask>Ant War</ParentBuildTask>
        <ParentOptionGroup>Web-Inf</ParentOptionGroup>
