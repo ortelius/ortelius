@@ -183,9 +183,10 @@ $(document).click(function (e) {
         hideOSS = "N";
 
        if (!hideOption())
-		 $("#verttab_setup").show();
-	   else
-	     $("#verttab_setup").hide();
+        $("#verttab_setup").show();
+       else
+          $("#verttab_setup").hide();
+
      } else if (data.Msg.toLowerCase() == "Login Admin".toLowerCase()) {
        loggedin = 'Y';
        admin = 'Y';
@@ -203,10 +204,10 @@ $(document).click(function (e) {
        else
         hideOSS = "N";
 
-       if (!hideOption())
-		 $("#verttab_setup").show();
-	   else
-	     $("#verttab_setup").hide();
+      if (!hideOption())
+		    $("#verttab_setup").show();
+	    else
+	      $("#verttab_setup").hide();
     }
      SetCookie("admin",admin);
   });
@@ -649,9 +650,9 @@ async function getSwagger()
    else
     hideOSS = "N";
 
-  if (!hideOption())
+   if (!hideOption())
     $("#verttab_setup").show();
-  else
+   else
     $("#verttab_setup").hide();
 
 //   SetCookie("p1",newUser);
@@ -678,9 +679,9 @@ async function getSwagger()
    else
     hideOSS = "N";
 
-  if (!hideOption())
+   if (!hideOption())
     $("#verttab_setup").show();
-  else
+   else
     $("#verttab_setup").hide();
 
 //   SetCookie("p1",newUser);
@@ -961,6 +962,12 @@ async function getSwagger()
 				        hideOSS = "Y";
 				       else
 				        hideOSS = "N";
+
+                if (!hideOption())
+                  $("#verttab_setup").show();
+                else
+                  $("#verttab_setup").hide();
+
 				//       SetCookie("p1",myuserid);
 				//       SetCookie("p2",mypw);
 				       SetCookie("admin",isAdmin);
@@ -984,6 +991,12 @@ async function getSwagger()
 				        hideOSS = "Y";
 				       else
 				        hideOSS = "N";
+
+                if (!hideOption())
+                  $("#verttab_setup").show();
+                else
+                  $("#verttab_setup").hide();
+
 				//       SetCookie("p1",myuserid);
 				//       SetCookie("p2",mypw);
 				       SetCookie("admin",isAdmin);
@@ -1048,6 +1061,12 @@ async function getSwagger()
 		        hideOSS = "Y";
 		       else
 		        hideOSS = "N";
+
+            if (!hideOption())
+              $("#verttab_setup").show();
+            else
+              $("#verttab_setup").hide();
+
 		//       SetCookie("p1",myuserid);
 		//       SetCookie("p2",mypw);
 		       SetCookie("admin",isAdmin);
@@ -1071,6 +1090,12 @@ async function getSwagger()
 		        hideOSS = "Y";
 		       else
 		        hideOSS = "N";
+
+            if (!hideOption())
+              $("#verttab_setup").show();
+            else
+              $("#verttab_setup").hide();
+
 		//       SetCookie("p1",myuserid);
 		//       SetCookie("p2",mypw);
 		       SetCookie("admin",isAdmin);
@@ -1146,6 +1171,12 @@ async function getSwagger()
     hideOSS = "Y";
    else
     hideOSS = "N";
+
+    if (!hideOption())
+      $("#verttab_setup").show();
+    else
+      $("#verttab_setup").hide();
+
 //   SetCookie("p1",username);
 //   SetCookie("p2",provider + ":" + access_token);
    SetCookie("admin",isAdmin);
@@ -1170,6 +1201,12 @@ async function getSwagger()
     hideOSS = "Y";
    else
     hideOSS = "N";
+
+    if (!hideOption())
+      $("#verttab_setup").show();
+    else
+      $("#verttab_setup").hide();
+
 //   SetCookie("p1",username);
 //   SetCookie("p2",provider + ":" + access_token);
    SetCookie("admin",isAdmin);

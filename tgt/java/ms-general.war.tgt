@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OMTarget>
    <Version>6.3</Version>
-   <Name>ao-ms-ui.war</Name>
+   <Name>ms-general.war</Name>
    <Project>DEPLOY-PLUS</Project>
-   <TargetDefinitionFile>ao-ms-ui.tgt</TargetDefinitionFile>
+   <TargetDefinitionFile>ms-general.tgt</TargetDefinitionFile>
    <OSPlatform>Java</OSPlatform>
    <BuildType>Java War</BuildType>
    <IntDirectory></IntDirectory>
@@ -92,7 +92,7 @@
            </Option>
            <Option>
                <Flag>webxml=</Flag>
-               <Parameter>"dmadminweb/microservice/ao-ms-ui/web.xml"</Parameter>
+               <Parameter>"dmadminweb/microservice/ms-general/web.xml"</Parameter>
                <Description>The name of the deployment descriptor for the final target .war file. It is renamed web.xml and placed in the WEB-INF directory.</Description>
                <Type>379</Type>
            </Option>
@@ -365,11 +365,11 @@
        <ParentOptionGroup>Build Task Options</ParentOptionGroup>
    </Dependency>
    <Dependency>
-      <Name>dmadminweb/src/dmadmin/pro/*.java</Name>
-      <Type>5</Type>
-      <ParentBuildTask>Ant Javac</ParentBuildTask>
-      <ParentOptionGroup>Build Task Options</ParentOptionGroup>
-  </Dependency>
+       <Name>dmadminweb/src/dmadmin/pro/*.java</Name>
+       <Type>5</Type>
+       <ParentBuildTask>Ant Javac</ParentBuildTask>
+       <ParentOptionGroup>Build Task Options</ParentOptionGroup>
+   </Dependency>
    <Dependency>
        <Name>dmadminweb/src/dmadmin/json/*.java</Name>
        <Type>37</Type>
@@ -851,7 +851,7 @@
        <ParentOptionGroup>Web-Inf</ParentOptionGroup>
    </Dependency>
    <Dependency>
-       <Name>dmadminweb/microservice/ao-ms-ui/web.xml</Name>
+       <Name>dmadminweb/microservice/ms-general/web.xml</Name>
 
        <Type>5</Type>
        <ParentBuildTask>Ant War</ParentBuildTask>
