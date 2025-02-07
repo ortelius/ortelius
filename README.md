@@ -112,6 +112,7 @@ Contributors:
 - Priya Kashyap
 
 
+
 ### CD Integrations
 
 Create integrations with documentation and videos for the following CI/CD Solutions:
@@ -166,6 +167,7 @@ Contributors:
 - Nik Poputko
 - Anirudh Sharma
 - Ragha Vema
+- Manoj Singhal
 
 ### Documentation
 
