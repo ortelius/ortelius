@@ -18,7 +18,6 @@ package dmadmin.model;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.security.KeyFactory;
@@ -33,11 +32,12 @@ import java.util.UUID;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 
 public class JWTGenerateValidateRSA {
 
-    public static void main(String[] args) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public static void main(String[] args) throws Exception {
 
         String jwt = createJwtSignedHMAC(0,UUID.randomUUID().toString());
         System.out.println(jwt);
@@ -47,16 +47,19 @@ public class JWTGenerateValidateRSA {
         System.out.println(token.getBody());
     }
 
-    public static Jws<Claims> parseJwt(String jwtString) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public static Jws<Claims> parseJwt(String jwtString) throws Exception {
 
-        PublicKey publicKey = getPublicKey();
+     PublicKey publicKey = getPublicKey();
 
-        Jws<Claims> jwt = Jwts.parser()
-                .setSigningKey(publicKey)
-                .parseClaimsJws(jwtString);
+     JwtParser parser = Jwts.parser()
+             .setSigningKey(publicKey)  // Set the public key
+             .build();
 
-        return jwt;
-    }
+     // Parse the JWT string to get the claims
+     Jws<Claims> jwt = parser.parseClaimsJws(jwtString);
+
+     return jwt;
+ }
 
 
     public static String createJwtSignedHMAC(int userid, String uuid) throws InvalidKeySpecException, NoSuchAlgorithmException {

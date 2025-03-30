@@ -645,7 +645,7 @@ private static JsonObject parseJson(String jsonData) {
     }
    }
   }
-  catch (InvalidKeySpecException | NoSuchAlgorithmException e)
+  catch (Exception e)
   {
 
   }
