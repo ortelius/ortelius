@@ -110,7 +110,7 @@ Contributors:
 - Steven Carrato
 - Ragha Vema
 - Priya Kashyap
-
+- Siddharth Pareek
 
 
 ### CD Integrations
