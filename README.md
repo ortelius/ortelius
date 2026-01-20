@@ -28,18 +28,17 @@ Our mission is to build a federated DevOps and Supply Chain Security evidence st
 
 The benefits of the Ortelius Open Source Project are:
 
-1) Federates supply chain and DevOps intelligence across organizational silos.
-2) Tracks component versions 'blast radius' and their vulnerabilities across all consuming applications for rapid response.
-3) Tracks the logical applications and aggregates component SBOM and CVE data to the logical application level.
-4) Integrates open-source security tooling into the CI/CD pipeline.
+1) A Digital Twin that federates supply chain and DevOps intelligence across organizational silos.
+2) Maps component versions > Open-source packages > deployed endpoint, synchronizing with OSV.dev to identify new CVEs exposing live systems and the attack surface.
+3) Decreases MTTR for newly reported critical and high-risk CVEs. 
+4) Integrates open-source security tooling into the development workflows.
 5) Performs software supply chain versioning and builds historical trends, the basis for threat modeling and remediation.
-6) Serve as a central market place to share reusable components with their SBOM and CVE information.
 
-## Ortelius Development Goals for 2023
+## Ortelius Development Goals for 2026
 
-Goals for Q1 and Q2 of 2024
-
-Continue development of Ortelius v11.  See the [Ortelius v11 Project Boards](https://github.com/orgs/ortelius/projects/10) for a list of issues to work on.  Get paid for your work by completing an issue tagged with `Bounty`.
+Q1 - release the new version of Ortelius
+Q2 - focus on MCP 
+Q3 - Auto remediation of critical / high risk vulnerabilties running on endpoints
 
 List of v11 Repos:
 * [scec-app-tag](https://github.com/ortelius/scec-app-tag.git)
@@ -141,17 +140,6 @@ Contributors:
 - Bassem Riahi
 - Arnab Maity
 
-### Market Place and Domains
-
-Enhance the current Domain structure to make it more like a Marketplace for sharing Microservices.  Think API marketplace.
-
-Contributors:
-
-- Christopher Hicks
-- Steve Taylor
-- Ayesha Khaliq
-- Nael Fridhi
-- Karamjot Singh
 
 ### UX and Testing
 
@@ -184,7 +172,7 @@ Contributors:
 
 ### Architecture
 
-Work to begin breaking down the monolithic into services. Starting with logging as a good first step. Integration with Istio with Routing. Solving onboarding efforts (AWS scraping for existing microservice customers)
+Digtial Twin development, MCP and the use of AI for Auto-remediation of dependency files. 
 
 Contributors:
 
