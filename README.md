@@ -1,6 +1,19 @@
 # Ortelius
 
-Welcome to Ortelius. The goal of the Ortelius community is to expose weak links and security compliance in the software supply chain by continuously gathering and analyzing software supply chain intelligence introduced across the DevOps pipeline. Generating security insights like SBOMs is not enough to harden your software supply chain. Consumption and analysis of the data is needed to rapidly respond to supply chain threats. IT teams struggle to respond to threats when critical security intelligence is fragmented across tools and managed at the container level. Ortelius gathers and aggregates security and DevOps intelligence, tracking open-source inventory and vulnerabilities at the higher organizational levels, including logical applications, runtime environments, and organizational domains. With Ortelius, you can easily answer the question, “Where is Log4J running?” For more information, see the comprehensive documentation at [Ortelius' documentation](http://docs.ortelius.io).
+
+Ortelius is an open-source post-deployment vulnerability defense platform that reduces MTTR for critical and high-risk CVEs impacting live systems to less than 10 days. It continuously maps deployed applications to their open-source components, providing real-time visibility into vulnerabilities actively running in production — not just what was scanned before release.
+
+What Ortelius Does
+
+Most security tools focus on prevention before deployment. Ortelius focuses on defense after deployment, when new vulnerabilities are disclosed against software already in use. Ortelius aggregates DevOps, deployment, and security intelligence into a unified digital twin of deployed software, tracking open-source inventory and CVEs across applications, environments, clusters, and organizational domains — not just containers or images.
+
+With Ortelius, teams can immediately answer:
+
+“Where is this vulnerability running right now?”
+
+By identifying which CVEs are actively deployed and reachable in live environments, Ortelius enables teams to prioritize true risk, reduce blast radius, and drive remediation workflows fast enough to meet today’s threat landscape.
+
+For more information, see the comprehensive documentation at [Ortelius' documentation](http://docs.ortelius.io).
 
 
 ![Release](https://img.shields.io/github/v/release/ortelius/ortelius?sort=semver)
@@ -16,29 +29,23 @@ Welcome to Ortelius. The goal of the Ortelius community is to expose weak links 
 
 ## Ortelius Mission
 
-Our mission is to build a federated DevOps and Supply Chain Security evidence store designed to provide real-time insights and feedback on the security aspects of software development, deployment, and operations within a DevSecOps environment.
+Our mission is to improve software supply chain defense by providing real-time, federated visibility into vulnerabilities impacting live systems, enabling faster detection, prioritization, and remediation across the DevSecOps lifecycle.
 
-## Ortelius Value Statements
-
-- We want Members to learn and understand solutions around software security, DevOps, and cloud-native environments through a diverse contributor base.
-- We want our members to develop their careers, skills and gain community recognition for their work and expertise.
-- We want members to learn how to contribute to an open source community and become part of the broader conversation around cloud native architecture.
 
 ## Ortelius Benefits
 
 The benefits of the Ortelius Open Source Project are:
 
-1) A Digital Twin that federates supply chain and DevOps intelligence across organizational silos.
-2) Maps component versions > Open-source packages > deployed endpoint, synchronizing with OSV.dev to identify new CVEs exposing live systems and the attack surface.
-3) Decreases MTTR for newly reported critical and high-risk CVEs. 
-4) Integrates open-source security tooling into the development workflows.
-5) Performs software supply chain versioning and builds historical trends, the basis for threat modeling and remediation.
+- Digital Twin of Deployed Software: Creates a continuously updated digital twin that federates DevOps and software supply chain intelligence across organizational, team, and tooling silos.
 
-## Ortelius Development Goals for 2026
+- End-to-End Vulnerability Mapping: Maps application versions → open-source packages → deployed endpoints, synchronizing with OSV.dev to identify newly disclosed CVEs actively impacting live systems and expanding attack surface.
 
-Q1 - release the new version of Ortelius
-Q2 - focus on MCP 
-Q3 - Auto remediation of critical / high risk vulnerabilties running on endpoints
+- Faster CVE Remediation: Reduces mean time to remediation (MTTR) for newly reported critical and high-risk vulnerabilities by identifying where vulnerable components are running in production.
+
+- Workflow-Native Security Integration: Integrates open-source security tooling directly into CI/CD and platform engineering workflows, enabling security insights to drive action—not just alerts.
+
+- Supply Chain History and Trend Analysis: Maintains versioned supply chain intelligence over time, establishing a historical system of record that supports threat modeling, blast-radius analysis, compliance reporting, and remediation planning.
+
 
 List of v11 Repos:
 * [scec-app-tag](https://github.com/ortelius/scec-app-tag.git)
