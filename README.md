@@ -113,6 +113,7 @@ Contributors:
 - Ragha Vema
 - Priya Kashyap
 - Siddharth Pareek
+- Ashutosh Apurva
 
 
 ### CD Integrations
@@ -142,6 +143,7 @@ Contributors:
 - Kingsathurthi
 - Bassem Riahi
 - Arnab Maity
+- Ashutosh Apurva
 
 
 ### UX and Testing
@@ -238,6 +240,7 @@ Contributors:
 - Akshat Jain
 - Ragha Vema
 - Kumar A. Anurag
+- - Ashutosh Apurva
 
 ### Product Management
 
