@@ -23,6 +23,13 @@ With Ortelius, teams can immediately answer:
 
 By identifying which CVEs are actively deployed and reachable in live environments, Ortelius enables teams to prioritize true risk, reduce blast radius, and drive remediation workflows fast enough to meet today’s threat landscape.
 
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=n_aNHMYKXKw">
+    <img src="https://img.youtube.com/vi/sqDx4ReOm70/maxresdefault.jpg" width="600"/>
+  </a>
+</p>
+
+
 ## Ortelius Mission
 
 Our mission is to improve software supply chain defense by providing real-time, federated visibility into vulnerabilities impacting live systems, enabling faster detection, prioritization, and remediation across the DevSecOps lifecycle.
