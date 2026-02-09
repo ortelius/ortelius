@@ -25,7 +25,7 @@ By identifying which CVEs are actively deployed and reachable in live environmen
 
 <p align="center">
   <a href="https://www.youtube.com/watch?v=n_aNHMYKXKw">
-    <img src="https://img.youtube.com/vi/sqDx4ReOm70/maxresdefault.jpg" width="600"/>
+    <img src="https://github.com/user-attachments/assets/c6722a5e-08d3-432a-be2f-369375b0dc12" width="600"/>
   </a>
 </p>
 
