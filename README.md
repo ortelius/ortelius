@@ -1,318 +1,212 @@
-# Ortelius
+# Getting Started
 
-Ortelius is an open-source post-deployment vulnerability defense platform that reduces MTTR for critical and high-risk CVEs impacting live systems to less than 10 days. It continuously maps deployed applications to their open-source components, providing real-time visibility into vulnerabilities actively running in production — not just what was scanned before release.
+When a critical open source vulnerability is disclosed, most security teams face the same four questions in rapid succession — and struggle to answer any of them quickly:
 
-![Release](https://img.shields.io/github/v/release/ortelius/ortelius?sort=semver)
-![license](https://img.shields.io/github/license/ortelius/.github)
+- **What exactly is the threat?** The CVE ID, CVSS score, and enough detail to know whether it's exploitable in your environment.
+- **Where in your codebase do you fix it?** Which repo, which package, and which version introduced the vulnerable dependency.
+- **Where is that code actually running right now?** Not where it was deployed last quarter — where it is live in production today, whether that's a Kubernetes cluster, a cloud function, or an edge device in the field.
+- **How do you actually fix it?** The upgraded version and a clear remediation path so nothing falls through the cracks.
 
-![Build](https://img.shields.io/github/actions/workflow/status/ortelius/ortelius/build-push-chart.yml)
-![CodeQL](https://github.com/ortelius/ortelius/workflows/CodeQL/badge.svg)
-[![OpenSSF
--Scorecard](https://api.securityscorecards.dev/projects/github.com/ortelius/ortelius/badge)](https://api.securityscorecards.dev/projects/github.com/ortelius/ortelius)
+PDVD answers all four questions in a single platform. It ingests your Software Bill of Materials (SBOM) at build time, matches your deployed components against the OSV vulnerability database every 15 minutes, tracks every CVE from the moment it is introduced into a release through every environment it reaches until it is remediated, and measures how long each step takes against your SLA targets.
 
+---
 
-![Discord](https://img.shields.io/discord/722468819091849316)
+## TLDR; (Hosted)
 
-## What Ortelius Does
+The fastest way to get started is the hosted version at **[app.deployhub.com](https://app.deployhub.com)** — no infrastructure setup required.
 
-Most security tools focus on prevention before deployment. Ortelius focuses on defense after deployment, when new vulnerabilities are disclosed against software already in use. Ortelius aggregates DevOps, deployment, and security intelligence into a unified digital twin of deployed software, tracking open-source inventory and CVEs across applications, environments, clusters, and organizational domains — not just containers or images.
+1. Go to [app.deployhub.com](https://app.deployhub.com) and click **Sign Up**
+2. Enter your username, email, first name, last name, and organization name
+3. Check your email for an invitation link — click it to set your password and log in
+4. You're in. Your organization is created and you are its owner.
 
-With Ortelius, teams can immediately answer:
+> **Note:** If your organization already exists in the system, you'll see a conflict message with the org admin's email address. Contact them directly to be added.
 
-“Where is this vulnerability running right now?”
+---
 
-By identifying which CVEs are actively deployed and reachable in live environments, Ortelius enables teams to prioritize true risk, reduce blast radius, and drive remediation workflows fast enough to meet today’s threat landscape.
+## Connect Your GitHub Repositories
 
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=n_aNHMYKXKw">
-    <img src="https://img.youtube.com/vi/sqDx4ReOm70/maxresdefault.jpg" width="600"/>
-  </a>
-</p>
+Once logged in, connect your GitHub account. This is the primary way PDVD discovers your software — it reads your existing workflow runs, finds your container images and releases, and automatically imports everything into your dashboard.
 
+### Step 1 — Connect GitHub
 
-## Ortelius Mission
+1. In the top-right menu, go to **Profile → Connect GitHub**
+2. You'll be redirected to GitHub to install the PDVD GitHub App on your account or organization
+3. Select which repositories to give PDVD access to — you can start with one and add more later
+4. After approving, you'll be redirected back to PDVD with GitHub connected
 
-Our mission is to improve software supply chain defense by providing real-time, federated visibility into vulnerabilities impacting live systems, enabling faster detection, prioritization, and remediation across the DevSecOps lifecycle.
+### Step 2 — What Happens Automatically
 
+Once connected, PDVD's background scanner runs against every repository in your installation. For each repository it:
 
-## Ortelius Benefits
+1. **Finds your latest successful workflow run** on `main` or `master`, triggered by a push, release, or manual dispatch
+2. **Extracts your container image reference** from the workflow logs — specifically the image produced by a Docker manifest push
+3. **Discovers your SBOM** using a three-step priority order:
+   - First, looks for an SBOM attached directly to the container image as an OCI attestation (cosign/DSSE format or OCI Referrers API)
+   - Second, looks for an artifact named `sbom` or `cyclonedx` uploaded during the workflow run
+   - Third, if no SBOM is found, generates one automatically by scanning the container image using [Syft](https://github.com/anchore/syft)
+4. **Reads OCI image labels** (`org.opencontainers.image.*`) to enrich the release with git metadata — commit SHA, branch, source URL, authors
+5. **Fetches your OpenSSF Scorecard** score from securityscorecards.dev automatically
+6. **Creates a release record** in PDVD with the version, SBOM, git metadata, and scorecard score
+7. **Records a sync** linking the release to the endpoint representing the GitHub Actions environment
 
-The benefits of the Ortelius Open Source Project are:
+The scanner remembers the last workflow run ID it processed per repository, so repeat runs only pick up genuinely new activity.
 
-- Digital Twin of Deployed Software: Creates a continuously updated digital twin that federates DevOps and software supply chain intelligence across organizational, team, and tooling silos.
+### Step 3 — Verify Your Data
 
-- End-to-End Vulnerability Mapping: Maps application versions → open-source packages → deployed endpoints, synchronizing with OSV.dev to identify newly disclosed CVEs actively impacting live systems and expanding attack surface.
+After a few minutes, go to your dashboard. You should see:
 
-- Faster CVE Remediation: Reduces mean time to remediation (MTTR) for newly reported critical and high-risk vulnerabilities by identifying where vulnerable components are running in production.
+- Your repositories listed under **Releases**
+- Vulnerability counts populated (if your SBOM contains packages with known CVEs)
+- An OpenSSF Scorecard score on each release
+- GitHub Actions listed as an endpoint under **Endpoints**
 
-- Workflow-Native Security Integration: Integrates open-source security tooling directly into CI/CD and platform engineering workflows, enabling security insights to drive action—not just alerts.
+#### Why Am I Seeing Zero CVEs?
 
-- Supply Chain History and Trend Analysis: Maintains versioned supply chain intelligence over time, establishing a historical system of record that supports threat modeling, blast-radius analysis, compliance reporting, and remediation planning.
+Two things must be true before vulnerabilities appear:
 
+1. **A release with a valid SBOM has been imported** — components need properly formatted PURLs for CVE matching to work
+2. **That release has been synced to at least one endpoint** — the scanner records GitHub Actions runs as endpoints automatically
 
-List of v11 Repos:
-* [scec-app-tag](https://github.com/ortelius/scec-app-tag.git)
-* [scec-appver](https://github.com/ortelius/scec-appver.git)
-* [scec-comp-tag](https://github.com/ortelius/scec-comp-tag.git)
-* [scec-compver](https://github.com/ortelius/scec-compver.git)
-* [scec-vulnerability](https://github.com/ortelius/scec-vulnerability.git)
-* [scec-deployment](https://github.com/ortelius/scec-deployment.git)
-* [scec-deppkg](https://github.com/ortelius/scec-deppkg.git)
-* [scec-environment](https://github.com/ortelius/scec-environment.git)
-* [scec-group](https://github.com/ortelius/scec-group.git)
-* [scec-scorecard](https://github.com/ortelius/scec-scorecard.git)
-* [scec-textfile](https://github.com/ortelius/scec-textfile.git)
-* [scec-user](https://github.com/ortelius/scec-user.git)
-* [scec-usergroup](https://github.com/ortelius/scec-usergroup.git)
-* [scec-validate-provenance](https://github.com/ortelius/scec-validate-provenance.git)
-* [scec-validate-signing](https://github.com/ortelius/scec-validate-signing.git)
-* [scec-validate-user](https://github.com/ortelius/scec-validate-user.git)
+CVE data is refreshed from OSV.dev every 15 minutes. If you just connected GitHub and see nothing yet, wait a few minutes and refresh.
 
+If you still see zero CVEs after that, the most likely cause is that your SBOM was not found or was generated from an image that uses an unsupported ecosystem. Check that your container image is publicly accessible or that the GitHub App has the appropriate registry access. Components with missing or malformed PURLs are silently skipped during CVE matching.
 
-## Code of Conduct
+---
 
-[Contributor Covenant Code of Conduct](./CODE_OF_CONDUCT.md)
+### Getting the Best Results
 
-## Become a contributor
+The scanner works with whatever your pipeline already produces. However, the quality of vulnerability matching improves when your workflow publishes an explicit SBOM. The recommended approach is to generate and attach an SBOM as an OCI attestation at build time — PDVD will find and use it automatically without any additional configuration:
 
-1) Review the [Ortelius Contributor Guide](https://docs.ortelius.io/guides/contributorguide/)
-2) Add yourself to the [Ortelius Google Group](https://groups.google.com/g/ortelius-dev)
-3) Join the [Discord community channel](https://discord.gg/ZtXU74x)
+```yaml
+# Example: generate and attach an SBOM as an OCI attestation using Syft
+- name: Generate and attest SBOM
+  run: |
+    syft ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+      -o cyclonedx-json \
+      --file sbom.json
+    cosign attest --predicate sbom.json \
+      --type cyclonedx \
+      ${{ env.IMAGE_NAME }}@${{ env.IMAGE_DIGEST }}
+```
 
-## Open Source Sub-Committees
+If you already produce SBOMs via Syft, Trivy, or any CycloneDX-compatible tool and upload them as workflow artifacts, PDVD will find those too — no changes needed.
 
-[Calendar of meetings with times and zoom info.](https://ortelius.io/events/)
+**Supported ecosystems for CVE matching:** npm, PyPI, Maven, Go, NuGet, RubyGems, cargo (crates.io), Composer, apk (Alpine/Wolfi), deb (Debian/Ubuntu)
 
-## Ortelius Governing Board
-- [Govering Board Guidelines and Elections](https://ortelius.io/guidelines/)
-- [GB Google Group](https://groups.google.com/g/ortelius-governing-board)
-- [Current Governing Board Members](https://ortelius.io/blog/2022/12/13/ortelius-2023-governing-board/)
+> **Using a different CI system or want direct API access?** See the [Implementation Guide](docs/implementation.md) for REST API reference.
 
+---
 
-### CD Environment - Development Infrastructure and Productivity
+## Read Your Dashboard
 
-Create a CD process for managing pull requests, builds, tests and releases.
+The dashboard is organized into five sections. All metrics use a **rolling 180-day window** and reflect the **NIST Recommended SLA Policy** (Critical 15d · High 30d · Medium 90d · Low 180d) unless you configure a different policy.
 
-Contributors:
+### Top Cards — Executive Summary
 
-- Anand Bhagwat
-- Steve Taylor
-- Sanjay Sheel
-- Sacha Wharton
-- Sagar Utekar
-- Nael Fridhi
-- Sanchit Khurana
-- Natch Khongpasuk
-- Brad McCoy
-- Zach Jones
-- Aditi Agarwal
-- Jesse Gonzalez
-- Jimmy Malhan
-- Arvind Singharpuria
-- Interas LLC - Corporate Contributer
-- Ujwal Yelmareddy
-- Lakshmi Viswanath
-- Hamid Gholami
-- Kingsathurthi
-- Bassem Riahi
-- Arnab Maity
-- Steven Carrato
-- Ragha Vema
-- Priya Kashyap
-- Siddharth Pareek
-- Ashutosh Apurva
-
-
-### CD Integrations
-
-Create integrations with documentation and videos for the following CI/CD Solutions:
-
-- Jenkins: 90% work completed
-- Jenkins X
-- Screwdriver
-- Tekton (Tekton Catalog)
-- Spinnaker
-- Argo
-
-Contributors:
-
-- Steve Taylor
-- Sacha Wharton
-- Sagar Utekar
-- Nael Fridhi
-- Sanchit Khurana
-- Karamjot Singh
-- Sergio Canales
-- Zach Jones
-- Aditi Agarwal
-- Jesse Gonzalez
-- Lakshmi Viswanath
-- Kingsathurthi
-- Bassem Riahi
-- Arnab Maity
-- Ashutosh Apurva
-
-
-### UX and Testing
-
-Review User Interface and make recommendations for improving with a focus on ease of use. Define test cases with automation.
-
-Contributors:
-- David Edelhart
-- Tracy Ragan
-- Parijat Kalita
-- Ashutosh Srivastava
-- Poovaraj Thangamariappan
-- Yasaman Khazaie
-- Nik Poputko
-- Anirudh Sharma
-- Ragha Vema
-- Manoj Singhal
-
-### Documentation
-
-Review documentation and re-write or clarify complexities.
-
-Contributors:
-
-- Tracy Ragan
-- Divya Mohan
-- Mark Peters
-- Arijeet Majumdar
-- Pawel Kulecki
-- Jayesh Srivastava
-
-### Architecture
-
-Digtial Twin development, MCP and the use of AI for Auto-remediation of dependency files. 
-
-Contributors:
-
-- Christopher Hicks
-- Steve Taylor
-- Ayesha Khaliq
-- Drishti Dhamejani
-- Rahul Agrawal
-- Sacha Wharton
-- Sagar Utekar
-- Nael Fridhi
-- Sanchit Khurana
-- Karamjot Singh
-- Zach Jones
-- Jesse Gonzalez
-- Neil Chen
-- Devendran Nehru
-- Arvind Singharpuria
-- Turker Aslan
-- Leniuska Alvarado
-- Ankur Kumar
-- Lakshmi Viswanaths
-- Bassem Riahi
-- Paul Li
-- Joseph Akayesi
-- Christian De Leon
-- Ian Anderson
-- Priya Kashyap
-
-### Development
-
-Work on existing enhancements and bug fixes. Add them to the core Ortelius repository unless a doc change.
-
-Contributors:
-
-- Steve Taylor
-- Drishti Dhamejani
-- Melissa Albarella
-- Sagar Utekar
-- Nael Fridhi
-- Sanchit Khurana
-- Zach Jones
-- Jesse Gonzalez
-- Temitope Bimbo Babatola
-- Munirat Sulaimon
-- Neil Chen
-- Atul Tiwari
-- Devendran Nehru
-- Utkarsh Kumar Sharma
-- Avikam Jha
-- Jayesh Srivastava
-- Arvind Singharpuria
-- Aman Saxena
-- Ashutosh Srivastava
-- Leniuska Alvarado
-- Bassem Riahi
-- Paul Li
-- Joseph Akayesi
-- Christian De Leon
-- Akshat Jain
-- Ragha Vema
-- Kumar A. Anurag
-- - Ashutosh Apurva
-
-### Product Management
-
-- Website, branding, outreach
-- Review messaging, update logo, submit blogs.
-- Personas, Journey Maps, service maps, roadmaps, Value Canvas, Go-to-Market strategies, product metrics.
-- What problem or opportunity is being explored?
-- How is the solution being framed to tackle this?
-- What is being measured to determine if this is successful?
-- Who are the people that this solution serves?
-- How are they being informed about it?
-- How are they learning to actually use or benefit from it?
-- How are they involved in collaborating on the solution with us?
-- What is the experience like for new collaborators getting started?
-- How does the solution fit with both the immediate and wider ecosystem?
-- Are there any roadblocks that can be removed in how we operate?
-- What additional resources could be made available? Where would those resources help most?
-- Where is the documentation being maintained on the project?
-- Do we understand accessibility requirements? Are we meeting them?
-
-Contributors:
-
-- Tracy Ragan
-- Neetu Jain
-- Divya Mohan
-- Mark Peters
-- Alok Tanna
-- Arijeet Majumdar
-- Tatiana Lazebnyk
-- Turker Aslan
-- Priya Kashyap
-
-### Project Management
-
-Track progress, define process, work with Steve and Marky managing pull requests and releases dates.
-
-Contributors:
-
-- Tracy Ragan
-- Neetu Jain
-- Priya Kashyap
-
-## GitOps
-
-Research, define and Automate GitOps with Ortelius
-
-Contributors,
-
-- Brad McCoy
-- Arvind Singharpuria
-- Amit Dsouza
-- Ayesha Khaliq
-- Saif Ul Islam
-- Kingsathurthi
-- Hamid Gholami
-- Anuja Kumari
-- Vrukshali Torawane
-- Joseph Akayesi
-- Rakesh Arumalla
-- Arnab Maity
-
-## Installation
-
-Browse through the [Installation and Support Guide](http://docs.ortelius.io/guides/userguide/installation-and-support/) for detailed guidance on how to sign up for & set up Ortelius.
-
-## Support
-
-- [Issues](https://github.com/ortelius/ortelius/issues)
+Five cards give you the headline numbers at a glance:
+
+| Card                         | What it means                                                                     | Calculation                                                                                                                                                  |
+|------------------------------|-----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Total New CVEs**           | Total vulnerabilities detected within the rolling 180-day window                  | CVEs where Detected Date is within the last 180 days                                                                                                         |
+| **Post-Deploy CVEs**         | Currently open CVEs that were disclosed *after* the software was already deployed | Open CVEs where Disclosure Date > Deployment date                                                                                                            |
+| **MTTR (Pre + Post Deploy)** | Average days to remediate across all endpoint CVEs fixed in the period            | Σ(Fix Date − First Introduced Date) / Total Fixed CVEs                                                                                                       |
+| **MTTR (Post-Deploy)**       | Average days to remediate for post-deployment CVEs only                           | Σ(Fix Date − First Introduced Date) / Total Fixed Post-Deploy CVEs. Clock starts at `root_introduced_at` — the first known version where the CVE was present |
+| **% Open > SLA**             | Percentage of open CVEs exceeding their severity-based SLA                        | (Count of Open CVEs > SLA / Total Open CVEs) × 100                                                                                                           |
+
+### Severity Breakdown & SLA Compliance
+
+A table segmented by Critical, High, Medium, and Low with six columns per row:
+
+| Column             | What it means                                                                           |
+|--------------------|-----------------------------------------------------------------------------------------|
+| **MTTR (Days)**    | Σ(Fix − Detect) / Fixed — average remediation time for closed CVEs at this severity     |
+| **MTTR (Post)**    | Σ(Fix − Detect) / Post-deploy fixed — same but restricted to post-deployment CVEs       |
+| **% Fixed in SLA** | (Fixed ≤ SLA / Total) × 100 — what fraction were resolved before the deadline           |
+| **Mean Age**       | Σ(Now − Detect) / Open — average age of currently open CVEs at this severity            |
+| **Oldest**         | Max open age — the single oldest unresolved CVE at this severity                        |
+| **% > SLA**        | (Open > SLA / Total Open) × 100 — how many open CVEs have already breached the deadline |
+
+### Volume & Flow
+
+Shows the **Backlog Delta** — new CVEs detected minus CVEs fixed — broken out as a bar chart by severity (Critical, High, Medium, Low). Green bars are fixes; red bars are new CVEs. A rising red bar means risk is accumulating faster than it is being resolved. The aggregate delta number is shown top-right; positive means the backlog is growing.
+
+### Vulnerability Trend (180 Days)
+
+A stacked area chart showing open CVE counts per day for each severity band over the rolling window. Use this to spot when a new batch of vulnerabilities was introduced (a sudden step up) or when a remediation effort took effect (a step down). The x-axis is date; the y-axis is count of open CVEs. Each band is colour-coded: Critical (red), High (orange), Medium (yellow), Low (blue).
+
+### Security Velocity & Impact Metrics
+
+Four metric cards focused on operational effectiveness:
+
+| Metric                 | What it means                                               | Calculation                             |
+|------------------------|-------------------------------------------------------------|-----------------------------------------|
+| **Fix Velocity**       | CVEs remediated per week over the last 180 days             | Fixed CVEs / 26 weeks                   |
+| **High-Risk Backlog**  | Total open Critical + High CVEs right now                   | Count of open Critical + open High      |
+| **Shift-Left Success** | Percentage of CVEs caught before they reached production    | Pre-Deploy / (Pre-Deploy + Total) × 100 |
+| **SLA Burn Rate**      | How many SLA deadlines are being breached per 30-day period | Open CVEs where (SLA − Age) < 30d       |
+
+Three summary numbers appear at the bottom of this section:
+
+| Number                | What it means                                                                                                                                 |
+|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| **CVE-Days Exposure** | Total accumulated exposure across all open CVEs — Σ(Mean Age) across all open CVEs. A high number means many CVEs have been open a long time. |
+| **Weeks to Clear**    | Estimated weeks to resolve the current backlog at the current fix velocity — Open / Weekly Velocity                                           |
+| **Risk Score**        | Weighted sum of open CVEs by severity — Weighted Open (C×8 H×3 M×1 L×1)                                                                       |
+
+---
+
+## Invite Your Team
+
+As an org owner or admin, go to your organization settings to invite colleagues.
+
+Each invited user receives an email with a link to set their password. Links expire after **48 hours**. If a link expires, an admin can resend it.
+
+When choosing a role, use the minimum necessary:
+
+| Role       | Can do                                                                                    |
+|------------|-------------------------------------------------------------------------------------------|
+| **Owner**  | Everything, including managing billing and deleting the org                               |
+| **Admin**  | Everything except billing — invite users, manage roles, access all resources              |
+| **Editor** | Upload releases, upload SBOMs, sync endpoints — the right role for CI/CD service accounts |
+| **Viewer** | Read-only — dashboards, CVE details, endpoint status                                      |
+
+---
+
+## SLA Reference
+
+SLA targets define how many days your team has to remediate a CVE before it counts as overdue. The clock starts when the CVE is first detected on a deployed endpoint.
+
+| Severity | Standard Endpoint | Mission-Critical Endpoint |
+|----------|-------------------|---------------------------|
+| Critical | 15 days           | 7 days                    |
+| High     | 30 days           | 15 days                   |
+| Medium   | 90 days           | 90 days                   |
+| Low      | 180 days          | 180 days                  |
+
+Endpoints with `endpoint_type: mission_asset` use the tighter targets in the right column.
+
+---
+
+## Glossary
+
+| Term                  | Definition                                                                                           |
+|-----------------------|------------------------------------------------------------------------------------------------------|
+| **CVE**               | Common Vulnerabilities and Exposures — a unique identifier for a known vulnerability                 |
+| **CVSS**              | Common Vulnerability Scoring System — a 0–10 severity score (9.0+ = Critical)                        |
+| **SBOM**              | Software Bill of Materials — a machine-readable inventory of every library your software depends on  |
+| **PURL**              | Package URL — a standardized identifier for a software package, e.g. `pkg:npm/lodash@4.17.20`        |
+| **MTTR**              | Mean Time To Remediate — average days from CVE detection to fix deployment                           |
+| **SLA**               | Service Level Agreement — the target number of days within which a CVE should be remediated          |
+| **Endpoint**          | A running environment where software is deployed (cluster, function, device)                         |
+| **Sync**              | The act of telling PDVD what versions are currently deployed to an endpoint                          |
+| **OSV**               | Open Source Vulnerabilities — the vulnerability database PDVD pulls from, refreshed every 15 minutes |
+| **OCI Attestation**   | An SBOM or other artifact attached directly to a container image in the registry                     |
+| **OpenSSF Scorecard** | An automated security health score (0–10) for open source repositories                               |
+
+---
+
+## Next Steps
+
+- **Running on-premises or self-hosted?** → [Architecture Guide](docs/architecture.md)
+- **Integrating the API, writing queries, or contributing code?** → [Implementation Guide](docs/implementation.md)

@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "description": "Type of event, e.g., 'release.sync.created'"
+    },
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "release": {
+      "type": "object",
+      "description": "The ProjectRelease metadata",
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "projecttype": { "type": "string" },
+        "gitcommit": { "type": "string" },
+        "dockersha": { "type": "string" },
+        "is_public": { "type": "boolean", "default": true }
+      },
+      "required": ["name", "version"]
+    },
+    "sbom_ref": {
+      "type": "object",
+      "description": "Reference to the stored SBOM content",
+      "properties": {
+        "cid": {
+          "type": "string",
+          "description": "IPFS CID of the SBOM content"
+        },
+        "storage_type": { "type": "string", "enum": ["ipfs", "s3"] },
+        "content_sha": { "type": "string" },
+        "uploaded_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["cid", "storage_type"]
+    },
+    "endpoint": {
+      "type": "object",
+      "description": "The deployment target (Endpoint) metadata",
+      "properties": {
+        "name": { "type": "string" },
+        "endpoint_type": {
+          "type": "string",
+          "enum": [
+            "cluster",
+            "ec2",
+            "lambda",
+            "ecs",
+            "eks",
+            "gke",
+            "aks",
+            "fargate",
+            "edge",
+            "iot",
+            "mission_asset"
+          ]
+        },
+        "environment": { "type": "string" },
+        "is_public": { "type": "boolean", "default": true }
+      },
+      "required": ["name", "endpoint_type", "environment"]
+    },
+    "synced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the deployment sync"
+    }
+  },
+  "required": [
+    "event_type",
+    "event_id",
+    "event_time",
+    "release",
+    "sbom_ref",
+    "endpoint"
+  ]
+}

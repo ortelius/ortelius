@@ -1,3 +1,0 @@
-This is a config file
-see the server name here: SERVERNAME
-end of the config file

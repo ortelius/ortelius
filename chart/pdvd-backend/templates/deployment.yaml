@@ -1,0 +1,130 @@
+# chart/pdvd-backend/templates/deployment.yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "microservice.name" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "microservice.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "microservice.name" . }}
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+        - name: {{ include "microservice.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: Always
+          env:
+            - name: ARANGO_USER
+              valueFrom:
+                secretKeyRef:
+                  name: arangodb
+                  key: DBUserName
+            - name: ARANGO_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: arangodb
+                  key: DBPassword
+            - name: ARANGO_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: arangodb
+                  key: DBHost
+            - name: ARANGO_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: arangodb
+                  key: DBPort
+            - name: RBAC_REPO
+              valueFrom:
+                secretKeyRef:
+                  name: rbac
+                  key: RBACRepo
+            - name: RBAC_REPO_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: rbac
+                  key: RBACRepoToken
+            - name: API_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: github-creds
+                  key: ApiBaseUrl
+            - name: BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: github-creds
+                  key: BaseUrl
+            - name: GITHUB_APP_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: github-creds
+                  key: AppName
+            - name: GITHUB_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: github-creds
+                  key: AppId
+            - name: GITHUB_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: github-creds
+                  key: ClientId
+            - name: GITHUB_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: github-creds
+                  key: ClientSecret
+            - name: GITHUB_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: github-creds
+                  key: PrivateKey
+            {{- if .Values.smtp.enabled }}
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-config
+                  key: SMTPHost
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-config
+                  key: SMTPPort
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-config
+                  key: SMTPUsername
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-config
+                  key: SMTPPassword
+            - name: SMTP_FROM_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-config
+                  key: SMTPFromEmail
+            - name: SMTP_FROM_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-config
+                  key: SMTPFromName
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 60
+---

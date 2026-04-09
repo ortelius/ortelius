@@ -1,0 +1,53 @@
+---
+services:
+  arangodb:
+    image: arangodb:3.12@sha256:c7c73e4f2694d70dffcf4cea779ba60355e6563018550ea70bcb77ce8e35fb97
+    container_name: arangodb
+    environment:
+      ARANGO_ROOT_PASSWORD: mypassword
+      LANG: en
+    ports:
+      - "8529:8529"
+    volumes:
+      - ./db:/mnt/
+    networks:
+      - app-network
+    tty: true
+
+  go-app:
+    build:
+      context: ../pdvd-backend
+      dockerfile: Dockerfile
+    container_name: go-app
+    environment:
+      ARANGO_HOST: arangodb
+      ARANGO_PORT: "8529"
+      ARANGO_USER: root
+      ARANGO_PASS: mypassword
+      ARANGO_URL: http://arangodb:8529
+      MS_PORT: "3000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - arangodb
+    networks:
+      - app-network
+
+  node-app:
+    build:
+      context: ../pdvd-frontend
+      dockerfile: Dockerfile.Dev
+    container_name: node-app
+    environment:
+      NODE_ENV: production
+    ports:
+      - "4000:4000"
+    depends_on:
+      - arangodb
+      - go-app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
