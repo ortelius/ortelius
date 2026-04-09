@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ortelius/pdvd-backend/v12/util"
+	"github.com/ortelius/ortelius/v12/util"
 )
 
 // ProjectRelease represents a release object stored in the database.

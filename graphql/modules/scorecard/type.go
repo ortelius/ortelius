@@ -3,7 +3,7 @@ package scorecard
 
 import (
 	"github.com/graphql-go/graphql"
-	"github.com/ortelius/pdvd-backend/v12/model"
+	"github.com/ortelius/ortelius/v12/model"
 )
 
 // ScorecardDocumentationType represents the documentation links for a check.

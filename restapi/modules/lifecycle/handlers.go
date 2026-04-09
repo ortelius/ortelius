@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/arangodb/go-driver/v2/arangodb"
-	"github.com/ortelius/pdvd-backend/v12/database"
+	"github.com/ortelius/ortelius/v12/database"
 )
 
 // SupersedeAllActiveCVEs closes all active CVEs for a specific endpoint and release.

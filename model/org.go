@@ -1,4 +1,4 @@
-// Package model defines the data structures for organization management in the PDVD system.
+// Package model defines the data structures for organization management in the Ortelius system.
 package model
 
 import "time"

@@ -9,9 +9,9 @@ import (
 	"log"
 
 	"github.com/arangodb/go-driver/v2/arangodb"
-	"github.com/ortelius/pdvd-backend/v12/database"
-	"github.com/ortelius/pdvd-backend/v12/model"
-	"github.com/ortelius/pdvd-backend/v12/util"
+	"github.com/ortelius/ortelius/v12/database"
+	"github.com/ortelius/ortelius/v12/model"
+	"github.com/ortelius/ortelius/v12/util"
 )
 
 // GetSBOMContentHash calculates SHA256 hash of SBOM content

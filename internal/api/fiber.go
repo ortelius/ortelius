@@ -1,4 +1,4 @@
-// Package api provides HTTP server configuration and initialization for the PDVD backend.
+// Package api provides HTTP server configuration and initialization for the Ortelius backend.
 //
 //revive:disable-next-line:var-naming
 package api
@@ -12,9 +12,9 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	fiberrecover "github.com/gofiber/fiber/v3/middleware/recover"
-	"github.com/ortelius/pdvd-backend/v12/database"
-	"github.com/ortelius/pdvd-backend/v12/graphql"
-	"github.com/ortelius/pdvd-backend/v12/restapi"
+	"github.com/ortelius/ortelius/v12/database"
+	"github.com/ortelius/ortelius/v12/graphql"
+	"github.com/ortelius/ortelius/v12/restapi"
 )
 
 // NewFiberApp creates and configures a Fiber app with REST and GraphQL routes
@@ -27,7 +27,7 @@ func NewFiberApp(db database.DBConnection) *fiber.App {
 	}
 
 	app := fiber.New(fiber.Config{
-		AppName:     "pdvd-backend/v12 API v1.0",
+		AppName:     "ortelius/v12 API v1.0",
 		BodyLimit:   50 * 1024 * 1024, // 50MB
 		ReadTimeout: 60 * time.Second, // seconds
 	})

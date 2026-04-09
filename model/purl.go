@@ -1,4 +1,4 @@
-// Package model defines the data structures used by the pdvd-backend/v12,
+// Package model defines the data structures used by the ortelius/v12,
 // including releases, SBOMs, and endpoints.
 package model
 

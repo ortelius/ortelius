@@ -3,7 +3,7 @@ package dashboard
 
 import (
 	"github.com/graphql-go/graphql"
-	"github.com/ortelius/pdvd-backend/v12/database"
+	"github.com/ortelius/ortelius/v12/database"
 )
 
 // GetQueryFields returns the dashboard queries to be mounted in the root schema

@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/arangodb/go-driver/v2/arangodb"
-	"github.com/ortelius/pdvd-backend/v12/database"
-	"github.com/ortelius/pdvd-backend/v12/model"
+	"github.com/ortelius/ortelius/v12/database"
+	"github.com/ortelius/ortelius/v12/model"
 )
 
 // CreateInvitation creates a new user invitation and sends email

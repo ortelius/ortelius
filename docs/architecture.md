@@ -1,6 +1,6 @@
 # Architecture Guide
 
-**Audience:** Platform engineers, infrastructure teams, and security reviewers deploying or evaluating PDVD on-premises.
+**Audience:** Platform engineers, infrastructure teams, and security reviewers deploying or evaluating Ortelius on-premises.
 
 ---
 
@@ -152,7 +152,7 @@ At scale this creates three compounding problems: **storage** (millions of edges
 
 ### The Solution: PURL Hub Nodes
 
-Instead of connecting CVEs directly to SBOMs, PDVD inserts a version-free **PURL hub node** for each unique package. CVEs connect to the hub; SBOMs connect to the hub. Version information lives on the edges, not the nodes.
+Instead of connecting CVEs directly to SBOMs, Ortelius inserts a version-free **PURL hub node** for each unique package. CVEs connect to the hub; SBOMs connect to the hub. Version information lives on the edges, not the nodes.
 
 ```mermaid
 graph TB
@@ -241,7 +241,7 @@ sequenceDiagram
 
 Version matching runs at ingest time to decide which candidates become `release2cve` edges, and again at sync time to populate `cve_lifecycle` records. Both paths use the same `util.IsVersionAffected` function.
 
-PDVD uses **ecosystem-specific parsers** rather than a single generic semver parser because version schemes differ significantly across package ecosystems:
+Ortelius uses **ecosystem-specific parsers** rather than a single generic semver parser because version schemes differ significantly across package ecosystems:
 
 | Ecosystem                | Parser                         | Example version  |
 |--------------------------|--------------------------------|------------------|
@@ -252,13 +252,13 @@ PDVD uses **ecosystem-specific parsers** rather than a single generic semver par
 
 **Key rules that prevent false positives:**
 
-- OSV uses `"0"` in the `introduced` field to mean "from the beginning of time." PDVD treats this as `0.0.0`, not the literal string `"0"`.
+- OSV uses `"0"` in the `introduced` field to mean "from the beginning of time." Ortelius treats this as `0.0.0`, not the literal string `"0"`.
 - A range must have **both** a lower bound (`introduced`) **and** an upper bound (`fixed` or `last_affected`) to produce a match. Incomplete ranges return `false`. This prevents a misconfigured or partial OSV record from marking everything as vulnerable.
 - Go stdlib versions carrying a `go` prefix (e.g., `go1.22.2`) have the prefix stripped before parsing.
 
 ### PURL Standardization
 
-Hub keys must be identical whether they come from a CVE record (OSV data) or an SBOM component (CycloneDX data). PDVD enforces this through a single function — `util.GetStandardBasePURL()` — that normalizes the ecosystem type and strips the version before generating the hub key.
+Hub keys must be identical whether they come from a CVE record (OSV data) or an SBOM component (CycloneDX data). Ortelius enforces this through a single function — `util.GetStandardBasePURL()` — that normalizes the ecosystem type and strips the version before generating the hub key.
 
 The most important mapping is the Wolfi/Chainguard family, which OSV lists under ecosystem names that do not match the `apk` PURL type used by SBOM generators:
 
@@ -342,7 +342,7 @@ The JWT payload contains **only the username**. Role and org memberships are **a
 {
   "username": "alice",
   "sub": "alice",
-  "iss": "pdvd-backend",
+  "iss": "ortelius",
   "iat": 1704067200,
   "exp": 1704153600
 }
@@ -397,7 +397,7 @@ Set to `true` when `cve.published > root_introduced_at`. These are CVEs that wer
 
 ### Ingestion Pipeline
 
-During CVE ingestion from OSV.dev, PDVD parses CVSS vector strings and pre-calculates numeric base scores using the `github.com/pandatix/go-cvss` library. Scores are stored in the `database_specific` field on each CVE document at write time, eliminating runtime parsing overhead and enabling fast indexed queries.
+During CVE ingestion from OSV.dev, Ortelius parses CVSS vector strings and pre-calculates numeric base scores using the `github.com/pandatix/go-cvss` library. Scores are stored in the `database_specific` field on each CVE document at write time, eliminating runtime parsing overhead and enabling fast indexed queries.
 
 ```mermaid
 flowchart TB
@@ -557,9 +557,9 @@ graph TB
     LB[Load Balancer<br/>HTTPS:443] --> API1 & API2 & API3
 
     subgraph APICluster["API Cluster (3 replicas)"]
-        API1[PDVD Pod 1]
-        API2[PDVD Pod 2]
-        API3[PDVD Pod 3]
+        API1[Ortelius Pod 1]
+        API2[Ortelius Pod 2]
+        API3[Ortelius Pod 3]
     end
 
     subgraph Workers["Background Goroutines (per pod)"]
@@ -590,27 +590,27 @@ graph TB
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pdvd-api
-  namespace: pdvd
+  name: ortelius-api
+  namespace: ortelius
 spec:
   replicas: 3
   template:
     spec:
       containers:
       - name: api
-        image: pdvd/backend:v2.0.0
+        image: ortelius/backend:v2.0.0
         ports:
         - containerPort: 3000
         env:
         - name: ARANGO_HOST
           valueFrom:
             secretKeyRef:
-              name: pdvd-secrets
+              name: ortelius-secrets
               key: arango-host
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
-              name: pdvd-secrets
+              name: ortelius-secrets
               key: jwt-secret
         resources:
           requests:
@@ -697,7 +697,7 @@ The GitHub App integration allows users to connect their GitHub installation and
 
 ```bash
 GITHUB_APP_ID=123456
-GITHUB_APP_NAME=my-pdvd-app
+GITHUB_APP_NAME=my-ortelius-app
 GITHUB_CLIENT_ID=Iv1.abc123
 GITHUB_CLIENT_SECRET=abc123...
 GITHUB_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\n..."
@@ -711,7 +711,7 @@ Kafka enables asynchronous release ingestion — CI pipelines publish events to 
 
 - Topic name: `release-events`
 - Recommended: 3 partitions, 7-day retention
-- Consumer group: `pdvd-backend-worker`
+- Consumer group: `ortelius-worker`
 
 **Confluent Cloud (SASL/PLAIN + TLS):**
 
@@ -742,13 +742,13 @@ Event schema: see [Implementation Guide](implementation.md#kafka-event-schema).
 | `ADMIN_EMAIL`          | `admin@example.com`     | No       | Bootstrap admin email                            |
 | `RBAC_REPO`            | —                       | No       | Git repo URL for RBAC config                     |
 | `RBAC_REPO_TOKEN`      | —                       | No       | Git token for RBAC repo access                   |
-| `RBAC_CONFIG_PATH`     | `/etc/pdvd/rbac.yaml`   | No       | Local file fallback if no RBAC_REPO              |
+| `RBAC_CONFIG_PATH`     | `/etc/ortelius/rbac.yaml`   | No       | Local file fallback if no RBAC_REPO              |
 | `SMTP_HOST`            | `smtp.gmail.com`        | No       | SMTP server hostname                             |
 | `SMTP_PORT`            | `587`                   | No       | SMTP port                                        |
 | `SMTP_USERNAME`        | —                       | No       | SMTP auth username                               |
 | `SMTP_PASSWORD`        | —                       | No       | SMTP auth password                               |
-| `SMTP_FROM_EMAIL`      | `noreply@pdvd.com`      | No       | From address                                     |
-| `SMTP_FROM_NAME`       | `PDVD System`           | No       | From display name                                |
+| `SMTP_FROM_EMAIL`      | `noreply@ortelius.com`      | No       | From address                                     |
+| `SMTP_FROM_NAME`       | `Ortelius System`           | No       | From display name                                |
 | `BASE_URL`             | `http://localhost:3000` | No       | Used in invitation email links                   |
 | `GITHUB_APP_ID`        | —                       | No       | GitHub App numeric ID                            |
 | `GITHUB_APP_NAME`      | —                       | No       | GitHub App slug name                             |

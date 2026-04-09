@@ -1,4 +1,4 @@
-// Package kafka provides Kafka event processing functionality for the PDVD backend.
+// Package kafka provides Kafka event processing functionality for the Ortelius backend.
 package kafka
 
 import (
@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ortelius/pdvd-backend/v12/database"
-	release "github.com/ortelius/pdvd-backend/v12/events/modules/releases"
-	"github.com/ortelius/pdvd-backend/v12/internal/services"
+	"github.com/ortelius/ortelius/v12/database"
+	release "github.com/ortelius/ortelius/v12/events/modules/releases"
+	"github.com/ortelius/ortelius/v12/internal/services"
 	"github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl/plain" // Add this
 )
@@ -81,7 +81,7 @@ func RunEventProcessor(ctx context.Context, db database.DBConnection) error {
 	// 2. Configure the Reader to use the Dialer
 	readerConfig := kafka.ReaderConfig{
 		Brokers:  brokers,
-		GroupID:  "pdvd-backend-worker",
+		GroupID:  "ortelius-worker",
 		Topic:    topic,
 		MaxBytes: 10e6,
 		Dialer:   dialer, // Inject the secure dialer here

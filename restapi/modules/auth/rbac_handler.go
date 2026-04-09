@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/ortelius/pdvd-backend/v12/database"
+	"github.com/ortelius/ortelius/v12/database"
 	"gopkg.in/yaml.v2"
 )
 

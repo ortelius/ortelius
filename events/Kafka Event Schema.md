@@ -2,7 +2,7 @@
 
 ## Overview
 
-This schema defines a unified event contract for the PDVD system. It combines software release metadata, storage references for SBOMs, and deployment endpoint information into a single message. This structure ensures that events processed via Kafka trigger the same validation, deduplication, and automated CVE linking logic as the REST API.
+This schema defines a unified event contract for the Ortelius system. It combines software release metadata, storage references for SBOMs, and deployment endpoint information into a single message. This structure ensures that events processed via Kafka trigger the same validation, deduplication, and automated CVE linking logic as the REST API.
 
 ---
 

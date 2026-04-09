@@ -11,12 +11,12 @@ import (
 	"github.com/arangodb/go-driver/v2/arangodb"
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/osv-scanner/pkg/models"
-	"github.com/ortelius/pdvd-backend/v12/database"
-	"github.com/ortelius/pdvd-backend/v12/model"
-	"github.com/ortelius/pdvd-backend/v12/restapi/modules/lifecycle"
-	"github.com/ortelius/pdvd-backend/v12/restapi/modules/releases"
-	"github.com/ortelius/pdvd-backend/v12/restapi/modules/sbom"
-	"github.com/ortelius/pdvd-backend/v12/util"
+	"github.com/ortelius/ortelius/v12/database"
+	"github.com/ortelius/ortelius/v12/model"
+	"github.com/ortelius/ortelius/v12/restapi/modules/lifecycle"
+	"github.com/ortelius/ortelius/v12/restapi/modules/releases"
+	"github.com/ortelius/ortelius/v12/restapi/modules/sbom"
+	"github.com/ortelius/ortelius/v12/util"
 )
 
 // PostSyncWithEndpoint handles POST requests for syncing multiple releases to an endpoint

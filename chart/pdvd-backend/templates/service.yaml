@@ -28,14 +28,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: pdvd-backend
+  name: ortelius
   {{- if eq (default "glb" .Values.ingress.type) "glb" }}
   annotations:
     cloud.google.com/backend-config: '{"default": "{{ include "microservice.name" . }}-backend-config"}'
   {{- end }}
 spec:
   selector:
-    app: pdvd-backend
+    app: ortelius
   ports:
     - protocol: TCP
       port: 8080

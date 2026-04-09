@@ -1,4 +1,4 @@
-// Package main is the entry point for the PDVD backend application.
+// Package main is the entry point for the Ortelius backend application.
 package main
 
 import (
@@ -8,9 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/ortelius/pdvd-backend/v12/database"
-	"github.com/ortelius/pdvd-backend/v12/internal/api"
-	"github.com/ortelius/pdvd-backend/v12/internal/kafka"
+	"github.com/ortelius/ortelius/v12/database"
+	"github.com/ortelius/ortelius/v12/internal/api"
+	"github.com/ortelius/ortelius/v12/internal/kafka"
 )
 
 func main() {
@@ -47,6 +47,6 @@ func main() {
 	}()
 
 	<-ctx.Done()
-	log.Println("Shutting down pdvd-backend...")
+	log.Println("Shutting down ortelius...")
 	app.Shutdown()
 }

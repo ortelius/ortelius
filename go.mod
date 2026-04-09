@@ -1,4 +1,4 @@
-module github.com/ortelius/pdvd-backend/v12
+module github.com/ortelius/ortelius/v12
 
 go 1.26.1
 

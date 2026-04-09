@@ -85,7 +85,7 @@ func tryUpdateRepo(repoURL string, authMethod *http.BasicAuth, username, email, 
 	displayName := orgName // Preserve original for display
 
 	// 1. Clone
-	tempDir, err := os.MkdirTemp("", "pdvd-rbac-*")
+	tempDir, err := os.MkdirTemp("", "ortelius-rbac-*")
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp dir: %w", err)
 	}
@@ -215,8 +215,8 @@ func tryUpdateRepo(repoURL string, authMethod *http.BasicAuth, username, email, 
 	commitMsg := fmt.Sprintf("feat: onboarding user %s to org %s", username, normalizedOrgName)
 	_, err = worktree.Commit(commitMsg, &git.CommitOptions{
 		Author: &object.Signature{
-			Name:  "PDVD Backend",
-			Email: "noreply@pdvd.com",
+			Name:  "Ortelius Backend",
+			Email: "noreply@ortelius.com",
 			When:  time.Now(),
 		},
 	})

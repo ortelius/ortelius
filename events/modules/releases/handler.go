@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ortelius/pdvd-backend/v12/model"
+	"github.com/ortelius/ortelius/v12/model"
 )
 
 // SBOMFetcher defines the interface for fetching SBOM content from storage.

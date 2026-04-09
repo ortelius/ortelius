@@ -13,11 +13,11 @@ import (
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/gofiber/fiber/v3"
 	"github.com/graphql-go/graphql"
-	"github.com/ortelius/pdvd-backend/v12/database"
-	"github.com/ortelius/pdvd-backend/v12/restapi/modules/auth"
-	"github.com/ortelius/pdvd-backend/v12/restapi/modules/github"
-	"github.com/ortelius/pdvd-backend/v12/restapi/modules/releases"
-	"github.com/ortelius/pdvd-backend/v12/restapi/modules/releasesync"
+	"github.com/ortelius/ortelius/v12/database"
+	"github.com/ortelius/ortelius/v12/restapi/modules/auth"
+	"github.com/ortelius/ortelius/v12/restapi/modules/github"
+	"github.com/ortelius/ortelius/v12/restapi/modules/releases"
+	"github.com/ortelius/ortelius/v12/restapi/modules/releasesync"
 )
 
 // SetupRoutes configures all REST API routes and the GraphQL endpoint.
@@ -211,7 +211,7 @@ func autoApplyRBACOnStartup(db database.DBConnection, emailConfig *auth.EmailCon
 		// Fallback to local file mode
 		configPath := os.Getenv("RBAC_CONFIG_PATH")
 		if configPath == "" {
-			configPath = "/etc/pdvd/rbac.yaml"
+			configPath = "/etc/ortelius/rbac.yaml"
 		}
 		if _, err := os.Stat(configPath); err != nil {
 			// Neither GitHub nor local file configured

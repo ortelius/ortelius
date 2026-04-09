@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/graphql-go/graphql"
-	"github.com/ortelius/pdvd-backend/v12/restapi/modules/auth"
+	"github.com/ortelius/ortelius/v12/restapi/modules/auth"
 )
 
 // GraphQLHandler returns a Fiber handler for GraphQL requests

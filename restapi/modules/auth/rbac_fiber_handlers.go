@@ -11,8 +11,8 @@ import (
 
 	"github.com/arangodb/go-driver/v2/arangodb"
 	"github.com/gofiber/fiber/v3"
-	"github.com/ortelius/pdvd-backend/v12/database"
-	"github.com/ortelius/pdvd-backend/v12/model"
+	"github.com/ortelius/ortelius/v12/database"
+	"github.com/ortelius/ortelius/v12/model"
 	"gopkg.in/yaml.v2"
 )
 
@@ -167,7 +167,7 @@ func ApplyRBACFromFile(db database.DBConnection, emailConfig *EmailConfig) fiber
 		}
 
 		if req.FilePath == "" {
-			req.FilePath = "/etc/pdvd/rbac.yaml"
+			req.FilePath = "/etc/ortelius/rbac.yaml"
 		}
 
 		yamlContent, err := os.ReadFile(req.FilePath)

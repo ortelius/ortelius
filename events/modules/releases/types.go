@@ -4,7 +4,7 @@ package release
 import (
 	"time"
 
-	"github.com/ortelius/pdvd-backend/v12/model"
+	"github.com/ortelius/ortelius/v12/model"
 )
 
 // ReleaseSBOMCreatedEvent represents a release SBOM creation event published to Kafka.

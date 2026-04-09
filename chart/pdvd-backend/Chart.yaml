@@ -2,7 +2,7 @@
 apiVersion: v2
 description: Post-Deployment Vulnerability Detection Backend
 icon: https://ortelius.github.io/ortelius-charts/logo.png
-name: pdvd-backend
+name: ortelius
 type: application
 version: 11.0.0
 appVersion: 11.0.0

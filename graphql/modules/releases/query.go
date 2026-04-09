@@ -8,9 +8,9 @@ import (
 
 	"github.com/arangodb/go-driver/v2/arangodb"
 	"github.com/graphql-go/graphql"
-	"github.com/ortelius/pdvd-backend/v12/database"
-	"github.com/ortelius/pdvd-backend/v12/model"
-	"github.com/ortelius/pdvd-backend/v12/restapi/modules/auth" // Imported for Context Keys
+	"github.com/ortelius/ortelius/v12/database"
+	"github.com/ortelius/ortelius/v12/model"
+	"github.com/ortelius/ortelius/v12/restapi/modules/auth" // Imported for Context Keys
 )
 
 // GetQueryFields returns the release queries to be mounted in the root schema.

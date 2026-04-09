@@ -16,7 +16,7 @@ services:
 
   go-app:
     build:
-      context: ../pdvd-backend
+      context: ../ortelius
       dockerfile: Dockerfile
     container_name: go-app
     environment:
@@ -35,7 +35,7 @@ services:
 
   node-app:
     build:
-      context: ../pdvd-frontend
+      context: ../frontend
       dockerfile: Dockerfile.Dev
     container_name: node-app
     environment:

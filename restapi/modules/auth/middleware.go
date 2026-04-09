@@ -3,7 +3,7 @@ package auth
 
 import (
 	"github.com/gofiber/fiber/v3"
-	"github.com/ortelius/pdvd-backend/v12/database"
+	"github.com/ortelius/ortelius/v12/database"
 )
 
 // CtxKey defines a type for context keys to ensure type safety and avoid collisions.

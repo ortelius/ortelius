@@ -1,4 +1,4 @@
-// Package services provides internal service implementations for the PDVD backend.
+// Package services provides internal service implementations for the Ortelius backend.
 package services
 
 import (
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	release "github.com/ortelius/pdvd-backend/v12/events/modules/releases"
+	release "github.com/ortelius/ortelius/v12/events/modules/releases"
 )
 
 // CIDFetcher implements release.SBOMFetcher

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/arangodb/go-driver/v2/arangodb"
-	"github.com/ortelius/pdvd-backend/v12/database"
+	"github.com/ortelius/ortelius/v12/database"
 )
 
 // ResolveOverview handles fetching the high-level dashboard metrics.

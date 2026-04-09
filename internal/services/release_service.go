@@ -1,13 +1,13 @@
-// Package services provides internal service implementations for the PDVD backend.
+// Package services provides internal service implementations for the Ortelius backend.
 package services
 
 import (
 	"context"
 	"log"
 
-	"github.com/ortelius/pdvd-backend/v12/database"
-	"github.com/ortelius/pdvd-backend/v12/model"
-	"github.com/ortelius/pdvd-backend/v12/restapi/modules/releases"
+	"github.com/ortelius/ortelius/v12/database"
+	"github.com/ortelius/ortelius/v12/model"
+	"github.com/ortelius/ortelius/v12/restapi/modules/releases"
 )
 
 // ReleaseServiceWrapper implements release.ReleaseService

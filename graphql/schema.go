@@ -3,12 +3,12 @@ package graphql
 
 import (
 	"github.com/graphql-go/graphql"
-	"github.com/ortelius/pdvd-backend/v12/database"
-	"github.com/ortelius/pdvd-backend/v12/graphql/modules/dashboard"
-	"github.com/ortelius/pdvd-backend/v12/graphql/modules/endpoints"
-	"github.com/ortelius/pdvd-backend/v12/graphql/modules/releases"
-	"github.com/ortelius/pdvd-backend/v12/graphql/modules/scorecard"
-	"github.com/ortelius/pdvd-backend/v12/graphql/modules/vulnerabilities"
+	"github.com/ortelius/ortelius/v12/database"
+	"github.com/ortelius/ortelius/v12/graphql/modules/dashboard"
+	"github.com/ortelius/ortelius/v12/graphql/modules/endpoints"
+	"github.com/ortelius/ortelius/v12/graphql/modules/releases"
+	"github.com/ortelius/ortelius/v12/graphql/modules/scorecard"
+	"github.com/ortelius/ortelius/v12/graphql/modules/vulnerabilities"
 )
 
 var db database.DBConnection

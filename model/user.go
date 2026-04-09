@@ -1,4 +1,4 @@
-// Package model provides data models for the PDVD system.
+// Package model provides data models for the Ortelius system.
 package model
 
 import (

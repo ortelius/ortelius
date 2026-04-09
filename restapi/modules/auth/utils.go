@@ -54,7 +54,7 @@ func GenerateJWT(username string) (string, error) {
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			Issuer:    "pdvd-backend",
+			Issuer:    "ortelius",
 			Subject:   username,
 		},
 	}

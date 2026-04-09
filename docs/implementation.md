@@ -1,6 +1,6 @@
 # Implementation Guide
 
-**Audience:** Backend engineers integrating the PDVD API, writing GraphQL queries, or contributing to the codebase.
+**Audience:** Backend engineers integrating the Ortelius API, writing GraphQL queries, or contributing to the codebase.
 
 ---
 
@@ -215,7 +215,7 @@ DELETE /users/:username                 Delete user
 ```text
 POST   /rbac/apply/content              Apply YAML config from request body (Content-Type: application/x-yaml)
 POST   /rbac/apply/upload               Apply YAML config from multipart file upload
-POST   /rbac/apply                      Apply from filesystem path (JSON body: {"file_path": "/etc/pdvd/rbac.yaml"})
+POST   /rbac/apply                      Apply from filesystem path (JSON body: {"file_path": "/etc/ortelius/rbac.yaml"})
 POST   /rbac/validate                   Validate YAML without applying
 GET    /rbac/config                     Export current config as YAML
 GET    /rbac/invitations                List pending (unaccepted) invitations
