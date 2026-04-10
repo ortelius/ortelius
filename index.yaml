@@ -9237,4 +9237,16 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/ms-ui-10.0.5/ms-ui-10.0.5.tgz
     version: 10.0.5
-generated: "2026-02-06T19:48:50.648654438Z"
+  ortelius:
+  - apiVersion: v2
+    appVersion: 10.0.458
+    created: "2026-04-10T18:51:54.886397278Z"
+    description: Post-Deployment Vulnerability Detection Backend
+    digest: a2fed03df7452f6838df414787d501ff468540278b834e0d6e7de399a35f1fce
+    icon: https://ortelius.github.io/ortelius-charts/logo.png
+    name: ortelius
+    type: application
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/v10.0.458/ortelius-10.0.458.tgz
+    version: 10.0.458
+generated: "2026-04-10T18:51:54.886051724Z"
