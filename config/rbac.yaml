@@ -1,0 +1,77 @@
+---
+orgs:
+  - name: acme
+    display_name: "ACME Corporation"
+    description: "Main enterprise customer"
+    metadata:
+      owner: "alice"
+      tier: "enterprise"
+    members:
+      - username: alice
+        role: owner
+      - username: carol
+        role: viewer
+
+  - name: widgets
+    display_name: "Widgets Inc"
+    description: "Manufacturing partner"
+    metadata:
+      owner: "bob"
+      tier: "partner"
+    members:
+      - username: bob
+        role: owner
+      - username: carol
+        role: viewer
+
+users:
+  # Identity definitions (Auth Provider, Email)
+  # Permissions are derived solely from the 'orgs' block above.
+
+  - username: admin
+    email: admin@deployhub.com
+    auth_provider: local
+
+  - username: alice
+    email: alice@acme.com
+    auth_provider: local
+
+  - username: bob
+    email: bob@widgets.com
+    auth_provider: local
+
+  - username: carol
+    email: carol@contractor.com
+    auth_provider: local
+
+  - username: scanner-bot
+    email: scanner@deployhub.com
+    auth_provider: service_account
+
+roles:
+  - name: owner
+    description: "Organization owner with full access and billing management"
+    permissions:
+      - "admin:org"
+      - "write:*"
+      - "read:*"
+
+  - name: admin
+    description: "System administrator"
+    permissions:
+      - "admin:*"
+      - "write:*"
+      - "read:*"
+
+  - name: editor
+    description: "Can create and modify resources"
+    permissions:
+      - "read:*"
+      - "write:releases"
+      - "write:sbom"
+      - "write:sync"
+
+  - name: viewer
+    description: "Read-only access"
+    permissions:
+      - "read:*"

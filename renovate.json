@@ -1,14 +1,10 @@
 {
-  "baseBranches": ["svccat"],
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base", "group:all"],
-  "ignorePaths": ["chart/**", "requirements.txt"],
+  "ignorePaths": ["chart/**"],
   "schedule": ["every 1 hours every weekday"],
   "prHourlyLimit": 4,
   "pip_requirements": {
-    "fileMatch": ["(^|/)requirements\\.in$"]
-  },
-  "pip-compile": {
     "fileMatch": ["(^|/)requirements\\.in$"]
   },
   "groupName": "all dependencies",
@@ -22,7 +18,17 @@
       "groupSlug": "all",
       "matchPackagePatterns": [".*"],
       "automerge": true,
-      "autoApprove": true
+      "autoApprove": true,
+      "excludePackageNames": ["github.com/google/osv-scanner"]
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchPackagePatterns": ["^go", "^toolchain"],
+      "enabled": false
+    },
+    {
+      "matchPackageNames": ["github.com/google/osv-scanner"],
+      "allowedVersions": "v1.9.2"
     }
   ],
   "separateMajorMinor": false,

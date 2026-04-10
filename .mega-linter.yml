@@ -1,13 +1,37 @@
-# Configuration file for MegaLinter
-# See all available variables at https://megalinter.io/configuration/ and in linters documentation
-
-APPLY_FIXES: all # all, none, or list of linter keys
-
-ENABLE_LINTERS:
-  - JAVASCRIPT_ES
-  - JAVASCRIPT_STANDARD
-  - JAVASCRIPT_PRETTIER
-
+---
+APPLY_FIXES: all
+SHOW_ELAPSED_TIME: true
+FILEIO_REPORTER: false
+YAML_V8R_FILTER_REGEX_EXCLUDE: .mega-linter.yml
+YAML_PRETTIER_FILTER_REGEX_EXCLUDE: templates/
+YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: templates/
+DISABLE_LINTERS:
+  - REPOSITORY_DUSTILOCK
+  - REPOSITORY_GIT_DIFF
+  - REPOSITORY_TRIVY
+  - REPOSITORY_DEVSKIM
+  - REPOSITORY_CHECKOV
+  - REPOSITORY_KICS
+  - MARKDOWN_MARKDOWN_LINK_CHECK
 DISABLE:
   - COPYPASTE
   - SPELL
+
+GO_GOLANGCI_LINT_ARGUMENTS:
+  - "run"
+  - "./..."
+  - "--timeout"
+  - "10m"
+  - "--fix"
+  - "--show-stats"
+
+GO_GOLANGCI_LINT_COMMAND_REMOVE_ARGUMENTS:
+  - "run"
+  - "--fix"
+
+PRE_COMMANDS:
+  - command: wget https://go.dev/dl/go1.26.1.linux-amd64.tar.gz
+  - command: rm -rf /usr/lib/go
+  - command: tar -xf go1.26.1.linux-amd64.tar.gz -C /usr/lib
+  - command: go version
+  - command: golangci-lint cache clean

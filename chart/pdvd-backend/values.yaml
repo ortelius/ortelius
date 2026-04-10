@@ -1,0 +1,27 @@
+---
+replicaCount: 1
+image:
+  repository: quay.io/ortelius/ortelius
+  tag: main-v10.0.92-g2eebd3
+  sha: sha256:6720749f6628a424466140733ee11ce73d600a1b457d76d4d6ec7971b05c00ce
+  pullPolicy: Always
+
+apiBaseUrl: "http://localhost:3000"
+baseUrl: "http://localhost:4000"
+
+github:
+  appName: ""
+  appId: ""
+  clientId: ""
+  clientSecret: ""
+  privateKey: ""
+
+# SMTP Configuration - Leave empty to disable email (invitations will print to console)
+smtp:
+  enabled: false # Set to true to enable email sending
+  host: ""
+  port: ""
+  username: ""
+  password: ""
+  fromEmail: ""
+  fromName: ""
