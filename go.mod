@@ -8,7 +8,7 @@ require (
 	github.com/aquasecurity/go-pep440-version v0.0.1
 	github.com/arangodb/go-driver/v2 v2.2.0
 	github.com/cenkalti/backoff v2.2.1+incompatible
-	github.com/go-git/go-git/v5 v5.17.1
+	github.com/go-git/go-git/v5 v5.18.0
 	github.com/gofiber/fiber/v3 v3.1.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/osv-scanner v1.9.2
