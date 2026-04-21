@@ -4,5 +4,5 @@ description: Post-Deployment Vulnerability Detection Backend
 icon: https://ortelius.github.io/ortelius-charts/logo.png
 name: ortelius
 type: application
-version: 11.0.0
-appVersion: 11.0.0
+version: 12.0.0
+appVersion: 12.0.0
