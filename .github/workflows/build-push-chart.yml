@@ -16,7 +16,7 @@ name: Build/Push Image and Release Charts
 permissions: read-all
 jobs:
   setenv:
-    uses: ortelius/workflow-toolkit/.github/workflows/env-config-workflow.yml@13618d643dbc15775b93c0759a3601b20a599cb2
+    uses: ortelius/workflow-toolkit/.github/workflows/env-config-workflow.yml@2695f78482e1bbd139d32be876ed34b2535bdc95
     with:
       gh_head_ref: ${{ github.head_ref }}
       gh_ref_name: ${{ github.ref_name }}
@@ -28,7 +28,7 @@ jobs:
     permissions:
       id-token: write
       contents: write
-    uses: ortelius/workflow-toolkit/.github/workflows/container-release-workflow.yml@13618d643dbc15775b93c0759a3601b20a599cb2
+    uses: ortelius/workflow-toolkit/.github/workflows/container-release-workflow.yml@2695f78482e1bbd139d32be876ed34b2535bdc95
     needs: setenv
     with:
       gh_repository_owner: ${{ github.repository_owner }}
@@ -45,7 +45,7 @@ jobs:
     permissions:
       security-events: write
       statuses: write
-    uses: ortelius/workflow-toolkit/.github/workflows/trivy-scan-workflow.yml@13618d643dbc15775b93c0759a3601b20a599cb2
+    uses: ortelius/workflow-toolkit/.github/workflows/trivy-scan-workflow.yml@2695f78482e1bbd139d32be876ed34b2535bdc95
     needs:
       - setenv
       - release
@@ -57,7 +57,7 @@ jobs:
   helm:
     permissions:
       contents: write
-    uses: ortelius/workflow-toolkit/.github/workflows/helm-release-workflow.yml@13618d643dbc15775b93c0759a3601b20a599cb2
+    uses: ortelius/workflow-toolkit/.github/workflows/helm-release-workflow.yml@2695f78482e1bbd139d32be876ed34b2535bdc95
     needs:
       - setenv
       - release
@@ -76,24 +76,3 @@ jobs:
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       GPG_KEY: ${{ secrets.GPG_KEY }}
       gh_token: ${{ secrets.HELM_INDEXER_TOKEN }}
-  sbom:
-    uses: ortelius/workflow-toolkit/.github/workflows/sbom-generation-workflow.yml@13618d643dbc15775b93c0759a3601b20a599cb2
-    needs:
-      - setenv
-      - release
-    with:
-      gh_repository_owner: ${{ github.repository_owner }}
-      gh_event_name: ${{ github.event_name }}
-      gh_ref: ${{ github.ref }}
-      dhurl: ${{ needs.setenv.outputs.dhurl }}
-      compname: ${{ needs.setenv.outputs.compname }}
-      chart_version: ${{ needs.setenv.outputs.chart_version }}
-      branch: ${{ needs.setenv.outputs.branch }}
-      digest: ${{ needs.release.outputs.digest }}
-      image_repo_tag: ${{ needs.setenv.outputs.image_repo_tag }}
-      image_repository: ${{ needs.setenv.outputs.image_repository }}
-      image_tag: ${{ needs.setenv.outputs.image_tag }}
-      image_version: ${{ needs.setenv.outputs.image_version }}
-    secrets:
-      DHPASS: ${{ secrets.DHPASS }}
-      DHUSER: ${{ secrets.DHUSER }}
