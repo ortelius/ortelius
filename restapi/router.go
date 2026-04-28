@@ -16,6 +16,7 @@ import (
 	"github.com/ortelius/ortelius/v12/database"
 	"github.com/ortelius/ortelius/v12/restapi/modules/auth"
 	"github.com/ortelius/ortelius/v12/restapi/modules/github"
+	"github.com/ortelius/ortelius/v12/restapi/modules/metadata"
 	"github.com/ortelius/ortelius/v12/restapi/modules/releases"
 	"github.com/ortelius/ortelius/v12/restapi/modules/releasesync"
 )
@@ -96,6 +97,10 @@ func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema
 	// Release & Sync
 	api.Post("/releases", auth.OptionalAuth(db), releases.PostReleaseWithSBOM(db))
 	api.Post("/sync", auth.OptionalAuth(db), releasesync.PostSyncWithEndpoint(db))
+
+	// Metadata (key-value store for audit log cursor persistence)
+	api.Get("/metadata/:key", auth.OptionalAuth(db), metadata.GetMetadata(db))
+	api.Put("/metadata/:key", auth.OptionalAuth(db), metadata.SetMetadata(db))
 
 	log.Println("API routes initialized successfully")
 }
