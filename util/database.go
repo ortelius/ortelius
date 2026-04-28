@@ -5,11 +5,13 @@ package util
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/arangodb/go-driver/v2/arangodb"
+	"github.com/google/osv-scanner/pkg/models"
 	"github.com/ortelius/ortelius/v12/database"
 )
 
@@ -88,4 +90,50 @@ func SaveLastRun(db database.DBConnection, ecosystem string, lastModified time.T
 
 	_, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{BindVars: bindVars})
 	return err
+}
+
+// FetchCVEAffectedData retrieves the 'affected' arrays for a batch of CVE IDs (OSV IDs).
+// This prevents high-fanout memory bloat in ArangoDB by doing a fast O(1) fetch in Go.
+func FetchCVEAffectedData(ctx context.Context, db arangodb.Database, cveIDs []string) (map[string][]models.Affected, error) {
+	if len(cveIDs) == 0 {
+		return make(map[string][]models.Affected), nil
+	}
+
+	query := `
+		FOR cve IN cve
+			FILTER cve.id IN @cve_ids
+			RETURN { id: cve.id, affected: cve.affected }
+	`
+	cursor, err := db.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"cve_ids": cveIDs},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close()
+
+	cveMap := make(map[string][]models.Affected)
+
+	for cursor.HasMore() {
+		var doc struct {
+			ID       string                   `json:"id"`
+			Affected []map[string]interface{} `json:"affected"`
+		}
+		if _, err := cursor.ReadDocument(ctx, &doc); err == nil {
+			var modelsAffected []models.Affected
+			for _, aMap := range doc.Affected {
+				bytes, err := json.Marshal(aMap)
+				if err != nil {
+					continue
+				}
+				var affected models.Affected
+				if err := json.Unmarshal(bytes, &affected); err == nil {
+					modelsAffected = append(modelsAffected, affected)
+				}
+			}
+			cveMap[doc.ID] = modelsAffected
+		}
+	}
+
+	return cveMap, nil
 }
