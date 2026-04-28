@@ -97,6 +97,7 @@ func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema
 	// Release & Sync
 	api.Post("/releases", auth.OptionalAuth(db), releases.PostReleaseWithSBOM(db))
 	api.Post("/sync", auth.OptionalAuth(db), releasesync.PostSyncWithEndpoint(db))
+	api.Get("/releases/exists", releases.CheckReleaseExists(db))
 
 	// Metadata (key-value store for audit log cursor persistence)
 	api.Get("/metadata/:key", auth.OptionalAuth(db), metadata.GetMetadata(db))

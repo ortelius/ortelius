@@ -305,3 +305,40 @@ func linkReleaseToExistingCVEs(ctx context.Context, db database.DBConnection, re
 
 	return nil
 }
+
+// CheckReleaseExists returns 200 if a release with the given contentsha exists, 404 if not.
+// Used by the GKE sync job to avoid regenerating SBOMs for already-ingested images.
+func CheckReleaseExists(db database.DBConnection) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		contentSha := c.Query("contentsha")
+		if contentSha == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "contentsha query parameter required",
+			})
+		}
+
+		ctx := context.Background()
+		query := `
+			FOR r IN release
+				FILTER r.contentsha == @contentsha
+				LIMIT 1
+				RETURN r._key
+		`
+		cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+			BindVars: map[string]interface{}{
+				"contentsha": contentSha,
+			},
+		})
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "Query failed",
+			})
+		}
+		defer cursor.Close()
+
+		if cursor.HasMore() {
+			return c.Status(fiber.StatusOK).JSON(fiber.Map{"exists": true})
+		}
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"exists": false})
+	}
+}
