@@ -217,7 +217,7 @@ func InitializeDatabase() DBConnection {
 	//
 
 	idxList := []indexConfig{
-		// Original CVE indexes
+		// CVE indexes
 		{Collection: "cve", IdxName: "package_name", IdxField: []string{"affected[*].package.name"}, Unique: false},
 		{Collection: "cve", IdxName: "package_purl", IdxField: []string{"affected[*].package.purl"}, Unique: false},
 		{Collection: "cve", IdxName: "cve_id", IdxField: []string{"id"}, Unique: false},
@@ -225,23 +225,13 @@ func InitializeDatabase() DBConnection {
 		// SBOM & Release indexes
 		{Collection: "sbom", IdxName: "sbom_contentsha", IdxField: []string{"contentsha"}, Unique: false},
 		{Collection: "release", IdxName: "release_contentsha", IdxField: []string{"contentsha"}, Unique: false},
-
-		// Composite index for latest version retrieval per org + name
 		{Collection: "release", IdxName: "release_org_name_version_order",
-			IdxField: []string{
-				"org",
-				"name",
-				"version_major",
-				"version_minor",
-				"version_patch",
-				"version_prerelease",
-				"version",
-			}, Unique: false},
+			IdxField: []string{"org", "name", "version_major", "version_minor", "version_patch", "version_prerelease", "version"}, Unique: false},
 
 		// PURL unique index
 		{Collection: "purl", IdxName: "purl_idx", IdxField: []string{"purl"}, Unique: true},
 
-		// User Management Indexes
+		// User Management indexes
 		{Collection: "users", IdxName: "users_username", IdxField: []string{"username"}, Unique: true},
 		{Collection: "users", IdxName: "users_email", IdxField: []string{"email"}, Unique: true},
 		{Collection: "invitations", IdxName: "idx_token", IdxField: []string{"token"}, Unique: true},
@@ -253,14 +243,26 @@ func InitializeDatabase() DBConnection {
 		{Collection: "cve_lifecycle", IdxName: "lifecycle_remediated", IdxField: []string{"is_remediated"}, Unique: false},
 		{Collection: "cve_lifecycle", IdxName: "lifecycle_endpoint_release_version",
 			IdxField: []string{"endpoint_name", "release_name", "introduced_version"}, Unique: false},
+		{Collection: "cve_lifecycle", IdxName: "lifecycle_endpoint_release_remediated",
+			IdxField: []string{"endpoint_name", "release_name", "is_remediated"}, Unique: false},
 
 		// Sync indexes
-		// Composite index including endpoint_name for optimized queries
 		{Collection: "sync", IdxName: "sync_endpoint_release",
 			IdxField: []string{"endpoint_name", "release_name"}, Unique: false},
-		// Exact index for release_name + release_version (matches old db.sync.ensureIndex)
 		{Collection: "sync", IdxName: "sync_release_name_version",
 			IdxField: []string{"release_name", "release_version"}, Unique: false},
+		{Collection: "sync", IdxName: "sync_endpoint_release_synced",
+			IdxField: []string{"release_name", "endpoint_name", "synced_at"}, Unique: false},
+
+		// Edge collection indexes - INBOUND traversal (_to)
+		{Collection: "sbom2purl", IdxName: "idx_sbom2purl_to", IdxField: []string{"_to"}, Unique: false},
+		{Collection: "release2sbom", IdxName: "idx_release2sbom_to", IdxField: []string{"_to"}, Unique: false},
+		{Collection: "release2cve", IdxName: "idx_release2cve_to", IdxField: []string{"_to"}, Unique: false},
+		{Collection: "cve2purl", IdxName: "idx_cve2purl_to", IdxField: []string{"_to"}, Unique: false},
+
+		// Edge collection indexes - OUTBOUND traversal (_from)
+		{Collection: "release2cve", IdxName: "idx_release2cve_from", IdxField: []string{"_from"}, Unique: false},
+		{Collection: "release2sbom", IdxName: "idx_release2sbom_from", IdxField: []string{"_from"}, Unique: false},
 	}
 
 	for _, idx := range idxList {
