@@ -79,9 +79,32 @@ func CreateOrUpdateLifecycleRecord(
 	if cursor.HasMore() {
 		var existing map[string]interface{}
 		cursor.ReadDocument(ctx, &existing)
-		// Resurrection logic: If we just superseded this record (e.g. re-sync of same version), mark it active again.
-		updateQuery := `UPDATE @key WITH { updated_at: DATE_NOW(), is_remediated: false, remediated_at: null, remediation_status: null, remediation_notes: null } IN cve_lifecycle`
-		db.Database.Query(ctx, updateQuery, &arangodb.QueryOptions{BindVars: map[string]interface{}{"key": existing["_key"]}})
+
+		// Re-evaluate disclosed_after_deployment using original root_introduced_at
+		// so that CVEs published after the original deployment but before a pod
+		// restart are correctly flagged as post-deployment vulnerabilities.
+		rootTs := existing["root_introduced_at"]
+		if rootTs == nil {
+			rootTs = existing["introduced_at"]
+		}
+		rootTime, _ := time.Parse(time.RFC3339, fmt.Sprintf("%v", rootTs))
+		isDisclosedAfter := !cveInfo.Published.IsZero() && cveInfo.Published.After(rootTime)
+
+		updateQuery := `UPDATE @key WITH {
+			updated_at: DATE_NOW(),
+			is_remediated: false,
+			remediated_at: null,
+			remediation_status: null,
+			remediation_notes: null,
+			disclosed_after_deployment: @disclosed_after
+		} IN cve_lifecycle`
+
+		db.Database.Query(ctx, updateQuery, &arangodb.QueryOptions{
+			BindVars: map[string]interface{}{
+				"key":             existing["_key"],
+				"disclosed_after": isDisclosedAfter,
+			},
+		})
 		return nil
 	}
 
