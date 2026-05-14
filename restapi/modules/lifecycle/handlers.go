@@ -109,9 +109,33 @@ func CreateOrUpdateLifecycleRecord(
 	}
 
 	// Step 2: "Root Reference" Logic.
-	// Look for the same CVE in the PREVIOUS version of this release on this endpoint.
-	rootIntroducedAt := introducedAt // Default to current sync time if first discovery
+	// Seed rootIntroducedAt from the release's BuildDate when available.
+	// This ensures that for images built after CVE disclosure, disclosed_after_deployment
+	// is correctly set to false (the image was built knowing about the CVE).
+	// Fall back to current sync time if BuildDate is not populated.
+	rootIntroducedAt := introducedAt
 
+	releaseQuery := `FOR r IN release FILTER r.name == @name AND r.version == @version
+		LIMIT 1 RETURN r.builddate`
+	relCursor, relErr := db.Database.Query(ctx, releaseQuery, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{
+			"name":    releaseName,
+			"version": releaseVersion,
+		},
+	})
+	if relErr == nil {
+		defer relCursor.Close()
+		if relCursor.HasMore() {
+			var buildDate time.Time
+			relCursor.ReadDocument(ctx, &buildDate)
+			if !buildDate.IsZero() {
+				rootIntroducedAt = buildDate
+			}
+		}
+	}
+
+	// Look for the same CVE in the PREVIOUS version of this release on this endpoint.
+	// If found, carry forward the earliest known root_introduced_at.
 	rootQuery := `
 		LET prev_version = (
 			FOR s IN sync 
@@ -138,7 +162,12 @@ func CreateOrUpdateLifecycleRecord(
 	if err == nil {
 		defer rootCursor.Close()
 		if rootCursor.HasMore() {
-			rootCursor.ReadDocument(ctx, &rootIntroducedAt)
+			var prevRootTime time.Time
+			rootCursor.ReadDocument(ctx, &prevRootTime)
+			// Only carry forward if it predates what we already have
+			if !prevRootTime.IsZero() && prevRootTime.Before(rootIntroducedAt) {
+				rootIntroducedAt = prevRootTime
+			}
 		}
 	}
 
