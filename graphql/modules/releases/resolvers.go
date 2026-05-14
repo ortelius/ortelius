@@ -195,30 +195,21 @@ func ResolveAffectedEndpoints(db database.DBConnection, name, version string) ([
 	return endpoints, nil
 }
 
-// ResolveAffectedReleases updated to count unique CVE ID + Package combinations
-// FIXED: Updated version_prerelease sorting to DESC for accurate pre-release comparisons
+// ResolveAffectedReleases updated to use the IsLatest flag for O(1) identification of the newest release
 func ResolveAffectedReleases(db database.DBConnection, severity string, org string) ([]interface{}, error) {
 	ctx := context.Background()
 	severityScore := util.GetSeverityScore(severity)
 
 	query := `
+		// FAST PATH: Instantly grab only the latest releases using the new boolean flag
 		FOR r IN release
+			FILTER r.is_latest == true
 			FILTER @org == "" OR r.org == @org
-			COLLECT name = r.name INTO groupedReleases = r
 
-			LET latestRelease = (
-				FOR release IN groupedReleases
-					SORT release.version_major != null ? release.version_major : -1 DESC,
-						release.version_minor != null ? release.version_minor : -1 DESC,
-						release.version_patch != null ? release.version_patch : -1 DESC,
-						release.version_prerelease != null && release.version_prerelease != "" ? 1 : 0 ASC,
-						release.version_prerelease DESC, // <--- CHANGED TO DESC
-						release.version DESC
-					LIMIT 1
-					RETURN release
-			)[0]
+			LET latestRelease = r
 			
-			LET versionCount = LENGTH(groupedReleases)
+			// Subquery to count total versions for this package
+			LET versionCount = LENGTH(FOR v IN release FILTER v.name == latestRelease.name RETURN 1)
 
 			LET sbomData = (
 				FOR s IN 1..1 OUTBOUND latestRelease release2sbom
@@ -266,7 +257,6 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 			
 			LET maxSeverity = LENGTH(cveMatches) > 0 ? MAX(cveMatches[*].cve_severity_score) : 0
 			
-			// Methodology Fix: Count one record for every unique CVE ID + Package combination
 			LET uniqueInstances = (
 				FOR match IN cveMatches
 					COLLECT cveId = match.cve_id, package = match.package
@@ -274,17 +264,18 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 			)
 			LET vulnerabilityCount = LENGTH(uniqueInstances)
 			
+			// Find previous version for delta calculation (constrained to just this package name)
 			LET previousRelease = (
-				FOR release IN groupedReleases
-					FILTER release._key != latestRelease._key
-					SORT release.version_major != null ? release.version_major : -1 DESC,
-						release.version_minor != null ? release.version_minor : -1 DESC,
-						release.version_patch != null ? release.version_patch : -1 DESC,
-						release.version_prerelease != null && release.version_prerelease != "" ? 1 : 0 ASC,
-						release.version_prerelease DESC, // <--- CHANGED TO DESC
-						release.version DESC
+				FOR v IN release
+					FILTER v.name == latestRelease.name AND v._key != latestRelease._key
+					SORT (v.version_major != null ? v.version_major : -1) DESC,
+						 (v.version_minor != null ? v.version_minor : -1) DESC,
+						 (v.version_patch != null ? v.version_patch : -1) DESC,
+						 (v.version_prerelease != null && v.version_prerelease != "" ? 1 : 0) ASC,
+						 v.version_prerelease DESC,
+						 v.version DESC
 					LIMIT 1
-					RETURN release
+					RETURN v
 			)[0]
 			
 			LET prevVulnCount = previousRelease != null ? (
@@ -473,19 +464,16 @@ func convertToModelsAffected(allAffected []map[string]interface{}) []models.Affe
 	return result
 }
 
-// filepath: graphql/modules/releases/resolvers.go
-
 // ResolveOrgAggregatedReleases aggregates release data by organization
+// FIXED: Replaced slow COLLECT grouping with instant O(1) IsLatest lookup
 func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, username string) ([]interface{}, error) {
 	ctx := context.Background()
 	severityScore := util.GetSeverityScore(severity)
 
-	// Determine org filter based on authentication status
 	userOrgs := []string{}
 	filterByPublic := true
 
 	if username != "" {
-		// User is authenticated - fetch their orgs from database
 		userQuery := `FOR u IN users FILTER u.username == @username LIMIT 1 RETURN u.orgs`
 		cursor, err := db.Database.Query(ctx, userQuery, &arangodb.QueryOptions{
 			BindVars: map[string]interface{}{"username": username},
@@ -500,7 +488,6 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				}
 			}
 		}
-		// If user has no orgs specified, they have global access
 		filterByPublic = false
 	}
 
@@ -509,41 +496,29 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 		LET filterPublic = @filter_by_public
 		LET userOrgs = @user_orgs
 
+		// FAST PATH: Instantly grab only the latest releases using the new boolean flag
 		FOR r IN release
+			FILTER r.is_latest == true
 			FILTER filterPublic == true ? r.is_public == true : (LENGTH(userOrgs) == 0 OR r.org IN userOrgs)
 
-			// Global sort for index-assisted traversal
-			SORT r.org, r.name
+			LET latest = r
 
-			COLLECT org = r.org, name = r.name INTO groupedReleases = r
+			LET total_versions = LENGTH(FOR v IN release FILTER v.name == latest.name RETURN 1)
 
-			// Get latest version per package using semver sorting
-			LET latest = (
-				FOR v IN groupedReleases
-					SORT v.version_major != null ? v.version_major : -1 DESC,
-						 v.version_minor != null ? v.version_minor : -1 DESC,
-						 v.version_patch != null ? v.version_patch : -1 DESC,
-						 v.version_prerelease != null && v.version_prerelease != "" ? 1 : 0 ASC,
-						 v.version_prerelease ASC,
+			// Find previous version for delta calculation
+			LET previous = (
+				FOR v IN release
+					FILTER v.name == latest.name AND v._key != latest._key
+					SORT (v.version_major != null ? v.version_major : -1) DESC,
+						 (v.version_minor != null ? v.version_minor : -1) DESC,
+						 (v.version_patch != null ? v.version_patch : -1) DESC,
+						 (v.version_prerelease != null && v.version_prerelease != "" ? 1 : 0) ASC,
+						 v.version_prerelease DESC,
 						 v.version DESC
 					LIMIT 1
 					RETURN v
 			)[0]
 
-			// Get previous version per package using semver sorting
-			LET previous = (
-				FOR v IN groupedReleases
-					SORT v.version_major != null ? v.version_major : -1 DESC,
-						 v.version_minor != null ? v.version_minor : -1 DESC,
-						 v.version_patch != null ? v.version_patch : -1 DESC,
-						 v.version_prerelease != null && v.version_prerelease != "" ? 1 : 0 ASC,
-						 v.version_prerelease ASC,
-						 v.version DESC
-					LIMIT 1, 1   // skip first, take second
-					RETURN v
-			)[0]
-
-			// -------- SBOM and dependency count --------
 			LET sbomData = FIRST(
 				FOR s IN 1..1 OUTBOUND latest release2sbom
 					LIMIT 1
@@ -559,7 +534,6 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				)
 				: 0
 
-			// -------- SYNC --------
 			LET synced_endpoint_count = FIRST(
 				FOR s IN sync
 					FILTER s.release_name == latest.name AND s.release_version == latest.version
@@ -567,7 +541,6 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 					RETURN count
 			)
 
-			// -------- CVE matches --------
 			LET cveMatches = (
 				FOR cve, edge IN 1..1 OUTBOUND latest release2cve
 					FILTER severityThreshold == 0.0 OR cve.database_specific.cvss_base_score >= severityThreshold
@@ -592,7 +565,6 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 					RETURN { severity, count }
 			)
 
-			// Previous release CVEs for delta calculation
 			LET prevVulnCount = previous != null
 				? LENGTH(
 					FOR cve, edge IN 1..1 OUTBOUND previous release2cve
@@ -602,6 +574,7 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				: null
 
 			LET row = {
+				total_versions,
 				dependency_count,
 				synced_endpoint_count,
 				vulnerability_count: LENGTH(uniqueMatches),
@@ -611,8 +584,8 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				severity_counts
 			}
 
-			COLLECT org2 = org INTO rows = row
-			LET total_versions = LENGTH(rows)
+			// Group back up by Organization to generate final totals
+			COLLECT org2 = latest.org INTO rows = row
 
 			LET critical = SUM(
 				FOR r IN rows
@@ -650,8 +623,8 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 
 			RETURN {
 				org_name: org2,
-				total_releases: 1,  // only latest counted per org+name
-				total_versions,
+				total_releases: LENGTH(rows),  
+				total_versions: SUM(rows[*].total_versions),
 				total_vulnerabilities: SUM(rows[*].vulnerability_count),
 				critical_count: critical,
 				high_count: high,

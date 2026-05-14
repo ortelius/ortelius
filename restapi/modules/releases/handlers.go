@@ -18,8 +18,8 @@ import (
 )
 
 // ProcessReleaseIngestion encapsulates the core logic for saving a release,
-// processing its SBOM, and linking it to CVEs. This function is shared by
-// both the REST API handler and the Kafka event processor to ensure identical behavior.
+// processing its SBOM, and linking it to CVEs.
+// FIXED: Now evaluates and flags the "latest" version at write-time
 func ProcessReleaseIngestion(ctx context.Context, db database.DBConnection, rel model.ReleaseWithSBOM) (string, error) {
 	// 1. Standardize Metadata
 	rel.ParseAndSetVersion()
@@ -29,6 +29,21 @@ func ProcessReleaseIngestion(ctx context.Context, db database.DBConnection, rel 
 	if rel.ContentSha == "" {
 		return "", fmt.Errorf("ContentSha is required (GitCommit or DockerSha must be provided)")
 	}
+
+	// --- NEW: Evaluate if this is the newest version at write-time ---
+	existingLatest, err := getLatestRelease(ctx, db, rel.Name)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch current latest release: %w", err)
+	}
+
+	isNewLatest := false
+	if existingLatest == nil || isVersionGreater(rel.ProjectRelease, *existingLatest) {
+		isNewLatest = true
+		rel.IsLatest = true
+	} else {
+		rel.IsLatest = false
+	}
+	// ------------------------------------------------------------------
 
 	// 2. Check for existing release by composite natural key (name + version + contentsha)
 	existingReleaseKey, err := database.FindReleaseByCompositeKey(ctx, db.Database,
@@ -45,6 +60,14 @@ func ProcessReleaseIngestion(ctx context.Context, db database.DBConnection, rel 
 		// Release already exists, use existing key
 		releaseID = "release/" + existingReleaseKey
 		rel.Key = existingReleaseKey
+
+		// Ensure IsLatest is accurate (in case a newer release was deleted and this one is taking the crown back)
+		_, updateErr := db.Collections["release"].UpdateDocument(ctx, existingReleaseKey, map[string]interface{}{
+			"is_latest": rel.IsLatest,
+		})
+		if updateErr != nil {
+			fmt.Printf("Warning: Failed to update is_latest on existing release: %v\n", updateErr)
+		}
 	} else {
 		// Save new ProjectRelease to ArangoDB
 		releaseMeta, err := db.Collections["release"].CreateDocument(ctx, rel.ProjectRelease)
@@ -54,6 +77,14 @@ func ProcessReleaseIngestion(ctx context.Context, db database.DBConnection, rel 
 		releaseID = "release/" + releaseMeta.Key
 		rel.Key = releaseMeta.Key
 	}
+
+	// --- NEW: Demote the old latest release if this one superseded it ---
+	if isNewLatest && existingLatest != nil && existingLatest.Key != rel.Key {
+		if err := demoteOldLatest(ctx, db, existingLatest.Key); err != nil {
+			fmt.Printf("Warning: Failed to demote old latest release %s: %v\n", existingLatest.Key, err)
+		}
+	}
+	// --------------------------------------------------------------------
 
 	// 3. Process SBOM (handles deduplication via content hashing)
 	_, sbomID, err := sbom.ProcessSBOM(ctx, db, rel.SBOM)
@@ -89,6 +120,107 @@ func ProcessReleaseIngestion(ctx context.Context, db database.DBConnection, rel 
 	}
 
 	return releaseID, nil
+}
+
+// ============================================================================
+// VERSION EVALUATION HELPERS
+// ============================================================================
+
+// getLatestRelease finds the current latest release for a given package name.
+func getLatestRelease(ctx context.Context, db database.DBConnection, name string) (*model.ProjectRelease, error) {
+	// 1. Try to find the one explicitly marked as latest first
+	query := `
+		FOR r IN release
+			FILTER r.name == @name AND r.is_latest == true
+			LIMIT 1
+			RETURN r
+	`
+	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"name": name},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close()
+
+	var rel model.ProjectRelease
+	if cursor.HasMore() {
+		if _, err := cursor.ReadDocument(ctx, &rel); err == nil {
+			return &rel, nil
+		}
+	}
+
+	// 2. Fallback: If none is marked (unmigrated data), sort to find the newest
+	fallbackQuery := `
+		FOR r IN release
+			FILTER r.name == @name
+			SORT (r.version_major != null ? r.version_major : -1) DESC,
+				 (r.version_minor != null ? r.version_minor : -1) DESC,
+				 (r.version_patch != null ? r.version_patch : -1) DESC,
+				 (r.version_prerelease != null && r.version_prerelease != "" ? 1 : 0) ASC,
+				 r.version_prerelease DESC,
+				 r.version DESC
+			LIMIT 1
+			RETURN r
+	`
+	fallbackCursor, err := db.Database.Query(ctx, fallbackQuery, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"name": name},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer fallbackCursor.Close()
+
+	if fallbackCursor.HasMore() {
+		if _, err := fallbackCursor.ReadDocument(ctx, &rel); err == nil {
+			return &rel, nil
+		}
+	}
+
+	return nil, nil // No existing releases found
+}
+
+// isVersionGreater compares two releases and returns true if newRel is strictly greater.
+func isVersionGreater(newRel, existingRel model.ProjectRelease) bool {
+	getVal := func(ptr *int) int {
+		if ptr == nil {
+			return -1 // Unset versions evaluated as lowest possible value
+		}
+		return *ptr
+	}
+
+	nMajor, eMajor := getVal(newRel.VersionMajor), getVal(existingRel.VersionMajor)
+	if nMajor != eMajor {
+		return nMajor > eMajor
+	}
+
+	nMinor, eMinor := getVal(newRel.VersionMinor), getVal(existingRel.VersionMinor)
+	if nMinor != eMinor {
+		return nMinor > eMinor
+	}
+
+	nPatch, ePatch := getVal(newRel.VersionPatch), getVal(existingRel.VersionPatch)
+	if nPatch != ePatch {
+		return nPatch > ePatch
+	}
+
+	// Pre-releases logic: Stable releases (empty string) are greater than pre-releases.
+	if newRel.VersionPrerelease == "" && existingRel.VersionPrerelease != "" {
+		return true
+	}
+	if newRel.VersionPrerelease != "" && existingRel.VersionPrerelease == "" {
+		return false
+	}
+
+	return newRel.VersionPrerelease > existingRel.VersionPrerelease
+}
+
+// demoteOldLatest updates the previous latest release to is_latest = false
+func demoteOldLatest(ctx context.Context, db database.DBConnection, key string) error {
+	_, err := db.Collections["release"].UpdateDocument(ctx, key, map[string]interface{}{
+		"is_latest": false,
+	})
+	return err
 }
 
 // PostReleaseWithSBOM handles POST requests for creating a release with its SBOM.

@@ -20,6 +20,7 @@ type ProjectRelease struct {
 	VersionPatch             *int                  `json:"version_patch,omitempty"`
 	VersionPrerelease        string                `json:"version_prerelease,omitempty"`
 	VersionBuildMetadata     string                `json:"version_build_metadata,omitempty"`
+	IsLatest                 bool                  `json:"is_latest"`
 	ProjectType              string                `json:"projecttype,omitempty"`
 	ContentSha               string                `json:"contentsha,omitempty"`
 	Basename                 string                `json:"basename,omitempty"`
