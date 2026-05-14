@@ -37,6 +37,34 @@ func SupersedeAllActiveCVEs(ctx context.Context, db database.DBConnection, endpo
 	return err
 }
 
+// resolveBuildDate returns the earliest reliable timestamp for a release.
+// It queries the release document's builddate field and returns it if populated
+// and earlier than the fallback time provided. This is the single source of truth
+// for seeding root_introduced_at on new and resurrected lifecycle records.
+func resolveBuildDate(ctx context.Context, db database.DBConnection, releaseName, releaseVersion string, fallback time.Time) time.Time {
+	query := `FOR r IN release FILTER r.name == @name AND r.version == @version
+		LIMIT 1 RETURN r.builddate`
+	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{
+			"name":    releaseName,
+			"version": releaseVersion,
+		},
+	})
+	if err != nil {
+		return fallback
+	}
+	defer cursor.Close()
+
+	if cursor.HasMore() {
+		var buildDate time.Time
+		cursor.ReadDocument(ctx, &buildDate)
+		if !buildDate.IsZero() && buildDate.Before(fallback) {
+			return buildDate
+		}
+	}
+	return fallback
+}
+
 // CreateOrUpdateLifecycleRecord handles version-specific audit records with Root discovery tracking.
 func CreateOrUpdateLifecycleRecord(
 	ctx context.Context,
@@ -80,14 +108,20 @@ func CreateOrUpdateLifecycleRecord(
 		var existing map[string]interface{}
 		cursor.ReadDocument(ctx, &existing)
 
-		// Re-evaluate disclosed_after_deployment using original root_introduced_at
-		// so that CVEs published after the original deployment but before a pod
-		// restart are correctly flagged as post-deployment vulnerabilities.
+		// Re-evaluate root_introduced_at using release builddate as a fallback.
+		// This corrects records where root_introduced_at was seeded from sync time
+		// (e.g. first sync happened on the same day the CVE was published) rather
+		// than from the actual image build date.
 		rootTs := existing["root_introduced_at"]
 		if rootTs == nil {
 			rootTs = existing["introduced_at"]
 		}
 		rootTime, _ := time.Parse(time.RFC3339, fmt.Sprintf("%v", rootTs))
+
+		// Use builddate if it predates the current root_introduced_at — this
+		// self-corrects any record where sync time was used instead of build date.
+		rootTime = resolveBuildDate(ctx, db, releaseName, releaseVersion, rootTime)
+
 		isDisclosedAfter := !cveInfo.Published.IsZero() && cveInfo.Published.After(rootTime)
 
 		updateQuery := `UPDATE @key WITH {
@@ -96,12 +130,14 @@ func CreateOrUpdateLifecycleRecord(
 			remediated_at: null,
 			remediation_status: null,
 			remediation_notes: null,
+			root_introduced_at: @root_time,
 			disclosed_after_deployment: @disclosed_after
 		} IN cve_lifecycle`
 
 		db.Database.Query(ctx, updateQuery, &arangodb.QueryOptions{
 			BindVars: map[string]interface{}{
 				"key":             existing["_key"],
+				"root_time":       rootTime.Format(time.RFC3339),
 				"disclosed_after": isDisclosedAfter,
 			},
 		})
@@ -109,30 +145,11 @@ func CreateOrUpdateLifecycleRecord(
 	}
 
 	// Step 2: "Root Reference" Logic.
-	// Seed rootIntroducedAt from the release's BuildDate when available.
+	// Seed rootIntroducedAt from the release's builddate when available.
 	// This ensures that for images built after CVE disclosure, disclosed_after_deployment
 	// is correctly set to false (the image was built knowing about the CVE).
-	// Fall back to current sync time if BuildDate is not populated.
-	rootIntroducedAt := introducedAt
-
-	releaseQuery := `FOR r IN release FILTER r.name == @name AND r.version == @version
-		LIMIT 1 RETURN r.builddate`
-	relCursor, relErr := db.Database.Query(ctx, releaseQuery, &arangodb.QueryOptions{
-		BindVars: map[string]interface{}{
-			"name":    releaseName,
-			"version": releaseVersion,
-		},
-	})
-	if relErr == nil {
-		defer relCursor.Close()
-		if relCursor.HasMore() {
-			var buildDate time.Time
-			relCursor.ReadDocument(ctx, &buildDate)
-			if !buildDate.IsZero() {
-				rootIntroducedAt = buildDate
-			}
-		}
-	}
+	// Fall back to current sync time if builddate is not populated.
+	rootIntroducedAt := resolveBuildDate(ctx, db, releaseName, releaseVersion, introducedAt)
 
 	// Look for the same CVE in the PREVIOUS version of this release on this endpoint.
 	// If found, carry forward the earliest known root_introduced_at.
