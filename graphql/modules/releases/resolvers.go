@@ -195,21 +195,31 @@ func ResolveAffectedEndpoints(db database.DBConnection, name, version string) ([
 	return endpoints, nil
 }
 
-// ResolveAffectedReleases updated to use the IsLatest flag for O(1) identification of the newest release
+// ResolveAffectedReleases updated to count unique CVE ID + Package combinations.
+// Always returns the latest version per release name regardless of CVE count,
+// so the releases page shows the current state even when the latest has zero CVEs.
 func ResolveAffectedReleases(db database.DBConnection, severity string, org string) ([]interface{}, error) {
 	ctx := context.Background()
 	severityScore := util.GetSeverityScore(severity)
 
 	query := `
-		// FAST PATH: Instantly grab only the latest releases using the new boolean flag
 		FOR r IN release
-			FILTER r.is_latest == true
 			FILTER @org == "" OR r.org == @org
+			COLLECT name = r.name INTO groupedReleases = r
 
-			LET latestRelease = r
+			LET latestRelease = (
+				FOR release IN groupedReleases
+					SORT release.version_major != null ? release.version_major : -1 DESC,
+						release.version_minor != null ? release.version_minor : -1 DESC,
+						release.version_patch != null ? release.version_patch : -1 DESC,
+						release.version_prerelease != null && release.version_prerelease != "" ? 1 : 0 ASC,
+						release.version_prerelease ASC,
+						release.version DESC
+					LIMIT 1
+					RETURN release
+			)[0]
 			
-			// Subquery to count total versions for this package
-			LET versionCount = LENGTH(FOR v IN release FILTER v.name == latestRelease.name RETURN 1)
+			LET versionCount = LENGTH(groupedReleases)
 
 			LET sbomData = (
 				FOR s IN 1..1 OUTBOUND latestRelease release2sbom
@@ -253,8 +263,6 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
                     }
 			)
 
-			FILTER @severityScore == 0.0 OR LENGTH(cveMatches) > 0
-			
 			LET maxSeverity = LENGTH(cveMatches) > 0 ? MAX(cveMatches[*].cve_severity_score) : 0
 			
 			LET uniqueInstances = (
@@ -264,18 +272,17 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 			)
 			LET vulnerabilityCount = LENGTH(uniqueInstances)
 			
-			// Find previous version for delta calculation (constrained to just this package name)
 			LET previousRelease = (
-				FOR v IN release
-					FILTER v.name == latestRelease.name AND v._key != latestRelease._key
-					SORT (v.version_major != null ? v.version_major : -1) DESC,
-						 (v.version_minor != null ? v.version_minor : -1) DESC,
-						 (v.version_patch != null ? v.version_patch : -1) DESC,
-						 (v.version_prerelease != null && v.version_prerelease != "" ? 1 : 0) ASC,
-						 v.version_prerelease DESC,
-						 v.version DESC
+				FOR release IN groupedReleases
+					FILTER release._key != latestRelease._key
+					SORT release.version_major != null ? release.version_major : -1 DESC,
+						release.version_minor != null ? release.version_minor : -1 DESC,
+						release.version_patch != null ? release.version_patch : -1 DESC,
+						release.version_prerelease != null && release.version_prerelease != "" ? 1 : 0 ASC,
+						release.version_prerelease ASC,
+						release.version DESC
 					LIMIT 1
-					RETURN v
+					RETURN release
 			)[0]
 			
 			LET prevVulnCount = previousRelease != null ? (
@@ -412,7 +419,9 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 			}
 		}
 
-		if len(aggRelease.CveMatches) == 0 && severityScore == 0.0 {
+		// Always emit a row for releases with zero CVEs so the latest version
+		// is always visible on the releases page regardless of CVE count.
+		if len(aggRelease.CveMatches) == 0 {
 			releaseOnlyKey := releaseKey + ":NO_CVES"
 			if !seen[releaseOnlyKey] {
 				seen[releaseOnlyKey] = true
