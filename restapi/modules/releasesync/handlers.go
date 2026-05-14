@@ -354,6 +354,16 @@ func isVersionGreater(newRel, existingRel model.ProjectRelease) bool {
 	if getVal(newRel.VersionPatch) != getVal(existingRel.VersionPatch) {
 		return getVal(newRel.VersionPatch) > getVal(existingRel.VersionPatch)
 	}
+
+	// FIXED: Handle pre-releases properly. Stable releases (empty string)
+	// are greater than pre-releases.
+	if newRel.VersionPrerelease == "" && existingRel.VersionPrerelease != "" {
+		return true
+	}
+	if newRel.VersionPrerelease != "" && existingRel.VersionPrerelease == "" {
+		return false
+	}
+
 	return newRel.VersionPrerelease > existingRel.VersionPrerelease
 }
 

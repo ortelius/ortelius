@@ -196,6 +196,7 @@ func ResolveAffectedEndpoints(db database.DBConnection, name, version string) ([
 }
 
 // ResolveAffectedReleases updated to count unique CVE ID + Package combinations
+// FIXED: Updated version_prerelease sorting to DESC for accurate pre-release comparisons
 func ResolveAffectedReleases(db database.DBConnection, severity string, org string) ([]interface{}, error) {
 	ctx := context.Background()
 	severityScore := util.GetSeverityScore(severity)
@@ -211,7 +212,7 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 						release.version_minor != null ? release.version_minor : -1 DESC,
 						release.version_patch != null ? release.version_patch : -1 DESC,
 						release.version_prerelease != null && release.version_prerelease != "" ? 1 : 0 ASC,
-						release.version_prerelease ASC,
+						release.version_prerelease DESC, // <--- CHANGED TO DESC
 						release.version DESC
 					LIMIT 1
 					RETURN release
@@ -280,7 +281,7 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 						release.version_minor != null ? release.version_minor : -1 DESC,
 						release.version_patch != null ? release.version_patch : -1 DESC,
 						release.version_prerelease != null && release.version_prerelease != "" ? 1 : 0 ASC,
-						release.version_prerelease ASC,
+						release.version_prerelease DESC, // <--- CHANGED TO DESC
 						release.version DESC
 					LIMIT 1
 					RETURN release
@@ -475,7 +476,6 @@ func convertToModelsAffected(allAffected []map[string]interface{}) []models.Affe
 // filepath: graphql/modules/releases/resolvers.go
 
 // ResolveOrgAggregatedReleases aggregates release data by organization
-// FIXED: Deduplicates vulnerability matches BEFORE calculating severity counts to ensure totals match
 func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, username string) ([]interface{}, error) {
 	ctx := context.Background()
 	severityScore := util.GetSeverityScore(severity)
@@ -517,15 +517,28 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 
 			COLLECT org = r.org, name = r.name INTO groupedReleases = r
 
-			// Get latest version per package using index-order
+			// Get latest version per package using semver sorting
 			LET latest = (
 				FOR v IN groupedReleases
+					SORT v.version_major != null ? v.version_major : -1 DESC,
+						 v.version_minor != null ? v.version_minor : -1 DESC,
+						 v.version_patch != null ? v.version_patch : -1 DESC,
+						 v.version_prerelease != null && v.version_prerelease != "" ? 1 : 0 ASC,
+						 v.version_prerelease ASC,
+						 v.version DESC
 					LIMIT 1
 					RETURN v
 			)[0]
 
+			// Get previous version per package using semver sorting
 			LET previous = (
 				FOR v IN groupedReleases
+					SORT v.version_major != null ? v.version_major : -1 DESC,
+						 v.version_minor != null ? v.version_minor : -1 DESC,
+						 v.version_patch != null ? v.version_patch : -1 DESC,
+						 v.version_prerelease != null && v.version_prerelease != "" ? 1 : 0 ASC,
+						 v.version_prerelease ASC,
+						 v.version DESC
 					LIMIT 1, 1   // skip first, take second
 					RETURN v
 			)[0]
