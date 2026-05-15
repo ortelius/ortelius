@@ -203,23 +203,13 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 	severityScore := util.GetSeverityScore(severity)
 
 	query := `
-		FOR r IN release
-			FILTER @org == "" OR r.org == @org
-			COLLECT name = r.name INTO groupedReleases = r
+		FOR latestRelease IN release
+			FILTER latestRelease.is_latest == true
+			FILTER @org == "" OR latestRelease.org == @org
 
-			LET latestRelease = (
-				FOR release IN groupedReleases
-					SORT release.version_major != null ? release.version_major : -1 DESC,
-						release.version_minor != null ? release.version_minor : -1 DESC,
-						release.version_patch != null ? release.version_patch : -1 DESC,
-						release.version_prerelease != null && release.version_prerelease != "" ? 1 : 0 ASC,
-						release.version_prerelease ASC,
-						release.version DESC
-					LIMIT 1
-					RETURN release
-			)[0]
-			
-			LET versionCount = LENGTH(groupedReleases)
+			LET versionCount = LENGTH(
+				FOR v IN release FILTER v.name == latestRelease.name RETURN 1
+			)
 
 			LET sbomData = (
 				FOR s IN 1..1 OUTBOUND latestRelease release2sbom
@@ -273,16 +263,16 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 			LET vulnerabilityCount = LENGTH(uniqueInstances)
 			
 			LET previousRelease = (
-				FOR release IN groupedReleases
-					FILTER release._key != latestRelease._key
-					SORT release.version_major != null ? release.version_major : -1 DESC,
-						release.version_minor != null ? release.version_minor : -1 DESC,
-						release.version_patch != null ? release.version_patch : -1 DESC,
-						release.version_prerelease != null && release.version_prerelease != "" ? 1 : 0 ASC,
-						release.version_prerelease ASC,
-						release.version DESC
+				FOR v IN release
+					FILTER v.name == latestRelease.name AND v._key != latestRelease._key
+					SORT (v.version_major != null ? v.version_major : -1) DESC,
+						(v.version_minor != null ? v.version_minor : -1) DESC,
+						(v.version_patch != null ? v.version_patch : -1) DESC,
+						(v.version_prerelease != null && v.version_prerelease != "" ? 1 : 0) ASC,
+						v.version_prerelease DESC,
+						v.version DESC
 					LIMIT 1
-					RETURN release
+					RETURN v
 			)[0]
 			
 			LET prevVulnCount = previousRelease != null ? (
@@ -670,4 +660,86 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 	}
 
 	return results, nil
+}
+
+// ResolveReleaseTimeline returns minimal per-version data for a release name,
+// sorted semver descending. Designed to power a timeline/version picker UI
+// control — the frontend calls the existing release(name, version) query to
+// load full details when the user selects a version.
+func ResolveReleaseTimeline(db database.DBConnection, name string) ([]map[string]interface{}, error) {
+	ctx := context.Background()
+
+	query := `
+		FOR r IN release
+			FILTER r.name == @name
+
+			LET syncCount = FIRST(
+				FOR s IN sync
+					FILTER s.release_name == r.name AND s.release_version == r.version
+					COLLECT WITH COUNT INTO count
+					RETURN count
+			)
+
+			LET cveMatches = (
+				FOR cve, edge IN 1..1 OUTBOUND r release2cve
+					RETURN {
+						severity: UPPER(cve.database_specific.severity_rating)
+					}
+			)
+
+			LET uniqueCVEs = (
+				FOR match IN cveMatches
+					COLLECT cveId = match.cve_id, package = match.package
+					RETURN match
+			)
+
+			LET critical = LENGTH(FOR m IN cveMatches FILTER m.severity == "CRITICAL" RETURN 1)
+			LET high     = LENGTH(FOR m IN cveMatches FILTER m.severity == "HIGH"     RETURN 1)
+			LET medium   = LENGTH(FOR m IN cveMatches FILTER m.severity == "MEDIUM"   RETURN 1)
+			LET low      = LENGTH(FOR m IN cveMatches FILTER m.severity == "LOW"      RETURN 1)
+
+			SORT r.version_major != null ? r.version_major : -1 DESC,
+			     r.version_minor != null ? r.version_minor : -1 DESC,
+			     r.version_patch != null ? r.version_patch : -1 DESC,
+			     r.version_prerelease != null && r.version_prerelease != "" ? 1 : 0 ASC,
+			     r.version_prerelease ASC,
+			     r.version DESC
+
+			RETURN {
+				version:          r.version,
+				build_date:       r.builddate,
+				endpoint_count:   syncCount || 0,
+				critical_count:   critical,
+				high_count:       high,
+				medium_count:     medium,
+				low_count:        low,
+				total_cves:       LENGTH(cveMatches),
+				content_sha:      r.contentsha
+			}
+	`
+
+	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{
+			"name": name,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close()
+
+	// Mark the first result as latest
+	var entries []map[string]interface{}
+	first := true
+	for cursor.HasMore() {
+		var entry map[string]interface{}
+		if _, err := cursor.ReadDocument(ctx, &entry); err != nil {
+			continue
+		}
+		entry["is_latest"] = first
+		first = false
+		entries = append(entries, entry)
+	}
+
+	return entries, nil
 }

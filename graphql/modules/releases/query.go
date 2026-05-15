@@ -89,5 +89,19 @@ func GetQueryFields(db database.DBConnection, releaseType *graphql.Object, affec
 				return ResolveOrgAggregatedReleases(db, strings.ToLower(severity), username)
 			},
 		},
+		"releaseTimeline": &graphql.Field{
+			Type: graphql.NewList(ReleaseTimelineEntryType),
+			Args: graphql.FieldConfigArgument{
+				"name": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				name := p.Args["name"].(string)
+				decodedName, err := url.QueryUnescape(name)
+				if err != nil {
+					decodedName = name
+				}
+				return ResolveReleaseTimeline(db, decodedName)
+			},
+		},
 	}
 }

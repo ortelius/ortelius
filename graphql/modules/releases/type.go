@@ -360,3 +360,22 @@ func GetReleaseType(db database.DBConnection, vulnerabilityType *graphql.Object,
 		},
 	})
 }
+
+// ReleaseTimelineEntryType is the minimal per-version type for the timeline UI control.
+// Contains only what is needed to render the picker — full release details are fetched
+// separately via the existing release(name, version) query when a version is selected.
+var ReleaseTimelineEntryType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "ReleaseTimelineEntry",
+	Fields: graphql.Fields{
+		"version":        &graphql.Field{Type: graphql.String}, // e.g. "v1.35.3-gke.1737000"
+		"build_date":     &graphql.Field{Type: graphql.String}, // ISO8601 from builddate field
+		"endpoint_count": &graphql.Field{Type: graphql.Int},    // how many endpoints run this version
+		"critical_count": &graphql.Field{Type: graphql.Int},
+		"high_count":     &graphql.Field{Type: graphql.Int},
+		"medium_count":   &graphql.Field{Type: graphql.Int},
+		"low_count":      &graphql.Field{Type: graphql.Int},
+		"total_cves":     &graphql.Field{Type: graphql.Int},
+		"content_sha":    &graphql.Field{Type: graphql.String},
+		"is_latest":      &graphql.Field{Type: graphql.Boolean}, // true only for semver latest
+	},
+})
