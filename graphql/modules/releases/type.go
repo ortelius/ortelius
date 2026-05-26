@@ -64,6 +64,7 @@ var AffectedReleaseType = graphql.NewObject(graphql.ObjectConfig{
 		"synced_endpoint_count":     &graphql.Field{Type: graphql.Int},
 		"vulnerability_count":       &graphql.Field{Type: graphql.Int},
 		"vulnerability_count_delta": &graphql.Field{Type: graphql.Int},
+		"is_latest":                 &graphql.Field{Type: graphql.Boolean},
 	},
 })
 

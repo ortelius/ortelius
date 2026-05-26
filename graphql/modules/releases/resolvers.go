@@ -203,13 +203,34 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 	severityScore := util.GetSeverityScore(severity)
 
 	query := `
-		FOR latestRelease IN release
-			FILTER latestRelease.is_latest == true
-			FILTER @org == "" OR latestRelease.org == @org
-
-			LET versionCount = LENGTH(
-				FOR v IN release FILTER v.name == latestRelease.name RETURN 1
+		FOR r IN release
+			FILTER @org == "" OR r.org == @org OR (
+				LENGTH(
+					FOR s IN sync
+						FILTER s.release_name == r.name
+						AND s.release_version == r.version
+						FOR e IN endpoint
+							FILTER e.name == s.endpoint_name
+							AND e.org == @org
+							LIMIT 1
+							RETURN 1
+				) > 0
 			)
+			COLLECT name = r.name INTO groupedReleases = r
+
+			LET latestRelease = (
+				FOR release IN groupedReleases
+					SORT release.version_major != null ? release.version_major : -1 DESC,
+						release.version_minor != null ? release.version_minor : -1 DESC,
+						release.version_patch != null ? release.version_patch : -1 DESC,
+						release.version_prerelease != null && release.version_prerelease != "" ? 1 : 0 ASC,
+						release.version_prerelease ASC,
+						release.version DESC
+					LIMIT 1
+					RETURN release
+			)[0]
+			
+			LET versionCount = LENGTH(groupedReleases)
 
 			LET sbomData = (
 				FOR s IN 1..1 OUTBOUND latestRelease release2sbom
@@ -263,16 +284,16 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 			LET vulnerabilityCount = LENGTH(uniqueInstances)
 			
 			LET previousRelease = (
-				FOR v IN release
-					FILTER v.name == latestRelease.name AND v._key != latestRelease._key
-					SORT (v.version_major != null ? v.version_major : -1) DESC,
-						(v.version_minor != null ? v.version_minor : -1) DESC,
-						(v.version_patch != null ? v.version_patch : -1) DESC,
-						(v.version_prerelease != null && v.version_prerelease != "" ? 1 : 0) ASC,
-						v.version_prerelease DESC,
-						v.version DESC
+				FOR release IN groupedReleases
+					FILTER release._key != latestRelease._key
+					SORT release.version_major != null ? release.version_major : -1 DESC,
+						release.version_minor != null ? release.version_minor : -1 DESC,
+						release.version_patch != null ? release.version_patch : -1 DESC,
+						release.version_prerelease != null && release.version_prerelease != "" ? 1 : 0 ASC,
+						release.version_prerelease ASC,
+						release.version DESC
 					LIMIT 1
-					RETURN v
+					RETURN release
 			)[0]
 			
 			LET prevVulnCount = previousRelease != null ? (
@@ -295,6 +316,7 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 			RETURN {
 				release_name: latestRelease.name,
 				latest_version: latestRelease.version,
+				is_latest: true,
 				version_major: latestRelease.version_major,
 				version_minor: latestRelease.version_minor,
 				version_patch: latestRelease.version_patch,
@@ -331,6 +353,7 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 		VersionPatch            *int     `json:"version_patch"`
 		VersionPrerelease       string   `json:"version_prerelease"`
 		VersionCount            int      `json:"version_count"`
+		IsLatest                bool     `json:"is_latest"`
 		ContentSha              string   `json:"content_sha"`
 		ProjectType             string   `json:"project_type"`
 		OpenSSFScorecardScore   *float64 `json:"openssf_scorecard_score"`
@@ -399,6 +422,7 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 					"synced_endpoint_count":     aggRelease.SyncedEndpointCount,
 					"vulnerability_count":       aggRelease.VulnerabilityCount,
 					"vulnerability_count_delta": aggRelease.VulnerabilityCountDelta,
+					"is_latest":                 aggRelease.IsLatest,
 				}
 
 				if len(cveMatch.AllAffected) > 0 {
@@ -439,6 +463,7 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 					"synced_endpoint_count":     aggRelease.SyncedEndpointCount,
 					"vulnerability_count":       aggRelease.VulnerabilityCount,
 					"vulnerability_count_delta": aggRelease.VulnerabilityCountDelta,
+					"is_latest":                 aggRelease.IsLatest,
 				})
 			}
 		}
@@ -662,10 +687,9 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 	return results, nil
 }
 
-// ResolveReleaseTimeline returns minimal per-version data for a release name,
-// sorted semver descending. Designed to power a timeline/version picker UI
-// control — the frontend calls the existing release(name, version) query to
-// load full details when the user selects a version.
+// ResolveReleaseTimeline returns per-version CVE severity counts for a release name,
+// sorted semver descending. Uses the same release2cve graph traversal as
+// ResolveAffectedReleases so counts are consistent with the releases page.
 func ResolveReleaseTimeline(db database.DBConnection, name string) ([]map[string]interface{}, error) {
 	ctx := context.Background()
 
@@ -673,24 +697,18 @@ func ResolveReleaseTimeline(db database.DBConnection, name string) ([]map[string
 		FOR r IN release
 			FILTER r.name == @name
 
-			LET syncCount = FIRST(
+			LET syncCount = (
 				FOR s IN sync
 					FILTER s.release_name == r.name AND s.release_version == r.version
 					COLLECT WITH COUNT INTO count
 					RETURN count
-			)
+			)[0]
 
 			LET cveMatches = (
 				FOR cve, edge IN 1..1 OUTBOUND r release2cve
-					RETURN {
-						severity: UPPER(cve.database_specific.severity_rating)
-					}
-			)
-
-			LET uniqueCVEs = (
-				FOR match IN cveMatches
-					COLLECT cveId = match.cve_id, package = match.package
-					RETURN match
+					COLLECT cveId = cve.id, pkg = edge.package_purl
+					AGGREGATE severityRating = MAX(cve.database_specific.severity_rating)
+					RETURN { severity: UPPER(severityRating) }
 			)
 
 			LET critical = LENGTH(FOR m IN cveMatches FILTER m.severity == "CRITICAL" RETURN 1)
@@ -706,15 +724,15 @@ func ResolveReleaseTimeline(db database.DBConnection, name string) ([]map[string
 			     r.version DESC
 
 			RETURN {
-				version:          r.version,
-				build_date:       r.builddate,
-				endpoint_count:   syncCount || 0,
-				critical_count:   critical,
-				high_count:       high,
-				medium_count:     medium,
-				low_count:        low,
-				total_cves:       LENGTH(cveMatches),
-				content_sha:      r.contentsha
+				version:        r.version,
+				build_date:     r.builddate,
+				endpoint_count: syncCount || 0,
+				critical_count: critical,
+				high_count:     high,
+				medium_count:   medium,
+				low_count:      low,
+				total_cves:     LENGTH(cveMatches),
+				content_sha:    r.contentsha
 			}
 	`
 
@@ -728,18 +746,44 @@ func ResolveReleaseTimeline(db database.DBConnection, name string) ([]map[string
 	}
 	defer cursor.Close()
 
-	// Mark the first result as latest
-	var entries []map[string]interface{}
-	first := true
-	for cursor.HasMore() {
-		var entry map[string]interface{}
-		if _, err := cursor.ReadDocument(ctx, &entry); err != nil {
-			continue
-		}
-		entry["is_latest"] = first
-		first = false
-		entries = append(entries, entry)
+	// Identify latest version using same semver sort as ResolveAffectedReleases
+	type TimelineRow struct {
+		Version       string  `json:"version"`
+		BuildDate     *string `json:"build_date"`
+		EndpointCount int     `json:"endpoint_count"`
+		CriticalCount int     `json:"critical_count"`
+		HighCount     int     `json:"high_count"`
+		MediumCount   int     `json:"medium_count"`
+		LowCount      int     `json:"low_count"`
+		TotalCves     int     `json:"total_cves"`
+		ContentSha    string  `json:"content_sha"`
 	}
 
-	return entries, nil
+	var rows []TimelineRow
+	for cursor.HasMore() {
+		var row TimelineRow
+		if _, err := cursor.ReadDocument(ctx, &row); err != nil {
+			continue
+		}
+		rows = append(rows, row)
+	}
+
+	// First row is latest (AQL sorted semver desc)
+	results := make([]map[string]interface{}, 0, len(rows))
+	for i, row := range rows {
+		results = append(results, map[string]interface{}{
+			"version":        row.Version,
+			"build_date":     row.BuildDate,
+			"endpoint_count": row.EndpointCount,
+			"critical_count": row.CriticalCount,
+			"high_count":     row.HighCount,
+			"medium_count":   row.MediumCount,
+			"low_count":      row.LowCount,
+			"total_cves":     row.TotalCves,
+			"content_sha":    row.ContentSha,
+			"is_latest":      i == 0,
+		})
+	}
+
+	return results, nil
 }
