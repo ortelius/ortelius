@@ -55,8 +55,12 @@ func ProcessSBOM(ctx context.Context, db database.DBConnection, sbom model.SBOM)
 // ProcessSBOMComponents extracts PURLs from SBOM and creates hub-spoke relationships
 // FIXED: Now uses centralized PURL standardization for consistent Hub keys
 func ProcessSBOMComponents(ctx context.Context, db database.DBConnection, sbom model.SBOM, sbomID string) error {
-	// Parse SBOM content to extract components
 	var sbomData struct {
+		Metadata struct {
+			Component struct {
+				Purl string `json:"purl"`
+			} `json:"component"`
+		} `json:"metadata"`
 		Components []struct {
 			Purl string `json:"purl"`
 		} `json:"components"`
@@ -66,15 +70,23 @@ func ProcessSBOMComponents(ctx context.Context, db database.DBConnection, sbom m
 		return err
 	}
 
-	// Step 1: Collect and process all PURLs using centralized standardization
+	// Collect all PURLs — metadata.component (the application itself) first, then components[]
+	type rawComponent struct{ Purl string }
+	var allComponents []rawComponent
+
+	if sbomData.Metadata.Component.Purl != "" {
+		allComponents = append(allComponents, rawComponent{sbomData.Metadata.Component.Purl})
+	}
+	for _, c := range sbomData.Components {
+		if c.Purl != "" {
+			allComponents = append(allComponents, rawComponent{c.Purl})
+		}
+	}
+
 	var purlInfos []PurlInfo
 	basePurlSet := make(map[string]bool)
 
-	for _, component := range sbomData.Components {
-		if component.Purl == "" {
-			continue
-		}
-
+	for _, component := range allComponents {
 		cleanedPurl, err := util.CleanPURL(component.Purl)
 		if err != nil {
 			log.Printf("Failed to clean PURL %s: %v", component.Purl, err)
@@ -87,7 +99,6 @@ func ProcessSBOMComponents(ctx context.Context, db database.DBConnection, sbom m
 			continue
 		}
 
-		// CRITICAL FIX: Use centralized standardization for Hub key
 		basePurl, err := util.GetStandardBasePURL(cleanedPurl)
 		if err != nil {
 			log.Printf("Failed to get standard base PURL from %s: %v", cleanedPurl, err)
@@ -113,7 +124,6 @@ func ProcessSBOMComponents(ctx context.Context, db database.DBConnection, sbom m
 		return nil
 	}
 
-	// Step 2: Batch find/create all unique base PURLs
 	uniqueBasePurls := make([]string, 0, len(basePurlSet))
 	for basePurl := range basePurlSet {
 		uniqueBasePurls = append(uniqueBasePurls, basePurl)
@@ -124,7 +134,6 @@ func ProcessSBOMComponents(ctx context.Context, db database.DBConnection, sbom m
 		return err
 	}
 
-	// Step 3: Prepare all edges for batch insertion
 	var edgesToCheck []EdgeInfo
 	edgeCheckMap := make(map[string]bool)
 
@@ -153,13 +162,11 @@ func ProcessSBOMComponents(ctx context.Context, db database.DBConnection, sbom m
 		return nil
 	}
 
-	// Check which edges already exist
 	existingEdges, err := batchCheckEdgesExist(ctx, db, "sbom2purl", edgesToCheck)
 	if err != nil {
 		return err
 	}
 
-	// Build edges to insert with version metadata
 	var edgesToCreate []map[string]interface{}
 	for i, checkEdge := range edgesToCheck {
 		edgeKey := checkEdge.From + ":" + checkEdge.To + ":" + checkEdge.Version
