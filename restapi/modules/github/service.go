@@ -46,8 +46,8 @@ func GetInstallationToken(installationID string) (string, error) {
 	}
 
 	client := &http.Client{}
-	url := fmt.Sprintf("%s/app/installations/%s/access_tokens", githubAPI, installationID)
-	req, _ := http.NewRequest("POST", url, nil)
+	reqURL := fmt.Sprintf("%s/app/installations/%s/access_tokens", githubAPI, installationID)
+	req, _ := http.NewRequest("POST", reqURL, nil)
 	req.Header.Set("Authorization", "Bearer "+signedJWT)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
@@ -74,10 +74,9 @@ func GetInstallationToken(installationID string) (string, error) {
 // FetchRepos retrieves repositories accessible to the installation
 func FetchRepos(installationToken string) ([]GitHubRepo, error) {
 	client := &http.Client{}
+	reqURL := fmt.Sprintf("%s/installation/repositories?per_page=100", githubAPI)
 
-	url := fmt.Sprintf("%s/installation/repositories?per_page=100", githubAPI)
-
-	req, _ := http.NewRequest("GET", url, nil)
+	req, _ := http.NewRequest("GET", reqURL, nil)
 	req.Header.Set("Authorization", "Bearer "+installationToken)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
@@ -103,8 +102,8 @@ func FetchRepos(installationToken string) ([]GitHubRepo, error) {
 // FetchReleases retrieves releases for a GitHub repository.
 func FetchReleases(token, owner, repo string) ([]GitHubRelease, error) {
 	client := &http.Client{}
-	url := fmt.Sprintf("%s/repos/%s/%s/releases", githubAPI, owner, repo)
-	req, _ := http.NewRequest("GET", url, nil)
+	reqURL := fmt.Sprintf("%s/repos/%s/%s/releases", githubAPI, owner, repo)
+	req, _ := http.NewRequest("GET", reqURL, nil)
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
@@ -128,8 +127,8 @@ func FetchReleases(token, owner, repo string) ([]GitHubRelease, error) {
 // FetchWorkflowRuns retrieves workflow runs for a GitHub repository.
 func FetchWorkflowRuns(token, owner, repo string) ([]GitHubWorkflowRun, error) {
 	client := &http.Client{}
-	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs?status=success&per_page=10", githubAPI, owner, repo)
-	req, _ := http.NewRequest("GET", url, nil)
+	reqURL := fmt.Sprintf("%s/repos/%s/%s/actions/runs?status=success&per_page=10", githubAPI, owner, repo)
+	req, _ := http.NewRequest("GET", reqURL, nil)
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
@@ -150,4 +149,16 @@ func FetchWorkflowRuns(token, owner, repo string) ([]GitHubWorkflowRun, error) {
 		return nil, err
 	}
 	return result.WorkflowRuns, nil
+}
+
+// getSystemToken returns the system-level GitHub token used for public repo
+// access and rate limit improvements. Not used for private repos.
+func getSystemToken() string {
+	return os.Getenv("GITHUB_TOKEN")
+}
+
+// getSystemGitLabToken returns the system-level GitLab token used for public
+// repo searches. Not used for private repos.
+func getSystemGitLabToken() string {
+	return os.Getenv("GITLAB_TOKEN")
 }

@@ -17,13 +17,13 @@ import (
 	"github.com/ortelius/ortelius/v12/restapi/modules/auth"
 	"github.com/ortelius/ortelius/v12/restapi/modules/github"
 	"github.com/ortelius/ortelius/v12/restapi/modules/metadata"
+	org "github.com/ortelius/ortelius/v12/restapi/modules/org"
+	"github.com/ortelius/ortelius/v12/restapi/modules/rbac"
 	"github.com/ortelius/ortelius/v12/restapi/modules/releases"
 	"github.com/ortelius/ortelius/v12/restapi/modules/releasesync"
 )
 
 // SetupRoutes configures all REST API routes and the GraphQL endpoint.
-// Redundant CORS middleware has been removed here as it is now handled globally
-// in internal/api/fiber.go to prevent 408 timeouts.
 func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema) {
 
 	// Background initialization tasks
@@ -43,10 +43,14 @@ func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema
 	go autoApplyRBACOnStartup(db, emailConfig)
 	go startInvitationCleanup(db)
 
+	// Background token validation — runs every 6 hours
+	// Validates all org PATs and updates token_status on the org doc
+	go startTokenValidation(db)
+
 	// API Group /api/v1
 	api := app.Group("/api/v1")
 
-	// GraphQL Route - Mounted within the api group to inherit path prefixes
+	// GraphQL
 	api.Post("/graphql", auth.OptionalAuth(db), GraphQLHandler(schema))
 
 	// Public Routes
@@ -70,6 +74,11 @@ func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema
 	githubGroup.Get("/repos", github.ListRepos(db))
 	githubGroup.Post("/onboard", github.OnboardRepos(db))
 
+	// Public repo search — uses system token, no org credentials needed
+	// GET /api/v1/github/search?q=kubernetes&provider=github
+	// GET /api/v1/github/search?q=gitlab-runner&provider=gitlab
+	githubGroup.Get("/search", github.SearchPublicRepos(db))
+
 	// Invitation Routes
 	invitationGroup := api.Group("/invitation")
 	invitationGroup.Get("/:token", auth.GetInvitationHandler(db))
@@ -89,17 +98,42 @@ func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema
 	rbac.Post("/apply/content", auth.ApplyRBACFromBody(db, emailConfig))
 	rbac.Post("/apply/upload", auth.ApplyRBACFromUpload(db, emailConfig))
 	rbac.Post("/apply", auth.ApplyRBACFromFile(db, emailConfig))
-	rbac.Post("/validate", auth.HandleRBACValidate(db))
+	rbac.Post("/validate", auth.ValidateRBAC(db))
 	rbac.Get("/config", auth.GetRBACConfig(db))
 	rbac.Get("/invitations", auth.ListPendingInvitationsHandler(db))
 	rbac.Post("/webhook", handleRBACWebhook(db, emailConfig))
+
+	// Org Management
+	// Status and credential endpoints are scoped to org members/owners only.
+	// The org middleware checks that the requesting user belongs to the org.
+	orgGroup := api.Group("/orgs", auth.RequireAuth(db))
+
+	// GET  /api/v1/orgs/:org/status
+	// Returns connection state, token status, visible tracked repos (minus hidden)
+	orgGroup.Get("/:org/status", org.GetOrgStatus(db))
+
+	// POST /api/v1/orgs/:org/credentials
+	// Store encrypted PAT for private repo access (owner only)
+	orgGroup.Post("/:org/credentials", auth.RequireRole("owner"), org.UpdateOrgCredentials(db))
+
+	// DELETE /api/v1/orgs/:org/credentials/:provider
+	// Remove stored PAT for a provider (owner only)
+	orgGroup.Delete("/:org/credentials/:provider", auth.RequireRole("owner"), org.DeleteOrgCredentials(db))
+
+	// POST /api/v1/orgs/:org/tracked-repos
+	// Add a repo to tracked_repos: commits to YAML + syncs to DB + unhides (owner only)
+	orgGroup.Post("/:org/tracked-repos", auth.RequireRole("owner"), github.TrackRepo(db, auth.MakeUserCreator(db, emailConfig)))
+
+	// POST /api/v1/orgs/:org/hidden-repos
+	// Hide a tracked repo from the UI without stopping scanning (owner or admin)
+	orgGroup.Post("/:org/hidden-repos", auth.RequireRole("owner", "admin"), github.HideRepo(db))
 
 	// Release & Sync
 	api.Post("/releases", auth.OptionalAuth(db), releases.PostReleaseWithSBOM(db))
 	api.Post("/sync", auth.OptionalAuth(db), releasesync.PostSyncWithEndpoint(db))
 	api.Get("/releases/exists", releases.CheckReleaseExists(db))
 
-	// Metadata (key-value store for audit log cursor persistence)
+	// Metadata
 	api.Get("/metadata/:key", auth.OptionalAuth(db), metadata.GetMetadata(db))
 	api.Put("/metadata/:key", auth.OptionalAuth(db), metadata.SetMetadata(db))
 
@@ -115,14 +149,14 @@ func handleRBACWebhook(db database.DBConnection, emailConfig *auth.EmailConfig) 
 			})
 		}
 
-		config, err := auth.LoadPeriobolosConfig(yamlContent)
+		config, err := rbac.LoadRBACConfig(yamlContent)
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "Invalid RBAC config: " + err.Error(),
 			})
 		}
 
-		result, err := auth.ApplyRBAC(db, config, emailConfig)
+		result, err := rbac.ApplyRBAC(db, config, auth.MakeUserCreator(db, emailConfig))
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "Failed to apply RBAC: " + err.Error(),
@@ -175,6 +209,7 @@ func syncRBACFromRepo() (string, error) {
 	return string(yamlContent), nil
 }
 
+// startInvitationCleanup runs expired invitation cleanup every hour.
 func startInvitationCleanup(db database.DBConnection) {
 	runCleanup(db)
 	ticker := time.NewTicker(1 * time.Hour)
@@ -197,8 +232,33 @@ func runCleanup(db database.DBConnection) {
 	}
 }
 
+// startTokenValidation validates all org PATs every 6 hours.
+// Updates token_status on each org doc so the UI can show
+// a warning badge when credentials need attention.
+func startTokenValidation(db database.DBConnection) {
+	// Run once at startup after a short delay to let the DB settle
+	time.Sleep(30 * time.Second)
+	runTokenValidation(db)
+
+	ticker := time.NewTicker(6 * time.Hour)
+	defer ticker.Stop()
+	for range ticker.C {
+		runTokenValidation(db)
+	}
+}
+
+func runTokenValidation(db database.DBConnection) {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+
+	if err := org.ValidateOrgTokens(ctx, db); err != nil {
+		fmt.Printf("⚠️  Background Task: Token validation failed: %v\n", err)
+		return
+	}
+	fmt.Println("✅ Background Task: Org token validation complete")
+}
+
 func autoApplyRBACOnStartup(db database.DBConnection, emailConfig *auth.EmailConfig) {
-	// Check if RBAC repo is configured for GitOps mode
 	repoURL := os.Getenv("RBAC_REPO")
 	token := os.Getenv("RBAC_REPO_TOKEN")
 
@@ -206,7 +266,6 @@ func autoApplyRBACOnStartup(db database.DBConnection, emailConfig *auth.EmailCon
 	var err error
 
 	if repoURL != "" && token != "" {
-		// GitOps mode: Fetch from GitHub
 		fmt.Println("🔄 Auto-applying RBAC configuration from GitHub:", repoURL)
 		yamlContent, err = syncRBACFromRepo()
 		if err != nil {
@@ -214,13 +273,11 @@ func autoApplyRBACOnStartup(db database.DBConnection, emailConfig *auth.EmailCon
 			return
 		}
 	} else {
-		// Fallback to local file mode
 		configPath := os.Getenv("RBAC_CONFIG_PATH")
 		if configPath == "" {
 			configPath = "/etc/ortelius/rbac.yaml"
 		}
 		if _, err := os.Stat(configPath); err != nil {
-			// Neither GitHub nor local file configured
 			return
 		}
 		fmt.Println("🔄 Auto-applying RBAC configuration from local file:", configPath)
@@ -232,13 +289,13 @@ func autoApplyRBACOnStartup(db database.DBConnection, emailConfig *auth.EmailCon
 		yamlContent = string(yamlBytes)
 	}
 
-	config, err := auth.LoadPeriobolosConfig(yamlContent)
+	config, err := rbac.LoadRBACConfig(yamlContent)
 	if err != nil {
 		fmt.Printf("⚠️  Failed to load RBAC config: %v\n", err)
 		return
 	}
 
-	result, err := auth.ApplyRBAC(db, config, emailConfig)
+	result, err := rbac.ApplyRBAC(db, config, auth.MakeUserCreator(db, emailConfig))
 	if err != nil {
 		fmt.Printf("⚠️  RBAC apply failed: %v\n", err)
 		return

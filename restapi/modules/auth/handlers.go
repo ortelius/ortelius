@@ -14,6 +14,7 @@ import (
 	"github.com/ortelius/ortelius/v12/model"
 	"github.com/ortelius/ortelius/v12/restapi/modules/github"
 	"github.com/ortelius/ortelius/v12/restapi/modules/gitops"
+	"github.com/ortelius/ortelius/v12/restapi/modules/rbac"
 )
 
 // ============================================================================
@@ -106,12 +107,12 @@ func Signup(db database.DBConnection, emailConfig *EmailConfig) fiber.Handler {
 		}
 
 		// 4. Apply the Configuration Locally
-		config, err := LoadPeriobolosConfig(updatedYaml)
+		config, err := rbac.LoadRBACConfig(updatedYaml)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal configuration error"})
 		}
 
-		result, err := ApplyRBAC(db, config, emailConfig)
+		result, err := rbac.ApplyRBAC(db, config, MakeUserCreator(db, emailConfig))
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to apply account configuration"})
 		}
