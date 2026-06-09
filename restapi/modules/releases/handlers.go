@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,20 +31,15 @@ func ProcessReleaseIngestion(ctx context.Context, db database.DBConnection, rel 
 		return "", fmt.Errorf("ContentSha is required (GitCommit or DockerSha must be provided)")
 	}
 
-	// --- NEW: Evaluate if this is the newest version at write-time ---
+	// Use the existing latest marker as the fast-path read. A full-family
+	// recompute only runs when this release may become latest.
 	existingLatest, err := getLatestRelease(ctx, db, rel.Name)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch current latest release: %w", err)
 	}
 
-	isNewLatest := false
-	if existingLatest == nil || isVersionGreater(rel.ProjectRelease, *existingLatest) {
-		isNewLatest = true
-		rel.IsLatest = true
-	} else {
-		rel.IsLatest = false
-	}
-	// ------------------------------------------------------------------
+	isNewLatest := existingLatest == nil || isVersionGreater(rel.ProjectRelease, *existingLatest)
+	rel.IsLatest = isNewLatest
 
 	// 2. Check for existing release by composite natural key (name + version + contentsha)
 	existingReleaseKey, err := database.FindReleaseByCompositeKey(ctx, db.Database,
@@ -61,13 +57,6 @@ func ProcessReleaseIngestion(ctx context.Context, db database.DBConnection, rel 
 		releaseID = "release/" + existingReleaseKey
 		rel.Key = existingReleaseKey
 
-		// Ensure IsLatest is accurate (in case a newer release was deleted and this one is taking the crown back)
-		_, updateErr := db.Collections["release"].UpdateDocument(ctx, existingReleaseKey, map[string]interface{}{
-			"is_latest": rel.IsLatest,
-		})
-		if updateErr != nil {
-			fmt.Printf("Warning: Failed to update is_latest on existing release: %v\n", updateErr)
-		}
 	} else {
 		// Save new ProjectRelease to ArangoDB
 		releaseMeta, err := db.Collections["release"].CreateDocument(ctx, rel.ProjectRelease)
@@ -78,13 +67,14 @@ func ProcessReleaseIngestion(ctx context.Context, db database.DBConnection, rel 
 		rel.Key = releaseMeta.Key
 	}
 
-	// --- NEW: Demote the old latest release if this one superseded it ---
-	if isNewLatest && existingLatest != nil && existingLatest.Key != rel.Key {
-		if err := demoteOldLatest(ctx, db, existingLatest.Key); err != nil {
-			fmt.Printf("Warning: Failed to demote old latest release %s: %v\n", existingLatest.Key, err)
+	// If this release may be the new latest, recompute the full release family.
+	// This clears stale latest flags and promotes exactly one release. Older
+	// releases stay on the fast path and avoid the full scan.
+	if isNewLatest {
+		if err := recomputeLatestRelease(ctx, db, rel.Name); err != nil {
+			return "", fmt.Errorf("failed to recompute latest release: %w", err)
 		}
 	}
-	// --------------------------------------------------------------------
 
 	// 3. Process SBOM (handles deduplication via content hashing)
 	_, sbomID, err := sbom.ProcessSBOM(ctx, db, rel.SBOM)
@@ -127,8 +117,10 @@ func ProcessReleaseIngestion(ctx context.Context, db database.DBConnection, rel 
 // ============================================================================
 
 // getLatestRelease finds the current latest release for a given package name.
+// This intentionally uses the is_latest flag as a fast-path lookup for normal
+// ingestion checks. The full release-family scan is only done by
+// recomputeLatestRelease when a release may supersede the current latest.
 func getLatestRelease(ctx context.Context, db database.DBConnection, name string) (*model.ProjectRelease, error) {
-	// 1. Try to find the one explicitly marked as latest first
 	query := `
 		FOR r IN release
 			FILTER r.name == @name AND r.is_latest == true
@@ -143,41 +135,66 @@ func getLatestRelease(ctx context.Context, db database.DBConnection, name string
 	}
 	defer cursor.Close()
 
-	var rel model.ProjectRelease
 	if cursor.HasMore() {
-		if _, err := cursor.ReadDocument(ctx, &rel); err == nil {
-			return &rel, nil
+		var rel model.ProjectRelease
+		if _, err := cursor.ReadDocument(ctx, &rel); err != nil {
+			return nil, err
 		}
+		return &rel, nil
 	}
 
-	// 2. Fallback: If none is marked (unmigrated data), sort to find the newest
-	fallbackQuery := `
+	return nil, nil
+}
+
+// recomputeLatestRelease recalculates the latest release for a package name from
+// persisted release records. It does not trust existing is_latest flags because
+// historical duplicate SHA/tag ingestion can leave more than one stale latest.
+func recomputeLatestRelease(ctx context.Context, db database.DBConnection, name string) error {
+	query := `
 		FOR r IN release
 			FILTER r.name == @name
-			SORT (r.version_major != null ? r.version_major : -1) DESC,
-				 (r.version_minor != null ? r.version_minor : -1) DESC,
-				 (r.version_patch != null ? r.version_patch : -1) DESC,
-				 (r.version_prerelease != null && r.version_prerelease != "" ? 1 : 0) ASC,
-				 r.version_prerelease DESC,
-				 r.version DESC
-			LIMIT 1
 			RETURN r
 	`
-	fallbackCursor, err := db.Database.Query(ctx, fallbackQuery, &arangodb.QueryOptions{
+	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
 		BindVars: map[string]interface{}{"name": name},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
-	defer fallbackCursor.Close()
+	defer cursor.Close()
 
-	if fallbackCursor.HasMore() {
-		if _, err := fallbackCursor.ReadDocument(ctx, &rel); err == nil {
-			return &rel, nil
+	var latest *model.ProjectRelease
+	for cursor.HasMore() {
+		var rel model.ProjectRelease
+		if _, err := cursor.ReadDocument(ctx, &rel); err != nil {
+			return err
+		}
+		if latest == nil || isVersionGreater(rel, *latest) {
+			latest = &rel
 		}
 	}
 
-	return nil, nil // No existing releases found
+	if latest == nil || latest.Key == "" {
+		return nil
+	}
+
+	updateQuery := `
+		FOR r IN release
+			FILTER r.name == @name
+			UPDATE r WITH { is_latest: r._key == @latestKey } IN release
+	`
+	updateCursor, err := db.Database.Query(ctx, updateQuery, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{
+			"name":      name,
+			"latestKey": latest.Key,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	defer updateCursor.Close()
+
+	return nil
 }
 
 // isVersionGreater compares two releases and returns true if newRel is strictly greater.
@@ -204,7 +221,7 @@ func isVersionGreater(newRel, existingRel model.ProjectRelease) bool {
 		return nPatch > ePatch
 	}
 
-	// Pre-releases logic: Stable releases (empty string) are greater than pre-releases.
+	// Stable releases are greater than pre-releases.
 	if newRel.VersionPrerelease == "" && existingRel.VersionPrerelease != "" {
 		return true
 	}
@@ -212,15 +229,72 @@ func isVersionGreater(newRel, existingRel model.ProjectRelease) bool {
 		return false
 	}
 
-	return newRel.VersionPrerelease > existingRel.VersionPrerelease
+	return comparePrerelease(newRel.VersionPrerelease, existingRel.VersionPrerelease) > 0
 }
 
-// demoteOldLatest updates the previous latest release to is_latest = false
-func demoteOldLatest(ctx context.Context, db database.DBConnection, key string) error {
-	_, err := db.Collections["release"].UpdateDocument(ctx, key, map[string]interface{}{
-		"is_latest": false,
+func comparePrerelease(a, b string) int {
+	if a == b {
+		return 0
+	}
+
+	aParts := splitPrerelease(a)
+	bParts := splitPrerelease(b)
+	maxLen := len(aParts)
+	if len(bParts) > maxLen {
+		maxLen = len(bParts)
+	}
+
+	for i := 0; i < maxLen; i++ {
+		if i >= len(aParts) {
+			return -1
+		}
+		if i >= len(bParts) {
+			return 1
+		}
+
+		cmp := comparePrereleaseIdentifier(aParts[i], bParts[i])
+		if cmp != 0 {
+			return cmp
+		}
+	}
+
+	return 0
+}
+
+func splitPrerelease(value string) []string {
+	return strings.FieldsFunc(value, func(r rune) bool {
+		return r == '.' || r == '-' || r == '_'
 	})
-	return err
+}
+
+func comparePrereleaseIdentifier(a, b string) int {
+	aNum, aErr := strconv.Atoi(a)
+	bNum, bErr := strconv.Atoi(b)
+
+	if aErr == nil && bErr == nil {
+		if aNum > bNum {
+			return 1
+		}
+		if aNum < bNum {
+			return -1
+		}
+		return 0
+	}
+
+	if aErr == nil && bErr != nil {
+		return -1 // semver: numeric identifiers have lower precedence than non-numeric identifiers
+	}
+	if aErr != nil && bErr == nil {
+		return 1
+	}
+
+	if a > b {
+		return 1
+	}
+	if a < b {
+		return -1
+	}
+	return 0
 }
 
 // PostReleaseWithSBOM handles POST requests for creating a release with its SBOM.

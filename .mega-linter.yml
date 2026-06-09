@@ -30,8 +30,8 @@ GO_GOLANGCI_LINT_COMMAND_REMOVE_ARGUMENTS:
   - "--fix"
 
 PRE_COMMANDS:
-  - command: wget https://go.dev/dl/go1.26.1.linux-amd64.tar.gz
+  - command: wget https://go.dev/dl/go1.26.4.linux-amd64.tar.gz
   - command: rm -rf /usr/lib/go
-  - command: tar -xf go1.26.1.linux-amd64.tar.gz -C /usr/lib
+  - command: tar -xf go1.26.4.linux-amd64.tar.gz -C /usr/lib
   - command: go version
   - command: golangci-lint cache clean
