@@ -21,6 +21,7 @@ import (
 	"github.com/ortelius/ortelius/v12/restapi/modules/rbac"
 	"github.com/ortelius/ortelius/v12/restapi/modules/releases"
 	"github.com/ortelius/ortelius/v12/restapi/modules/releasesync"
+	"github.com/ortelius/ortelius/v12/restapi/modules/trackedrepos"
 )
 
 // SetupRoutes configures all REST API routes and the GraphQL endpoint.
@@ -79,6 +80,10 @@ func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema
 	// GET /api/v1/github/search?q=gitlab-runner&provider=gitlab
 	githubGroup.Get("/search", github.SearchPublicRepos(db))
 
+	// Single repo lookup — verifies a repo exists before tracking
+	// GET /api/v1/github/repo?owner=curl&name=curl&provider=github
+	githubGroup.Get("/repo", github.FetchPublicRepo(db))
+
 	// Invitation Routes
 	invitationGroup := api.Group("/invitation")
 	invitationGroup.Get("/:token", auth.GetInvitationHandler(db))
@@ -127,6 +132,15 @@ func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema
 	// POST /api/v1/orgs/:org/hidden-repos
 	// Hide a tracked repo from the UI without stopping scanning (owner or admin)
 	orgGroup.Post("/:org/hidden-repos", auth.RequireRole("owner", "admin"), github.HideRepo(db))
+
+	// System-level public repo tracking — any authenticated user can add, removal gated on usage
+	// GET  /api/v1/tracked-repos              — list all tracked public repos with sync counts
+	// POST /api/v1/tracked-repos              — add a public repo (any authenticated user)
+	// DELETE /api/v1/tracked-repos/:key       — remove (steward org owner if zero syncs, admin always)
+	trackedGroup := api.Group("/tracked-repos", auth.RequireAuth(db))
+	trackedGroup.Get("/", trackedrepos.ListTrackedRepos(db))
+	trackedGroup.Post("/", trackedrepos.AddTrackedRepo(db))
+	trackedGroup.Delete("/:key", trackedrepos.RemoveTrackedRepo(db))
 
 	// Release & Sync
 	api.Post("/releases", auth.OptionalAuth(db), releases.PostReleaseWithSBOM(db))

@@ -490,12 +490,14 @@ func convertToModelsAffected(allAffected []map[string]interface{}) []models.Affe
 
 // ResolveOrgAggregatedReleases aggregates release data by organization
 // FIXED: Replaced slow COLLECT grouping with instant O(1) IsLatest lookup
+// ResolveOrgAggregatedReleases aggregates release data by organization.
+// Also merges in any system_tracked_repos entries whose owner has no release
+// records yet — these appear as pending cards in the UI.
 func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, username string) ([]interface{}, error) {
 	ctx := context.Background()
 	severityScore := util.GetSeverityScore(severity)
 
 	userOrgs := []string{}
-	filterByPublic := true
 
 	if username != "" {
 		userQuery := `FOR u IN users FILTER u.username == @username LIMIT 1 RETURN u.orgs`
@@ -512,24 +514,22 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				}
 			}
 		}
-		filterByPublic = false
 	}
 
+	// Show public releases always, plus org-scoped releases for authenticated users.
+	// Previously used a ternary that suppressed public releases for logged-in users.
 	query := `
 		LET severityThreshold = @severityScore
-		LET filterPublic = @filter_by_public
 		LET userOrgs = @user_orgs
 
-		// FAST PATH: Instantly grab only the latest releases using the new boolean flag
 		FOR r IN release
 			FILTER r.is_latest == true
-			FILTER filterPublic == true ? r.is_public == true : (LENGTH(userOrgs) == 0 OR r.org IN userOrgs)
+			FILTER r.is_public == true OR (LENGTH(userOrgs) == 0 OR r.org IN userOrgs)
 
 			LET latest = r
 
 			LET total_versions = LENGTH(FOR v IN release FILTER v.name == latest.name RETURN 1)
 
-			// Find previous version for delta calculation
 			LET previous = (
 				FOR v IN release
 					FILTER v.name == latest.name AND v._key != latest._key
@@ -608,7 +608,6 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				severity_counts
 			}
 
-			// Group back up by Organization to generate final totals
 			COLLECT org2 = latest.org INTO rows = row
 
 			LET critical = SUM(
@@ -647,7 +646,7 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 
 			RETURN {
 				org_name: org2,
-				total_releases: LENGTH(rows),  
+				total_releases: LENGTH(rows),
 				total_versions: SUM(rows[*].total_versions),
 				total_vulnerabilities: SUM(rows[*].vulnerability_count),
 				critical_count: critical,
@@ -658,15 +657,15 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				avg_scorecard_score: LENGTH(validScores) > 0 ? AVG(validScores) : null,
 				total_dependencies: SUM(rows[*].dependency_count),
 				synced_endpoint_count: SUM(rows[*].synced_endpoint_count),
-				vulnerability_count_delta: SUM(rows[*].vulnerability_count_delta)
+				vulnerability_count_delta: SUM(rows[*].vulnerability_count_delta),
+				pending_scan: false
 			}
 	`
 
 	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
 		BindVars: map[string]interface{}{
-			"severityScore":    severityScore,
-			"user_orgs":        userOrgs,
-			"filter_by_public": filterByPublic,
+			"severityScore": severityScore,
+			"user_orgs":     userOrgs,
 		},
 	})
 	if err != nil {
@@ -674,14 +673,66 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 	}
 	defer cursor.Close()
 
+	// Collect results and build a set of org names that already have release data
 	var results []interface{}
+	scannedOrgs := make(map[string]bool)
+
 	for cursor.HasMore() {
 		var result map[string]interface{}
 		_, err := cursor.ReadDocument(ctx, &result)
 		if err != nil {
 			continue
 		}
+		if orgName, ok := result["org_name"].(string); ok {
+			scannedOrgs[orgName] = true
+		}
 		results = append(results, result)
+	}
+
+	// Find system_tracked_repos owners that have no release records yet.
+	// These are repos the user added that are waiting for the first scan cycle.
+	pendingQuery := `
+		FOR t IN system_tracked_repos
+			FILTER NOT (
+				FOR r IN release
+					FILTER r.org == t.owner AND r.is_public == true
+					LIMIT 1
+					RETURN 1
+			)[0]
+			COLLECT owner = t.owner, provider = t.provider
+			RETURN { owner, provider }
+	`
+	pendingCursor, err := db.Database.Query(ctx, pendingQuery, nil)
+	if err == nil {
+		defer pendingCursor.Close()
+		for pendingCursor.HasMore() {
+			var row struct {
+				Owner    string `json:"owner"`
+				Provider string `json:"provider"`
+			}
+			if _, err := pendingCursor.ReadDocument(ctx, &row); err != nil {
+				continue
+			}
+			if scannedOrgs[row.Owner] {
+				continue // already has release data, skip
+			}
+			results = append(results, map[string]interface{}{
+				"org_name":                  row.Owner,
+				"total_releases":            0,
+				"total_versions":            0,
+				"total_vulnerabilities":     0,
+				"critical_count":            0,
+				"high_count":                0,
+				"medium_count":              0,
+				"low_count":                 0,
+				"max_severity_score":        nil,
+				"avg_scorecard_score":       nil,
+				"total_dependencies":        0,
+				"synced_endpoint_count":     0,
+				"vulnerability_count_delta": nil,
+				"pending_scan":              true,
+			})
+		}
 	}
 
 	return results, nil

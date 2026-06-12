@@ -151,6 +151,34 @@ func FetchWorkflowRuns(token, owner, repo string) ([]GitHubWorkflowRun, error) {
 	return result.WorkflowRuns, nil
 }
 
+// FetchRepoMeta retrieves metadata for a single GitHub repository.
+// Used by OnboardRepos to determine repo visibility before creating releases.
+func FetchRepoMeta(token, owner, repo string) (*GitHubRepo, error) {
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/repos/%s/%s", githubAPI, owner, repo), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("github api returned %d for %s/%s", resp.StatusCode, owner, repo)
+	}
+
+	var result GitHubRepo
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // getSystemToken returns the system-level GitHub token used for public repo
 // access and rate limit improvements. Not used for private repos.
 func getSystemToken() string {

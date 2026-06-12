@@ -69,6 +69,9 @@ var AffectedReleaseType = graphql.NewObject(graphql.ObjectConfig{
 })
 
 // OrgAggregatedReleaseType represents releases aggregated by organization
+// OrgAggregatedReleaseType represents releases aggregated by organization.
+// pending_scan is true when the org has been added via system_tracked_repos
+// but the relscanner has not yet processed it — no release records exist yet.
 var OrgAggregatedReleaseType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "OrgAggregatedRelease",
 	Fields: graphql.Fields{
@@ -85,6 +88,7 @@ var OrgAggregatedReleaseType = graphql.NewObject(graphql.ObjectConfig{
 		"total_dependencies":        &graphql.Field{Type: graphql.Int},
 		"synced_endpoint_count":     &graphql.Field{Type: graphql.Int},
 		"vulnerability_count_delta": &graphql.Field{Type: graphql.Int},
+		"pending_scan":              &graphql.Field{Type: graphql.Boolean},
 	},
 })
 

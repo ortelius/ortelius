@@ -164,8 +164,7 @@ func InitializeDatabase() DBConnection {
 	//
 
 	collections = make(map[string]arangodb.Collection)
-	// Added "users", "invitations", "roles", and "orgs" for user management
-	collectionNames := []string{"release", "sbom", "purl", "cve", "endpoint", "sync", "metadata", "cve_lifecycle", "users", "invitations", "roles", "orgs"}
+	collectionNames := []string{"release", "sbom", "purl", "cve", "endpoint", "sync", "metadata", "cve_lifecycle", "users", "invitations", "roles", "orgs", "system_tracked_repos"}
 
 	for _, collectionName := range collectionNames {
 		var col arangodb.Collection
@@ -237,6 +236,9 @@ func InitializeDatabase() DBConnection {
 		{Collection: "invitations", IdxName: "idx_token", IdxField: []string{"token"}, Unique: true},
 		{Collection: "invitations", IdxName: "idx_invitation_username", IdxField: []string{"username"}, Unique: false},
 		{Collection: "invitations", IdxName: "idx_expires_at", IdxField: []string{"expires_at"}, Unique: false},
+
+		// system_tracked_repos unique constraint
+		{Collection: "system_tracked_repos", IdxName: "idx_tracked_repo_key", IdxField: []string{"provider", "owner", "name"}, Unique: true},
 
 		// CVE Lifecycle indexes
 		{Collection: "cve_lifecycle", IdxName: "lifecycle_cve_id", IdxField: []string{"cve_id"}, Unique: false},

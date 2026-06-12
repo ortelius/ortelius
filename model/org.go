@@ -24,6 +24,7 @@ type Org struct {
 	Name        string            `json:"name"`
 	DisplayName string            `json:"display_name,omitempty"`
 	Description string            `json:"description,omitempty"`
+	IsPublic    bool              `json:"is_public,omitempty"` // true = auto-created for public repo tracking, no credentials
 	Metadata    map[string]string `json:"metadata,omitempty"`
 	CreatedAt   time.Time         `json:"created_at"`
 	UpdatedAt   time.Time         `json:"updated_at"`

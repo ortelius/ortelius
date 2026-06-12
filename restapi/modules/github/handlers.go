@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -99,6 +100,15 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 			}
 			owner, repo := parts[0], parts[1]
 
+			// Fetch repo metadata to determine visibility before creating releases.
+			// IsPublic drives GraphQL access control — public repos are visible to
+			// unauthenticated users via the is_public == true filter.
+			repoMeta, repoErr := FetchRepoMeta(appToken, owner, repo)
+			isPublic := true // default to public; overridden when we have metadata
+			if repoErr == nil {
+				isPublic = !repoMeta.Private
+			}
+
 			releases, err := FetchReleases(appToken, owner, repo)
 			if err == nil {
 				for _, r := range releases {
@@ -110,7 +120,7 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 						GitOrg:         owner,
 						GitRepoProject: repo,
 						BuildDate:      r.PublishedAt,
-						IsPublic:       false,
+						IsPublic:       isPublic,
 						ContentSha:     r.TagName,
 					}
 					releaseModel.ParseAndSetNameComponents()
@@ -469,4 +479,78 @@ func searchGitLab(query string) ([]SearchPublicReposResult, error) {
 		})
 	}
 	return repos, nil
+}
+
+// FetchPublicRepo handles GET /api/v1/github/repo?owner=...&name=...&provider=github|gitlab
+// Verifies a single repo exists on the provider and returns its metadata.
+// Used by the frontend to validate direct owner/repo input before tracking.
+func FetchPublicRepo(_ database.DBConnection) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		provider := strings.ToLower(strings.TrimSpace(c.Query("provider", "github")))
+		owner := strings.TrimSpace(c.Query("owner"))
+		name := strings.TrimSpace(c.Query("name"))
+
+		if owner == "" || name == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "owner and name are required"})
+		}
+
+		client := &http.Client{Timeout: 10 * time.Second}
+
+		switch provider {
+		case "github":
+			apiURL := fmt.Sprintf("https://api.github.com/repos/%s/%s", owner, name)
+			req, _ := http.NewRequest("GET", apiURL, nil)
+			req.Header.Set("Accept", "application/vnd.github+json")
+			if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+				req.Header.Set("Authorization", "Bearer "+token)
+			}
+			resp, err := client.Do(req)
+			if err != nil {
+				return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"error": "failed to reach GitHub API"})
+			}
+			defer resp.Body.Close()
+			if resp.StatusCode == http.StatusNotFound {
+				return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+					"error": fmt.Sprintf("%s/%s does not exist on GitHub or is private", owner, name),
+				})
+			}
+			if resp.StatusCode != http.StatusOK {
+				return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+					"error": fmt.Sprintf("GitHub API returned status %d", resp.StatusCode),
+				})
+			}
+			var result map[string]interface{}
+			json.NewDecoder(resp.Body).Decode(&result)
+			return c.JSON(result)
+
+		case "gitlab":
+			encoded := strings.ReplaceAll(fmt.Sprintf("%s/%s", owner, name), "/", "%2F")
+			apiURL := fmt.Sprintf("https://gitlab.com/api/v4/projects/%s", encoded)
+			req, _ := http.NewRequest("GET", apiURL, nil)
+			if token := os.Getenv("GITLAB_TOKEN"); token != "" {
+				req.Header.Set("PRIVATE-TOKEN", token)
+			}
+			resp, err := client.Do(req)
+			if err != nil {
+				return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"error": "failed to reach GitLab API"})
+			}
+			defer resp.Body.Close()
+			if resp.StatusCode == http.StatusNotFound {
+				return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+					"error": fmt.Sprintf("%s/%s does not exist on GitLab or is private", owner, name),
+				})
+			}
+			if resp.StatusCode != http.StatusOK {
+				return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+					"error": fmt.Sprintf("GitLab API returned status %d", resp.StatusCode),
+				})
+			}
+			var result map[string]interface{}
+			json.NewDecoder(resp.Body).Decode(&result)
+			return c.JSON(result)
+
+		default:
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "provider must be github or gitlab"})
+		}
+	}
 }
