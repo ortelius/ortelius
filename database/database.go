@@ -224,8 +224,14 @@ func InitializeDatabase() DBConnection {
 		// SBOM & Release indexes
 		{Collection: "sbom", IdxName: "sbom_contentsha", IdxField: []string{"contentsha"}, Unique: false},
 		{Collection: "release", IdxName: "release_contentsha", IdxField: []string{"contentsha"}, Unique: false},
+		{Collection: "release", IdxName: "release_name", IdxField: []string{"name"}, Unique: false},
+		{Collection: "release", IdxName: "release_name_version", IdxField: []string{"name", "version"}, Unique: false},
+		{Collection: "release", IdxName: "release_latest_org", IdxField: []string{"is_latest", "org"}, Unique: false},
+		{Collection: "release", IdxName: "release_latest_public_org", IdxField: []string{"is_latest", "is_public", "org"}, Unique: false},
 		{Collection: "release", IdxName: "release_org_name_version_order",
 			IdxField: []string{"org", "name", "version_major", "version_minor", "version_patch", "version_prerelease", "version"}, Unique: false},
+		{Collection: "release", IdxName: "release_name_version_order",
+			IdxField: []string{"name", "version_major", "version_minor", "version_patch", "version_prerelease", "version"}, Unique: false},
 
 		// PURL unique index
 		{Collection: "purl", IdxName: "purl_idx", IdxField: []string{"purl"}, Unique: true},
@@ -265,6 +271,7 @@ func InitializeDatabase() DBConnection {
 		// Edge collection indexes - OUTBOUND traversal (_from)
 		{Collection: "release2cve", IdxName: "idx_release2cve_from", IdxField: []string{"_from"}, Unique: false},
 		{Collection: "release2sbom", IdxName: "idx_release2sbom_from", IdxField: []string{"_from"}, Unique: false},
+		{Collection: "sbom2purl", IdxName: "idx_sbom2purl_from_full_purl", IdxField: []string{"_from", "full_purl"}, Unique: false},
 	}
 
 	for _, idx := range idxList {

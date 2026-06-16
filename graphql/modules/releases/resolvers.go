@@ -220,10 +220,9 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 
 			LET latestRelease = (
 				FOR release IN groupedReleases
-					SORT release.version_major != null ? release.version_major : -1 DESC,
-						release.version_minor != null ? release.version_minor : -1 DESC,
-						release.version_patch != null ? release.version_patch : -1 DESC,
-						release.version_prerelease != null && release.version_prerelease != "" ? 1 : 0 ASC,
+					SORT release.version_major DESC,
+						release.version_minor DESC,
+						release.version_patch DESC,
 						release.version_prerelease ASC,
 						release.version DESC
 					LIMIT 1
@@ -286,10 +285,9 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 			LET previousRelease = (
 				FOR release IN groupedReleases
 					FILTER release._key != latestRelease._key
-					SORT release.version_major != null ? release.version_major : -1 DESC,
-						release.version_minor != null ? release.version_minor : -1 DESC,
-						release.version_patch != null ? release.version_patch : -1 DESC,
-						release.version_prerelease != null && release.version_prerelease != "" ? 1 : 0 ASC,
+					SORT release.version_major DESC,
+						release.version_minor DESC,
+						release.version_patch DESC,
 						release.version_prerelease ASC,
 						release.version DESC
 					LIMIT 1
@@ -533,11 +531,10 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 			LET previous = (
 				FOR v IN release
 					FILTER v.name == latest.name AND v._key != latest._key
-					SORT (v.version_major != null ? v.version_major : -1) DESC,
-						 (v.version_minor != null ? v.version_minor : -1) DESC,
-						 (v.version_patch != null ? v.version_patch : -1) DESC,
-						 (v.version_prerelease != null && v.version_prerelease != "" ? 1 : 0) ASC,
-						 v.version_prerelease DESC,
+					SORT v.version_major DESC,
+						 v.version_minor DESC,
+						 v.version_patch DESC,
+						 v.version_prerelease ASC,
 						 v.version DESC
 					LIMIT 1
 					RETURN v
@@ -597,6 +594,27 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				)
 				: null
 
+			LET critical_count = SUM(
+				FOR sc IN severity_counts
+					FILTER sc.severity == "CRITICAL"
+					RETURN sc.count
+			)
+			LET high_count = SUM(
+				FOR sc IN severity_counts
+					FILTER sc.severity == "HIGH"
+					RETURN sc.count
+			)
+			LET medium_count = SUM(
+				FOR sc IN severity_counts
+					FILTER sc.severity == "MEDIUM"
+					RETURN sc.count
+			)
+			LET low_count = SUM(
+				FOR sc IN severity_counts
+					FILTER sc.severity == "LOW"
+					RETURN sc.count
+			)
+
 			LET row = {
 				total_versions,
 				dependency_count,
@@ -605,38 +623,13 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				vulnerability_count_delta: prevVulnCount != null ? (LENGTH(uniqueMatches) - prevVulnCount) : null,
 				max_severity: LENGTH(cveMatches) > 0 ? MAX(cveMatches[*].score) : 0,
 				scorecard_score: latest.openssf_scorecard_score,
-				severity_counts
+				critical_count,
+				high_count,
+				medium_count,
+				low_count
 			}
 
 			COLLECT org2 = latest.org INTO rows = row
-
-			LET critical = SUM(
-				FOR r IN rows
-					FOR sc IN r.severity_counts
-						FILTER sc.severity == "CRITICAL"
-						RETURN sc.count
-			)
-
-			LET high = SUM(
-				FOR r IN rows
-					FOR sc IN r.severity_counts
-						FILTER sc.severity == "HIGH"
-						RETURN sc.count
-			)
-
-			LET medium = SUM(
-				FOR r IN rows
-					FOR sc IN r.severity_counts
-						FILTER sc.severity == "MEDIUM"
-						RETURN sc.count
-			)
-
-			LET low = SUM(
-				FOR r IN rows
-					FOR sc IN r.severity_counts
-						FILTER sc.severity == "LOW"
-						RETURN sc.count
-			)
 
 			LET validScores = (
 				FOR r IN rows
@@ -649,10 +642,10 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				total_releases: LENGTH(rows),
 				total_versions: SUM(rows[*].total_versions),
 				total_vulnerabilities: SUM(rows[*].vulnerability_count),
-				critical_count: critical,
-				high_count: high,
-				medium_count: medium,
-				low_count: low,
+				critical_count: SUM(rows[*].critical_count),
+				high_count: SUM(rows[*].high_count),
+				medium_count: SUM(rows[*].medium_count),
+				low_count: SUM(rows[*].low_count),
 				max_severity_score: MAX(rows[*].max_severity),
 				avg_scorecard_score: LENGTH(validScores) > 0 ? AVG(validScores) : null,
 				total_dependencies: SUM(rows[*].dependency_count),
@@ -767,10 +760,9 @@ func ResolveReleaseTimeline(db database.DBConnection, name string) ([]map[string
 			LET medium   = LENGTH(FOR m IN cveMatches FILTER m.severity == "MEDIUM"   RETURN 1)
 			LET low      = LENGTH(FOR m IN cveMatches FILTER m.severity == "LOW"      RETURN 1)
 
-			SORT r.version_major != null ? r.version_major : -1 DESC,
-			     r.version_minor != null ? r.version_minor : -1 DESC,
-			     r.version_patch != null ? r.version_patch : -1 DESC,
-			     r.version_prerelease != null && r.version_prerelease != "" ? 1 : 0 ASC,
+			SORT r.version_major DESC,
+			     r.version_minor DESC,
+			     r.version_patch DESC,
 			     r.version_prerelease ASC,
 			     r.version DESC
 

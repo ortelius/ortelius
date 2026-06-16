@@ -5,6 +5,7 @@ package releasesync
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -338,25 +339,31 @@ func getCurrentEndpointState(ctx context.Context, db database.DBConnection, endp
 	return currentReleases, nil
 }
 
+// isVersionGreater compares two releases and returns true if newRel is strictly greater.
 func isVersionGreater(newRel, existingRel model.ProjectRelease) bool {
 	getVal := func(ptr *int) int {
 		if ptr == nil {
-			return 0
+			return -1 // Unset versions evaluated as lowest possible value
 		}
 		return *ptr
 	}
-	if getVal(newRel.VersionMajor) != getVal(existingRel.VersionMajor) {
-		return getVal(newRel.VersionMajor) > getVal(existingRel.VersionMajor)
-	}
-	if getVal(newRel.VersionMinor) != getVal(existingRel.VersionMinor) {
-		return getVal(newRel.VersionMinor) > getVal(existingRel.VersionMinor)
-	}
-	if getVal(newRel.VersionPatch) != getVal(existingRel.VersionPatch) {
-		return getVal(newRel.VersionPatch) > getVal(existingRel.VersionPatch)
+
+	nMajor, eMajor := getVal(newRel.VersionMajor), getVal(existingRel.VersionMajor)
+	if nMajor != eMajor {
+		return nMajor > eMajor
 	}
 
-	// FIXED: Handle pre-releases properly. Stable releases (empty string)
-	// are greater than pre-releases.
+	nMinor, eMinor := getVal(newRel.VersionMinor), getVal(existingRel.VersionMinor)
+	if nMinor != eMinor {
+		return nMinor > eMinor
+	}
+
+	nPatch, ePatch := getVal(newRel.VersionPatch), getVal(existingRel.VersionPatch)
+	if nPatch != ePatch {
+		return nPatch > ePatch
+	}
+
+	// Stable releases are greater than pre-releases.
 	if newRel.VersionPrerelease == "" && existingRel.VersionPrerelease != "" {
 		return true
 	}
@@ -364,7 +371,72 @@ func isVersionGreater(newRel, existingRel model.ProjectRelease) bool {
 		return false
 	}
 
-	return newRel.VersionPrerelease > existingRel.VersionPrerelease
+	return comparePrerelease(newRel.VersionPrerelease, existingRel.VersionPrerelease) > 0
+}
+
+func comparePrerelease(a, b string) int {
+	if a == b {
+		return 0
+	}
+
+	aParts := splitPrerelease(a)
+	bParts := splitPrerelease(b)
+	maxLen := len(aParts)
+	if len(bParts) > maxLen {
+		maxLen = len(bParts)
+	}
+
+	for i := 0; i < maxLen; i++ {
+		if i >= len(aParts) {
+			return -1
+		}
+		if i >= len(bParts) {
+			return 1
+		}
+
+		cmp := comparePrereleaseIdentifier(aParts[i], bParts[i])
+		if cmp != 0 {
+			return cmp
+		}
+	}
+
+	return 0
+}
+
+func splitPrerelease(value string) []string {
+	return strings.FieldsFunc(value, func(r rune) bool {
+		return r == '.' || r == '-' || r == '_'
+	})
+}
+
+func comparePrereleaseIdentifier(a, b string) int {
+	aNum, aErr := strconv.Atoi(a)
+	bNum, bErr := strconv.Atoi(b)
+
+	if aErr == nil && bErr == nil {
+		if aNum > bNum {
+			return 1
+		}
+		if aNum < bNum {
+			return -1
+		}
+		return 0
+	}
+
+	if aErr == nil && bErr != nil {
+		return -1 // semver: numeric identifiers have lower precedence than non-numeric identifiers
+	}
+	if aErr != nil && bErr == nil {
+		return 1
+	}
+
+	if a > b {
+		return 1
+	}
+	if a < b {
+		return -1
+	}
+	return 0
 }
 
 func processReleases(ctx context.Context, db database.DBConnection, req model.SyncWithEndpoint,
