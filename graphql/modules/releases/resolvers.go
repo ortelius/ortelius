@@ -94,7 +94,6 @@ func ResolveReleaseVulnerabilities(db database.DBConnection, name, version strin
 			continue
 		}
 
-		// Methodology: One record for every unique CVE ID + Package combination
 		key := result.CveID + ":" + result.Package
 		if seen[key] {
 			continue
@@ -196,8 +195,6 @@ func ResolveAffectedEndpoints(db database.DBConnection, name, version string) ([
 }
 
 // ResolveAffectedReleases updated to count unique CVE ID + Package combinations.
-// Always returns the latest version per release name regardless of CVE count,
-// so the releases page shows the current state even when the latest has zero CVEs.
 func ResolveAffectedReleases(db database.DBConnection, severity string, org string) ([]interface{}, error) {
 	ctx := context.Background()
 	severityScore := util.GetSeverityScore(severity)
@@ -431,8 +428,6 @@ func ResolveAffectedReleases(db database.DBConnection, severity string, org stri
 			}
 		}
 
-		// Always emit a row for releases with zero CVEs so the latest version
-		// is always visible on the releases page regardless of CVE count.
 		if len(aggRelease.CveMatches) == 0 {
 			releaseOnlyKey := releaseKey + ":NO_CVES"
 			if !seen[releaseOnlyKey] {
@@ -486,8 +481,6 @@ func convertToModelsAffected(allAffected []map[string]interface{}) []models.Affe
 	return result
 }
 
-// ResolveOrgAggregatedReleases aggregates release data by organization
-// FIXED: Replaced slow COLLECT grouping with instant O(1) IsLatest lookup
 // ResolveOrgAggregatedReleases aggregates release data by organization.
 // Also merges in any system_tracked_repos entries whose owner has no release
 // records yet — these appear as pending cards in the UI.
@@ -514,8 +507,6 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 		}
 	}
 
-	// Show public releases always, plus org-scoped releases for authenticated users.
-	// Previously used a ternary that suppressed public releases for logged-in users.
 	query := `
 		LET severityThreshold = @severityScore
 		LET userOrgs = @user_orgs
@@ -562,6 +553,19 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 					RETURN count
 			)
 
+			// NEW: collect per-type endpoint counts for org card badges.
+			// Joins sync → endpoint on name, groups by endpoint_type, counts distinct endpoints.
+			// Falls back to "unknown" when endpoint_type is missing or empty.
+			LET endpoint_type_counts = (
+				FOR s IN sync
+					FILTER s.release_name == latest.name AND s.release_version == latest.version
+					FOR e IN endpoint
+						FILTER e.name == s.endpoint_name
+						COLLECT ep_type = (e.endpoint_type != null AND e.endpoint_type != "" ? e.endpoint_type : "unknown")
+						WITH COUNT INTO type_count
+						RETURN { label: ep_type, count: type_count }
+			)
+
 			LET cveMatches = (
 				FOR cve, edge IN 1..1 OUTBOUND latest release2cve
 					FILTER severityThreshold == 0.0 OR cve.database_specific.cvss_base_score >= severityThreshold
@@ -595,30 +599,23 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				: null
 
 			LET critical_count = SUM(
-				FOR sc IN severity_counts
-					FILTER sc.severity == "CRITICAL"
-					RETURN sc.count
+				FOR sc IN severity_counts FILTER sc.severity == "CRITICAL" RETURN sc.count
 			)
 			LET high_count = SUM(
-				FOR sc IN severity_counts
-					FILTER sc.severity == "HIGH"
-					RETURN sc.count
+				FOR sc IN severity_counts FILTER sc.severity == "HIGH" RETURN sc.count
 			)
 			LET medium_count = SUM(
-				FOR sc IN severity_counts
-					FILTER sc.severity == "MEDIUM"
-					RETURN sc.count
+				FOR sc IN severity_counts FILTER sc.severity == "MEDIUM" RETURN sc.count
 			)
 			LET low_count = SUM(
-				FOR sc IN severity_counts
-					FILTER sc.severity == "LOW"
-					RETURN sc.count
+				FOR sc IN severity_counts FILTER sc.severity == "LOW" RETURN sc.count
 			)
 
 			LET row = {
 				total_versions,
 				dependency_count,
 				synced_endpoint_count,
+				endpoint_type_counts,
 				vulnerability_count: LENGTH(uniqueMatches),
 				vulnerability_count_delta: prevVulnCount != null ? (LENGTH(uniqueMatches) - prevVulnCount) : null,
 				max_severity: LENGTH(cveMatches) > 0 ? MAX(cveMatches[*].score) : 0,
@@ -651,7 +648,15 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				total_dependencies: SUM(rows[*].dependency_count),
 				synced_endpoint_count: SUM(rows[*].synced_endpoint_count),
 				vulnerability_count_delta: SUM(rows[*].vulnerability_count_delta),
-				pending_scan: false
+				pending_scan: false,
+				// Merge per-type counts across all releases in the org.
+				// Sums counts by label so [kubernetes:10, kubernetes:5] → [kubernetes:15].
+				endpoint_type_counts: (
+					FOR row IN rows
+						FOR tc IN row.endpoint_type_counts
+							COLLECT label = tc.label AGGREGATE count = SUM(tc.count)
+							RETURN { label, count }
+				)
 			}
 	`
 
@@ -666,7 +671,6 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 	}
 	defer cursor.Close()
 
-	// Collect results and build a set of org names that already have release data
 	var results []interface{}
 	scannedOrgs := make(map[string]bool)
 
@@ -683,7 +687,6 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 	}
 
 	// Find system_tracked_repos owners that have no release records yet.
-	// These are repos the user added that are waiting for the first scan cycle.
 	pendingQuery := `
 		FOR t IN system_tracked_repos
 			FILTER NOT (
@@ -707,7 +710,7 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				continue
 			}
 			if scannedOrgs[row.Owner] {
-				continue // already has release data, skip
+				continue
 			}
 			results = append(results, map[string]interface{}{
 				"org_name":                  row.Owner,
@@ -724,6 +727,7 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				"synced_endpoint_count":     0,
 				"vulnerability_count_delta": nil,
 				"pending_scan":              true,
+				"endpoint_type_counts":      []interface{}{},
 			})
 		}
 	}
@@ -731,9 +735,7 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 	return results, nil
 }
 
-// ResolveReleaseTimeline returns per-version CVE severity counts for a release name,
-// sorted semver descending. Uses the same release2cve graph traversal as
-// ResolveAffectedReleases so counts are consistent with the releases page.
+// ResolveReleaseTimeline returns per-version CVE severity counts for a release name.
 func ResolveReleaseTimeline(db database.DBConnection, name string) ([]map[string]interface{}, error) {
 	ctx := context.Background()
 
@@ -789,7 +791,6 @@ func ResolveReleaseTimeline(db database.DBConnection, name string) ([]map[string
 	}
 	defer cursor.Close()
 
-	// Identify latest version using same semver sort as ResolveAffectedReleases
 	type TimelineRow struct {
 		Version       string  `json:"version"`
 		BuildDate     *string `json:"build_date"`
@@ -811,7 +812,6 @@ func ResolveReleaseTimeline(db database.DBConnection, name string) ([]map[string
 		rows = append(rows, row)
 	}
 
-	// First row is latest (AQL sorted semver desc)
 	results := make([]map[string]interface{}, 0, len(rows))
 	for i, row := range rows {
 		results = append(results, map[string]interface{}{

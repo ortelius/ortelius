@@ -8,6 +8,7 @@ import (
 	"github.com/ortelius/ortelius/v12/graphql/modules/endpoints"
 	"github.com/ortelius/ortelius/v12/graphql/modules/releases"
 	"github.com/ortelius/ortelius/v12/graphql/modules/scorecard"
+	"github.com/ortelius/ortelius/v12/graphql/modules/users"
 	"github.com/ortelius/ortelius/v12/graphql/modules/vulnerabilities"
 )
 
@@ -67,6 +68,11 @@ func CreateSchema() (graphql.Schema, error) {
 		queryFields[k] = v
 	}
 
+	// Add user queries (myFavoriteOrgs)
+	for k, v := range users.GetQueryFields(db) {
+		queryFields[k] = v
+	}
+
 	// Note: Scorecard data is accessed via release.scorecard_result field
 	// No dedicated scorecard queries needed
 
@@ -76,8 +82,23 @@ func CreateSchema() (graphql.Schema, error) {
 		Fields: queryFields,
 	})
 
-	// Step 7: Build and return final schema
+	// Step 7: Build unified mutation fields from all modules.
+	// This is currently the only module contributing mutations; the schema
+	// previously had no mutation root at all.
+	mutationFields := graphql.Fields{}
+
+	for k, v := range users.GetMutationFields(db) {
+		mutationFields[k] = v
+	}
+
+	rootMutation := graphql.NewObject(graphql.ObjectConfig{
+		Name:   "Mutation",
+		Fields: mutationFields,
+	})
+
+	// Step 8: Build and return final schema
 	return graphql.NewSchema(graphql.SchemaConfig{
-		Query: rootQuery,
+		Query:    rootQuery,
+		Mutation: rootMutation,
 	})
 }

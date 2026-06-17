@@ -11,8 +11,9 @@ type User struct {
 	Username             string    `json:"username"`
 	Email                string    `json:"email"`
 	PasswordHash         string    `json:"password_hash,omitempty"`
-	Role                 string    `json:"role"` // admin, editor, viewer
-	Orgs                 []string  `json:"orgs"` // List of orgs user can access
+	Role                 string    `json:"role"`          // admin, editor, viewer
+	Orgs                 []string  `json:"orgs"`          // List of orgs user can access
+	FavoriteOrgs         []string  `json:"favorite_orgs"` // Orgs the user has starred for quick access (independent of Orgs membership)
 	IsActive             bool      `json:"is_active"`
 	Status               string    `json:"status"`                           // pending, active, inactive
 	AuthProvider         string    `json:"auth_provider"`                    // local, oidc
@@ -30,6 +31,7 @@ func NewUser(username, role string) *User {
 		Username:     username,
 		Role:         role,
 		Orgs:         []string{}, // Empty by default (global access)
+		FavoriteOrgs: []string{}, // Empty by default
 		IsActive:     true,
 		Status:       "pending", // Default to pending until invitation accepted
 		AuthProvider: "local",
@@ -89,6 +91,29 @@ func (u *User) CanWrite() bool {
 // CanRead returns true if user can read
 func (u *User) CanRead() bool {
 	return u.Role == "admin" || u.Role == "editor" || u.Role == "viewer"
+}
+
+// IsFavoriteOrg returns true if the given org is in the user's favorites.
+func (u *User) IsFavoriteOrg(org string) bool {
+	for _, o := range u.FavoriteOrgs {
+		if o == org {
+			return true
+		}
+	}
+	return false
+}
+
+// ToggleFavoriteOrg adds the org to FavoriteOrgs if absent, or removes it if
+// present. Returns the updated list.
+func (u *User) ToggleFavoriteOrg(org string) []string {
+	for i, o := range u.FavoriteOrgs {
+		if o == org {
+			u.FavoriteOrgs = append(u.FavoriteOrgs[:i], u.FavoriteOrgs[i+1:]...)
+			return u.FavoriteOrgs
+		}
+	}
+	u.FavoriteOrgs = append(u.FavoriteOrgs, org)
+	return u.FavoriteOrgs
 }
 
 // Invitation represents a user invitation

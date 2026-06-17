@@ -68,10 +68,20 @@ var AffectedReleaseType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
-// OrgAggregatedReleaseType represents releases aggregated by organization
+// EndpointTypeCountType represents a single endpoint type + count pair for org cards.
+var EndpointTypeCountType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "EndpointTypeCount",
+	Fields: graphql.Fields{
+		"label": &graphql.Field{Type: graphql.String},
+		"count": &graphql.Field{Type: graphql.Int},
+	},
+})
+
 // OrgAggregatedReleaseType represents releases aggregated by organization.
 // pending_scan is true when the org has been added via system_tracked_repos
 // but the relscanner has not yet processed it — no release records exist yet.
+// endpoint_type_counts contains per-type breakdowns of synced endpoints,
+// used to render [GKE ×3] [GitHub Actions ×12] style badges on org cards.
 var OrgAggregatedReleaseType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "OrgAggregatedRelease",
 	Fields: graphql.Fields{
@@ -89,6 +99,8 @@ var OrgAggregatedReleaseType = graphql.NewObject(graphql.ObjectConfig{
 		"synced_endpoint_count":     &graphql.Field{Type: graphql.Int},
 		"vulnerability_count_delta": &graphql.Field{Type: graphql.Int},
 		"pending_scan":              &graphql.Field{Type: graphql.Boolean},
+		// NEW: per-type endpoint breakdown for org card badges
+		"endpoint_type_counts": &graphql.Field{Type: graphql.NewList(EndpointTypeCountType)},
 	},
 })
 
@@ -367,20 +379,18 @@ func GetReleaseType(db database.DBConnection, vulnerabilityType *graphql.Object,
 }
 
 // ReleaseTimelineEntryType is the minimal per-version type for the timeline UI control.
-// Contains only what is needed to render the picker — full release details are fetched
-// separately via the existing release(name, version) query when a version is selected.
 var ReleaseTimelineEntryType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "ReleaseTimelineEntry",
 	Fields: graphql.Fields{
-		"version":        &graphql.Field{Type: graphql.String}, // e.g. "v1.35.3-gke.1737000"
-		"build_date":     &graphql.Field{Type: graphql.String}, // ISO8601 from builddate field
-		"endpoint_count": &graphql.Field{Type: graphql.Int},    // how many endpoints run this version
+		"version":        &graphql.Field{Type: graphql.String},
+		"build_date":     &graphql.Field{Type: graphql.String},
+		"endpoint_count": &graphql.Field{Type: graphql.Int},
 		"critical_count": &graphql.Field{Type: graphql.Int},
 		"high_count":     &graphql.Field{Type: graphql.Int},
 		"medium_count":   &graphql.Field{Type: graphql.Int},
 		"low_count":      &graphql.Field{Type: graphql.Int},
 		"total_cves":     &graphql.Field{Type: graphql.Int},
 		"content_sha":    &graphql.Field{Type: graphql.String},
-		"is_latest":      &graphql.Field{Type: graphql.Boolean}, // true only for semver latest
+		"is_latest":      &graphql.Field{Type: graphql.Boolean},
 	},
 })
