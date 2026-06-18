@@ -49,30 +49,52 @@ func GitHubCallback(db database.DBConnection) fiber.Handler {
 		state := c.Query("state")                    // Optional return path set by GitHubLogin
 		setupAction := c.Query("setup_action")       // Indicates an update redirect!
 
-		// FIXED: If GitHub is just redirecting after an update, bypass OAuth exchange
-		// and send the user straight back to the frontend.
+		// 1. Authenticate the User from Cookie FIRST
+		token := c.Cookies("auth_token")
+		if token == "" {
+			return c.Redirect().To("/?error=session_expired")
+		}
+
+		claims, err := ValidateJWT(token)
+		if err != nil {
+			return c.Redirect().To("/?error=session_expired")
+		}
+
+		username := claims.Username
+		ctx := c.Context()
+		user, err := getUserByUsername(ctx, db, username)
+		if err != nil {
+			return c.Redirect().To("/?error=user_not_found")
+		}
+
+		// 2. Handle the "Update" Redirect Flow
+		// If GitHub is just redirecting after an update, bypass OAuth exchange,
+		// save the installation ID if it changed, and send the user straight back.
 		if setupAction == "update" {
+			if installationID != "" && user.GitHubInstallationID != installationID {
+				user.GitHubInstallationID = installationID
+				user.UpdatedAt = time.Now()
+				_ = updateUser(ctx, db, user)
+			}
+
 			frontendURL := os.Getenv("BASE_URL")
 			if frontendURL == "" {
 				frontendURL = "http://localhost:4000"
 			}
-
-			// CHANGE THIS LINE: Default to /profile instead of /welcome
 			returnPath := "/profile"
-
 			if state != "" && isSafeReturnPath(state) {
 				returnPath = state
 			}
 			return c.Redirect().To(fmt.Sprintf("%s%s?github_updated=true", frontendURL, returnPath))
 		}
 
+		// 3. Handle the Standard OAuth Flow
 		if code == "" {
 			return c.Status(fiber.StatusBadRequest).SendString("Missing code. Ensure the App requests OAuth during installation.")
 		}
 
 		clientID := os.Getenv("GITHUB_CLIENT_ID")
 		clientSecret := os.Getenv("GITHUB_CLIENT_SECRET")
-
 		if clientID == "" || clientSecret == "" {
 			return c.Status(fiber.StatusInternalServerError).SendString("Server misconfiguration")
 		}
@@ -109,45 +131,45 @@ func GitHubCallback(db database.DBConnection) fiber.Handler {
 			return c.Status(fiber.StatusUnauthorized).SendString("Failed to get access token")
 		}
 
-		// Get Current User from Cookie
-		token := c.Cookies("auth_token")
-		if token == "" {
-			return c.Redirect().To("/?error=session_expired")
-		}
+		// FIXED: If the app was already installed, GitHub doesn't send the installation_id in the URL.
+		// We must fetch the user's accessible installations directly using their new token.
+		if installationID == "" {
+			reqInst, _ := http.NewRequest("GET", "https://api.github.com/user/installations", nil)
+			reqInst.Header.Set("Authorization", "Bearer "+accessToken)
+			reqInst.Header.Set("Accept", "application/vnd.github.v3+json")
 
-		claims, err := ValidateJWT(token)
-		if err != nil {
-			return c.Redirect().To("/?error=session_expired")
-		}
-
-		username := claims.Username
-
-		ctx := c.Context()
-		user, err := getUserByUsername(ctx, db, username)
-		if err != nil {
-			return c.Redirect().To("/?error=user_not_found")
+			respInst, err := client.Do(reqInst)
+			if err == nil {
+				defer respInst.Body.Close()
+				var instResult struct {
+					Installations []struct {
+						ID int `json:"id"`
+					} `json:"installations"`
+				}
+				if json.NewDecoder(respInst.Body).Decode(&instResult) == nil {
+					if len(instResult.Installations) > 0 {
+						installationID = fmt.Sprintf("%d", instResult.Installations[0].ID)
+					}
+				}
+			}
 		}
 
 		// Store Token and Installation ID
 		user.GitHubToken = accessToken
-
 		if installationID != "" {
 			user.GitHubInstallationID = installationID
 		}
-
 		user.UpdatedAt = time.Now()
 
 		if err := updateUser(ctx, db, user); err != nil {
 			return c.Status(fiber.StatusInternalServerError).SendString("Failed to save GitHub token")
 		}
 
-		// Redirect to Frontend — honor the return path passed via `state` if
-		// present and safe, otherwise fall back to the profile page.
+		// Redirect to Frontend
 		frontendURL := os.Getenv("BASE_URL")
 		if frontendURL == "" {
 			frontendURL = "http://localhost:4000"
 		}
-
 		returnPath := "/profile"
 		if state != "" && isSafeReturnPath(state) {
 			returnPath = state
