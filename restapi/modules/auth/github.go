@@ -56,7 +56,10 @@ func GitHubCallback(db database.DBConnection) fiber.Handler {
 			if frontendURL == "" {
 				frontendURL = "http://localhost:4000"
 			}
-			returnPath := "/welcome"
+
+			// CHANGE THIS LINE: Default to /profile instead of /welcome
+			returnPath := "/profile"
+
 			if state != "" && isSafeReturnPath(state) {
 				returnPath = state
 			}
