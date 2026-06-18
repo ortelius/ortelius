@@ -6,15 +6,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/ortelius/ortelius/v12/database"
 )
 
-// GitHubLogin initiates the GitHub App Installation flow
-// UPDATED: Changed *fiber.Ctx to fiber.Ctx and used c.Redirect().To() for Fiber v3
+// GitHubLogin initiates the GitHub App Installation flow.
+// Accepts an optional ?return_to= query param (a relative app path) which is
+// threaded through GitHub's installation flow via the `state` parameter and
+// used by GitHubCallback to send the user back to where they started
+// (e.g. the Welcome page) instead of always landing on /profile.
 func GitHubLogin(c fiber.Ctx) error {
 	appName := os.Getenv("GITHUB_APP_NAME")
 	if appName == "" {
@@ -22,15 +27,26 @@ func GitHubLogin(c fiber.Ctx) error {
 	}
 
 	installURL := fmt.Sprintf("https://github.com/apps/%s/installations/new", appName)
+
+	if returnTo := c.Query("return_to"); returnTo != "" && isSafeReturnPath(returnTo) {
+		installURL += "?state=" + url.QueryEscape(returnTo)
+	}
+
 	return c.Redirect().To(installURL)
 }
 
+// isSafeReturnPath restricts redirect targets to same-app relative paths,
+// preventing the state param from being used as an open redirect.
+func isSafeReturnPath(path string) bool {
+	return strings.HasPrefix(path, "/") && !strings.HasPrefix(path, "//") && !strings.Contains(path, "://")
+}
+
 // GitHubCallback handles the callback from GitHub
-// UPDATED: Changed *fiber.Ctx to fiber.Ctx and used c.Redirect().To() for Fiber v3
 func GitHubCallback(db database.DBConnection) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		code := c.Query("code")
 		installationID := c.Query("installation_id") // Captured from App Install flow
+		state := c.Query("state")                    // Optional return path set by GitHubLogin
 
 		if code == "" {
 			return c.Status(fiber.StatusBadRequest).SendString("Missing code. Ensure the App requests OAuth during installation.")
@@ -107,11 +123,18 @@ func GitHubCallback(db database.DBConnection) fiber.Handler {
 			return c.Status(fiber.StatusInternalServerError).SendString("Failed to save GitHub token")
 		}
 
-		// Redirect to Frontend Profile
+		// Redirect to Frontend — honor the return path passed via `state` if
+		// present and safe, otherwise fall back to the profile page.
 		frontendURL := os.Getenv("BASE_URL")
 		if frontendURL == "" {
 			frontendURL = "http://localhost:4000"
 		}
-		return c.Redirect().To(fmt.Sprintf("%s/profile?github_connected=true", frontendURL))
+
+		returnPath := "/profile"
+		if state != "" && isSafeReturnPath(state) {
+			returnPath = state
+		}
+
+		return c.Redirect().To(fmt.Sprintf("%s%s?github_connected=true", frontendURL, returnPath))
 	}
 }
