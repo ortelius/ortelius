@@ -687,6 +687,8 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 	}
 
 	// Find system_tracked_repos owners that have no release records yet.
+	// ... [EXISTING CODE] ...
+	// Find system_tracked_repos owners that have no release records yet.
 	pendingQuery := `
 		FOR t IN system_tracked_repos
 			FILTER NOT (
@@ -712,6 +714,10 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 			if scannedOrgs[row.Owner] {
 				continue
 			}
+
+			// Add this line to mark pending orgs as seen
+			scannedOrgs[row.Owner] = true
+
 			results = append(results, map[string]interface{}{
 				"org_name":                  row.Owner,
 				"total_releases":            0,
@@ -727,6 +733,33 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				"synced_endpoint_count":     0,
 				"vulnerability_count_delta": nil,
 				"pending_scan":              true,
+				"endpoint_type_counts":      []interface{}{},
+			})
+		}
+	}
+
+	// ========================================================================
+	// NEW CODE: Fill the gap for empty orgs that have no releases or pending scans
+	// ========================================================================
+	for _, orgName := range userOrgs {
+		if !scannedOrgs[orgName] {
+			scannedOrgs[orgName] = true
+
+			results = append(results, map[string]interface{}{
+				"org_name":                  orgName,
+				"total_releases":            0,
+				"total_versions":            0,
+				"total_vulnerabilities":     0,
+				"critical_count":            0,
+				"high_count":                0,
+				"medium_count":              0,
+				"low_count":                 0,
+				"max_severity_score":        nil,
+				"avg_scorecard_score":       nil,
+				"total_dependencies":        0,
+				"synced_endpoint_count":     0,
+				"vulnerability_count_delta": nil,
+				"pending_scan":              false,
 				"endpoint_type_counts":      []interface{}{},
 			})
 		}
