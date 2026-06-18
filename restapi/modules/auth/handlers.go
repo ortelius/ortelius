@@ -488,6 +488,9 @@ func CreateUser(db database.DBConnection) fiber.Handler {
 		user.IsActive = true
 		user.Status = "active"
 
+		// Seed the default favorites here so they immediately populate the dashboard
+		user.FavoriteOrgs = []string{"curl", "jenkinsci"}
+
 		if err := createUser(ctx, db, user); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create user"})
 		}
