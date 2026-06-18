@@ -687,19 +687,33 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 	}
 
 	// Find system_tracked_repos owners that have no release records yet.
-	// ... [EXISTING CODE] ...
-	// Find system_tracked_repos owners that have no release records yet.
 	pendingQuery := `
-		FOR t IN system_tracked_repos
-			FILTER NOT (
-				FOR r IN release
-					FILTER r.org == t.owner AND r.is_public == true
-					LIMIT 1
-					RETURN 1
-			)[0]
-			COLLECT owner = t.owner, provider = t.provider
+		LET system_pending = (
+			FOR t IN system_tracked_repos
+				FILTER NOT (
+					FOR r IN release
+						FILTER r.org == t.owner AND r.is_public == true
+						LIMIT 1
+						RETURN 1
+				)[0]
+				RETURN { owner: t.owner, provider: t.provider }
+		)
+		LET org_pending = (
+			FOR o IN orgs
+				FILTER LENGTH(o.tracked_repos) > 0
+				FILTER NOT (
+					FOR r IN release
+						FILTER r.org == o.name
+						LIMIT 1
+						RETURN 1
+				)[0]
+				RETURN { owner: o.name, provider: o.tracked_repos[0].provider }
+		)
+		FOR p IN APPEND(system_pending, org_pending)
+			COLLECT owner = p.owner, provider = p.provider
 			RETURN { owner, provider }
 	`
+
 	pendingCursor, err := db.Database.Query(ctx, pendingQuery, nil)
 	if err == nil {
 		defer pendingCursor.Close()
