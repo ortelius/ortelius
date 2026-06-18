@@ -237,8 +237,9 @@ func Me(db database.DBConnection) fiber.Handler {
 				appToken, err := github.GetInstallationToken(user.GitHubInstallationID)
 				if err == nil {
 					// Verify the installation actually has repo access
-					repos, repoErr := github.FetchRepos(appToken)
-					if repoErr == nil && len(repos) > 0 {
+					_, repoErr := github.FetchRepos(appToken)
+					// FIXED: Even if len(repos) == 0, the installation is perfectly valid!
+					if repoErr == nil {
 						installationValid = true
 					} else {
 						// It's a zombie installation or empty permission set. Clear it.
@@ -256,7 +257,6 @@ func Me(db database.DBConnection) fiber.Handler {
 						installationValid = true
 					}
 				}
-
 			}
 
 			// Check user OAuth token
@@ -274,7 +274,6 @@ func Me(db database.DBConnection) fiber.Handler {
 					// Network error - assume still valid
 					userTokenValid = true
 				}
-
 			}
 
 			// Convert if-else chain to switch statement (gocritic fix)
@@ -650,7 +649,8 @@ func createUser(ctx context.Context, db database.DBConnection, user *model.User)
 			created_at: @created_at,
 			updated_at: @updated_at,
 			github_token: @github_token,
-			github_installation_id: @github_installation_id
+			github_installation_id: @github_installation_id,
+			favorite_orgs: @favorite_orgs
 		} INTO users
 	`
 	bindVars := map[string]interface{}{
@@ -666,6 +666,7 @@ func createUser(ctx context.Context, db database.DBConnection, user *model.User)
 		"updated_at":             user.UpdatedAt,
 		"github_token":           user.GitHubToken,
 		"github_installation_id": user.GitHubInstallationID,
+		"favorite_orgs":          user.FavoriteOrgs,
 	}
 	_, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{BindVars: bindVars})
 	return err

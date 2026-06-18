@@ -47,6 +47,21 @@ func GitHubCallback(db database.DBConnection) fiber.Handler {
 		code := c.Query("code")
 		installationID := c.Query("installation_id") // Captured from App Install flow
 		state := c.Query("state")                    // Optional return path set by GitHubLogin
+		setupAction := c.Query("setup_action")       // Indicates an update redirect!
+
+		// FIXED: If GitHub is just redirecting after an update, bypass OAuth exchange
+		// and send the user straight back to the frontend.
+		if setupAction == "update" {
+			frontendURL := os.Getenv("BASE_URL")
+			if frontendURL == "" {
+				frontendURL = "http://localhost:4000"
+			}
+			returnPath := "/welcome"
+			if state != "" && isSafeReturnPath(state) {
+				returnPath = state
+			}
+			return c.Redirect().To(fmt.Sprintf("%s%s?github_updated=true", frontendURL, returnPath))
+		}
 
 		if code == "" {
 			return c.Status(fiber.StatusBadRequest).SendString("Missing code. Ensure the App requests OAuth during installation.")
