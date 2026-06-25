@@ -16,7 +16,6 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/os: linux
-      serviceAccountName: {{ include "microservice.name" . }}
       containers:
         - name: {{ include "microservice.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
