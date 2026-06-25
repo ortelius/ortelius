@@ -16,6 +16,7 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/os: linux
+      serviceAccountName: {{ include "microservice.name" . }}
       containers:
         - name: {{ include "microservice.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -86,6 +87,11 @@ spec:
                 secretKeyRef:
                   name: github-creds
                   key: PrivateKey
+            - name: TOKEN_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: token-encryption
+                  key: TokenEncryptionKey                  
             {{- if .Values.smtp.enabled }}
             - name: SMTP_HOST
               valueFrom:

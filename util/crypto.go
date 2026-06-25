@@ -116,13 +116,3 @@ func MaskToken(token string) string {
 	}
 	return "****" + token[len(token)-4:]
 }
-
-// GenerateEncryptionKey generates a new random 32-byte key and returns it
-// as a base64-encoded string. Used for initial setup / key rotation.
-func GenerateEncryptionKey() (string, error) {
-	key := make([]byte, 32)
-	if _, err := rand.Read(key); err != nil {
-		return "", fmt.Errorf("failed to generate key: %w", err)
-	}
-	return base64.StdEncoding.EncodeToString(key), nil
-}
