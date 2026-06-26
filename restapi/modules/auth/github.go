@@ -186,6 +186,7 @@ func GitHubCallback(db database.DBConnection) fiber.Handler {
 		// this is a live credential with repo access, not safe to keep in plaintext.
 		encryptedToken, err := util.EncryptToken(accessToken)
 		if err != nil {
+			fmt.Println("[DEBUG] GitHubCallback: util.EncryptToken failed:", err)
 			return c.Status(fiber.StatusInternalServerError).SendString("Failed to secure GitHub token")
 		}
 		user.GitHubToken = encryptedToken

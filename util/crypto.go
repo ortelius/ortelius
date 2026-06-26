@@ -17,13 +17,16 @@ const encPrefix = "enc:v1:"
 func getEncryptionKey() ([]byte, error) {
 	key := os.Getenv("TOKEN_ENCRYPTION_KEY")
 	if key == "" {
+		fmt.Println("[DEBUG] getEncryptionKey: TOKEN_ENCRYPTION_KEY is not set")
 		return nil, fmt.Errorf("TOKEN_ENCRYPTION_KEY environment variable is not set")
 	}
 	keyBytes, err := base64.StdEncoding.DecodeString(key)
 	if err != nil {
+		fmt.Println("[DEBUG] getEncryptionKey: TOKEN_ENCRYPTION_KEY is not valid base64:", err)
 		return nil, fmt.Errorf("TOKEN_ENCRYPTION_KEY must be a base64-encoded 32-byte key: %w", err)
 	}
 	if len(keyBytes) != 32 {
+		fmt.Println("[DEBUG] getEncryptionKey: TOKEN_ENCRYPTION_KEY decoded to", len(keyBytes), "bytes, expected 32")
 		return nil, fmt.Errorf("TOKEN_ENCRYPTION_KEY must decode to exactly 32 bytes, got %d", len(keyBytes))
 	}
 	return keyBytes, nil
@@ -45,16 +48,19 @@ func EncryptToken(plaintext string) (string, error) {
 
 	block, err := aes.NewCipher(keyBytes)
 	if err != nil {
+		fmt.Println("[DEBUG] EncryptToken: aes.NewCipher failed:", err)
 		return "", fmt.Errorf("failed to create cipher: %w", err)
 	}
 
 	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
+		fmt.Println("[DEBUG] EncryptToken: cipher.NewGCM failed:", err)
 		return "", fmt.Errorf("failed to create GCM: %w", err)
 	}
 
 	nonce := make([]byte, aesGCM.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		fmt.Println("[DEBUG] EncryptToken: failed to generate nonce:", err)
 		return "", fmt.Errorf("failed to generate nonce: %w", err)
 	}
 
@@ -71,6 +77,7 @@ func DecryptToken(encrypted string) (string, error) {
 	}
 
 	if len(encrypted) <= len(encPrefix) || encrypted[:len(encPrefix)] != encPrefix {
+		fmt.Println("[DEBUG] DecryptToken: missing or invalid version prefix")
 		return "", fmt.Errorf("invalid encrypted token format: missing version prefix")
 	}
 
@@ -81,27 +88,32 @@ func DecryptToken(encrypted string) (string, error) {
 
 	ciphertext, err := base64.StdEncoding.DecodeString(encrypted[len(encPrefix):])
 	if err != nil {
+		fmt.Println("[DEBUG] DecryptToken: failed to decode base64 ciphertext:", err)
 		return "", fmt.Errorf("failed to decode encrypted token: %w", err)
 	}
 
 	block, err := aes.NewCipher(keyBytes)
 	if err != nil {
+		fmt.Println("[DEBUG] DecryptToken: aes.NewCipher failed:", err)
 		return "", fmt.Errorf("failed to create cipher: %w", err)
 	}
 
 	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
+		fmt.Println("[DEBUG] DecryptToken: cipher.NewGCM failed:", err)
 		return "", fmt.Errorf("failed to create GCM: %w", err)
 	}
 
 	nonceSize := aesGCM.NonceSize()
 	if len(ciphertext) < nonceSize {
+		fmt.Println("[DEBUG] DecryptToken: ciphertext too short, len=", len(ciphertext), "nonceSize=", nonceSize)
 		return "", fmt.Errorf("ciphertext too short")
 	}
 
 	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
 	plaintext, err := aesGCM.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
+		fmt.Println("[DEBUG] DecryptToken: aesGCM.Open failed (wrong key or corrupted data):", err)
 		return "", fmt.Errorf("failed to decrypt token: %w", err)
 	}
 
