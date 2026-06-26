@@ -84,8 +84,10 @@ func GitHubCallback(db database.DBConnection) fiber.Handler {
 		code := c.Query("code")
 		installationID := c.Query("installation_id") // Captured from App Install flow
 		stateParam := c.Query("state")
+		fmt.Println("[DEBUG] GitHubCallback: invoked, code present =", code != "", "installation_id =", installationID, "state present =", stateParam != "")
 
 		if code == "" {
+			fmt.Println("[DEBUG] GitHubCallback: missing code param, aborting")
 			return c.Status(fiber.StatusBadRequest).SendString("Missing code. Ensure the App requests OAuth during installation.")
 		}
 
@@ -120,13 +122,16 @@ func GitHubCallback(db database.DBConnection) fiber.Handler {
 		})
 
 		if cookieNonce == "" || len(statePart) != 2 || statePart[0] != cookieNonce {
+			fmt.Println("[DEBUG] GitHubCallback: CSRF state/nonce check failed, redirecting")
 			return c.Redirect().To("/?error=invalid_oauth_state")
 		}
+		fmt.Println("[DEBUG] GitHubCallback: CSRF state/nonce check passed")
 
 		clientID := os.Getenv("GITHUB_CLIENT_ID")
 		clientSecret := os.Getenv("GITHUB_CLIENT_SECRET")
 
 		if clientID == "" || clientSecret == "" {
+			fmt.Println("[DEBUG] GitHubCallback: GITHUB_CLIENT_ID or GITHUB_CLIENT_SECRET not set")
 			return c.Status(fiber.StatusInternalServerError).SendString("Server misconfiguration")
 		}
 
@@ -144,42 +149,53 @@ func GitHubCallback(db database.DBConnection) fiber.Handler {
 		client := &http.Client{Timeout: 10 * time.Second}
 		resp, err := client.Do(req)
 		if err != nil {
+			fmt.Println("[DEBUG] GitHubCallback: token exchange HTTP request failed:", err)
 			return c.Status(fiber.StatusInternalServerError).SendString("Failed to exchange token")
 		}
 		defer resp.Body.Close()
+		fmt.Println("[DEBUG] GitHubCallback: token exchange HTTP status =", resp.StatusCode)
 
 		var result map[string]interface{}
 		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			fmt.Println("[DEBUG] GitHubCallback: failed to parse token response JSON:", err)
 			return c.Status(fiber.StatusInternalServerError).SendString("Failed to parse token response")
 		}
 
 		if errMsg, isError := result["error"]; isError {
+			fmt.Println("[DEBUG] GitHubCallback: GitHub returned error in token response:", errMsg)
 			return c.Status(fiber.StatusUnauthorized).SendString(fmt.Sprintf("GitHub Error: %v", errMsg))
 		}
 
 		accessToken, ok := result["access_token"].(string)
 		if !ok || accessToken == "" {
+			fmt.Println("[DEBUG] GitHubCallback: access_token missing or empty in response")
 			return c.Status(fiber.StatusUnauthorized).SendString("Failed to get access token")
 		}
+		fmt.Println("[DEBUG] GitHubCallback: access_token received, length =", len(accessToken))
 
 		// Get Current User from Cookie
 		token := c.Cookies("auth_token")
 		if token == "" {
+			fmt.Println("[DEBUG] GitHubCallback: auth_token cookie missing, session expired")
 			return c.Redirect().To("/?error=session_expired")
 		}
 
 		claims, err := ValidateJWT(token)
 		if err != nil {
+			fmt.Println("[DEBUG] GitHubCallback: ValidateJWT failed:", err)
 			return c.Redirect().To("/?error=session_expired")
 		}
 
 		username := claims.Username
+		fmt.Println("[DEBUG] GitHubCallback: JWT validated for username =", username)
 
 		ctx := c.Context()
 		user, err := getUserByUsername(ctx, db, username)
 		if err != nil {
+			fmt.Println("[DEBUG] GitHubCallback: getUserByUsername failed for", username, ":", err)
 			return c.Redirect().To("/?error=user_not_found")
 		}
+		fmt.Println("[DEBUG] GitHubCallback: user lookup succeeded, calling util.EncryptToken")
 
 		// Store Token and Installation ID
 		// Encrypted at rest, same as org-level PATs (see org.UpdateOrgCredentials) —
@@ -189,6 +205,7 @@ func GitHubCallback(db database.DBConnection) fiber.Handler {
 			fmt.Println("[DEBUG] GitHubCallback: util.EncryptToken failed:", err)
 			return c.Status(fiber.StatusInternalServerError).SendString("Failed to secure GitHub token")
 		}
+		fmt.Println("[DEBUG] GitHubCallback: util.EncryptToken succeeded")
 		user.GitHubToken = encryptedToken
 
 		if installationID != "" {
