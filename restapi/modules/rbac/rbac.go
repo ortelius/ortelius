@@ -46,9 +46,11 @@ type OrgMember struct {
 }
 
 // RBACUser represents a user in the RBAC YAML.
+// No Email field on purpose - email lives only in the application database,
+// never in this git-tracked config. See gitops.User for the matching
+// write-side struct and why.
 type RBACUser struct {
 	Username     string `yaml:"username"`
-	Email        string `yaml:"email"`
 	AuthProvider string `yaml:"auth_provider,omitempty"`
 }
 
@@ -206,8 +208,12 @@ func ApplyRBAC(db database.DBConnection, config *RBACConfig, createUser UserCrea
 
 		existingUser, exists := existingUserMap[username]
 		if !exists {
-			// Delegate user creation + invitation to auth package via injected function
-			token, err := createUser(ctx, db, username, configUser.Email, role, orgs)
+			// Delegate user creation + invitation to auth package via injected function.
+			// No email here by design - RBAC config carries roles/orgs only. The
+			// caller (Signup handler, SSO first-login, or an admin via the UI)
+			// is responsible for setting email directly on the user record
+			// through a non-git-tracked path.
+			token, err := createUser(ctx, db, username, "", role, orgs)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create user %s: %w", username, err)
 			}
@@ -218,10 +224,8 @@ func ApplyRBAC(db database.DBConnection, config *RBACConfig, createUser UserCrea
 			result.Created = append(result.Created, username)
 		} else {
 			needsUpdate := false
-			if existingUser.Email != configUser.Email ||
-				existingUser.Role != role ||
+			if existingUser.Role != role ||
 				!stringSlicesEqual(existingUser.Orgs, orgs) {
-				existingUser.Email = configUser.Email
 				existingUser.Role = role
 				existingUser.Orgs = orgs
 				needsUpdate = true
@@ -277,7 +281,6 @@ func ExportRBACConfig(ctx context.Context, db database.DBConnection) (*RBACConfi
 	for _, user := range users {
 		config.Users = append(config.Users, RBACUser{
 			Username:     user.Username,
-			Email:        user.Email,
 			AuthProvider: user.AuthProvider,
 		})
 	}

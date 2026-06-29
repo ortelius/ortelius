@@ -5,23 +5,36 @@ import (
 	"time"
 )
 
+// LinkedIdentity records one external login method attached to a local
+// account - e.g. a user who signed up with username/password can later
+// attach a Google login, then later still a GitHub login, all resolving to
+// the SAME User record. Provider+ExternalID together are unique across all
+// users (enforced in code via getUserByLinkedIdentity, not a DB constraint).
+type LinkedIdentity struct {
+	Provider      string    `json:"provider"`               // "google", "github", "authentik", "okta", "gitlab"
+	ExternalID    string    `json:"external_id"`             // stable subject/id at the provider - sub (Google/OIDC) or numeric id (GitHub), NEVER email
+	Email         string    `json:"email,omitempty"`         // email reported by the provider at link time, kept for audit/debugging only
+	EmailVerified bool      `json:"email_verified"`          // was the provider's email claim verified at link time
+	LinkedAt      time.Time `json:"linked_at"`
+}
+
 // User represents a user in the system
 type User struct {
-	Key                  string    `json:"_key,omitempty"`
-	Username             string    `json:"username"`
-	Email                string    `json:"email"`
-	PasswordHash         string    `json:"password_hash,omitempty"`
-	Role                 string    `json:"role"`          // admin, editor, viewer
-	Orgs                 []string  `json:"orgs"`          // List of orgs user can access
-	FavoriteOrgs         []string  `json:"favorite_orgs"` // Orgs the user has starred for quick access (independent of Orgs membership)
-	IsActive             bool      `json:"is_active"`
-	Status               string    `json:"status"`                           // pending, active, inactive
-	AuthProvider         string    `json:"auth_provider"`                    // local, oidc
-	ExternalID           string    `json:"external_id,omitempty"`            // For OIDC
-	GitHubToken          string    `json:"github_token,omitempty"`           // GitHub User OAuth Token (optional/legacy)
-	GitHubInstallationID string    `json:"github_installation_id,omitempty"` // GitHub App Installation ID
-	CreatedAt            time.Time `json:"created_at"`
-	UpdatedAt            time.Time `json:"updated_at"`
+	Key                  string           `json:"_key,omitempty"`
+	Username             string           `json:"username"`
+	Email                string           `json:"email"`
+	PasswordHash         string           `json:"password_hash,omitempty"`
+	Role                 string           `json:"role"`          // admin, editor, viewer
+	Orgs                 []string         `json:"orgs"`          // List of orgs user can access
+	FavoriteOrgs         []string         `json:"favorite_orgs"` // Orgs the user has starred for quick access (independent of Orgs membership)
+	IsActive             bool             `json:"is_active"`
+	Status               string           `json:"status"`        // pending, active, inactive
+	AuthProvider         string           `json:"auth_provider"` // "local" (has a password) or "sso" (provisioned by a first SSO login, no password set)
+	LinkedIdentities     []LinkedIdentity `json:"linked_identities,omitempty"`
+	GitHubToken          string           `json:"github_token,omitempty"`           // GitHub User OAuth Token (optional/legacy)
+	GitHubInstallationID string           `json:"github_installation_id,omitempty"` // GitHub App Installation ID
+	CreatedAt            time.Time        `json:"created_at"`
+	UpdatedAt            time.Time        `json:"updated_at"`
 }
 
 // NewUser creates a new user with default values

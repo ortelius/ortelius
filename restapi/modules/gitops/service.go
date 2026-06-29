@@ -46,9 +46,13 @@ type Member struct {
 }
 
 // User represents a user identity structure.
+// Deliberately has NO email field - this struct is marshaled into rbac.yaml,
+// which is committed and pushed to a git repository (RBAC_REPO). Storing
+// real email addresses in a git-tracked config file means they persist in
+// history forever and can leak to anyone with read access to that repo -
+// email is sourced/stored only in the application database, never here.
 type User struct {
 	Username     string `yaml:"username"`
-	Email        string `yaml:"email"`
 	AuthProvider string `yaml:"auth_provider,omitempty"`
 }
 
@@ -60,7 +64,7 @@ type Role struct {
 }
 
 // UpdateRBACRepo clones the remote repo, adds the new user/org, and pushes changes.
-func UpdateRBACRepo(username, email, firstName, lastName, orgName string) (string, error) {
+func UpdateRBACRepo(username, firstName, lastName, orgName string) (string, error) {
 	repoURL := os.Getenv("RBAC_REPO")
 	token := os.Getenv("RBAC_REPO_TOKEN")
 
@@ -78,7 +82,7 @@ func UpdateRBACRepo(username, email, firstName, lastName, orgName string) (strin
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		updatedYaml, err = tryUpdateRepo(repoURL, authMethod, username, email, firstName, lastName, orgName)
+		updatedYaml, err = tryUpdateRepo(repoURL, authMethod, username, firstName, lastName, orgName)
 		if err == nil {
 			return updatedYaml, nil
 		}
@@ -220,7 +224,7 @@ func tryAddTrackedRepo(repoURL string, authMethod *http.BasicAuth, orgName, prov
 	return string(newYamlBytes), nil
 }
 
-func tryUpdateRepo(repoURL string, authMethod *http.BasicAuth, username, email, firstName, lastName, orgName string) (string, error) {
+func tryUpdateRepo(repoURL string, authMethod *http.BasicAuth, username, firstName, lastName, orgName string) (string, error) {
 	normalizedOrgName := strings.ToLower(strings.TrimSpace(orgName))
 	displayName := orgName
 
@@ -317,7 +321,6 @@ func tryUpdateRepo(repoURL string, authMethod *http.BasicAuth, username, email, 
 	if !userExists {
 		config.Users = append(config.Users, User{
 			Username:     username,
-			Email:        email,
 			AuthProvider: "local",
 		})
 		configUpdated = true

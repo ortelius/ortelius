@@ -38,6 +38,15 @@ func MakeUserCreator(db database.DBConnection, emailConfig *EmailConfig) rbac.Us
 			return "", fmt.Errorf("failed to create user: %w", err)
 		}
 
+		// No email known at this point (RBAC config never carries it - see
+		// rbac.RBACUser). The caller is responsible for setting email and
+		// sending the real invitation through a non-git-tracked path (e.g.
+		// the Signup handler does this immediately after this returns, using
+		// the email from the signup request directly).
+		if email == "" {
+			return "", nil
+		}
+
 		inv, err := CreateInvitation(ctx, dbConn, emailConfig, username, email, role)
 		if err != nil {
 			return "", nil

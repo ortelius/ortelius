@@ -99,7 +99,9 @@ func Signup(db database.DBConnection, emailConfig *EmailConfig) fiber.Handler {
 		}
 
 		// 3. Execute GitOps Workflow
-		updatedYaml, err := gitops.UpdateRBACRepo(req.Username, req.Email, req.FirstName, req.LastName, req.Organization)
+		// Note: email is intentionally NOT passed here - rbac.yaml is committed
+		// to a git repo and must never carry PII. See gitops.User / rbac.RBACUser.
+		updatedYaml, err := gitops.UpdateRBACRepo(req.Username, req.FirstName, req.LastName, req.Organization)
 		if err != nil {
 			fmt.Printf("GitOps Error: %v\n", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -116,6 +118,24 @@ func Signup(db database.DBConnection, emailConfig *EmailConfig) fiber.Handler {
 		result, err := rbac.ApplyRBAC(db, config, MakeUserCreator(db, emailConfig))
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to apply account configuration"})
+		}
+
+		// 5. ApplyRBAC created the account with no email (RBAC config never
+		// carries it). req.Email is known directly from this signup request,
+		// never from the committed YAML - set it on the new record and send
+		// the real invitation now.
+		newUser, err := getUserByUsername(ctx, db, req.Username)
+		if err == nil {
+			newUser.Email = req.Email
+			newUser.UpdatedAt = time.Now()
+			if err := updateUser(ctx, db, newUser); err != nil {
+				fmt.Printf("WARNING: failed to set email for new user %s: %v\n", req.Username, err)
+			}
+			if _, err := CreateInvitation(ctx, db, emailConfig, req.Username, req.Email, newUser.Role); err != nil {
+				fmt.Printf("WARNING: failed to create/send invitation for %s: %v\n", req.Username, err)
+			}
+		} else {
+			fmt.Printf("WARNING: could not load newly created user %s to set email: %v\n", req.Username, err)
 		}
 
 		fmt.Printf("Signup Complete for %s. Created: %v, Invited: %v\n", req.Username, result.Created, result.Invited)
@@ -652,6 +672,7 @@ func createUser(ctx context.Context, db database.DBConnection, user *model.User)
 			is_active: @is_active,
 			status: @status,
 			auth_provider: @auth_provider,
+			linked_identities: @linked_identities,
 			created_at: @created_at,
 			updated_at: @updated_at,
 			github_token: @github_token,
@@ -667,6 +688,7 @@ func createUser(ctx context.Context, db database.DBConnection, user *model.User)
 		"is_active":              user.IsActive,
 		"status":                 user.Status,
 		"auth_provider":          user.AuthProvider,
+		"linked_identities":      user.LinkedIdentities,
 		"created_at":             user.CreatedAt,
 		"updated_at":             user.UpdatedAt,
 		"github_token":           user.GitHubToken,
@@ -674,6 +696,73 @@ func createUser(ctx context.Context, db database.DBConnection, user *model.User)
 	}
 	_, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{BindVars: bindVars})
 	return err
+}
+
+// getUserByLinkedIdentity finds the user that has (provider, externalID) in
+// its linked_identities array. This is the PRIMARY lookup for repeat SSO
+// logins - it's keyed on the provider's stable subject/id, never on email,
+// since email can change at the provider but sub/id never does.
+func getUserByLinkedIdentity(ctx context.Context, db database.DBConnection, provider, externalID string) (*model.User, error) {
+	query := `
+		FOR u IN users
+		FILTER LENGTH(
+			FOR li IN u.linked_identities OR []
+			FILTER li.provider == @provider AND li.external_id == @external_id
+			LIMIT 1
+			RETURN li
+		) > 0
+		LIMIT 1
+		RETURN u
+	`
+	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"provider": provider, "external_id": externalID},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close()
+
+	var user model.User
+	if !cursor.HasMore() {
+		return nil, fmt.Errorf("user not found")
+	}
+	if _, err := cursor.ReadDocument(ctx, &user); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// getUserByEmail finds an existing account by email (case-insensitive),
+// regardless of how it was created - local signup or a prior SSO login.
+// This is the SECONDARY lookup used only when getUserByLinkedIdentity finds
+// nothing, to merge a new SSO login into an existing account rather than
+// creating a duplicate. Callers MUST only use this path when the provider
+// has confirmed email_verified=true on the incoming claim - matching on an
+// unverified email would let anyone claim an account by typing someone
+// else's address into an IdP that doesn't check it.
+func getUserByEmail(ctx context.Context, db database.DBConnection, email string) (*model.User, error) {
+	query := `
+		FOR u IN users
+		FILTER LOWER(u.email) == LOWER(@email)
+		LIMIT 1
+		RETURN u
+	`
+	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"email": email},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close()
+
+	var user model.User
+	if !cursor.HasMore() {
+		return nil, fmt.Errorf("user not found")
+	}
+	if _, err := cursor.ReadDocument(ctx, &user); err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func updateUser(ctx context.Context, db database.DBConnection, user *model.User) error {
@@ -688,6 +777,7 @@ func updateUser(ctx context.Context, db database.DBConnection, user *model.User)
 			is_active: @is_active,
 			status: @status,
 			updated_at: @updated_at,
+			linked_identities: @linked_identities,
 			github_token: @github_token,
 			github_installation_id: @github_installation_id
 		} IN users
@@ -701,6 +791,7 @@ func updateUser(ctx context.Context, db database.DBConnection, user *model.User)
 		"is_active":              user.IsActive,
 		"status":                 user.Status,
 		"updated_at":             user.UpdatedAt,
+		"linked_identities":      user.LinkedIdentities,
 		"github_token":           user.GitHubToken,
 		"github_installation_id": user.GitHubInstallationID,
 	}

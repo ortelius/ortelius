@@ -40,6 +40,12 @@ func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema
 		}
 	}()
 
+	// OIDC providers (Google now; Authentik/Okta register the same way once
+	// their env vars are set - see LoadOIDCProvidersFromEnv) and GitHub's
+	// separate OAuth2 sign-in app.
+	auth.LoadOIDCProvidersFromEnv(context.Background())
+	auth.LoadGitHubOAuthFromEnv()
+
 	emailConfig := auth.LoadEmailConfig()
 	go autoApplyRBACOnStartup(db, emailConfig)
 	go startInvitationCleanup(db)
@@ -66,9 +72,20 @@ func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema
 	authGroup.Post("/change-password", auth.RequireAuth(db), auth.ChangePassword(db))
 	authGroup.Post("/refresh", auth.RefreshToken(db))
 
-	// GitHub Auth Routes
+	// GitHub Auth Routes (App-install flow - links repo access to an
+	// already-logged-in user; see github.go)
 	authGroup.Get("/github/login", auth.GitHubLogin)
 	authGroup.Get("/github/callback", auth.GitHubCallback(db))
+
+	// GitHub Sign-In Routes (OAuth2 login flow - separate OAuth App
+	// registration from the GitHub App above; see github_oauth.go)
+	authGroup.Get("/github-signin/login", auth.GitHubSigninLogin)
+	authGroup.Get("/github-signin/callback", auth.GitHubSigninCallback(db))
+
+	// Generic OIDC Sign-In Routes - :provider matches a name registered via
+	// LoadOIDCProvidersFromEnv (e.g. "google", and later "authentik", "okta")
+	authGroup.Get("/:provider/login", auth.OIDCLogin)
+	authGroup.Get("/:provider/callback", auth.OIDCCallback(db))
 
 	// GitHub Integration Routes
 	githubGroup := api.Group("/github", auth.RequireAuth(db))
