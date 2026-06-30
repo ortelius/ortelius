@@ -93,6 +93,16 @@ var ExecutiveSummaryType = graphql.NewObject(graphql.ObjectConfig{
 		"oldest_open_critical_days": &graphql.Field{Type: graphql.Float}, // Section B.4
 		"backlog_delta":             &graphql.Field{Type: graphql.Int},   // Section D.3
 		"fixed_within_sla_pct":      &graphql.Field{Type: graphql.Float}, // Section C.2 - Added for frontend
+
+		// Release-clocked equivalents. Computed from the latest published version of
+		// each release (release.is_latest) instead of the latest synced endpoint
+		// snapshot, so they're populated even for releases that have never been
+		// deployed through a tracked endpoint (e.g. curl, jenkins).
+		"open_cves_release":                 &graphql.Field{Type: graphql.Int},
+		"mean_open_age_release":             &graphql.Field{Type: graphql.Float},
+		"open_cves_beyond_sla_pct_release":  &graphql.Field{Type: graphql.Float},
+		"oldest_open_critical_days_release": &graphql.Field{Type: graphql.Float},
+		"backlog_delta_release":             &graphql.Field{Type: graphql.Int},
 	},
 })
 
@@ -121,6 +131,15 @@ var DetailedSeverityMetricsType = graphql.NewObject(graphql.ObjectConfig{
 		"remediated":    &graphql.Field{Type: graphql.Int}, // D.2
 		"backlog_count": &graphql.Field{Type: graphql.Int}, // Current Open Count (legacy name)
 		"open_count":    &graphql.Field{Type: graphql.Int}, // Current Open Count - NEW FIELD (same as backlog_count)
+
+		// Release-clocked open exposure — same shape as the B/C sections above, but
+		// sourced from the latest published release version rather than the latest
+		// synced endpoint snapshot.
+		"open_count_release":            &graphql.Field{Type: graphql.Int},
+		"mean_open_age_release":         &graphql.Field{Type: graphql.Float},
+		"oldest_open_days_release":      &graphql.Field{Type: graphql.Float},
+		"open_beyond_sla_pct_release":   &graphql.Field{Type: graphql.Float},
+		"open_beyond_sla_count_release": &graphql.Field{Type: graphql.Int},
 	},
 })
 
@@ -142,6 +161,19 @@ var EndpointImpactMetricsType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
+// ReleaseImpactMetricsType reports deployment coverage at the release level, so the
+// frontend can detect "released but never deployed" projects (e.g. curl, jenkins)
+// and default the dashboard to the release-clocked view instead of showing a wall
+// of misleading zeros from endpoint-gated metrics.
+var ReleaseImpactMetricsType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "ReleaseImpactMetrics",
+	Fields: graphql.Fields{
+		"total_releases_count":      &graphql.Field{Type: graphql.Int},
+		"deployed_releases_count":   &graphql.Field{Type: graphql.Int},
+		"undeployed_releases_count": &graphql.Field{Type: graphql.Int},
+	},
+})
+
 // MTTRAnalysisType is the root container for the Dashboard Metrics response
 var MTTRAnalysisType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "MTTRAnalysis",
@@ -149,5 +181,6 @@ var MTTRAnalysisType = graphql.NewObject(graphql.ObjectConfig{
 		"executive_summary": &graphql.Field{Type: ExecutiveSummaryType},
 		"by_severity":       &graphql.Field{Type: graphql.NewList(DetailedSeverityMetricsType)},
 		"endpoint_impact":   &graphql.Field{Type: EndpointImpactMetricsType},
+		"release_impact":    &graphql.Field{Type: ReleaseImpactMetricsType},
 	},
 })

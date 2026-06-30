@@ -415,6 +415,39 @@ func ResolveMTTR(db database.DBConnection, days int, org string) (map[string]int
 					})
 		)
 
+		// Release-based open set: does NOT require a sync/endpoint record to exist.
+		// This is what powers the "Released" dashboard view for projects (e.g. curl,
+		// jenkins) whose maintainers cut releases that are never deployed through
+		// any tracked endpoint. Clock basis is identical (root_introduced_at), but
+		// membership is keyed off the latest published version of each release
+		// instead of the latest synced version on each endpoint.
+		LET latest_releases = (
+			FOR r IN release
+				FILTER r.is_latest == true
+				FILTER @org == "" OR r.org == @org
+				RETURN { release: r.name, version: r.version }
+		)
+
+		LET release_open_cves = (
+			FOR active IN latest_releases
+				FOR lifecycle IN cve_lifecycle
+					FILTER lifecycle.release_name == active.release
+					AND lifecycle.introduced_version == active.version
+					FILTER lifecycle.is_remediated == false
+
+					LET sev_key = UPPER(lifecycle.severity_rating)
+					LET sla_entry = HAS(sla_def, sev_key) ? sla_def[sev_key] : sla_def["NONE"]
+					// No endpoint to classify as a mission asset in the release-only
+					// view, so always use the standard (non high-risk) SLA target.
+					LET sla_days = sla_entry.default
+					LET discovery_ts = DATE_TIMESTAMP(lifecycle.root_introduced_at != null ? lifecycle.root_introduced_at : lifecycle.introduced_at)
+
+					RETURN MERGE(lifecycle, {
+						sla_days: sla_days,
+						open_age: DATE_DIFF(discovery_ts, DATE_NOW(), "d")
+					})
+		)
+
 		LET all_events = (
 			FOR r IN cve_lifecycle
 				LET remediated_ts = r.remediated_at != null ? DATE_TIMESTAMP(r.remediated_at) : null
@@ -461,6 +494,10 @@ func ResolveMTTR(db database.DBConnection, days int, org string) (map[string]int
 				LET sum_open_age_post = SUM(open_post[*].open_age)
 
 				LET open_beyond_sla = LENGTH(FOR g IN open_items FILTER g.open_age > g.sla_days RETURN 1)
+
+				LET open_items_release = (FOR g IN release_open_cves FILTER UPPER(g.severity_rating) == severity_val RETURN g)
+				LET count_open_release = LENGTH(open_items_release)
+				LET open_beyond_sla_release = LENGTH(FOR g IN open_items_release FILTER g.open_age > g.sla_days RETURN 1)
 				
 				RETURN {
 					severity: severity_val,
@@ -477,12 +514,21 @@ func ResolveMTTR(db database.DBConnection, days int, org string) (map[string]int
 					new_detected: count_open,
 					remediated: count_fixed,
 					open_post_count: count_open_post,
+
+					// Release-clocked open metrics — populated regardless of whether
+					// any endpoint has synced this release.
+					open_count_release: count_open_release,
+					mean_open_age_release: count_open_release > 0 ? AVG(open_items_release[*].open_age) : 0,
+					oldest_open_days_release: count_open_release > 0 ? MAX(open_items_release[*].open_age) : 0,
+					open_beyond_sla_pct_release: count_open_release > 0 ? (open_beyond_sla_release * 100.0 / count_open_release) : 0,
+					open_beyond_sla_count_release: open_beyond_sla_release,
 					
 					_sum_mttr: sum_mttr || 0,
 					_sum_mttr_post: sum_mttr_post || 0,
 					_count_fixed_post: count_fixed_post,
 					_sum_open_age: SUM(open_items[*].open_age) || 0,
 					_sum_open_age_post: sum_open_age_post || 0,
+					_sum_open_age_release: SUM(open_items_release[*].open_age) || 0,
 					_count_fixed_within_sla: SUM(FOR g IN fixed_in_window FILTER g.days_to_remediate <= g.sla_days RETURN 1)
 				}
 		)
@@ -491,6 +537,7 @@ func ResolveMTTR(db database.DBConnection, days int, org string) (map[string]int
 		LET total_open = SUM(severity_groups[*].open_count)
 		LET total_open_post = SUM(severity_groups[*].open_post_count)
 		LET total_fixed_post = SUM(severity_groups[*]._count_fixed_post)
+		LET total_open_release = SUM(severity_groups[*].open_count_release)
 
 		LET exec_summary = {
 			total_new_cves: SUM(severity_groups[*].new_detected),
@@ -503,7 +550,15 @@ func ResolveMTTR(db database.DBConnection, days int, org string) (map[string]int
 			open_cves_beyond_sla_pct: total_open > 0 ? (SUM(severity_groups[*].open_beyond_sla_count) * 100.0 / total_open) : 0,
 			fixed_within_sla_pct: total_fixed > 0 ? (SUM(severity_groups[*]._count_fixed_within_sla) * 100.0 / total_fixed) : 0,
 			oldest_open_critical_days: MAX(FOR g IN severity_groups FILTER g.severity == "CRITICAL" RETURN g.oldest_open_days),
-			backlog_delta: SUM(severity_groups[*].new_detected) - total_fixed
+			backlog_delta: SUM(severity_groups[*].new_detected) - total_fixed,
+
+			// Release-clocked equivalents — populated even when no release in the
+			// window has ever been synced to a tracked endpoint.
+			open_cves_release: total_open_release,
+			mean_open_age_release: total_open_release > 0 ? SUM(severity_groups[*]._sum_open_age_release) / total_open_release : 0,
+			open_cves_beyond_sla_pct_release: total_open_release > 0 ? (SUM(severity_groups[*].open_beyond_sla_count_release) * 100.0 / total_open_release) : 0,
+			oldest_open_critical_days_release: MAX(FOR g IN severity_groups FILTER g.severity == "CRITICAL" RETURN g.oldest_open_days_release),
+			backlog_delta_release: SUM(severity_groups[*].new_detected) - total_fixed
 		}
 
 		RETURN {
@@ -512,6 +567,11 @@ func ResolveMTTR(db database.DBConnection, days int, org string) (map[string]int
 			endpoint_impact: {
 				affected_endpoints_count: LENGTH(UNIQUE(FOR e IN current_snapshot_cves RETURN e.endpoint_name)),
 				post_deployment_cves_by_type: (FOR e IN current_snapshot_cves FILTER e.is_post == true COLLECT type = e.endpoint_type WITH COUNT INTO count RETURN { type, count })
+			},
+			release_impact: {
+				total_releases_count: LENGTH(latest_releases),
+				deployed_releases_count: LENGTH(UNIQUE(latest_snapshots[*].release)),
+				undeployed_releases_count: LENGTH(latest_releases) - LENGTH(UNIQUE(latest_snapshots[*].release))
 			}
 		}
 	`
