@@ -68,6 +68,11 @@ func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema
 	authGroup.Post("/login", auth.Login(db))
 	authGroup.Post("/logout", auth.Logout())
 	authGroup.Get("/me", auth.OptionalAuth(db), auth.Me(db))
+
+	// Public - reports which SSO providers are configured, so the frontend
+	// can conditionally render login buttons. Must come before the
+	// /:provider catch-all routes below or it'd be swallowed by them.
+	authGroup.Get("/status", auth.AuthStatus)
 	authGroup.Post("/forgot-password", auth.ForgotPassword(db))
 	authGroup.Post("/change-password", auth.RequireAuth(db), auth.ChangePassword(db))
 	authGroup.Post("/refresh", auth.RefreshToken(db))

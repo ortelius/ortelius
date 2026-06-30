@@ -142,6 +142,19 @@ func getOIDCProvider(name string) (*oidcRuntimeProvider, bool) {
 	return rp, ok
 }
 
+// RegisteredOIDCProviders returns the names of all currently configured OIDC
+// providers (e.g. ["google"], or ["google", "authentik"] once more are
+// added). Used by AuthStatus to tell the frontend which SSO buttons to show.
+func RegisteredOIDCProviders() []string {
+	oidcProvidersMu.RLock()
+	defer oidcProvidersMu.RUnlock()
+	names := make([]string, 0, len(oidcProviders))
+	for name := range oidcProviders {
+		names = append(names, name)
+	}
+	return names
+}
+
 // OIDCLogin redirects the browser to the named provider's authorize endpoint.
 // Mounted as GET /api/v1/auth/:provider/login - :provider must be a name
 // previously passed to RegisterOIDCProvider (e.g. "google").

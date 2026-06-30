@@ -30,6 +30,13 @@ const githubSigninNonceCookie = "github_signin_nonce"
 
 var githubOAuthConfig *oauth2.Config
 
+// GitHubSigninEnabled reports whether GITHUB_OAUTH_CLIENT_ID was set at
+// startup. Used by AuthStatus to tell the frontend whether to show the
+// "Sign in with GitHub" button.
+func GitHubSigninEnabled() bool {
+	return githubOAuthConfig != nil
+}
+
 // LoadGitHubOAuthFromEnv configures the GitHub sign-in OAuth2 app. Call once
 // at startup alongside LoadOIDCProvidersFromEnv. Uses a SEPARATE client
 // id/secret from GITHUB_APP_NAME's app (env: GITHUB_OAUTH_CLIENT_ID /
