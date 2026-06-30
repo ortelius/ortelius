@@ -41,41 +41,35 @@ spec:
                 secretKeyRef:
                   name: arangodb
                   key: DBPort
+            # --- Non-secret config: plain values straight from .Values ---
             - name: RBAC_REPO
-              valueFrom:
-                secretKeyRef:
-                  name: rbac
-                  key: RBACRepo
+              value: "{{ .Values.rbac_repo }}"
+            - name: API_BASE_URL
+              value: "{{ .Values.apiBaseUrl }}"
+            - name: BASE_URL
+              value: "{{ .Values.baseUrl }}"
+            - name: GITHUB_APP_NAME
+              value: "{{ .Values.github.appName }}"
+            - name: GITHUB_APP_ID
+              value: "{{ .Values.github.appId }}"
+            - name: GITHUB_CLIENT_ID
+              value: "{{ .Values.github.clientId }}"
+            - name: GOOGLE_OIDC_CLIENT_ID
+              value: "{{ .Values.googleOidc.clientId }}"
+            - name: GOOGLE_OIDC_ALLOWED_DOMAIN
+              value: "{{ .Values.googleOidc.allowedDomain }}"
+            - name: GOOGLE_OIDC_REDIRECT_URL
+              value: "{{ .Values.baseUrl }}/api/v1/auth/google/callback"
+            - name: GITHUB_OAUTH_CLIENT_ID
+              value: "{{ .Values.githubSignin.clientId }}"
+            - name: GITHUB_OAUTH_REDIRECT_URL
+              value: "{{ .Values.baseUrl }}/api/v1/auth/github-signin/callback"
+            # --- True secrets: pulled from Secret objects ---
             - name: RBAC_REPO_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: rbac
                   key: RBACRepoToken
-            - name: API_BASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: github-creds
-                  key: ApiBaseUrl
-            - name: BASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: github-creds
-                  key: BaseUrl
-            - name: GITHUB_APP_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: github-creds
-                  key: AppName
-            - name: GITHUB_APP_ID
-              valueFrom:
-                secretKeyRef:
-                  name: github-creds
-                  key: AppId
-            - name: GITHUB_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: github-creds
-                  key: ClientId
             - name: GITHUB_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -86,71 +80,42 @@ spec:
                 secretKeyRef:
                   name: github-creds
                   key: PrivateKey
+            - name: GITHUB_READONLY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-creds
+                  key: ReadOnlyToken
             - name: TOKEN_ENCRYPTION_KEY
               valueFrom:
                 secretKeyRef:
                   name: token-encryption
-                  key: TokenEncryptionKey                  
-            - name: GOOGLE_OIDC_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: google-oidc-creds
-                  key: ClientId
+                  key: TokenEncryptionKey
             - name: GOOGLE_OIDC_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: google-oidc-creds
                   key: ClientSecret
-            - name: GOOGLE_OIDC_ALLOWED_DOMAIN
-              valueFrom:
-                secretKeyRef:
-                  name: google-oidc-creds
-                  key: AllowedDomain
-            - name: GOOGLE_OIDC_REDIRECT_URL
-              value: "{{ .Values.baseUrl }}/api/v1/auth/google/callback"
-            - name: GITHUB_OAUTH_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: github-signin-creds
-                  key: ClientId
             - name: GITHUB_OAUTH_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: github-signin-creds
                   key: ClientSecret
-            - name: GITHUB_OAUTH_REDIRECT_URL
-              value: "{{ .Values.baseUrl }}/api/v1/auth/github-signin/callback"
             {{- if .Values.smtp.enabled }}
             - name: SMTP_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: smtp-config
-                  key: SMTPHost
+              value: "{{ .Values.smtp.host }}"
             - name: SMTP_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: smtp-config
-                  key: SMTPPort
+              value: "{{ .Values.smtp.port }}"
             - name: SMTP_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: smtp-config
-                  key: SMTPUsername
+              value: "{{ .Values.smtp.username }}"
+            - name: SMTP_FROM_EMAIL
+              value: "{{ .Values.smtp.fromEmail }}"
+            - name: SMTP_FROM_NAME
+              value: "{{ .Values.smtp.fromName }}"
             - name: SMTP_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: smtp-config
                   key: SMTPPassword
-            - name: SMTP_FROM_EMAIL
-              valueFrom:
-                secretKeyRef:
-                  name: smtp-config
-                  key: SMTPFromEmail
-            - name: SMTP_FROM_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: smtp-config
-                  key: SMTPFromName
             {{- end }}
           ports:
             - name: http
