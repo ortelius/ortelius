@@ -91,6 +91,35 @@ spec:
                 secretKeyRef:
                   name: token-encryption
                   key: TokenEncryptionKey                  
+            - name: GOOGLE_OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: google-oidc-creds
+                  key: ClientId
+            - name: GOOGLE_OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: google-oidc-creds
+                  key: ClientSecret
+            - name: GOOGLE_OIDC_ALLOWED_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: google-oidc-creds
+                  key: AllowedDomain
+            - name: GOOGLE_OIDC_REDIRECT_URL
+              value: "{{ .Values.baseUrl }}/api/v1/auth/google/callback"
+            - name: GITHUB_OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: github-signin-creds
+                  key: ClientId
+            - name: GITHUB_OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: github-signin-creds
+                  key: ClientSecret
+            - name: GITHUB_OAUTH_REDIRECT_URL
+              value: "{{ .Values.baseUrl }}/api/v1/auth/github-signin/callback"
             {{- if .Values.smtp.enabled }}
             - name: SMTP_HOST
               valueFrom:
