@@ -546,11 +546,10 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				)
 				: 0
 
-			LET synced_endpoint_count = FIRST(
+			LET synced_endpoint_names = (
 				FOR s IN sync
 					FILTER s.release_name == latest.name AND s.release_version == latest.version
-					COLLECT WITH COUNT INTO count
-					RETURN count
+					RETURN s.endpoint_name
 			)
 
 			// NEW: collect per-type endpoint counts for org card badges.
@@ -614,7 +613,7 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 			LET row = {
 				total_versions,
 				dependency_count,
-				synced_endpoint_count,
+				synced_endpoint_names,
 				endpoint_type_counts,
 				vulnerability_count: LENGTH(uniqueMatches),
 				vulnerability_count_delta: prevVulnCount != null ? (LENGTH(uniqueMatches) - prevVulnCount) : null,
@@ -646,7 +645,7 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				max_severity_score: MAX(rows[*].max_severity),
 				avg_scorecard_score: LENGTH(validScores) > 0 ? AVG(validScores) : null,
 				total_dependencies: SUM(rows[*].dependency_count),
-				synced_endpoint_count: SUM(rows[*].synced_endpoint_count),
+				synced_endpoint_count: LENGTH(UNIQUE(FLATTEN(rows[*].synced_endpoint_names))),
 				vulnerability_count_delta: SUM(rows[*].vulnerability_count_delta),
 				pending_scan: false,
 				// Merge per-type counts across all releases in the org.
