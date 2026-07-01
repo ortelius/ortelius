@@ -287,3 +287,191 @@ func GetCVEsForReleaseTracking(ctx context.Context, db database.DBConnection, re
 	}
 	return result, nil
 }
+
+// PurgeSentinelRecords is retained for completeness but is no longer called
+// by ProcessSync. Sentinel records are now kept permanently alongside real
+// endpoint records. The Released dashboard tab reads only sentinel records;
+// the Deployed tab reads only real endpoint records, so there is no overlap.
+func PurgeSentinelRecords(ctx context.Context, db database.DBConnection, releaseName, releaseVersion string) error {
+	query := `
+		FOR r IN cve_lifecycle
+			FILTER r.endpoint_name == "_release_tracking_"
+			AND r.release_name == @release_name
+			AND r.introduced_version == @version
+			REMOVE r IN cve_lifecycle
+	`
+	_, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{
+			"release_name": releaseName,
+			"version":      releaseVersion,
+		},
+	})
+	return err
+}
+
+// ProcessReleaseWithoutEndpoint creates cve_lifecycle records for a release that has
+// never been synced to any tracked endpoint (e.g. curl, jenkins). This is the
+// release-only ingestion pathway that powers the "Released" dashboard view.
+//
+// The sentinel endpoint name "_release_tracking_" distinguishes these records
+// from real endpoint-synced records so the existing "Deployed" view is unaffected.
+// The introduced_version is set to the release version so the release_open_cves
+// AQL CTE can join on it via `lifecycle.introduced_version == active.version`.
+func ProcessReleaseWithoutEndpoint(
+	ctx context.Context,
+	db database.DBConnection,
+	releaseName string,
+	releaseVersion string,
+	buildDate time.Time,
+) error {
+	cves, err := GetCVEsForReleaseTracking(ctx, db, releaseName, releaseVersion)
+	if err != nil {
+		return fmt.Errorf("failed to get CVEs for %s@%s: %w", releaseName, releaseVersion, err)
+	}
+
+	introducedAt := buildDate
+	// Guard against Go zero-time (0001-01-01) being passed in from a release
+	// document where builddate was never set — treat it the same as missing.
+	if introducedAt.IsZero() || introducedAt.Year() < 2000 {
+		introducedAt = time.Now()
+	}
+
+	const releaseTrackingEndpoint = "_release_tracking_"
+
+	for _, cve := range cves {
+		if err := CreateOrUpdateLifecycleRecord(
+			ctx, db,
+			releaseTrackingEndpoint, releaseName, releaseVersion,
+			cve, introducedAt, false,
+		); err != nil {
+			return fmt.Errorf("failed to create release lifecycle record for %s: %w", cve.CVEID, err)
+		}
+	}
+	return nil
+}
+
+// IngestAllUndeployedReleases seeds cve_lifecycle sentinel records for every
+// release version that does not yet have sentinel records. Processes ALL versions
+// (not just is_latest) so the trend chart has full historical data across releases.
+//
+// Guard: skips versions that already have sentinel records — safe to re-run.
+// Does NOT skip versions with real endpoint records; Deployed and Released tabs
+// read from disjoint endpoint_name sets so there is no double-counting.
+func IngestAllUndeployedReleases(ctx context.Context, db database.DBConnection, org string) error {
+	query := `
+		LET tracked = (
+			FOR l IN cve_lifecycle
+				FILTER l.endpoint_name == "_release_tracking_"
+				RETURN DISTINCT CONCAT(l.release_name, "@", l.introduced_version)
+		)
+		FOR r IN release
+			FILTER @org == "" OR r.org == @org
+			FILTER CONCAT(r.name, "@", r.version) NOT IN tracked
+			RETURN { name: r.name, version: r.version, builddate: r.builddate }
+	`
+	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"org": org},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to query undeployed releases: %w", err)
+	}
+	defer cursor.Close()
+
+	type releaseRow struct {
+		Name      string     `json:"name"`
+		Version   string     `json:"version"`
+		BuildDate *time.Time `json:"builddate"`
+	}
+
+	seenReleases := map[string]bool{}
+	for cursor.HasMore() {
+		var row releaseRow
+		if _, err := cursor.ReadDocument(ctx, &row); err != nil {
+			continue
+		}
+		bd := time.Time{}
+		if row.BuildDate != nil && !row.BuildDate.IsZero() && row.BuildDate.Year() >= 2000 {
+			bd = *row.BuildDate
+		}
+		if err := ProcessReleaseWithoutEndpoint(ctx, db, row.Name, row.Version, bd); err != nil {
+			fmt.Printf("WARNING: release lifecycle ingestion failed for %s@%s: %v\n", row.Name, row.Version, err)
+		}
+		seenReleases[row.Name] = true
+	}
+
+	// After seeding all versions, reconcile remediation timestamps across
+	// consecutive versions for every release touched this run.
+	for releaseName := range seenReleases {
+		if err := ReconcileSentinelRemediations(ctx, db, releaseName); err != nil {
+			fmt.Printf("WARNING: sentinel remediation reconcile failed for %s: %v\n", releaseName, err)
+		}
+	}
+	return nil
+}
+
+// ReconcileSentinelRemediations walks consecutive versions of a release sorted
+// by builddate and marks as remediated any sentinel cve_lifecycle records whose
+// CVE is no longer present in the next version's SBOM. This gives the "Released"
+// trend chart a realistic drop-off when a newer release fixes CVEs, and feeds
+// the MTTR calculation (all_events) for release-only projects.
+//
+// remediated_at is set to the builddate of the first version that dropped the CVE.
+func ReconcileSentinelRemediations(ctx context.Context, db database.DBConnection, releaseName string) error {
+	query := `
+		LET versions = (
+			FOR r IN release
+				FILTER r.name == @release_name
+				FILTER r.builddate != null
+				AND DATE_TIMESTAMP(r.builddate) > DATE_TIMESTAMP("2000-01-01")
+				SORT r.builddate ASC
+				RETURN { version: r.version, builddate: r.builddate }
+		)
+
+		// Build the CVE set for every version once, so the inner loop
+		// doesn't re-query release2cve for each open sentinel record.
+		LET version_cve_sets = (
+			FOR v IN versions
+				LET cve_keys = (
+					FOR r IN release
+						FILTER r.name == @release_name AND r.version == v.version
+						FOR cve, edge IN 1..1 OUTBOUND r release2cve
+							FILTER cve.id != null AND edge.package_base != null
+							RETURN CONCAT(cve.id, "|", edge.package_base)
+				)
+				RETURN { version: v.version, builddate: v.builddate, cve_keys: cve_keys }
+		)
+
+		// For each open sentinel record, find the FIRST version after its
+		// introduction where the CVE is absent — not just the adjacent version.
+		// This handles CVEs that persist across multiple releases before being
+		// fixed (e.g. present in 8.16–8.19, absent in 8.20 → all four records
+		// get remediated_at = 8.20 builddate).
+		FOR l IN cve_lifecycle
+			FILTER l.endpoint_name == "_release_tracking_"
+			AND l.release_name == @release_name
+			AND l.is_remediated == false
+			LET cve_key = CONCAT(l.cve_id, "|", l.package)
+			LET intro_idx = POSITION(versions[*].version, l.introduced_version, true)
+			LET fix_version = FIRST(
+				FOR i IN (intro_idx >= 0 ? intro_idx + 1 : 0)..LENGTH(version_cve_sets) - 1
+					FILTER cve_key NOT IN version_cve_sets[i].cve_keys
+					RETURN version_cve_sets[i]
+			)
+			FILTER fix_version != null
+			UPDATE l WITH {
+				is_remediated:      true,
+				remediated_at:      fix_version.builddate,
+				remediated_version: fix_version.version,
+				days_to_remediate:  DATE_DIFF(
+					DATE_TIMESTAMP(l.introduced_at),
+					DATE_TIMESTAMP(fix_version.builddate),
+					"d"
+				),
+				updated_at: DATE_ISO8601(DATE_NOW())
+			} IN cve_lifecycle
+	`
+	_, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"release_name": releaseName},
+	})
+	return err
+}

@@ -171,7 +171,7 @@ func ResolveVulnerabilityTrend(db database.DBConnection, days int, org string) (
 	now := time.Now().UTC()
 
 	query := `
-		// ── PHASE 1: resolve active snapshots and pull lifecycle events ONCE ──────
+		// ── PHASE 1a: deployed snapshot lifecycle events (endpoint-based) ────────
 
 		LET latest_snapshots = (
 			FOR s IN sync
@@ -198,10 +198,7 @@ func ResolveVulnerabilityTrend(db database.DBConnection, days int, org string) (
 				RETURN { endpoint, release: releaseName, version }
 		)
 
-		// Pull every lifecycle event that could appear in any day of the window.
-		// The composite index on (endpoint_name, release_name, introduced_version)
-		// makes this lookup fast rather than a full collection scan.
-		LET all_lifecycle = (
+		LET sync_lifecycle = (
 			FOR active IN latest_snapshots
 				FOR r IN cve_lifecycle
 					FILTER r.endpoint_name == active.endpoint
@@ -213,6 +210,31 @@ func ResolveVulnerabilityTrend(db database.DBConnection, days int, org string) (
 						remediated_ts:  r.remediated_at != null ? DATE_TIMESTAMP(r.remediated_at) : null
 					}
 		)
+
+		// ── PHASE 1b: sentinel lifecycle events (release-only, no endpoints) ─────
+		// Covers projects like curl/jenkins that cut releases but are never deployed
+		// through a tracked endpoint. Clock basis is introduced_at (= builddate of
+		// the release version), giving correct step-up history as versions are released.
+
+		LET sentinel_lifecycle = (
+			FOR r IN cve_lifecycle
+				FILTER r.endpoint_name == "_release_tracking_"
+				LET relDoc = (
+					FOR rel IN release
+						FILTER rel.name == r.release_name AND rel.version == r.introduced_version
+						LIMIT 1
+						RETURN rel.org
+				)[0]
+				FILTER @org == "" OR relDoc == @org
+				RETURN {
+					severity:       UPPER(r.severity_rating),
+					introduced_ts:  DATE_TIMESTAMP(r.introduced_at),
+					remediated_ts:  r.remediated_at != null ? DATE_TIMESTAMP(r.remediated_at) : null
+				}
+		)
+
+		// Union both sets — Phase 2 aggregates from the combined in-memory result.
+		LET all_lifecycle = APPEND(sync_lifecycle, sentinel_lifecycle)
 
 		// ── PHASE 2: aggregate per day from the in-memory result set ─────────────
 
@@ -398,6 +420,8 @@ func ResolveMTTR(db database.DBConnection, days int, org string) (map[string]int
 					FILTER lifecycle.endpoint_name == active.endpoint 
 					AND lifecycle.release_name == active.release 
 					AND lifecycle.introduced_version == active.version
+					// Exclude release-tracking sentinel records from the deployed view.
+					FILTER lifecycle.endpoint_name != "_release_tracking_"
 					FILTER lifecycle.is_remediated == false
 					
 					LET ep_type = HAS(ep_map, lifecycle.endpoint_name) ? ep_map[lifecycle.endpoint_name] : "unknown"
@@ -433,6 +457,8 @@ func ResolveMTTR(db database.DBConnection, days int, org string) (map[string]int
 				FOR lifecycle IN cve_lifecycle
 					FILTER lifecycle.release_name == active.release
 					AND lifecycle.introduced_version == active.version
+					// Only use records created by the release-tracking ingestion pathway.
+					FILTER lifecycle.endpoint_name == "_release_tracking_"
 					FILTER lifecycle.is_remediated == false
 
 					LET sev_key = UPPER(lifecycle.severity_rating)

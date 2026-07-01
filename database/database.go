@@ -253,6 +253,10 @@ func InitializeDatabase() DBConnection {
 			IdxField: []string{"endpoint_name", "release_name", "introduced_version"}, Unique: false},
 		{Collection: "cve_lifecycle", IdxName: "lifecycle_endpoint_release_remediated",
 			IdxField: []string{"endpoint_name", "release_name", "is_remediated"}, Unique: false},
+		// Supports release_open_cves AQL CTE — filters on the sentinel endpoint
+		// used by the release-only ingestion pathway (IngestAllUndeployedReleases).
+		{Collection: "cve_lifecycle", IdxName: "lifecycle_release_tracking_sentinel",
+			IdxField: []string{"endpoint_name", "release_name", "introduced_version", "is_remediated"}, Unique: false},
 
 		// Sync indexes
 		{Collection: "sync", IdxName: "sync_endpoint_release",
