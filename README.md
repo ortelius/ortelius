@@ -53,35 +53,22 @@ After onboarding, go to your dashboard. You should see:
 
 #### Why Am I Seeing Zero CVEs?
 
-GitHub onboarding (above) imports release and deployment *metadata* — it does not attach an SBOM, so there is nothing yet for CVE matching to run against. To get vulnerability data for a release, an SBOM needs to reach it by one of these paths:
+GitHub onboarding (above) imports release and deployment *metadata* — it does not attach an SBOM, so there is nothing yet for CVE matching to run against. No changes to your CI/CD pipeline, no CLI, and no direct API calls from your pipeline are required to fix this — SBOM data reaches Ortelius automatically via a scanner component:
 
-1. **Automatically, via a scanner component** — if your deployment runs the [`relscanner-job`](https://github.com/ortelius/relscanner-job) CronJob (discovers releases from GitHub/GitLab CI and auto-attaches an SBOM via OCI attestations, Cosign, GitHub Release assets, or Syft/cdxgen generation) or the [`deployment-gke`](https://github.com/ortelius/deployment-gke) Cloud Function (does the same for pods observed running in GKE), this happens for you with no CI changes required. Ask your platform team whether either is deployed alongside this backend.
-2. **From your own CI pipeline** — upload an SBOM for the release via `POST /api/v1/releases` (see [Implementation Guide](docs/implementation.md#releases)), typically from a CI step using Syft, Trivy, or any CycloneDX-compatible tool, matched to the release by `name` + `version`
-3. **Sync that release to an endpoint** via `POST /api/v1/sync`, if it isn't already covered by a GitHub Actions endpoint created during onboarding, or by an endpoint one of the scanner components created
+- [`relscanner-job`](https://github.com/ortelius/relscanner-job) — a CronJob that discovers releases from GitHub/GitLab and auto-attaches an SBOM via OCI attestations, Cosign, GitHub Release assets, or Syft/cdxgen generation
+- [`deployment-gke`](https://github.com/ortelius/deployment-gke) — a Cloud Function that does the same for pods observed running in GKE
+
+Ask your platform team whether one of these is deployed alongside this backend — that's the only setup step. Once it is, give it up to one scan cycle (15 minutes by default) after a repo is connected or a pod deploys.
 
 CVE data is refreshed from OSV.dev every 15 minutes. Components with missing or malformed PURLs are silently skipped during CVE matching.
 
 ---
 
-### Getting the Best Results
-
-If neither scanner component above is deployed, have your CI pipeline call the REST API directly — this is the most direct way to get SBOM-based CVE matching without additional infrastructure. A typical pipeline step:
-
-```yaml
-# Example: generate an SBOM with Syft and post it to Ortelius
-- name: Generate SBOM
-  run: syft ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -o cyclonedx-json --file sbom.json
-
-- name: Upload release + SBOM to Ortelius
-  run: |
-    curl -X POST "$ORTELIUS_URL/api/v1/releases" \
-      -H "Content-Type: application/json" \
-      -d @release-payload.json   # release fields + sbom.content = contents of sbom.json
-```
+### Supported Ecosystems
 
 **Supported ecosystems for CVE matching:** npm, PyPI, Maven, Go, NuGet, RubyGems, cargo (crates.io), Composer, apk (Alpine/Wolfi), deb (Debian/Ubuntu)
 
-> **Using a different CI system or want direct API access?** See the [Implementation Guide](docs/implementation.md) for REST API reference.
+> **Building custom tooling?** `POST /api/v1/releases` also accepts an SBOM directly if you're integrating with Ortelius programmatically — see the [Implementation Guide](docs/implementation.md) — but this isn't something you need to add to your CI/CD pipeline for normal use; the scanner components above cover that.
 
 ---
 
