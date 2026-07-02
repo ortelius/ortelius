@@ -26,7 +26,7 @@ The fastest way to get started is the hosted version at **[app.deployhub.com](ht
 
 ## Connect Your GitHub Repositories
 
-Once logged in, connect your GitHub account. This is the primary way Ortelius discovers your software — it reads your existing workflow runs, finds your container images and releases, and automatically imports everything into your dashboard.
+Once logged in, connect your GitHub account. This is the fastest way to get repository and release metadata into Ortelius, though — see the note at the end of this section — it does **not** by itself give you vulnerability data.
 
 ### Step 1 — Connect GitHub
 
@@ -35,62 +35,49 @@ Once logged in, connect your GitHub account. This is the primary way Ortelius di
 3. Select which repositories to give Ortelius access to — you can start with one and add more later
 4. After approving, you'll be redirected back to Ortelius with GitHub connected
 
-### Step 2 — What Happens Automatically
+### Step 2 — Onboard Repositories
 
-Once connected, Ortelius's background scanner runs against every repository in your installation. For each repository it:
+From **Profile → GitHub Integration**, pick which of your installed repositories to onboard (`POST /api/v1/github/onboard`). For each selected `owner/repo`, Ortelius:
 
-1. **Finds your latest successful workflow run** on `main` or `master`, triggered by a push, release, or manual dispatch
-2. **Extracts your container image reference** from the workflow logs — specifically the image produced by a Docker manifest push
-3. **Discovers your SBOM** using a three-step priority order:
-   - First, looks for an SBOM attached directly to the container image as an OCI attestation (cosign/DSSE format or OCI Referrers API)
-   - Second, looks for an artifact named `sbom` or `cyclonedx` uploaded during the workflow run
-   - Third, if no SBOM is found, generates one automatically by scanning the container image using [Syft](https://github.com/anchore/syft)
-4. **Reads OCI image labels** (`org.opencontainers.image.*`) to enrich the release with git metadata — commit SHA, branch, source URL, authors
-5. **Fetches your OpenSSF Scorecard** score from securityscorecards.dev automatically
-6. **Creates a release record** in Ortelius with the version, SBOM, git metadata, and scorecard score
-7. **Records a sync** linking the release to the endpoint representing the GitHub Actions environment
+1. **Fetches GitHub Releases** for the repo via the App installation token and creates a `release` record per release tag (version = tag name; visibility is set from the repo's public/private status)
+2. **Fetches recent GitHub Actions workflow runs** and, for each run that completed successfully, creates a `github-actions/<owner>/<repo>` endpoint and a `sync` record (release version = first 7 characters of the run's head commit SHA)
 
-The scanner remembers the last workflow run ID it processed per repository, so repeat runs only pick up genuinely new activity.
+This gives you a release and deployment timeline for the repo. Repeated onboarding calls simply re-run this same import — this REST endpoint itself has no automatic SBOM discovery, container image inspection, or OpenSSF Scorecard lookup. (A separate, optionally-deployed component, [`relscanner-job`](https://github.com/ortelius/relscanner-job), *does* provide a persistent background scanner with exactly those capabilities — see [Why Am I Seeing Zero CVEs?](#why-am-i-seeing-zero-cves) below.)
 
 ### Step 3 — Verify Your Data
 
-After a few minutes, go to your dashboard. You should see:
+After onboarding, go to your dashboard. You should see:
 
-- Your repositories listed under **Releases**
-- Vulnerability counts populated (if your SBOM contains packages with known CVEs)
-- An OpenSSF Scorecard score on each release
-- GitHub Actions listed as an endpoint under **Endpoints**
+- Your repositories listed under **Releases**, with a version per GitHub release
+- `github-actions/<owner>/<repo>` listed as an endpoint under **Endpoints**, if any workflow runs succeeded
 
 #### Why Am I Seeing Zero CVEs?
 
-Two things must be true before vulnerabilities appear:
+GitHub onboarding (above) imports release and deployment *metadata* — it does not attach an SBOM, so there is nothing yet for CVE matching to run against. To get vulnerability data for a release, an SBOM needs to reach it by one of these paths:
 
-1. **A release with a valid SBOM has been imported** — components need properly formatted PURLs for CVE matching to work
-2. **That release has been synced to at least one endpoint** — the scanner records GitHub Actions runs as endpoints automatically
+1. **Automatically, via a scanner component** — if your deployment runs the [`relscanner-job`](https://github.com/ortelius/relscanner-job) CronJob (discovers releases from GitHub/GitLab CI and auto-attaches an SBOM via OCI attestations, Cosign, GitHub Release assets, or Syft/cdxgen generation) or the [`deployment-gke`](https://github.com/ortelius/deployment-gke) Cloud Function (does the same for pods observed running in GKE), this happens for you with no CI changes required. Ask your platform team whether either is deployed alongside this backend.
+2. **From your own CI pipeline** — upload an SBOM for the release via `POST /api/v1/releases` (see [Implementation Guide](docs/implementation.md#releases)), typically from a CI step using Syft, Trivy, or any CycloneDX-compatible tool, matched to the release by `name` + `version`
+3. **Sync that release to an endpoint** via `POST /api/v1/sync`, if it isn't already covered by a GitHub Actions endpoint created during onboarding, or by an endpoint one of the scanner components created
 
-CVE data is refreshed from OSV.dev every 15 minutes. If you just connected GitHub and see nothing yet, wait a few minutes and refresh.
-
-If you still see zero CVEs after that, the most likely cause is that your SBOM was not found or was generated from an image that uses an unsupported ecosystem. Check that your container image is publicly accessible or that the GitHub App has the appropriate registry access. Components with missing or malformed PURLs are silently skipped during CVE matching.
+CVE data is refreshed from OSV.dev every 15 minutes. Components with missing or malformed PURLs are silently skipped during CVE matching.
 
 ---
 
 ### Getting the Best Results
 
-The scanner works with whatever your pipeline already produces. However, the quality of vulnerability matching improves when your workflow publishes an explicit SBOM. The recommended approach is to generate and attach an SBOM as an OCI attestation at build time — Ortelius will find and use it automatically without any additional configuration:
+If neither scanner component above is deployed, have your CI pipeline call the REST API directly — this is the most direct way to get SBOM-based CVE matching without additional infrastructure. A typical pipeline step:
 
 ```yaml
-# Example: generate and attach an SBOM as an OCI attestation using Syft
-- name: Generate and attest SBOM
-  run: |
-    syft ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
-      -o cyclonedx-json \
-      --file sbom.json
-    cosign attest --predicate sbom.json \
-      --type cyclonedx \
-      ${{ env.IMAGE_NAME }}@${{ env.IMAGE_DIGEST }}
-```
+# Example: generate an SBOM with Syft and post it to Ortelius
+- name: Generate SBOM
+  run: syft ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -o cyclonedx-json --file sbom.json
 
-If you already produce SBOMs via Syft, Trivy, or any CycloneDX-compatible tool and upload them as workflow artifacts, Ortelius will find those too — no changes needed.
+- name: Upload release + SBOM to Ortelius
+  run: |
+    curl -X POST "$ORTELIUS_URL/api/v1/releases" \
+      -H "Content-Type: application/json" \
+      -d @release-payload.json   # release fields + sbom.content = contents of sbom.json
+```
 
 **Supported ecosystems for CVE matching:** npm, PyPI, Maven, Go, NuGet, RubyGems, cargo (crates.io), Composer, apk (Alpine/Wolfi), deb (Debian/Ubuntu)
 
@@ -201,8 +188,8 @@ Endpoints with `endpoint_type: mission_asset` use the tighter targets in the rig
 | **Endpoint**          | A running environment where software is deployed (cluster, function, device)                         |
 | **Sync**              | The act of telling Ortelius what versions are currently deployed to an endpoint                          |
 | **OSV**               | Open Source Vulnerabilities — the vulnerability database Ortelius pulls from, refreshed every 15 minutes |
-| **OCI Attestation**   | An SBOM or other artifact attached directly to a container image in the registry                     |
-| **OpenSSF Scorecard** | An automated security health score (0–10) for open source repositories                               |
+| **OCI Attestation**   | An SBOM or other artifact attached directly to a container image in the registry. This backend's own REST/GitHub-onboarding endpoints don't discover these, but the optional [`relscanner-job`](https://github.com/ortelius/relscanner-job) and [`deployment-gke`](https://github.com/ortelius/deployment-gke) scanner components do |
+| **OpenSSF Scorecard** | An automated security health score (0–10) for open source repositories. Not fetched by this backend's own endpoints, but `relscanner-job` fetches it automatically when deployed; otherwise populate `scorecard_result` on a release yourself via the API |
 
 ---
 

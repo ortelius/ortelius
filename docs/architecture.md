@@ -703,6 +703,19 @@ GITHUB_CLIENT_SECRET=abc123...
 GITHUB_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\n..."
 ```
 
+### Org-Level Personal Access Tokens
+
+As an alternative (or supplement) to the GitHub App, an org owner can store a GitHub or GitLab personal access token directly on the org (`POST /api/v1/orgs/:org/credentials`). Tokens are encrypted at rest using `TOKEN_ENCRYPTION_KEY` and are never returned by the API once stored — only connection-status booleans are exposed via `GET /api/v1/orgs/:org/status`.
+
+### "Sign in with GitHub" and OIDC Providers
+
+Independent of the GitHub App installation flow, Ortelius supports pluggable login providers:
+
+- **GitHub Sign-In** — a lightweight OAuth2 flow (`GITHUB_OAUTH_CLIENT_ID` / `GITHUB_OAUTH_CLIENT_SECRET` / `GITHUB_OAUTH_REDIRECT_URL`) used purely for authentication, separate from the App installation credentials above.
+- **OIDC** — any spec-compliant issuer (Google, Authentik, Okta, ...) can be registered by name and configured entirely through `<PROVIDER>_OIDC_*` environment variables, with no new handler code required per provider.
+
+`GET /api/v1/auth/status` reports which of these are currently configured so the frontend can conditionally show the corresponding login buttons.
+
 ### Kafka
 
 Kafka enables asynchronous release ingestion — CI pipelines publish events to the `release-events` topic instead of calling the REST API directly.
@@ -752,9 +765,20 @@ Event schema: see [Implementation Guide](implementation.md#kafka-event-schema).
 | `BASE_URL`             | `http://localhost:3000` | No       | Used in invitation email links                   |
 | `GITHUB_APP_ID`        | —                       | No       | GitHub App numeric ID                            |
 | `GITHUB_APP_NAME`      | —                       | No       | GitHub App slug name                             |
-| `GITHUB_CLIENT_ID`     | —                       | No       | GitHub OAuth client ID                           |
-| `GITHUB_CLIENT_SECRET` | —                       | No       | GitHub OAuth client secret                       |
+| `GITHUB_CLIENT_ID`     | —                       | No       | GitHub App OAuth client ID (installation flow)   |
+| `GITHUB_CLIENT_SECRET` | —                       | No       | GitHub App OAuth client secret (installation flow) |
 | `GITHUB_PRIVATE_KEY`   | —                       | No       | GitHub App RSA private key (PEM)                 |
+| `GITHUB_OAUTH_CLIENT_ID`     | —                 | No       | "Sign in with GitHub" OAuth client ID (`github-signin` flow) |
+| `GITHUB_OAUTH_CLIENT_SECRET` | —                 | No       | "Sign in with GitHub" OAuth client secret        |
+| `GITHUB_OAUTH_REDIRECT_URL`  | —                 | No       | "Sign in with GitHub" OAuth callback URL         |
+| `<PROVIDER>_OIDC_CLIENT_ID`     | —              | No       | OIDC client ID for a registered provider (e.g. `GOOGLE_OIDC_CLIENT_ID`, `AUTHENTIK_OIDC_CLIENT_ID`) |
+| `<PROVIDER>_OIDC_CLIENT_SECRET` | —              | No       | OIDC client secret for that provider             |
+| `<PROVIDER>_OIDC_ISSUER_URL`    | —              | No       | OIDC discovery issuer URL for that provider      |
+| `<PROVIDER>_OIDC_REDIRECT_URL`  | —              | No       | OIDC callback URL for that provider              |
+| `<PROVIDER>_OIDC_ALLOWED_DOMAIN`| —              | No       | Restricts logins to ID tokens matching this domain |
+| `GITHUB_TOKEN`         | —                       | No       | Fallback GitHub PAT for public repo search/fetch when no org credential is set |
+| `GITLAB_TOKEN`         | —                       | No       | Fallback GitLab PAT for public repo search/fetch |
+| `TOKEN_ENCRYPTION_KEY` | —                       | **Yes*** | Encrypts org-level GitHub/GitLab PATs at rest — required once any org stores credentials |
 | `KAFKA_BROKERS`        | `localhost:9092`        | No       | Comma-separated broker list                      |
 | `KAFKA_API_KEY`        | —                       | No       | Enables SASL/PLAIN + TLS when set                |
 | `KAFKA_API_SECRET`     | —                       | No       | SASL password                                    |

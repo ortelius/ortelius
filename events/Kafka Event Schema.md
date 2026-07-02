@@ -1,52 +1,53 @@
-# Release Sync Kafka Event Schema Documentation
+# Release SBOM Created — Kafka Event Schema Documentation
 
 ## Overview
 
-This schema defines a unified event contract for the Ortelius system. It combines software release metadata, storage references for SBOMs, and deployment endpoint information into a single message. This structure ensures that events processed via Kafka trigger the same validation, deduplication, and automated CVE linking logic as the REST API.
+This schema defines the event contract for asynchronous release ingestion in Ortelius. A producer publishes a `release.sbom.created` event referencing release metadata and a stored SBOM; the Kafka consumer (`internal/kafka.RunEventProcessor`) fetches the SBOM content and runs it through the **same** release-creation path (`ReleaseService.CreateRelease`) used by `POST /api/v1/releases` — including PURL extraction and CVE linking. There is no divergence between the REST and event-driven ingestion paths.
+
+Topic: `release-events` · Consumer group: `ortelius-worker`.
+
+> **Scope note:** This event carries release + SBOM data only. It does **not** carry endpoint or sync information — deployment state is recorded separately via `POST /api/v1/sync`. There is currently no Kafka event for sync/deployment events.
 
 ---
 
 ## Top-Level Properties
 
-* **event_type** (string, Required): Unique identifier for the event logic (e.g., `release.sync.created`).
-* **event_id** (string, Required): A unique UUID for message tracking and deduplication.
-* **event_time** (string, Required): The ISO 8601 timestamp when the event was generated.
-* **synced_at** (string, Optional): The ISO 8601 timestamp of the actual deployment. If omitted, the system defaults to the current processing time.
+* **event_type** (string, Required): Identifies the event contract. Always `"release.sbom.created"` from the built-in producer (`ReleaseProducer.PublishReleaseSBOMCreated`).
+* **event_id** (string, Required): A UUID generated per message for tracking.
+* **event_time** (string, Required): ISO 8601 timestamp when the event was generated.
+* **schema_version** (string, Required): Currently `"v1"`.
 
 ---
 
-## 1. Release Object
+## 1. `release` Object
 
-Contains core metadata for the software component.
+A `model.ProjectRelease` document, serialized directly. The consumer reads the following fields; any others present in the JSON are ignored by the event handler:
 
-* **name** (string, Required): The full name of the release (e.g., "org/repo").
-* **version** (string, Required): The version string, automatically cleaned and parsed into SemVer components during ingestion.
+* **name** (string, Required): The full name of the release (e.g., `"org/repo"`).
+* **version** (string, Required): The version string; re-parsed into SemVer components on ingest.
 * **projecttype** (string, Optional): The category of project (e.g., `docker`, `container`, `git`).
 * **gitcommit** (string, Optional): The Git SHA associated with the release.
-* **dockersha** (string, Optional): The Docker Image Digest.
-* **is_public** (boolean, Default: `true`): Visibility flag for the release.
+* **dockersha** (string, Optional): The Docker image digest.
+* **is_public** (boolean, Default: `true`): Visibility flag for the release — controls unauthenticated GraphQL access.
+
+## 2. `sbom_ref` Object
+
+Describes where the SBOM content is stored so the consumer can retrieve it before processing.
+
+* **cid** (string, Required): Content identifier used to fetch the SBOM (e.g., an IPFS CID).
+* **storage_type** (string, Required): Storage backend identifier. The built-in producer always sets this to `"ipfs"`.
+* **bucket**, **object_key** (string, Optional): Present only when `storage_type` involves S3.
+* **content_sha** (string, Optional): SHA256 hash of the SBOM content for integrity verification.
+* **size_bytes** (integer, Optional): Size of the stored SBOM payload.
+* **uploaded_at** (string, Required): Timestamp when the SBOM was persisted to the storage backend.
+
+> **Implementation status:** The consumer's SBOM fetcher (`internal/services.CIDFetcher`) is currently a **placeholder** — it does not yet call out to IPFS or S3. It returns an empty `{"components":[]}` payload regardless of `cid`. Wire up real storage retrieval here before relying on this path in production; until then, releases ingested via Kafka will have no SBOM components.
 
 ---
 
-## 2. SBOM Reference Object
+## Validation
 
-Describes how to retrieve the SBOM content for security analysis.
-
-* **cid** (string, Required): The IPFS Content Identifier where the JSON SBOM is stored.
-* **storage_type** (string, Required): The backend storage provider. Allowed values: `["ipfs", "s3"]`.
-* **content_sha** (string, Optional): A SHA256 hash of the SBOM content for integrity verification.
-* **uploaded_at** (string, Optional): Timestamp when the SBOM was persisted to the storage backend.
-
----
-
-## 3. Endpoint Object
-
-Defines the deployment target for MTTR and lifecycle tracking.
-
-* **name** (string, Required): Unique name of the environment or cluster (e.g., "prod-us-east-1").
-* **endpoint_type** (string, Required): The infrastructure category. Supported types include `eks`, `lambda`, `gke`, `fargate`, `iot`, and `mission_asset`.
-* **environment** (string, Required): The environment designation (e.g., `production`, `staging`).
-* **is_public** (boolean, Default: `true`): Visibility flag for the endpoint.
+The consumer rejects a message (returns an error, does not retry) if any of `release.name`, `release.version`, or `sbom_ref.cid` is empty.
 
 ---
 
@@ -54,10 +55,10 @@ Defines the deployment target for MTTR and lifecycle tracking.
 
 ```json
 {
-  "event_type": "release.sync.created",
+  "event_type": "release.sbom.created",
   "event_id": "550e8400-e29b-41d4-a716-446655440000",
-  "event_time": "2023-10-27T10:00:00Z",
-  "synced_at": "2023-10-27T09:55:00Z",
+  "event_time": "2024-12-01T10:00:00Z",
+  "schema_version": "v1",
   "release": {
     "name": "ortelius/reporting-service",
     "version": "v1.2.3",
@@ -70,13 +71,9 @@ Defines the deployment target for MTTR and lifecycle tracking.
     "cid": "QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco",
     "storage_type": "ipfs",
     "content_sha": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "uploaded_at": "2023-10-27T09:50:00Z"
-  },
-  "endpoint": {
-    "name": "production-cluster-01",
-    "endpoint_type": "eks",
-    "environment": "production",
-    "is_public": true
+    "uploaded_at": "2024-12-01T09:55:00Z"
   }
 }
 ```
+
+See also: [Architecture Guide — Kafka](../docs/architecture.md#kafka) for broker/topic configuration and deployment notes.

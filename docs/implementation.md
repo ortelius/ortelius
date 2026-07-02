@@ -63,6 +63,42 @@ Returns current user info. Works with or without authentication (`OptionalAuth`)
 
 Refreshes the JWT cookie using the existing cookie. No body required.
 
+#### `GET /auth/status` (Public)
+
+Reports which SSO providers are currently configured so the frontend can conditionally render "Sign in with X" buttons.
+
+```json
+// Response 200
+{ "google": true, "github": false }
+```
+
+#### `POST /auth/forgot-password` (Public)
+
+```json
+// Request
+{ "email": "alice@acme.com" }
+
+// Response 200
+{ "message": "Password reset email sent (not implemented yet)" }
+```
+
+> **Note:** This endpoint currently accepts requests and returns success but does not send an email or issue a reset token — the flow is a stub pending implementation.
+
+### GitHub Sign-In & OIDC
+
+These endpoints authenticate a user (login), as distinct from the GitHub *App* installation flow used for repo onboarding (see [GitHub App, Organization & Tracked Repos](#github-app-organization--tracked-repos)).
+
+```text
+GET /auth/github/login                  Start GitHub App installation OAuth flow (redirect)
+GET /auth/github/callback               GitHub App installation OAuth callback
+GET /auth/github-signin/login           Start "Sign in with GitHub" OAuth flow (redirect)
+GET /auth/github-signin/callback        "Sign in with GitHub" OAuth callback — sets auth cookie
+GET /auth/:provider/login               Start OIDC login for a registered provider (e.g. google, authentik, okta)
+GET /auth/:provider/callback            OIDC callback for the given provider — sets auth cookie
+```
+
+OIDC providers are registered by name and are provider-agnostic — any spec-compliant OIDC issuer plugs in via environment variables of the form `<PROVIDER>_OIDC_CLIENT_ID`, `<PROVIDER>_OIDC_CLIENT_SECRET`, `<PROVIDER>_OIDC_ISSUER_URL`, `<PROVIDER>_OIDC_REDIRECT_URL`, and optionally `<PROVIDER>_OIDC_ALLOWED_DOMAIN` to restrict logins to a domain. GitHub is handled separately (`github-signin`) because it has no OIDC discovery document; both flows share the same nonce/state/cookie pattern.
+
 ### Signup & Invitations
 
 #### `POST /signup` (Public)
@@ -155,6 +191,18 @@ Uploads a release with its SBOM. Triggers PURL extraction and CVE linking.
 
 **Org derivation:** If `org` is not set in the request body, it is parsed from the `name` field. `acme/payment-service` → `org=acme`, `shortname=payment-service`. A name with no slash defaults to `org=library`. Always pass `org` explicitly or use the `org/name` convention.
 
+#### `GET /releases/exists?contentsha=<sha>`
+
+Cheap existence check a CI pipeline can call before uploading a full SBOM, to skip redundant work.
+
+```json
+// Response 200
+{ "exists": true }
+
+// Response 404
+{ "exists": false }
+```
+
 ### Sync
 
 #### `POST /sync` (OptionalAuth)
@@ -199,6 +247,78 @@ Records the current deployment state of an endpoint.
 **Result status values:** `created`, `created_with_sbom`, `updated`, `updated_with_sbom`, `unchanged`, `error`
 
 **Partial sync:** Only releases in the `releases` array are swept and resurrected. Releases previously synced to this endpoint but absent from this request are left unchanged.
+
+### GitHub App, Organization & Tracked Repos
+
+The GitHub App integration is separate from GitHub sign-in ([above](#github-sign-in--oidc)): it lets a user with a connected App installation onboard repos and their releases directly from the UI.
+
+```text
+GET  /github/repos                        (RequireAuth) List repos accessible via the user's App installation
+POST /github/onboard                      (RequireAuth) Import releases + CI-run endpoints for selected repos
+GET  /github/search                       Search public repos on GitHub/GitLab by name
+GET  /github/repo                         Fetch metadata for a single public repo
+```
+
+#### `POST /github/onboard` (RequireAuth)
+
+For each `owner/repo` in the request, fetches releases via the App installation token, creates a `release` document per GitHub release (tag as version), determines `is_public` from repo visibility (drives unauthenticated GraphQL access), and — for each successful GitHub Actions workflow run — creates a `github-actions/<owner>/<repo>` endpoint plus a `sync` record.
+
+```json
+// Request
+{ "repos": ["acme/payment-service", "acme/frontend"] }
+
+// Response 200
+{ "message": "Processed 4 items via GitHub App", "errors": [] }
+```
+
+#### Organization Endpoints
+
+```text
+GET    /orgs/:org/status                        Github/GitLab connection status, tracked/hidden repos (org member)
+POST   /orgs/:org/credentials                    Store an encrypted PAT for github|gitlab (RequireRole("owner"))
+DELETE /orgs/:org/credentials/:provider          Remove a stored PAT (RequireRole("owner"))
+POST   /orgs/:org/tracked-repos                  Track a repo under this org via GitOps commit (RequireRole("owner"))
+POST   /orgs/:org/hidden-repos                   Hide a tracked repo from org views without untracking it (RequireRole("owner", "admin"))
+```
+
+`GET /orgs/:org/status` never returns raw or encrypted tokens — only booleans (`github_app_connected`, `github_pat_present`, `gitlab_pat_present`) and a derived `github_status` of `app_connected`, `pat_only`, or `not_connected`. Personal access tokens submitted via `POST /orgs/:org/credentials` are encrypted at rest (see `TOKEN_ENCRYPTION_KEY`) and validated immediately after storage, setting `token_status` on the org document.
+
+#### System-Wide Tracked Repos
+
+Distinct from org-scoped tracked repos above, these track public repos globally so any authenticated user can add one:
+
+```text
+GET    /tracked-repos                    List all system-tracked public repos with active sync counts
+POST   /tracked-repos                    Track a new public repo (any authenticated user)
+DELETE /tracked-repos/:key               Untrack a repo
+```
+
+```json
+// POST /tracked-repos request
+{ "provider": "github", "owner": "acme", "name": "payment-service" }
+
+// Response 201
+{ "success": true, "message": "now tracking github/acme/payment-service", "provider": "github", "owner": "acme", "name": "payment-service", "added_by": "alice", "added_by_org": "acme", "added_at": "2024-12-01T10:00:00Z" }
+```
+
+### Metadata
+
+Simple key-value storage for operational metadata (`OptionalAuth`).
+
+```text
+GET /metadata/:key                       Retrieve a value by key
+PUT /metadata/:key                       Upsert a value by key
+```
+
+```json
+// PUT /metadata/last-scan request
+{ "value": "2024-12-01T10:00:00Z" }
+
+// Response 200 (both GET and PUT)
+{ "key": "last-scan", "value": "2024-12-01T10:00:00Z", "updated_at": "2024-12-01T10:00:00Z" }
+```
+
+> **Collision warning:** the `metadata` collection is shared with two other jobs, each using a different document shape. The [`osvdev-job`](https://github.com/ortelius/osvdev-job) CronJob writes one document per OSV ecosystem (key = ecosystem name, e.g. `npm`, `pypi`, `crates.io`) with `last_modified` + `type: "ecosystem_metadata"` (no `value`/`updated_at`). The [`relscanner-job`](https://github.com/ortelius/relscanner-job) CronJob writes a single document at key `relscanner_state` holding its `processed_repos`/`processed_releases` scan-state maps. Avoid using an OSV ecosystem name or `relscanner_state` as a key via this endpoint — writing to either will corrupt that job's state and force expensive reprocessing on its next run.
 
 ### User Management (RequireAuth + RequireRole("admin"))
 
@@ -701,6 +821,8 @@ Event type: `release.sbom.created`
 
 The processor fetches the SBOM content by CID via the `SBOMFetcher` interface, then runs the same `ProcessReleaseIngestion` pipeline as `POST /releases`.
 
+> **Implementation status:** The default `SBOMFetcher` (`internal/services.CIDFetcher`) is currently a placeholder that returns an empty component list regardless of `cid` — it does not yet fetch from IPFS or S3. See [`events/Kafka Event Schema.md`](../events/Kafka%20Event%20Schema.md) for full field documentation.
+
 ---
 
 ## Database Schema
@@ -718,7 +840,7 @@ graph TD
 
     INVITATIONS["✉️ invitations\n─────────────────\ntoken · username\nrole · expires_at\naccepted_at"]
 
-    ROLES["🔑 roles\n─────────────────\nname\npermissions[]"]
+    ROLES["🔑 roles  (unused)\n─────────────────\nname\npermissions[]"]
 
     %% ── Software Inventory ─────────────────────────────────────────
     RELEASE["📦 release\n─────────────────\nname · version\norg · contentsha\nversion_major/minor/patch\nprojecttype · gitcommit\ndockersha · is_public"]
@@ -739,7 +861,7 @@ graph TD
     LIFECYCLE["📊 cve_lifecycle\n─────────────────\ncve_id · endpoint_name\nrelease_name\nintroduced_version\nintroduced_at\nroot_introduced_at\nremediated_at\nis_remediated\ndisclosed_after_deployment"]
 
     %% ── Metadata ───────────────────────────────────────────────────
-    METADATA["🗂️ metadata\n─────────────────\ntype (ecosystem_metadata)\nlast_modified"]
+    METADATA["🗂️ metadata  (multi-purpose)\n─────────────────\necosystem HWM: _key · last_modified · type\nscan state: _key=relscanner_state\ngeneric KV: _key · value · updated_at"]
 
     %% ── Edge Collections ────────────────────────────────────────────
     RELEASE  -->|"release2sbom"| SBOM
@@ -918,9 +1040,11 @@ graph TD
   "password_hash": "$2a$10$...",
   "role": "owner",
   "orgs": ["acme"],
+  "favorite_orgs": ["acme"],
   "is_active": true,
   "status": "active",
   "auth_provider": "local",
+  "linked_identities": [],
   "github_installation_id": "",
   "github_token": ""
 }
@@ -949,9 +1073,23 @@ graph TD
   "name": "acme",
   "display_name": "ACME Corporation",
   "description": "Main enterprise customer",
-  "metadata": { "owner": "alice", "tier": "enterprise" }
+  "is_public": false,
+  "metadata": { "tier": "enterprise" },
+  "github_installation_id": "12345678",
+  "github_token_enc": "enc:v1:...",
+  "gitlab_token_enc": "",
+  "token_status": "valid",
+  "token_last_validated": "2024-12-01T10:00:00Z",
+  "tracked_repos": [
+    { "provider": "github", "owner": "acme", "name": "payment-service", "private": true, "added_by": "alice", "added_at": "2024-11-01T10:00:00Z" }
+  ],
+  "hidden_repos": [],
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-12-01T10:00:00Z"
 }
 ```
+
+`github_token_enc` / `gitlab_token_enc` hold encrypted PATs (see [Org-Level Personal Access Tokens](architecture.md#org-level-personal-access-tokens)) and are only present for private repos not covered by the GitHub App installation. `is_public: true` marks an org auto-created for public-repo tracking with no credentials required.
 
 ### Edge Collections
 
@@ -1079,7 +1217,7 @@ Always call `util.GetStandardBasePURL()` or `util.GetBasePURLFromComponents()` f
 
 ## CVE Lifecycle Implementation
 
-### Materialized Edge Creation (`linkReleaseToExistingCVEs`)
+### Materialized Edge Creation (`LinkReleaseToExistingCVEs`)
 
 Called at the end of every `ProcessReleaseIngestion`:
 

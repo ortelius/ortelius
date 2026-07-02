@@ -7,6 +7,8 @@
 - **SLA:** Severity-based, as defined below  
 - **Rolling MTTR Window:** 180 days
 
+> **Implementation note:** This document describes the metrics model and compliance rationale behind the dashboard. For the concrete GraphQL fields these metrics are exposed as (`MTTRAnalysis`, `ExecutiveSummary`, `DetailedSeverityMetrics`, etc.), see [Implementation Guide § GraphQL Reference](../../../docs/implementation.md#graphql-reference). "High-risk" below corresponds to the `mission_asset` endpoint type in the data model — see `resolvers.go` (`is_high_risk = (ep_type == "mission_asset")`).
+
 ---
 
 ## 1. SLA Reference Table (for calculations)
@@ -185,7 +187,7 @@
 
 **2. Post-Deployment CVEs by Endpoint Type**  
 
-- Standard, Privileged, Safety-Critical  
+- Broken down by the endpoint's `endpoint_type` value (`eks`, `gke`, `aks`, `ecs`, `fargate`, `lambda`, `edge`, `cluster`, `ec2`, `mission_asset`, etc.) — exposed to the frontend as `endpoint_type_counts`  
 - Supports **blast radius assessment**  
 - **NIST SP 800-218:** PP-6  
 - **NIST SP 800-190:** Section 3.2
