@@ -56,9 +56,8 @@ After onboarding, go to your dashboard. You should see:
 GitHub onboarding (above) imports release and deployment *metadata* — it does not attach an SBOM, so there is nothing yet for CVE matching to run against. No changes to your CI/CD pipeline, no CLI, and no direct API calls from your pipeline are required to fix this — SBOM data reaches Ortelius automatically via a scanner component:
 
 - [`relscanner-job`](https://github.com/ortelius/relscanner-job) — a CronJob that discovers releases from GitHub/GitLab and auto-attaches an SBOM via OCI attestations, Cosign, GitHub Release assets, or Syft/cdxgen generation
-- [`deployment-gke`](https://github.com/ortelius/deployment-gke) — a Cloud Function that does the same for pods observed running in GKE
 
-Ask your platform team whether one of these is deployed alongside this backend — that's the only setup step. Once it is, give it up to one scan cycle (15 minutes by default) after a repo is connected or a pod deploys.
+Ask your platform team whether this is deployed alongside this backend — that's the only setup step. Once it is, give it up to one scan cycle (15 minutes by default) after a repo is connected.
 
 CVE data is refreshed from OSV.dev every 15 minutes. Components with missing or malformed PURLs are silently skipped during CVE matching.
 
@@ -175,7 +174,7 @@ Endpoints with `endpoint_type: mission_asset` use the tighter targets in the rig
 | **Endpoint**          | A running environment where software is deployed (cluster, function, device)                         |
 | **Sync**              | The act of telling Ortelius what versions are currently deployed to an endpoint                          |
 | **OSV**               | Open Source Vulnerabilities — the vulnerability database Ortelius pulls from, refreshed every 15 minutes |
-| **OCI Attestation**   | An SBOM or other artifact attached directly to a container image in the registry. This backend's own REST/GitHub-onboarding endpoints don't discover these, but the optional [`relscanner-job`](https://github.com/ortelius/relscanner-job) and [`deployment-gke`](https://github.com/ortelius/deployment-gke) scanner components do |
+| **OCI Attestation**   | An SBOM or other artifact attached directly to a container image in the registry. This backend's own REST/GitHub-onboarding endpoints don't discover these, but the optional [`relscanner-job`](https://github.com/ortelius/relscanner-job) scanner component does |
 | **OpenSSF Scorecard** | An automated security health score (0–10) for open source repositories. Not fetched by this backend's own endpoints, but `relscanner-job` fetches it automatically when deployed; otherwise populate `scorecard_result` on a release yourself via the API |
 
 ---
