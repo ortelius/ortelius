@@ -246,6 +246,17 @@ func CleanPURL(purlStr string) (string, error) {
 		// Qualifiers are intentionally omitted to clean the string
 	}
 
+	// Julia purls require a uuid qualifier per spec — the uuid, not the
+	// name, is the durable package identity (names can be renamed/reused
+	// in the Julia registry). Dropping it produces an invalid purl that
+	// fails re-validation the next time it's parsed (e.g. in
+	// GetStandardBasePURL), so it must survive qualifier-stripping.
+	if strings.EqualFold(parsed.Type, "julia") {
+		if uuid, ok := parsed.Qualifiers.Map()["uuid"]; ok {
+			cleaned.Qualifiers = packageurl.Qualifiers{{Key: "uuid", Value: uuid}}
+		}
+	}
+
 	return strings.ToLower(cleaned.ToString()), nil
 }
 
@@ -280,6 +291,8 @@ func EcosystemToPurlType(ecosystem string) string {
 		"Chainguard": "apk", // CRITICAL: Map Chainguard to apk
 		"Debian":     "deb",
 		"Ubuntu":     "deb",
+		"Julia":      "julia", // Registered purl type (purl-spec, Oct 2025)
+		"Github":     "github",
 	}
 
 	// Try exact match first
@@ -332,6 +345,13 @@ func GetStandardBasePURL(purlStr string) (string, error) {
 		Namespace: parsed.Namespace,
 		Name:      parsed.Name,
 		// Version, Qualifiers, Subpath intentionally omitted
+	}
+
+	// See CleanPURL: Julia purls require a uuid qualifier per spec.
+	if strings.EqualFold(normalizedType, "julia") {
+		if uuid, ok := parsed.Qualifiers.Map()["uuid"]; ok {
+			base.Qualifiers = packageurl.Qualifiers{{Key: "uuid", Value: uuid}}
+		}
 	}
 
 	return strings.ToLower(base.ToString()), nil
