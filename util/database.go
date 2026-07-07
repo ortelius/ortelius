@@ -15,13 +15,30 @@ import (
 	"github.com/ortelius/ortelius/v12/database"
 )
 
-// SanitizeKey ensures the database key is valid for ArangoDB
-// ArangoDB keys cannot contain spaces, slashes, or brackets
+// SanitizeKey ensures the database key is valid for ArangoDB.
+//
+// ArangoDB _key values may only contain letters, digits, and the symbols
+// _ - : . @ ( ) + , = ; $ ! * ' %  -- anything else must be removed or
+// replaced, or ArangoDB rejects the document outright. Unless every single
+// caller checks that error (most don't, historically -- see
+// osvdev-job's processEdges), an invalid key fails silently: the document
+// is never written, but the caller proceeds as if it was, e.g. creating an
+// edge that points at a purl document that doesn't exist and never will,
+// on every single run, forever (ArangoDB doesn't enforce referential
+// integrity on edge collections, so nothing else catches this either).
+//
+// This was surfaced by Julia purls, which now legitimately retain a
+// "?uuid=..." qualifier (required by the purl-spec for that type) -- the
+// "?" was never in this function's replacer and isn't in ArangoDB's
+// allowed set, so every Julia purl's key generation failed the same way,
+// every time.
 func SanitizeKey(key string) string {
-	// 1. Trim whitespace/newlines first
+	// 1. Trim whitespace/newlines first.
 	key = strings.TrimSpace(key)
 
-	// 2. Use Replacer for cleaner, faster, multi-string replacement
+	// 2. Preserve prior behavior exactly for these specific characters, so
+	// every key that doesn't hit the new fallback below stays
+	// byte-identical to what's already stored.
 	replacer := strings.NewReplacer(
 		" ", "-",
 		"/", "-",
@@ -30,8 +47,28 @@ func SanitizeKey(key string) string {
 		"(", "",
 		")", "",
 	)
+	key = replacer.Replace(key)
 
-	return replacer.Replace(key)
+	// 3. Safety net: replace anything ArangoDB doesn't allow in a _key with
+	// "-" instead of silently producing an invalid key. This only changes
+	// output for inputs that were already broken (nothing was ever
+	// successfully stored under an invalid key), so it can't orphan
+	// anything that currently works.
+	const allowedSymbols = "_-:.@+,=;$!*'%"
+	var b strings.Builder
+	b.Grow(len(key))
+	for _, r := range key {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9':
+			b.WriteRune(r)
+		case strings.ContainsRune(allowedSymbols, r):
+			b.WriteRune(r)
+		default:
+			b.WriteRune('-')
+		}
+	}
+
+	return b.String()
 }
 
 // EcosystemMetadata stores the high-water mark for imports
