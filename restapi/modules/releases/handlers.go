@@ -369,24 +369,91 @@ func PopulateContentSha(release *model.ProjectRelease) {
 	}
 }
 
-// DeleteRelease2SBOMEdges deletes all existing release2sbom edges for a given release.
+// DeleteRelease2SBOMEdges deletes all existing release2sbom edges for a
+// given release, and cascades the delete to the sbom documents those edges
+// pointed at (plus their sbom2purl edges), since a release only ever has
+// one active SBOM -- the old one becomes permanently unreachable the
+// moment its edge is removed.
+//
+// The previous version only removed the edge, never touching the sbom
+// document itself. That leaves it orphaned forever: nothing else in the
+// codebase ever revisits an already-abandoned sbom to clean it up, so on
+// a system where releases get re-synced (or checkReleaseExists fails and
+// a redundant sync happens for an already-existing release -- see the
+// gke2release Cloud Function), this leaked one orphaned sbom document per
+// re-sync. On the reporting system this was found on, that had
+// accumulated to 96.5% of the entire sbom collection (11,663 of 12,086).
 func DeleteRelease2SBOMEdges(ctx context.Context, db database.DBConnection, releaseID string) error {
-	query := `
+	// Capture the sbom targets before removing the edges -- once the edge
+	// is gone there's no way to find them again.
+	findQuery := `
 		FOR e IN release2sbom
 			FILTER e._from == @releaseID
-			REMOVE e IN release2sbom
+			RETURN e._to
 	`
-	bindVars := map[string]interface{}{
-		"releaseID": releaseID,
-	}
-
-	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
-		BindVars: bindVars,
+	cursor, err := db.Database.Query(ctx, findQuery, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"releaseID": releaseID},
 	})
 	if err != nil {
 		return err
 	}
+	var oldSbomIDs []string
+	for cursor.HasMore() {
+		var sbomID string
+		if _, err := cursor.ReadDocument(ctx, &sbomID); err != nil {
+			break
+		}
+		oldSbomIDs = append(oldSbomIDs, sbomID)
+	}
 	cursor.Close()
+
+	// Remove the release2sbom edges themselves (unchanged from before).
+	removeEdgesQuery := `
+		FOR e IN release2sbom
+			FILTER e._from == @releaseID
+			REMOVE e IN release2sbom
+	`
+	edgeCursor, err := db.Database.Query(ctx, removeEdgesQuery, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"releaseID": releaseID},
+	})
+	if err != nil {
+		return err
+	}
+	edgeCursor.Close()
+
+	if len(oldSbomIDs) == 0 {
+		return nil
+	}
+
+	// Cascade: remove the now-orphaned sbom documents' own sbom2purl
+	// edges, then the sbom documents themselves.
+	cascadeQuery := `
+		FOR sbomID IN @sbomIDs
+			FOR e IN sbom2purl
+				FILTER e._from == sbomID
+				REMOVE e IN sbom2purl
+	`
+	if cursor, err := db.Database.Query(ctx, cascadeQuery, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"sbomIDs": oldSbomIDs},
+	}); err != nil {
+		return fmt.Errorf("failed to remove sbom2purl edges for superseded sbom(s): %w", err)
+	} else {
+		cursor.Close()
+	}
+
+	removeSbomsQuery := `
+		FOR sbomID IN @sbomIDs
+			LET key = PARSE_IDENTIFIER(sbomID).key
+			REMOVE key IN sbom
+			OPTIONS { ignoreErrors: true }
+	`
+	if cursor, err := db.Database.Query(ctx, removeSbomsQuery, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"sbomIDs": oldSbomIDs},
+	}); err != nil {
+		return fmt.Errorf("failed to remove superseded sbom document(s): %w", err)
+	} else {
+		cursor.Close()
+	}
 
 	return nil
 }
