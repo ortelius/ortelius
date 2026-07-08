@@ -371,18 +371,22 @@ func PopulateContentSha(release *model.ProjectRelease) {
 
 // DeleteRelease2SBOMEdges deletes all existing release2sbom edges for a
 // given release, and cascades the delete to the sbom documents those edges
-// pointed at (plus their sbom2purl edges), since a release only ever has
-// one active SBOM -- the old one becomes permanently unreachable the
-// moment its edge is removed.
+// pointed at (plus their sbom2purl edges) -- but only if nothing else
+// still references them. sbom documents are deduplicated by content hash
+// (see restapi/modules/sbom/handlers.go's ProcessSBOM /
+// FindSBOMByContentHash), so two releases with identical SBOM content can
+// legitimately share the same document; only a sbom with zero remaining
+// release2sbom edges after this one is removed is actually orphaned.
 //
 // The previous version only removed the edge, never touching the sbom
-// document itself. That leaves it orphaned forever: nothing else in the
-// codebase ever revisits an already-abandoned sbom to clean it up, so on
-// a system where releases get re-synced (or checkReleaseExists fails and
-// a redundant sync happens for an already-existing release -- see the
-// gke2release Cloud Function), this leaked one orphaned sbom document per
-// re-sync. On the reporting system this was found on, that had
-// accumulated to 96.5% of the entire sbom collection (11,663 of 12,086).
+// document itself. That leaves it orphaned forever whenever it truly was
+// exclusive to this release: nothing else in the codebase ever revisits
+// an already-abandoned sbom to clean it up, so on a system where releases
+// get re-synced (or checkReleaseExists fails and a redundant sync happens
+// for an already-existing release -- see the gke2release Cloud Function),
+// this leaked one orphaned sbom document per re-sync. On the reporting
+// system this was found on, that had accumulated to 96.5% of the entire
+// sbom collection (11,663 of 12,086).
 func DeleteRelease2SBOMEdges(ctx context.Context, db database.DBConnection, releaseID string) error {
 	// Capture the sbom targets before removing the edges -- once the edge
 	// is gone there's no way to find them again.
@@ -424,6 +428,46 @@ func DeleteRelease2SBOMEdges(ctx context.Context, db database.DBConnection, rele
 	if len(oldSbomIDs) == 0 {
 		return nil
 	}
+
+	// sbom documents are content-hash deduplicated (see FindSBOMByContentHash
+	// in restapi/modules/sbom/handlers.go's ProcessSBOM) -- two releases
+	// with identical SBOM content share the same document, each via its
+	// own release2sbom edge. Deleting unconditionally here would destroy a
+	// document still legitimately referenced by some OTHER release, so
+	// only cascade-delete a captured old sbom if NO release2sbom edge
+	// points at it anymore (this release's own edge was already removed
+	// above, so a remaining hit means a different release still needs it).
+	stillReferencedQuery := `
+		FOR sbomID IN @sbomIDs
+			FILTER LENGTH(FOR e IN release2sbom FILTER e._to == sbomID LIMIT 1 RETURN 1) > 0
+			RETURN sbomID
+	`
+	refCursor, err := db.Database.Query(ctx, stillReferencedQuery, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"sbomIDs": oldSbomIDs},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to check remaining references for superseded sbom(s): %w", err)
+	}
+	stillReferenced := make(map[string]bool)
+	for refCursor.HasMore() {
+		var id string
+		if _, err := refCursor.ReadDocument(ctx, &id); err != nil {
+			break
+		}
+		stillReferenced[id] = true
+	}
+	refCursor.Close()
+
+	var toDelete []string
+	for _, id := range oldSbomIDs {
+		if !stillReferenced[id] {
+			toDelete = append(toDelete, id)
+		}
+	}
+	if len(toDelete) == 0 {
+		return nil
+	}
+	oldSbomIDs = toDelete
 
 	// Cascade: remove the now-orphaned sbom documents' own sbom2purl
 	// edges, then the sbom documents themselves.
