@@ -257,15 +257,13 @@ func Me(db database.DBConnection) fiber.Handler {
 			if hasInstallationID {
 				appToken, err := github.GetInstallationToken(user.GitHubInstallationID)
 				if err == nil {
-					// Verify the installation actually has repo access
-					repos, repoErr := github.FetchRepos(appToken)
-					if repoErr == nil && len(repos) > 0 {
-						installationValid = true
-					} else {
-						// It's a zombie installation or empty permission set. Clear it.
-						user.GitHubInstallationID = ""
-						installationValid = false
-					}
+					// Installation token issuance succeeding means the installation is live.
+					// A subsequent empty/failed repos fetch (rate limit, transient API error,
+					// or genuinely zero repos currently selected in the App) does NOT mean the
+					// installation was revoked, so it must not clear GitHubInstallationID here —
+					// doing so previously caused users to be silently disconnected whenever
+					// FetchRepos happened to return zero repos for unrelated reasons.
+					installationValid = true
 				} else {
 					switch {
 					case isGitHubRevokedErr(err):
