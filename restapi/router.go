@@ -155,6 +155,17 @@ func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema
 	// Hide a tracked repo from the UI without stopping scanning (owner or admin)
 	orgGroup.Post("/:org/hidden-repos", auth.RequireRole("owner", "admin"), github.HideRepo(db))
 
+	// Org member management — every mutation commits to rbac.yaml (GitOps)
+	// and then applies locally, so the git repo stays the source of truth.
+	// GET    /api/v1/orgs/:org/members            — list members + pending invitations (any org member)
+	// POST   /api/v1/orgs/:org/members            — invite a new user / add an existing one (owner or admin)
+	// PATCH  /api/v1/orgs/:org/members/:username  — change a member's role (owner or admin)
+	// DELETE /api/v1/orgs/:org/members/:username  — remove a member (owner or admin)
+	orgGroup.Get("/:org/members", org.ListOrgMembers(db))
+	orgGroup.Post("/:org/members", auth.RequireRole("owner", "admin"), org.InviteOrgMember(db, emailConfig))
+	orgGroup.Patch("/:org/members/:username", auth.RequireRole("owner", "admin"), org.UpdateOrgMemberRole(db, emailConfig))
+	orgGroup.Delete("/:org/members/:username", auth.RequireRole("owner", "admin"), org.RemoveOrgMember(db, emailConfig))
+
 	// System-level public repo tracking — any authenticated user can add, removal gated on usage
 	// GET  /api/v1/tracked-repos              — list all tracked public repos with sync counts
 	// POST /api/v1/tracked-repos              — add a public repo (any authenticated user)

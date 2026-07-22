@@ -27,9 +27,10 @@ func NewFiberApp(db database.DBConnection) *fiber.App {
 	}
 
 	app := fiber.New(fiber.Config{
-		AppName:     "ortelius/v12 API v1.0",
-		BodyLimit:   50 * 1024 * 1024, // 50MB
-		ReadTimeout: 60 * time.Second, // seconds
+		AppName:      "ortelius/v12 API v1.0",
+		BodyLimit:    50 * 1024 * 1024, // 50MB
+		ReadTimeout:  60 * time.Second, // seconds
+		UnescapePath: true,             // decode %20 etc. in path params (e.g. org names with spaces) before routing/matching
 	})
 
 	// Middleware

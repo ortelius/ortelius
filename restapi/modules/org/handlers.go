@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/arangodb/go-driver/v2/arangodb"
 	"github.com/gofiber/fiber/v3"
 	"github.com/ortelius/ortelius/v12/database"
 	"github.com/ortelius/ortelius/v12/model"
@@ -71,6 +72,11 @@ func GetOrgStatus(db database.DBConnection) fiber.Handler {
 			githubStatus = "not_connected"
 		}
 
+		// Query GKE / cluster-type endpoints for this org and their last sync time.
+		// deployment-gke posts with endpoint_type "3" (legacy) or "cluster"/"gke";
+		// we surface all cluster-family types so the UI can show the integration status.
+		gkeEndpoints := queryGKEEndpoints(ctx, db, orgName)
+
 		return c.JSON(fiber.Map{
 			"org":                  orgName,
 			"display_name":         org.DisplayName,
@@ -82,6 +88,7 @@ func GetOrgStatus(db database.DBConnection) fiber.Handler {
 			"token_last_validated": org.TokenLastValidated,
 			"tracked_repos":        visibleRepos,
 			"hidden_repos":         org.HiddenRepos,
+			"gke_endpoints":        gkeEndpoints,
 		})
 	}
 }
@@ -324,4 +331,76 @@ func containsOrg(orgs []string, target string) bool {
 		}
 	}
 	return false
+}
+
+// gkeEndpointView is the wire shape for a single GKE/cluster endpoint.
+type gkeEndpointView struct {
+	Name         string  `json:"name"`
+	EndpointType string  `json:"endpoint_type"`
+	LastSync     *string `json:"last_sync"`
+}
+
+// queryGKEEndpoints returns all endpoints for the org whose endpoint_type is
+// a cluster/GKE family value, along with their most recent sync timestamp.
+//
+// deployment-gke (deployment-gke/main.go) posts with endpoint_type "3" — a
+// legacy numeric string from an earlier enum. The model has since moved to
+// named constants ("cluster", "gke", "eks", "aks", etc.). We match all of
+// these so the indicator works regardless of which value was stored.
+func queryGKEEndpoints(ctx context.Context, db database.DBConnection, orgName string) []gkeEndpointView {
+	// Cluster-family endpoint_type values recognised across all versions of the
+	// sync clients. "3" is the numeric legacy value written by deployment-gke.
+	clusterTypes := []interface{}{"3", "cluster", "gke", "eks", "aks", "fargate", "edge", "iot", "mission_asset"}
+
+	query := `
+		LET cluster_types = @cluster_types
+		FOR e IN endpoint
+			FILTER LOWER(e.org) == LOWER(@org)
+			FILTER e.endpoint_type IN cluster_types
+			LET last_sync = FIRST(
+				FOR s IN sync
+					FILTER s.endpoint_name == e.name
+					SORT s.synced_at DESC
+					LIMIT 1
+					RETURN s.synced_at
+			)
+			SORT e.name ASC
+			RETURN {
+				name:          e.name,
+				endpoint_type: e.endpoint_type,
+				last_sync:     last_sync
+			}
+	`
+	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{
+			"org":           orgName,
+			"cluster_types": clusterTypes,
+		},
+	})
+	if err != nil {
+		fmt.Printf("WARNING: queryGKEEndpoints(%s): %v\n", orgName, err)
+		return []gkeEndpointView{}
+	}
+	defer cursor.Close()
+
+	var results []gkeEndpointView
+	for cursor.HasMore() {
+		var row struct {
+			Name         string  `json:"name"`
+			EndpointType string  `json:"endpoint_type"`
+			LastSync     *string `json:"last_sync"`
+		}
+		if _, err := cursor.ReadDocument(ctx, &row); err != nil {
+			continue
+		}
+		results = append(results, gkeEndpointView{
+			Name:         row.Name,
+			EndpointType: row.EndpointType,
+			LastSync:     row.LastSync,
+		})
+	}
+	if results == nil {
+		return []gkeEndpointView{}
+	}
+	return results
 }
