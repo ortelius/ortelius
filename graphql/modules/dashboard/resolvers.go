@@ -476,29 +476,59 @@ func ResolveMTTR(db database.DBConnection, days int, org string) (map[string]int
 
 		LET all_events = (
 			FOR r IN cve_lifecycle
-				LET remediated_ts = r.remediated_at != null ? DATE_TIMESTAMP(r.remediated_at) : null
-				FILTER remediated_ts != null
-				
+				FILTER r.remediated_at != null
+
+				// Collapse per-historical-version duplicates. Each historical
+				// release version gets its own cve_lifecycle document carrying
+				// forward every CVE still present in its SBOM (see
+				// ProcessReleaseWithoutEndpoint / IngestAllUndeployedReleases).
+				// A CVE that persisted unfixed across N historical versions
+				// before finally being fixed therefore has N separate
+				// documents, not one -- without collapsing them, a single
+				// real remediation event gets counted N times here. Grouping
+				// by endpoint_name too (not just release_name/cve_id/package)
+				// keeps real per-endpoint sync events distinct from each
+				// other; it's specifically the shared "_release_tracking_"
+				// sentinel endpoint that produces these historical dupes.
+				//
+				// SORT DESC + COLLECT ... INTO preserves per-group order, so
+				// grp[0] is the record from the most recent version this
+				// cve/package/endpoint was tracked at -- i.e. whether/when it
+				// was ultimately fixed, which is the one that matters for
+				// remediated_at/is_remediated. true_introduced_at instead uses
+				// the EARLIEST appearance across every version in the group,
+				// so the exposure window (days_to_remediate) reflects the
+				// real, full duration the vulnerability was present -- not
+				// just since whichever version's copy happened to survive
+				// longest.
+				SORT r.release_name, r.cve_id, r.package, r.endpoint_name, DATE_TIMESTAMP(r.introduced_at) DESC
+				COLLECT release_name = r.release_name, cve_id = r.cve_id, package = r.package, endpoint_name = r.endpoint_name
+					INTO grp = r
+				LET canonical = grp[0]
+				FILTER canonical.remediated_at != null
+				LET remediated_ts = DATE_TIMESTAMP(canonical.remediated_at)
+				LET true_introduced_at = MIN(grp[*].root_introduced_at != null ? grp[*].root_introduced_at : grp[*].introduced_at)
+
 				// Filter by Org
-				LET relDoc = (FOR rel IN release FILTER rel.name == r.release_name AND rel.version == r.introduced_version LIMIT 1 RETURN rel)[0]
+				LET relDoc = (FOR rel IN release FILTER rel.name == release_name AND rel.version == canonical.introduced_version LIMIT 1 RETURN rel)[0]
 				FILTER @org == "" OR relDoc.org == @org
 
-				LET ep_type = HAS(ep_map, r.endpoint_name) ? ep_map[r.endpoint_name] : "unknown"
+				LET ep_type = HAS(ep_map, endpoint_name) ? ep_map[endpoint_name] : "unknown"
 				LET is_high_risk = (ep_type == "mission_asset")
-				
-				LET sev_key = UPPER(r.severity_rating)
+
+				LET sev_key = UPPER(canonical.severity_rating)
 				LET sla_entry = HAS(sla_def, sev_key) ? sla_def[sev_key] : sla_def["NONE"]
 				LET sla_days = is_high_risk ? sla_entry.high_risk : sla_entry.default
-				
-				LET discovery_ts = DATE_TIMESTAMP(r.root_introduced_at != null ? r.root_introduced_at : r.introduced_at)
+
+				LET discovery_ts = DATE_TIMESTAMP(true_introduced_at)
 				LET total_duration = DATE_DIFF(discovery_ts, remediated_ts, "d")
 
-				RETURN MERGE(r, {
+				RETURN MERGE(canonical, {
 					endpoint_type: ep_type,
 					sla_days: sla_days,
 					days_to_remediate: total_duration,
 					in_window_fix: (remediated_ts >= @cutoffTimestamp),
-					is_post: (r.disclosed_after_deployment == true)
+					is_post: (canonical.disclosed_after_deployment == true)
 				})
 		)
 
