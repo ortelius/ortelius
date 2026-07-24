@@ -411,9 +411,44 @@ func IngestAllUndeployedReleases(ctx context.Context, db database.DBConnection, 
 		seenReleases[row.Name] = true
 	}
 
-	// After seeding all versions, reconcile remediation timestamps across
-	// consecutive versions for every release touched this run.
-	for releaseName := range seenReleases {
+	// After seeding all versions, reconcile remediation timestamps.
+	// Reconcile every release that has release-tracking sentinel records,
+	// not just ones that had a new version to seed this run. Reconciliation
+	// must be able to re-evaluate records regardless of whether anything new
+	// was seeded this run -- e.g. after a repair pass reopens records that
+	// were previously (and incorrectly) marked remediated, those records
+	// still "count" as tracked (they weren't deleted, just reset), so they'd
+	// never enter seenReleases above and would otherwise sit unreconciled
+	// until the release happened to get a new version for unrelated reasons.
+	reconcileQuery := `
+		FOR l IN cve_lifecycle
+			FILTER l.endpoint_name == "_release_tracking_"
+			FILTER @org == "" OR (FOR r IN release FILTER r.name == l.release_name LIMIT 1 RETURN r.org == @org)[0]
+			RETURN DISTINCT l.release_name
+	`
+	reconcileCursor, err := db.Database.Query(ctx, reconcileQuery, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"org": org},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to query release names for reconciliation: %w", err)
+	}
+	defer reconcileCursor.Close()
+
+	allTrackedReleases := map[string]bool{}
+	for reconcileCursor.HasMore() {
+		var name string
+		if _, err := reconcileCursor.ReadDocument(ctx, &name); err == nil {
+			allTrackedReleases[name] = true
+		}
+	}
+	// Belt-and-suspenders: also include anything seeded fresh this run, in
+	// case it hasn't shown up in the query above for any reason (e.g. a
+	// replication lag edge case).
+	for name := range seenReleases {
+		allTrackedReleases[name] = true
+	}
+
+	for releaseName := range allTrackedReleases {
 		if err := ReconcileSentinelRemediations(ctx, db, releaseName); err != nil {
 			fmt.Printf("WARNING: sentinel remediation reconcile failed for %s: %v\n", releaseName, err)
 		}
@@ -435,6 +470,15 @@ func ReconcileSentinelRemediations(ctx context.Context, db database.DBConnection
 				FILTER r.name == @release_name
 				FILTER r.builddate != null
 				AND DATE_TIMESTAMP(r.builddate) > DATE_TIMESTAMP("2000-01-01")
+				// "0.0.0-snapshot" is a placeholder version relscanner-job assigns
+				// to CI/workflow-run scans that aren't tied to a real tagged
+				// release (see cmd/root.go). Its build date can be more recent
+				// than the true latest release, and its SBOM/dependency set is
+				// unrelated, so including it here causes real CVEs in the
+				// actual latest release to look falsely "fixed" against an
+				// unrelated snapshot scan. Real prereleases (e.g. 5.0.0-rc1)
+				// are still legitimate comparison points and stay included.
+				FILTER r.version != "0.0.0-snapshot"
 				SORT r.builddate ASC
 				RETURN { version: r.version, builddate: r.builddate }
 		)
