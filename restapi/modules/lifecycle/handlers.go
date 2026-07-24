@@ -273,9 +273,21 @@ func GetCVEsForReleaseTracking(ctx context.Context, db database.DBConnection, re
 	defer cursor.Close()
 	result := make(map[string]CVEInfo)
 	for cursor.HasMore() {
+		// NOTE: these json tags are required. Without them, Go's default
+		// case-insensitive field matching only binds single-word keys
+		// (package, published) — snake_case keys like cve_id, severity_rating,
+		// and severity_score never match CveID/SeverityRating/SeverityScore
+		// and silently decode to their zero values ("" / 0.0). That corrupted
+		// every sentinel record's cve_id and severity_rating from creation,
+		// which in turn broke ReconcileSentinelRemediations' cve_key matching
+		// and caused near-immediate false is_remediated=true on release-only
+		// records — the actual root cause of the "Released" dashboard zeros.
 		var raw struct {
-			CveID, Package, SeverityRating, Published string
-			SeverityScore                             float64
+			CveID          string  `json:"cve_id"`
+			Package        string  `json:"package"`
+			SeverityRating string  `json:"severity_rating"`
+			Published      string  `json:"published"`
+			SeverityScore  float64 `json:"severity_score"`
 		}
 		if _, err := cursor.ReadDocument(ctx, &raw); err == nil {
 			pubTime, _ := time.Parse(time.RFC3339, raw.Published)

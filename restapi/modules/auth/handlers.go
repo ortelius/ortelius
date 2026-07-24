@@ -255,7 +255,7 @@ func Me(db database.DBConnection) fiber.Handler {
 			// Check installation ID first
 			installationValid := false
 			if hasInstallationID {
-				appToken, err := github.GetInstallationToken(user.GitHubInstallationID)
+				_, err := github.GetInstallationToken(user.GitHubInstallationID)
 				if err == nil {
 					// Installation token issuance succeeding means the installation is live.
 					// A subsequent empty/failed repos fetch (rate limit, transient API error,
