@@ -249,8 +249,10 @@ func InitializeDatabase() DBConnection {
 		// CVE Lifecycle indexes
 		{Collection: "cve_lifecycle", IdxName: "lifecycle_cve_id", IdxField: []string{"cve_id"}, Unique: false},
 		{Collection: "cve_lifecycle", IdxName: "lifecycle_remediated", IdxField: []string{"is_remediated"}, Unique: false},
-		{Collection: "cve_lifecycle", IdxName: "lifecycle_endpoint_release_version",
-			IdxField: []string{"endpoint_name", "release_name", "introduced_version"}, Unique: false},
+		// lifecycle_endpoint_release_version was removed: [endpoint_name,
+		// release_name, introduced_version] is a strict prefix of
+		// lifecycle_release_tracking_sentinel below, which already serves
+		// those queries.
 		{Collection: "cve_lifecycle", IdxName: "lifecycle_endpoint_release_remediated",
 			IdxField: []string{"endpoint_name", "release_name", "is_remediated"}, Unique: false},
 		// Supports release_open_cves AQL CTE — filters on the sentinel endpoint
@@ -266,15 +268,23 @@ func InitializeDatabase() DBConnection {
 		{Collection: "sync", IdxName: "sync_endpoint_release_synced",
 			IdxField: []string{"release_name", "endpoint_name", "synced_at"}, Unique: false},
 
-		// Edge collection indexes - INBOUND traversal (_to)
-		{Collection: "sbom2purl", IdxName: "idx_sbom2purl_to", IdxField: []string{"_to"}, Unique: false},
-		{Collection: "release2sbom", IdxName: "idx_release2sbom_to", IdxField: []string{"_to"}, Unique: false},
-		{Collection: "release2cve", IdxName: "idx_release2cve_to", IdxField: []string{"_to"}, Unique: false},
-		{Collection: "cve2purl", IdxName: "idx_cve2purl_to", IdxField: []string{"_to"}, Unique: false},
-
-		// Edge collection indexes - OUTBOUND traversal (_from)
-		{Collection: "release2cve", IdxName: "idx_release2cve_from", IdxField: []string{"_from"}, Unique: false},
-		{Collection: "release2sbom", IdxName: "idx_release2sbom_from", IdxField: []string{"_from"}, Unique: false},
+		// Edge collection indexes
+		//
+		// ArangoDB's built-in `edge` index already covers _from and _to
+		// independently on every edge collection, and the planner selects it
+		// (verified with db._explain on cve2purl: "edge index scan",
+		// selectivity 11.67%). Separate persistent indexes on _to or _from
+		// were therefore never read, but every write still had to maintain
+		// them -- ~4.2M redundant index entries across cve2purl (3.5M docs),
+		// release2cve (564K) and sbom2purl (154K).
+		//
+		// That write amplification drove continuous RocksDB compaction and
+		// held ArangoDB at ~1421m CPU with an idle query load. Dropping the
+		// four single-field indexes below took steady state to 5m.
+		//
+		// Do NOT re-add single-field _to / _from persistent indexes here.
+		// Compound indexes whose first field is _from or _to are still
+		// worthwhile when they cover extra fields, as below.
 		{Collection: "sbom2purl", IdxName: "idx_sbom2purl_from_full_purl", IdxField: []string{"_from", "full_purl"}, Unique: false},
 	}
 

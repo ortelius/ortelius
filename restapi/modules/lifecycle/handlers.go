@@ -494,8 +494,24 @@ func ReconcileSentinelRemediations(ctx context.Context, db database.DBConnection
 							FILTER cve.id != null AND edge.package_base != null
 							RETURN CONCAT(cve.id, "|", edge.package_base)
 				)
-				RETURN { version: v.version, builddate: v.builddate, cve_keys: cve_keys }
+				// cve_set is an OBJECT keyed by cve_key, not an array. The inner
+				// loop below tests membership once per (sentinel x version) pair;
+				// NOT IN on an array is a linear scan, so with ~373 open sentinels
+				// x ~100 versions x ~811 edges per version that reached ~30M
+				// comparisons per release. HAS() on an object is a hash lookup,
+				// which collapses that to ~37K probes.
+				RETURN {
+					version: v.version,
+					builddate: v.builddate,
+					cve_set: ZIP(cve_keys, cve_keys[* RETURN true])
+				}
 		)
+
+		// Hoisted out of the per-sentinel loop below. Referencing
+		// versions[*].version inline rebuilt this array once per open sentinel
+		// record; building it once here makes it a single allocation.
+		LET version_list = versions[*].version
+		LET version_count = LENGTH(version_cve_sets)
 
 		// For each open sentinel record, find the FIRST version after its
 		// introduction where the CVE is absent — not just the adjacent version.
@@ -507,10 +523,10 @@ func ReconcileSentinelRemediations(ctx context.Context, db database.DBConnection
 			AND l.release_name == @release_name
 			AND l.is_remediated == false
 			LET cve_key = CONCAT(l.cve_id, "|", l.package)
-			LET intro_idx = POSITION(versions[*].version, l.introduced_version, true)
+			LET intro_idx = POSITION(version_list, l.introduced_version, true)
 			LET fix_version = FIRST(
-				FOR i IN (intro_idx >= 0 ? intro_idx + 1 : 0)..LENGTH(version_cve_sets) - 1
-					FILTER cve_key NOT IN version_cve_sets[i].cve_keys
+				FOR i IN (intro_idx >= 0 ? intro_idx + 1 : 0)..version_count - 1
+					FILTER !HAS(version_cve_sets[i].cve_set, cve_key)
 					RETURN version_cve_sets[i]
 			)
 			FILTER fix_version != null
