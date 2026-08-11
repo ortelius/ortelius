@@ -1,5 +1,16 @@
 ---
+# ---------------------------------------------------------------------------
+# ortelius (backend)
+#
+# Defaults match the currently running deployment, so committing this changes
+# no rendered output beyond additive template plumbing.
+#
+# Pool placement and resources are set from the umbrella chart:
+#   ortelius/helmcharts -> charts/ortelius/values.yaml -> ortelius:
+# ---------------------------------------------------------------------------
+
 replicaCount: 1
+
 image:
   repository: quay.io/ortelius/ortelius
   tag: main-v10.0.92-g2eebd3
@@ -25,12 +36,66 @@ githubSignin:
   clientId: ""
   clientSecret: ""
 
-# SMTP Configuration - Leave empty to disable email (invitations will print to console)
+# SMTP Configuration - Leave empty to disable email (invitations print to console)
 smtp:
-  enabled: false # Set to true to enable email sending
+  enabled: false
   host: ""
   port: ""
   username: ""
   password: ""
   fromEmail: ""
   fromName: ""
+
+# ---------------------------------------------------------------------------
+# Resources
+#
+# Measured steady state: 69m CPU / 176Mi. 150m request is ~2x measured;
+# memory request == limit gives Guaranteed QoS only if the CPU request also
+# equals the CPU limit, so both are set here.
+#
+# This pod previously ran with no resources at all (BestEffort QoS), making
+# it the first thing the kubelet evicts under node memory pressure.
+# ---------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: 150m
+    memory: 384Mi
+  limits:
+    cpu: 150m
+    memory: 384Mi
+
+# ---------------------------------------------------------------------------
+# Scheduling
+#
+# Defaults to the previously hardcoded selector. Set workload=system from the
+# umbrella chart to pin the backend to system-pool alongside ArangoDB --
+# keeps it off preemptible batch-pool nodes and out of contention with the
+# osvdev / relscanner CronJobs.
+# ---------------------------------------------------------------------------
+nodeSelector:
+  kubernetes.io/os: linux
+  # workload: system
+
+tolerations: []
+
+affinity: {}
+
+priorityClassName: ""
+  # database-critical
+
+# ---------------------------------------------------------------------------
+# Probes
+#
+# The existing livenessProbe values are preserved as defaults. readinessProbe
+# is new: without it, the Service routes traffic to the pod before the backend
+# can serve, producing 502s during rollouts.
+# ---------------------------------------------------------------------------
+probes:
+  readiness:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    failureThreshold: 3
+  liveness:
+    initialDelaySeconds: 60
+    periodSeconds: 60
+    failureThreshold: 3

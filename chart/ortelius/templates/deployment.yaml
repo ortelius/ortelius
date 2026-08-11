@@ -5,7 +5,7 @@ kind: Deployment
 metadata:
   name: {{ include "microservice.name" . }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount | default 1 }}
   selector:
     matchLabels:
       app: {{ include "microservice.name" . }}
@@ -14,12 +14,23 @@ spec:
       labels:
         app: {{ include "microservice.name" . }}
     spec:
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
       nodeSelector:
-        kubernetes.io/os: linux
+        {{- toYaml (.Values.nodeSelector | default (dict "kubernetes.io/os" "linux")) | nindent 8 }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ include "microservice.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "Always" }}
           env:
             - name: ARANGO_USER
               valueFrom:
@@ -120,10 +131,22 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds | default 15 }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds | default 10 }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold | default 3 }}
           livenessProbe:
             httpGet:
               path: /
               port: 8080
-            initialDelaySeconds: 60
-            periodSeconds: 60
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds | default 60 }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds | default 60 }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold | default 3 }}
 ---
