@@ -2,6 +2,17 @@ apiVersion: v1
 entries:
   ortelius:
   - apiVersion: v2
+    appVersion: 12.0.517
+    created: "2026-08-11T20:29:31.210278927Z"
+    description: Post-Deployment Vulnerability Detection Backend
+    digest: 4670f9a3003a55c18d4fc1fa6d0ed430a598e4ad8347a2c178042f9ce6632981
+    icon: https://ortelius.github.io/ortelius-charts/logo.png
+    name: ortelius
+    type: application
+    urls:
+    - https://github.com/ortelius/ortelius/releases/download/v12.0.517/ortelius-12.0.517.tgz
+    version: 12.0.517
+  - apiVersion: v2
     appVersion: 12.0.516
     created: "2026-08-11T17:00:50.418554308Z"
     description: Post-Deployment Vulnerability Detection Backend
@@ -551,4 +562,4 @@ entries:
     urls:
     - https://github.com/ortelius/ortelius/releases/download/v12.0.460/ortelius-12.0.460.tgz
     version: 12.0.460
-generated: "2026-08-11T17:00:50.418051171Z"
+generated: "2026-08-11T20:29:31.209822059Z"
