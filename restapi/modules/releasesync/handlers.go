@@ -539,20 +539,43 @@ func processSBOMForRelease(ctx context.Context, db database.DBConnection, sbomDa
 	if sbomData.ObjType == "" {
 		sbomData.ObjType = "SBOM"
 	}
+
 	_, sbomID, err := sbom.ProcessSBOM(ctx, db, *sbomData)
 	if err != nil {
+		fmt.Printf("Error processing SBOM for %s: %v\n", releaseID, err)
 		return false
 	}
-	releases.DeleteRelease2SBOMEdges(ctx, db, releaseID)
+
+	if err := releases.DeleteRelease2SBOMEdges(ctx, db, releaseID); err != nil {
+		fmt.Printf("Error removing old release2sbom edges for %s: %v\n", releaseID, err)
+		return false
+	}
+
 	edge := map[string]interface{}{"_from": releaseID, "_to": sbomID}
-	db.Collections["release2sbom"].CreateDocument(ctx, edge)
+	if _, err := db.Collections["release2sbom"].CreateDocument(ctx, edge); err != nil {
+		fmt.Printf("Error creating release2sbom edge for %s: %v\n", releaseID, err)
+		return false
+	}
 
 	if err := sbom.ProcessSBOMComponents(ctx, db, *sbomData, sbomID); err != nil {
 		fmt.Printf("Error processing SBOM components: %v\n", err)
 		return false
 	}
 
-	releases.LinkReleaseToExistingCVEs(ctx, db, releaseID, releaseID[8:])
+	// release2cve is materialized/derived data. Replace the previous set before
+	// rebuilding it. LinkReleaseToExistingCVEs also uses deterministic keys and
+	// overwrite-on-key writes, so retries or overlapping sync requests cannot
+	// append duplicates.
+	if err := releases.DeleteRelease2CVEEdges(ctx, db, releaseID); err != nil {
+		fmt.Printf("Error removing old release2cve edges for %s: %v\n", releaseID, err)
+		return false
+	}
+
+	if err := releases.LinkReleaseToExistingCVEs(ctx, db, releaseID, releaseID[8:]); err != nil {
+		fmt.Printf("Error rebuilding release2cve edges for %s: %v\n", releaseID, err)
+		return false
+	}
+
 	return true
 }
 

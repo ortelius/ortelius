@@ -3,6 +3,8 @@ package releases
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -100,9 +102,12 @@ func ProcessReleaseIngestion(ctx context.Context, db database.DBConnection, rel 
 		return "", fmt.Errorf("failed to process SBOM components: %w", err)
 	}
 
-	// 6. Link Release directly to CVEs (Materialized Edges for static analysis)
-	if err := deleteRelease2CVEEdges(ctx, db, releaseID); err != nil {
-		fmt.Printf("Warning: Failed to cleanup old CVE edges: %v\n", err)
+	// 6. Link Release directly to CVEs (Materialized Edges for static analysis).
+	// release2cve is derived data, so always replace the current materialized
+	// set before rebuilding it. A cleanup failure must be fatal; continuing
+	// would append another copy of every logical release/CVE/package edge.
+	if err := DeleteRelease2CVEEdges(ctx, db, releaseID); err != nil {
+		return "", fmt.Errorf("failed to cleanup old release2cve edges: %w", err)
 	}
 
 	if err := LinkReleaseToExistingCVEs(ctx, db, releaseID, rel.Key); err != nil {
@@ -502,21 +507,63 @@ func DeleteRelease2SBOMEdges(ctx context.Context, db database.DBConnection, rele
 	return nil
 }
 
-// deleteRelease2CVEEdges deletes all existing release2cve edges for a given release.
-func deleteRelease2CVEEdges(ctx context.Context, db database.DBConnection, releaseID string) error {
+// DeleteRelease2CVEEdges deletes all existing materialized release2cve edges
+// for a given release. It is exported because both normal release ingestion and
+// releasesync must replace this derived edge set before rebuilding it.
+func DeleteRelease2CVEEdges(ctx context.Context, db database.DBConnection, releaseID string) error {
 	query := `
 		FOR e IN release2cve
 			FILTER e._from == @releaseID
 			REMOVE e IN release2cve
 	`
-	bindVars := map[string]interface{}{
-		"releaseID": releaseID,
+	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{
+			"releaseID": releaseID,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	defer cursor.Close()
+
+	return nil
+}
+
+// releaseCVEEdgeKey returns a deterministic ArangoDB key for the logical
+// release2cve identity. The same release/CVE/package relationship therefore
+// converges on the same document even when requests are retried or overlap.
+func releaseCVEEdgeKey(releaseID, cveID, packageBase string) string {
+	raw := releaseID + "\x00" + cveID + "\x00" + packageBase
+	sum := sha256.Sum256([]byte(raw))
+	return "relcve_" + hex.EncodeToString(sum[:])
+}
+
+// writeRelease2CVEEdges writes materialized release2cve edges idempotently.
+// DeleteRelease2CVEEdges remains the normal replace step because the derived
+// set can shrink when an SBOM changes. Deterministic _key values plus
+// overwriteMode:update provide the second line of defense against retries and
+// concurrent writers recreating duplicates.
+func writeRelease2CVEEdges(ctx context.Context, db database.DBConnection, edges []map[string]interface{}) error {
+	if len(edges) == 0 {
+		return nil
 	}
 
-	_, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
-		BindVars: bindVars,
+	query := `
+		FOR edge IN @edges
+			INSERT edge INTO release2cve
+			OPTIONS { overwriteMode: "update" }
+	`
+	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{
+			"edges": edges,
+		},
 	})
-	return err
+	if err != nil {
+		return err
+	}
+	defer cursor.Close()
+
+	return nil
 }
 
 // LinkReleaseToExistingCVEs finds matching CVEs for a release and creates materialized edges.
@@ -672,22 +719,21 @@ func LinkReleaseToExistingCVEs(ctx context.Context, db database.DBConnection, re
 
 		seenInstances[instanceKey] = true
 
+		now := time.Now()
 		edgesToInsert = append(edgesToInsert, map[string]interface{}{
+			"_key":            releaseCVEEdgeKey(releaseID, cand.CveID, cand.PackagePurlBase),
 			"_from":           releaseID,
 			"_to":             cand.CveID,
 			"type":            "static_analysis",
 			"package_purl":    cand.PackagePurlFull,
 			"package_base":    cand.PackagePurlBase,
 			"package_version": cand.PackageVersion,
-			"created_at":      time.Now(),
+			"created_at":      now,
+			"updated_at":      now,
 		})
 	}
 
-	if len(edgesToInsert) > 0 {
-		return sbom.BatchInsertEdges(ctx, db, "release2cve", edgesToInsert)
-	}
-
-	return nil
+	return writeRelease2CVEEdges(ctx, db, edgesToInsert)
 }
 
 // CheckReleaseExists returns 200 if a release with the given contentsha exists, 404 if not.
