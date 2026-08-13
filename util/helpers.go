@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -401,12 +402,16 @@ func IsVersionAffected(version string, affected models.Affected) bool {
 	return false
 }
 
-// isVersionInRange checks if a version falls within an OSV range
-// Uses ecosystem-specific parsers for npm and PyPI
-// FIXED: Requires both lower and upper boundaries to avoid false positives
-// FIXED: Special handling for OSV's "0" value meaning "from the beginning"
+// isVersionInRange checks if a version falls within an OSV range.
+//
+// OSV range events form a timeline of vulnerability state changes. An
+// introduced event does not require a matching fixed/last_affected event;
+// when no closing event exists, the range is intentionally open-ended and
+// remains vulnerable indefinitely.
+//
+// The evaluator below also handles multiple introduced/fixed intervals and
+// explicit limit events.
 func isVersionInRange(version string, vrange models.Range, ecosystem string) bool {
-	// Try ecosystem-specific parsers first
 	switch strings.ToLower(ecosystem) {
 	case "npm":
 		return isVersionInRangeNPM(version, vrange)
@@ -414,291 +419,305 @@ func isVersionInRange(version string, vrange models.Range, ecosystem string) boo
 		return isVersionInRangePython(version, vrange)
 	}
 
-	// Fall back to semver parsing with coercion (handles Maven and others)
-	v, err := semver.NewVersion(version)
-	if err != nil {
-		// If not valid semver, fall back to string comparison
-		return isVersionInRangeString(version, vrange)
+	// Use semantic-version ordering when both the target and all non-limit
+	// event boundaries can be parsed as semantic versions. ECOSYSTEM ranges
+	// are allowed to contain arbitrary version strings, so fall back to the
+	// existing string ordering when semantic parsing is not possible.
+	if canEvaluateSemverRange(version, vrange) {
+		return evaluateOSVRange(version, vrange, compareSemverVersions, "version")
 	}
 
-	var introduced, fixed, lastAffected *semver.Version
-
-	// Parse all events and collect boundaries
-	for _, event := range vrange.Events {
-		if event.Introduced != "" {
-			// FIXED: Special handling for OSV's "0" value
-			if event.Introduced == "0" {
-				// "0" means "from the beginning of time" in OSV spec
-				introduced = semver.MustParse("0.0.0")
-			} else {
-				if parsed, err := semver.NewVersion(event.Introduced); err == nil {
-					introduced = parsed
-				} else {
-					log.Printf("WARNING: Failed to parse introduced version '%s': %v", event.Introduced, err)
-				}
-			}
-		}
-		if event.Fixed != "" {
-			if parsed, err := semver.NewVersion(event.Fixed); err == nil {
-				fixed = parsed
-			} else {
-				log.Printf("WARNING: Failed to parse fixed version '%s': %v", event.Fixed, err)
-			}
-		}
-		if event.LastAffected != "" {
-			if parsed, err := semver.NewVersion(event.LastAffected); err == nil {
-				lastAffected = parsed
-			} else {
-				log.Printf("WARNING: Failed to parse last_affected version '%s': %v", event.LastAffected, err)
-			}
-		}
-	}
-
-	// FIXED: Require both lower and upper boundaries to prevent false positives
-	// A valid vulnerability range must have both:
-	// - A lower bound (introduced)
-	// - AND an upper bound (fixed OR last_affected)
-	hasLowerBound := introduced != nil
-	hasUpperBound := fixed != nil || lastAffected != nil
-
-	if !hasLowerBound || !hasUpperBound {
-		// Incomplete range data - cannot reliably determine if version is affected
-		// Return false to avoid false positives
-		log.Printf("WARNING: Incomplete range data for version %s (hasLowerBound=%v, hasUpperBound=%v)",
-			version, hasLowerBound, hasUpperBound)
-		return false
-	}
-
-	// Check if version is >= introduced
-	if v.LessThan(introduced) {
-		return false // Version is before the introduced version
-	}
-
-	// Check if version is < fixed
-	if fixed != nil && !v.LessThan(fixed) {
-		return false // Version is at or after the fixed version
-	}
-
-	// Check if version is <= last_affected
-	if lastAffected != nil && v.GreaterThan(lastAffected) {
-		return false // Version is after the last affected version
-	}
-
-	// If we reach here, version is within the affected range
-	return true
+	return isVersionInRangeString(version, vrange)
 }
 
-// isVersionInRangeNPM uses npm-specific version comparison
-// FIXED: Added same boundary requirements and "0" handling
-func isVersionInRangeNPM(version string, vrange models.Range) bool {
-	v, err := npm.NewVersion(version)
-	if err != nil {
-		// Fall back to string comparison
-		return isVersionInRangeString(version, vrange)
-	}
+type versionCompareFunc func(left, right string) (int, error)
 
-	var introduced, fixed, lastAffected npm.Version
-
-	hasIntroduced := false
-	hasFixed := false
-	hasLastAffected := false
-
-	for _, event := range vrange.Events {
-		if event.Introduced != "" {
-			// FIXED: Special handling for "0"
-			if event.Introduced == "0" {
-				if intro, err := npm.NewVersion("0.0.0"); err == nil {
-					introduced = intro
-					hasIntroduced = true
-				}
-			} else {
-				if intro, err := npm.NewVersion(event.Introduced); err == nil {
-					introduced = intro
-					hasIntroduced = true
-				} else {
-					log.Printf("WARNING: Failed to parse npm introduced version '%s': %v", event.Introduced, err)
-				}
-			}
-		}
-		if event.Fixed != "" {
-			if fix, err := npm.NewVersion(event.Fixed); err == nil {
-				fixed = fix
-				hasFixed = true
-			} else {
-				log.Printf("WARNING: Failed to parse npm fixed version '%s': %v", event.Fixed, err)
-			}
-		}
-		if event.LastAffected != "" {
-			if last, err := npm.NewVersion(event.LastAffected); err == nil {
-				lastAffected = last
-				hasLastAffected = true
-			} else {
-				log.Printf("WARNING: Failed to parse npm last_affected version '%s': %v", event.LastAffected, err)
-			}
-		}
-	}
-
-	// FIXED: Require both boundaries
-	hasLowerBound := hasIntroduced
-	hasUpperBound := hasFixed || hasLastAffected
-
-	if !hasLowerBound || !hasUpperBound {
-		log.Printf("WARNING: Incomplete npm range data for version %s (hasLowerBound=%v, hasUpperBound=%v)",
-			version, hasLowerBound, hasUpperBound)
-		return false
-	}
-
-	// Check if version is >= introduced
-	if hasIntroduced && v.LessThan(introduced) {
-		return false
-	}
-
-	// Check if version is < fixed
-	if hasFixed && !v.LessThan(fixed) {
-		return false
-	}
-
-	// Check if version is <= last_affected
-	if hasLastAffected && v.GreaterThan(lastAffected) {
-		return false
-	}
-
-	// If we get here, version is within the affected range
-	return true
+type osvRangeEvent struct {
+	kind    string
+	version string
 }
 
-// isVersionInRangePython uses PEP 440 version comparison for Python packages
-// FIXED: Added same boundary requirements and "0" handling
-func isVersionInRangePython(version string, vrange models.Range) bool {
-	v, err := pep440.Parse(version)
-	if err != nil {
-		// Fall back to string comparison
-		return isVersionInRangeString(version, vrange)
+func evaluateOSVRange(
+	version string,
+	vrange models.Range,
+	compare versionCompareFunc,
+	label string,
+) bool {
+	if version == "" {
+		return false
 	}
-
-	var introduced, fixed, lastAffected pep440.Version
 
 	hasIntroduced := false
-	hasFixed := false
-	hasLastAffected := false
+	hasExplicitLimit := false
+	beforeExplicitLimit := false
+	events := make([]osvRangeEvent, 0, len(vrange.Events))
 
-	for _, event := range vrange.Events {
-		if event.Introduced != "" {
-			// FIXED: Special handling for "0"
-			if event.Introduced == "0" {
-				if intro, err := pep440.Parse("0.0.0"); err == nil {
-					introduced = intro
-					hasIntroduced = true
-				}
-			} else {
-				if intro, err := pep440.Parse(event.Introduced); err == nil {
-					introduced = intro
-					hasIntroduced = true
-				} else {
-					log.Printf("WARNING: Failed to parse python introduced version '%s': %v", event.Introduced, err)
-				}
-			}
-		}
-		if event.Fixed != "" {
-			if fix, err := pep440.Parse(event.Fixed); err == nil {
-				fixed = fix
-				hasFixed = true
-			} else {
-				log.Printf("WARNING: Failed to parse python fixed version '%s': %v", event.Fixed, err)
-			}
-		}
-		if event.LastAffected != "" {
-			if last, err := pep440.Parse(event.LastAffected); err == nil {
-				lastAffected = last
-				hasLastAffected = true
-			} else {
-				log.Printf("WARNING: Failed to parse python last_affected version '%s': %v", event.LastAffected, err)
-			}
-		}
-	}
-
-	// FIXED: Require both boundaries
-	hasLowerBound := hasIntroduced
-	hasUpperBound := hasFixed || hasLastAffected
-
-	if !hasLowerBound || !hasUpperBound {
-		log.Printf("WARNING: Incomplete python range data for version %s (hasLowerBound=%v, hasUpperBound=%v)",
-			version, hasLowerBound, hasUpperBound)
-		return false
-	}
-
-	// Check if version is >= introduced
-	if hasIntroduced && v.LessThan(introduced) {
-		return false
-	}
-
-	// Check if version is < fixed
-	if hasFixed && !v.LessThan(fixed) {
-		return false
-	}
-
-	// Check if version is <= last_affected
-	if hasLastAffected && v.GreaterThan(lastAffected) {
-		return false
-	}
-
-	// If we get here, version is within the affected range
-	return true
-}
-
-// isVersionInRangeString performs string-based comparison as fallback
-// FIXED: Added boundary requirement check
-func isVersionInRangeString(version string, vrange models.Range) bool {
-	hasIntroduced := false
-	hasFixed := false
-	hasLastAffected := false
-
+	// OSV limit events are evaluated independently from the affected-state
+	// timeline. If no limit is present, an implicit infinite limit applies.
 	for _, event := range vrange.Events {
 		if event.Introduced != "" {
 			hasIntroduced = true
+			events = append(events, osvRangeEvent{
+				kind:    "introduced",
+				version: event.Introduced,
+			})
 		}
 		if event.Fixed != "" {
-			hasFixed = true
+			events = append(events, osvRangeEvent{
+				kind:    "fixed",
+				version: event.Fixed,
+			})
 		}
 		if event.LastAffected != "" {
-			hasLastAffected = true
+			events = append(events, osvRangeEvent{
+				kind:    "last_affected",
+				version: event.LastAffected,
+			})
+		}
+		if event.Limit != "" {
+			hasExplicitLimit = true
+
+			// "*" is OSV's explicit infinity marker.
+			if strings.Contains(event.Limit, "*") {
+				beforeExplicitLimit = true
+				continue
+			}
+
+			cmp, err := compare(version, event.Limit)
+			if err != nil {
+				log.Printf(
+					"WARNING: Failed to compare %s %q with OSV limit %q: %v",
+					label, version, event.Limit, err,
+				)
+				return false
+			}
+			if cmp < 0 {
+				beforeExplicitLimit = true
+			}
 		}
 	}
 
-	// FIXED: Require both boundaries even for string comparison
-	hasLowerBound := hasIntroduced
-	hasUpperBound := hasFixed || hasLastAffected
+	// The OSV schema requires at least one introduced event. Unlike the old
+	// implementation, an upper boundary is NOT required: introduced-only is
+	// a valid open-ended vulnerability range.
+	if !hasIntroduced {
+		log.Printf("WARNING: OSV range for %s %q has no introduced event", label, version)
+		return false
+	}
 
-	if !hasLowerBound || !hasUpperBound {
-		log.Printf("WARNING: Incomplete range data for string version %s (hasLowerBound=%v, hasUpperBound=%v)",
-			version, hasLowerBound, hasUpperBound)
+	if hasExplicitLimit && !beforeExplicitLimit {
+		return false
+	}
+
+	// OSV evaluation is defined over the events sorted by the range's version
+	// ordering. Stable sorting also makes multiple affected intervals work
+	// even when the source did not emit events in order.
+	var sortErr error
+	sort.SliceStable(events, func(i, j int) bool {
+		if sortErr != nil {
+			return false
+		}
+
+		cmp, err := compareRangeBoundary(events[i].version, events[j].version, compare)
+		if err != nil {
+			sortErr = err
+			return false
+		}
+		if cmp != 0 {
+			return cmp < 0
+		}
+
+		// At the same boundary, process introduced before closing events so
+		// fixed can still win at that exact version.
+		return osvRangeEventPriority(events[i].kind) < osvRangeEventPriority(events[j].kind)
+	})
+
+	if sortErr != nil {
+		log.Printf("WARNING: Failed to order OSV range events for %s %q: %v", label, version, sortErr)
+		return false
+	}
+
+	vulnerable := false
+
+	for _, event := range events {
+		cmp, err := compareVersionToBoundary(version, event.version, compare)
+		if err != nil {
+			log.Printf(
+				"WARNING: Failed to compare %s %q with OSV %s boundary %q: %v",
+				label, version, event.kind, event.version, err,
+			)
+			return false
+		}
+
+		switch event.kind {
+		case "introduced":
+			if cmp >= 0 {
+				vulnerable = true
+			}
+
+		case "fixed":
+			// fixed is exclusive: the fixed version and anything newer are
+			// no longer affected until another introduced event is reached.
+			if cmp >= 0 {
+				vulnerable = false
+			}
+
+		case "last_affected":
+			// last_affected is inclusive.
+			if cmp > 0 {
+				vulnerable = false
+			}
+		}
+	}
+
+	return vulnerable
+}
+
+func osvRangeEventPriority(kind string) int {
+	switch kind {
+	case "introduced":
+		return 0
+	case "last_affected":
+		return 1
+	case "fixed":
+		return 2
+	default:
+		return 3
+	}
+}
+
+func compareVersionToBoundary(version string, boundary string, compare versionCompareFunc) (int, error) {
+	// introduced:"0" is a special OSV value that sorts before every real
+	// version. Treat it as already reached without asking an ecosystem parser
+	// to interpret it.
+	if boundary == "0" {
+		return 1, nil
+	}
+	return compare(version, boundary)
+}
+
+func compareRangeBoundary(left string, right string, compare versionCompareFunc) (int, error) {
+	if left == right {
+		return 0, nil
+	}
+	if left == "0" {
+		return -1, nil
+	}
+	if right == "0" {
+		return 1, nil
+	}
+	return compare(left, right)
+}
+
+func canEvaluateSemverRange(version string, vrange models.Range) bool {
+	if _, err := semver.NewVersion(strings.TrimPrefix(version, "go")); err != nil {
 		return false
 	}
 
 	for _, event := range vrange.Events {
-		// Simple string comparison for non-semver versions
-		if event.Introduced != "" {
-			// FIXED: Special handling for "0"
-			if event.Introduced == "0" {
-				// "0" means from the beginning, so no lower bound check needed
+		for _, boundary := range []string{event.Introduced, event.Fixed, event.LastAffected} {
+			if boundary == "" || boundary == "0" {
 				continue
 			}
-			if version < event.Introduced {
+			if _, err := semver.NewVersion(strings.TrimPrefix(boundary, "go")); err != nil {
 				return false
 			}
 		}
-		if event.Fixed != "" {
-			if version >= event.Fixed {
-				return false
-			}
-		}
-		if event.LastAffected != "" {
-			if version > event.LastAffected {
+
+		if event.Limit != "" && !strings.Contains(event.Limit, "*") {
+			if _, err := semver.NewVersion(strings.TrimPrefix(event.Limit, "go")); err != nil {
 				return false
 			}
 		}
 	}
+
 	return true
+}
+
+func compareSemverVersions(left, right string) (int, error) {
+	l, err := semver.NewVersion(strings.TrimPrefix(left, "go"))
+	if err != nil {
+		return 0, err
+	}
+
+	r, err := semver.NewVersion(strings.TrimPrefix(right, "go"))
+	if err != nil {
+		return 0, err
+	}
+
+	return l.Compare(r), nil
+}
+
+// isVersionInRangeNPM uses npm-specific version comparison.
+func isVersionInRangeNPM(version string, vrange models.Range) bool {
+	if _, err := npm.NewVersion(version); err != nil {
+		return isVersionInRangeString(version, vrange)
+	}
+
+	return evaluateOSVRange(version, vrange, compareNPMVersions, "npm version")
+}
+
+func compareNPMVersions(left, right string) (int, error) {
+	l, err := npm.NewVersion(left)
+	if err != nil {
+		return 0, err
+	}
+
+	r, err := npm.NewVersion(right)
+	if err != nil {
+		return 0, err
+	}
+
+	if l.LessThan(r) {
+		return -1, nil
+	}
+	if r.LessThan(l) {
+		return 1, nil
+	}
+	return 0, nil
+}
+
+// isVersionInRangePython uses PEP 440 version comparison for Python packages.
+func isVersionInRangePython(version string, vrange models.Range) bool {
+	if _, err := pep440.Parse(version); err != nil {
+		return isVersionInRangeString(version, vrange)
+	}
+
+	return evaluateOSVRange(version, vrange, comparePythonVersions, "python version")
+}
+
+func comparePythonVersions(left, right string) (int, error) {
+	l, err := pep440.Parse(left)
+	if err != nil {
+		return 0, err
+	}
+
+	r, err := pep440.Parse(right)
+	if err != nil {
+		return 0, err
+	}
+
+	if l.LessThan(r) {
+		return -1, nil
+	}
+	if r.LessThan(l) {
+		return 1, nil
+	}
+	return 0, nil
+}
+
+// isVersionInRangeString performs the existing string-based version ordering
+// for ECOSYSTEM ranges that cannot be parsed by one of the supported version
+// parsers. Open-ended ranges are valid here as well.
+func isVersionInRangeString(version string, vrange models.Range) bool {
+	return evaluateOSVRange(
+		version,
+		vrange,
+		func(left, right string) (int, error) {
+			return strings.Compare(left, right), nil
+		},
+		"string version",
+	)
 }
 
 // GetSeverityScore returns the lowest CVSS base score threshold for a given severity rating.
