@@ -210,7 +210,11 @@ graph TB
 
 ### Materialized `release2cve` Edges
 
-Hub traversal is used once — at SBOM ingest time — to compute which CVEs affect each release. The results are stored as direct `release2cve` edges. All runtime vulnerability queries use these materialized edges rather than traversing the hub graph live.
+Hub traversal is used at SBOM ingest or refresh time to compute which CVEs affect each release. The results are stored as direct `release2cve` edges. All runtime vulnerability queries use these materialized edges rather than traversing the hub graph live.
+
+`release2cve` is **derived, replaceable data**. Whenever an SBOM is processed for an existing release, Ortelius deletes that release's current `release2cve` edge set and rebuilds it from the current SBOM → PURL → CVE graph. Cleanup failure is treated as fatal for the refresh so the service does not append a second materialized copy.
+
+Each logical edge also has deterministic identity derived from the release, CVE, and package base PURL. Edge writes use ArangoDB `overwriteMode: "update"`, so retries or overlapping writers for the same logical relationship converge on one edge instead of creating duplicates. The delete-before-rebuild step is still required because the derived set can shrink when an SBOM changes.
 
 ```mermaid
 sequenceDiagram
@@ -218,8 +222,9 @@ sequenceDiagram
     participant DB as ArangoDB
     participant Util as Version Matcher
 
-    Note over API: POST /releases (SBOM ingest)
+    Note over API: POST /releases or /sync with SBOM
 
+    API->>DB: Process SBOM and PURL relationships
     API->>DB: Traverse: release → sbom → purl hubs → CVEs
     DB-->>API: Candidate (cve_id, package_purl, package_version, affected_ranges)
 
@@ -229,17 +234,20 @@ sequenceDiagram
     end
 
     API->>DB: Deduplicate by (cve_id, package_base_purl)
-    API->>DB: Batch INSERT release2cve edges
-    Note over DB: Old edges deleted first — full refresh on re-ingest
+    API->>DB: DELETE existing release2cve edges for release
+    API->>DB: INSERT deterministic-key edges with overwriteMode:update
+    Note over DB: Full replace + idempotent writes prevent duplicate materialization
 
-    Note over API: POST /graphql — runtime query
+    Note over API: Runtime vulnerability query
     API->>DB: FOR cve IN 1..1 OUTBOUND release release2cve
-    DB-->>API: Results in <500ms
+    DB-->>API: Materialized results
 ```
 
 ### Version Matching
 
-Version matching runs at ingest time to decide which candidates become `release2cve` edges, and again at sync time to populate `cve_lifecycle` records. Both paths use the same `util.IsVersionAffected` function.
+Version matching runs at ingest time to decide which candidates become `release2cve` edges, and the same `util.IsVersionAffected` implementation is reused wherever Ortelius evaluates OSV affected ranges.
+
+Ortelius evaluates OSV ranges as an **ordered event timeline**, not as a single required lower/upper-bound pair. This is important because valid OSV data may contain an `introduced` event without a corresponding `fixed` or `last_affected` event. Such a range is intentionally open-ended and remains affected until another event closes it.
 
 Ortelius uses **ecosystem-specific parsers** rather than a single generic semver parser because version schemes differ significantly across package ecosystems:
 
@@ -247,14 +255,25 @@ Ortelius uses **ecosystem-specific parsers** rather than a single generic semver
 |--------------------------|--------------------------------|------------------|
 | npm                      | aquasecurity/go-npm-version    | `4.17.20`        |
 | PyPI                     | aquasecurity/go-pep440-version | `2.3.0rc1`       |
-| Maven, Go, NuGet, others | Masterminds/semver             | `1.2.3-SNAPSHOT` |
+| SemVer-compatible values | Masterminds/semver             | `1.2.3`          |
 | Fallback                 | String comparison              | any              |
 
-**Key rules that prevent false positives:**
+For ecosystems other than npm and PyPI, Ortelius first attempts semantic-version comparison when the target version and all relevant range boundaries are parseable as SemVer. If they are not, the matcher falls back to string ordering for that range.
 
-- OSV uses `"0"` in the `introduced` field to mean "from the beginning of time." Ortelius treats this as `0.0.0`, not the literal string `"0"`.
-- A range must have **both** a lower bound (`introduced`) **and** an upper bound (`fixed` or `last_affected`) to produce a match. Incomplete ranges return `false`. This prevents a misconfigured or partial OSV record from marking everything as vulnerable.
-- Go stdlib versions carrying a `go` prefix (e.g., `go1.22.2`) have the prefix stripped before parsing.
+**OSV range evaluation rules:**
+
+- `introduced` is **inclusive**. Once the target version reaches an `introduced` boundary, the range is affected.
+- `introduced: "0"` means "from the beginning of time" and sorts before every real version.
+- An `introduced` event does **not** require an upper boundary. If no later closing event exists, the affected interval is open-ended.
+- `fixed` is **exclusive**. The fixed version itself and newer versions are not affected until a later `introduced` event is reached.
+- `last_affected` is **inclusive**. The named version remains affected; versions after it are not affected until a later `introduced` event.
+- `limit` is an exclusive evaluation boundary. A target at or beyond an explicit finite limit is outside that range; `*` represents an unbounded limit.
+- Multiple `introduced`, `fixed`, and `last_affected` events are supported. Events are ordered with the ecosystem's comparison function and evaluated as vulnerability-state transitions, allowing multiple affected intervals in a single OSV range.
+- A range with no `introduced` event is treated as invalid for matching and returns `false`.
+- If a version or boundary cannot be compared with the selected parser, Ortelius logs a warning and returns `false` for that range rather than guessing.
+- Go-style versions carrying a `go` prefix (for example, `go1.22.2`) have the prefix stripped when semantic-version comparison is used.
+
+This behavior prevents valid open-ended OSV advisories from being dropped while still failing closed when range data cannot be ordered reliably.
 
 ### PURL Standardization
 
@@ -508,11 +527,15 @@ On each `POST /api/v1/releases`:
 3. Hash SBOM content (SHA256) for deduplication
 4. Create or retrieve PURL hub nodes (batch upsert)
 5. Create `sbom2purl` edges with version metadata
-6. Traverse hub graph to find candidate CVEs
-7. Validate each candidate with `util.IsVersionAffected` (ecosystem-specific parsers)
-8. Batch-insert `release2cve` materialized edges
+6. Traverse the hub graph to find candidate CVEs
+7. Validate each candidate with `util.IsVersionAffected`
+8. Deduplicate candidates by logical CVE/package identity
+9. Delete the release's existing `release2cve` materialized edge set
+10. Rebuild `release2cve` with deterministic edge keys and ArangoDB `overwriteMode: "update"`
 
-The same pipeline runs for releases ingested via Kafka (`release.sbom.created` events) — there is no divergence between the REST and event-driven paths.
+The delete-before-rebuild step is required because `release2cve` is derived data and the correct set can shrink when an SBOM changes. A cleanup failure aborts the materialized-edge refresh rather than appending new edges to an unknown old state. Deterministic keys and overwrite-on-key writes provide an additional idempotency layer for retries and overlapping writers.
+
+`POST /api/v1/sync` follows the same materialization rule whenever its payload contains an SBOM: the release-to-SBOM relationship and SBOM components are refreshed, existing `release2cve` edges for that release are deleted, and the materialized CVE edges are rebuilt. Releases ingested via Kafka (`release.sbom.created` events) use the same release ingestion pipeline as the REST endpoint.
 
 ---
 

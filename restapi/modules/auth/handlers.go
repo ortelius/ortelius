@@ -206,11 +206,12 @@ func Login(db database.DBConnection) fiber.Handler {
 		SetAuthCookie(c, token)
 
 		return c.JSON(fiber.Map{
-			"message":  "Login successful",
-			"username": user.Username,
-			"email":    user.Email,
-			"role":     user.Role,
-			"orgs":     user.Orgs,
+			"message":          "Login successful",
+			"username":         user.Username,
+			"email":            user.Email,
+			"role":             user.Role,
+			"orgs":             user.Orgs,
+			"needs_onboarding": user.NeedsOnboarding,
 		})
 	}
 }
@@ -229,6 +230,36 @@ func Logout() fiber.Handler {
 			Path:     "/",
 		})
 		return c.JSON(fiber.Map{"message": "Logged out successfully"})
+	}
+}
+
+// CompleteOnboarding marks the current user as having seen the onboarding
+// flow (/welcome), so subsequent logins - including future SSO round trips -
+// no longer report needs_onboarding: true. Mounted as
+// POST /api/v1/auth/onboarding-complete, called by the frontend once the
+// welcome page has been shown.
+func CompleteOnboarding(db database.DBConnection) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		username, ok := c.Locals("username").(string)
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Not authenticated"})
+		}
+
+		ctx := c.Context()
+		user, err := getUserByUsername(ctx, db, username)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch user profile"})
+		}
+
+		if user.NeedsOnboarding {
+			user.NeedsOnboarding = false
+			user.UpdatedAt = time.Now()
+			if err := updateUser(ctx, db, user); err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update user"})
+			}
+		}
+
+		return c.JSON(fiber.Map{"message": "Onboarding marked complete"})
 	}
 }
 
@@ -324,6 +355,7 @@ func Me(db database.DBConnection) fiber.Handler {
 			"role":             user.Role,
 			"orgs":             user.Orgs,
 			"github_connected": githubConnected,
+			"needs_onboarding": user.NeedsOnboarding,
 		})
 	}
 }

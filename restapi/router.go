@@ -75,6 +75,7 @@ func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema
 	authGroup.Get("/status", auth.AuthStatus)
 	authGroup.Post("/forgot-password", auth.ForgotPassword(db))
 	authGroup.Post("/change-password", auth.RequireAuth(db), auth.ChangePassword(db))
+	authGroup.Post("/onboarding-complete", auth.RequireAuth(db), auth.CompleteOnboarding(db))
 	authGroup.Post("/refresh", auth.RefreshToken(db))
 
 	// GitHub Auth Routes (App-install flow - links repo access to an

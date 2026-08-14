@@ -11,25 +11,30 @@ import (
 // the SAME User record. Provider+ExternalID together are unique across all
 // users (enforced in code via getUserByLinkedIdentity, not a DB constraint).
 type LinkedIdentity struct {
-	Provider      string    `json:"provider"`               // "google", "github", "authentik", "okta", "gitlab"
-	ExternalID    string    `json:"external_id"`             // stable subject/id at the provider - sub (Google/OIDC) or numeric id (GitHub), NEVER email
-	Email         string    `json:"email,omitempty"`         // email reported by the provider at link time, kept for audit/debugging only
-	EmailVerified bool      `json:"email_verified"`          // was the provider's email claim verified at link time
+	Provider      string    `json:"provider"`        // "google", "github", "authentik", "okta", "gitlab"
+	ExternalID    string    `json:"external_id"`     // stable subject/id at the provider - sub (Google/OIDC) or numeric id (GitHub), NEVER email
+	Email         string    `json:"email,omitempty"` // email reported by the provider at link time, kept for audit/debugging only
+	EmailVerified bool      `json:"email_verified"`  // was the provider's email claim verified at link time
 	LinkedAt      time.Time `json:"linked_at"`
 }
 
 // User represents a user in the system
 type User struct {
-	Key                  string           `json:"_key,omitempty"`
-	Username             string           `json:"username"`
-	Email                string           `json:"email"`
-	PasswordHash         string           `json:"password_hash,omitempty"`
-	Role                 string           `json:"role"`          // admin, editor, viewer
-	Orgs                 []string         `json:"orgs"`          // List of orgs user can access
-	FavoriteOrgs         []string         `json:"favorite_orgs"` // Orgs the user has starred for quick access (independent of Orgs membership)
-	IsActive             bool             `json:"is_active"`
-	Status               string           `json:"status"`        // pending, active, inactive
-	AuthProvider         string           `json:"auth_provider"` // "local" (has a password) or "sso" (provisioned by a first SSO login, no password set)
+	Key          string   `json:"_key,omitempty"`
+	Username     string   `json:"username"`
+	Email        string   `json:"email"`
+	PasswordHash string   `json:"password_hash,omitempty"`
+	Role         string   `json:"role"`          // admin, editor, viewer
+	Orgs         []string `json:"orgs"`          // List of orgs user can access
+	FavoriteOrgs []string `json:"favorite_orgs"` // Orgs the user has starred for quick access (independent of Orgs membership)
+	IsActive     bool     `json:"is_active"`
+	Status       string   `json:"status"`        // pending, active, inactive
+	AuthProvider string   `json:"auth_provider"` // "local" (has a password) or "sso" (provisioned by a first SSO login, no password set)
+	// NeedsOnboarding is true only for brand-new accounts (set in NewUser).
+	// Existing documents predate this field and unmarshal it to false (Go's
+	// zero value for bool when a JSON key is absent) - i.e. "already
+	// onboarded" - which is the correct behavior with no migration needed.
+	NeedsOnboarding      bool             `json:"needs_onboarding"`
 	LinkedIdentities     []LinkedIdentity `json:"linked_identities,omitempty"`
 	GitHubToken          string           `json:"github_token,omitempty"`           // GitHub User OAuth Token (optional/legacy)
 	GitHubInstallationID string           `json:"github_installation_id,omitempty"` // GitHub App Installation ID
@@ -41,15 +46,16 @@ type User struct {
 func NewUser(username, role string) *User {
 	now := time.Now()
 	return &User{
-		Username:     username,
-		Role:         role,
-		Orgs:         []string{}, // Empty by default (global access)
-		FavoriteOrgs: []string{}, // Empty by default
-		IsActive:     true,
-		Status:       "pending", // Default to pending until invitation accepted
-		AuthProvider: "local",
-		CreatedAt:    now,
-		UpdatedAt:    now,
+		Username:        username,
+		Role:            role,
+		Orgs:            []string{}, // Empty by default (global access)
+		FavoriteOrgs:    []string{}, // Empty by default
+		IsActive:        true,
+		Status:          "pending", // Default to pending until invitation accepted
+		AuthProvider:    "local",
+		NeedsOnboarding: true,
+		CreatedAt:       now,
+		UpdatedAt:       now,
 	}
 }
 
