@@ -303,21 +303,58 @@ func ResolveVulnerabilityTrend(db database.DBConnection, days int, org string) (
 // ResolveDashboardGlobalStatus calculates aggregated vulnerability counts and deltas.
 func ResolveDashboardGlobalStatus(db database.DBConnection, _ int, org string) (map[string]interface{}, error) {
 	ctx := context.Background()
-	windowTime := time.Now().AddDate(0, 0, -30)
 
 	query := `
-		LET get_active_state = (FOR ts IN [@now, @window]
+		// now_ts/window_ts computed here via DATE_NOW() instead of passed in
+		// from Go as formatted strings: DATE_NOW() returns epoch milliseconds,
+		// a plain number with no timezone/offset to get wrong, and derives
+		// window_ts from a single clock read instead of two separate
+		// time.Now() calls on the Go side.
+		//
+		// Perf note (2026-09-01): a raw sync.synced_at <= ts string comparison
+		// was tried here to make this filter index-seekable via a new
+		// sync_synced_at index. Measured 11.65s vs 4.67s for the
+		// DATE_TIMESTAMP()-wrapped version on the same data volume -- AQL's
+		// relational string operators use a locale-aware comparator that's
+		// more expensive per-row than DATE_TIMESTAMP()'s function-call
+		// overhead, and the new index wasn't actually being picked up by the
+		// optimizer in that test, so there was no seek benefit to offset the
+		// cost. Reverted to the numeric comparison below. sync_synced_at is
+		// left in database.go in case a verified, index-hinted retry is
+		// wanted later, but is not relied on by this query as written.
+		LET now_ts = DATE_NOW()
+		LET window_ts = DATE_SUBTRACT(now_ts, @windowDays, "day")
+
+		// Org-scoped releases, computed ONCE — doesn't depend on ts, so this
+		// replaces a per-row correlated release lookup that ran once per sync
+		// row per timestamp pass (324,351 items, 10.3s combined in profiling)
+		// with a single small precomputed set reused by both passes.
+		LET orgReleases = (
+			FOR r IN release
+				FILTER @org == "" OR r.org == @org
+				RETURN { name: r.name, version: r.version }
+		)
+
+		LET get_active_state = (FOR ts IN [now_ts, window_ts]
 			RETURN (
 				FOR sync IN sync
-					FILTER DATE_TIMESTAMP(sync.synced_at) <= DATE_TIMESTAMP(ts)
-					
-					// Filter by Org
-					LET relDoc = (FOR r IN release FILTER r.name == sync.release_name AND r.version == sync.release_version LIMIT 1 RETURN r)[0]
-					FILTER @org == "" OR relDoc.org == @org
+					FILTER DATE_TIMESTAMP(sync.synced_at) <= ts
 
-					COLLECT endpoint = sync.endpoint_name, release = sync.release_name INTO groups = sync
-					LET latest = (FOR g IN groups SORT DATE_TIMESTAMP(g.synced_at) DESC LIMIT 1 RETURN g)[0]
-					RETURN { endpoint, release, version: latest.release_version, snapshot_ts: DATE_TIMESTAMP(ts) }
+					COLLECT endpoint = sync.endpoint_name, release = sync.release_name
+					AGGREGATE latest_synced = MAX(sync.synced_at)
+					LET version = FIRST(
+						FOR s IN sync
+							FILTER s.release_name == release
+							AND s.endpoint_name == endpoint
+							AND s.synced_at == latest_synced
+							LIMIT 1
+							RETURN s.release_version
+					)
+
+					// Org filter applied once per group, not once per raw sync row
+					FILTER @org == "" OR { name: release, version } IN orgReleases
+
+					RETURN { endpoint, release, version, snapshot_ts: ts }
 			)
 		)
 
@@ -378,9 +415,8 @@ func ResolveDashboardGlobalStatus(db database.DBConnection, _ int, org string) (
 
 	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
 		BindVars: map[string]interface{}{
-			"now":    time.Now().Format(time.RFC3339),
-			"window": windowTime.Format(time.RFC3339),
-			"org":    org,
+			"windowDays": 30,
+			"org":        org,
 		},
 	})
 	if err != nil {

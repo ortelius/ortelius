@@ -511,6 +511,11 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 		LET severityThreshold = @severityScore
 		LET userOrgs = @user_orgs
 
+		// Built once, reused by every release row below — replaces a per-row
+		// join to endpoint (20,098 indexed lookups in profiling) with an
+		// in-memory map lookup.
+		LET ep_map = MERGE(FOR e IN endpoint RETURN { [e.name]: e.endpoint_type })
+
 		FOR r IN release
 			FILTER r.is_latest == true
 			FILTER r.is_public == true OR (LENGTH(userOrgs) == 0 OR r.org IN userOrgs)
@@ -546,23 +551,28 @@ func ResolveOrgAggregatedReleases(db database.DBConnection, severity string, use
 				)
 				: 0
 
+			// Single sync scan feeds both synced_endpoint_names and
+			// endpoint_type_counts below — was two separate identically-
+			// filtered scans (one of which also re-joined to endpoint per row).
 			LET synced_endpoint_names = (
 				FOR s IN sync
 					FILTER s.release_name == latest.name AND s.release_version == latest.version
 					RETURN s.endpoint_name
 			)
 
-			// NEW: collect per-type endpoint counts for org card badges.
-			// Joins sync → endpoint on name, groups by endpoint_type, counts distinct endpoints.
-			// Falls back to "unknown" when endpoint_type is missing or empty.
+			// Per-type endpoint counts for org card badges, derived from
+			// synced_endpoint_names via ep_map instead of a second sync scan
+			// joined to endpoint. FILTER HAS(...) preserves the original
+			// inner-join semantics: an endpoint_name with no matching
+			// endpoint document contributes nothing (not counted as
+			// "unknown" — that fallback is only for a document that exists
+			// but has a null/empty endpoint_type).
 			LET endpoint_type_counts = (
-				FOR s IN sync
-					FILTER s.release_name == latest.name AND s.release_version == latest.version
-					FOR e IN endpoint
-						FILTER e.name == s.endpoint_name
-						COLLECT ep_type = (e.endpoint_type != null AND e.endpoint_type != "" ? e.endpoint_type : "unknown")
-						WITH COUNT INTO type_count
-						RETURN { label: ep_type, count: type_count }
+				FOR epName IN synced_endpoint_names
+					FILTER HAS(ep_map, epName)
+					LET ep_type = (ep_map[epName] != null AND ep_map[epName] != "" ? ep_map[epName] : "unknown")
+					COLLECT label = ep_type WITH COUNT INTO type_count
+					RETURN { label, count: type_count }
 			)
 
 			LET cveMatches = (

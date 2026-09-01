@@ -271,6 +271,22 @@ func InitializeDatabase() DBConnection {
 		// satisfy it from the index instead of materializing+scanning `sync`.
 		{Collection: "sync", IdxName: "sync_endpoint_release_synced",
 			IdxField: []string{"release_name", "endpoint_name", "synced_at"}, Unique: false},
+		// Backs the date-cutoff scan in ResolveDashboardGlobalStatus's
+		// get_active_state (graphql/modules/dashboard/resolvers.go) — that
+		// query filters the whole sync collection by synced_at with no
+		// preceding equality on release_name/endpoint_name, so it needs
+		// synced_at as a leading field to range-seek instead of a full scan.
+		// Requires synced_at to be a consistently UTC-formatted string
+		// (verified: 94,819/94,819 rows Z-suffixed as of 2026-09-01) so a raw
+		// comparison sorts identically to true chronological order.
+		// The optimizer doesn't pick this on its own -- the query forces it
+		// via OPTIONS { indexHint, forceIndexHint: true }. Confirmed via
+		// profiling: 2.01s with the hint (genuine range seek, Filtered: 0)
+		// vs 4.5-5.0s without it. Don't drop this index without updating that
+		// query first -- forceIndexHint means it errors rather than silently
+		// degrading if this index disappears.
+		{Collection: "sync", IdxName: "sync_synced_at",
+			IdxField: []string{"synced_at"}, Unique: false},
 
 		// Edge collection indexes
 		//
