@@ -414,15 +414,36 @@ func ResolveMTTR(db database.DBConnection, days int, org string) (map[string]int
 
 		LET ep_map = MERGE(FOR e IN endpoint RETURN { [e.name]: e.endpoint_type })
 
+		// Org-scoped releases, computed ONCE and reused by latest_snapshots and
+		// all_events below — replaces two separate per-row/per-group correlated
+		// release lookups that were the dominant cost (~8.4s combined) in profiling.
+		LET orgReleases = (
+			FOR r IN release
+				FILTER @org == "" OR r.org == @org
+				RETURN { name: r.name, version: r.version }
+		)
+
 		LET latest_snapshots = (
 			FOR sync IN sync
-				// Filter by Org
-				LET relDoc = (FOR r IN release FILTER r.name == sync.release_name AND r.version == sync.release_version LIMIT 1 RETURN r)[0]
-				FILTER @org == "" OR relDoc.org == @org
+				// COLLECT order matches sync_endpoint_release_synced's field order
+				// (release_name, endpoint_name, synced_at) so synced_at is covered
+				// by the index projection — grouping endpoint-first instead picks
+				// the narrower sync_endpoint_release index (no synced_at) and
+				// forces a separate 94,820-row materialize to fetch it.
+				COLLECT release = sync.release_name, endpoint = sync.endpoint_name
+				AGGREGATE latest_synced = MAX(sync.synced_at)
+				LET version = FIRST(
+					FOR s IN sync
+						FILTER s.release_name == release
+						AND s.endpoint_name == endpoint
+						AND s.synced_at == latest_synced
+						LIMIT 1
+						RETURN s.release_version
+				)
 
-				COLLECT endpoint = sync.endpoint_name, release = sync.release_name
-				AGGREGATE latest_ts = MAX(DATE_TIMESTAMP(sync.synced_at))
-				LET version = (FOR s IN sync FILTER s.endpoint_name == endpoint AND s.release_name == release AND DATE_TIMESTAMP(s.synced_at) == latest_ts LIMIT 1 RETURN s.release_version)[0]
+				// Org filter applied once per group (152), not once per raw sync row (94,820)
+				FILTER @org == "" OR { name: release, version } IN orgReleases
+
 				RETURN { endpoint, release, version }
 		)
 
@@ -521,9 +542,8 @@ func ResolveMTTR(db database.DBConnection, days int, org string) (map[string]int
 				LET remediated_ts = DATE_TIMESTAMP(canonical.remediated_at)
 				LET true_introduced_at = MIN(grp[*].root_introduced_at != null ? grp[*].root_introduced_at : grp[*].introduced_at)
 
-				// Filter by Org
-				LET relDoc = (FOR rel IN release FILTER rel.name == release_name AND rel.version == canonical.introduced_version LIMIT 1 RETURN rel)[0]
-				FILTER @org == "" OR relDoc.org == @org
+				// Org filter — reuses orgReleases instead of a separate correlated lookup
+				FILTER @org == "" OR { name: release_name, version: canonical.introduced_version } IN orgReleases
 
 				LET ep_type = HAS(ep_map, endpoint_name) ? ep_map[endpoint_name] : "unknown"
 				LET is_high_risk = (ep_type == "mission_asset")
