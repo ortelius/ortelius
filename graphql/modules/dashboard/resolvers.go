@@ -163,6 +163,17 @@ func ResolveTopRisks(db database.DBConnection, assetType string, limit int, org 
 //     in-memory result set rather than hitting the collections again.
 //
 // This reduces database I/O from O(days × collections) to O(1 × collections).
+//
+// Perf note (2026-08-31 profiling): the previous version of this query cost ~5s
+// because (a) latest_snapshots used COLLECT...AGGREGATE MAX + a correlated
+// re-scan of `sync` to find the matching row, which cannot use an index and
+// forced a near-full materialize+filter of the whole collection, and (b) the
+// org check re-queried `release` once per cve_lifecycle row (10k+ correlated
+// subqueries) instead of once. Fixed by sorting `sync` in the exact field
+// order of the existing sync_endpoint_release_synced index (release_name,
+// endpoint_name, synced_at) so the "latest per group" lookup is satisfied by
+// the index instead of a scan, and by precomputing org-scoped releases once
+// into orgReleases and hashing against it instead of re-querying per row.
 func ResolveVulnerabilityTrend(db database.DBConnection, days int, org string) ([]map[string]interface{}, error) {
 	ctx := context.Background()
 	if days <= 0 {
@@ -171,31 +182,32 @@ func ResolveVulnerabilityTrend(db database.DBConnection, days int, org string) (
 	now := time.Now().UTC()
 
 	query := `
+		// ── Org-scoped releases, computed ONCE and reused by both phases below ──
+		// Uses the release_name_version index; replaces the old per-row
+		// correlated subquery back to ` + "`release`" + ` in both phases.
+		LET orgReleases = (
+			FOR r IN release
+				FILTER @org == "" OR r.org == @org
+				RETURN { name: r.name, version: r.version }
+		)
+
 		// ── PHASE 1a: deployed snapshot lifecycle events (endpoint-based) ────────
+		// SORT matches the sync_endpoint_release_synced index field order
+		// (release_name, endpoint_name, synced_at) exactly, so the optimizer
+		// can satisfy "latest per group" from the index instead of
+		// materializing and re-scanning the entire sync collection.
 
 		LET latest_snapshots = (
 			FOR s IN sync
-				COLLECT endpoint = s.endpoint_name, releaseName = s.release_name
-				AGGREGATE latest_ts = MAX(DATE_TIMESTAMP(s.synced_at))
-				LET version = (
-					FOR sv IN sync
-						FILTER sv.endpoint_name == endpoint
-						AND sv.release_name == releaseName
-						AND DATE_TIMESTAMP(sv.synced_at) == latest_ts
-						LIMIT 1
-						RETURN sv.release_version
-				)[0]
+				SORT s.release_name, s.endpoint_name, s.synced_at DESC
+				COLLECT releaseName = s.release_name, endpoint = s.endpoint_name
+					INTO g KEEP s
+				LET latest = FIRST(g).s
 
 				// Org filter applied once here, not repeated per day
-				LET relDoc = (
-					FOR r IN release
-						FILTER r.name == releaseName AND r.version == version
-						LIMIT 1
-						RETURN r.org
-				)[0]
-				FILTER @org == "" OR relDoc == @org
+				FILTER @org == "" OR { name: releaseName, version: latest.release_version } IN orgReleases
 
-				RETURN { endpoint, release: releaseName, version }
+				RETURN { endpoint, release: releaseName, version: latest.release_version }
 		)
 
 		LET sync_lifecycle = (
@@ -219,13 +231,7 @@ func ResolveVulnerabilityTrend(db database.DBConnection, days int, org string) (
 		LET sentinel_lifecycle = (
 			FOR r IN cve_lifecycle
 				FILTER r.endpoint_name == "_release_tracking_"
-				LET relDoc = (
-					FOR rel IN release
-						FILTER rel.name == r.release_name AND rel.version == r.introduced_version
-						LIMIT 1
-						RETURN rel.org
-				)[0]
-				FILTER @org == "" OR relDoc == @org
+				FILTER @org == "" OR { name: r.release_name, version: r.introduced_version } IN orgReleases
 				RETURN {
 					severity:       UPPER(r.severity_rating),
 					introduced_ts:  DATE_TIMESTAMP(r.introduced_at),

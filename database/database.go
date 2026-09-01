@@ -265,6 +265,10 @@ func InitializeDatabase() DBConnection {
 			IdxField: []string{"endpoint_name", "release_name"}, Unique: false},
 		{Collection: "sync", IdxName: "sync_release_name_version",
 			IdxField: []string{"release_name", "release_version"}, Unique: false},
+		// Backs the "latest snapshot per (release, endpoint)" lookup in
+		// ResolveVulnerabilityTrend (graphql/modules/dashboard/resolvers.go).
+		// That query SORTs on exactly this field order so the optimizer can
+		// satisfy it from the index instead of materializing+scanning `sync`.
 		{Collection: "sync", IdxName: "sync_endpoint_release_synced",
 			IdxField: []string{"release_name", "endpoint_name", "synced_at"}, Unique: false},
 
