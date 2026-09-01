@@ -164,16 +164,17 @@ func ResolveTopRisks(db database.DBConnection, assetType string, limit int, org 
 //
 // This reduces database I/O from O(days × collections) to O(1 × collections).
 //
-// Perf note (2026-08-31 profiling): the previous version of this query cost ~5s
-// because (a) latest_snapshots used COLLECT...AGGREGATE MAX + a correlated
-// re-scan of `sync` to find the matching row, which cannot use an index and
-// forced a near-full materialize+filter of the whole collection, and (b) the
-// org check re-queried `release` once per cve_lifecycle row (10k+ correlated
-// subqueries) instead of once. Fixed by sorting `sync` in the exact field
-// order of the existing sync_endpoint_release_synced index (release_name,
-// endpoint_name, synced_at) so the "latest per group" lookup is satisfied by
-// the index instead of a scan, and by precomputing org-scoped releases once
-// into orgReleases and hashing against it instead of re-querying per row.
+// Perf note (2026-08-31 re-profile): the SORT+COLLECT...INTO g KEEP s version
+// above cost MORE than the original (5.3s vs 4.97s) — KEEP s materializes the
+// full sync document for every row in every group just to discard all but
+// the first, and the mixed asc-group/desc-tiebreak SORT can't be satisfied by
+// a single-direction index scan, so it fell back to a real 94k-row sort.
+// Fixed by pulling distinct (release_name, endpoint_name) pairs from the
+// index alone (no materialize), then fetching only the single latest row per
+// pair via a correlated SORT+LIMIT 1 subquery — the one shape the
+// sync_endpoint_release_synced index (release_name, endpoint_name, synced_at)
+// can satisfy end-to-end: equality on the first two fields, single-direction
+// SORT on the third, LIMIT 1 short-circuits after the first index entry.
 func ResolveVulnerabilityTrend(db database.DBConnection, days int, org string) ([]map[string]interface{}, error) {
 	ctx := context.Background()
 	if days <= 0 {
@@ -183,8 +184,6 @@ func ResolveVulnerabilityTrend(db database.DBConnection, days int, org string) (
 
 	query := `
 		// ── Org-scoped releases, computed ONCE and reused by both phases below ──
-		// Uses the release_name_version index; replaces the old per-row
-		// correlated subquery back to ` + "`release`" + ` in both phases.
 		LET orgReleases = (
 			FOR r IN release
 				FILTER @org == "" OR r.org == @org
@@ -192,22 +191,29 @@ func ResolveVulnerabilityTrend(db database.DBConnection, days int, org string) (
 		)
 
 		// ── PHASE 1a: deployed snapshot lifecycle events (endpoint-based) ────────
-		// SORT matches the sync_endpoint_release_synced index field order
-		// (release_name, endpoint_name, synced_at) exactly, so the optimizer
-		// can satisfy "latest per group" from the index instead of
-		// materializing and re-scanning the entire sync collection.
-
+		// COLLECT...AGGREGATE MAX is a pure streaming index-only aggregate (no
+		// sort, no heap) — cheap even touching every row. The per-group lookup
+		// then does a genuine 3-field EQUALITY point-seek against
+		// sync_endpoint_release_synced (release_name, endpoint_name, synced_at)
+		// instead of SORT+LIMIT 1, which forced a batched constrained-heap scan
+		// that read ~95k index entries instead of seeking directly per group.
 		LET latest_snapshots = (
 			FOR s IN sync
-				SORT s.release_name, s.endpoint_name, s.synced_at DESC
 				COLLECT releaseName = s.release_name, endpoint = s.endpoint_name
-					INTO g KEEP s
-				LET latest = FIRST(g).s
+				AGGREGATE latest_synced = MAX(s.synced_at)
+				LET version = FIRST(
+					FOR sv IN sync
+						FILTER sv.release_name == releaseName
+						AND sv.endpoint_name == endpoint
+						AND sv.synced_at == latest_synced
+						LIMIT 1
+						RETURN sv.release_version
+				)
 
 				// Org filter applied once here, not repeated per day
-				FILTER @org == "" OR { name: releaseName, version: latest.release_version } IN orgReleases
+				FILTER @org == "" OR { name: releaseName, version } IN orgReleases
 
-				RETURN { endpoint, release: releaseName, version: latest.release_version }
+				RETURN { endpoint, release: releaseName, version }
 		)
 
 		LET sync_lifecycle = (
