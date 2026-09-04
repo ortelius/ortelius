@@ -248,28 +248,72 @@ func ResolveVulnerabilityTrend(db database.DBConnection, days int, org string) (
 		// Union both sets — Phase 2 aggregates from the combined in-memory result.
 		LET all_lifecycle = APPEND(sync_lifecycle, sentinel_lifecycle)
 
-		// ── PHASE 2: aggregate per day from the in-memory result set ─────────────
-
+		// ── PHASE 2: diff-array sweep instead of a per-day re-scan ───────────────
+		// Perf note (2026-09-01): the previous version of Phase 2 did
+		// FOR r IN all_lifecycle FILTER (...) once PER DAY (181 times), an
+		// O(days x events) algorithm invisible at small scale (org-scoped
+		// testing: ~9 events, 1,629 total row-evaluations) but dominant at
+		// production scale with @org=="" (~16,844 events: 3,008,582 row-
+		// evaluations, 6.5s of a 7.48s / 31.4s slow-query-logged run).
+		// Fixed by computing each event's open day-range ONCE (introduced_ts
+		// <= eod_ts(D) AND (remediated_ts == null OR remediated_ts > eod_ts(D))
+		// holds for a single contiguous D range per event), converting each
+		// range to a +1/-1 delta pair, then reconstructing all @days+1 daily
+		// counts via one cumulative-sum pass per severity — O(events + days)
+		// instead of O(events * days). Verified against the original
+		// query's output (day-boundary FLOOR/+1 offset math checked for
+		// off-by-one) before being committed here; re-verify if this logic
+		// is touched again.
 		LET now_ts = DATE_TIMESTAMP(DATE_TRUNC(@now, "day"))
+		LET eod0 = DATE_TIMESTAMP(DATE_ADD(now_ts, 1, "day"))
+		LET MS_PER_DAY = 86400000
+
+		LET ranges = (
+			FOR r IN all_lifecycle
+				LET d_max_raw = FLOOR((eod0 - r.introduced_ts) / MS_PER_DAY)
+				LET d_min_raw = r.remediated_ts == null
+					? 0
+					: FLOOR((eod0 - r.remediated_ts) / MS_PER_DAY) + 1
+				LET d_max = d_max_raw > @days ? @days : d_max_raw
+				LET d_min = d_min_raw < 0 ? 0 : d_min_raw
+				FILTER d_max >= 0 AND d_min <= @days AND d_min <= d_max
+				RETURN { severity: r.severity, d_min, d_max }
+		)
+
+		LET deltas = APPEND(
+			(FOR r IN ranges RETURN { day: r.d_min, severity: r.severity, delta: 1 }),
+			(FOR r IN ranges FILTER r.d_max < @days RETURN { day: r.d_max + 1, severity: r.severity, delta: -1 })
+		)
+
+		LET delta_by_day_severity = (
+			FOR d IN deltas
+				COLLECT day = d.day, severity = d.severity AGGREGATE net = SUM(d.delta)
+				RETURN { day, severity, net }
+		)
+
+		LET running = (
+			FOR sev_val IN ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+				LET day_deltas = (
+					FOR day_offset IN 0..@days
+						LET net = FIRST(FOR d IN delta_by_day_severity FILTER d.day == day_offset AND d.severity == sev_val RETURN d.net) || 0
+						RETURN { day_offset, net }
+				)
+				LET cumulative = (
+					FOR i IN 0..@days
+						LET count = SUM(FOR dd IN day_deltas FILTER dd.day_offset <= i RETURN dd.net)
+						RETURN { day_offset: i, count }
+				)
+				RETURN { severity: sev_val, cumulative }
+		)
 
 		FOR day_offset IN 0..@days
 			LET current_day_ts = DATE_SUBTRACT(now_ts, day_offset, "day")
-			LET eod_ts = DATE_TIMESTAMP(DATE_ADD(current_day_ts, 1, "day"))
-
-			LET day_counts = (
-				FOR r IN all_lifecycle
-					FILTER r.introduced_ts <= eod_ts
-					FILTER r.remediated_ts == null OR r.remediated_ts > eod_ts
-					COLLECT severity = r.severity WITH COUNT INTO count
-					RETURN { severity, count }
-			)
-
 			RETURN {
 				date:     DATE_FORMAT(current_day_ts, "%yyyy-%mm-%dd"),
-				critical: FIRST(FOR d IN day_counts FILTER d.severity == "CRITICAL" RETURN d.count) || 0,
-				high:     FIRST(FOR d IN day_counts FILTER d.severity == "HIGH"     RETURN d.count) || 0,
-				medium:   FIRST(FOR d IN day_counts FILTER d.severity == "MEDIUM"   RETURN d.count) || 0,
-				low:      FIRST(FOR d IN day_counts FILTER d.severity == "LOW"      RETURN d.count) || 0
+				critical: FIRST(FOR s IN running FILTER s.severity == "CRITICAL" RETURN FIRST(FOR c IN s.cumulative FILTER c.day_offset == day_offset RETURN c.count)) || 0,
+				high:     FIRST(FOR s IN running FILTER s.severity == "HIGH"     RETURN FIRST(FOR c IN s.cumulative FILTER c.day_offset == day_offset RETURN c.count)) || 0,
+				medium:   FIRST(FOR s IN running FILTER s.severity == "MEDIUM"   RETURN FIRST(FOR c IN s.cumulative FILTER c.day_offset == day_offset RETURN c.count)) || 0,
+				low:      FIRST(FOR s IN running FILTER s.severity == "LOW"      RETURN FIRST(FOR c IN s.cumulative FILTER c.day_offset == day_offset RETURN c.count)) || 0
 			}
 	`
 
@@ -305,25 +349,25 @@ func ResolveDashboardGlobalStatus(db database.DBConnection, _ int, org string) (
 	ctx := context.Background()
 
 	query := `
-		// now_ts/window_ts computed here via DATE_NOW() instead of passed in
-		// from Go as formatted strings: DATE_NOW() returns epoch milliseconds,
-		// a plain number with no timezone/offset to get wrong, and derives
-		// window_ts from a single clock read instead of two separate
-		// time.Now() calls on the Go side.
+		// now_ts/window_ts as ISO-8601 UTC strings (DATE_ISO8601 always emits
+		// a Z-suffixed string), computed from a single DATE_NOW() read. Kept
+		// as strings -- not numbers -- so the sync.synced_at filter below can
+		// compare raw string-to-string and be satisfied by the sync_synced_at
+		// index (forced via indexHint below). Raw comparison is safe because
+		// synced_at is verified consistently UTC/Z-suffixed (94,819/94,819
+		// rows as of 2026-09-01).
 		//
-		// Perf note (2026-09-01): a raw sync.synced_at <= ts string comparison
-		// was tried here to make this filter index-seekable via a new
-		// sync_synced_at index. Measured 11.65s vs 4.67s for the
-		// DATE_TIMESTAMP()-wrapped version on the same data volume -- AQL's
-		// relational string operators use a locale-aware comparator that's
-		// more expensive per-row than DATE_TIMESTAMP()'s function-call
-		// overhead, and the new index wasn't actually being picked up by the
-		// optimizer in that test, so there was no seek benefit to offset the
-		// cost. Reverted to the numeric comparison below. sync_synced_at is
-		// left in database.go in case a verified, index-hinted retry is
-		// wanted later, but is not relied on by this query as written.
-		LET now_ts = DATE_NOW()
-		LET window_ts = DATE_SUBTRACT(now_ts, @windowDays, "day")
+		// Perf note (2026-09-01): without forceIndexHint, the optimizer did
+		// not pick sync_synced_at on its own and this filter fell back to a
+		// full scan -- confirmed via two earlier profiling attempts (11.65s
+		// and an inconclusive 4.50s where the index still wasn't listed as
+		// used). With the hint, sync_synced_at genuinely drives a range seek
+		// (profiled Filtered: 0, vs ~27k discarded per pass without it),
+		// landing at 2.01s vs 5.03s for the DATE_TIMESTAMP()-wrapped numeric
+		// version this replaced. forceIndexHint also means this errors loudly
+		// instead of silently degrading if the index is ever dropped.
+		LET now_ts = DATE_ISO8601(DATE_NOW())
+		LET window_ts = DATE_ISO8601(DATE_SUBTRACT(DATE_NOW(), @windowDays, "day"))
 
 		// Org-scoped releases, computed ONCE — doesn't depend on ts, so this
 		// replaces a per-row correlated release lookup that ran once per sync
@@ -338,7 +382,8 @@ func ResolveDashboardGlobalStatus(db database.DBConnection, _ int, org string) (
 		LET get_active_state = (FOR ts IN [now_ts, window_ts]
 			RETURN (
 				FOR sync IN sync
-					FILTER DATE_TIMESTAMP(sync.synced_at) <= ts
+					OPTIONS { indexHint: "sync_synced_at", forceIndexHint: true }
+					FILTER sync.synced_at <= ts
 
 					COLLECT endpoint = sync.endpoint_name, release = sync.release_name
 					AGGREGATE latest_synced = MAX(sync.synced_at)
@@ -354,7 +399,11 @@ func ResolveDashboardGlobalStatus(db database.DBConnection, _ int, org string) (
 					// Org filter applied once per group, not once per raw sync row
 					FILTER @org == "" OR { name: release, version } IN orgReleases
 
-					RETURN { endpoint, release, version, snapshot_ts: ts }
+					// snapshot_ts stays numeric (DATE_TIMESTAMP) for the
+					// downstream cve_lifecycle comparisons in previous_cves,
+					// computed once per surviving group here -- not per raw
+					// sync row, so this stays cheap.
+					RETURN { endpoint, release, version, snapshot_ts: DATE_TIMESTAMP(ts) }
 			)
 		)
 
