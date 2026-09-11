@@ -99,10 +99,14 @@ func FetchRepos(installationToken string) ([]GitHubRepo, error) {
 	return result.Repositories, nil
 }
 
-// FetchReleases retrieves releases for a GitHub repository.
+// FetchReleases retrieves the most recent releases for a GitHub repository.
+// Capped to maxReleasesPerRepo via per_page so onboarding a repo with a long
+// release history doesn't flood the release collection on first import.
+const maxReleasesPerRepo = 10
+
 func FetchReleases(token, owner, repo string) ([]GitHubRelease, error) {
 	client := &http.Client{}
-	reqURL := fmt.Sprintf("%s/repos/%s/%s/releases", githubAPI, owner, repo)
+	reqURL := fmt.Sprintf("%s/repos/%s/%s/releases?per_page=%d", githubAPI, owner, repo, maxReleasesPerRepo)
 	req, _ := http.NewRequest("GET", reqURL, nil)
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
@@ -120,6 +124,9 @@ func FetchReleases(token, owner, repo string) ([]GitHubRelease, error) {
 	var releases []GitHubRelease
 	if err := json.NewDecoder(resp.Body).Decode(&releases); err != nil {
 		return nil, err
+	}
+	if len(releases) > maxReleasesPerRepo {
+		releases = releases[:maxReleasesPerRepo]
 	}
 	return releases, nil
 }
