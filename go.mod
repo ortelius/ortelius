@@ -9,7 +9,7 @@ require (
 	github.com/arangodb/go-driver/v2 v2.3.1
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/coreos/go-oidc/v3 v3.19.0
-	github.com/go-git/go-git/v5 v5.19.1
+	github.com/go-git/go-git/v5 v5.19.2
 	github.com/gofiber/fiber/v3 v3.4.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/osv-scanner v1.9.2
