@@ -39,6 +39,9 @@ import (
 func ResolveSSOUser(ctx context.Context, db database.DBConnection, provider, externalID, email string, emailVerified bool, defaultUsername string) (*model.User, error) {
 	// 1. Returning SSO user - the common case after the first login.
 	if user, err := getUserByLinkedIdentity(ctx, db, provider, externalID); err == nil {
+		if err := activateSSOUser(ctx, db, user); err != nil {
+			return nil, err
+		}
 		return user, nil
 	}
 
@@ -56,10 +59,15 @@ func ResolveSSOUser(ctx context.Context, db database.DBConnection, provider, ext
 		if existing, err := getUserByEmail(ctx, db, email); err == nil {
 			if hasLinkedIdentity(existing, provider, externalID) {
 				// Shouldn't happen given step 1, but guards against a race.
+				if err := activateSSOUser(ctx, db, existing); err != nil {
+					return nil, err
+				}
 				return existing, nil
 			}
 			existing.LinkedIdentities = append(existing.LinkedIdentities, identity)
 			existing.UpdatedAt = time.Now()
+			existing.IsActive = true
+			existing.Status = "active"
 			// A user who previously only had a password is now also an SSO
 			// user; auth_provider becomes informational once linked - leave
 			// it as "local" if they still have a password (PasswordHash != "")
@@ -89,6 +97,21 @@ func ResolveSSOUser(ctx context.Context, db database.DBConnection, provider, ext
 		return nil, fmt.Errorf("failed to provision user: %w", err)
 	}
 	return user, nil
+}
+
+// activateSSOUser marks a user active after a successful Google/GitHub/OIDC
+// login (is_active=true, status="active"), persisting only if it changed.
+func activateSSOUser(ctx context.Context, db database.DBConnection, user *model.User) error {
+	if user.IsActive && user.Status == "active" {
+		return nil
+	}
+	user.IsActive = true
+	user.Status = "active"
+	user.UpdatedAt = time.Now()
+	if err := updateUser(ctx, db, user); err != nil {
+		return fmt.Errorf("failed to activate user: %w", err)
+	}
+	return nil
 }
 
 func hasLinkedIdentity(user *model.User, provider, externalID string) bool {
