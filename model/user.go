@@ -38,8 +38,15 @@ type User struct {
 	LinkedIdentities     []LinkedIdentity `json:"linked_identities,omitempty"`
 	GitHubToken          string           `json:"github_token,omitempty"`           // GitHub User OAuth Token (optional/legacy)
 	GitHubInstallationID string           `json:"github_installation_id,omitempty"` // GitHub App Installation ID
-	CreatedAt            time.Time        `json:"created_at"`
-	UpdatedAt            time.Time        `json:"updated_at"`
+	// GitHubRepoMappings holds the optional artifact-namespace/gitops-endpoint
+	// mapping entered per repo on the welcome page, keyed by full_name
+	// ("owner/repo"). Set by restapi/modules/github.OnboardRepos and read by
+	// relscanner-job on every scan cycle so the mapping keeps applying to
+	// releases discovered after onboarding, not just the ones present at
+	// import time.
+	GitHubRepoMappings map[string]RepoMapping `json:"github_repo_mappings,omitempty"`
+	CreatedAt          time.Time              `json:"created_at"`
+	UpdatedAt          time.Time              `json:"updated_at"`
 }
 
 // NewUser creates a new user with default values

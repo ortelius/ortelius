@@ -38,7 +38,25 @@ type GitHubWorkflowRun struct {
 	HeadSha    string    `json:"head_sha"`
 }
 
+// RepoMapping carries the optional per-repo mapping entered by the user at
+// onboarding time. Both fields are pointers so an absent key (repo untouched
+// by the user) is distinguishable from an explicitly empty value.
+type RepoMapping struct {
+	// ArtifactNamespace maps the repo to the Docker/artifact namespace it
+	// publishes under (e.g. "deployhub"). Combined with the repo's short
+	// name to populate ProjectRelease.DockerRepo for vulnerability matching.
+	ArtifactNamespace *string `json:"artifactNamespace,omitempty"`
+	// GitopsEndpoint maps the repo to the runtime endpoint it deploys to,
+	// formatted as "<endpoint name>/<namespace>" (e.g.
+	// "us-central-1_deployhub/deployhub"). Only meaningful for repos that
+	// hold gitops manifests/charts.
+	GitopsEndpoint *string `json:"gitopsEndpoint,omitempty"`
+}
+
 // OnboardRequest represents a request to onboard GitHub repositories.
 type OnboardRequest struct {
 	Repos []string `json:"repos"` // List of full_names (e.g. "owner/repo")
+	// RepoMappings is keyed by full_name (e.g. "owner/repo"). A repo with no
+	// entry here is onboarded with no artifact/gitops mapping, same as before.
+	RepoMappings map[string]RepoMapping `json:"repoMappings,omitempty"`
 }

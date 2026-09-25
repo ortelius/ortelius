@@ -100,6 +100,18 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 			}
 			owner, repo := parts[0], parts[1]
 
+			// Optional mapping entered by the user at onboarding time. Both
+			// sub-fields are independent and either/both may be empty.
+			mapping := req.RepoMappings[fullRepoName]
+			var artifactNamespace string
+			if mapping.ArtifactNamespace != nil {
+				artifactNamespace = strings.TrimSpace(*mapping.ArtifactNamespace)
+			}
+			var gitopsEndpoint string
+			if mapping.GitopsEndpoint != nil {
+				gitopsEndpoint = strings.TrimSpace(*mapping.GitopsEndpoint)
+			}
+
 			// Fetch repo metadata to determine visibility before creating releases.
 			// IsPublic drives GraphQL access control — public repos are visible to
 			// unauthenticated users via the is_public == true filter.
@@ -109,9 +121,14 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 				isPublic = !repoMeta.Private
 			}
 
+			// Tracks the version of the most recently created release so the
+			// gitops endpoint sync below (if requested) has something to
+			// point at. GitHub returns releases newest-first.
+			var latestReleaseVersion string
+
 			releases, err := FetchReleases(appToken, owner, repo)
 			if err == nil {
-				for _, r := range releases {
+				for i, r := range releases {
 					releaseModel := model.ProjectRelease{
 						Name:           fullRepoName,
 						Version:        r.TagName,
@@ -123,11 +140,19 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 						IsPublic:       isPublic,
 						ContentSha:     r.TagName,
 					}
+					if artifactNamespace != "" {
+						// e.g. artifactNamespace "deployhub" + repo "DeployHub-Pro"
+						// -> DockerRepo "deployhub/DeployHub-Pro", used for CVE/purl matching.
+						releaseModel.DockerRepo = fmt.Sprintf("%s/%s", artifactNamespace, repo)
+					}
 					releaseModel.ParseAndSetNameComponents()
 					releaseModel.ParseAndSetVersion()
 					_, err := db.Collections["release"].CreateDocument(ctx, releaseModel)
 					if err == nil {
 						processed++
+						if i == 0 {
+							latestReleaseVersion = releaseModel.Version
+						}
 					}
 				}
 			} else {
@@ -159,6 +184,61 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 						processed++
 					}
 				}
+			}
+
+			// GitOps mapping: link the repo's latest release to the runtime
+			// endpoint/namespace it deploys to (e.g.
+			// "us-central-1_deployhub/deployhub"), the same Endpoint/Sync shape
+			// used by real cluster syncs, so CVEs found in this release can be
+			// traced to where it's actually running.
+			if gitopsEndpoint != "" {
+				if latestReleaseVersion == "" {
+					errors = append(errors, fmt.Sprintf("%s: gitops endpoint mapping given but no release found to sync", fullRepoName))
+				} else {
+					endpoint := model.NewEndpoint()
+					endpoint.Name = gitopsEndpoint
+					endpoint.EndpointType = model.EndpointTypeCluster
+					endpoint.Environment = "production"
+					endpoint.ParseAndSetNameComponents()
+					// Ignore duplicate-key errors — the endpoint may already
+					// exist from a real cluster sync (Synced Endpoints).
+					db.Collections["endpoint"].CreateDocument(ctx, endpoint)
+
+					sync := model.NewSync()
+					sync.EndpointName = gitopsEndpoint
+					sync.ReleaseName = fullRepoName
+					sync.ReleaseVersion = latestReleaseVersion
+					if _, syncErr := db.Collections["sync"].CreateDocument(ctx, sync); syncErr == nil {
+						processed++
+					} else {
+						errors = append(errors, fmt.Sprintf("%s: failed to sync gitops endpoint: %v", fullRepoName, syncErr))
+					}
+				}
+			}
+		}
+
+		// Persist the mapping onto the user document (keyed by full_name) so
+		// relscanner-job keeps applying it to releases discovered on future
+		// scan cycles, not just the ones created above at import time.
+		if len(req.RepoMappings) > 0 {
+			if user.GitHubRepoMappings == nil {
+				user.GitHubRepoMappings = make(map[string]model.RepoMapping)
+			}
+			for fullRepoName, m := range req.RepoMappings {
+				persisted := model.RepoMapping{}
+				if m.ArtifactNamespace != nil {
+					persisted.ArtifactNamespace = strings.TrimSpace(*m.ArtifactNamespace)
+				}
+				if m.GitopsEndpoint != nil {
+					persisted.GitopsEndpoint = strings.TrimSpace(*m.GitopsEndpoint)
+				}
+				if persisted.IsEmpty() {
+					continue
+				}
+				user.GitHubRepoMappings[fullRepoName] = persisted
+			}
+			if _, updateErr := db.Collections["users"].UpdateDocument(ctx, user.Key, user); updateErr != nil {
+				errors = append(errors, fmt.Sprintf("failed to persist repo mappings: %v", updateErr))
 			}
 		}
 

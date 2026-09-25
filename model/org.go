@@ -11,6 +11,11 @@ type TrackedRepo struct {
 	Private  bool      `json:"private,omitempty" yaml:"private,omitempty"`
 	AddedBy  string    `json:"added_by,omitempty" yaml:"added_by,omitempty"`
 	AddedAt  time.Time `json:"added_at,omitempty" yaml:"added_at,omitempty"`
+	// Mapping is the optional artifact-namespace/gitops-endpoint mapping for
+	// this repo (see RepoMapping). Read by relscanner-job on every scan
+	// cycle for org-tracked repos, mirroring GitHubRepoMappings on User for
+	// GitHub-App-installed repos.
+	Mapping RepoMapping `json:"mapping,omitempty" yaml:"mapping,omitempty"`
 }
 
 // RepoKey returns a canonical string key for deduplication and hidden_repos matching.
