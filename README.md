@@ -198,3 +198,4 @@ Endpoints with `endpoint_type: mission_asset` use the tighter targets in the rig
 - Jing Chen (BLNB, United Kingdom): Digital Twin Core, MCP Architecture
 - Arvind Singharpuria (Fountane Inc, India): Front End, Digital Twin
 - Siddarth Pareek (NatWest, India): Governing Board Chairperson, Strategic Advisor
+- Nate Fishman: CEO, Consultant, Fishman Digital Consulting
