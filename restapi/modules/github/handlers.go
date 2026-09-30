@@ -52,22 +52,14 @@ func ListRepos(db database.DBConnection) fiber.Handler {
 			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"error": "Failed to fetch repos from GitHub: " + err.Error()})
 		}
 
-		// Repos the user removed from scanning are hidden by default; pass
-		// ?include_excluded=true to list them flagged with "excluded".
-		excluded := excludedSet(user.GitHubExcludedRepos)
-		includeExcluded := c.Query("include_excluded") == "true"
-		visible := make([]GitHubRepo, 0, len(repos))
-		for _, r := range repos {
-			if excluded[strings.ToLower(r.FullName)] {
-				if !includeExcluded {
-					continue
-				}
-				r.Excluded = true
-			}
-			visible = append(visible, r)
+		// Flag repos that are on the user's scan allow-list so the UI can show
+		// which ones are actually being scanned.
+		scanned := repoNameSet(user.GitHubScannedRepos)
+		for i := range repos {
+			repos[i].Scanned = scanned[strings.ToLower(repos[i].FullName)]
 		}
 
-		return c.JSON(visible)
+		return c.JSON(repos)
 	}
 }
 
@@ -107,6 +99,7 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 
 		processed := 0
 		errors := []string{}
+		onboarded := make([]string, 0, len(req.Repos))
 
 		for _, fullRepoName := range req.Repos {
 			parts := strings.Split(fullRepoName, "/")
@@ -114,6 +107,7 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 				continue
 			}
 			owner, repo := parts[0], parts[1]
+			onboarded = append(onboarded, fullRepoName)
 
 			// Optional mapping entered by the user at onboarding time. Both
 			// sub-fields are independent and either/both may be empty.
@@ -232,30 +226,13 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 			}
 		}
 
-		// Re-onboarding a repo re-includes it in scanning: drop it from the
-		// user's exclusion list. Done via AQL (and mirrored on the struct) so
-		// an emptied list is really cleared - omitempty would skip it in the
-		// UpdateDocument below.
-		if len(user.GitHubExcludedRepos) > 0 {
-			drop := excludedSet(req.Repos)
-			kept := make([]string, 0, len(user.GitHubExcludedRepos))
-			for _, x := range user.GitHubExcludedRepos {
-				if !drop[strings.ToLower(strings.TrimSpace(x))] {
-					kept = append(kept, x)
-				}
-			}
-			if len(kept) != len(user.GitHubExcludedRepos) {
-				user.GitHubExcludedRepos = kept
-				clearQuery := `UPDATE @key WITH { github_excluded_repos: @kept } IN users OPTIONS { mergeObjects: false }`
-				if cur, qErr := db.Database.Query(ctx, clearQuery, &arangodb.QueryOptions{
-					BindVars: map[string]interface{}{"key": user.Key, "kept": kept},
-				}); qErr != nil {
-					errors = append(errors, fmt.Sprintf("failed to clear excluded repos: %v", qErr))
-				} else {
-					cur.Close()
-				}
-			}
-		}
+		// Only explicitly onboarded repos are scanned by relscanner-job: add the
+		// repos imported here to the user's allow-list (case-insensitive dedupe).
+		// The struct is updated too, so the UpdateDocument below cannot write a
+		// stale list back.
+		mergedScanned := mergeRepoNames(user.GitHubScannedRepos, onboarded)
+		scannedChanged := len(mergedScanned) != len(user.GitHubScannedRepos)
+		user.GitHubScannedRepos = mergedScanned
 
 		// Persist the mapping onto the user document (keyed by full_name) so
 		// relscanner-job keeps applying it to releases discovered on future
@@ -277,8 +254,10 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 				}
 				user.GitHubRepoMappings[fullRepoName] = persisted
 			}
+		}
+		if len(req.RepoMappings) > 0 || scannedChanged {
 			if _, updateErr := db.Collections["users"].UpdateDocument(ctx, user.Key, user); updateErr != nil {
-				errors = append(errors, fmt.Sprintf("failed to persist repo mappings: %v", updateErr))
+				errors = append(errors, fmt.Sprintf("failed to persist onboarded repos/mappings: %v", updateErr))
 			}
 		}
 
@@ -289,8 +268,8 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 	}
 }
 
-// excludedSet builds a lower-cased lookup set of "owner/repo" names.
-func excludedSet(list []string) map[string]bool {
+// repoNameSet builds a lower-cased lookup set of "owner/repo" names.
+func repoNameSet(list []string) map[string]bool {
 	m := make(map[string]bool, len(list))
 	for _, k := range list {
 		if k = strings.ToLower(strings.TrimSpace(k)); k != "" {
@@ -300,20 +279,38 @@ func excludedSet(list []string) map[string]bool {
 	return m
 }
 
-// ExcludeRepos handles POST /api/v1/github/exclude
-// Stops scanning the given GitHub App repos for the calling user: the repos are
-// added to users.github_excluded_repos (honored by relscanner-job and hidden by
-// ListRepos) and their per-repo mappings are dropped. Existing releases, SBOMs
-// and syncs are NOT deleted, and access on the GitHub App installation itself is
-// unchanged. Re-onboarding a repo via POST /github/onboard reverses it.
-func ExcludeRepos(db database.DBConnection) fiber.Handler {
+// mergeRepoNames appends the names in add that are not already in existing
+// (case-insensitive), preserving order. It always returns a non-nil slice.
+func mergeRepoNames(existing, add []string) []string {
+	out := make([]string, 0, len(existing)+len(add))
+	seen := make(map[string]bool, len(existing)+len(add))
+	for _, list := range [][]string{existing, add} {
+		for _, k := range list {
+			key := strings.ToLower(strings.TrimSpace(k))
+			if key == "" || seen[key] {
+				continue
+			}
+			seen[key] = true
+			out = append(out, strings.TrimSpace(k))
+		}
+	}
+	return out
+}
+
+// RemoveRepos handles POST /api/v1/github/remove
+// Removes the given repos from the calling user's scan allow-list
+// (users.github_scanned_repos) and drops their per-repo mappings, so
+// relscanner-job stops scanning them. Existing releases, SBOMs and syncs are
+// NOT deleted, and access on the GitHub App installation itself is unchanged.
+// Re-onboarding a repo via POST /github/onboard adds it back.
+func RemoveRepos(db database.DBConnection) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		username, _ := c.Locals("username").(string)
 		if username == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 		}
 
-		var req ExcludeRequest
+		var req RemoveRequest
 		if err := c.Bind().Body(&req); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid body"})
 		}
@@ -337,13 +334,13 @@ func ExcludeRepos(db database.DBConnection) fiber.Handler {
 			  FILTER u.username == @username
 			  LIMIT 1
 			  LET drop = (FOR r IN @repos RETURN LOWER(r))
-			  LET kept = (FOR x IN (u.github_excluded_repos || []) FILTER LOWER(x) NOT IN drop RETURN x)
+			  LET kept = (FOR x IN (u.github_scanned_repos || []) FILTER LOWER(x) NOT IN drop RETURN x)
 			  LET mappings = MERGE(APPEND([{}],
 			    (FOR k IN ATTRIBUTES(u.github_repo_mappings || {})
 			       FILTER LOWER(k) NOT IN drop
 			       RETURN { [k]: u.github_repo_mappings[k] })))
 			  UPDATE u WITH {
-			    github_excluded_repos: APPEND(kept, @repos),
+			    github_scanned_repos: kept,
 			    github_repo_mappings: mappings,
 			    updated_at: DATE_ISO8601(DATE_NOW())
 			  } IN users OPTIONS { mergeObjects: false }
@@ -360,8 +357,8 @@ func ExcludeRepos(db database.DBConnection) fiber.Handler {
 		}
 
 		return c.JSON(fiber.Map{
-			"message":  fmt.Sprintf("Stopped scanning %d repo(s)", len(repos)),
-			"excluded": repos,
+			"message": fmt.Sprintf("Stopped scanning %d repo(s)", len(repos)),
+			"removed": repos,
 		})
 	}
 }
