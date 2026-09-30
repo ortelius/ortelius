@@ -16,6 +16,16 @@ type GitHubRepo struct {
 	// Scanned reports whether the user explicitly onboarded the repo, i.e. it is
 	// on the allow-list relscanner-job scans. Filled in by ListRepos.
 	Scanned bool `json:"scanned"`
+	// Mapping is the saved artifact/gitops mapping for the repo, if any, so the
+	// UI can show and edit it after import. Filled in by ListRepos.
+	Mapping *RepoMappingView `json:"mapping,omitempty"`
+}
+
+// RepoMappingView is a repo's saved mapping as returned to the UI (same key
+// names the UI sends on import).
+type RepoMappingView struct {
+	ArtifactNamespace string `json:"artifactNamespace,omitempty"`
+	GitopsEndpoint    string `json:"gitopsEndpoint,omitempty"`
 }
 
 // GitHubRelease represents a GitHub release.
@@ -67,4 +77,12 @@ type OnboardRequest struct {
 // RemoveRequest represents a request to stop scanning onboarded GitHub repositories.
 type RemoveRequest struct {
 	Repos []string `json:"repos"` // List of full_names (e.g. "owner/repo")
+}
+
+// UpdateMappingRequest represents a request to change the mapping of an already
+// onboarded repo. Empty values clear that part of the mapping.
+type UpdateMappingRequest struct {
+	Repo              string `json:"repo"` // full_name, e.g. "owner/repo"
+	ArtifactNamespace string `json:"artifactNamespace"`
+	GitopsEndpoint    string `json:"gitopsEndpoint"` // "<endpoint name>/<namespace>" or ""
 }

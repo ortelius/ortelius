@@ -50,9 +50,9 @@ type User struct {
 	// GitHub App installation (intersected with what the installation can see);
 	// an absent/empty list means nothing is scanned. Set by OnboardRepos, pruned
 	// by RemoveRepos.
-	GitHubScannedRepos []string `json:"github_scanned_repos,omitempty"`
-	CreatedAt          time.Time              `json:"created_at"`
-	UpdatedAt          time.Time              `json:"updated_at"`
+	GitHubScannedRepos []string  `json:"github_scanned_repos,omitempty"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
 }
 
 // NewUser creates a new user with default values

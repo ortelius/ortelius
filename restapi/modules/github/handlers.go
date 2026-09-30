@@ -57,6 +57,15 @@ func ListRepos(db database.DBConnection) fiber.Handler {
 		scanned := repoNameSet(user.GitHubScannedRepos)
 		for i := range repos {
 			repos[i].Scanned = scanned[strings.ToLower(repos[i].FullName)]
+			for k, m := range user.GitHubRepoMappings {
+				if strings.EqualFold(k, repos[i].FullName) && !m.IsEmpty() {
+					repos[i].Mapping = &RepoMappingView{
+						ArtifactNamespace: m.ArtifactNamespace,
+						GitopsEndpoint:    m.GitopsEndpoint,
+					}
+					break
+				}
+			}
 		}
 
 		return c.JSON(repos)
@@ -359,6 +368,76 @@ func RemoveRepos(db database.DBConnection) fiber.Handler {
 		return c.JSON(fiber.Map{
 			"message": fmt.Sprintf("Stopped scanning %d repo(s)", len(repos)),
 			"removed": repos,
+		})
+	}
+}
+
+// UpdateRepoMapping handles PUT /api/v1/github/mapping
+// Changes the artifact-namespace / gitops-endpoint mapping of a repo the user
+// already onboarded, without re-importing it. relscanner-job reads the mapping on
+// every scan cycle, so it applies to releases scanned from then on (existing
+// releases are not re-linked). Empty values clear the mapping.
+func UpdateRepoMapping(db database.DBConnection) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		username, _ := c.Locals("username").(string)
+		if username == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+		}
+
+		var req UpdateMappingRequest
+		if err := c.Bind().Body(&req); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid body"})
+		}
+
+		repo := strings.TrimSpace(req.Repo)
+		parts := strings.Split(repo, "/")
+		if len(parts) != 2 || parts[0] == "" || parts[1] == "" || strings.ContainsAny(repo, " \t\n") {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "repo must be owner/repo"})
+		}
+		artifact := strings.TrimSpace(req.ArtifactNamespace)
+		gitops := strings.TrimSpace(req.GitopsEndpoint)
+		if gitops != "" {
+			i := strings.LastIndex(gitops, "/")
+			if i <= 0 || i == len(gitops)-1 {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "gitopsEndpoint must be <endpoint name>/<namespace>"})
+			}
+		}
+
+		ctx := c.Context()
+		query := `
+			FOR u IN users
+			  FILTER u.username == @username
+			  LIMIT 1
+			  LET repoKey = LOWER(@repo)
+			  FILTER repoKey IN (FOR x IN (u.github_scanned_repos || []) RETURN LOWER(x))
+			  LET rest = MERGE(APPEND([{}],
+			    (FOR k IN ATTRIBUTES(u.github_repo_mappings || {})
+			       FILTER LOWER(k) != repoKey
+			       RETURN { [k]: u.github_repo_mappings[k] })))
+			  LET mappings = (@artifact == "" AND @gitops == "")
+			    ? rest
+			    : MERGE(rest, { [@repo]: { artifact_namespace: @artifact, gitops_endpoint: @gitops } })
+			  UPDATE u WITH {
+			    github_repo_mappings: mappings,
+			    updated_at: DATE_ISO8601(DATE_NOW())
+			  } IN users OPTIONS { mergeObjects: false }
+			  RETURN 1`
+		cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+			BindVars: map[string]interface{}{
+				"username": username, "repo": repo, "artifact": artifact, "gitops": gitops,
+			},
+		})
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error"})
+		}
+		defer cursor.Close()
+		if !cursor.HasMore() {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Repo is not on your scan list; import it first"})
+		}
+
+		return c.JSON(fiber.Map{
+			"message": "Mapping saved for " + repo,
+			"mapping": RepoMappingView{ArtifactNamespace: artifact, GitopsEndpoint: gitops},
 		})
 	}
 }

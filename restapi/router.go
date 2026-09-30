@@ -100,6 +100,9 @@ func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema
 	// Stop scanning an onboarded repo (removes it from users.github_scanned_repos)
 	// POST /api/v1/github/remove  body: {"repos": ["owner/repo"]}
 	githubGroup.Post("/remove", github.RemoveRepos(db))
+	// Edit the mapping of an already onboarded repo
+	// PUT /api/v1/github/mapping  body: {"repo":"owner/repo","artifactNamespace":"","gitopsEndpoint":"name/namespace"}
+	githubGroup.Put("/mapping", github.UpdateRepoMapping(db))
 
 	// Public repo search — uses system token, no org credentials needed
 	// GET /api/v1/github/search?q=kubernetes&provider=github
