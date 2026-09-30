@@ -45,6 +45,11 @@ type User struct {
 	// releases discovered after onboarding, not just the ones present at
 	// import time.
 	GitHubRepoMappings map[string]RepoMapping `json:"github_repo_mappings,omitempty"`
+	// GitHubExcludedRepos lists "owner/repo" full_names the user removed from
+	// scanning. The GitHub App installation may still grant access to them,
+	// so relscanner-job filters them out on every scan cycle and ListRepos
+	// hides them from the Welcome page. Re-onboarding a repo clears its entry.
+	GitHubExcludedRepos []string `json:"github_excluded_repos,omitempty"`
 	CreatedAt          time.Time              `json:"created_at"`
 	UpdatedAt          time.Time              `json:"updated_at"`
 }

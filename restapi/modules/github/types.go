@@ -13,6 +13,9 @@ type GitHubRepo struct {
 	Description string `json:"description"`
 	HTMLURL     string `json:"html_url"`
 	Private     bool   `json:"private"`
+	// Excluded is only set (true) when ListRepos is called with
+	// ?include_excluded=true and the user removed the repo from scanning.
+	Excluded bool `json:"excluded,omitempty"`
 }
 
 // GitHubRelease represents a GitHub release.
@@ -59,4 +62,9 @@ type OnboardRequest struct {
 	// RepoMappings is keyed by full_name (e.g. "owner/repo"). A repo with no
 	// entry here is onboarded with no artifact/gitops mapping, same as before.
 	RepoMappings map[string]RepoMapping `json:"repoMappings,omitempty"`
+}
+
+// ExcludeRequest represents a request to stop scanning GitHub repositories.
+type ExcludeRequest struct {
+	Repos []string `json:"repos"` // List of full_names (e.g. "owner/repo")
 }
