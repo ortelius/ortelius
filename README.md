@@ -183,3 +183,18 @@ Endpoints with `endpoint_type: mission_asset` use the tighter targets in the rig
 
 - **Running on-premises or self-hosted?** → [Architecture Guide](docs/architecture.md)
 - **Integrating the API, writing queries, or contributing code?** → [Implementation Guide](docs/implementation.md)
+
+
+## Contributors / Maintainers
+- Steve Taylor (DeployHub): Project Chair, original creator of the Ortelius core platform, governance leadership, Architecture, and DevSecOps strategy
+- Tracy Ragan (DeployHub): Governance leadership, project management, outreach, documentation, community operations, and technical contributor
+- Tony Carrato (IBM/Retired): Project management, governance participation, outreach contributor, and board advisor
+- Ann Marie Fred (Red Hat): Governance Board, outreach, contributor enablement, and governance participation
+- Sergio Canales (Red Hat): Governance Board, release coordination, security, and project management support
+- Vincent Danen (Red Hat) : Technology Oversight Board
+- Brian Fox (Sonatype):Technology Oversight Board
+- Sacha Wharton (Pollinate, South Africa):Governing Board, Platform Engineering / Developer Experience
+- Utkarsh Sharma (Acutro, United Kingdom):Governing Board, AI/ML lead contributor
+- Jing Chen (BLNB, United Kingdom): Digital Twin Core, MCP Architecture
+- Arvind Singharpuria (Fountane Inc, India): Front End, Digital Twin
+- Siddarth Pareek (NatWest, India): Governing Board Chairperson, Strategic Advisor
