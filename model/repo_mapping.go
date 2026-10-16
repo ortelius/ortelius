@@ -8,9 +8,9 @@ package model
 //     publishes under (e.g. "deployhub"), used to build DockerRepo for
 //     vulnerability/purl matching.
 //   - GitopsEndpoint maps the repo to the runtime endpoint it deploys to,
-//     formatted as "<endpoint name>/<namespace>" (e.g.
-//     "us-central-1_deployhub/deployhub"), for repos that hold gitops
-//     manifests/charts.
+//     as a bare endpoint name (e.g. "dh-prod") or "<org>/<endpoint name>".
+//     A bare name is stored under the repo owner's org when synced. For repos
+//     that hold gitops manifests/charts.
 //
 // Persisted (not pointers) so it can be stored directly on User/TrackedRepo
 // and read by relscanner-job on every scan cycle, not just applied once at

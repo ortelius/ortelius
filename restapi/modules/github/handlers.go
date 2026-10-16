@@ -2,6 +2,7 @@
 package github
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -86,7 +87,7 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 		for fullRepoName, m := range req.RepoMappings {
 			if m.GitopsEndpoint != nil && !validGitopsEndpoint(strings.TrimSpace(*m.GitopsEndpoint)) {
 				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-					"error": fmt.Sprintf("%s: gitopsEndpoint must be <endpoint name>/<namespace>", fullRepoName),
+					"error": fmt.Sprintf("%s: gitopsEndpoint must be <endpoint name> or <org>/<endpoint name>", fullRepoName),
 				})
 			}
 		}
@@ -137,7 +138,10 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 			}
 			var gitopsEndpoint string
 			if mapping.GitopsEndpoint != nil {
-				gitopsEndpoint = strings.TrimSpace(*mapping.GitopsEndpoint)
+				// Bare "dh-prod" -> "<owner>/dh-prod" so the endpoint is listed
+				// under the repo's org, not the default "library" org. The saved
+				// mapping below keeps what the user entered.
+				gitopsEndpoint = qualifyGitopsEndpoint(owner, *mapping.GitopsEndpoint)
 			}
 
 			// Fetch repo metadata to determine visibility before creating releases.
@@ -280,6 +284,12 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 			}
 		}
 
+		// Import: have the scanner re-scan these repos' most recent releases on
+		// its next run, ignoring the old watermark.
+		if err := resetReleaseWatermarks(ctx, db, onboarded); err != nil {
+			errors = append(errors, fmt.Sprintf("failed to request a fresh release scan: %v", err))
+		}
+
 		return c.JSON(fiber.Map{
 			"message": fmt.Sprintf("Processed %d items via GitHub App", processed),
 			"errors":  errors,
@@ -287,14 +297,62 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 	}
 }
 
-// validGitopsEndpoint reports whether s is empty (mapping cleared) or formatted
-// as "<endpoint name>/<namespace>" with both parts non-empty.
+// validGitopsEndpoint reports whether s is empty (mapping cleared), a bare
+// endpoint name ("dh-prod") or "<org>/<endpoint name>", with no whitespace and
+// no empty part.
 func validGitopsEndpoint(s string) bool {
 	if s == "" {
 		return true
 	}
-	i := strings.LastIndex(s, "/")
-	return i > 0 && i < len(s)-1
+	if strings.ContainsAny(s, " \t\r\n") || strings.Count(s, "/") > 1 {
+		return false
+	}
+	if i := strings.Index(s, "/"); i >= 0 {
+		return i > 0 && i < len(s)-1
+	}
+	return true
+}
+
+// qualifyGitopsEndpoint returns the endpoint name as stored in the endpoint
+// collection: a bare name is prefixed with the repo owner as its org
+// ("dh-prod" -> "<owner>/dh-prod"); "<org>/<name>" and "" are kept as-is.
+func qualifyGitopsEndpoint(owner, endpoint string) string {
+	endpoint = strings.TrimSpace(endpoint)
+	if endpoint == "" || strings.Contains(endpoint, "/") {
+		return endpoint
+	}
+	return owner + "/" + endpoint
+}
+
+// resetReleaseWatermarks clears the relscanner-job release watermark of the
+// given "owner/repo" repos (metadata/relscanner_state -> processed_releases,
+// keyed "github/<owner>/<repo>"). With no watermark the scanner treats the repo
+// as a fresh one on its next run and scans its most recent releases again,
+// ignoring the old watermark; afterwards it writes a new watermark, so later
+// runs respect it. Called when the user imports a repo or saves its mapping.
+// The scanner merges only the keys it touched when saving its state, so this
+// reset is not overwritten by a run that was already in progress.
+func resetReleaseWatermarks(ctx context.Context, db database.DBConnection, repos []string) error {
+	if len(repos) == 0 {
+		return nil
+	}
+	query := `
+		FOR doc IN [DOCUMENT("metadata/relscanner_state")]
+		  FILTER doc != null
+		  LET wanted = (FOR r IN @repos RETURN LOWER(CONCAT("github/", r)))
+		  LET current = doc.processed_releases || {}
+		  LET stale = (FOR k IN ATTRIBUTES(current) FILTER LOWER(k) IN wanted RETURN k)
+		  FILTER LENGTH(stale) > 0
+		  UPDATE doc WITH { processed_releases: UNSET(current, stale) } IN metadata OPTIONS { mergeObjects: false }
+		  RETURN 1`
+	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"repos": repos},
+	})
+	if err != nil {
+		return err
+	}
+	defer cursor.Close()
+	return nil
 }
 
 // repoNameSet builds a lower-cased lookup set of "owner/repo" names.
@@ -423,7 +481,7 @@ func UpdateRepoMapping(db database.DBConnection) fiber.Handler {
 		}
 		gitops := strings.TrimSpace(req.GitopsEndpoint)
 		if !validGitopsEndpoint(gitops) {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "gitopsEndpoint must be <endpoint name>/<namespace>"})
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "gitopsEndpoint must be <endpoint name> or <org>/<endpoint name>"})
 		}
 
 		ctx := c.Context()
@@ -463,10 +521,16 @@ func UpdateRepoMapping(db database.DBConnection) fiber.Handler {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Repo is not on your scan list; import it first"})
 		}
 
-		return c.JSON(fiber.Map{
+		// Save: have the scanner re-scan this repo's most recent releases on its
+		// next run, ignoring the old watermark, so the new mapping is applied.
+		resp := fiber.Map{
 			"message": "Mapping saved for " + repo,
 			"mapping": RepoMappingView{ArtifactNamespace: artifact, GitopsEndpoint: gitops},
-		})
+		}
+		if err := resetReleaseWatermarks(ctx, db, []string{repo}); err != nil {
+			resp["warning"] = "mapping saved, but a fresh release scan could not be requested: " + err.Error()
+		}
+		return c.JSON(resp)
 	}
 }
 
