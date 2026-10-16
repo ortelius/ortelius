@@ -80,9 +80,10 @@ type RemoveRequest struct {
 }
 
 // UpdateMappingRequest represents a request to change the mapping of an already
-// onboarded repo. Empty values clear that part of the mapping.
+// onboarded repo. An empty gitopsEndpoint clears it. ArtifactNamespace is a
+// pointer: omitted keeps the saved value, "" clears it.
 type UpdateMappingRequest struct {
-	Repo              string `json:"repo"` // full_name, e.g. "owner/repo"
-	ArtifactNamespace string `json:"artifactNamespace"`
-	GitopsEndpoint    string `json:"gitopsEndpoint"` // "<endpoint name>/<namespace>" or ""
+	Repo              string  `json:"repo"` // full_name, e.g. "owner/repo"
+	ArtifactNamespace *string `json:"artifactNamespace,omitempty"`
+	GitopsEndpoint    string  `json:"gitopsEndpoint"` // "<endpoint name>/<namespace>" or ""
 }

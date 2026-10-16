@@ -81,6 +81,16 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid body"})
 		}
 
+		// Reject a malformed gitops endpoint up front (same rule as PUT
+		// /github/mapping) so nothing is imported or persisted half-way.
+		for fullRepoName, m := range req.RepoMappings {
+			if m.GitopsEndpoint != nil && !validGitopsEndpoint(strings.TrimSpace(*m.GitopsEndpoint)) {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+					"error": fmt.Sprintf("%s: gitopsEndpoint must be <endpoint name>/<namespace>", fullRepoName),
+				})
+			}
+		}
+
 		ctx := c.Context()
 
 		query := `FOR u IN users FILTER u.username == @username LIMIT 1 RETURN u`
@@ -277,6 +287,16 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 	}
 }
 
+// validGitopsEndpoint reports whether s is empty (mapping cleared) or formatted
+// as "<endpoint name>/<namespace>" with both parts non-empty.
+func validGitopsEndpoint(s string) bool {
+	if s == "" {
+		return true
+	}
+	i := strings.LastIndex(s, "/")
+	return i > 0 && i < len(s)-1
+}
+
 // repoNameSet builds a lower-cased lookup set of "owner/repo" names.
 func repoNameSet(list []string) map[string]bool {
 	m := make(map[string]bool, len(list))
@@ -394,13 +414,16 @@ func UpdateRepoMapping(db database.DBConnection) fiber.Handler {
 		if len(parts) != 2 || parts[0] == "" || parts[1] == "" || strings.ContainsAny(repo, " \t\n") {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "repo must be owner/repo"})
 		}
-		artifact := strings.TrimSpace(req.ArtifactNamespace)
+		// artifactNamespace is optional: when the key is omitted the saved value
+		// is kept (the UI only edits the gitops endpoint); an explicit "" clears it.
+		keepArtifact := req.ArtifactNamespace == nil
+		artifact := ""
+		if req.ArtifactNamespace != nil {
+			artifact = strings.TrimSpace(*req.ArtifactNamespace)
+		}
 		gitops := strings.TrimSpace(req.GitopsEndpoint)
-		if gitops != "" {
-			i := strings.LastIndex(gitops, "/")
-			if i <= 0 || i == len(gitops)-1 {
-				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "gitopsEndpoint must be <endpoint name>/<namespace>"})
-			}
+		if !validGitopsEndpoint(gitops) {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "gitopsEndpoint must be <endpoint name>/<namespace>"})
 		}
 
 		ctx := c.Context()
@@ -414,9 +437,14 @@ func UpdateRepoMapping(db database.DBConnection) fiber.Handler {
 			    (FOR k IN ATTRIBUTES(u.github_repo_mappings || {})
 			       FILTER LOWER(k) != repoKey
 			       RETURN { [k]: u.github_repo_mappings[k] })))
-			  LET mappings = (@artifact == "" AND @gitops == "")
+			  LET existing = FIRST(
+			    FOR k IN ATTRIBUTES(u.github_repo_mappings || {})
+			      FILTER LOWER(k) == repoKey
+			      RETURN u.github_repo_mappings[k])
+			  LET artifactVal = @keepArtifact ? (existing.artifact_namespace || "") : @artifact
+			  LET mappings = (artifactVal == "" AND @gitops == "")
 			    ? rest
-			    : MERGE(rest, { [@repo]: { artifact_namespace: @artifact, gitops_endpoint: @gitops } })
+			    : MERGE(rest, { [@repo]: { artifact_namespace: artifactVal, gitops_endpoint: @gitops } })
 			  UPDATE u WITH {
 			    github_repo_mappings: mappings,
 			    updated_at: DATE_ISO8601(DATE_NOW())
@@ -424,7 +452,7 @@ func UpdateRepoMapping(db database.DBConnection) fiber.Handler {
 			  RETURN 1`
 		cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
 			BindVars: map[string]interface{}{
-				"username": username, "repo": repo, "artifact": artifact, "gitops": gitops,
+				"username": username, "repo": repo, "artifact": artifact, "gitops": gitops, "keepArtifact": keepArtifact,
 			},
 		})
 		if err != nil {
