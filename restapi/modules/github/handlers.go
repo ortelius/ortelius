@@ -201,7 +201,7 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 						endpoint.EndpointType = "serverless"
 						endpoint.Environment = "ci"
 						endpoint.ParseAndSetNameComponents()
-						db.Collections["endpoint"].CreateDocument(ctx, endpoint)
+						_ = ensureEndpoint(ctx, db, endpoint)
 
 						sync := model.NewSync()
 						sync.EndpointName = endpointName
@@ -232,9 +232,11 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 					endpoint.EndpointType = model.EndpointTypeCluster
 					endpoint.Environment = "production"
 					endpoint.ParseAndSetNameComponents()
-					// Ignore duplicate-key errors — the endpoint may already
-					// exist from a real cluster sync (Synced Endpoints).
-					db.Collections["endpoint"].CreateDocument(ctx, endpoint)
+					// Create it only once -- the endpoint may already exist from
+					// a real cluster sync (Synced Endpoints) or an earlier import.
+					if err := ensureEndpoint(ctx, db, endpoint); err != nil {
+						errors = append(errors, fmt.Sprintf("%s: gitops endpoint: %v", fullRepoName, err))
+					}
 
 					sync := model.NewSync()
 					sync.EndpointName = gitopsEndpoint
@@ -295,6 +297,26 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 			"errors":  errors,
 		})
 	}
+}
+
+// ensureEndpoint creates the endpoint unless one with the same name already
+// exists. Endpoint documents get an auto-generated _key and `name` has no
+// unique index, so a plain CreateDocument adds a duplicate on every call; the
+// endpoint may also already exist from a real cluster sync.
+func ensureEndpoint(ctx context.Context, dbConn database.DBConnection, endpoint *model.Endpoint) error {
+	cursor, err := dbConn.Database.Query(ctx, `FOR e IN endpoint FILTER e.name == @name LIMIT 1 RETURN 1`, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"name": endpoint.Name},
+	})
+	if err != nil {
+		return err
+	}
+	exists := cursor.HasMore()
+	cursor.Close()
+	if exists {
+		return nil
+	}
+	_, err = dbConn.Collections["endpoint"].CreateDocument(ctx, endpoint)
+	return err
 }
 
 // validGitopsEndpoint reports whether s is empty (mapping cleared), a bare
