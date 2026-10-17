@@ -191,38 +191,12 @@ func OnboardRepos(db database.DBConnection) fiber.Handler {
 				errors = append(errors, fmt.Sprintf("Failed to fetch releases for %s: %v", fullRepoName, err))
 			}
 
-			runs, err := FetchWorkflowRuns(appToken, owner, repo)
-			if err == nil {
-				for _, run := range runs {
-					if run.Conclusion == "success" {
-						endpointName := "github-actions/" + fullRepoName
-						endpoint := model.NewEndpoint()
-						endpoint.Name = endpointName
-						endpoint.EndpointType = "serverless"
-						endpoint.Environment = "ci"
-						endpoint.ParseAndSetNameComponents()
-						_ = ensureEndpoint(ctx, db, endpoint)
-
-						sync := model.NewSync()
-						sync.EndpointName = endpointName
-						sync.ReleaseName = fullRepoName
-						version := run.HeadSha
-						if len(version) > 7 {
-							version = version[:7]
-						}
-						sync.ReleaseVersion = version
-						sync.SyncedAt = run.UpdatedAt
-						db.Collections["sync"].CreateDocument(ctx, sync)
-						processed++
-					}
-				}
-			}
-
 			// GitOps mapping: link the repo's latest release to the runtime
-			// endpoint/namespace it deploys to (e.g.
-			// "us-central-1_deployhub/deployhub"), the same Endpoint/Sync shape
-			// used by real cluster syncs, so CVEs found in this release can be
-			// traced to where it's actually running.
+			// endpoint it is deployed to (stored as "<org>/<endpoint>", e.g.
+			// "DeployHubProject/dh-prod"), the same Endpoint/Sync shape used by
+			// real cluster syncs, so CVEs found in this release can be traced
+			// to where it's actually running. This is the only endpoint an
+			// import creates: a CI workflow run is not a deployed runtime.
 			if gitopsEndpoint != "" {
 				if latestReleaseVersion == "" {
 					errors = append(errors, fmt.Sprintf("%s: gitops endpoint mapping given but no release found to sync", fullRepoName))
