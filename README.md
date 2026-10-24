@@ -40,16 +40,16 @@ Once logged in, connect your GitHub account. This is the fastest way to get repo
 From **Profile → GitHub Integration**, pick which of your installed repositories to onboard (`POST /api/v1/github/onboard`). For each selected `owner/repo`, Ortelius:
 
 1. **Fetches GitHub Releases** for the repo via the App installation token and creates a `release` record per release tag (version = tag name; visibility is set from the repo's public/private status)
-2. **Fetches recent GitHub Actions workflow runs** and, for each run that completed successfully, creates a `github-actions/<owner>/<repo>` endpoint and a `sync` record (release version = first 7 characters of the run's head commit SHA)
+2. **Links the latest release to a runtime endpoint** if you entered one for the repo (GitOps repos only): the endpoint is created as `<org>/<endpoint>` and a `sync` record ties the release to it. Workflow runs do not create endpoints, because a CI run is not a deployed runtime.
 
-This gives you a release and deployment timeline for the repo. Repeated onboarding calls simply re-run this same import — this REST endpoint itself has no automatic SBOM discovery, container image inspection, or OpenSSF Scorecard lookup. (A separate, optionally-deployed component, [`relscanner-job`](https://github.com/ortelius/relscanner-job), *does* provide a persistent background scanner with exactly those capabilities — see [Why Am I Seeing Zero CVEs?](#why-am-i-seeing-zero-cves) below.)
+This gives you a release timeline for the repo. Repeated onboarding calls simply re-run this same import — this REST endpoint itself has no automatic SBOM discovery, container image inspection, or OpenSSF Scorecard lookup. (A separate, optionally-deployed component, [`relscanner-job`](https://github.com/ortelius/relscanner-job), *does* provide a persistent background scanner with exactly those capabilities — see [Why Am I Seeing Zero CVEs?](#why-am-i-seeing-zero-cves) below.)
 
 ### Step 3 — Verify Your Data
 
 After onboarding, go to your dashboard. You should see:
 
 - Your repositories listed under **Releases**, with a version per GitHub release
-- `github-actions/<owner>/<repo>` listed as an endpoint under **Endpoints**, if any workflow runs succeeded
+- The runtime endpoint you mapped for a GitOps repo (`<org>/<endpoint>`) listed under **Endpoints**
 
 #### Why Am I Seeing Zero CVEs?
 

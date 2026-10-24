@@ -31,6 +31,7 @@ type indexConfig struct {
 	IdxName    string
 	IdxField   []string // Supported multiple fields for composite indexes
 	Unique     bool
+	Sparse     bool // skip documents where the indexed attribute is missing or null
 }
 
 var initDone = false          // has the data been initialized
@@ -220,6 +221,11 @@ func InitializeDatabase() DBConnection {
 		{Collection: "cve", IdxName: "package_name", IdxField: []string{"affected[*].package.name"}, Unique: false},
 		{Collection: "cve", IdxName: "package_purl", IdxField: []string{"affected[*].package.purl"}, Unique: false},
 		{Collection: "cve", IdxName: "cve_id", IdxField: []string{"id"}, Unique: false},
+		// Normalized base purl of each affected entry (written by the OSV loader
+		// and the repair tool). Lets the backend find a package's CVEs by index
+		// when it builds cve2purl edges lazily (see sbom.EnsureCVEEdgesForPurls).
+		// Sparse so documents that do not have the field yet are not indexed.
+		{Collection: "cve", IdxName: "cve_affected_base_purl", IdxField: []string{"affected[*].base_purl"}, Unique: false, Sparse: true},
 
 		// SBOM & Release indexes
 		{Collection: "sbom", IdxName: "sbom_contentsha", IdxField: []string{"contentsha"}, Unique: false},
@@ -325,9 +331,13 @@ func InitializeDatabase() DBConnection {
 			if idx.Unique {
 				unique = True
 			}
+			sparse := False
+			if idx.Sparse {
+				sparse = True
+			}
 			indexOptions := arangodb.CreatePersistentIndexOptions{
 				Unique: &unique,
-				Sparse: &False,
+				Sparse: &sparse,
 				Name:   idx.IdxName,
 			}
 			_, _, err = collections[idx.Collection].EnsurePersistentIndex(ctx, idx.IdxField, &indexOptions)

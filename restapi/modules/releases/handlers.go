@@ -572,16 +572,55 @@ func LinkReleaseToExistingCVEs(ctx context.Context, db database.DBConnection, re
 	query := `
 		FOR r IN release
 			FILTER r._key == @releaseKey
-			
+
 			FOR sbom IN 1..1 OUTBOUND r release2sbom
 				FOR sbomEdge IN sbom2purl
 					FILTER sbomEdge._from == sbom._id
 					LET purl = DOCUMENT(sbomEdge._to)
 					FILTER purl != null
-					
+
 					FOR cveEdge IN cve2purl
 						FILTER cveEdge._to == purl._id
-						
+` + cveVersionRangeFilter + `
+						LET cve = DOCUMENT(cveEdge._from)
+						FILTER cve != null
+
+						RETURN {
+							release_id: r._id,
+							cve_id: cve._id,
+							cve_doc_id: cve.id,
+							package_purl_full: sbomEdge.full_purl,
+							package_purl_base: purl.purl,
+							package_version: sbomEdge.version,
+							needs_validation: sbomEdge.version_major == null OR cveEdge.introduced_major == null
+						}
+	`
+
+	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{
+			"releaseKey": releaseKey,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	defer cursor.Close()
+
+	// releaseID is passed explicitly, so it wins over the id read from the graph.
+	edgesToInsert, err := buildRelease2CVEEdges(ctx, db, cursor, releaseID)
+	if err != nil {
+		return err
+	}
+	return writeRelease2CVEEdges(ctx, db, edgesToInsert)
+}
+
+// cveVersionRangeFilter is the AQL that keeps only the cve2purl edges whose
+// introduced/fixed (or last_affected) range contains the sbom2purl edge's
+// installed version. Edges missing the numeric version parts pass through and
+// are validated in Go by buildRelease2CVEEdges. It expects the variables
+// sbomEdge and cveEdge to be in scope, and is shared by the release -> CVE and
+// CVE -> release link queries so the two directions cannot drift apart.
+const cveVersionRangeFilter = `
 						FILTER (
 							sbomEdge.version_major != null AND 
 							cveEdge.introduced_major != null AND 
@@ -610,33 +649,20 @@ func LinkReleaseToExistingCVEs(ctx context.Context, db database.DBConnection, re
 								 sbomEdge.version_patch <= cveEdge.last_affected_patch)
 							))
 						) : true
-						
-						LET cve = DOCUMENT(cveEdge._from)
-						FILTER cve != null
-						
-						RETURN {
-							cve_id: cve._id,
-							cve_doc_id: cve.id,
-							package_purl_full: sbomEdge.full_purl,
-							package_purl_base: purl.purl,
-							package_version: sbomEdge.version,
-							needs_validation: sbomEdge.version_major == null OR cveEdge.introduced_major == null
-						}
-	`
+`
 
-	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
-		BindVars: map[string]interface{}{
-			"releaseKey": releaseKey,
-		},
-	})
-	if err != nil {
-		return err
-	}
-	defer cursor.Close()
-
+// buildRelease2CVEEdges turns link candidates read from cursor into
+// release2cve edge documents. Candidates whose version could not be compared in
+// AQL are validated against the CVE's affected data, and the result is
+// deduplicated per (release, CVE, package). When releaseID is empty each
+// candidate's own release_id is used, which is how the CVE -> release direction
+// (LinkCVEsToExistingReleases) links many releases in one pass.
+func buildRelease2CVEEdges(ctx context.Context, db database.DBConnection, cursor arangodb.Cursor, releaseID string) ([]map[string]interface{}, error) {
+	var err error
 	var edgesToInsert []map[string]interface{}
 
 	type Candidate struct {
+		ReleaseID       string `json:"release_id"`
 		CveID           string `json:"cve_id"`
 		CveDocID        string `json:"cve_doc_id"`
 		PackagePurlFull string `json:"package_purl_full"`
@@ -666,14 +692,18 @@ func LinkReleaseToExistingCVEs(ctx context.Context, db database.DBConnection, re
 	if len(cveIDsToFetch) > 0 {
 		cveAffectedMap, err = util.FetchCVEAffectedData(ctx, db.Database, cveIDsToFetch)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
 	seenInstances := make(map[string]bool)
 
 	for _, cand := range candidates {
-		instanceKey := cand.CveID + ":" + cand.PackagePurlBase
+		fromID := releaseID
+		if fromID == "" {
+			fromID = cand.ReleaseID
+		}
+		instanceKey := fromID + ":" + cand.CveID + ":" + cand.PackagePurlBase
 		if seenInstances[instanceKey] {
 			continue
 		}
@@ -721,8 +751,8 @@ func LinkReleaseToExistingCVEs(ctx context.Context, db database.DBConnection, re
 
 		now := time.Now()
 		edgesToInsert = append(edgesToInsert, map[string]interface{}{
-			"_key":            releaseCVEEdgeKey(releaseID, cand.CveID, cand.PackagePurlBase),
-			"_from":           releaseID,
+			"_key":            releaseCVEEdgeKey(fromID, cand.CveID, cand.PackagePurlBase),
+			"_from":           fromID,
 			"_to":             cand.CveID,
 			"type":            "static_analysis",
 			"package_purl":    cand.PackagePurlFull,
@@ -733,7 +763,106 @@ func LinkReleaseToExistingCVEs(ctx context.Context, db database.DBConnection, re
 		})
 	}
 
-	return writeRelease2CVEEdges(ctx, db, edgesToInsert)
+	return edgesToInsert, nil
+}
+
+// LinkCVEsToExistingReleases links the given CVEs (by _key, e.g.
+// "GHSA-h4mw-j7qp-8mwm") to every already-ingested release whose SBOM contains
+// an affected version of the CVE's package. Releases only get release2cve edges
+// when they are ingested or synced, so a CVE that is loaded afterwards would
+// otherwise never show on releases that already exist. It is the CVE -> release
+// mirror of LinkReleaseToExistingCVEs, uses the same matching rules, and is
+// idempotent (deterministic edge keys). It returns the number of edges written.
+func LinkCVEsToExistingReleases(ctx context.Context, db database.DBConnection, cveKeys []string) (int, error) {
+	total := 0
+	for _, key := range cveKeys {
+		key = strings.TrimSpace(key)
+		if key == "" {
+			continue
+		}
+		n, err := linkOneCVEToExistingReleases(ctx, db, "cve/"+key)
+		if err != nil {
+			return total, fmt.Errorf("%s: %w", key, err)
+		}
+		total += n
+	}
+	return total, nil
+}
+
+func linkOneCVEToExistingReleases(ctx context.Context, db database.DBConnection, cveID string) (int, error) {
+	query := `
+		FOR cveEdge IN cve2purl
+			FILTER cveEdge._from == @cveID
+			LET purl = DOCUMENT(cveEdge._to)
+			FILTER purl != null
+
+			FOR sbomEdge IN sbom2purl
+				FILTER sbomEdge._to == purl._id
+` + cveVersionRangeFilter + `
+				LET cve = DOCUMENT(cveEdge._from)
+				FILTER cve != null
+				LET sbom = DOCUMENT(sbomEdge._from)
+				FILTER sbom != null
+
+				FOR r IN 1..1 INBOUND sbom release2sbom
+					RETURN {
+						release_id: r._id,
+						cve_id: cve._id,
+						cve_doc_id: cve.id,
+						package_purl_full: sbomEdge.full_purl,
+						package_purl_base: purl.purl,
+						package_version: sbomEdge.version,
+						needs_validation: sbomEdge.version_major == null OR cveEdge.introduced_major == null
+					}
+	`
+
+	cursor, err := db.Database.Query(ctx, query, &arangodb.QueryOptions{
+		BindVars: map[string]interface{}{"cveID": cveID},
+	})
+	if err != nil {
+		return 0, err
+	}
+	defer cursor.Close()
+
+	edges, err := buildRelease2CVEEdges(ctx, db, cursor, "")
+	if err != nil {
+		return 0, err
+	}
+	if err := writeRelease2CVEEdges(ctx, db, edges); err != nil {
+		return 0, err
+	}
+	return len(edges), nil
+}
+
+// maxLinkCVEsPerRequest bounds one POST /cve/link call.
+const maxLinkCVEsPerRequest = 500
+
+// LinkCVEs handles POST /api/v1/cve/link, body {"ids": ["GHSA-...", "CVE-..."]}.
+// Call it after loading new or updated CVEs so releases that already exist pick
+// them up; it is safe to repeat.
+func LinkCVEs(db database.DBConnection) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		var req struct {
+			IDs []string `json:"ids"`
+		}
+		if err := c.Bind().Body(&req); err != nil || len(req.IDs) == 0 {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": `body must be {"ids": ["<cve key>", ...]}`})
+		}
+		if len(req.IDs) > maxLinkCVEsPerRequest {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": fmt.Sprintf("at most %d ids per request", maxLinkCVEsPerRequest),
+			})
+		}
+
+		written, err := LinkCVEsToExistingReleases(context.Background(), db, req.IDs)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error":         err.Error(),
+				"edges_written": written,
+			})
+		}
+		return c.JSON(fiber.Map{"cves": len(req.IDs), "edges_written": written})
+	}
 }
 
 // CheckReleaseExists returns 200 if a release with the given contentsha exists, 404 if not.

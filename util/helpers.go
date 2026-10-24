@@ -419,6 +419,15 @@ func isVersionInRange(version string, vrange models.Range, ecosystem string) boo
 		return isVersionInRangePython(version, vrange)
 	}
 
+	// apk ecosystems (Chainguard, Wolfi, Alpine, Alpaquita) end versions in a
+	// numeric -rN revision: -r9 is older than -r10. Semver would order the
+	// revision as pre-release text and get that backwards, so these use the apk
+	// ordering whenever the version and every boundary are valid apk versions,
+	// and otherwise fall through to the generic comparison below.
+	if isAPKEcosystem(ecosystem) && canEvaluateAPKRange(version, vrange) {
+		return evaluateOSVRange(version, vrange, compareAPKVersions, "apk version")
+	}
+
 	// Use semantic-version ordering when both the target and all non-limit
 	// event boundaries can be parsed as semantic versions. ECOSYSTEM ranges
 	// are allowed to contain arbitrary version strings, so fall back to the

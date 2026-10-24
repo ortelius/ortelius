@@ -60,9 +60,9 @@ type RepoMapping struct {
 	// name to populate ProjectRelease.DockerRepo for vulnerability matching.
 	ArtifactNamespace *string `json:"artifactNamespace,omitempty"`
 	// GitopsEndpoint maps the repo to the runtime endpoint it deploys to,
-	// formatted as "<endpoint name>/<namespace>" (e.g.
-	// "us-central-1_deployhub/deployhub"). Only meaningful for repos that
-	// hold gitops manifests/charts.
+	// given as a bare endpoint name (e.g. "dh-prod"), stored under the repo
+	// owner's org as "<org>/<endpoint name>", or already "<org>/<endpoint name>".
+	// Only meaningful for repos that hold gitops manifests/charts.
 	GitopsEndpoint *string `json:"gitopsEndpoint,omitempty"`
 }
 
@@ -85,5 +85,5 @@ type RemoveRequest struct {
 type UpdateMappingRequest struct {
 	Repo              string  `json:"repo"` // full_name, e.g. "owner/repo"
 	ArtifactNamespace *string `json:"artifactNamespace,omitempty"`
-	GitopsEndpoint    string  `json:"gitopsEndpoint"` // "<endpoint name>/<namespace>" or ""
+	GitopsEndpoint    string  `json:"gitopsEndpoint"` // "<endpoint name>", "<org>/<endpoint name>" or ""
 }

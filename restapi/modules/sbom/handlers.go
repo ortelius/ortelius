@@ -159,7 +159,8 @@ func ProcessSBOMComponents(ctx context.Context, db database.DBConnection, sbom m
 	}
 
 	if len(edgesToCheck) == 0 {
-		return nil
+		// Nothing new to link, but the package nodes may still lack CVE edges.
+		return EnsureCVEEdgesForPurls(ctx, db, purlIDMap)
 	}
 
 	existingEdges, err := batchCheckEdgesExist(ctx, db, "sbom2purl", edgesToCheck)
@@ -211,7 +212,10 @@ func ProcessSBOMComponents(ctx context.Context, db database.DBConnection, sbom m
 		}
 	}
 
-	return nil
+	// The sbom2purl edges exist now. Build the cve2purl edges of any package
+	// that does not have them yet (a no-op unless LAZY_CVE_EDGES is enabled), so
+	// the release is matched against them right after.
+	return EnsureCVEEdgesForPurls(ctx, db, purlIDMap)
 }
 
 // batchFindOrCreatePURLs finds or creates multiple PURLs in a single query

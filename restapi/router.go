@@ -187,6 +187,10 @@ func SetupRoutes(app *fiber.App, db database.DBConnection, schema graphql.Schema
 	api.Post("/sync", auth.OptionalAuth(db), releasesync.PostSyncWithEndpoint(db))
 	api.Get("/releases/exists", releases.CheckReleaseExists(db))
 
+	// Link newly loaded/updated CVEs to releases that were ingested before them
+	// POST /api/v1/cve/link  body: {"ids": ["GHSA-h4mw-j7qp-8mwm"]}
+	api.Post("/cve/link", auth.RequireAuth(db), auth.RequireRole("admin"), releases.LinkCVEs(db))
+
 	// Metadata
 	api.Get("/metadata/:key", auth.OptionalAuth(db), metadata.GetMetadata(db))
 	api.Put("/metadata/:key", auth.OptionalAuth(db), metadata.SetMetadata(db))

@@ -261,7 +261,7 @@ GET  /github/repo                         Fetch metadata for a single public rep
 
 #### `POST /github/onboard` (RequireAuth)
 
-For each `owner/repo` in the request, fetches releases via the App installation token, creates a `release` document per GitHub release (tag as version), determines `is_public` from repo visibility (drives unauthenticated GraphQL access), and — for each successful GitHub Actions workflow run — creates a `github-actions/<owner>/<repo>` endpoint plus a `sync` record.
+For each `owner/repo` in the request, fetches releases via the App installation token, creates a `release` document per GitHub release (tag as version), determines `is_public` from repo visibility (drives unauthenticated GraphQL access), and — only when a runtime endpoint is mapped for the repo — creates that `<org>/<endpoint>` endpoint (once) plus a `sync` record for the latest release. Workflow runs do not create endpoints: a CI run is not a deployed runtime.
 
 ```json
 // Request
@@ -1227,6 +1227,37 @@ Called at the end of every `ProcessReleaseIngestion`:
 4. Validate with `util.IsVersionAffected(sbomEdgeVersion, matchedAffected)`
 5. Deduplicate by `(cve_id, package_base_purl)`
 6. Batch-insert `release2cve` edges
+
+#### CVEs that arrive after the release (`LinkCVEsToExistingReleases`)
+
+`release2cve` edges are only built when a release is ingested or synced, so a CVE loaded *afterwards* would never appear on releases that already exist. `POST /api/v1/cve/link` (admin) takes `{"ids": ["GHSA-...", "CVE-..."]}` (CVE `_key`s, max 500) and runs the same match in the other direction: CVE → `cve2purl` → PURL hub ← `sbom2purl` ← SBOM ← `release2sbom` ← release. It uses the same version-range filter and Go validation as `LinkReleaseToExistingCVEs`, and writes the same deterministic-key edges, so it is idempotent. Call it after loading new or updated CVEs. Lifecycle (`cve_lifecycle`) records for releases already synced to an endpoint are only created on the next `POST /sync`.
+
+#### Lazy CVE edges (`LAZY_CVE_EDGES`)
+
+Eagerly writing a `cve2purl` edge for every package of every advisory creates millions of edges for packages no release contains (container-distro advisories alone are over a million records). With `LAZY_CVE_EDGES=true` (default off) the backend builds a package's edges the first time an SBOM references it:
+
+1. `ProcessSBOMComponents` creates the package nodes and `sbom2purl` edges, then calls `EnsureCVEEdgesForPurls`.
+2. For each package node without `cve_edges_version == CVEEdgesVersion`, it finds the CVEs through the `cve_affected_base_purl` index (`affected[*].base_purl`), builds the same `cve2purl` edge the loader writes (`buildCVEPurlEdge`: same `_key`, fields, and null version parts for `ECOSYSTEM` ranges), upserts it, and only then sets `cve_edges_version` on the package node.
+3. `LinkReleaseToExistingCVEs` runs afterwards unchanged.
+
+Notes:
+- **Requires `affected[].base_purl` on the CVE documents**, written by the OSV loader and the repair tool. Without it the lookup finds nothing and the package would be marked as built with no edges, so the step is gated: even with `LAZY_CVE_EDGES=true` it does nothing until the document `metadata/lazy_cve_edges` has `ready: true`. Set it once `base_purl` is backfilled:
+  ```aql
+  UPSERT { _key: "lazy_cve_edges" }
+  INSERT { _key: "lazy_cve_edges", ready: true }
+  UPDATE { ready: true }
+  IN metadata
+  ```
+  Packages first referenced before it is set get no lazy edges (and are not marked), so re-link those releases afterwards (`repair --rebuild-release2cve`).
+- **Pruning edges:** if you delete `cve2purl` edges for packages that no SBOM references, also clear their `cve_edges_version` marker (`UPDATE h WITH { cve_edges_version: null } IN purl OPTIONS { keepNull: false }`), or they would be treated as built with no edges.
+- **Crash safety:** the marker is written last, so an interrupted build is simply redone; edge keys are deterministic, so repeating it is harmless.
+- **Races with the loader:** here the package node and its `sbom2purl` edges are written before the CVEs are looked up; the loader writes the CVE first and then looks for packages that have an `sbom2purl` edge. Whichever goes first, one of them writes the edge.
+- **Rebuilds:** raising `CVEEdgesVersion` makes every package rebuild its edges the next time an SBOM references it.
+- **Cost:** the first SBOM containing a package pays for building its edges once; a very common package can mean thousands of edges.
+
+#### apk version ordering
+
+`isVersionInRange` uses apk ordering (`util/apk_version.go`) for the `Chainguard`, `Wolfi`, `Alpine` and `Alpaquita` ecosystems (the name before any `:`, so `Alpine:v3.19` counts). apk revisions are numeric (`-r9` < `-r10`); semver would order them as text and treat a vulnerable `r9` as already fixed. A version or range boundary that is not a valid apk version falls back to the generic comparison.
 
 ### Sweep and Resurrect (`SupersedeAllActiveCVEs` + `CreateOrUpdateLifecycleRecord`)
 
