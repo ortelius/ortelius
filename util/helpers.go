@@ -412,11 +412,22 @@ func IsVersionAffected(version string, affected models.Affected) bool {
 // The evaluator below also handles multiple introduced/fixed intervals and
 // explicit limit events.
 func isVersionInRange(version string, vrange models.Range, ecosystem string) bool {
+	// npm and PyPI have their own strict parsers (npm: full major.minor.patch;
+	// PEP 440 for PyPI). Advisories do not always write boundaries that way
+	// (a "16.2" or "v16.2.1" fixed version is common), and when the parser
+	// rejects a boundary the range cannot be ordered: the evaluator gives up and
+	// reports "not affected", hiding a vulnerable version. So the ecosystem
+	// parser is only used when the version and every boundary parse with it;
+	// otherwise it falls through to the lenient semver comparison below.
 	switch strings.ToLower(ecosystem) {
 	case "npm":
-		return isVersionInRangeNPM(version, vrange)
+		if canEvaluateRange(version, vrange, func(v string) error { _, err := npm.NewVersion(v); return err }) {
+			return evaluateOSVRange(version, vrange, compareNPMVersions, "npm version")
+		}
 	case "pypi":
-		return isVersionInRangePython(version, vrange)
+		if canEvaluateRange(version, vrange, func(v string) error { _, err := pep440.Parse(v); return err }) {
+			return evaluateOSVRange(version, vrange, comparePythonVersions, "python version")
+		}
 	}
 
 	// apk ecosystems (Chainguard, Wolfi, Alpine, Alpaquita) end versions in a
@@ -657,13 +668,32 @@ func compareSemverVersions(left, right string) (int, error) {
 	return l.Compare(r), nil
 }
 
-// isVersionInRangeNPM uses npm-specific version comparison.
-func isVersionInRangeNPM(version string, vrange models.Range) bool {
-	if _, err := npm.NewVersion(version); err != nil {
-		return isVersionInRangeString(version, vrange)
+// canEvaluateRange reports whether the version and every boundary of the range
+// can be parsed by the given ecosystem parser. "0" is OSV's "from the beginning"
+// marker and "*" its explicit infinity; the range evaluator handles both itself.
+func canEvaluateRange(version string, vrange models.Range, parse func(string) error) bool {
+	if parse(version) != nil {
+		return false
 	}
 
-	return evaluateOSVRange(version, vrange, compareNPMVersions, "npm version")
+	for _, event := range vrange.Events {
+		for _, boundary := range []string{event.Introduced, event.Fixed, event.LastAffected} {
+			if boundary == "" || boundary == "0" {
+				continue
+			}
+			if parse(boundary) != nil {
+				return false
+			}
+		}
+
+		if event.Limit != "" && !strings.Contains(event.Limit, "*") {
+			if parse(event.Limit) != nil {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 func compareNPMVersions(left, right string) (int, error) {
@@ -684,15 +714,6 @@ func compareNPMVersions(left, right string) (int, error) {
 		return 1, nil
 	}
 	return 0, nil
-}
-
-// isVersionInRangePython uses PEP 440 version comparison for Python packages.
-func isVersionInRangePython(version string, vrange models.Range) bool {
-	if _, err := pep440.Parse(version); err != nil {
-		return isVersionInRangeString(version, vrange)
-	}
-
-	return evaluateOSVRange(version, vrange, comparePythonVersions, "python version")
 }
 
 func comparePythonVersions(left, right string) (int, error) {
