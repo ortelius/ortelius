@@ -193,26 +193,45 @@ func ResolveAffectedEndpoints(db database.DBConnection, name, version string) ([
 	}
 	return endpoints, nil
 }
-
 // ResolveAffectedReleases updated to count unique CVE ID + Package combinations.
 func ResolveAffectedReleases(db database.DBConnection, severity string, org string) ([]interface{}, error) {
 	ctx := context.Background()
 	severityScore := util.GetSeverityScore(severity)
 
+	// Visibility: a release is visible to an org if the org owns it, or if one of
+	// the org's endpoints has a sync row for that exact release name+version.
+	//
+	// The visible set is resolved once, driving from the org's (few) endpoints
+	// through the sync index to the matching releases. The previous form put a
+	// correlated sync->endpoint subquery inside the per-release FILTER, which
+	// re-scanned sync for every release the org does not own (over 100K
+	// iterations on the reporting system, ~6s) and could not use any index on
+	// release.org. Requires the endpoint_org_name index (see database.go).
+	//
+	// When @org == "" the FILTER below folds to true and every release is
+	// visible; the @org != "" guards make the visibility LETs evaluate to empty.
 	query := `
+		LET orgEndpointNames = (
+			FOR e IN endpoint
+				FILTER @org != "" AND e.org == @org
+				RETURN e.name
+		)
+		LET syncedPairs = (
+			FOR epName IN orgEndpointNames
+				FOR s IN sync
+					FILTER s.endpoint_name == epName
+					RETURN DISTINCT { name: s.release_name, version: s.release_version }
+		)
+		LET visibleKeys = UNION_DISTINCT(
+			(FOR r IN release FILTER @org != "" AND r.org == @org RETURN r._key),
+			(FOR p IN syncedPairs
+				FOR r IN release
+					FILTER r.name == p.name AND r.version == p.version
+					RETURN r._key)
+		)
+
 		FOR r IN release
-			FILTER @org == "" OR r.org == @org OR (
-				LENGTH(
-					FOR s IN sync
-						FILTER s.release_name == r.name
-						AND s.release_version == r.version
-						FOR e IN endpoint
-							FILTER e.name == s.endpoint_name
-							AND e.org == @org
-							LIMIT 1
-							RETURN 1
-				) > 0
-			)
+			FILTER @org == "" OR r._key IN visibleKeys
 			COLLECT name = r.name INTO groupedReleases = r
 
 			LET latestRelease = (
