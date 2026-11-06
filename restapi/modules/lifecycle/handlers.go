@@ -628,84 +628,70 @@ func resetSentinelRemediations(ctx context.Context, db database.DBConnection, re
 
 // ReconcileSentinelRemediationsLimited marks retained sentinel records as
 // remediated at the first later retained release version where the CVE/package
-// is absent. Only maxVersions are considered.
+// is absent. versions must be the window that was just synced, ordered oldest
+// to newest. Presence is derived from the synced cve_lifecycle rows, so the
+// window is passed in to avoid racing with newly arrived releases.
 func ReconcileSentinelRemediationsLimited(
 	ctx context.Context,
 	db database.DBConnection,
 	releaseName string,
-	maxVersions int,
+	versions []sentinelReleaseVersion,
 ) error {
-	if maxVersions < 1 {
-		return fmt.Errorf("maxVersions must be at least 1")
+	// With fewer than two versions nothing can be remediated.
+	if len(versions) < 2 {
+		return nil
+	}
+
+	versionBind := make([]map[string]interface{}, 0, len(versions))
+	for _, v := range versions {
+		versionBind = append(versionBind, map[string]interface{}{
+			"version":   v.Version,
+			"builddate": v.BuildDate.UTC().Format("2006-01-02T15:04:05.000Z"),
+		})
 	}
 
 	query := `
-		LET recent_desc = (
-			FOR r IN release
-				FILTER r.name == @release_name
-				FILTER r.version != "0.0.0-snapshot"
-				FILTER r.builddate != null
-				AND DATE_TIMESTAMP(r.builddate) > DATE_TIMESTAMP("2000-01-01")
-				COLLECT version = r.version
-				AGGREGATE build_ts = MAX(DATE_TIMESTAMP(r.builddate))
-				SORT build_ts DESC
-				LIMIT @max_versions
-				RETURN { version: version, build_ts: build_ts }
+		LET versions = @versions
+		LET n = LENGTH(versions)
+
+		LET fixes = (
+			FOR l IN cve_lifecycle
+				FILTER l.endpoint_name == @endpoint_name
+				AND l.release_name == @release_name
+				LET idx = POSITION(versions[*].version, l.introduced_version, true)
+				FILTER idx >= 0
+				COLLECT cve_key = CONCAT(l.cve_id, "|", l.package)
+					INTO g = {
+						idx: idx,
+						key: l._key,
+						introduced_at: l.introduced_at,
+						is_remediated: l.is_remediated
+					}
+				LET present = g[*].idx
+				FOR row IN g
+					FILTER row.is_remediated == false AND row.idx < n - 1
+					LET fix_idx = FIRST(
+						FOR i IN row.idx + 1 .. n - 1
+							FILTER i NOT IN present
+							RETURN i
+					)
+					FILTER fix_idx != null
+					LET fv = versions[fix_idx]
+					RETURN {
+						key: row.key,
+						introduced_at: row.introduced_at,
+						fv: fv
+					}
 		)
 
-		LET versions = (
-			FOR v IN recent_desc
-				SORT v.build_ts ASC
-				RETURN {
-					version: v.version,
-					builddate: DATE_ISO8601(v.build_ts)
-				}
-		)
-
-		LET version_cve_sets = (
-			FOR v IN versions
-				LET cve_keys = (
-					FOR r IN release
-						FILTER r.name == @release_name AND r.version == v.version
-						FILTER r.builddate != null
-						AND DATE_TIMESTAMP(r.builddate) > DATE_TIMESTAMP("2000-01-01")
-						SORT DATE_TIMESTAMP(r.builddate) DESC, r._key DESC
-						LIMIT 1
-						FOR cve, edge IN 1..1 OUTBOUND r release2cve
-							FILTER cve.id != null AND cve.id != ""
-							FILTER edge.package_base != null AND edge.package_base != ""
-							RETURN DISTINCT CONCAT(cve.id, "|", edge.package_base)
-				)
-				RETURN {
-					version: v.version,
-					builddate: v.builddate,
-					cve_set: ZIP(cve_keys, cve_keys[* RETURN true])
-				}
-		)
-
-		LET version_list = versions[*].version
-		LET version_count = LENGTH(version_cve_sets)
-
-		FOR l IN cve_lifecycle
-			FILTER l.endpoint_name == @endpoint_name
-			AND l.release_name == @release_name
-			AND l.is_remediated == false
-			LET intro_idx = POSITION(version_list, l.introduced_version, true)
-			FILTER intro_idx >= 0 AND intro_idx < version_count - 1
-			LET cve_key = CONCAT(l.cve_id, "|", l.package)
-			LET fix_version = FIRST(
-				FOR i IN intro_idx + 1..version_count - 1
-					FILTER !HAS(version_cve_sets[i].cve_set, cve_key)
-					RETURN version_cve_sets[i]
-			)
-			FILTER fix_version != null
-			UPDATE l WITH {
+		FOR f IN fixes
+			UPDATE f.key WITH {
 				is_remediated: true,
-				remediated_at: fix_version.builddate,
-				remediated_version: fix_version.version,
+				remediated_at: f.fv.builddate,
+				remediated_version: f.fv.version,
 				days_to_remediate: DATE_DIFF(
-					DATE_TIMESTAMP(l.introduced_at),
-					DATE_TIMESTAMP(fix_version.builddate),
+					DATE_TIMESTAMP(f.introduced_at),
+					DATE_TIMESTAMP(f.fv.builddate),
 					"d"
 				),
 				updated_at: DATE_ISO8601(DATE_NOW())
@@ -714,14 +700,8 @@ func ReconcileSentinelRemediationsLimited(
 	return executeLifecycleQuery(ctx, db, query, map[string]interface{}{
 		"release_name":  releaseName,
 		"endpoint_name": releaseTrackingEndpoint,
-		"max_versions":  maxVersions,
+		"versions":      versionBind,
 	})
-}
-
-// ReconcileSentinelRemediations preserves the previous public API while using
-// the bounded history window.
-func ReconcileSentinelRemediations(ctx context.Context, db database.DBConnection, releaseName string) error {
-	return ReconcileSentinelRemediationsLimited(ctx, db, releaseName, DefaultSentinelHistoryVersions)
 }
 
 // MaintainRecentSentinelHistory synchronizes and reconciles the newest
@@ -770,7 +750,7 @@ func MaintainRecentSentinelHistory(
 			errs = append(errs, fmt.Errorf("reset sentinel remediation state for %s: %w", releaseName, err))
 			continue
 		}
-		if err := ReconcileSentinelRemediationsLimited(ctx, db, releaseName, maxVersions); err != nil {
+		if err := ReconcileSentinelRemediationsLimited(ctx, db, releaseName, versions); err != nil {
 			errs = append(errs, fmt.Errorf("reconcile sentinel history for %s: %w", releaseName, err))
 		}
 	}
